@@ -34,7 +34,13 @@
 !
 !
 !     This module includes procedures that provide a variety of general purpose
-!     utilities.
+!     utilities. The subroutines and functions provided by this module are
+!     grouped into the following sections:
+!           (1)  MQC suite control;
+!           (2)  Printing;
+!           (3)  Character conversion and manipulation;
+!           (4)  Algebra; and
+!           (5)  Other.
 !
 !
 !
@@ -102,6 +108,13 @@
 !
       CONTAINS
 !
+!
+!----------------------------------------------------------------
+!                                                               |
+!     MQC Suite Control and System Interaction                  |
+!                                                               |
+!----------------------------------------------------------------
+!
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
 !
@@ -135,166 +148,38 @@
       Return
       End Subroutine MQC_Error
 
-      
+
 !
-!PROCEDURE String_Change_Case
-      Subroutine String_Change_Case(string,upperlower,stringOut)
+!PROCEDURE mqc_get_command_argument
+      Subroutine mqc_get_command_argument(argNum,argument)
 !
-!     This subroutine is used to change the case of a string, sent as in/out
-!     dummy argument <string>. The input dummy argument <upperlower> is sent as
-!     'U' or 'L' to indicate whether the routine should make <string> all upper-
-!     case or lower-case. The output dummy argument <stringOut> is optional. If
-!     <stringOut> is sent, then the modified version of <string> is returned in
-!     <stringOut>. If <stringOut> is NOT sent, then <string> is replaced and
-!     returned.
+!     This subroutine is used to dynamically allocate command line arguments.
+!     <argument> should be passed as deferred length allocatable character.  
 !     
-!
-!     -H. P. Hratchian, 2017
+!     -L. M. Thompson, 2017.
 !
 !
       implicit none
-      character(len=*)::string
-      character(len=1),intent(in)::upperlower
-      character(len=*),optional::stringOut
-!
-      integer::i,charVal
+      character(len=:),allocatable::argument
+      integer,intent(in)::argNum
+      integer::argLen
 !
 !     Do the work...
 !
-      if(PRESENT(stringOut)) stringOut = ' '
-      select case(upperlower)
-      case('U','u')
-        do i = 1,LEN(string)
-          select case(string(i:i))
-          case ('a':'z')
-            charVal = ichar(string(i:i))
-            if(PRESENT(stringOut)) then
-              stringOut(i:i) = char(charVal-32)
-            else
-              string(i:i) = char(charVal-32)
-            endIf
-          case default
-            if(PRESENT(stringOut)) stringOut(i:i) = string(i:i)
-          endSelect
-        endDo
-      case('L','l')
-        do i = 1,LEN(string)
-          select case(string(i:i))
-          case ('A':'Z')
-            charVal = ichar(string(i:i))
-            if(PRESENT(stringOut)) then
-              stringOut(i:i) = char(charVal+32)
-            else
-              string(i:i) = char(charVal+32)
-            endIf
-          case default
-            if(PRESENT(stringOut)) stringOut(i:i) = string(i:i)
-          endSelect
-        endDo
-      case default
-        call MQC_Error('Unknown upperLower in String_Chage_Case.')
-      endSelect
+      call get_command_argument(argNum,length=argLen)
+      allocate(character(len=argLen)::argument)
+      call get_command_argument(argNum,argument)
 !
       Return
-      End Subroutine String_Change_Case
+      End Subroutine mqc_get_command_argument
 
-
-!PROCEDURE Integer2Character
-      function integer2character(integerIn,formatString) result(integerString)
 !
-!     This function converts an integer variable and returns a character string.
+!----------------------------------------------------------------
+!                                                               |
+!     Printing                                                  |
+!                                                               |
+!----------------------------------------------------------------
 !
-!
-!     -H. P. Hratchian, 2017.
-!
-!
-      implicit none
-      integer,intent(in)::integerIn
-      character(*),intent(in),optional::formatString
-      character(len=256)::myFormatString,integerString
-!
-      if(PRESENT(formatString)) then
-        myFormatString = formatString
-      else
-        myFormatString = 'I10'
-      endIf
-      myFormatString = '('//TRIM(myFormatString)//')'
-      write(integerString,myFormatString) integerIn
-      integerString = ADJUSTL(integerString)
-!
-      return
-      end function integer2character
-
-
-!PROCEDURE real2character
-      function real2character(realIn,formatString) result(realString)
-!
-!     This function converts a real variable and returns a character string. The
-!     input dummy argument <formatString> is OPTIONAL and can be sent to specify
-!     the desired formatting of the realIn. Note that <formatString> must
-!     conform to standard fortran requirments.
-!
-!
-!     -H. P. Hratchian, 2017.
-!
-!
-      implicit none
-      real,intent(in)::realIn
-      character(*),intent(in),optional::formatString
-      character(len=256)::myFormatString,realString
-!
-      if(PRESENT(formatString)) then
-        myFormatString = formatString
-      else
-        myFormatString = 'f20.5'
-      endIf
-      myFormatString = '('//TRIM(myFormatString)//')'
-      write(realString,myFormatString) realIn
-      realString = ADJUSTL(realString)
-!
-      return
-      end function real2character
-
-
-!PROCEDURE Build_String_Add_Int
-      Subroutine Build_String_Add_Int(IntIn,String,IntWidth,NDigits)
-!
-!     This subroutine is used to append an integer to a string.
-!
-!     -H. P. Hratchian, 2015
-!
-!
-      Implicit None
-      Integer,Intent(In)::IntIn
-      Character(Len=*),Intent(InOut)::String
-      Integer,Optional,Intent(In)::IntWidth,NDigits
-      Integer::My_IntWidth
-      Character(Len=512)::FormatString,TempChar
-
-!     Set-up My_IntWidth and then fill FormatString.
-!
-      If(Present(NDigits).and..not.Present(IntWidth)) then
-        My_IntWidth = NDigits
-      else if(Present(IntWidth)) then
-        My_IntWidth = IntWidth
-      else
-        My_IntWidth = 0
-      endIf
-      FormatString = '(I'
-      If(My_IntWidth.gt.0) then
-        Write(TempChar,'(I10)') My_IntWidth
-        FormatString = TRIM(FormatString)//TRIM(ADJUSTL(TempChar))
-      endIf
-      If(Present(NDigits)) then
-        Write(TempChar,'(I10)') NDigits
-      endIf
-      FormatString = TRIM(FormatString)//')'
-      Write(TempChar,FormatString) IntIn
-      String = TRIM(String)//TRIM(ADJUSTL(TempChar))
-      Return
-      End Subroutine Build_String_Add_Int
-
-
 !
 !PROCEDURE MQC_Print_Scalar_Integer
       Subroutine MQC_Print_Scalar_Integer(iOut,scalar,Header,Blank_At_Top, &
@@ -553,6 +438,179 @@
 
 
 !
+!----------------------------------------------------------------
+!                                                               |
+!     Character Conversion and Manipulation                     |
+!                                                               |
+!----------------------------------------------------------------
+!
+!
+!PROCEDURE String_Change_Case
+      Subroutine String_Change_Case(string,upperlower,stringOut)
+!
+!     This subroutine is used to change the case of a string, sent as in/out
+!     dummy argument <string>. The input dummy argument <upperlower> is sent as
+!     'U' or 'L' to indicate whether the routine should make <string> all upper-
+!     case or lower-case. The output dummy argument <stringOut> is optional. If
+!     <stringOut> is sent, then the modified version of <string> is returned in
+!     <stringOut>. If <stringOut> is NOT sent, then <string> is replaced and
+!     returned.
+!     
+!
+!     -H. P. Hratchian, 2017
+!
+!
+      implicit none
+      character(len=*)::string
+      character(len=1),intent(in)::upperlower
+      character(len=*),optional::stringOut
+!
+      integer::i,charVal
+!
+!     Do the work...
+!
+      if(PRESENT(stringOut)) stringOut = ' '
+      select case(upperlower)
+      case('U','u')
+        do i = 1,LEN(string)
+          select case(string(i:i))
+          case ('a':'z')
+            charVal = ichar(string(i:i))
+            if(PRESENT(stringOut)) then
+              stringOut(i:i) = char(charVal-32)
+            else
+              string(i:i) = char(charVal-32)
+            endIf
+          case default
+            if(PRESENT(stringOut)) stringOut(i:i) = string(i:i)
+          endSelect
+        endDo
+      case('L','l')
+        do i = 1,LEN(string)
+          select case(string(i:i))
+          case ('A':'Z')
+            charVal = ichar(string(i:i))
+            if(PRESENT(stringOut)) then
+              stringOut(i:i) = char(charVal+32)
+            else
+              string(i:i) = char(charVal+32)
+            endIf
+          case default
+            if(PRESENT(stringOut)) stringOut(i:i) = string(i:i)
+          endSelect
+        endDo
+      case default
+        call MQC_Error('Unknown upperLower in String_Chage_Case.')
+      endSelect
+!
+      Return
+      End Subroutine String_Change_Case
+
+
+!PROCEDURE Integer2Character
+      function integer2character(integerIn,formatString) result(integerString)
+!
+!     This function converts an integer variable and returns a character string.
+!
+!
+!     -H. P. Hratchian, 2017.
+!
+!
+      implicit none
+      integer,intent(in)::integerIn
+      character(*),intent(in),optional::formatString
+      character(len=256)::myFormatString,integerString
+!
+      if(PRESENT(formatString)) then
+        myFormatString = formatString
+      else
+        myFormatString = 'I10'
+      endIf
+      myFormatString = '('//TRIM(myFormatString)//')'
+      write(integerString,myFormatString) integerIn
+      integerString = ADJUSTL(integerString)
+!
+      return
+      end function integer2character
+
+
+!PROCEDURE real2character
+      function real2character(realIn,formatString) result(realString)
+!
+!     This function converts a real variable and returns a character string. The
+!     input dummy argument <formatString> is OPTIONAL and can be sent to specify
+!     the desired formatting of the realIn. Note that <formatString> must
+!     conform to standard fortran requirments.
+!
+!
+!     -H. P. Hratchian, 2017.
+!
+!
+      implicit none
+      real,intent(in)::realIn
+      character(*),intent(in),optional::formatString
+      character(len=256)::myFormatString,realString
+!
+      if(PRESENT(formatString)) then
+        myFormatString = formatString
+      else
+        myFormatString = 'f20.5'
+      endIf
+      myFormatString = '('//TRIM(myFormatString)//')'
+      write(realString,myFormatString) realIn
+      realString = ADJUSTL(realString)
+!
+      return
+      end function real2character
+
+
+!PROCEDURE Build_String_Add_Int
+      Subroutine Build_String_Add_Int(IntIn,String,IntWidth,NDigits)
+!
+!     This subroutine is used to append an integer to a string.
+!
+!     -H. P. Hratchian, 2015
+!
+!
+      Implicit None
+      Integer,Intent(In)::IntIn
+      Character(Len=*),Intent(InOut)::String
+      Integer,Optional,Intent(In)::IntWidth,NDigits
+      Integer::My_IntWidth
+      Character(Len=512)::FormatString,TempChar
+
+!     Set-up My_IntWidth and then fill FormatString.
+!
+      If(Present(NDigits).and..not.Present(IntWidth)) then
+        My_IntWidth = NDigits
+      else if(Present(IntWidth)) then
+        My_IntWidth = IntWidth
+      else
+        My_IntWidth = 0
+      endIf
+      FormatString = '(I'
+      If(My_IntWidth.gt.0) then
+        Write(TempChar,'(I10)') My_IntWidth
+        FormatString = TRIM(FormatString)//TRIM(ADJUSTL(TempChar))
+      endIf
+      If(Present(NDigits)) then
+        Write(TempChar,'(I10)') NDigits
+      endIf
+      FormatString = TRIM(FormatString)//')'
+      Write(TempChar,FormatString) IntIn
+      String = TRIM(String)//TRIM(ADJUSTL(TempChar))
+      Return
+      End Subroutine Build_String_Add_Int
+
+
+!
+!----------------------------------------------------------------
+!                                                               |
+!     Algebra                                                   |
+!                                                               |
+!----------------------------------------------------------------
+!
+!
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_integer
       Subroutine mqc_packedDiagonalMatrix2FullMatrix_integer(matrixDiagonal,  &
         matrixFull)
@@ -618,28 +676,13 @@
 
 !
 !
-!PROCEDURE mqc_get_command_argument
-      Subroutine mqc_get_command_argument(argNum,argument)
+!----------------------------------------------------------------
+!                                                               |
+!     Other                                                     |
+!                                                               |
+!----------------------------------------------------------------
 !
-!     This subroutine is used to dynamically allocate command line arguments.
-!     <argument> should be passed as deferred length allocatable character.  
-!     
-!     -L. M. Thompson, 2017.
-!
-!
-      implicit none
-      character(len=:),allocatable::argument
-      integer,intent(in)::argNum
-      integer::argLen
-!
-!     Do the work...
-!
-      call get_command_argument(argNum,length=argLen)
-      allocate(character(len=argLen)::argument)
-      call get_command_argument(argNum,argument)
-!
-      Return
-      End Subroutine mqc_get_command_argument
+
 !
 !
       End Module MQC_General
