@@ -6282,10 +6282,9 @@
       Type(MQC_Matrix)::Matrix
 !
       If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error('Incoming matrix not integer in MQC_Matrix_Copy_Int2Real')
-      Call MQC_Allocate_Matrix(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix),Matrix, &
-        'Real',Matrix%Storage)
       Matrix%MatR = Matrix%MatI
       If(Allocated(Matrix%MatI)) Deallocate(Matrix%MatI)
+      Matrix%Data_Type = 'Real'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Int2Real
@@ -6305,10 +6304,9 @@
       Type(MQC_Matrix)::Matrix
 !
       If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error('Incoming matrix not integer in MQC_Matrix_Copy_Int2Complex')
-      Call MQC_Allocate_Matrix(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix),Matrix, &
-        'Complex',Matrix%Storage)
       Matrix%MatC = Matrix%MatI
       If(Allocated(Matrix%MatI)) Deallocate(Matrix%MatI)
+      Matrix%Data_Type = 'Complex'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Int2Complex
@@ -6396,7 +6394,7 @@
       If(.not.MQC_Matrix_HaveComplex(Matrix)) Call MQC_Error('Incoming matrix not real in MQC_Matrix_Copy_Complex2Real')
       Matrix%MatR = Real(Matrix%MatC)
       If(Allocated(Matrix%MatC)) Deallocate(Matrix%MatC)
-      Matrix%Data_Type = 'Complex'
+      Matrix%Data_Type = 'Real'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Complex2Real
@@ -8521,8 +8519,6 @@
       function mqc_matrix_determinant(a) result(det)
 !
 !     This function returns the determinant of MQC matrix A.
-!     This is giving the right number but the sign is not working as
-!     IPIV is being returned strangely.
 !
 !     Lee M. Thompson, 2016.
 !
@@ -8543,7 +8539,7 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_diag2Symm(a)
+      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(rows,cols))
