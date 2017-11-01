@@ -183,6 +183,11 @@
         Module Procedure MQC_Integral_Transpose
       End Interface
 !
+      Interface Dagger
+        Module Procedure MQC_Integral_Conjugate_Transpose
+      End Interface
+
+!
       Interface MQC_Matrix_UndoSpinBlockGHF
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Integral
@@ -1274,6 +1279,49 @@
       end select
 !
       end function mqc_integral_transpose
+!
+!
+!     PROCEDURE MQC_Integral_Conjugate_Transpose
+      function mqc_integral_conjugate_transpose(integral,label) result(integralOut)
+!
+!     This function conjguate transposes a mqc integral type.
+!
+!     -L. M. Thompson, 2017.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integral
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      logical::doOffDiag
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      select case (integral%array_type)
+      case('space')
+          tmpMatrixAlpha = dagger(integral%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+      case('spin')
+          tmpMatrixAlpha = dagger(integral%alpha)
+          tmpMatrixBeta = dagger(integral%beta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      case('general')
+          tmpMatrixAlpha = dagger(integral%alpha)
+          tmpMatrixBeta = dagger(integral%beta)
+          tmpMatrixAlphaBeta = dagger(integral%betaAlpha)
+          tmpMatrixBetaAlpha = dagger(integral%alphaBeta)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+      case default
+        call mqc_error('Unknown integral type in mqc_integral_conjugate_transpose')
+      end select
+!
+      end function mqc_integral_conjugate_transpose
 !
 !=====================================================================
 !

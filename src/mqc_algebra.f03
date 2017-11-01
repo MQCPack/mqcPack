@@ -45,7 +45,7 @@
         Complex(Kind=8),Private,Allocatable::ScaC
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
       Contains
-        Procedure, Public::print => MQC_Print_Scalar
+        Procedure, Public::print => MQC_Print_Scalar_Algebra1
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
@@ -60,7 +60,7 @@
         Integer,Dimension(:),Private,Allocatable::VecI
         Complex(Kind=8),Dimension(:),Private,Allocatable::VecC
       Contains
-        Procedure, Public::print => MQC_Print_Vector
+        Procedure, Public::print => MQC_Print_Vector_Algebra1
         Procedure, Public::initialize => MQC_Vector_Initialize
         Procedure, Public::init => MQC_Vector_Initialize
         Procedure, Public::norm => MQC_Vector_Norm
@@ -87,7 +87,7 @@
         Integer,Dimension(:,:),Private,Allocatable::MatI
         Complex(Kind=8),Dimension(:,:),Private,Allocatable::MatC
       Contains
-        Procedure, Public::print => MQC_Print_Matrix
+        Procedure, Public::print => MQC_Print_Matrix_Algebra1
         Procedure, Public::initialize => MQC_Matrix_Initialize
         Procedure, Public::init => MQC_Matrix_Initialize
         Procedure, Public::identity => MQC_Matrix_Identity
@@ -115,7 +115,7 @@
         Integer,Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=8),Allocatable,Private::CTen(:,:,:,:)
       Contains
-        Procedure, Public::print => MQC_Print_r4tensor
+        Procedure, Public::print => MQC_Print_r4tensor_Algebra1
         Procedure, Public::at => MQC_R4Tensor_At
         Procedure, Public::put => MQC_R4Tensor_Put
         Procedure, Public::initialize => MQC_R4Tensor_Initialize
@@ -130,10 +130,10 @@
 !
 !
       Interface MQC_Print
-        Module Procedure MQC_Print_Scalar
-        Module Procedure MQC_Print_Vector
-        Module Procedure MQC_Print_Matrix
-        Module Procedure MQC_Print_r4tensor
+        Module Procedure MQC_Print_Scalar_Algebra1
+        Module Procedure MQC_Print_Vector_Algebra1
+        Module Procedure MQC_Print_Matrix_Algebra1
+        Module Procedure MQC_Print_r4tensor_Algebra1
       End Interface
 !
       Interface Contraction
@@ -627,8 +627,8 @@
       End Subroutine MQC_Output_Complex_Scalar
 !
 !
-!     PROCEDURE MQC_Print_Scalar
-      Subroutine MQC_Print_Scalar(Scalar,IOut,Header,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Scalar_Algebra1
+      Subroutine MQC_Print_Scalar_Algebra1(Scalar,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Scalar type variable.
@@ -657,14 +657,14 @@
       ElseIf(Scalar%Data_type.eq.'Complex') then
         Write(IOut,1003) TRIM(Header), Scalar%ScaC
       Else
-        Call MQC_Error('Scalar type unspecified in MQC_Print_Scalar')
+        Call MQC_Error('Scalar type unspecified in MQC_Print_Scalar_Algebra1')
       EndIf
       If(PRESENT(Blank_At_Bottom)) then
         If(Blank_At_Bottom) Write(IOut,*)
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Scalar
+      End Subroutine MQC_Print_Scalar_Algebra1
 !
 !
 !     PROCEDURE MQC_Scalar_Sqrt
@@ -2523,8 +2523,8 @@
       End Function MQC_CrossProduct
 !
 !
-!     PROCEDURE MQC_Print_Vector
-      Subroutine MQC_Print_Vector(Vector,IOut,Header,Verbose,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Vector_Algebra1
+      Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Vector type variable.
@@ -2571,7 +2571,7 @@
           Write(IOut,1003) I, Vector%vecc(I)
         EndDo
       Else
-        Call MQC_Error('Vector type unspecified in MQC_Print_Vector')
+        Call MQC_Error('Vector type unspecified in MQC_Print_VectorAlgebra1')
       EndIf
 
       If(PRESENT(Blank_At_Bottom)) then
@@ -2579,7 +2579,7 @@
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Vector
+      End Subroutine MQC_Print_Vector_Algebra1
 !
 !
 !     PROCEDURE MQC_vector_cast_real
@@ -6152,8 +6152,8 @@
       End Subroutine MQC_Set_Matrix2Matrix
 !
 !
-!     PROCEDURE MQC_Print_Matrix
-      Subroutine MQC_Print_Matrix(Matrix,IOut,Header,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Matrix_Algebra1
+      Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Matrix type variable.
@@ -6209,7 +6209,7 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
             Else
-              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix_Algebra1')
             EndIf
           EndDo
         EndDo
@@ -6235,7 +6235,7 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
             Else
-              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix_Algebra1')
             EndIf
           EndDo
         EndDo
@@ -6251,12 +6251,12 @@
           ElseIf(Matrix%Data_Type.eq.'Complex') then
             Write(IOut,2003) I, Matrix%MatC(I,1)
           Else
-            Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+            Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix_Algebra1')
           EndIf
         EndDo
 
       Else
-        Call MQC_Error('Matrix storage type unspecified in MQC_Print_Matrix')
+        Call MQC_Error('Matrix storage type unspecified in MQC_Print_Matrix_Algebra1')
       EndIf
 
 
@@ -6265,7 +6265,7 @@
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Matrix
+      End Subroutine MQC_Print_Matrix_Algebra1
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Int2Real
@@ -9157,8 +9157,8 @@
       End Subroutine MQC_R4Tensor_Put
 !
 !
-!     PROCEDURE MQC_Print_R4Tensor
-      Subroutine MQC_Print_R4Tensor(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
+!     PROCEDURE MQC_Print_R4Tensor_Algebra1
+      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
 !     This Subroutine prints the MQC_R4Tensor Tensor.
 !
@@ -9197,7 +9197,7 @@
         If(blank_at_bottom) Write(IOut,*)
       EndIf
 
-      End Subroutine MQC_Print_R4Tensor
+      End Subroutine MQC_Print_R4Tensor_Algebra1
 !
 !
 !     PROCEDURE MQC_Set_Array2Tensor

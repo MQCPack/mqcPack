@@ -1437,8 +1437,8 @@
 !
 !     Variable Declarations.
       implicit none
-      real::intrinsicOut
-      class(MQC_Variable),intent(in)::mqcVariable
+      real,intent(inOut)::intrinsicOut
+      type(MQC_Variable),intent(in)::mqcVariable
 !
 !
 !     Do the work...
@@ -1472,7 +1472,7 @@
 !     Variable Declarations.
       implicit none
       integer,intent(in)::intrinsicIn
-      class(MQC_Variable)::mqcVariable
+      type(MQC_Variable)::mqcVariable
 !
 !
 !     Load the MQC variable.
@@ -1497,7 +1497,7 @@
 !     Variable Declarations.
       implicit none
       real,intent(in)::intrinsicIn
-      class(MQC_Variable)::mqcVariable
+      type(MQC_Variable)::mqcVariable
 !
 !
 !     Load the MQC variable.
@@ -1632,7 +1632,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::sumVectorInteger
       real,dimension(:),allocatable::sumVectorReal
@@ -1708,7 +1708,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::differenceVectorInteger
       real,dimension(:),allocatable::differenceVectorReal
@@ -1784,7 +1784,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::productVectorInteger
       real,dimension(:),allocatable::productVectorReal
@@ -1859,7 +1859,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::quotientVectorInteger
       real,dimension(:),allocatable::quotientVectorReal
@@ -1933,7 +1933,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer::contractionInteger
       real::contractionReal
