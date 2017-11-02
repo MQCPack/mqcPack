@@ -81,37 +81,7 @@
         Procedure, Public::getBlock => mqc_eigenvalues_output_block
       End Type
 !
-!     These types are being kept as they are used in old MQC_Gaussian routine.
-!     we should discard these once we have updated to new API.
-!     MQC_MO_Coefficients
-      Type,Extends(MQC_SCF_Integral)::MQC_MO_Coefficients
-      End Type MQC_MO_Coefficients
-!      
-!     MQC_MO_Energies
-      Type,Extends(MQC_SCF_Eigenvalues)::MQC_MO_Energies    
-      End Type MQC_MO_Energies
-!      
-!     MQC_MO_Symmetries
-      Type,Extends(MQC_SCF_Eigenvalues)::MQC_MO_Symmetries  
-      End Type MQC_MO_Symmetries
-!
-!     MQC_Core_Hamiltonian
-      Type,Extends(MQC_SCF_Integral)::MQC_Core_Hamiltonian
-      End Type MQC_Core_Hamiltonian
-!
-!     MQC_Fock_Matrix
-      Type,Extends(MQC_SCF_Integral)::MQC_Fock_Matrix
-      End Type MQC_Fock_Matrix
-!
-!     MQC_Density_Matrix
-      Type,Extends(MQC_SCF_Integral)::MQC_Density_Matrix
-      End Type MQC_Density_Matrix
-!
-!     MQC_Overlap_Matrix
-      Type,Extends(MQC_SCF_Integral)::MQC_Overlap_Matrix
-      End Type MQC_Overlap_Matrix
-!      
-!     Parent Type
+!     MQC_Wavefunction
       Type MQC_Wavefunction
         Type(MQC_SCF_Integral)::MO_Coefficients
         Type(MQC_SCF_Eigenvalues)::MO_Energies
@@ -1724,7 +1694,7 @@
       Integer,Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_Core_Hamiltonian),Intent(In)::Core_Hamiltonian
+      Type(MQC_SCF_Integral),Intent(In)::Core_Hamiltonian
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_Scalar)::MatEl,Sgn
@@ -3106,7 +3076,7 @@
       Type(MQC_Matrix)::X,Y
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_TwoERIs),Intent(Out)::MO_ERIs
-      Type(MQC_MO_Coefficients),Intent(In)::MO_Coeff
+      Type(MQC_SCF_Integral),Intent(In)::MO_Coeff
 !
  1000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
  2000 Format(1x,'Doing O(N**8) integral transformation algorithm')
@@ -3740,7 +3710,7 @@
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasis
       Type(MQC_TwoERIs),Intent(In)::MO_ERIs
-      Type(MQC_Core_Hamiltonian),Intent(In)::MO_Core_Ham
+      Type(MQC_SCF_Integral),Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
       Integer::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &

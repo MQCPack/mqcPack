@@ -65,7 +65,7 @@
         logical::declared=.false.,header_read=.false.,header_written=.false.
         character(len=1)::readWriteMode=' '
         character(len=64)::LabFil=' ',GVers=' ',Title=' '
-        integer::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
+        integer,allocatable::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
           NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
         integer,dimension(:),allocatable::atomicNumbers,atomTypes,basisFunction2Atom, &
           IBasisFunctionType
@@ -501,6 +501,7 @@
       End Subroutine MQC_Gaussian_Fill_Molecule_Data_FChk
 
 
+!=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Fill_Molecule_Data
       Subroutine MQC_Gaussian_Fill_Molecule_Data(MoleculeData,NAtoms,  &
@@ -509,6 +510,7 @@
 !
 !     This subroutine is used to fill a MQC_Molecule_Data type variable
 !     given INPUT dummy arguments for each of its constituents entries.
+!     All the molecule objects need to be updated.
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(Out)::MoleculeData
@@ -529,634 +531,6 @@
       endSelect
 !
       End Subroutine MQC_Gaussian_Fill_Molecule_Data
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_Core_Hamiltonian
-      Subroutine MQC_Gaussian_Fill_Core_Hamiltonian(NBasis,Core_Ham_Alpha, &
-        Core_Ham_Beta,Core_Hamiltonian)
-!
-!     This subroutine is used to fill a MQC_Core_Hamiltonian type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis
-      Real,Dimension(:,:),Allocatable,Intent(In)::Core_Ham_Alpha, &
-        Core_Ham_Beta
-      Type(MQC_Core_Hamiltonian),Intent(Out)::Core_Hamiltonian
-!
-!     Allocate the arrays inside of MO_Coefficients...
-!
-      If(Allocated(Core_Ham_Alpha)) Core_Hamiltonian%Alpha = Core_Ham_Alpha
-      If(Allocated(Core_Ham_Alpha)) Core_Hamiltonian%Beta = Core_Ham_Beta
-!
-      End Subroutine MQC_Gaussian_Fill_Core_Hamiltonian
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_Fock_Matrix
-      Subroutine MQC_Gaussian_Fill_Fock_Matrix(NBasis,Fock_Matrix_Alpha, &
-        Fock_Matrix_Beta,Fock_Matrix)
-!
-!     This subroutine is used to fill a MQC_Fock_Matrix type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis
-      Real,Dimension(:,:),Allocatable,Intent(In)::Fock_Matrix_Alpha, &
-        Fock_Matrix_Beta
-      Type(MQC_Fock_Matrix),Intent(Out)::Fock_Matrix
-!
-!     Allocate the arrays inside of MO_Coefficients...
-!
-      If(Allocated(Fock_Matrix_Alpha)) Fock_Matrix%Alpha = Fock_Matrix_Alpha
-      If(Allocated(Fock_Matrix_Beta)) Fock_Matrix%Beta = Fock_Matrix_Beta
-!
-      End Subroutine MQC_Gaussian_Fill_Fock_Matrix
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_MO_Coefficients
-      Subroutine MQC_Gaussian_Fill_MO_Coefficients(NBasis,MO_Coeffs_Alpha, &
-        MO_Coeffs_Beta,MO_Coefficients)
-!
-!     This subroutine is used to fill a MQC_MO_Coefficients type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis
-      Real,Dimension(:,:),Allocatable,Intent(In)::MO_Coeffs_Alpha, &
-        MO_Coeffs_Beta
-      Type(MQC_MO_Coefficients),Intent(Out)::MO_Coefficients
-!
-!     Allocate the arrays inside of MO_Coefficients...
-!
-      If(Allocated(MO_Coeffs_Alpha)) MO_Coefficients%Alpha = MO_Coeffs_Alpha
-      If(Allocated(MO_Coeffs_Alpha)) MO_Coefficients%Beta = MO_Coeffs_Beta
-!
-      End Subroutine MQC_Gaussian_Fill_MO_Coefficients
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_Overlap_Matrix
-      Subroutine MQC_Gaussian_Fill_Overlap_Matrix(NBasis,In_Overlap_Matrix, &
-        Overlap_Matrix)
-!
-!     This subroutine is used to fill a MQC_Overlap_Matrix type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis
-      Real,Dimension(:,:),Allocatable,Intent(In)::In_Overlap_Matrix
-      Type(MQC_Overlap_Matrix),Intent(Out)::Overlap_Matrix
-!
-!     Allocate the arrays inside of MO_Coefficients...
-!
-      If(Allocated(In_Overlap_Matrix)) Overlap_Matrix%Alpha = In_Overlap_Matrix
-!
-      End Subroutine MQC_Gaussian_Fill_Overlap_Matrix
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_Wavefunction
-      Subroutine MQC_Gaussian_Fill_Wavefunction(NBasis,NElectrons,ICGU, &
-        Charge,Multiplicity,MO_Coeffs_Alpha,MO_Coeffs_Beta,Core_Hamiltonian_Alpha, &
-        Core_Hamiltonian_Beta,Fock_Matrix_Alpha,Fock_Matrix_Beta,Overlap_Matrix, &
-        Wavefunction)
-!
-!     This subroutine is used to fill a MQC_Wavefunction type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis,NElectrons,ICGU,Charge,Multiplicity
-      Real,Dimension(:,:),Allocatable,Intent(In)::Overlap_Matrix,Core_Hamiltonian_Alpha, &
-      Core_Hamiltonian_Beta,Fock_Matrix_Alpha,Fock_Matrix_Beta,MO_Coeffs_Alpha, &
-      MO_Coeffs_Beta
-      Class(MQC_Wavefunction),Intent(Out)::Wavefunction
-!
-!     Allocate the arrays inside of Wavefunction object...
-!
-      Wavefunction%NBasis = NBasis
-      Wavefunction%NElectrons = NElectrons
-      if (Mod(ICGU,1000)/100.eq.2) then
-        Wavefunction%WF_Type = 'G'
-      elseIf (Mod(ICGU,1000)/100.eq.1) then
-        if (Mod(ICGU,10).eq.1) then
-          Wavefunction%WF_Type = 'R'
-        elseIf (Mod(ICGU,10).eq.2) then
-          Wavefunction%WF_Type = 'U'
-        else
-          Call MQC_Error('Unknown flag at ICGU 1st bit in MQC_Gaussian_Fill_Wavefunction ')
-        endIf
-      else
-        Call MQC_Error('Unknown flag at ICGU 3rd bit in MQC_Gaussian_Fill_Wavefunction ')
-      endIf
-      if (Mod(ICGU,100)/10.eq.2) then
-        Wavefunction%WF_Complex = .True.
-      elseIf (Mod(ICGU,100)/10.eq.1) then
-        Wavefunction%WF_Complex = .False.
-      else
-        Call MQC_Error('Unknown flag at ICGU 2nd bit in MQC_Gaussian_Fill_Wavefunction ')
-      endIf
-      Wavefunction%Charge = Charge
-      Wavefunction%Multiplicity = Multiplicity
-      Wavefunction%NAlpha = (NElectrons + (Multiplicity-1))/2
-      Wavefunction%NBeta = NElectrons-(NElectrons + (Multiplicity-1))/2
-      if(Allocated(Core_Hamiltonian_Alpha)) Wavefunction%Core_Hamiltonian%Alpha = Core_Hamiltonian_Alpha
-      if(Allocated(Core_Hamiltonian_Beta)) Wavefunction%Core_Hamiltonian%Beta = Core_Hamiltonian_Beta
-      if(Allocated(Fock_Matrix_Alpha)) Wavefunction%Fock_Matrix%Alpha = Fock_Matrix_Alpha
-      if(Allocated(Fock_Matrix_Beta)) Wavefunction%Fock_Matrix%Beta = Fock_Matrix_Beta
-      if(Allocated(MO_Coeffs_Alpha)) Wavefunction%MO_Coefficients%Alpha = MO_Coeffs_Alpha
-      if(Allocated(MO_Coeffs_Beta)) Wavefunction%MO_Coefficients%Beta = MO_Coeffs_Beta
-      if(Allocated(Overlap_Matrix)) Wavefunction%Overlap_Matrix%Alpha = Overlap_Matrix
-!     LMT: Put funciton in EST for computing density matrix and fill this here
-!     LMT: Put funciton in EST for computing orbital energy and fill this here
-!     LMT: Put funciton in EST for Symmetry and fill this here
-!     LMT: Put funciton in EST for Basis and fill this here
-!     LMT: PSCF extentions? 
-!
-      End Subroutine MQC_Gaussian_Fill_Wavefunction
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Fill_ERIs
-      Subroutine MQC_Gaussian_Fill_ERIs(NBasis,ERIs,ERIs_Full,Integral_Type)
-!
-!     This subroutine is used to fill a MQC_TwoERIs type variable
-!     given INPUT dummy arguments for each of its constituents entries.
-!
-      Implicit None
-      Integer,Intent(In)::NBasis
-      Real,Dimension(:,:,:,:),Allocatable,Intent(In)::ERIs
-      Character(Len=64)::Integral_Type
-      Type(MQC_TwoERIs),Intent(Out)::ERIs_Full
-!
-!     Allocate the arrays inside of MO_Coefficients...
-!
-      ERIs_Full%AO = .True.
-      ERIs_Full%UHF = .False.
-      ERIs_Full%Storage_Type = 'Full'
-      ERIs_Full%Integral_Type = Integral_Type
-      If(Allocated(ERIs)) ERIs_Full%TwoERIs = ERIs
-!
-      End Subroutine MQC_Gaussian_Fill_ERIs
-
-
-!=====================================================================
-!
-!PROCEDURE MQC_Gaussian_Read_Matrix_File
-      Subroutine MQC_Gaussian_Read_Matrix_File(DEBUG_PRINT,FileName,  &
-        MoleculeInfo,Wavefunction,ERIs_Full,NumberBasisFunctions, &
-        NumberElectrons,ElectronicMultiplicity,Basis2AtomMap,Overlap_Matrix, &
-        MO_Coefficients,Core_Hamiltonian,Fock_Matrix)
-!
-!     This subroutine is used to read a Gaussian (binary) Matrix File.
-!
-!
-!     Dummy Arguments
-      Implicit None
-      Logical,Intent(In)::DEBUG_PRINT
-      Character(Len=256),Intent(In)::FileName
-      Class(MQC_Molecule_Data),Optional,Intent(Out)::MoleculeInfo
-      Type(MQC_MO_Coefficients),Optional,Intent(Out)::MO_Coefficients
-      Type(MQC_Fock_Matrix),Optional,Intent(Out)::Fock_Matrix
-      Type(MQC_Core_Hamiltonian),Optional,Intent(Out)::Core_Hamiltonian
-      Type(MQC_Overlap_Matrix),Optional,Intent(Out)::Overlap_Matrix
-      Class(MQC_Wavefunction),Optional,Intent(Out)::Wavefunction
-      Type(MQC_TwoERIs),Optional,Intent(Out)::ERIs_Full
-      Integer,Dimension(:),Allocatable,Optional,Intent(Out)::Basis2AtomMap
-      Integer,Optional,Intent(Out)::NumberBasisFunctions,NumberElectrons, &
-        ElectronicMultiplicity
-!      Real,Dimension(:,:,:,:),Allocatable,Optional,Intent(Out)::ERIs_Full
-!
-!     Test Variables/Arrays...
-      Real,Dimension(:),Allocatable::Overlap_Symm,Fock_AO_Symm
-      Real,Dimension(:,:),Allocatable::MO_Coeffs_Alpha,MO_Coeffs_Beta, &
-        Overlap_Sq,Fock_AO_Sq,Fock_MO_Sq,Fock_Matrix_Alpha,Fock_Matrix_Beta, &
-        Core_Hamiltonian_Alpha,Core_Hamiltonian_Beta,In_Overlap_Matrix
-!      Type(ERI_Value),Dimension(:),Allocatable::ERIs
-      Real,Dimension(:,:,:,:),Allocatable::ERIs
-!      Integer::ERI_i,ERI_j,ERI_k,ERI_l
-!
-!     General Set of Variables...
-      Integer,Parameter::IGMat_Unit=10,IGMat_LStr=64
-      Integer::IError
-!
-!     Varibles for key read-in values...
-      Integer::IGMat_Version,NLab,NAtoms,NBasis,NBasisUse,NBasisSymm, &
-        ICharge,Multiplicity,NElectrons,Len12L,Len4L,IOpCl,ICGU
-      Integer,Dimension(:),Allocatable::AtomicNumbers,AtomTypes, &
-        Map_BF2Atom,BF_TypeDefs
-      Real,Dimension(:),Allocatable::NuclearCharges,AtomicWeights
-      Real,Dimension(:,:),Allocatable::CartesianCoordinates
-      Character(Len=IGMat_LStr)::FileType_Label=' ',Gaussian_Version=' '
-      Character(Len=64)::Title=' ',Integral_Type
-!
-!     Temp variables used when reading matrix headers.
-      Integer::NI,NR,NTot,NPerRec,N1,N2,N3,N4,N5,ISym,NRecords
-      Character(len=64)::Matrix_Label
-!
-!     Temp variables...
-      Integer::iStart,IEnd,IStart1,IEnd1,i,j,II,JJ,KK,LL,Int_Tmp1
-      Integer,Dimension(:),Allocatable::Int_Vector_Tmp1
-      Integer,Dimension(:,:),Allocatable::Int_Matrix_Tmp1
-      Real::Real_Tmp1
-      Real,Dimension(:),Allocatable::Real_Vector_Tmp1,Real_Vector_Tmp2
-      Real,Dimension(:,:),Allocatable::Real_Matrix_Tmp1,Real_Matrix_Tmp2
-      Character(len=64)::Char_Tmp1
-!
-!
-!     Format Statements.
-!
- 1000 Format(1x,'Reading file ',A)
- 2000 Format(1x,'Atom',5x,'Atomic Num',5x,'Atom Type',6x,'Atomic Charge')
- 2010 Format(1x,I3,6x,I6,10x,I6,10x,F10.5)
- 2200 Format(1x,'Atom',15x,'x',17x,'y',17x,'z')
- 2210 Format(1x,I3,6x,F15.8,3x,F15.8,3x,F15.8)
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
-!
-!
-!     Read and open the user-defined Gaussian Matrix File.
-!
-      If(DEBUG_PRINT) Write(*,1000) TRIM(FileName)
-      Open(Unit=IGMat_Unit,File=FileName,Form='Unformatted', &
-        Status='Old',IOStat=IError)
-!
-!     Read Record 1.
-!       File Type Label, G-Matrix File Version, NLab, Gaussian Version.
-      Read(IGMat_Unit) FileType_Label(1:IGMat_LStr),IGMat_Version,NLab, &
-        Gaussian_Version(1:IGMat_LStr)
-      If(DEBUG_PRINT) then
-        Write(*,*)' Hrant - FileType_Label  : ',TRIM(FileType_Label)
-        Write(*,*)'         IGMat_Version   : ',IGMat_Version
-        Write(*,*)'         NLab            : ',NLab
-        Write(*,*)'         Gaussian_Version: ',TRIM(Gaussian_Version)
-        Write(*,*)
-      EndIf
-!
-!     Read Record 2.
-!       Title, NAtoms, NBasis, NBasisUse, Charge, Multiplicity, NElectrons,
-!       Len12L, Len4L, IOpCl, and ICGU.
-      Read(IGMat_Unit) Title,NAtoms,NBasis,NBasisUse,ICharge, &
-        Multiplicity,NElectrons,Len12L,Len4L,IOpCl,ICGU
-      If(DEBUG_PRINT) then
-        Write(*,*)'        Title            : ',TRIM(Title)
-        Write(*,*)'        NAtoms           : ',NAtoms
-        Write(*,*)'        NBasis           : ',NBasis
-        Write(*,*)'        NBasisUse        : ',NBasisUse
-        Write(*,*)'        ICharge          : ',ICharge
-        Write(*,*)'        Multiplicity     : ',Multiplicity
-        Write(*,*)'        NElectrons       : ',NElectrons
-        Write(*,*)'        Len12L           : ',Len12L
-        Write(*,*)'        Len4L            : ',Len4L
-        Write(*,*)'        IOpCl            : ',IOpCl
-        Write(*,*)'        ICGU             : ',ICGU
-        Write(*,*)
-      EndIf
-      If(PRESENT(NumberBasisFunctions)) NumberBasisFunctions = NBasis
-      If(PRESENT(NumberElectrons)) NumberElectrons = NElectrons
-      If(PRESENT(ElectronicMultiplicity)) ElectronicMultiplicity = Multiplicity
-!
-!     Read Records 3-5.
-!       Atomic numbers, Atom types, Atomic charges (possibly different from
-!       atomic number is ECPs were used).
-      Allocate(AtomicNumbers(NAtoms),AtomTypes(NAtoms), &
-        NuclearCharges(NAtoms))
-      Read(IGMat_Unit) (AtomicNumbers(i),i=1,NAtoms)
-      Read(IGMat_Unit) (AtomTypes(i),i=1,NAtoms)
-      Read(IGMat_Unit) (NuclearCharges(i),i=1,NAtoms)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,2000)
-        Do i = 1,NAtoms
-          Write(*,2010) i,AtomicNumbers(i),AtomTypes(i),NuclearCharges(i)
-        EndDo
-        Write(*,*)
-      EndIf
-!
-!     Read Record 6.
-!       Cartesian coordinates.
-      Allocate(CartesianCoordinates(3,NAtoms))
-      Read(IGMat_Unit) ((CartesianCoordinates(i,j),i=1,3),j=1,NAtoms)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,2200)
-        Do i = 1,NAtoms
-          Write(*,2210) i,CartesianCoordinates(:,i)
-        EndDo
-        Write(*,*)
-      EndIf
-!
-!     Read Record 7.
-!       Map_BF2Atom, BF_TypeDefs.
-      Allocate(Int_Vector_Tmp1(2*NBasis),Map_BF2Atom(NBasis), &
-        BF_TypeDefs(NBasis))
-      Read(IGMat_Unit) (Int_Vector_Tmp1(i),i=1,2*NBasis)
-      Map_BF2Atom = Int_Vector_Tmp1(1:NBasis)
-      BF_TypeDefs = Int_Vector_Tmp1(NBasis+1:2*NBasis)
-      DeAllocate(Int_Vector_Tmp1)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,*)' Hrant - Map_BF2Atom,BF_TypeDefs'
-        Do i = 1,NBasis
-          Write(*,*) Map_BF2Atom(i),BF_TypeDefs(i)
-        EndDo
-        Write(*,*)
-      EndIf
-      If(PRESENT(Basis2AtomMap)) then
-        Allocate(Basis2AtomMap(NBasis))
-        Basis2AtomMap = Map_BF2Atom
-      EndIf
-!
-!     Read Record 8.
-!       Atomic weights.
-      Allocate(AtomicWeights(NAtoms))
-      Read(IGMat_Unit) (AtomicWeights(i),i=1,NAtoms)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,*)' Hrant - Atomic Weights'
-        Do i = 1,NAtoms
-          Write(*,*) AtomicWeights(i)
-        EndDo
-        Write(*,*)
-      EndIf
-!
-!     Read Record 9.
-!       Atomic weights.
-      Allocate(Int_Vector_Tmp1(4))
-      Int_Vector_Tmp1 = 0
-      Read(IGMat_Unit) (Int_Vector_Tmp1(i),i=1,3)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,*)' Hrant - Window Flags:'
-        Write(*,*)'   NFC   = ',Int_Vector_Tmp1(1)
-        Write(*,*)'   NFV   = ',Int_Vector_Tmp1(2)
-        Write(*,*)'   ITran = ',Int_Vector_Tmp1(3)
-        Write(*,*)'   IDum  = ',Int_Vector_Tmp1(4)
-        Write(*,*)
-      EndIf
-      DeAllocate(Int_Vector_Tmp1)
-!
-!     Read Record 10.
-!       This is a placeholder.
-      Read(IGMat_Unit)
-!
-!     Read Record 11.
-!       16 Integers. The first 5 are currently used flags and the rest are
-!       placeholders for now.
-      Allocate(Int_Vector_Tmp1(16))
-      Int_Vector_Tmp1 = 0
-      Read(IGMat_Unit) (Int_Vector_Tmp1(i),i=1,16)
-      If(DEBUG_PRINT) then
-        Write(*,*)
-        Write(*,*)' Hrant - Record 11 Flags with Meaning...'
-        Write(*,*)'   NShellAO = ',Int_Vector_Tmp1(1)
-        Write(*,*)'   NPrimAO  = ',Int_Vector_Tmp1(2)
-        Write(*,*)'   NShellDB = ',Int_Vector_Tmp1(3)
-        Write(*,*)'   NPrimDB  = ',Int_Vector_Tmp1(4)
-        Write(*,*)'   NBTot    = ',Int_Vector_Tmp1(5)
-        Write(*,*)
-        Write(*,*)' Hrant - Record 11 Flags ... ALL OF THEM'
-        Do i = 1,16
-          Write(*,*) i,Int_Vector_Tmp1(i)
-        EndDo
-        Write(*,*)
-      EndIf
-      DeAllocate(Int_Vector_Tmp1)
-      NBasisSymm = NBasis*(NBasis+1)/2
-!
-!     Read the matrices now...
-      If(DEBUG_PRINT) Write(*,*)
-      Do
-        Read(IGMat_Unit,End=900) Matrix_Label,NI,NR,NTot,NPerRec,N1, &
-          N2,N3,N4,N5,ISym
-        If(DEBUG_PRINT) Write(*,*)' Matrix Label    = ',TRIM(Matrix_Label)
-        If(TRIM(Matrix_Label).eq.'END') Exit
-        NRecords = (NTot+NPerRec-1)/NPerRec
-        If(DEBUG_PRINT) then
-          Write(*,*)'   NI       = ',NI
-          Write(*,*)'   NR       = ',NR
-          Write(*,*)'   NTot     = ',NTot
-          Write(*,*)'   NPerRec  = ',NPerRec
-          Write(*,*)'   N1       = ',N1
-          Write(*,*)'   N2       = ',N2
-          Write(*,*)'   N3       = ',N3
-          Write(*,*)'   N4       = ',N4
-          Write(*,*)'   N5       = ',N5
-          Write(*,*)'   ISym     = ',ISym
-          Write(*,*)
-          Write(*,*)'   NRecords = ',NRecords
-        EndIf
-!        Write(*,*) 'about to do overlap', PRESENT(Overlap_Matrix),Present(Wavefunction), &
-!          TRIM(Matrix_Label)
-        If((PRESENT(Overlap_Matrix).or.Present(Wavefunction))  &
-          .and.TRIM(Matrix_Label).eq.'OVERLAP') then
-          Allocate(Overlap_Symm(NBasisSymm))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Overlap_Symm(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Overlap_Symm(IStart:NTot)
-          If(PRESENT(Overlap_Matrix).or.Present(Wavefunction)) then
-            Allocate(In_Overlap_Matrix(NBasis,NBasis))
-            Call Matrix_Symm2Sq(NBasis,Overlap_Symm,In_Overlap_Matrix)
-          EndIf
-!
-!
-        else if((PRESENT(Core_Hamiltonian).or.Present(Wavefunction)).and.  &
-          TRIM(Matrix_Label).eq.'CORE HAMILTONIAN ALPHA') then
-          Allocate(Real_Vector_Tmp1(NBasisSymm))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:NTot)
-          Allocate(Core_Hamiltonian_Alpha(NBasis,NBasis))
-          Call Matrix_Symm2Sq(NBasis,Real_Vector_Tmp1,Core_Hamiltonian_Alpha)
-          DeAllocate(Real_Vector_Tmp1)
-!
-        else if((PRESENT(Core_Hamiltonian).or.Present(Wavefunction)).and.  &
-          TRIM(Matrix_Label).eq.'CORE HAMILTONIAN BETA') then
-          Allocate(Real_Vector_Tmp1(NBasisSymm))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:NTot)
-          Allocate(Core_Hamiltonian_Beta(NBasis,NBasis))
-          Call Matrix_Symm2Sq(NBasis,Real_Vector_Tmp1,Core_Hamiltonian_Beta)
-          DeAllocate(Real_Vector_Tmp1)
-!
-!
-        else if((PRESENT(Fock_Matrix).or.Present(Wavefunction))  &
-          .and.TRIM(Matrix_Label).eq.'ALPHA FOCK MATRIX') then
-          Allocate(Fock_AO_Symm(NBasisSymm))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Fock_AO_Symm(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Fock_AO_Symm(IStart:NTot)
-          Allocate(Fock_Matrix_Alpha(NBasis,NBasis))
-          Call Matrix_Symm2Sq(NBasis,Fock_AO_Symm,Fock_Matrix_Alpha)
-          DeAllocate(Fock_AO_Symm)
-!
-        else if((PRESENT(Fock_Matrix).or.Present(Wavefunction))  &
-          .and.TRIM(Matrix_Label).eq.'BETA FOCK MATRIX') then
-          Allocate(Fock_AO_Symm(NBasisSymm))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Fock_AO_Symm(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Fock_AO_Symm(IStart:NTot)
-          Allocate(Fock_Matrix_Beta(NBasis,NBasis))
-          Call Matrix_Symm2Sq(NBasis,Fock_AO_Symm,Fock_Matrix_Beta)
-          DeAllocate(Fock_AO_Symm)
-!
-!
-        else if((PRESENT(MO_Coefficients).or.Present(Wavefunction)).and.  &
-          TRIM(Matrix_Label).eq.'ALPHA MO COEFFICIENTS') then
-          Allocate(MO_Coeffs_Alpha(NBasis,NBasis), &
-            Real_Vector_Tmp1(NBasis*NBasis))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:NTot)
-          iStart = 1
-          Do i = 1,NBasis
-            IStart = (i-1)*NBasis+1
-            IEnd   = i*NBasis
-            MO_Coeffs_Alpha(:,i) = Real_Vector_Tmp1(IStart:IEnd)
-          EndDo
-          DeAllocate(Real_Vector_Tmp1)
-!
-        else if((PRESENT(MO_Coefficients).or.Present(Wavefunction)).and.  &
-          TRIM(Matrix_Label).eq.'BETA MO COEFFICIENTS') then
-          Allocate(MO_Coeffs_Beta(NBasis,NBasis), &
-            Real_Vector_Tmp1(NBasis*NBasis))
-          iStart = 1
-          Do i = 1,NRecords-1
-            IEnd = IStart + NPerRec - 1
-            Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:IEnd)
-            iStart = iStart + NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Real_Vector_Tmp1(IStart:NTot)
-          iStart = 1
-          Do i = 1,NBasis
-            IStart = (i-1)*NBasis+1
-            IEnd   = i*NBasis
-            MO_Coeffs_Beta(:,i) = Real_Vector_Tmp1(IStart:IEnd)
-          EndDo
-          DeAllocate(Real_Vector_Tmp1)
-!
-!
-        else if(PRESENT(ERIs_Full).and.  &
-          TRIM(Matrix_Label).eq.'REGULAR 2E INTEGRALS') then
-          Integral_Type = 'Regular'
-          If(Present(ERIs_Full)) then
-            Allocate(ERIs(NBasis,NBasis,NBasis,NBasis))
-            ERIs = 0.0
-          endIf
-          Allocate(Int_Matrix_Tmp1(4,NPerRec),Real_Vector_Tmp1(NPerRec))
-          IStart = 1
-          Do i = 1,NRecords-1
-            Read(IGMat_Unit,End=900) Int_Matrix_Tmp1,Real_Vector_Tmp1
-            Do j = 1,NPerRec
-              II = Int_Matrix_Tmp1(1,j)
-              JJ = Int_Matrix_Tmp1(2,j)
-              KK = Int_Matrix_Tmp1(3,j)
-              LL = Int_Matrix_Tmp1(4,j)
-              If(DEBUG_PRINT) &
-                Write(*,5000) II,JJ,KK,LL,Real_Vector_Tmp1(j)
-              If(Present(ERIs_Full)) then
-                ERIs(II,JJ,KK,LL) = Real_Vector_Tmp1(j)
-                ERIs(JJ,II,KK,LL) = Real_Vector_Tmp1(j)
-                ERIs(II,JJ,LL,KK) = Real_Vector_Tmp1(j)
-                ERIs(JJ,II,LL,KK) = Real_Vector_Tmp1(j)
-                ERIs(KK,LL,II,JJ) = Real_Vector_Tmp1(j)
-                ERIs(KK,LL,JJ,II) = Real_Vector_Tmp1(j)
-                ERIs(LL,KK,II,JJ) = Real_Vector_Tmp1(j)
-                ERIs(LL,KK,JJ,II) = Real_Vector_Tmp1(j)
-              endIf
-            EndDo
-            IStart = IStart+NPerRec
-          EndDo
-          Read(IGMat_Unit,End=900) Int_Matrix_Tmp1,  &
-            Real_Vector_Tmp1
-          Do j = 1,NTot-IStart+1
-            II = Int_Matrix_Tmp1(1,j)
-            JJ = Int_Matrix_Tmp1(2,j)
-            KK = Int_Matrix_Tmp1(3,j)
-            LL = Int_Matrix_Tmp1(4,j)
-            If(DEBUG_PRINT) &
-              Write(*,5000) II,JJ,KK,LL,Real_Vector_Tmp1(j)
-            If(Present(ERIs_Full)) then
-              ERIs(II,JJ,KK,LL) = Real_Vector_Tmp1(j)
-              ERIs(JJ,II,KK,LL) = Real_Vector_Tmp1(j)
-              ERIs(II,JJ,LL,KK) = Real_Vector_Tmp1(j)
-              ERIs(JJ,II,LL,KK) = Real_Vector_Tmp1(j)
-              ERIs(KK,LL,II,JJ) = Real_Vector_Tmp1(j)
-              ERIs(KK,LL,JJ,II) = Real_Vector_Tmp1(j)
-              ERIs(LL,KK,II,JJ) = Real_Vector_Tmp1(j)
-              ERIs(LL,KK,JJ,II) = Real_Vector_Tmp1(j)
-            endIf
-          EndDo
-          DeAllocate(Int_Matrix_Tmp1,Real_Vector_Tmp1)
-        else
-          Do i = 1,NRecords
-            Read(IGMat_Unit,End=900)
-          EndDo
-        endIf
-      EndDo
-      Goto 999
- 900  Write(*,*)
-      Write(*,*)' PROBLEM READING FIRST MATRIX INFO!'
-      Write(*,*)
-!
- 999  Continue
-      If(Present(MoleculeInfo))  &
-        Call MQC_Gaussian_Fill_Molecule_Data(MoleculeInfo,NAtoms,  &
-        AtomicNumbers,AtomicWeights,NuclearCharges,  &
-        CartesianCoordinates,ICharge,Multiplicity)
-      If(Present(Core_Hamiltonian))  &
-        Call MQC_Gaussian_Fill_Core_Hamiltonian(NBasis,Core_Hamiltonian_Alpha, &
-        Core_Hamiltonian_Beta,Core_Hamiltonian)
-      If(Present(Fock_Matrix))  &
-        Call MQC_Gaussian_Fill_Fock_Matrix(NBasis,Fock_Matrix_Alpha, &
-        Fock_Matrix_Beta,Fock_Matrix)
-      If(Present(MO_Coefficients))  &
-        Call MQC_Gaussian_Fill_MO_Coefficients(NBasis,MO_Coeffs_Alpha, &
-        MO_Coeffs_Beta,MO_Coefficients)
-      If(Present(Overlap_Matrix))  &
-        Call MQC_Gaussian_Fill_Overlap_Matrix(NBasis,In_Overlap_Matrix, &
-        Overlap_Matrix)
-      If(Present(Wavefunction))  &
-        Call MQC_Gaussian_Fill_Wavefunction(NBasis,NElectrons,ICGU, &
-        ICharge,Multiplicity,MO_Coeffs_Alpha,MO_Coeffs_Beta,Core_Hamiltonian_Alpha, &
-        Core_Hamiltonian_Beta,Fock_Matrix_Alpha,Fock_Matrix_Beta, &
-        In_Overlap_Matrix,Wavefunction)
-      If(Present(ERIs_Full))  &
-        Call MQC_Gaussian_Fill_ERIs(NBasis,ERIs,ERIs_Full,Integral_Type)
-!
-      End Subroutine MQC_Gaussian_Read_Matrix_File
 
 
 !=====================================================================
@@ -1231,16 +605,33 @@
       fileinfo%UnitNumber     = 0
       fileinfo%declared       = .false.
       fileinfo%header_read    = .false.
+      fileinfo%header_written = .false.
       fileinfo%readWriteMode  = ' '
       fileinfo%LabFil         = ' '
       fileinfo%GVers          = ' '
       fileinfo%Title          = ' '
-      DEALLOCATE(fileinfo%atomicNumbers)
-      DEALLOCATE(fileinfo%atomTypes)
-      DEALLOCATE(fileinfo%basisFunction2Atom)
-      DEALLOCATE(fileinfo%atomicCharges)
-      DEALLOCATE(fileinfo%atomicWeights)
-      DEALLOCATE(fileinfo%cartesians)
+      if(allocated(fileinfo%atomicNumbers)) deallocate(fileinfo%atomicNumbers)
+      if(allocated(fileinfo%atomTypes)) deallocate(fileinfo%atomTypes)
+      if(allocated(fileinfo%basisFunction2Atom)) deallocate(fileinfo%basisFunction2Atom)
+      if(allocated(fileinfo%atomicCharges)) deallocate(fileinfo%atomicCharges)
+      if(allocated(fileinfo%atomicWeights)) deallocate(fileinfo%atomicWeights)
+      if(allocated(fileinfo%cartesians)) deallocate(fileinfo%cartesians)
+      if(allocated(fileinfo%natoms)) deallocate(fileinfo%natoms)
+      if(allocated(fileinfo%nbasis)) deallocate(fileinfo%nbasis)
+      if(allocated(fileinfo%nbasisUse)) deallocate(fileinfo%nbasisUse)
+      if(allocated(fileinfo%icharge)) deallocate(fileinfo%icharge)
+      if(allocated(fileinfo%multiplicity)) deallocate(fileinfo%multiplicity)
+      if(allocated(fileinfo%nelectrons)) deallocate(fileinfo%nelectrons)
+      if(allocated(fileinfo%icgu)) deallocate(fileinfo%icgu)
+      if(allocated(fileinfo%NFC)) deallocate(fileinfo%NFC)
+      if(allocated(fileinfo%NFV)) deallocate(fileinfo%NFV)
+      if(allocated(fileinfo%ITran)) deallocate(fileinfo%ITran)
+      if(allocated(fileinfo%IDum9)) deallocate(fileinfo%IDum9)
+      if(allocated(fileinfo%NShlAO)) deallocate(fileinfo%NShlAO)
+      if(allocated(fileinfo%NPrmAO)) deallocate(fileinfo%NPrmAO)
+      if(allocated(fileinfo%NShlDB)) deallocate(fileinfo%NShlDB)
+      if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
+      if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
@@ -1339,6 +730,10 @@
       if(.not.fileinfo%header_read) then
 
         fileinfo%readWriteMode = 'R'
+        allocate(fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,fileinfo%icharge, &
+          fileinfo%multiplicity,fileinfo%nelectrons,fileinfo%icgu,fileinfo%NFC, &
+          fileinfo%NFV,fileinfo%ITran,fileinfo%IDum9,fileinfo%NShlAO,fileinfo%NPrmAO, &
+          fileinfo%NShlDB,fileinfo%NPrmDB,fileinfo%NBTot)
         call Open_Read(TRIM(fileinfo%filename),fileinfo%UnitNumber,  &
           fileinfo%labfil,ivers,nlab,fileinfo%gvers,fileinfo%title,  &
           fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
@@ -1377,20 +772,12 @@
         filename)
 !
 !     This Routine is used to connect a Gaussian unformatted matrix file
-!     and write the header records. The dummy argument <FileName> is an input
-!     argument giving the the name of the file.
+!     and write the header records stored in fileinfo. The dummy argument 
+!     <FileName> is an input argument giving the the name of the file.
 !
-!     Dummy argument <filename> is optional and is only used if fileinfo
-!     hasn't already been defined using Routine
-!     MQC_Gaussian_Unformatted_Matrix_Open or if it is determined that the
-!     filename sent is different from the filename associated with object
-!     fileinfo.
+!     Dummy argument <filename> is optional. If filename is not specified,
+!     the filename in fileinfo is used.
 !
-!     NOTE: The routine MQC_Gaussian_Unformatted_Matrix_Open may be called
-!     before calling this routine. However, it is also OK to call this
-!     routine first. In that case, this routine will first call
-!     Routine MQC_Gaussian_Unformatted_Matrix_Open.
-
 !     L. M. Thompson, 2017.
 !
 !
@@ -1434,23 +821,103 @@
       endIf
       if(PRESENT(filename)) then
         if(TRIM(filename)/=TRIM(fileinfo%filename)) then
-          call fileinfo%CLOSEFILE()
-          call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          fileinfo%filename=trim(filename)
         endIf
       endIf
-      if(.not.(fileinfo%readWriteMode .eq. 'W' .or.  &
-        fileinfo%readWriteMode .eq. ' ')) then
-        my_filename = TRIM(fileinfo%filename)
-        call fileinfo%CLOSEFILE()
-        call fileinfo%OPENFILE(my_filename,0,ok)
-        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+!
+!     Check if all the required information is in fileinfo, and if no then
+!     initialize it.
+!
+      if(.not.allocated(fileinfo%natoms)) then
+        allocate(fileinfo%natoms)
+        fileinfo%natoms = 0
       endIf
-      if(fileinfo%header_written) then
-        my_filename = TRIM(fileinfo%filename)
-        call fileinfo%CLOSEFILE()
-        call fileinfo%OPENFILE(my_filename,0,ok)
-        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+      if(.not.allocated(fileinfo%nbasis)) then 
+        allocate(fileinfo%nbasis)
+        fileinfo%nbasis = 0
+      endIf
+      if(.not.allocated(fileinfo%nbasisUse)) then 
+        allocate(fileinfo%nbasisUse)
+        fileinfo%nbasisUse = 0
+      endIf
+      if(.not.allocated(fileinfo%icharge)) then 
+        allocate(fileinfo%icharge)
+        fileinfo%icharge = 0
+      endIf
+      if(.not.allocated(fileinfo%multiplicity)) then 
+        allocate(fileinfo%multiplicity)
+        fileinfo%multiplicity = 0
+      endIf
+      if(.not.allocated(fileinfo%nelectrons)) then 
+        allocate(fileinfo%nelectrons)
+        fileinfo%nelectrons = 0
+      endIf
+      if(.not.allocated(fileinfo%icgu)) then 
+        allocate(fileinfo%icgu)
+        fileinfo%icgu = 0
+      endIf
+      if(.not.allocated(fileinfo%NFC)) then 
+        allocate(fileinfo%NFC)
+        fileinfo%NFC = 0
+      endIf
+      if(.not.allocated(fileinfo%NFV)) then 
+        allocate(fileinfo%NFV)
+        fileinfo%NFV = 0
+      endIf
+      if(.not.allocated(fileinfo%ITran)) then 
+        allocate(fileinfo%ITran)
+        fileinfo%ITran = 0
+      endIf
+      if(.not.allocated(fileinfo%IDum9)) then 
+        allocate(fileinfo%IDum9)
+        fileinfo%IDum9 = 0
+      endIf
+      if(.not.allocated(fileinfo%NShlAO)) then 
+        allocate(fileinfo%NShlAO)
+        fileinfo%NShlAO = 0
+      endIf
+      if(.not.allocated(fileinfo%NPrmAO)) then 
+        allocate(fileinfo%NPrmAO)
+        fileinfo%NPrmAO = 0
+      endIf
+      if(.not.allocated(fileinfo%NShlDB)) then 
+        allocate(fileinfo%NShlDB)
+        fileinfo%NShlDB = 0
+      endIf
+      if(.not.allocated(fileinfo%NPrmDB)) then 
+        allocate(fileinfo%NPrmDB)
+        fileinfo%NPrmDB = 0
+      endIf
+      if(.not.allocated(fileinfo%NBTot)) then 
+        allocate(fileinfo%NBTot)
+        fileinfo%NBTot = 0
+      endIf
+
+      nAt3 = fileinfo%natoms*3
+
+      if(.not.allocated(fileinfo%atomicNumbers)) then
+        allocate(fileinfo%atomicNumbers(fileinfo%natoms))
+        fileinfo%atomicNumbers = 0
+      endIf
+      if(.not.allocated(fileinfo%atomTypes)) then
+        allocate(fileinfo%atomTypes(fileinfo%natoms))
+        fileinfo%atomTypes = 0
+      endIf
+      if(.not.allocated(fileinfo%atomicCharges)) then
+        allocate(fileinfo%atomicCharges(fileinfo%natoms))
+        fileinfo%atomicCharges = 0.0
+      endIf
+      if(.not.allocated(fileinfo%atomicWeights)) then
+        allocate(fileinfo%atomicWeights(fileinfo%natoms))
+        fileinfo%atomicWeights = 0.0
+      endIf
+      if(.not.allocated(fileinfo%cartesians)) then
+        allocate(fileinfo%cartesians(nAt3))
+        fileinfo%cartesians = 0.0
+      endIf
+      if(.not.allocated(fileinfo%basisFunction2Atom)) then
+        allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
+        fileinfo%basisFunction2Atom = 0
       endIf
 !
 !     Set the readWriteMode flag in fileinfo to 'W' and then write the
@@ -1462,9 +929,7 @@
         fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
         fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,iopcl, &
         fileinfo%icgu)
-      nAt3 = fileinfo%natoms*3
-      NShlAO = 2
-      NPrmAO = 6
+!
       call Wr_Head(fileinfo%unitNumber,fileinfo%natoms,nAt3,fileinfo%nbasis,  &
         fileinfo%atomicNumbers,fileinfo%atomTypes,fileinfo%atomicCharges,  &
         fileinfo%cartesians,fileinfo%basisFunction2Atom,fileinfo%IBasisFunctionType,  &
@@ -1472,7 +937,7 @@
         fileinfo%NShlAO,fileinfo%NPrmAO,fileinfo%NShlDB,fileinfo%NPrmDB,fileinfo%NBTot)
       fileinfo%CurrentlyOpen = .true.
       fileinfo%header_written   = .true.
-      
+!      
       if(DEBUG) write(IOut,1010) TRIM(fileinfo%LabFil),  &
         TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
         fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
@@ -1797,7 +1262,7 @@
       complex(kind=8),allocatable,dimension(:)::compVectorTmp
       type(MQC_Matrix)::matrixInUse 
       character(len=256)::my_filename
-      logical::DEBUG=.false.
+      logical::DEBUG=.false.,ok
       Parameter(LenBuf=4000)
 !
 !
@@ -1814,29 +1279,34 @@
 !
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
-          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
-            filename)
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error('Error writing Gaussian matrix file header: Must include a filename.')
+          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
         endIf
       endIf
       if(PRESENT(filename)) then
         if(TRIM(filename)/=TRIM(fileinfo%filename)) then
           call fileinfo%CLOSEFILE()
-          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
-            filename)
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         endIf
       endIf
       if(.not.(fileinfo%readWriteMode .eq. 'W' .or.  &
         fileinfo%readWriteMode .eq. ' ')) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
+        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
         call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
-          filename)
+          my_filename)
       endIf
       if(.not.fileinfo%header_written) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
         call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
           my_filename)
       endIf
