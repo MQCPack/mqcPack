@@ -197,6 +197,8 @@
       character(len=64)::arrayType,myLabel
 !
  1000 Format(1x,A)
+ 1050 Format( 2A )
+ 1060 Format( A,L10 )
 !  
       if(present(label)) then
         call string_change_case(label,'l',myLabel)
@@ -230,9 +232,9 @@
       case('multiplicity')
         call wavefunction%multiplicity%print(iOut,'Multiplicity',.true.,.true.)
       case('type')
-        write(iOut,*)' Wavefunction Type = ',Wavefunction%wF_type
+        write(iOut,1050)' Wavefunction Type = ',Wavefunction%wF_type
       case('complex')
-        write(iOut,*)' Complex   = ',Wavefunction%wF_complex
+        write(iOut,1060)' Complex   = ',Wavefunction%wF_complex
       case('all')
         call wavefunction%nBasis%print(iOut,'nBasis',.true.,.false.)
         call wavefunction%nAlpha%print(iOut,'nAlpha',.true.,.false.)
@@ -240,8 +242,9 @@
         call wavefunction%nElectrons%print(iOut,'nElectrons',.true.,.false.)
         call wavefunction%charge%print(iOut,'Charge',.true.,.false.)
         call wavefunction%multiplicity%print(iOut,'Multiplicity',.true.,.true.)
-        write(iOut,*)'Wavefunction Type = ',Wavefunction%wF_type
-        write(iOut,*)'Complex   = ',Wavefunction%wF_complex
+        write(iOut,1050)'Wavefunction Type = ',Wavefunction%wF_type
+        write(iOut,1060)'Complex   = ',Wavefunction%wF_complex
+
         call wavefunction%overlap_matrix%print(iOut,'Overlap matrix',.true.,.false.)
         call wavefunction%core_hamiltonian%print(iOut,'Core Hamiltonian matrix',.true.,.false.)
         call wavefunction%mo_energies%print(iOut,'Orbital Energies',.true.,.false.)
@@ -249,7 +252,8 @@
         call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
         call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
       case default
-        call mqc_error('Invalid label sent to wavefunction print')
+        call mqc_error_A('Invalid label sent to wavefunction print', 6, &
+             'myLabel', myLabel )
       end select
 !
       end subroutine mqc_print_wavefunction
@@ -267,9 +271,10 @@
       logical,intent(In),optional::blank_at_top,blank_at_bottom
 !
  1000 Format(1x,A)
+ 1020 Format( " " )
 !  
       if(present(blank_at_top)) then
-        if(blank_at_top) write(iout,*)
+        if(blank_at_top) write(iout,1020)
       endif
       write(iout,1000) trim(header)
       
@@ -285,11 +290,12 @@
         if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
         if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
       else
-        call mqc_error('Array type unrecogised in mqc_print_integral')
+        call mqc_error_A('Array type unrecogised in mqc_print_integral', 6, &
+             'integral%array_type', integral%array_type )
       endIf
 
       if(present(blank_at_bottom)) then
-        if(blank_at_bottom) write(iout,*)
+        if(blank_at_bottom) write(iout,1020)
       endif
 !
       end subroutine mqc_print_integral
@@ -307,9 +313,10 @@
       logical,intent(In),optional::blank_at_top,blank_at_bottom
 !
  1000 Format(1x,A)
+ 1020 Format( " " )
 !  
       if(present(blank_at_top)) then
-        if(blank_at_top) write(iout,*)
+        if(blank_at_top) write(iout,1020)
       endif
       write(iout,1000) trim(header)
       
@@ -320,11 +327,12 @@
         if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array')
         if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array')
       else
-        call mqc_error('Array type unrecogised in mqc_print_eigenvalues')
+        call mqc_error_A('Array type unrecogised in mqc_print_eigenvalues', 6, &
+             'eigenvalues%array_type', eigenvalues%array_type )
       endIf
 
       if(present(blank_at_bottom)) then
-        if(blank_at_bottom) write(iout,*)
+        if(blank_at_bottom) write(iout,1020)
       endif
 !
       end subroutine mqc_print_eigenvalues
@@ -508,7 +516,8 @@
           dimBlock = mqc_matrix_columns(integral%beta)
         endIf
       case default
-        call mqc_error('label not valid in mqc_integrals_dimension')
+        call mqc_error_A('label not valid in mqc_integrals_dimension', 6, &
+             'myLabel', myLabel )
       end select 
 !
       end function mqc_integral_dimension 
@@ -542,7 +551,8 @@
           dimBlock = mqc_length_vector(eigenvalues%beta)
         endIf
       case default
-        call mqc_error('label not valid in mqc_eigenvalues_dimension')
+        call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
+             'myLabel', myLabel )
       end select 
 !
       end function mqc_eigenvalues_dimension 
@@ -625,48 +635,56 @@
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
             call matrixOut%mput(integral%alpha,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha() )
           endIf
         elseIf (integral%type().eq.'spin') then
           call matrixOut%init(nDimTotal,nDimTotal)
           if (integral%hasAlpha()) then
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha() )
           endIf
           if (integral%hasBeta()) then
             call matrixOut%mput(integral%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasBeta()', integral%hasBeta() )
           endIf
         elseIf (integral%type().eq.'general') then
           call matrixOut%init(nDimTotal,nDimTotal)
           if (integral%hasAlpha()) then
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha() )
           endIf
           if (integral%hasBeta()) then
             call matrixOut%mput(integral%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasBeta()', integral%hasBeta() )
           endIf
           if (integral%hasAlphaBeta()) then
             call matrixOut%mput(integral%alphaBeta,[nDimAlpha+1,nDimTotal],[1,nDimAlpha]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlphaBeta()', integral%hasAlphaBeta() )
           endIf
           if (integral%hasBetaAlpha()) then
             call matrixOut%mput(integral%betaAlpha,[1,nDimAlpha],[nDimAlpha+1,nDimTotal]) 
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasBetaAlpha()', integral%hasBetaAlpha() )
           endIf
         endIf
       case('alpha')
         if (integral%hasAlpha()) then
           matrixOut = integral%alpha
         else
-          call mqc_error('block does not exist in mqc_integral_output_block')
+          call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+               'integral%hasAlpha()', integral%hasAlpha() )
         endIf
       case('beta')
         if (integral%hasBeta()) then
@@ -675,16 +693,19 @@
           if (integral%hasAlpha()) then
             matrixOut = integral%alpha
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha() )
           endIf
         else
-          call mqc_error('block does not exist in mqc_integral_output_block')
+          call mqc_error_A('block does not exist in mqc_integral_output_block', 6, &
+               'integral%type()', integral%type() )
         endIf
       case('alpha-alpha')
         if (integral%hasAlpha()) then
           matrixOut = integral%alpha
         else
-          call mqc_error('block does not exist in mqc_integral_output_block')
+          call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+               'integral%hasAlpha()', integral%hasAlpha() )
         endIf
       case('alpha-beta')
         if (integral%hasAlphaBeta()) then
@@ -713,13 +734,16 @@
           if (integral%hasAlpha()) then
             matrixOut = integral%alpha
           else
-            call mqc_error('block does not exist in mqc_integral_output_block')
+            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha() )
           endIf
         else
-          call mqc_error('block does not exist in mqc_integral_output_block')
+          call mqc_error_A('block does not exist in mqc_integral_output_block', 6, &
+               'integral%type()', integral%type() )
         endIf
       case default
-        call mqc_error('unrecognised block name in mqc_integral_output_block')
+        call mqc_error_A('unrecognised block name in mqc_integral_output_block', 6, &
+             'myBlockName', myBlockName )
       end select
 !
       end function mqc_integral_output_block  
@@ -752,26 +776,30 @@
           if (eigenvalues%hasAlpha()) then
             call vectorOut%vput(eigenvalues%alpha,1) 
           else
-            call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
+                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
           endIf
         elseIf ((eigenvalues%type().eq.'spin').or.(eigenvalues%type().eq.'general')) then
           call vectorOut%init(nDimTotal)
           if (eigenvalues%hasAlpha()) then
             call vectorOut%vput(eigenvalues%alpha,1) 
           else
-            call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
+                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
           endIf
           if (eigenvalues%hasBeta()) then
             call vectorOut%vput(eigenvalues%beta,nDimAlpha+1)
           else
-            call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
+                 'eigenvalues%hasBeta()', eigenvalues%hasBeta() )
           endIf
         endIf
       case('alpha')
         if (eigenvalues%hasAlpha()) then
           vectorOut = eigenvalues%alpha
         else
-          call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+          call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
+               'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
         endIf
       case('beta')
         if (eigenvalues%hasBeta()) then
@@ -780,13 +808,16 @@
           if (eigenvalues%hasAlpha()) then
             vectorOut = eigenvalues%alpha
           else
-            call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
+                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
           endIf
         else
-          call mqc_error('block does not exist in mqc_eigenvalues_output_block')
+          call mqc_error_A('block does not exist in mqc_eigenvalues_output_block', 6, &
+               'eigenvalues%type()', eigenvalues%type() )
         endIf
       case default
-        call mqc_error('unrecognised block name in mqc_eigenvalues_output_block')
+        call mqc_error_A('unrecognised block name in mqc_eigenvalues_output_block', 6, &
+             'myBlockName', myBlockName )
       end select
 !
       end function mqc_eigenvalues_output_block  
@@ -810,44 +841,52 @@
         if (integralIn%hasAlpha()) then
           call matrixOut%mput(integralIn%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
       case('spin')
         call matrixOut%init(nDimTotal,nDimTotal)
         if (integralIn%hasAlpha()) then
           call matrixOut%mput(integralIn%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
         if (integralIn%hasBeta()) then
           call matrixOut%mput(integralIn%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasBeta()', integralIn%hasBeta() )
         endIf
       case ('general')
         call matrixOut%init(nDimTotal,nDimTotal)
         if (integralIn%hasAlpha()) then
           call matrixOut%mput(integralIn%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
         if (integralIn%hasBeta()) then
           call matrixOut%mput(integralIn%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasBeta()', integralIn%hasBeta() )
         endIf
         if (integralIn%hasAlphaBeta()) then
           call matrixOut%mput(integralIn%alphaBeta,[nDimAlpha+1,nDimTotal],[1,nDimAlpha]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasAlphaBeta()', integralIn%hasAlphaBeta() )
         endIf
         if (integralIn%hasBetaAlpha()) then
           call matrixOut%mput(integralIn%betaAlpha,[1,nDimAlpha],[nDimAlpha+1,nDimTotal]) 
         else
-          call mqc_error('block does not exist in mqc_integral_output_array')
+          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+               'integralIn%hasBetaAlpha()', integralIn%hasBetaAlpha() )
         endIf
       case default
-        call mqc_error('unrecognised integer type in mqc_integral_output_array')
+        call mqc_error_A('unrecognised integer type in mqc_integral_output_array', 6, &
+             'integralIn%type()', integralIn%type() )
       end select
 !
       end subroutine mqc_integral_output_array  
@@ -871,22 +910,26 @@
         if (eigenvaluesIn%hasAlpha()) then
           call vectorOut%vput(eigenvaluesIn%alpha,1) 
         else
-          call mqc_error('block does not exist in mqc_eigenvalues_output_array')
+          call mqc_error_L('block does not exist in mqc_eigenvalues_output_array', 6, &
+               'eigenvaluesIn%hasAlpha()', eigenvaluesIn%hasAlpha() )
         endIf
       case('spin','general')
         call vectorOut%init(nDimTotal)
         if (eigenvaluesIn%hasAlpha()) then
           call vectorOut%vput(eigenvaluesIn%alpha,1) 
         else
-          call mqc_error('block does not exist in mqc_eigenvalues_output_array')
+          call mqc_error_L('block does not exist in mqc_eigenvalues_output_array', 6, &
+               'eigenvaluesIn%hasAlpha()', eigenvaluesIn%hasAlpha() )
         endIf
         if (eigenvaluesIn%hasBeta()) then
           call vectorOut%vput(eigenvaluesIn%beta,nDimAlpha+1) 
         else
-          call mqc_error('block does not exist in mqc_eigenvalues_output_array')
+          call mqc_error_L('block does not exist in mqc_eigenvalues_output_array', 6, &
+               'eigenvaluesIn%hasBeta()', eigenvaluesIn%hasBeta() )
         endIf
       case default
-        call mqc_error('unrecognised integer type in mqc_eigenvalues_output_array')
+        call mqc_error_A('unrecognised integer type in mqc_eigenvalues_output_array', 6, &
+             'eigenvaluesIn%type()', eigenvaluesIn%type() )
       end select
 !
       end subroutine mqc_eigenvalues_output_array  
@@ -925,15 +968,22 @@
         elseIf(rows.eq.nBasisTotal) then
           doOffDiag = .True.
         else
-          call mqc_error('Integral and matrix are wrongly sized for multiplication')
+          call mqc_error_I('Integral and matrix are wrongly sized for multiplication', 6, &
+               'rows', rows, &
+               'nBasisAlpha', nBasisAlpha, &
+               'nBasisBeta', nBasisBeta, &
+               'nBasisTotal', nBasisTotal )
         endIf
       else
-        call mqc_error('Integral is unassigned in MQC_Integral_Matrix_Multiply')
-      endIf
+        call mqc_error_L('Integral is unassigned in MQC_Integral_Matrix_Multiply', 6, &
+             'integralA%hasAlpha()', integralA%hasAlpha() )
+     endIf
+     
       select case (integralA%array_type)
       case('space')
-        if(.not.integralA%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralA%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasAlpha()', integralA%hasAlpha())
         if(doOffDiag) then
           tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha],[1,nBasisAlpha])
           tmpMatrixBeta = integralA%alpha.dot.matrixB%mat([nBasisAlpha+1,nBasisTotal], &
@@ -949,10 +999,12 @@
           call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
         endIf
       case('spin')
-        if(.not.integralA%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralA%hasBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralA%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasAlpha()', integralA%hasAlpha() )
+        if(.not.integralA%hasBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+'integralA%hasBeta()', integralA%hasBeta() )
         if(doOffDiag) then
           tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha],[1,nBasisAlpha])
           tmpMatrixBeta = integralA%beta.dot.matrixB%mat([nBasisAlpha+1,nBasisTotal], &
@@ -969,14 +1021,18 @@
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         endIf
       case('general')
-        if(.not.integralA%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralA%hasBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralA%hasAlphaBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralA%hasBetaAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralA%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasAlpha()', integralA%hasAlpha() )
+        if(.not.integralA%hasBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasBeta()', integralA%hasBeta() )
+        if(.not.integralA%hasAlphaBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasAlphaBeta()', integralA%hasAlphaBeta() )
+        if(.not.integralA%hasBetaAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralA%hasBetaAlpha()', integralA%hasBetaAlpha() )
         if(doOffDiag) then
           tmpMatrixAlpha = (integralA%alpha.dot.matrixB%mat([1,nBasisAlpha],[1,nBasisAlpha])) + &
             (integralA%betaAlpha.dot.matrixB%mat([nBasisAlpha+1,nBasisTotal],[1,nBasisAlpha]))
@@ -997,7 +1053,8 @@
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         endIf
       case default
-        call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+        call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+             'integralA%array_type', integralA%array_type )
       end select
 !
       end function mqc_integral_matrix_multiply
@@ -1036,15 +1093,21 @@
         elseIf(columns.eq.nBasisTotal) then
           doOffDiag = .True.
         else
-          call mqc_error('Integral and matrix are wrongly sized for multiplication')
+          call mqc_error_I('Integral and matrix are wrongly sized for multiplication', 6, &
+               'columns', columns, &
+               'nBasisAlpha', nBasisAlpha, &
+               'nBasisBeta', nBasisBeta, &
+               'nBasisTotal', nBasisTotal )
         endIf
       else
-        call mqc_error('Integral is unassigned in MQC_Integral_Matrix_Multiply')
+        call mqc_error_L('Integral is unassigned in MQC_Integral_Matrix_Multiply', 6, &
+             'integralB%hasAlpha()', integralB%hasAlpha() )
       endIf
       select case (integralB%array_type)
       case('space')
-        if(.not.integralB%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralB%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasAlpha()', integralB%hasAlpha() )
         if(doOffDiag) then
           tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha],[1,nBasisAlpha]).dot.integralB%alpha
           tmpMatrixBeta = matrixA%mat([nBasisAlpha+1,nBasisTotal],[nBasisAlpha+1,nBasisTotal]) &
@@ -1060,10 +1123,12 @@
           call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
         endIf
       case('spin')
-        if(.not.integralB%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralB%hasBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralB%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasAlpha()', integralB%hasAlpha() )
+        if(.not.integralB%hasBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasBeta()', integralB%hasBeta() )
         if(doOffDiag) then
           tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha],[1,nBasisAlpha]).dot.integralB%alpha
           tmpMatrixBeta = matrixA%mat([nBasisAlpha+1,nBasisTotal],[nBasisAlpha+1,nBasisTotal]) &
@@ -1080,14 +1145,18 @@
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         endIf
       case('general')
-        if(.not.integralB%hasAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralB%hasBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralB%hasAlphaBeta()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
-        if(.not.integralB%hasBetaAlpha()) call mqc_error('Required integral element &
-          & unassigned in MQC_Integral_Matrix_Multiply')
+        if(.not.integralB%hasAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasAlpha()', integralB%hasAlpha() )
+        if(.not.integralB%hasBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasBeta()', integralB%hasBeta() )
+        if(.not.integralB%hasAlphaBeta()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasAlphaBeta()', integralB%hasAlphaBeta() )
+        if(.not.integralB%hasBetaAlpha()) call mqc_error_L('Required integral element &
+          & unassigned in MQC_Integral_Matrix_Multiply', 6, &
+          'integralB%hasBetaAlpha()', integralB%hasBetaAlpha() )
         if(doOffDiag) then
           tmpMatrixAlpha = (matrixA%mat([1,nBasisAlpha],[1,nBasisAlpha]).dot.integralB%alpha) + &
             (matrixA%mat([1,nBasisAlpha],[nBasisAlpha+1,nBasisTotal]).dot.integralB%alphaBeta)
@@ -1108,7 +1177,8 @@
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         endIf
       case default
-        call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+        call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+'integralB%array_type', integralB%array_type )
       end select
 !
       end function mqc_matrix_integral_multiply
@@ -1153,7 +1223,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+          call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
         end select
       case('spin')
         select case (integralB%array_type)
@@ -1173,7 +1244,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+          call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
         end select
       case('general')
         select case (integralB%array_type)
@@ -1199,10 +1271,12 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+          call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
         end select
       case default
-        call mqc_error('Unknown integral type in mqc_integral_matrix_multiply')
+        call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
+             'integralA%array_type', integralA%array_type )
       end select
 !
       end function mqc_integral_integral_multiply
@@ -1245,7 +1319,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
       case default
-        call mqc_error('Unknown integral type in mqc_integral_transpose')
+        call mqc_error_A('Unknown integral type in mqc_integral_transpose', 6, &
+             'integral%array_type', integral%array_type )
       end select
 !
       end function mqc_integral_transpose
@@ -1288,7 +1363,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
       case default
-        call mqc_error('Unknown integral type in mqc_integral_conjugate_transpose')
+        call mqc_error_A('Unknown integral type in mqc_integral_conjugate_transpose', 6, &
+             'integral%array_type', integral%array_type )
       end select
 !
       end function mqc_integral_conjugate_transpose
@@ -1334,7 +1410,8 @@
             call tmpVector%put(array%at(i),k)
             k = k+1
           else
-            call mqc_error('mqc_matrix_spinBlockGHF is confused.')
+            call mqc_error_I('mqc_matrix_spinBlockGHF is confused.', 6, &
+                 'mod(i,2)', mod(i,2) )
           endIf
         endDo
         array = tmpVector
@@ -1352,7 +1429,8 @@
             call tmpMatrix%vput(array%vat([i],[0]),[k],[0])
             k = k+1
           else
-            call mqc_error('mqc_matrix_spinBlockGHF is confused.')
+            call mqc_error_i('mqc_matrix_spinBlockGHF is confused.', 6, &
+                 'mod(i,2)', mod(i,2) )
           endIf
         endDo
         j = 1
@@ -1365,12 +1443,13 @@
             call array%vput(tmpMatrix%vat([0],[i]),[0],[k])
             k = k+1
           else
-            call mqc_error('mqc_matrix_spinBlockGHF is confused.')
+            call mqc_error_I('mqc_matrix_spinBlockGHF is confused.', 6, &
+                 'mod(i,2)', mod(i,2) )
           endIf
         endDo
         if(mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
       class default
-        call mqc_error('unrecognised array type in mqc_matrix_spinBlockGHF')
+        call mqc_error_I('unrecognised array type in mqc_matrix_spinBlockGHF', 6)
       end select 
 !
       return
@@ -1522,6 +1601,7 @@
       Logical::Last
 !      
  1001 Format(1x,I7,2x,B64)
+ 1050 Format( A )
 !
 !     Initialize Arrays
 !
@@ -1533,7 +1613,8 @@
       If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
         NBit_Ints = (NBasis/(Bit_Size(0)-1))+1
         If(NBit_Ints.gt.1) then
-          Call MQC_Error('Determinant generator limited to 1 integer')
+          Call MQC_Error_I('Determinant generator limited to 1 integer', 6, &
+               'NBit_Ints', NBit_Ints )
         EndIf
         Allocate(Alpha_Strings(NAlpha_Str,NBit_Ints),Beta_Strings(NBeta_Str,NBit_Ints))
       EndIf
@@ -1657,11 +1738,11 @@
       EndIf
 !
       If(IPrint.ge.2) then
-        Write(IOut,*) "Alpha Strings"
+        Write(IOut,1050) "Alpha Strings"
         Do I = 1,NAlpha_Str
           Write(IOut,1001) I,Alpha_Strings(I,1)
         EndDo
-        Write(IOut,*) "Beta Strings"
+        Write(IOut,1050) "Beta Strings"
         Do I = 1,NBeta_Str
           Write(IOut,1001) I,Beta_Strings(I,1)
         EndDo
@@ -1705,6 +1786,7 @@
       Integer,Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
       
+ 1050 Format( A )
       NBasis = NBasisIn
       NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
@@ -1754,7 +1836,9 @@
       Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
 
       If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) & 
-        Call MQC_Error('Slater_Condon has been handed spin non-conserving determinants')
+        Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
+        'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+        'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
 
 !      Write(IOut,*) "Det_Diff:",Det_Diff
       Select Case (Det_Diff)
@@ -2826,7 +2910,7 @@
               ERI2 = Zero
             EndIf
           Else
-            Write(IOut,*) 'Slater Condon has been handed confusing determinant info'
+            Write(IOut,1050) 'Slater Condon has been handed confusing determinant info'
           EndIf
 !
           MatEl = ERI1 - ERI2
@@ -3046,7 +3130,9 @@
           Return
 !        
       Case Default
-        Call MQC_Error('Slater_Condon is confused about number of different orbitals')
+        Call MQC_Error_I('Slater_Condon is confused about number of different orbitals', 6, &
+             'Det_Diff', Det_Diff )
+
 !
       End Select
 !

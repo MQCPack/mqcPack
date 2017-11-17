@@ -165,26 +165,36 @@
       NAtoms = NAtoms_Sent
       If(Present(NAtomsIn)) then
         If(NAtomsIn.ne.NAtoms)  &
-          Call MQC_Error('Error in MQC_Molecule_Data_Fill')
+          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          'NAtomsIn', NAtomsIn, &
+          'NAtoms', NAtoms )
       endIf
       If(Present(Atomic_Numbers)) then
         If(NAtoms.ne.Size(Atomic_Numbers))  &
-          Call MQC_Error('Error in MQC_Molecule_Data_Fill')
+          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          'NAtoms', NAtoms, &
+          'Size(Atomic_Numbers)', Size(Atomic_Numbers))
         MQC_Molecule_Data_Object%Atomic_Numbers = Atomic_Numbers
       endIf
       If(Present(Atomic_Masses)) then
         If(NAtoms.ne.Size(Atomic_Masses))  &
-          Call MQC_Error('Error in MQC_Molecule_Data_Fill')
+          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          'NAtoms', NAtoms, &
+          'Size(Atomic_Masses)', Size(Atomic_Masses) )
         MQC_Molecule_Data_Object%Atomic_Masses = Atomic_Masses
       endIf
       If(Present(Nuclear_Charges)) then
         If(NAtoms.ne.Size(Nuclear_Charges))  &
-          Call MQC_Error('Error in MQC_Molecule_Data_Fill')
+          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          'NAtoms', NAtoms, &
+          'Size(Nuclear_Charges)', Size(Nuclear_Charges))
         MQC_Molecule_Data_Object%Nuclear_Charges = Nuclear_Charges
       endIf
       If(Present(Cartesian_Coordinates)) then
         If(NAtoms.ne.Size(Cartesian_Coordinates,2))  &
-          Call MQC_Error('Error in MQC_Molecule_Data_Fill')
+          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          'NAtoms', NAtoms, &
+          'Size(Cartesian_Coordinates,2)', Size(Cartesian_Coordinates,2))
         MQC_Molecule_Data_Object%Cartesian_Coordinates =  &
           Cartesian_Coordinates
       endIf
