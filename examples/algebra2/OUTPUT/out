@@ -1,0 +1,8 @@
+Testing scalars...
+    Testing initialization and reporting.
+      Details for var1:
+        Type = REAL
+        Rank =               0
+        Len  =               1
+      Details for var2:
+        Type = INTEGER
