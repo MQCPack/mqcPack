@@ -1,4 +1,4 @@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
-SUBDIRS = src examples/algebra2
+SUBDIRS = src examples
 dist_doc_DATA = README
 

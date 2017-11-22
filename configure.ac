@@ -16,5 +16,5 @@ fi
 fi
 AC_PROG_RANLIB
 AC_SUBST(MQC_SPECIFIC_FCFLAGS, $MQC_SPECIFIC_FCFLAGS)
-AC_CONFIG_FILES([Makefile src/Makefile examples/algebra2/Makefile examples/biorthog/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile examples/Makefile])
 AC_OUTPUT
