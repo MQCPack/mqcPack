@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-mqc_abort_(void)
+void mqc_abort_(void)
 {
   abort();
 }
