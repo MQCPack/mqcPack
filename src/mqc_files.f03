@@ -200,7 +200,8 @@
         Open(Unit=UnitNumber,File=TRIM(FileName),Action='Write',  &
           Status='old',Position='Append',IOStat=IError)
       case default
-        call MQC_Error('Unkown file action.')
+        call MQC_Error_A('Unkown file action.', 6, &
+             'TRIM(my_fileAction)', TRIM(my_fileAction) )
       endSelect
       If(IError.ne.0) Return
       FileInfo%filename = TRIM(FileName)
@@ -1069,8 +1070,10 @@
 !
 !     Write out the line.
 !
-      write(*,*)' Hrant - Unit number is ',FileInfo%UnitNumber
-      write(*,*)' Hrant - Trying to write line: ',TRIM(line)
+ 1050 Format( A, I10 )
+ 1060 Format( 2A )
+      write(*,1050)' Hrant - Unit number is ',FileInfo%UnitNumber
+      write(*,1060)' Hrant - Trying to write line: ',TRIM(line)
       write(FileInfo%UnitNumber,'(A)') TRIM(Line)
 !
       Return

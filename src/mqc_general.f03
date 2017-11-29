@@ -148,7 +148,289 @@
       Return
       End Subroutine MQC_Error
 
+      subroutine mqc_error_i( Message, IOut, Var_Name1, INT1, &
+           Var_Name2, INT2, Var_Name3, INT3, Var_Name4, INT4, &
+           Var_Name5, INT5, Var_Name6, INT6)
+!
+!     This subroutine is used to kill a MQC job. The character string in
+!     Message is printed as are the names and values of variables related 
+!     to the failure. If possible, this routine will abort, which should 
+!     cause a stack trace.
+!
+!     The names and values of the integer variables are OPTIONAL arguments, 
+!     so that one routine can be used for many types of cases
+!
+!     When modifing code use us this routine, if IOUT is not specified, use 
+!     unit number 6.
+!
+!     -H. P. Hratchian, 2016
+!
+!
+      implicit none
+      character(LEN=*),intent(in)::Message
+      integer,intent(in)::IOut
+      character(LEN=*),intent(in),OPTIONAL::Var_Name1
+      character(LEN=*),intent(in),OPTIONAL::Var_Name2
+      character(LEN=*),intent(in),OPTIONAL::Var_Name3
+      character(LEN=*),intent(in),OPTIONAL::Var_Name4
+      character(LEN=*),intent(in),OPTIONAL::Var_Name5
+      character(LEN=*),intent(in),OPTIONAL::Var_Name6
+      integer,intent(in),OPTIONAL::INT1
+      integer,intent(in),OPTIONAL::INT2
+      integer,intent(in),OPTIONAL::INT3
+      integer,intent(in),OPTIONAL::INT4
+      integer,intent(in),OPTIONAL::INT5
+      integer,intent(in),OPTIONAL::INT6
+      integer::IJunk
+!
+ 1000 Format(4x,A,' = ',I15)
+ 1030 Format(1x,'MQC ERROR: ',A)
+!
+      Write(IOut,1030) TRIM(Message)
+      If(Present(INT1)) then
+         Write(IOut,1000) Var_Name1, INT1
+      endIf
+      If(Present(INT2)) then
+         Write(IOut,1000) Var_Name2, INT2
+      endIf
+      If(Present(INT3)) then
+         Write(IOut,1000) Var_Name3, INT3
+      endIf
+      If(Present(INT4)) then
+         Write(IOut,1000) Var_Name4, INT4
+      endIf
+      If(Present(INT5)) then
+         Write(IOut,1000) Var_Name5, INT5
+      endIf
+      If(Present(INT6)) then
+         Write(IOut,1000) Var_Name6, INT6
+      endIf
+!
+!      Stop 999
+      call mqc_abort()
 
+      Return
+      end Subroutine mqc_error_i
+      !
+
+      subroutine mqc_error_r( Message, IOut, Var_NAME1, FLT1, &
+           Var_NAME2, FLT2, Var_NAME3, FLT3, Var_NAME4, FLT4, &
+           Var_NAME5, FLT5, Var_NAME6, FLT6)
+!
+!     This subroutine is used to kill a MQC job. The character string in
+!     Message is printed as are the names and values of variables related 
+!     to the failure. If possible, this routine will abort, which should 
+!     cause a stack trace.
+!
+!     The names and values of the integer variables are OPTIONAL arguments, 
+!     so that one routine can be used for many types of cases
+!
+!     When modifing code use us this routine, if IOUT is not specified, use 
+!     unit number 6.
+!
+!     -H. P. Hratchian, 2016
+!
+!
+      implicit none
+      character(LEN=*),intent(in)::Message
+      integer,intent(in)::IOut
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME1
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME2
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME3
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME4
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME5
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME6
+      real,intent(in),OPTIONAL::FLT1
+      real,intent(in),OPTIONAL::FLT2
+      real,intent(in),OPTIONAL::FLT3
+      real,intent(in),OPTIONAL::FLT4
+      real,intent(in),OPTIONAL::FLT5
+      real,intent(in),OPTIONAL::FLT6
+      integer::IJunk
+!
+ 1000 Format(4x,A,' = ',E20.14)
+ 1030 Format(1x,'MQC ERROR: ',A)
+!
+      Write(IOut,1030) TRIM(Message)
+
+      If(Present(FLT1)) then
+         Write(IOut,1000) Var_NAME1, FLT1
+      endIf
+      If(Present(FLT2)) then
+         Write(IOut,1000) Var_NAME2, FLT2
+      endIf
+      If(Present(FLT3)) then
+         Write(IOut,1000) Var_NAME3, FLT3
+      endIf
+      If(Present(FLT4)) then
+         Write(IOut,1000) Var_NAME4, FLT4
+      endIf
+      If(Present(FLT5)) then
+         Write(IOut,1000) Var_NAME5, FLT5
+      endIf
+      If(Present(FLT6)) then
+         Write(IOut,1000) Var_NAME6, FLT6
+      endIf
+!
+      call mqc_abort()
+
+      Return
+      end Subroutine mqc_error_r
+      !
+
+      subroutine mqc_error_l( Message, IOut, Var_NAME1, LOG1, &
+           Var_NAME2, LOG2, Var_NAME3, LOG3, Var_NAME4, LOG4, &
+           Var_NAME5, LOG5, Var_NAME6, LOG6)
+!
+!     This subroutine is used to kill a MQC job. The character string in
+!     Message is printed as are the names and values of variables related 
+!     to the failure. If possible, this routine will abort, which should 
+!     cause a stack trace.
+!
+!     The names and values of the integer variables are OPTIONAL arguments, 
+!     so that one routine can be used for many types of cases
+!
+!     When modifing code use us this routine, if IOUT is not specified, use 
+!     unit number 6.
+!
+!     -H. P. Hratchian, 2016
+!
+!
+      implicit none
+      character(LEN=*),intent(in)::Message
+      integer,intent(in)::IOut
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME1
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME2
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME3
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME4
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME5
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME6
+      logical,intent(in),OPTIONAL::LOG1
+      logical,intent(in),OPTIONAL::LOG2
+      logical,intent(in),OPTIONAL::LOG3
+      logical,intent(in),OPTIONAL::LOG4
+      logical,intent(in),OPTIONAL::LOG5
+      logical,intent(in),OPTIONAL::LOG6
+      integer::IJunk
+!
+ 1030 Format(1x,'MQC ERROR: ',A)
+ 1050 Format(4x,A,' = ','.TRUE.')
+ 1060 Format(4x,A,' = ','.FALSE.')
+!
+      Write(IOut,1030) TRIM(Message)
+      If(Present(LOG1)) then
+         If(LOG1) then
+            Write(IOut,1050) Var_NAME1
+         else 
+            Write(IOut,1060) Var_NAME1
+         endif
+      endif
+      If(Present(LOG2)) then
+         If(LOG2) then
+            Write(IOut,1050) Var_NAME2
+         else 
+            Write(IOut,1060) Var_NAME2
+         endif
+      endif
+      If(Present(LOG3)) then
+         If(LOG3) then
+            Write(IOut,1050) Var_NAME3
+         else 
+            Write(IOut,1060) Var_NAME3
+         endif
+      endif
+      If(Present(LOG4)) then
+         If(LOG4) then
+            Write(IOut,1050) Var_NAME4
+         else 
+            Write(IOut,1060) Var_NAME4
+         endif
+      endif
+
+      If(Present(LOG5)) then
+         If(LOG5) then
+            Write(IOut,1050) Var_NAME5
+         else 
+            Write(IOut,1060) Var_NAME5
+         endif
+      endif
+
+      If(Present(LOG6)) then
+         If(LOG6) then
+            Write(IOut,1050) Var_NAME6
+         else 
+            Write(IOut,1060) Var_NAME6
+         endif
+      endif
+!
+      call mqc_abort()
+
+      Return
+      end Subroutine mqc_error_l
+      !
+
+      subroutine mqc_error_A( Message, IOut, CHAR1, Var_NAME1, &
+           CHAR2, Var_NAME2, CHAR3, Var_NAME3, CHAR4, Var_NAME4, &
+           CHAR5, Var_NAME5, CHAR6, Var_NAME6)
+!
+!     This subroutine is used to kill a MQC job. The character string in
+!     Message is printed. If possible, this routine will return an exit
+!     value code of 999 to the operating system.
+!
+!     IOut is an OPTIONAL argument with the unit number corresponding to
+!     the file where the error message should be written. If IOut is not
+!     sent, unit number 6 is used.
+!
+!     -H. P. Hratchian, 2016
+!
+!
+      implicit none
+      character(LEN=*),intent(in)::Message
+      integer,intent(in)::IOut
+      character(LEN=*),intent(in),OPTIONAL::CHAR1
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME1
+      character(LEN=*),intent(in),OPTIONAL::CHAR2
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME2
+      character(LEN=*),intent(in),OPTIONAL::CHAR3
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME3
+      character(LEN=*),intent(in),OPTIONAL::CHAR4
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME4
+      character(LEN=*),intent(in),OPTIONAL::CHAR5
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME5
+      character(LEN=*),intent(in),OPTIONAL::CHAR6
+      character(LEN=*),intent(in),OPTIONAL::Var_NAME6
+      integer::IJunk
+!
+ 1000 Format(4x,A,' = ',A)
+ 1030 Format(1x,'MQC ERROR: ',A)
+!
+
+      Write(IOut,1030) TRIM(Message)
+      If(Present(Var_NAME1)) then
+         Write(IOut,1000) CHAR1, Var_NAME1
+      endif
+      If(Present(Var_NAME2)) then
+         Write(IOut,1000) CHAR2, Var_NAME2
+      endif
+      If(Present(Var_NAME3)) then
+         Write(IOut,1000) CHAR3, Var_NAME3
+      endif
+      If(Present(Var_NAME4)) then
+         Write(IOut,1000) CHAR4, Var_NAME4
+      endif
+      If(Present(Var_NAME5)) then
+         Write(IOut,1000) CHAR5, Var_NAME5
+      endif
+      If(Present(Var_NAME6)) then
+         Write(IOut,1000) CHAR6, Var_NAME6
+      endif
+!
+      call mqc_abort()
+
+      Return
+      end Subroutine mqc_error_A
+      !
+      
 !
 !PROCEDURE mqc_get_command_argument
       Subroutine mqc_get_command_argument(argNum,argument)
@@ -199,8 +481,9 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
 !
+ 1020 Format(" ")
       if(PRESENT(Blank_At_Top)) then
-        if(Blank_At_Top) write(iOut,*)
+        if(Blank_At_Top) write(iOut,1020)
       endIf
       if(PRESENT(header)) then
         lineToPrint = TRIM(header)
@@ -215,7 +498,7 @@
       lineToPrint = ADJUSTL(lineToPrint)
       write(iOut,'(A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
-        if(Blank_At_Bottom) write(iOut,*)
+        if(Blank_At_Bottom) write(iOut,1020)
       endIf
 !
       return
@@ -241,8 +524,9 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
 !
+ 1020 Format(" ")
       if(PRESENT(Blank_At_Top)) then
-        if(Blank_At_Top) write(iOut,*)
+        if(Blank_At_Top) write(iOut,1020)
       endIf
       if(PRESENT(header)) then
         lineToPrint = TRIM(header)
@@ -257,7 +541,7 @@
       lineToPrint = ADJUSTL(lineToPrint)
       write(iOut,'(A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
-        if(Blank_At_Bottom) write(iOut,*)
+        if(Blank_At_Bottom) write(iOut,1020)
       endIf
 !
       return
@@ -285,15 +569,16 @@
       Integer,Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
 !
- 1000 Format(1x,A)
+ 1000 Format(/,1x,A)
  1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
  2001 Format(1x,I7,10I14)
 
       NRows = Size(Array,1)
       NCols = Size(Array,2)
 
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       Write(IOut,1000) TRIM(Header)
 
@@ -306,7 +591,7 @@
       EndDo
 
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
@@ -332,15 +617,16 @@
       Integer::I,J,NCols,NRows,IFirst,ILast
       Integer,Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
- 1000 Format(1x,A)
+ 1000 Format(/,1x,A)
  1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
  2002 Format(1x,I7,10F14.6)
 !
       NRows = Size(Array,1)
       NCols = Size(Array,2)
 !
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       Write(IOut,1000) TRIM(Header)
 
@@ -353,7 +639,7 @@
       EndDo
 
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
@@ -378,13 +664,14 @@
       logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       integer::I,Length
 !
- 1000 Format(1x,A)
+ 1000 Format(/,1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2x,A)
+ 1020 Format(" ")
 !
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       if(Present(Header)) Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
@@ -392,7 +679,7 @@
         Write(IOut,1001) I, Vector(I)
       EndDo
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
@@ -417,11 +704,12 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer::I,Length
 !
- 1000 Format(1x,A)
+ 1000 Format(/,1x,A)
  1002 Format(1x,I7,2X,F14.6)
+ 1020 Format(" ")
 !
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
@@ -430,7 +718,7 @@
       EndDo
 
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
@@ -500,7 +788,8 @@
           endSelect
         endDo
       case default
-        call MQC_Error('Unknown upperLower in String_Chage_Case.')
+        call MQC_Error_A('Unknown upperLower in String_Chage_Case.', 6, &
+             'upperlower', upperlower)
       endSelect
 !
       Return
@@ -632,7 +921,10 @@
 !
       nDim = SIZE(matrixDiagonal)
       if(nDim.ne.SIZE(matrixFull,1).or.nDim.ne.SIZE(matrixFull,2))  &
-        call mqc_error('mqc_packedDiagonalMatrix2FullMatrix_real: disagreement in input/output array size!')
+        call mqc_error_i('mqc_packedDiagonalMatrix2FullMatrix_real: disagreement in input/output array size!', 6, &
+        'nDim', nDim, &
+        'SIZE(matrixFull,1)', SIZE(matrixFull,1), &
+        'SIZE(matrixFull,2)', SIZE(matrixFull,2))
       matrixFull = 0.0
       do i = 1,nDim
         matrixFull(i,i) = matrixDiagonal(i)
@@ -641,8 +933,6 @@
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_integer
 
-
-!
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_real
       Subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
         matrixFull)
@@ -664,7 +954,10 @@
 !
       nDim = SIZE(matrixDiagonal)
       if(nDim.ne.SIZE(matrixFull,1).or.nDim.ne.SIZE(matrixFull,2))  &
-        call mqc_error('mqc_packedDiagonalMatrix2FullMatrix_real: disagreement in input/output array size!')
+        call mqc_error_i('mqc_packedDiagonalMatrix2FullMatrix_real: disagreement in input/output array size!', 6, &
+        'nDim', nDim, &
+        'SIZE(matrixFull,1)', SIZE(matrixFull,1), &
+        'SIZE(matrixFull,2)', SIZE(matrixFull,2))
       matrixFull = 0.0
       do i = 1,nDim
         matrixFull(i,i) = matrixDiagonal(i)

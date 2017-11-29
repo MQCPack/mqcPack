@@ -77,7 +77,7 @@
           Type is (Integer)
             Return_Value = Val
           Class Default
-            Call MQC_Error('Data types not compatible in LinkedList_Return_Integer_Value')
+            Call MQC_Error_I('Data types not compatible in LinkedList_Return_Integer_Value', 6)
           End Select
         endIf
       endIf
@@ -111,7 +111,7 @@
           Type is (Real)
             Return_Value = Val
           Class Default
-            Call MQC_Error('Data types not compatible in LinkedList_Return_Integer_Value')
+            Call MQC_Error_I('Data types not compatible in LinkedList_Return_Integer_Value',6)
           End Select
         endIf
       endIf
@@ -145,7 +145,7 @@
           Type is (Character(Len=*))
             Return_Value = Val
           Class Default
-            Call MQC_Error('Data types not compatible in LinkedList_Return_Integer_Value')
+            Call MQC_Error_I('Data types not compatible in LinkedList_Return_Integer_Value', 6)
           End Select
         endIf
       endIf

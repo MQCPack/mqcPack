@@ -1,0 +1,17 @@
+#! /bin/csh -f
+
+autoreconf --install
+#rm src/*.o src/*.mod
+
+if ($?LD_LIBRARY_PATH ) then
+  setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/dmullally/mqcPack/install/lib
+else
+  setenv LD_LIBRARY_PATH /home/dmullally/mqcPack/install/lib
+endif
+
+echo ${LD_LIBRARY_PATH}
+
+./configure --prefix=/home/dmullally/mqcPack/install
+make
+
+make check
