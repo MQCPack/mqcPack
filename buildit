@@ -1,17 +1,19 @@
 #! /bin/csh -f
 
+chmod 755 examples/algera2/testit.sh
+
 autoreconf --install
 #rm src/*.o src/*.mod
 
 if ($?LD_LIBRARY_PATH ) then
-  setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/dmullally/mqcPack/install/lib
+  setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:`pwd`/../install/lib
 else
-  setenv LD_LIBRARY_PATH /home/dmullally/mqcPack/install/lib
+  setenv LD_LIBRARY_PATH `pwd`/../install/lib
 endif
 
 echo ${LD_LIBRARY_PATH}
 
-./configure --prefix=/home/dmullally/mqcPack/install
+./configure --prefix=`pwd`/../install
 make
 
 make check
