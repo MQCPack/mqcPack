@@ -141,10 +141,12 @@
           elseIf (Mod(ICGU,10).eq.2) then
             wf_type = 'U'
           else
-            call MQC_Error('Unknown flag at ICGU 1st digit in MQC_Gaussian_ICGU ')
+            call MQC_Error_I('Unknown flag at ICGU 1st digit in MQC_Gaussian_ICGU ', 6, &
+               'ICGU', ICGU )
           endIf
         else
-          call MQC_Error('Unknown flag at ICGU 3rd digit in MQC_Gaussian_ICGU ')
+          call MQC_Error_I('Unknown flag at ICGU 3rd digit in MQC_Gaussian_ICGU ', 6, &
+               'ICGU', ICGU )
         endIf
       endIf
       if(PRESENT(wf_complex)) then
@@ -153,7 +155,8 @@
         elseIf (Mod(ICGU,100)/10.eq.1) then
           wf_complex = .false.
         else
-          Call MQC_Error('Unknown flag at ICGU 2nd digit in MQC_Gaussian_ICGU ')
+          Call MQC_Error_I('Unknown flag at ICGU 2nd digit in MQC_Gaussian_ICGU ', 6, &
+               'ICGU', ICGU )
         endIf
       endIf
 !
@@ -280,7 +283,8 @@
 !     lines of the file.
 !
       Call FileInfo%GetBuffer(FileInfo%Title)
-      If (FileInfo%LoadBuffer()) Call MQC_Error('Failiure loading FChk buffer')
+      If (FileInfo%LoadBuffer()) Call MQC_Error_L('Failiure loading FChk buffer', 6, &
+           'FileInfo%LoadBuffer()', FileInfo%LoadBuffer() )
       Call FileInfo%GetNextString(FileInfo%JobType,EOF,OK)
       Call FileInfo%GetNextString(FileInfo%Method,EOF,OK)
       Call FileInfo%GetNextString(FileInfo%BasisSet,EOF,OK)
@@ -344,6 +348,7 @@
 !
 !     Format Statements
 !
+ 1060 Format( A )
  2000 Format(A40,3X,A1,3X,A2,A22)
  8000 Format(1x,'Label: ',A40,' | Type=',A1,' | NEq=',A2,  &
         ' | Value=',A12)
@@ -377,23 +382,23 @@
         If(fail) Return
         Select Case (TypeFlag)
         Case('I')
-          Write(*,*)' Found an INTEGER ARRAY'
+          Write(*,1060)' Found an INTEGER ARRAY'
           If(Present(Vector_Integer)) then
             If(Size(Vector_Integer).ge.NElements) &
               Call MQC_Files_Text_File_Read_Int_Vec(FChkFile,  &
                 Vector_Integer,EOF,OK)
           endIf
         Case('R')
-         Write(*,*)' Found a REAL ARRAY'
+         Write(*,1060)' Found a REAL ARRAY'
           If(Present(Vector_Real)) then
             If(Size(Vector_Real).ge.NElements) &
               Call MQC_Files_Text_File_Read_Real_Vec(FChkFile,  &
                 Vector_Real,EOF,OK)
           endIf
         Case('C')
-          Write(*,*)' Found a CHARACTER ARRAY'
+          Write(*,1060)' Found a CHARACTER ARRAY'
         Case('L')
-          Write(*,*)' Found a LOGICAL ARRAY'
+          Write(*,1060)' Found a LOGICAL ARRAY'
         Case Default
           Return
         End Select
@@ -451,17 +456,20 @@
         'Number of atoms                            I',  &
         FChkFile,OK,Temp_Char,NElements,Scalar_Integer=NAtoms)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error loading NAtoms.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error loading NAtoms.', 6, &
+        'OK', OK )
       Call Find_FChk_Entry(                              &
         'Charge                                     I',  &
         FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Charge)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error loading Charge.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error loading Charge.', 6, &
+        'OK', OK )
       Call Find_FChk_Entry(                              &
         'Multiplicity                               I',  &
         FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Multiplicity)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error loading Multiplicity.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error loading Multiplicity.', 6, &
+        'OK', OK )
       Allocate(AtomicNumbers(NAtoms),AtomicMasses(NAtoms),  &
         NuclearCharges(NAtoms),Cartesians_1D(3*NAtoms),  &
         Cartesians(3,NAtoms))
@@ -472,23 +480,27 @@
         'Atomic numbers                             I',  &
         FChkFile,OK,Temp_Char,NElements,Vector_Integer=AtomicNumbers)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error - AtomicNumbers.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicNumbers.', 6, &
+        'OK', OK )
       Call Find_FChk_Entry(                              &
         'Nuclear charges                            R',  &
         FChkFile,OK,Temp_Char,NElements,Vector_Real=NuclearCharges)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error - NuclearCharges.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error - NuclearCharges.', 6, &
+        'OK', OK )
       Call Find_FChk_Entry(                              &
         'Current cartesian coordinates              R',  &
         FChkFile,OK,Temp_Char,NElements,Vector_Real=Cartesians_1D)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error - Cartesians.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error - Cartesians.', 6, &
+        'OK', OK )
       Cartesians = Reshape(Cartesians_1D,(/3,NAtoms/))
       Call Find_FChk_Entry(                              &
         'Real atomic weights                        R',  &
         FChkFile,OK,Temp_Char,NElements,Vector_Real=AtomicMasses)
       If(.not.OK)  &
-        Call MQC_Error('MQC_Gaussian: FChk error - AtomicMasses.')
+        Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicMasses.', 6, &
+        'OK', OK )
 !
 !     Fill the molecular data object. Then de-allocate arrays.
 !
@@ -698,16 +710,19 @@
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
         if(TRIM(filename)/=TRIM(fileinfo%filename)) then
           call fileinfo%CLOSEFILE()
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
         endIf
       endIf
       if(.not.(fileinfo%readWriteMode .eq. 'R' .or.  &
@@ -715,13 +730,15 @@
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
         call fileinfo%OPENFILE(my_filename,0,ok)
-        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+        if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
       endIf
       if(fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
         call fileinfo%OPENFILE(my_filename,0,ok)
-        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+        if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
       endIf
 !
 !     Set the readWriteMode flag in fileinfo to 'R' and then read the
@@ -814,9 +831,11 @@
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+               'ok', ok )
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
@@ -1007,7 +1026,10 @@
 !
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
-!
+ 1020 Format( " " )!
+ 1040 Format( A, I15 )
+ 1050 Format( 2A )
+ 1060 Format( A )
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
 !     program unit. If so, then get the file declared before reading the
@@ -1018,7 +1040,8 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_l('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
@@ -1049,7 +1072,8 @@
       if(Present(matrixOut)) nOutputArrays = nOutputArrays+1
       if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
       if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
-      if(nOutputArrays.ne.1) call mqc_error('Too many output arrays sent to Gaussian matrix file reading procedure.')
+      if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
+           'nOutputArrays', nOutputArrays )
 !
 !     Look for the label sent by the calling program unit. If the label is
 !     found, then load <matrixOut> with the data on the file.
@@ -1076,20 +1100,23 @@
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,integerTmp)
               else
-                if(.not.Present(matrixOut)) call mqc_error('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.')
+                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
+                  & procedure.', 6, &
+'Present(matrixOut)', Present(matrixOut) )
               endIf
               deallocate(integerTmp)
             case('INTEGER-MATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.')
-              allocate(integerTmp(LR))
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
+                & procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
+             allocate(integerTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
               matrixOut = Reshape(integerTmp,[N1,N2])
               deallocate(integerTmp)
             case('INTEGER-SYMMATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
+                & procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
               allocate(integerTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
@@ -1103,20 +1130,23 @@
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,arrayTmp)
               else
-                if(.not.Present(matrixOut)) call mqc_error('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.')
+                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
+                  & procedure.', 6, &
+                  'Present(matrixOut)', Present(matrixOut) )
               endIf
               deallocate(arrayTmp)
             case('REAL-MATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
+                & procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
               matrixOut = Reshape(arrayTmp,[N1,N2])
               deallocate(arrayTmp)
             case('REAL-SYMMATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
+                & procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
@@ -1130,41 +1160,47 @@
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,complexTmp)
               else
-                call mqc_error('Reading vector from Gaussian matrix file, but NO VECTOR SENT &
-                  & to procedure.')
+                call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT &
+                  & to procedure.', 6, &
+                  'Present(vectorOut)', Present(vectorOut), &
+                  'Present(matrixOut)', Present(matrixOut) )
               endIf
               deallocate(complexTmp)
             case('COMPLEX-MATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix &
-                & file, but NO MATRIX SENT to procedure.')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix &
+                & file, but NO MATRIX SENT to procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
-              write(*,*) 'reading matrix'
+              write(*,1060) 'reading matrix'
               call Rd_RBuf(fileinfo%unitNumber,2*NTot,2*LenBuf,complexTmp)
-              write(*,*) 'read matrix'
+              write(*,1060) 'read matrix'
               matrixOut = Reshape(complexTmp,[N1,N2])
               deallocate(complexTmp)
             case('COMPLEX-SYMMATRIX')
-              if(.not.Present(matrixOut)) call mqc_error('Reading matrix from Gaussian matrix &
-                & file, but NO MATRIX SENT to procedure.')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix &
+                & file, but NO MATRIX SENT to procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,2*NTot,2*LenBuf,complexTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
               deallocate(complexTmp)
 
             case('MIXED')
-              write(*,*)
-              write(*,*)' Hrant - LR   = ',LR
-              write(*,*)' Hrant - NR   = ',NR
-              write(*,*)' Hrant - NI   = ',NI
-              write(*,*)' Hrant - NRI  = ',NRI
-              write(*,*)' Hrant - NTot = ',NTot
-              write(*,*)
-              call mqc_error('No general way to load mixed types as of yet &
-      &         We are doing it case-by-case at the moment and this does not match.')
-
+              write(*,1020)
+              write(*,1040)' Hrant - LR   = ',LR
+              write(*,1040)' Hrant - NR   = ',NR
+              write(*,1040)' Hrant - NI   = ',NI
+              write(*,1040)' Hrant - NRI  = ',NRI
+              write(*,1040)' Hrant - NTot = ',NTot
+              write(*,1020)
+              call mqc_error_a('No general way to load mixed types as of yet &
+      &         We are doing it case-by-case at the moment and this does not match.', 6, &
+      'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
+      MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
             case('2ERIS-SYMSYMR4TENSOR')
-              if(.not.Present(r4TensorOut)) call mqc_error('Reading r4 tensor from Gaussian matrix file, but NO R4TENSOR SENT to &
-                & procedure.')
+              if(.not.Present(r4TensorOut)) call mqc_error_l('Reading r4 tensor from Gaussian matrix file, but NO R4TENSOR SENT to &
+                & procedure.', 6, &
+                'Present(r4TensorOut)', Present(r4TensorOut) )
               if(NRI.eq.1) then
                 allocate(arrayTmp(LR))
                 call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
@@ -1178,8 +1214,10 @@
               endIf
 
             case default
-              write(*,*)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
-              call mqc_error('Found strange matrix type in Gaussian matrix read routine.')
+              write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
+              call mqc_error_A('Found strange matrix type in Gaussian matrix read routine.', 6, &
+                   'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
+                   MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
             end select
             found = .true.
             exit outerLoop
@@ -1201,7 +1239,8 @@
       endDo outerLoop
       if(.not.found) then
         errorMsg = 'Could NOT find requested matrix file label "'//TRIM(label)//'".'
-        call MQC_Error(errorMsg)
+        call MQC_Error_L(errorMsg, 6, &
+             'found', found )
       endIf
 !
       return
@@ -1280,17 +1319,20 @@
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+               'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
         if(TRIM(filename)/=TRIM(fileinfo%filename)) then
           call fileinfo%CLOSEFILE()
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
-          if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+            'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         endIf
       endIf
@@ -1299,7 +1341,8 @@
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
         call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
-        if(.not.ok) Call MQC_Error('Error opening Gaussian matrix file.')
+        if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
         call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
           my_filename)
       endIf
@@ -1318,7 +1361,8 @@
       if(Present(matrixIn)) nInputArrays = nInputArrays+1
       if(Present(vectorIn)) nInputArrays = nInputArrays+1
       if(Present(r4TensorIn)) nInputArrays = nInputArrays+1
-      if(nInputArrays.ne.1) call mqc_error('Too many input arrays sent to Gaussian matrix file writing procedure.')
+      if(nInputArrays.ne.1) call mqc_error_i('Too many input arrays sent to Gaussian matrix file writing procedure.', 6, &
+           'nInputArrays', nInputArrays )
 !
 !     Load the MQC variable into a regular array and get the required dimensions
 !     Some routines will change when we upgrade to algebra2
@@ -1364,7 +1408,11 @@
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,1,LenBuf,mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,realMatrixTmp)
           else
-            call mqc_error('type not recognised') 
+            call mqc_error_l('type not recognised', 6, &
+                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+                 "mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')", mqc_matrix_test_symmetric(matrixInUse,'antisymmetric'), &
+                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveInteger(matrixInUse)) then 
           if(mqc_matrix_test_diagonal(matrixInUse)) then
@@ -1404,7 +1452,11 @@
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,1,LenBuf,mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intMatrixTmp)
           else
-            call mqc_error('type not recognised') 
+            call mqc_error_l('type not recognised', 6, &
+                 'Emqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+                 "mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')", mqc_matrix_test_symmetric(matrixInUse,'antisymmetric'), &
+                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveComplex(matrixInUse)) then 
           if(mqc_matrix_test_diagonal(matrixInUse)) then
@@ -1444,11 +1496,18 @@
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,1,LenBuf,mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compMatrixTmp)
           else
-            call mqc_error('type not recognised') 
+            call mqc_error_l('type not recognised', 6, &
+                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+                 "mqc_matrix_test_symmetric(matrixInUse,'hermitian')", mqc_matrix_test_symmetric(matrixInUse,'hermitian'), &
+                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         else
-          call mqc_error('MatrixIn type not recognised in &
-     &      MQC_Gaussian_Unformatted_Matrix_Write_Array')
+          call mqc_error_l('MatrixIn type not recognised in &
+     &      MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+     'mqc_matrix_haveReal(matrixInUse)', mqc_matrix_haveReal(matrixInUse), &
+     'mqc_matrix_haveInteger(matrixInUse)', mqc_matrix_haveInteger(matrixInUse), &
+     'mqc_matrix_haveComplex(matrixInUse)', mqc_matrix_haveComplex(matrixInUse) )
         endIf
       elseIf(present(vectorIn)) then
         if(mqc_vector_haveReal(vectorIn)) then 
@@ -1467,8 +1526,11 @@
           call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,1,LenBuf,mqc_length_vector(vectorIn), &
             0,0,0,0,.False.,compVectorTmp)
         else
-          call mqc_error('VectorIn type not recognised in &
-     &      MQC_Gaussian_Unformatted_Matrix_Write_Array')
+          call mqc_error_l('VectorIn type not recognised in &
+     &      MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+     'mqc_vector_haveReal(vectorIn)', mqc_vector_haveReal(vectorIn), &
+     'mqc_vector_haveInteger(vectorIn)', mqc_vector_haveInteger(vectorIn), &
+     'mqc_vector_haveComplex(vectorIn)', mqc_vector_haveComplex(vectorIn) )
         endIf
       endIf
 !
@@ -1510,7 +1572,8 @@
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen())  &
-        call MQC_Error('Failed to retrieve atom info from Gaussian matrix file: File not open.')
+        call MQC_Error_L('Failed to retrieve atom info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
@@ -1524,10 +1587,13 @@
       select case (mylabel)
       case('atomiccharge','nuclearcharge')
         if((element.le.0).or.(element.gt.fileinfo%natoms))  &
-          call MQC_Error('element to %getAtomInfo is invalid.')
+          call MQC_Error_I('element to %getAtomInfo is invalid.', 6, &
+          'element', element, &
+          'fileinfo%natoms', fileinfo%natoms )
         value_out = fileinfo%atomicCharges(element)
       case default
-        call mqc_error('Invalid label sent to %getAtomInfo.')
+        call mqc_error_A('Invalid label sent to %getAtomInfo.', 6, &
+             'mylabel', mylabel )
       endSelect
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info = value_out
@@ -1572,7 +1638,8 @@
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen())  &
-        call MQC_Error('Failed to retrieve basis info from Gaussian matrix file: File not open.')
+        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
@@ -1586,18 +1653,25 @@
       select case (mylabel)
       case('basis2atom')
         if(.not.allocated(fileinfo%basisFunction2Atom))  &
-          call MQC_Error('Requested basis2Atom not possible.')
+          call MQC_Error_L('Requested basis2Atom not possible.', 6, &
+'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
         if((element.le.0).or.(element.gt.fileinfo%nbasis))  &
-          call MQC_Error('element to %getBasisInfo is invalid.')
+          call MQC_Error_I('element to %getBasisInfo is invalid.', 6, &
+          'element', element, &
+          'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%basisFunction2Atom(element)
       case('basis type')
         if(.not.allocated(fileinfo%IBasisFunctionType))  &
-          call MQC_Error('Requested basis type not possible.')
+          call MQC_Error_l('Requested basis type not possible.', 6, &
+          'allocated(fileinfo%IBasisFunctionType)', allocated(fileinfo%IBasisFunctionType) )
         if((element.le.0).or.(element.gt.fileinfo%nbasis))  &
-          call MQC_Error('element to %getBasisInfo is invalid.')
+          call MQC_Error_I('element to %getBasisInfo is invalid.', 6, &
+          'element', element, &
+          'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%IBasisFunctionType(element)
       case default
-        call mqc_error('Invalid label sent to %getBasisInfo.')
+        call mqc_error_a('Invalid label sent to %getBasisInfo.', 6, &
+             'mylabel', mylabel )
       endSelect
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info = value_out
@@ -1677,7 +1751,8 @@
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
@@ -1708,13 +1783,15 @@
       if(Present(est_wavefunction)) nInputArrays = nInputArrays+1
       if(Present(est_integral)) nInputArrays = nInputArrays+1
       if(Present(est_eigenvalues)) nInputArrays = nInputArrays+1
-      if(nInputArrays.ne.1) call mqc_error('Too many input arrays sent to Gaussian matrix file reading procedure.')
+      if(nInputArrays.ne.1) call mqc_error_i('Too many input arrays sent to Gaussian matrix file reading procedure.', 6, &
+           'nInputArrays', nInputArrays )
 !
 !     Get the EST object in the desired wavefunction type format
 !
       if(present(override)) then
         call String_Change_Case(override,'l',my_override)
-        if(present(est_wavefunction)) call mqc_error('Overriding wavefunction types not implemented') 
+        if(present(est_wavefunction)) call mqc_error_l('Overriding wavefunction types not implemented', 6, & 
+             'present(est_wavefunction)', present(est_wavefunction) )
         if(my_override.eq.'space') then
           my_integral_type = 'space'
         elseIf(my_override.eq.'spin') then
@@ -1722,7 +1799,8 @@
         elseIf(my_override.eq.'general') then
           my_integral_type = 'general'
         else
-          call mqc_error('Unrecognised override type in %writeESTObj')
+          call mqc_error_A('Unrecognised override type in %writeESTObj', 6, &
+               'my_override', my_override )
         endIf
       else
         if(present(est_integral)) then
@@ -1737,7 +1815,8 @@
       call String_Change_Case(label,'l',myLabel)
       select case (mylabel)
       case('mo coefficients')
-        if(.not.(Present(est_integral))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_integral))) call mqc_error_l('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -1750,10 +1829,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('mo energies')
-        if(.not.(Present(est_eigenvalues))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_eigenvalues))) call mqc_error_l('wrong EST type in writeESTOBj', 6, &
+             'Present(est_eigenvalues)', Present(est_eigenvalues) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA ORBITAL ENERGIES', &
             vectorIn=est_eigenvalues%getBlock('alpha'))
@@ -1766,10 +1847,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_eigenvalues,tmpVector)
           call fileInfo%writeArray('ALPHA ORBITAL COEFFICIENTS',vectorIn=tmpVector)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_a('Unknown wavefunction type in getESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('core hamiltonian')
-        if(.not.(Present(est_integral))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_integral))) call mqc_error_l('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -1782,10 +1865,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('fock')
-        if(.not.(Present(est_integral))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_integral))) call mqc_error_l('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA FOCK MATRIX', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -1798,10 +1883,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('density')
-        if(.not.(Present(est_integral))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -1814,10 +1901,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('overlap')
-        if(.not.(Present(est_integral))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('OVERLAP', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -1828,10 +1917,12 @@
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
         endIf
       case('wavefunction')
-        if(.not.(Present(est_wavefunction))) call mqc_error('wrong EST type in writeESTOBj')
+        if(.not.(Present(est_wavefunction))) call mqc_error_l('wrong EST type in writeESTOBj', 6, &
+             'Present(est_wavefunction)', Present(est_wavefunction) )
         if(mqc_integral_array_type(est_wavefunction%overlap_matrix).eq.'space') then
           call fileInfo%writeArray('OVERLAP', &
             matrixIn=est_wavefunction%overlap_matrix%getBlock('alpha'))
@@ -1842,7 +1933,9 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%overlap_matrix,tmpMatrix)
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%overlap_matrix)', &
+               mqc_integral_array_type(est_wavefunction%overlap_matrix) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%core_hamiltonian).eq.'space') then
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA', &
@@ -1856,7 +1949,9 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%core_hamiltonian,tmpMatrix)
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%core_hamiltonian)', &
+               mqc_integral_array_type(est_wavefunction%core_hamiltonian) )
         endIf
         if(mqc_eigenvalues_array_type(est_wavefunction%mo_energies).eq.'space') then
           call fileInfo%writeArray('ALPHA ORBITAL ENERGIES', &
@@ -1870,7 +1965,9 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%mo_energies,tmpVector)
           call fileInfo%writeArray('ALPHA ORBITAL ENERGIES',vectorIn=tmpVector)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_eigenvalues_array_type(est_wavefunction%mo_energies)', &
+               mqc_eigenvalues_array_type(est_wavefunction%mo_energies) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%mo_coefficients).eq.'space') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
@@ -1884,7 +1981,9 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%mo_coefficients,tmpMatrix)
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+          'mqc_integral_array_type(est_wavefunction%mo_coefficients)', &
+          mqc_integral_array_type(est_wavefunction%mo_coefficients) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'space') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
@@ -1898,7 +1997,9 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%density_matrix)', &
+               mqc_integral_array_type(est_wavefunction%density_matrix) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'space') then
           call fileInfo%writeArray('ALPHA FOCK MATRIX', &
@@ -1912,10 +2013,13 @@
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%fock_matrix,tmpMatrix)
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
-          call mqc_error('Unknown wavefunction type in writeESTObj')
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%fock_matrix)', &
+               mqc_integral_array_type(est_wavefunction%fock_matrix) )
         endIf
       case default
-        call mqc_error('Invalid label sent to %writeESTObj.')
+        call mqc_error_A('Invalid label sent to %writeESTObj.', 6, &
+             'mylabel', mylabel )
       end select
 !
       return
@@ -1994,7 +2098,8 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error('Error reading Gaussian matrix file header: Must include a filename.')
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
@@ -2025,7 +2130,8 @@
       if(Present(est_wavefunction)) nOutputArrays = nOutputArrays+1
       if(Present(est_integral)) nOutputArrays = nOutputArrays+1
       if(Present(est_eigenvalues)) nOutputArrays = nOutputArrays+1
-      if(nOutputArrays.ne.1) call mqc_error('Too many output arrays sent to Gaussian matrix file reading procedure.')
+      if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
+           'nOutputArrays', nOutputArrays )
 !
 !     Do the work...
 !
@@ -2051,7 +2157,10 @@
           call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('mo energies')
         if(fileinfo%isRestricted()) then
@@ -2071,7 +2180,10 @@
           call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','general',tmpVectorAlpha, &
             tmpVectorBeta)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('core hamiltonian')
         if(fileinfo%isRestricted()) then
@@ -2093,7 +2205,10 @@
           call mqc_integral_allocate(est_integral,'core hamiltonian','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('fock')
         if(fileinfo%isRestricted()) then
@@ -2115,7 +2230,10 @@
           call mqc_integral_allocate(est_integral,'fock','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('density')
         if(fileinfo%isRestricted()) then
@@ -2137,7 +2255,10 @@
           call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('overlap')
         if(fileinfo%isRestricted()) then
@@ -2158,7 +2279,10 @@
           call mqc_integral_allocate(est_integral,'overlap','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case('wavefunction')
         if(fileinfo%isRestricted()) then
@@ -2275,10 +2399,14 @@
           est_wavefunction%multiplicity = fileInfo%getVal('multiplicity')
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         else
-          call mqc_error('Unknown wavefunction type in getESTObj')
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case default
-        call mqc_error('Invalid label sent to %getESTObj.')
+        call mqc_error_A('Invalid label sent to %getESTObj.', 6, &
+             'mylabel', mylabel )
       end select
 !
       return
@@ -2311,7 +2439,8 @@
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen())  &
-        call MQC_Error('Failed to retrieve value from Gaussian matrix file: File not open.')
+        call MQC_Error_L('Failed to retrieve value from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
@@ -2340,7 +2469,8 @@
       case('nbeta')
         value_out = (fileinfo%nelectrons - fileinfo%multiplicity + 1)/2 
       case default
-        call mqc_error('Failure finding requested integer value in Gaussian matrix file')
+        call mqc_error_A('Failure finding requested integer value in Gaussian matrix file', 6, &
+             'mylabel', mylabel )
       endSelect
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer = value_out
