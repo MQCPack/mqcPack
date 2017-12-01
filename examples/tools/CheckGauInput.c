@@ -26,8 +26,9 @@ void mqc_error( char * );
 char *mqc_GetMatrixFile( char *, char * );
 void mqc_Global_init( void );
 char *mqc_DupString( char *, char * );
-InputLine *Alloc_InputLine( char *, InputLine * );
+InputLine *mqc_Alloc_InputLine( char *, InputLine * );
 void mqc_Write_InputLines( char *, InputLine * );
+void mqc_Free_InputLines( InputLine * );
 void mqc_Remove_Return( char * );
 char *mqc_Replace_String( char *, char *, char * );
 
@@ -42,26 +43,53 @@ InputLine *Last_NonBlank = (InputLine *)NULL;
 
 int main(int argc, char *argv[])
 {
+  char charBuf[2096];
   char *MatFileName;
-  char charBuf[1024];
+  char *EnvName;
+  char *NextEnvName;
+  int i, j;
 
 #ifdef DEBUG
   printf( "Start of Program\n" );
   fflush(stdout);
 #endif
-  if ( argc-1 != 2 ) {
+  if ( argc-1 < 2 ) {
     printf( "Error in number of argments to this program.  Arguments should be:\n     - Full path to a Gaussian file\n         - This can either be a MatrixFile\n         - This can be a Gaussian input file\n     - The name of the binary for the program that \n       generates the MatrixFile, most likely \"g16\".  \n       The environment should be setup to run the program.\n" );
     if ( argc-1 == 0 ) {
       mqc_error( "No arguments to this program\n"); 
     } else {
-      sprintf( charBuf, "%d arguments to this program.  The first 3 are:\n  %s\n  %s\n  %s\n", argc-1, argv[0],argv[1],argv[3]);
-      mqc_error( charBuf );
+      mqc_error( "Only one argument to this program\n"); 
     }
   }
 
   mqc_Global_init( );
-  MatFileName = mqc_GetMatrixFile( argv[1], argv[2] );
-
+  j = argc-1;
+  EnvName = malloc(1024);
+  NextEnvName = malloc(1024);
+  for ( i=1; i< j; i++ ) {
+    MatFileName = mqc_GetMatrixFile( argv[i], argv[j] );
+    if ( i > 1 ) {
+      sprintf( NextEnvName, "NxtMatFil%d", i-1 );
+      if ( setenv( NextEnvName, EnvName, 1 ) != 0 ) {
+	sprintf( charBuf, "Not able to set env variable \"%\" to \"%s\"\n",
+	     NextEnvName, EnvName );
+	mqc_error( charBuf );
+      }
+    }
+    sprintf( EnvName, "MatFil%d", i );
+    if ( setenv( EnvName, MatFileName, 1 ) != 0 ) {
+      sprintf( charBuf, "Not able to set env variable \"%\" to \"%s\"\n",
+	       EnvName, MatFileName );
+    }
+  }
+  sprintf( NextEnvName, "NxtMatFil%d", j-1 );
+  if ( setenv( NextEnvName, "mqc_Done", 1 ) != 0 ) {
+    sprintf( charBuf, "Not able to set env variable \"%\" to \"mqc_Done\"\n",
+	     NextEnvName );
+    mqc_error( charBuf );
+  }
+    /* Either set environment variables, and with MatFileNames or call F2003 */
+    /* the F2003 program Needs a Link list containing various Wavefunctions */
 }
 
 char *mqc_GetMatrixFile( char *FileName, char *Program )
@@ -171,7 +199,10 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
   CheckGAU_File = NULL;
   if ( -1 == mqc_FINDstrINline( " ASCII ", charBuf ) ) {
     /* The file is Binary, not ACSII. It is a MatrixFile */
+#ifdef DEBUG
     printf( "%s is binary, so a MatrixFile\n",FileName);
+    fflush(stdout);
+#endif
     unlink(tmp_CheckGAU_File_Name);
     MatFileName = mqc_DupString(FileName, (char *)NULL);
     return( MatFileName );	     
@@ -231,7 +262,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
     printf( " Read from input: %s\n", charBuf );
     fflush(stdout);
 #endif
-    Current_Line = Alloc_InputLine( charBuf, (InputLine *)NULL );
+    Current_Line = mqc_Alloc_InputLine( charBuf, (InputLine *)NULL );
     Start_Line = Current_Line;
   }
 
@@ -305,7 +336,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
 	  fflush(stdout);
 #endif
 	  Last_Line = Current_Line;
-	  Current_Line = Alloc_InputLine( charBuf, Last_Line );
+	  Current_Line = mqc_Alloc_InputLine( charBuf, Last_Line );
 	}
 	/* Find the name of the MartixFile in the keywords */
       }
@@ -339,7 +370,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
 	fflush(stdout);
 #endif
 	Last_Line = Current_Line;
-	Current_Line = Alloc_InputLine( charBuf, Last_Line );
+	Current_Line = mqc_Alloc_InputLine( charBuf, Last_Line );
       }
     }
   }
@@ -400,15 +431,16 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
     /* Append a blank line, MatrixFile Name, blank line behind the */
     /* last non-blank line */
     sprintf( charBuf, "\n%s.mat\n\n", JobName );
-    Current_Line = Alloc_InputLine( charBuf, Last_NonBlank );
+    Current_Line = mqc_Alloc_InputLine( charBuf, Last_NonBlank );
     sprintf( charBuf, "%s.mat", JobName );
     MatFileName = mqc_DupString( charBuf, (char *)NULL);
-    sprintf( InputFile, "%s_mod", FileName );
+    sprintf( InputFile, "%s.mod", JobName );
     mqc_Write_InputLines( InputFile, Start_Line );
   } else {
     sprintf( InputFile, FileName );
     MatFileName = mqc_DupString( Last_NonBlank->Name, (char *)NULL);
   }
+  mqc_Free_InputLines( Start_Line );
 
   sprintf( charBuf, "%s < %s >%s.log", Program, InputFile, JobName );
 
@@ -551,7 +583,7 @@ char *mqc_DupString( char *old_str, char *free_this )
   return( new_str );
 }
 
-InputLine *Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_struct )
+InputLine *mqc_Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_struct )
 {
   static Blank_count = 0;
 
@@ -559,7 +591,7 @@ InputLine *Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_stru
 
   new_struct = (InputLine *)malloc ( (size_t)sizeof( InputLine )+128);
   if ( new_struct == (InputLine *)NULL ) {
-    printf( "Error: Not able to allocate memory in Alloc_InputLine.");
+    printf( "Error: Not able to allocate memory in mqc_Alloc_InputLine.");
     exit( 0 );
   }
   if ( LAST_InputLine_struct == (InputLine *)NULL ) {
@@ -602,12 +634,34 @@ InputLine *Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_stru
   return(new_struct);
 }
 
+void mqc_Free_InputLines( InputLine *Start_InputLine )
+{
+  InputLine *Current_InputLine = (InputLine *)NULL;
+  InputLine *Next_InputLine = (InputLine *)NULL;
+
+  Current_InputLine = Start_InputLine;
+  while (Current_InputLine != (InputLine *)NULL ) {
+    Next_InputLine = (InputLine *)Current_InputLine->next;
+    /* Free the strings */
+    free(Current_InputLine->Name);
+    free(Current_InputLine->Lower_Name);
+    /* Set values to NULL, just in case we accidently to use a */
+    /* freed structure */
+    Current_InputLine->Name = (char *)NULL;
+    Current_InputLine->Lower_Name = (char *)NULL;
+    Current_InputLine->next=NULL;
+    Current_InputLine->last=NULL;
+    /* Free the structure */
+    free(Current_InputLine);
+    Current_InputLine = Next_InputLine;
+  }
+}
+
 void mqc_Write_InputLines( char *File_Name, InputLine *Start_InputLine )
 {
   FILE *MY_GAU_File=NULL;
   int fclose_return;
   int rtn_fputs;
-
   InputLine *Current_InputLine = (InputLine *)NULL;
   InputLine *Next_InputLine = (InputLine *)NULL;
 
