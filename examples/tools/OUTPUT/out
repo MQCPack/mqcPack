@@ -6,16 +6,14 @@ Error in number of argments to this program.  Arguments should be:
      - The name of the binary for the program that 
        generates the MatrixFile, most likely "g16".  
        The environment should be setup to run the program.
-ERROR: 1 arguments to this program.  The first 3 are:
-  ../CheckGauInput
-  test.com
-  REMOTEHOST=cpe-173-175-196-210.tx.res.rr.com
+ERROR: Only one argument to this program
 
 ERROR: Did not find Gaussian_not_in_path in the path
 
-Found g16
 test-Should be no problems
 test1071-Should be no problems
 test1129-Should be no problems
 test1130-Should be no problems
-test1132-Should be no problems
+test1132-Run Input should be no problems
+test1132-MatrixFile
+test1132-Run Input and MatrixFile
