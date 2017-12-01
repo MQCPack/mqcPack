@@ -1,4 +1,4 @@
-AC_INIT([MQC_Pack], [1.1], [hhratchian@ucmerced.edu])
+AC_INIT([MQC_Pack], [0.1.1], [hhratchian@ucmerced.edu])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/mqc_general.f03])
 AC_PROG_CPP

@@ -1,6 +1,6 @@
 #! /bin/csh -f
 
-chmod 755 examples/algebra2/testit.sh
+chmod 000 examples/algebra2/testit.sh
 
 autoreconf --install
 #rm src/*.o src/*.mod
