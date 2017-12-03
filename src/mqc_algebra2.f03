@@ -271,7 +271,9 @@
       endIf
       if(Present(dimensions)) then
         if(Size(dimensions).ne.myRank)  &
-          call MQC_Error('Logic error in MQC_Variable_initialize: Dimensions and Rank do not jive!')
+          call MQC_Error_I('Logic error in MQC_Variable_initialize: Dimensions and Rank do not jive!', 6, &
+          'Size(dimensions)', Size(dimensions), &
+          'myRank', myRank )
       endIf
 !
 !     Set-up <myStorageFormat>.
@@ -292,7 +294,8 @@
       case('INTEGER','INT','I')
         mqcVariable%dataType = 'INTEGER'
       case default
-        call MQC_Error('Initializing MQC_Variable with unknown data type.')
+        call MQC_Error_A('Initializing MQC_Variable with unknown data type.', 6, &
+             'myDataType', myDataType)
       end select
 !
 !     Take care of rank and dimensions.
@@ -304,11 +307,13 @@
           mqcVariable%dimensions = 0
         case(1:10)
           if(.not.Present(dimensions))  &
-            call MQC_Error('Illegal attempt to initialize MQC_Variable of rank > 0 without defined dimensions.')
+            call MQC_Error_L('Illegal attempt to initialize MQC_Variable of rank > 0 without defined dimensions.', 6, &
+            'Present(dimensions)', Present(dimensions) )
           mqcVariable%dimensions = 0
           mqcVariable%dimensions(1:myRank) = dimensions
         case default
-          call MQC_Error('Illegal rank sent to MQC_Variable_initialize.')
+          call MQC_Error_I('Illegal rank sent to MQC_Variable_initialize.', 6, &
+               'myRank', myRank)
         end select
       elseIf(myRank.eq.0) then
         mqcVariable%dimensions = 0
@@ -337,7 +342,8 @@
           Allocate(mqcVariable%integerArray(myLength))
         endIf
       case default
-        call MQC_Error('MQC_Variable_initialize is confused in allocation block.')
+        call MQC_Error_A('MQC_Variable_initialize is confused in allocation block.', 6, &
+             'mqcVariable%dataType', mqcVariable%dataType)
       end select
 !
 !     Lastly, set the initialized flag.
@@ -379,8 +385,8 @@
         endDo
         k = k + arrayElement(1)
       case default
-        write(*,*)' Hrant - StorageFormat = ',TRIM(mqcVariable%storageFormat)
-        call mqc_error('MQC_Variable_getArrayPosition: Found an unknown storage format.')
+        call mqc_error_a('MQC_Variable_getArrayPosition: Found an unknown storage format.', 6, &
+             'TRIM(mqcVariable%storageFormat)', TRIM(mqcVariable%storageFormat))
       end select
 !
       return
@@ -416,7 +422,8 @@
           myLen = myLen*mqcVariable%dimensions(i)
         endDo
       case default
-        call MQC_Error('Invalid rank found in MQC_Variable_getLength.')
+        call MQC_Error_I('Invalid rank found in MQC_Variable_getLength.', 6, &
+             'mqcVariable%rank', mqcVariable%rank)
       end select
 !
       return
@@ -476,14 +483,17 @@
         myDimension = 0
       endIf
       if(myDimension.gt.MQC_Variable_getRank(mqcVariable))  &
-        call MQC_Error('MQC_Variable_getSize: Illegal iDimension sent.')
+        call MQC_Error_I('MQC_Variable_getSize: Illegal iDimension sent.', 6,&
+        'myDimension', myDimension, &
+        'MQC_Variable_getRank(mqcVariable)', MQC_Variable_getRank(mqcVariable))
       select case(myDimension)
       case(1:)
         mySize = mqcVariable%dimensions(myDimension)
       case(:0)
         mySize = MQC_Variable_getLength(mqcVariable)
       case default
-        call MQC_Error('Error in SIZE: Invalid dimension sent.')
+        call MQC_Error_I('Error in SIZE: Invalid dimension sent.', 6, &
+             'myDimension', myDimension )
       end select
 !
       return
@@ -750,7 +760,8 @@
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
-          call mqc_error('MQC variable print requested for unknown type.')
+          call mqc_error_a('MQC variable print requested for unknown type.', 6, &
+          'mqcVariable%getType()', mqcVariable%getType())
         end select
 !
 !     Print vectors...
@@ -773,7 +784,8 @@
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
-          call mqc_error('MQC variable print requested for unknown type.')
+          call mqc_error_a('MQC variable print requested for unknown type.', 6, &
+               'mqcVariable%getType()', mqcVariable%getType() )
         end select
 !
 !     Print matrices...
@@ -800,10 +812,12 @@
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
-          call mqc_error('MQC variable print requested for unknown type.')
+          call mqc_error_a('MQC variable print requested for unknown type.', 6, &
+               'mqcVariable%getType()', mqcVariable%getType())
         end select
       case default
-        call mqc_error('MQC variable print requested for unknown rank.')
+        call mqc_error_i('MQC variable print requested for unknown rank.', 6, &
+             'mqcVariable%getRank()', mqcVariable%getRank())
       end select
 !
       return
@@ -839,19 +853,26 @@
 !
 !     Do the work...
 !
-      if(valueMQC%rank.ne.0) call mqc_error('MQC_Variable_Put: Sent MQC value must be a scalar.')
-      if(.not.mqcVariable%initialized) call mqc_error('Cannot use MQC_Variable_Put with uninitialized MQC variable.')
+      if(valueMQC%rank.ne.0) call mqc_error_i('MQC_Variable_Put: Sent MQC value must be a scalar.', 6, &
+      'valueMQC%rank', valueMQC%rank)
+      if(.not.mqcVariable%initialized) call mqc_error_l('Cannot use MQC_Variable_Put with uninitialized MQC variable.', 6, &
+           'mqcVariable%initialized', mqcVariable%initialized )
       if(mqcVariable%rank.ne.SIZE(arrayElement))  &
-        call mqc_error('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.')
+        call mqc_error_i('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.', 6, &
+        'mqcVariable%rank', mqcVariable%rank, &
+        'SIZE(arrayElement)', SIZE(arrayElement))
       k = MQC_Variable_getArrayPosition(mqcVariable,arrayElement)
-      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error('MQC_Variable_Put: Invalid array index provided.')
+      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error_i('MQC_Variable_Put: Invalid array index provided.', 6, &
+           'k', k, &
+           'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
         mqcVariable%realArray(k) = INT(valueMQC)
       case('INTEGER')
         mqcVariable%integerArray(k) = FLOAT(valueMQC)
       case default
-        call mqc_error('MQC_Variable_Put: Unknown MQC variable type.')
+        call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
+             'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
       end select
 !
       return
@@ -881,18 +902,24 @@
 !
 !     Do the work...
 !
-      if(.not.mqcVariable%initialized) call mqc_error('Cannot use MQC_Variable_Put with uninitialized MQC variable.')
+      if(.not.mqcVariable%initialized) call mqc_error_l('Cannot use MQC_Variable_Put with uninitialized MQC variable.', 6, &
+           'mqcVariable%initialized', mqcVariable%initialized )
       if(mqcVariable%rank.ne.SIZE(arrayElement))  &
-        call mqc_error('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.')
+        call mqc_error_I('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.', 6, &
+        'mqcVariable%rank', mqcVariable%rank, &
+        'SIZE(arrayElement)', SIZE(arrayElement) )
       k = MQC_Variable_getArrayPosition(mqcVariable,arrayElement)
-      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error('MQC_Variable_Put: Invalid array index provided.')
+      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error_i('MQC_Variable_Put: Invalid array index provided.', 6, &
+           'k', k, &
+           'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
         mqcVariable%realArray(k) = valueInteger
       case('INTEGER')
         mqcVariable%integerArray(k) = valueInteger
       case default
-        call mqc_error('MQC_Variable_Put: Unknown MQC variable type.')
+        call mqc_error_A('MQC_Variable_Put: Unknown MQC variable type.', 6, &
+             'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)))
       end select
 !
       return
@@ -922,18 +949,23 @@
 !
 !     Do the work...
 !
-      if(.not.mqcVariable%initialized) call mqc_error('Cannot use MQC_Variable_Put with uninitialized MQC variable.')
+      if(.not.mqcVariable%initialized) call mqc_error_L('Cannot use MQC_Variable_Put with uninitialized MQC variable.', 6, &
+           'mqcVariable%initialized', mqcVariable%initialized )
       if(mqcVariable%rank.ne.SIZE(arrayElement))  &
-        call mqc_error('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.')
+        call mqc_error_i('MQC_Variable_Put: Rank of variable does NOT match number of array indices provided.', 6, &
+        'mqcVariable%rank', mqcVariable%rank, &
+        'SIZE(arrayElement)', SIZE(arrayElement) )
       k = MQC_Variable_getArrayPosition(mqcVariable,arrayElement)
-      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error('MQC_Variable_Put: Invalid array index provided.')
+      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error_I('MQC_Variable_Put: Invalid array index provided.', 6, &
+           'MQC_Variable_getLength(mqcVariable))', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
         mqcVariable%realArray(k) = valueReal
       case('INTEGER')
         mqcVariable%integerArray(k) = valueReal
       case default
-        call mqc_error('MQC_Variable_Put: Unknown MQC variable type.')
+        call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
+             'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)))
       end select
 !
       return
@@ -979,9 +1011,11 @@
       if(Present(valueInteger)) nInputs = nInputs+1
       if(Present(valueReal)) nInputs = nInputs+1
       if(nInputs.gt.1)  &
-        call MQC_Error('MQC_Variable_clear Error: Multiple input arguments sent.')
+        call MQC_Error_I('MQC_Variable_clear Error: Multiple input arguments sent.', 6, &
+        'nInputs', nInputs)
       if(nInputs.lt.1)  &
-        call MQC_Error('MQC_Variable_clear Error: No input values sent.')
+        call MQC_Error_I('MQC_Variable_clear Error: No input values sent.', 6, &
+        'nInputs', nInputs)
       fillInteger = Present(valueInteger)
       fillReal = Present(valueReal)
 !
@@ -992,7 +1026,9 @@
       elseIf(fillReal) then
         myDataType = 'REAL'
       else
-        call MQC_Error('MQC_Variable_clear: Confused setting myDataType.')
+        call MQC_Error_L('MQC_Variable_clear: Confused setting myDataType.', 6, &
+             'fillInteger', fillInteger, &
+             'fillReal', fillReal )
       endIf
       if(PRESENT(dimensions)) then
         myRank = SIZE(dimensions)
@@ -1015,7 +1051,9 @@
       elseIf(fillReal) then
         mqcVariable%realArray(:) = valueReal
       else
-        call MQC_Error('MQC_Variable_clear: Confused filling input value.')
+        call MQC_Error_L('MQC_Variable_clear: Confused filling input value.', 6, &
+             'fillInteger', fillInteger, &
+             'fillReal', fillReal )
       endIf
 !
       return
@@ -1048,7 +1086,8 @@
 !
 !     Call Procedure MQC_Variable_clear_general.
 !
-      if(valueMQC%rank.ne.0) call mqc_error('MQC_Variable_clear: Sent MQC value must be a scalar.')
+      if(valueMQC%rank.ne.0) call mqc_error_i('MQC_Variable_clear: Sent MQC value must be a scalar.', 6, &
+           'valueMQC%rank', valueMQC%rank )
       select case(TRIM(valueMQC%getType()))
       case('REAL')
         if(PRESENT(dimensions)) then
@@ -1067,7 +1106,8 @@
             valueInteger=valueMQC%integerArray(1))
         endIf
       case default
-        call mqc_error('MQC_Variable_clear: Unknown type of MQC variable sent.')
+        call mqc_error_A('MQC_Variable_clear: Unknown type of MQC variable sent.', 6, &
+             'TRIM(valueMQC%getType())', TRIM(valueMQC%getType()))
       end select
 !
       return
@@ -1181,7 +1221,8 @@
         Allocate(mqcVariable%integerArray(SIZE(mqcIn%integerArray(:))))
         mqcVariable%integerArray = mqcIn%integerArray
       case default
-        call mqc_error('MQC_Variable_mqc2mqc: Confused by data type.')
+        call mqc_error_A('MQC_Variable_mqc2mqc: Confused by data type.', 6, &
+             'TRIM(mqcIn%getType())', TRIM(mqcIn%getType()) )
       end select
       mqcVariable%initialized = .true.
 !
@@ -1226,9 +1267,11 @@
       if(Present(arrayIntegerIn)) nInputs = nInputs+1
       if(Present(arrayRealIn)) nInputs = nInputs+1
       if(nInputs.gt.1)  &
-        call MQC_Error('MQC_Variable_setVal Error: Multiple input values sent.')
+        call MQC_Error_I('MQC_Variable_setVal Error: Multiple input values sent.', 6, &
+        "nInputs", nInputs )
       if(nInputs.lt.1)  &
-        call MQC_Error('MQC_Variable_setVal Error: No input values sent.')
+        call MQC_Error_I('MQC_Variable_setVal Error: No input values sent.', 6, &
+        "nInputs", nInputs )
       fillInteger = Present(scalarIntegerIn).or.Present(arrayIntegerIn)
       fillReal = Present(scalarRealIn).or.Present(arrayRealIn)
       fillScalar = Present(scalarIntegerIn).or.Present(scalarRealIn)
@@ -1241,7 +1284,9 @@
       elseIf(fillReal) then
         myDataType = 'REAL'
       else
-        call MQC_Error('MQC_Variable_setVal: Confused setting myDataType.')
+        call MQC_Error_L('MQC_Variable_setVal: Confused setting myDataType.', 6, &
+             'fillInteger', fillInteger, &
+             'fillReal', fillReal )
       endIf
       if(fillScalar) then
         myRank = 0
@@ -1253,10 +1298,16 @@
         elseIf(fillReal) then
           myDimensions(1) = SIZE(arrayRealIn)
         else
-          call mqc_error('MQC_Variable_setVal: Confused setting myDimensions.')
+          call mqc_error_l('MQC_Variable_setVal: Confused setting myDimensions.', 6, &
+             'fillScalar', fillScalar, &
+             'fillArray', fillArray, &
+             'fillInteger', fillInteger, &
+             'fillReal', fillReal )
         endIf
       else
-        call MQC_Error('MQC_Variable_setVal: Confused setting myRank.')
+        call MQC_Error_L('MQC_Variable_setVal: Confused setting myRank.', 6, &
+             'fillScalar', fillScalar, &
+             'fillArray', fillArray )
       endIf
 !
 !     Initialize mqcVariable and then set the value appropriately.
@@ -1273,7 +1324,10 @@
         elseIf(fillReal) then
           mqcVariable%realArray(1) = scalarRealIn
         else
-          call MQC_Error('MQC_Variable_setVal: Confused filling scalar value.')
+          call MQC_Error_L('MQC_Variable_setVal: Confused filling scalar value.', 6, &
+               'fillScalar', fillScalar, &
+               'fillInteger', fillInteger, &
+               'fillReal', fillReal )
         endIf
       elseIf(fillArray) then
         if(fillInteger) then
@@ -1281,7 +1335,10 @@
         elseIf(fillReal) then
           mqcVariable%realArray(:) = arrayRealIn
         else
-          call MQC_Error('MQC_Variable_setVal: Confused filling array values.')
+          call MQC_Error_L('MQC_Variable_setVal: Confused filling array values.', 6, &
+               'fillArray', fillArray, &
+               'fillInteger', fillInteger, &
+               'fillReal', fillReal )
         endIf
       endIf
 !
@@ -1410,14 +1467,16 @@
 !     Do the work...
 !
       if(Rank(mqcVariable).ne.0)  &
-        call mqc_error('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.')
+        call mqc_error_i('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.', 6, &
+        'Rank(mqcVariable)', Rank(mqcVariable) )
       select case(MQC_Variable_getTypeCode(mqcVariable))
       case(2)
         intrinsicOut = INT(mqcVariable%realArray(1))
       case(3)
         intrinsicOut = mqcVariable%integerArray(1)
       case default
-        call mqc_error('MQC_Variable_mqc2intrinsicIntegerScalar: Unknown MQC_Variable type found.')
+        call mqc_error_I('MQC_Variable_mqc2intrinsicIntegerScalar: Unknown MQC_Variable type found.', 6, &
+             'MQC_Variable_getTypeCode(mqcVariable)', MQC_Variable_getTypeCode(mqcVariable) )
       end select
 !
       return
@@ -1437,21 +1496,23 @@
 !
 !     Variable Declarations.
       implicit none
-      real::intrinsicOut
-      class(MQC_Variable),intent(in)::mqcVariable
+      real,intent(inOut)::intrinsicOut
+      type(MQC_Variable),intent(in)::mqcVariable
 !
 !
 !     Do the work...
 !
       if(Rank(mqcVariable).ne.0)  &
-        call mqc_error('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.')
+        call mqc_error_I('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.', 6, &
+        'Rank(mqcVariable)', Rank(mqcVariable) )
       select case(MQC_Variable_getTypeCode(mqcVariable))
       case(2)
         intrinsicOut = mqcVariable%realArray(1)
       case(3)
         intrinsicOut = mqcVariable%integerArray(1)
       case default
-        call mqc_error('MQC_Variable_mqc2intrinsicRealScalar: Unknown MQC_Variable type found.')
+        call mqc_error_I('MQC_Variable_mqc2intrinsicRealScalar: Unknown MQC_Variable type found.', 6, &
+             'MQC_Variable_getTypeCode(mqcVariable)', MQC_Variable_getTypeCode(mqcVariable) )
       end select
 !
       return
@@ -1472,7 +1533,7 @@
 !     Variable Declarations.
       implicit none
       integer,intent(in)::intrinsicIn
-      class(MQC_Variable)::mqcVariable
+      type(MQC_Variable)::mqcVariable
 !
 !
 !     Load the MQC variable.
@@ -1497,7 +1558,7 @@
 !     Variable Declarations.
       implicit none
       real,intent(in)::intrinsicIn
-      class(MQC_Variable)::mqcVariable
+      type(MQC_Variable)::mqcVariable
 !
 !
 !     Load the MQC variable.
@@ -1632,7 +1693,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::sumVectorInteger
       real,dimension(:),allocatable::sumVectorReal
@@ -1641,7 +1702,9 @@
 !     Start by ensuring the two MQC Variables are conformable.
 !
       if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error('MQC Addition only allowed for conformable values.')
+        call mqc_error_l('MQC Addition only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = A + B and for
@@ -1658,16 +1721,20 @@
       typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
       typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
       if(typeCode1.eq.0)  &
-        call mqc_error('MQC_Variable_Addition: Var1 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Addition: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1 )
       if(typeCode2.eq.0)  &
-        call mqc_error('MQC_Variable_Addition: Var2 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Addition: Var2 is of UNKONWN type.', 6, &
+        'typeCode2', typeCode2 )
       select case(MIN(typeCode1,typeCode2))
       case(2)
         allocate(sumVectorReal(SIZE(mqcVariable1)))
       case(3)
         allocate(sumVectorInteger(SIZE(mqcVariable1)))
       case default
-        call mqc_error('MQC_Variable_Addition: Result is of UNKNOWN type.')
+        call mqc_error_I('MQC_Variable_Addition: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
       end select
 !
 !     Now, do the addition and set the output function value accordingly.
@@ -1686,7 +1753,9 @@
         sumVectorInteger = mqcVariable1%integerArray + mqcVariable2%integerArray
         mqcVariableOut = sumVectorInteger
       case default
-        call mqc_error('MQC_Variable_Addition: Combination of var1 and var 2 types is UNKNOWN.')
+        call mqc_error_I('MQC_Variable_Addition: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2)
       end select
 !
       return
@@ -1708,7 +1777,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::differenceVectorInteger
       real,dimension(:),allocatable::differenceVectorReal
@@ -1717,7 +1786,9 @@
 !     Start by ensuring the two MQC Variables are conformable.
 !
       if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error('MQC Subtraction only allowed for conformable values.')
+        call mqc_error_l('MQC Subtraction only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = A - B and for
@@ -1734,16 +1805,20 @@
       typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
       typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
       if(typeCode1.eq.0)  &
-        call mqc_error('MQC_Variable_Subtraction: Var1 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Subtraction: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1 )
       if(typeCode2.eq.0)  &
-        call mqc_error('MQC_Variable_Subtraction: Var2 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Subtraction: Var2 is of UNKONWN type.', 6, &
+        'typeCode2', typeCode2 )
       select case(MIN(typeCode1,typeCode2))
       case(2)
         allocate(differenceVectorReal(SIZE(mqcVariable1)))
       case(3)
         allocate(differenceVectorInteger(SIZE(mqcVariable1)))
       case default
-        call mqc_error('MQC_Variable_Subtraction: Result is of UNKNOWN type.')
+        call mqc_error_I('MQC_Variable_Subtraction: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
       end select
 !
 !     Now, do the addition and set the output function value accordingly.
@@ -1762,7 +1837,9 @@
         differenceVectorInteger = mqcVariable1%integerArray - mqcVariable2%integerArray
         mqcVariableOut = differenceVectorInteger
       case default
-        call mqc_error('MQC_Variable_Subtraction: Combination of var1 and var 2 types is UNKNOWN.')
+        call mqc_error_I('MQC_Variable_Subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2 )
       end select
 !
       return
@@ -1784,7 +1861,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::productVectorInteger
       real,dimension(:),allocatable::productVectorReal
@@ -1793,7 +1870,9 @@
 !     Start by ensuring the two MQC Variables are conformable.
 !
       if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error('MQC Multiplication only allowed for conformable values.')
+        call mqc_error_l('MQC Multiplication only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = A * B and for
@@ -1810,16 +1889,20 @@
       typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
       typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
       if(typeCode1.eq.0)  &
-        call mqc_error('MQC_Variable_Multiplication: Var1 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Multiplication: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1)
       if(typeCode2.eq.0)  &
-        call mqc_error('MQC_Variable_Multiplication: Var2 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Multiplication: Var2 is of UNKONWN type.', 6, &
+        'typeCode2' ,typeCode2);
       select case(MIN(typeCode1,typeCode2))
       case(2)
         allocate(productVectorReal(SIZE(mqcVariable1)))
       case(3)
         allocate(productVectorInteger(SIZE(mqcVariable1)))
       case default
-        call mqc_error('MQC_Variable_Multiplication: Result is of UNKNOWN type.')
+        call mqc_error_i('MQC_Variable_Multiplication: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
       end select
 !
 !     Now, do the addition and set the output function value accordingly.
@@ -1838,7 +1921,9 @@
         productVectorInteger = mqcVariable1%integerArray * mqcVariable2%integerArray
         mqcVariableOut = productVectorInteger
       case default
-        call mqc_error('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.')
+        call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2 )
       end select
 !
       return
@@ -1859,7 +1944,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer,dimension(:),allocatable::quotientVectorInteger
       real,dimension(:),allocatable::quotientVectorReal
@@ -1868,7 +1953,9 @@
 !     Start by ensuring the two MQC Variables are conformable.
 !
       if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error('MQC Division only allowed for conformable values.')
+        call mqc_error_l('MQC Division only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = A / B and for
@@ -1885,16 +1972,20 @@
       typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
       typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
       if(typeCode1.eq.0)  &
-        call mqc_error('MQC_Variable_Division: Var1 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Division: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1 )
       if(typeCode2.eq.0)  &
-        call mqc_error('MQC_Variable_Division: Var2 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Division: Var2 is of UNKONWN type.', 6, &
+        'typeCode2', typeCode2 )
       select case(MIN(typeCode1,typeCode2))
       case(2)
         allocate(quotientVectorReal(SIZE(mqcVariable1)))
       case(3)
         allocate(quotientVectorInteger(SIZE(mqcVariable1)))
       case default
-        call mqc_error('MQC_Variable_Division: Result is of UNKNOWN type.')
+        call mqc_error_I('MQC_Variable_Division: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
       end select
 !
 !     Now, do the addition and set the output function value accordingly.
@@ -1913,7 +2004,9 @@
         quotientVectorInteger = mqcVariable1%integerArray / mqcVariable2%integerArray
         mqcVariableOut = quotientVectorInteger
       case default
-        call mqc_error('MQC_Variable_Division: Combination of var1 and var 2 types is UNKNOWN.')
+        call mqc_error_I('MQC_Variable_Division: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2)
       end select
 !
       return
@@ -1933,7 +2026,7 @@
 !
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
       integer::typeCode1,typeCode2
       integer::contractionInteger
       real::contractionReal
@@ -1942,7 +2035,10 @@
 !     Start by ensuring the two MQC Variables are conformable.
 !
       if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error('MQC Division only allowed for conformable values.')
+        call mqc_error_l('MQC Division only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
+
 !
 !     Get the right combination of integer/real and form the result scalar.
 !
@@ -1957,9 +2053,13 @@
       typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
       typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
       if(typeCode1.eq.0)  &
-        call mqc_error('MQC_Variable_Division: Var1 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Division: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1 )
+
       if(typeCode2.eq.0)  &
-        call mqc_error('MQC_Variable_Division: Var2 is of UNKONWN type.')
+        call mqc_error_I('MQC_Variable_Division: Var2 is of UNKONWN type.', 6, &
+'typeCode2', typeCode2 )
+
 !
 !     Now, do the contraction and set the output function value accordingly.
 !
@@ -1977,7 +2077,9 @@
         contractionInteger = dot_product(mqcVariable1%integerArray,mqcVariable2%integerArray)
         mqcVariableOut = contractionInteger
       case default
-        call mqc_error('MQC_Variable_Contraction_Full: Combination of var1 and var 2 types is UNKNOWN.')
+        call mqc_error_I('MQC_Variable_Contraction_Full: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
       end select
 !
       return

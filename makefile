@@ -65,7 +65,7 @@ all: test1 test2 test3
 # Fortran 2003 source (*.f03) file.
 #
 %.exe: %.f03 $(MQCDir)/bin/mqc.a
-	$(RunF) $(LIBS) $(Prof) -I$(MQCDir)/bin -o $*.exe $*.f03 $(MQCDir)/bin/mqc.a
+	$(RunF) $(Prof) -I$(MQCDir)/bin -o $*.exe $*.f03 $(MQCDir)/bin/mqc.a $(LIBS)
 
 #
 # Rules for building GauOpen object files. These rules take into account the

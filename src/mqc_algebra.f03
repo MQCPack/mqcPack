@@ -45,7 +45,7 @@
         Complex(Kind=8),Private,Allocatable::ScaC
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
       Contains
-        Procedure, Public::print => MQC_Print_Scalar
+        Procedure, Public::print => MQC_Print_Scalar_Algebra1
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
@@ -60,7 +60,7 @@
         Integer,Dimension(:),Private,Allocatable::VecI
         Complex(Kind=8),Dimension(:),Private,Allocatable::VecC
       Contains
-        Procedure, Public::print => MQC_Print_Vector
+        Procedure, Public::print => MQC_Print_Vector_Algebra1
         Procedure, Public::initialize => MQC_Vector_Initialize
         Procedure, Public::init => MQC_Vector_Initialize
         Procedure, Public::norm => MQC_Vector_Norm
@@ -87,7 +87,7 @@
         Integer,Dimension(:,:),Private,Allocatable::MatI
         Complex(Kind=8),Dimension(:,:),Private,Allocatable::MatC
       Contains
-        Procedure, Public::print => MQC_Print_Matrix
+        Procedure, Public::print => MQC_Print_Matrix_Algebra1
         Procedure, Public::initialize => MQC_Matrix_Initialize
         Procedure, Public::init => MQC_Matrix_Initialize
         Procedure, Public::identity => MQC_Matrix_Identity
@@ -115,7 +115,7 @@
         Integer,Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=8),Allocatable,Private::CTen(:,:,:,:)
       Contains
-        Procedure, Public::print => MQC_Print_r4tensor
+        Procedure, Public::print => MQC_Print_r4tensor_Algebra1
         Procedure, Public::at => MQC_R4Tensor_At
         Procedure, Public::put => MQC_R4Tensor_Put
         Procedure, Public::initialize => MQC_R4Tensor_Initialize
@@ -130,10 +130,10 @@
 !
 !
       Interface MQC_Print
-        Module Procedure MQC_Print_Scalar
-        Module Procedure MQC_Print_Vector
-        Module Procedure MQC_Print_Matrix
-        Module Procedure MQC_Print_r4tensor
+        Module Procedure MQC_Print_Scalar_Algebra1
+        Module Procedure MQC_Print_Vector_Algebra1
+        Module Procedure MQC_Print_Matrix_Algebra1
+        Module Procedure MQC_Print_r4tensor_Algebra1
       End Interface
 !
       Interface Contraction
@@ -407,7 +407,8 @@
         Scalar%Data_type = 'Complex'
         Allocate(Scalar%ScaC)
       Else
-        Call MQC_Error('ScalarIn type unspecified in MQC_Allocate_Scalar')
+        Call MQC_Error_A('ScalarIn type unspecified in MQC_Allocate_Scalar', 6, &
+             'Data_Type', Data_Type )
       EndIf
 !
       Return
@@ -546,7 +547,8 @@
         ScalarOut%ScaC = ScalarIn%ScaC
         ScalarOut%Data_type = 'Complex'
       Else
-        Call MQC_Error('ScalarIn type not assigned in MQC_Scalar2Scalar')
+        Call MQC_Error_A('ScalarIn type not assigned in MQC_Scalar2Scalar', 6, &
+             'ScalarIn%Data_type', ScalarIn%Data_type )
       EndIf
 !
       Return
@@ -570,7 +572,8 @@
       ElseIf(ScalarIn%Data_type.eq.'Real') then
         ScalarOut = Int(ScalarIn%scar)
       Else
-        Call MQC_Error('ScalarIn type unspecified in MQC_Output_Scalar')
+        Call MQC_Error_A('ScalarIn type unspecified in MQC_Output_Scalar', 6, &
+             'ScalarIn%Data_type', ScalarIn%Data_type )
       EndIf
 !
       Return
@@ -594,7 +597,8 @@
       ElseIf(ScalarIn%Data_type.eq.'Integer') then
         ScalarOut = Dble(ScalarIn%scai)
       Else
-        Call MQC_Error('ScalarIn type unspecified in MQC_Output_Scalar')
+        Call MQC_Error_A('ScalarIn type unspecified in MQC_Output_Scalar', 6, &
+             'ScalarIn%Data_type', ScalarIn%Data_type )
       EndIf
 !
       Return
@@ -620,15 +624,16 @@
       ElseIf(ScalarIn%Data_type.eq.'Complex') then
         ScalarOut = ScalarIn%scac
       Else
-        Call MQC_Error('ScalarIn type unspecified in MQC_Output_Scalar')
+        Call MQC_Error_A('ScalarIn type unspecified in MQC_Output_Scalar', 6, &
+             'ScalarIn%Data_type', ScalarIn%Data_type )
       EndIf
 !
       Return
       End Subroutine MQC_Output_Complex_Scalar
 !
 !
-!     PROCEDURE MQC_Print_Scalar
-      Subroutine MQC_Print_Scalar(Scalar,IOut,Header,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Scalar_Algebra1
+      Subroutine MQC_Print_Scalar_Algebra1(Scalar,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Scalar type variable.
@@ -646,9 +651,10 @@
  1001 Format(1x,A,1x,'=',1x,I14)
  1002 Format(1x,A,1x,'=',1x,F14.6)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
+ 1020 Format( " " )
 !
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       If(Scalar%Data_type.eq.'Integer') then
         Write(IOut,1001) TRIM(Header), Scalar%ScaI
@@ -657,14 +663,15 @@
       ElseIf(Scalar%Data_type.eq.'Complex') then
         Write(IOut,1003) TRIM(Header), Scalar%ScaC
       Else
-        Call MQC_Error('Scalar type unspecified in MQC_Print_Scalar')
+        Call MQC_Error_A('Scalar type unspecified in MQC_Print_Scalar_Algebra1', 6, &
+             'Scalar%Data_type', Scalar%Data_type )
       EndIf
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Scalar
+      End Subroutine MQC_Print_Scalar_Algebra1
 !
 !
 !     PROCEDURE MQC_Scalar_Sqrt
@@ -691,7 +698,8 @@
         MQC_Scalar_Sqrt%ScaC = Sqrt(Scalar%ScaC)
         MQC_Scalar_Sqrt%Data_type = 'Complex'
       Else
-        Call MQC_Error('Scalar type unspecified in MQC_Scalar_Sqrt')
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Sqrt', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
       EndIf
 !
       Return
@@ -778,7 +786,8 @@
       ElseIf(Scalar%Data_Type.eq.'Complex') then
         Output = Real(Scalar%ScaC)
       Else
-        call mqc_error('Data type unrecognised.')
+        call mqc_error_A('Data type unrecognised.', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
       EndIf
 !
       Return
@@ -805,7 +814,8 @@
       ElseIf(Scalar%Data_Type.eq.'Complex') then
         Output = int(Scalar%ScaC)
       Else
-        call mqc_error('Data type unrecognised.')
+        call mqc_error_A('Data type unrecognised.', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
       EndIf
 !
       Return
@@ -832,7 +842,8 @@
       ElseIf(Scalar%Data_Type.eq.'Complex') then
         Output = Scalar%ScaC
       Else
-        call mqc_error('Data type unrecognised.')
+        call mqc_error_A('Data type unrecognised.', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
       EndIf
 !
       Return
@@ -852,6 +863,7 @@
       Type(MQC_Scalar)::MQC_ScalarAdd
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
 !
+ 1050 Format( 2A )
       Call MQC_Deallocate_Scalar(MQC_ScalarAdd)
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         Call MQC_Allocate_Scalar(MQC_ScalarAdd,'Real')
@@ -881,9 +893,11 @@
         Call MQC_Allocate_Scalar(MQC_ScalarAdd,'Complex')
         MQC_ScalarAdd%ScaC = Scalar1%ScaC + cmplx(Scalar2%ScaI,0)
       Else
-        write(*,*)' Scalar type of #1 = ',TRIM(Scalar1%Data_type)
-        write(*,*)' Scalar type of #2 = ',TRIM(Scalar2%Data_type)
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarAdd')
+        write(*,1050)' Scalar type of #1 = ',TRIM(Scalar1%Data_type)
+        write(*,1050)' Scalar type of #2 = ',TRIM(Scalar2%Data_type)
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarAdd', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -932,7 +946,9 @@
         Call MQC_Allocate_Scalar(MQC_ScalarSubtract,'Complex')
         MQC_ScalarSubtract%ScaC = Scalar1%ScaC - cmplx(Scalar2%ScaI,0)
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarSubtract')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarSubtract', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -981,7 +997,9 @@
         Call MQC_Allocate_Scalar(MQC_ScalarMultiply,'Complex')
         MQC_ScalarMultiply%ScaC = Scalar1%ScaC * cmplx(Scalar2%ScaI,0)
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarMultiply')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarMultiply', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1030,7 +1048,9 @@
         Call MQC_Allocate_Scalar(MQC_ScalarDivide,'Complex')
         MQC_ScalarDivide%ScaC = Scalar1%ScaC + cmplx(Scalar2%ScaI,0)
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarDivide')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarDivide', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1079,7 +1099,9 @@
         If(Scalar1%scac.eq.Scalar2%scai) MQC_ScalarNE = .False.
         If(Scalar1%scac.ne.Scalar2%scai) MQC_ScalarNE = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarNE')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNE', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1120,7 +1142,9 @@
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scac.eq.Scalar2%scai) MQC_ScalarEQ = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarEQ')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQ', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1151,7 +1175,9 @@
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.lt.Scalar2%scai) MQC_ScalarLT = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarLT')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLT', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1182,7 +1208,9 @@
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.gt.Scalar2%scai) MQC_ScalarGT = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarGT')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGT', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1213,7 +1241,9 @@
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.le.Scalar2%scai) MQC_ScalarLE = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarLE')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLE', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1244,7 +1274,9 @@
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.ge.Scalar2%scai) MQC_ScalarGE = .True.
       Else
-        Call MQC_Error('Scalar types unspecified in MQC_ScalarGE')
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGE', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
       EndIf
 !
       Return
@@ -1563,7 +1595,9 @@
 
       IndI = I
       If(IndI.lt.0) IndI = Vec%Length + IndI + 1
-      If (IndI.gt.Vec%Length.or.IndI.eq.0) Call MQC_Error('Index out of bounds in MQC_Vector_Scalar_At')
+      If (IndI.gt.Vec%Length.or.IndI.eq.0) Call MQC_Error_I('Index out of bounds in MQC_Vector_Scalar_At', 6, &
+           'Vec%Length', Vec%Length, &
+           'IndI', IndI )
       If (Vec%Data_Type.eq.'Integer') then
         Element = (Vec%VecI(IndI))
       ElseIf (Vec%Data_Type.eq.'Real') then
@@ -1571,7 +1605,8 @@
       ElseIf (Vec%Data_Type.eq.'Complex') then
         Element = (Vec%VecC(IndI))
       Else
-        Call MQC_Error('Vector type not defined in MQC_Vector_Scalar_At')
+        Call MQC_Error_A('Vector type not defined in MQC_Vector_Scalar_At', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
       EndIf
 
       End Function
@@ -1602,17 +1637,26 @@
       If (IndJ.lt.0) IndJ = Vec%Length + IndJ + 1
       If (IndI.eq.0) then
         IndI = 1
-        If(Present(J)) Call MQC_Error('Vector length badly defined in MQC_Vector_Vector_At')
+        If(Present(J)) Call MQC_Error_L('Vector length badly defined in MQC_Vector_Vector_At', 6, &
+             'Present(J)', Present(J) )
         IndJ = Vec%Length
       EndIf
 
       Length = IndJ-IndI+1
-      If (Length.le.0.or.Length.gt.Vec%Length) Call MQC_Error('Vector length badly &
-     &   defined in MQC_Vector_Vector_At')
-      If (IndI.le.0.or.IndI.gt.(Vec%Length-Length+1)) Call MQC_Error('Index I out of bounds &
-     &   in MQC_Vector_Vector_At')
-      If (IndJ.lt.Length.or.IndJ.gt.Vec%Length) Call MQC_Error('Index J out of bounds &
-     &   in MQC_Vector_Vector_At')
+      If (Length.le.0.or.Length.gt.Vec%Length) Call MQC_Error_I('Vector length badly &
+     &   defined in MQC_Vector_Vector_At', 6, &
+     'Length', Length, &
+     'Vec%Length', Vec%Length )
+      If (IndI.le.0.or.IndI.gt.(Vec%Length-Length+1)) Call MQC_Error_I('Index I out of bounds &
+     &   in MQC_Vector_Vector_At', 6, &
+     'IndI', IndI, &
+     'Vec%Length', Vec%Length, &
+     'Length', Length )
+      If (IndJ.lt.Length.or.IndJ.gt.Vec%Length) Call MQC_Error_I('Index J out of bounds &
+     &   in MQC_Vector_Vector_At', 6, &
+     'IndJ', IndJ, &
+     'Length', Length, &
+     'Vec%Length', Vec%Length )
       If (Vec%Data_Type.eq.'Integer') then
         Call MQC_Allocate_Vector(Length,Vector,'Integer')
         Vector%VecI = (Vec%VecI(IndI:IndJ))
@@ -1623,7 +1667,8 @@
         Call MQC_Allocate_Vector(Length,Vector,'Complex')
         Vector%VecC = (Vec%VecC(IndI:IndJ))
       Else
-        Call MQC_Error('Vector type not defined in MQC_Vector_Vector_At')
+        Call MQC_Error_A('Vector type not defined in MQC_Vector_Vector_At', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
       EndIf
       Vector%Column = Vec%Column
 
@@ -1660,7 +1705,8 @@
         Elseif(VectorIn%Data_Type.eq.'Complex') then
           ArrayOut = Real(VectorIn%vecc)
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector2IntegerArray')
+          Call MQC_Error_A('VectorIn type not defined in MQC_Vector2IntegerArray', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       EndIf
 !
@@ -1698,7 +1744,8 @@
         Elseif(VectorIn%Data_Type.eq.'Complex') then
           ArrayOut = real(VectorIn%vecc)
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector2RealArray')
+          Call MQC_Error_A('VectorIn type not defined in MQC_Vector2RealArray', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       EndIf
 !
@@ -1736,7 +1783,8 @@
         Elseif(VectorIn%Data_Type.eq.'Complex') then
           ArrayOut = VectorIn%vecc
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector2ComplexArray')
+          Call MQC_Error_A('VectorIn type not defined in MQC_Vector2ComplexArray', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       EndIf
 !
@@ -1864,11 +1912,15 @@
       Vector2Len = MQC_Length_Vector(Vector2In)
 
       If (Vector1Len.ne.Vector2Len) then
-        Call MQC_Error('Vector lengths unequal in MQC_VectorVectorSum')
+        Call MQC_Error_I('Vector lengths unequal in MQC_VectorVectorSum', 6, &
+             'Vector1Len', Vector1Len, &
+             'Vector2Len', Vector2Len )
       EndIf
 
       If (Vector1In%column.neqv.Vector2In%column) then
-        Call MQC_Error('Vector orientations are different in MQC_VectorVectorSum')
+        Call MQC_Error_L('Vector orientations are different in MQC_VectorVectorSum', 6, &
+             'Vector1In%column', Vector1In%column, &
+             'Vector2In%column', Vector2In%column )
       EndIf
 
       If(Vector1In%Data_type.eq.'Real') then
@@ -1885,7 +1937,8 @@
           MQC_VectorVectorSum%vecc = Vector1In%vecr + Vector2In%vecc
           MQC_VectorVectorSum%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorSum')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorSum', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Integer') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -1901,7 +1954,8 @@
           MQC_VectorVectorSum%vecc = Vector1In%veci + Vector2In%vecc
           MQC_VectorVectorSum%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorSum')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorSum', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Complex') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -1917,10 +1971,12 @@
           MQC_VectorVectorSum%vecc = Vector1In%vecc + Vector2In%vecc
           MQC_VectorVectorSum%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorSum')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorSum', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       Else
-        Call MQC_Error('Vector1In type unspecified in MQC_VectorVectorSum')
+        Call MQC_Error_A('Vector1In type unspecified in MQC_VectorVectorSum', 6, &
+             'Vector1In%Data_type', Vector1In%Data_type )
       EndIf
 
       Return
@@ -1944,11 +2000,15 @@
       Vector2Len = MQC_Length_Vector(Vector2In)
 
       If (Vector1Len.ne.Vector2Len) then
-        Call MQC_Error('Vector lengths unequal in MQC_VectorVectorDifference')
+        Call MQC_Error_I('Vector lengths unequal in MQC_VectorVectorDifference', 6, &
+             'Vector1Len', Vector1Len, &
+             'Vector2Len', Vector2Len )
       EndIf
 
       If (Vector1In%column.neqv.Vector2In%column) then
-        Call MQC_Error('Vector orientations are different in MQC_VectorVectorDifference')
+        Call MQC_Error_L('Vector orientations are different in MQC_VectorVectorDifference', 6, &
+             'Vector1In%column', Vector1In%column, &
+             'Vector2In%column', Vector2In%column )
       EndIf
 
       If(Vector1In%Data_type.eq.'Real') then
@@ -1965,7 +2025,8 @@
           MQC_VectorVectorDifference%vecc = Vector1In%vecr - Vector2In%vecc
           MQC_VectorVectorDifference%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDifference')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorDifference', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Integer') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -1981,7 +2042,8 @@
           MQC_VectorVectorDifference%vecc = Vector1In%veci - Vector2In%vecc
           MQC_VectorVectorDifference%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDifference')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorDifference', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Complex') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -1997,10 +2059,12 @@
           MQC_VectorVectorDifference%vecc = Vector1In%vecc - Vector2In%vecc
           MQC_VectorVectorDifference%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDifference')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_VectorVectorDifference', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       Else
-        Call MQC_Error('Vector1In type unspecified in MQC_VectorVectorDifference')
+        Call MQC_Error_A('Vector1In type unspecified in MQC_VectorVectorDifference', 6, &
+             'Vector1In%Data_type', Vector1In%Data_type )
       EndIf
 
       Return
@@ -2037,7 +2101,8 @@
           MQC_ScalarVectorSum%vecc = VectorIn%vecr + ScalarIn%scac
           MQC_ScalarVectorSum%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorSum')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorSum', 6,&
+               'ScalarIn%Data_type', ScalarIn%Data_type )
         EndIf
       ElseIf(VectorIn%Data_type.eq.'Integer') then
         If(ScalarIn%Data_type.eq.'Real') then
@@ -2053,7 +2118,8 @@
           MQC_ScalarVectorSum%vecc = VectorIn%veci + ScalarIn%scac
           MQC_ScalarVectorSum%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorSum')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
         EndIf
       ElseIf(VectorIn%Data_type.eq.'Complex') then
         If(ScalarIn%Data_type.eq.'Real') then
@@ -2069,10 +2135,12 @@
           MQC_ScalarVectorSum%vecc = VectorIn%vecc + ScalarIn%scac
           MQC_ScalarVectorSum%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorSum')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
         EndIf
       Else
-        Call MQC_Error('VectorIn type unspecified in MQC_ScalarVectorSum')
+        Call MQC_Error_A('VectorIn type unspecified in MQC_ScalarVectorSum', 6, &
+             'VectorIn%Data_type', VectorIn%Data_type )
       EndIf
 
       Return
@@ -2109,7 +2177,9 @@
           MQC_ScalarVectorDifference%vecc = VectorIn%vecr - ScalarIn%scac
           MQC_ScalarVectorDifference%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorDifference')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorDifference', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type, &
+               'VectorIn%Data_type', VectorIn%Data_type )
         EndIf
       ElseIf(VectorIn%Data_type.eq.'Integer') then
         If(ScalarIn%Data_type.eq.'Real') then
@@ -2125,7 +2195,9 @@
           MQC_ScalarVectorDifference%vecc = VectorIn%veci - ScalarIn%scac
           MQC_ScalarVectorDifference%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorDifference')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorDifference', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type, &
+               'VectorIn%Data_type', VectorIn%Data_type )
         EndIf
       ElseIf(VectorIn%Data_type.eq.'Complex') then
         If(ScalarIn%Data_type.eq.'Real') then
@@ -2141,10 +2213,13 @@
           MQC_ScalarVectorDifference%vecc = VectorIn%vecc - ScalarIn%scac
           MQC_ScalarVectorDifference%column = VectorIn%column
         Else
-          Call MQC_Error('ScalarIn type unspecified in MQC_ScalarVectorDifference')
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_ScalarVectorDifference', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type, &
+               'VectorIn%Data_type', VectorIn%Data_type )
         EndIf
       Else
-        Call MQC_Error('VectorIn type unspecified in MQC_ScalarVectorDifference')
+        Call MQC_Error_A('VectorIn type unspecified in MQC_ScalarVectorDifference', 6, &
+             'VectorIn%Data_type', VectorIn%Data_type )
       EndIf
 
       Return
@@ -2168,11 +2243,15 @@
       Vector2Len = MQC_Length_Vector(Vector2In)
 
       If (Vector1Len.ne.Vector2Len) then
-        Call MQC_Error('Vector lengths unequal in MQC_ElementVectorProduct')
+        Call MQC_Error_I('Vector lengths unequal in MQC_ElementVectorProduct', 6, &
+             'Vector1Len', Vector1Len, &
+             'Vector2Len', Vector2Len )
       EndIf
 
       If (Vector1In%column.neqv.Vector2In%column) then
-        Call MQC_Error('Vector orientations are different in ElementVectorProduct')
+        Call MQC_Error_L('Vector orientations are different in ElementVectorProduct', 6, &
+             'Vector1In%column', Vector1In%column, &
+             'Vector2In%column', Vector2In%column )
       EndIf
 
       If(Vector1In%Data_type.eq.'Real') then
@@ -2189,7 +2268,8 @@
           MQC_ElementVectorProduct%vecc = Vector1In%vecr * Vector2In%vecc
           MQC_ElementVectorProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_ElementVectorProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_ElementVectorProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Integer') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -2205,7 +2285,8 @@
           MQC_ElementVectorProduct%vecc = Vector1In%veci * Vector2In%vecc
           MQC_ElementVectorProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_ElementVectorProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_ElementVectorProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Complex') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -2221,10 +2302,12 @@
           MQC_ElementVectorProduct%vecc = Vector1In%vecc * Vector2In%vecc
           MQC_ElementVectorProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_ElementVectorProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_ElementVectorProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       Else
-        Call MQC_Error('Vector1In type unspecified in MQC_ElementVectorProduct')
+        Call MQC_Error_A('Vector1In type unspecified in MQC_ElementVectorProduct', 6, &
+             'Vector1In%Data_type', Vector1In%Data_type )
       EndIf
 
       Return
@@ -2291,14 +2374,19 @@
       Type(MQC_Vector),Intent(In)::Vector1,Vector2
 !
       If (Vector1%Length.ne.Vector2%Length) then
-        Call MQC_Error('Vector dimensions are different in MQC_VectorVectorDotProduct')
+        Call MQC_Error_I('Vector dimensions are different in MQC_VectorVectorDotProduct', 6, &
+             'Vector1%Length', Vector1%Length, &
+             'Vector2%Length', Vector2%Length )
       EndIf
       If (Vector1%Column.eqv.Vector2%Column) then
-        Call MQC_Error('Vector orientations are the same in MQC_VectorVectorDotProduct')
+        Call MQC_Error_L('Vector orientations are the same in MQC_VectorVectorDotProduct', 6, &
+             'Vector1%Column', Vector1%Column, &
+             'Vector2%Column', Vector2%Column )
       EndIf
       if (vector1%column) then
-        call mqc_error('Vector1 is column type and vector2 is not. &
-     &    Use mqc_outer(Vector1,Vector2) for outer product')
+        call mqc_error_L('Vector1 is column type and vector2 is not. &
+     &    Use mqc_outer(Vector1,Vector2) for outer product', 6, &
+     'vector1%column', vector1%column )
       endif
       If(MQC_Vector_HaveReal(Vector1)) then
         If(MQC_Vector_HaveReal(Vector2)) then
@@ -2308,7 +2396,10 @@
         ElseIf(MQC_Vector_HaveComplex(Vector2)) then
           MQC_VectorVectorDotProduct = dot_product(Vector1%vecr,Vector2%vecc)
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDotProduct')
+          Call MQC_Error_L('Vector2In type unspecified in MQC_VectorVectorDotProduct', 6, &
+               'MQC_Vector_HaveReal(Vector2)', MQC_Vector_HaveReal(Vector2), &
+               'MQC_Vector_HaveInteger(Vector2)', MQC_Vector_HaveInteger(Vector2), &
+               'MQC_Vector_HaveComplex(Vector2)', MQC_Vector_HaveComplex(Vector2) )
         EndIf
       ElseIf(MQC_Vector_HaveInteger(Vector1)) then
         If(MQC_Vector_HaveReal(Vector2)) then
@@ -2318,7 +2409,10 @@
         ElseIf(MQC_Vector_HaveComplex(Vector2)) then
           MQC_VectorVectorDotProduct = dot_product(Vector1%veci,Vector2%vecc)
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDotProduct')
+          Call MQC_Error_L('Vector2In type unspecified in MQC_VectorVectorDotProduct', 6, &
+               'MQC_Vector_HaveReal(Vector2)', MQC_Vector_HaveReal(Vector2), &
+               'MQC_Vector_HaveInteger(Vector2)', MQC_Vector_HaveInteger(Vector2), &
+               'MQC_Vector_HaveComplex(Vector2)', MQC_Vector_HaveComplex(Vector2) )
         EndIf
       ElseIf(MQC_Vector_HaveComplex(Vector1)) then
         If(MQC_Vector_HaveReal(Vector2)) then
@@ -2328,10 +2422,16 @@
         ElseIf(MQC_Vector_HaveComplex(Vector2)) then
           MQC_VectorVectorDotProduct = dot_product(Vector1%vecc,Vector2%vecc)
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_VectorVectorDotProduct')
+          Call MQC_Error_L('Vector2In type unspecified in MQC_VectorVectorDotProduct', 6, &
+               'MQC_Vector_HaveReal(Vector2)', MQC_Vector_HaveReal(Vector2), &
+               'MQC_Vector_HaveInteger(Vector2)', MQC_Vector_HaveInteger(Vector2), &
+               'MQC_Vector_HaveComplex(Vector2)', MQC_Vector_HaveComplex(Vector2) )
         EndIf
       Else
-        Call MQC_Error('Vector1In type unspecified in MQC_VectorVectorDotProduct')
+        Call MQC_Error_L('Vector1In type unspecified in MQC_VectorVectorDotProduct', 6, &
+        'MQC_Vector_HaveComplex(Vector1)', MQC_Vector_HaveComplex(Vector1), &
+        'MQC_Vector_HaveInteger(Vector1)', MQC_Vector_HaveInteger(Vector1), &
+        'MQC_Vector_HaveReal(Vector1)', MQC_Vector_HaveReal(Vector1) )
       EndIf
 !
       Return
@@ -2351,11 +2451,14 @@
       type(mqc_vector)::VC
 
       If (VA%Column.eqv.VB%Column) then
-        Call MQC_Error('Vector orientations are the same in MQC_Outer')
+        Call MQC_Error_L('Vector orientations are the same in MQC_Outer', 6, &
+             'VA%Column', VA%Column, &
+             'VB%Column', VB%Column )
       EndIf
       if (VB%column) then
-        call mqc_error('Vector1 is row type and vector2 is column. &
-     &    Use .dot. as a dot product operator for dot product. ')
+        call mqc_error_l('Vector1 is row type and vector2 is column. &
+     &    Use .dot. as a dot product operator for dot product. ', 6, &
+     'VB%column', VB%column )
       endif
       if (mqc_have_int(VA) .and. mqc_have_int(VB)) then
         call mqc_allocate_matrix(VA%length,VB%length,M,'Integer','StorFull')
@@ -2412,15 +2515,21 @@
       Vector2Len = MQC_Length_Vector(Vector2In)
 
       If (Vector1Len.ne.3.or.Vector2Len.ne.3) then
-        Call MQC_Error('Vector not R3 in MQC_CrossProduct')
+        Call MQC_Error_I('Vector not R3 in MQC_CrossProduct', 6, &
+             'Vector1Len', Vector1Len, &
+             'Vector2Len', Vector2Len )
       EndIf
 
       If (Vector1Len.ne.Vector2Len) then
-        Call MQC_Error('Vector lengths unequal in MQC_CrossProduct')
+        Call MQC_Error_I('Vector lengths unequal in MQC_CrossProduct', 6, &
+             'Vector1Len', Vector1Len, &
+             'Vector2Len', Vector2Len )
       EndIf
 
       If (Vector1In%column.neqv.Vector2In%column) then
-        Call MQC_Error('Vector orientations are different in MQC_CrossProduct')
+        Call MQC_Error_L('Vector orientations are different in MQC_CrossProduct', 6, &
+             'Vector1In%column', Vector1In%column, &
+             'Vector2In%column', Vector2In%column )
       EndIf
 
       If(Vector1In%Data_type.eq.'Real') then
@@ -2452,7 +2561,8 @@
             Vector1In%vecr(2)*Vector2In%vecc(1)
           MQC_CrossProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_CrossProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_CrossProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Integer') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -2483,7 +2593,8 @@
             Vector1In%veci(2)*Vector2In%vecc(1)
           MQC_CrossProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_CrossProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_CrossProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       ElseIf(Vector1In%Data_type.eq.'Complex') then
         If(Vector2In%Data_type.eq.'Real') then
@@ -2514,17 +2625,19 @@
             Vector1In%vecc(2)*Vector2In%vecc(1)
           MQC_CrossProduct%column = Vector1In%column
         Else
-          Call MQC_Error('Vector2In type unspecified in MQC_CrossProduct')
+          Call MQC_Error_A('Vector2In type unspecified in MQC_CrossProduct', 6, &
+               'Vector2In%Data_type', Vector2In%Data_type )
         EndIf
       Else
-        Call MQC_Error('Vector1In type unspecified in MQC_CrossProduct')
+        Call MQC_Error_A('Vector1In type unspecified in MQC_CrossProduct', 6, &
+             'Vector1In%Data_type', Vector1In%Data_type )
       EndIf
       Return
       End Function MQC_CrossProduct
 !
 !
-!     PROCEDURE MQC_Print_Vector
-      Subroutine MQC_Print_Vector(Vector,IOut,Header,Verbose,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Vector_Algebra1
+      Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Vector type variable.
@@ -2544,18 +2657,20 @@
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2X,F12.5,F11.5,"i")
+ 1020 Format( " " )
+ 1030 Format( A )
 !
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       Write(IOut,1000) TRIM(Header)
 
       Length = MQC_Length_Vector(Vector)
       if (Present(Verbose)) then
         if (verbose.and.vector%column) then
-          write(IOut,*) 'The vector being printed is a column vector'
+          write(IOut,1030) 'The vector being printed is a column vector'
         elseif (verbose) then
-          write(IOut,*) 'The vector being printed is a row vector'
+          write(IOut,1030) 'The vector being printed is a row vector'
         endif
       endIf
       If(Vector%Data_type.eq.'Integer') then
@@ -2571,15 +2686,16 @@
           Write(IOut,1003) I, Vector%vecc(I)
         EndDo
       Else
-        Call MQC_Error('Vector type unspecified in MQC_Print_Vector')
+        Call MQC_Error_A('Vector type unspecified in MQC_Print_Vector_Algebra1', 6, &
+             'Vector%Data_type', Vector%Data_type )
       EndIf
 
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Vector
+      End Subroutine MQC_Print_Vector_Algebra1
 !
 !
 !     PROCEDURE MQC_vector_cast_real
@@ -2638,7 +2754,9 @@
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
-      If (IndI.eq.0.or.IndI.gt.Vector%Length) Call MQC_Error('Index I badly specified in mqc_vector_scalar_put')
+      If (IndI.eq.0.or.IndI.gt.Vector%Length) Call MQC_Error_I('Index I badly specified in mqc_vector_scalar_put', 6, &
+           'IndI', IndI, &
+           'Vector%Length', Vector%Length )
 
       If (Vector%Data_Type.eq.'Integer') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -2650,7 +2768,8 @@
           Call MQC_Vector_Copy_Int2Complex(Vector)
           Vector%VecC(IndI) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Put', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Real') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -2661,7 +2780,8 @@
           Call MQC_Vector_Copy_Real2Complex(Vector)
           Vector%VecC(IndI) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Put', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Complex') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -2671,10 +2791,12 @@
         ElseIf (Scalar%Data_Type.eq.'Complex') then
           Vector%VecC(IndI) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Put', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       Else
-        Call MQC_Error('Vector type not defined in MQC_Vector_Scalar_Put')
+        Call MQC_Error_A('Vector type not defined in MQC_Vector_Scalar_Put', 6, &
+             'Vector%Data_Type', Vector%Data_Type )
       EndIf
 
       End Subroutine MQC_Vector_Scalar_Put
@@ -2697,8 +2819,9 @@
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
-      If (IndI.eq.0.or.IndI.gt.Vector%Length) Call MQC_Error('Index I badly specified in mqc_vector_scalar_increment.')
-
+      If (IndI.eq.0.or.IndI.gt.Vector%Length) Call MQC_Error_I('Index I badly specified in mqc_vector_scalar_increment.', 6, &
+           'IndI', IndI, &
+           'Vector%Length', Vector%Length )
       If (Vector%Data_Type.eq.'Integer') then
         If (Scalar%Data_Type.eq.'Integer') then
           Vector%VecI(IndI) = Vector%VecI(IndI) + Scalar%ScaI
@@ -2707,7 +2830,8 @@
         ElseIf (Scalar%Data_Type.eq.'Complex') then
           Vector%VecI(IndI) = Vector%VecI(IndI) + Real(Scalar%ScaC)
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Incrememt')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Incrememt', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Real') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -2717,7 +2841,8 @@
         ElseIf (Scalar%Data_Type.eq.'Complex') then
           Vector%VecR(IndI) = Vector%VecR(IndI) + Real(Scalar%ScaC)
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Increment')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Increment', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Complex') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -2727,10 +2852,12 @@
         ElseIf (Scalar%Data_Type.eq.'Complex') then
           Vector%VecC(IndI) = Vector%VecC(IndI) + Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Vector_Scalar_Increment')
+          Call MQC_Error_A('Scalar type not defined in MQC_Vector_Scalar_Increment', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type )
         EndIf
       Else
-        Call MQC_Error('Vector type not defined in MQC_Vector_Scalar_Increment')
+        Call MQC_Error_A('Vector type not defined in MQC_Vector_Scalar_Increment', 6, &
+'Vector%Data_Type', Vector%Data_Type )
       EndIf
 !
       End Subroutine MQC_Vector_Scalar_Increment
@@ -2757,16 +2884,26 @@
         IndI = 1
       EndIf
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
-      If (IndI.eq.0) Call MQC_Error('Index I badly specified in mqc_vector_vector_put')
+      If (IndI.eq.0) Call MQC_Error_I('Index I badly specified in mqc_vector_vector_put', 6, &
+           'IndI', IndI )
       IndJ = IndI + MQC_Length_Vector(VectorIn) - 1
 
       Length = IndJ-IndI+1
-      If (Length.le.0.or.Length.gt.Vector%Length.or.Length.ne.VectorIn%Length) Call MQC_Error('Vector length badly &
-    &  defined in MQC_Vector_Vector_Put')
-      If (IndI.le.0.or.IndI.gt.(Vector%Length-Length+1)) Call MQC_Error('Index I out of bounds &
-    &   in MQC_Vector_Vector_Put')
-      If (IndJ.lt.Length.or.IndJ.gt.Vector%Length) Call MQC_Error('Index J out of bounds &
-    &   in MQC_Vector_Vector_Put')
+      If (Length.le.0.or.Length.gt.Vector%Length.or.Length.ne.VectorIn%Length) Call MQC_Error_I('Vector length badly &
+    &  defined in MQC_Vector_Vector_Put', 6, &
+    'Length', Length, &
+    'Vector%Length', Vector%Length, &
+    'VectorIn%Length', VectorIn%Length )
+      If (IndI.le.0.or.IndI.gt.(Vector%Length-Length+1)) Call MQC_Error_I('Index I out of bounds &
+    &   in MQC_Vector_Vector_Put', 6, &
+    'IndI', IndI, &
+    'Vector%Length', Vector%Length, &
+    'Length', Length )
+      If (IndJ.lt.Length.or.IndJ.gt.Vector%Length) Call MQC_Error_I('Index J out of bounds &
+    &   in MQC_Vector_Vector_Put', 6, &
+    'IndJ', IndJ, &
+    'Length', Length, &
+    'Vector%Length', Vector%Length )
       If (Vector%Data_Type.eq.'Integer') then
         If (VectorIn%Data_Type.eq.'Integer') then
           Vector%VecI(IndI:IndJ) = VectorIn%VecI
@@ -2777,7 +2914,8 @@
           Call MQC_Vector_Copy_Int2Complex(Vector)
           Vector%VecC(IndI:IndJ) = VectorIn%VecC
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+          Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Real') then
         If (VectorIn%Data_Type.eq.'Integer') then
@@ -2788,7 +2926,8 @@
           Call MQC_Vector_Copy_Real2Complex(Vector)
           Vector%VecC(IndI:IndJ) = VectorIn%VecC
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+          Call MQC_Error_a('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       ElseIf (Vector%Data_Type.eq.'Complex') then
         If (VectorIn%Data_Type.eq.'Integer') then
@@ -2798,10 +2937,12 @@
         ElseIf (VectorIn%Data_Type.eq.'Complex') then
           Vector%VecC(IndI:IndJ) = VectorIn%VecC
         Else
-          Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+          Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+               'VectorIn%Data_Type', VectorIn%Data_Type )
         EndIf
       Else
-        Call MQC_Error('Vector type not defined in MQC_Vector_Vector_Put')
+        Call MQC_Error_a('Vector type not defined in MQC_Vector_Vector_Put', 6, &
+             'Vector%Data_Type', Vector%Data_Type )
       EndIf
 
       End Subroutine MQC_Vector_Vector_Put
@@ -2847,7 +2988,7 @@
             Vector%VecC = Scalar%cval()
           EndIf
         Class Default
-          Call MQC_Error('Scalar Type not defined in MQC_Vector_Initialize')
+          Call MQC_Error_I('Scalar Type not defined in MQC_Vector_Initialize', 6 )
         End Select
       Else
         Call MQC_Allocate_Vector(Length,Vector,'Real')
@@ -2910,7 +3051,8 @@
             call mqc_allocate_vector(vector%length,vector_res,'Complex')
             vector_res%vecc = scalar%scac * vector%veci
           else
-            call mqc_error('unrecognised data type in mqc_vectorscalarproduct')
+            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+                 'scalar%Data_type', scalar%Data_type )
           endIf
         elseIf(vector%Data_type.eq.'Real') then
           if(scalar%Data_type.eq.'Integer') then
@@ -2923,7 +3065,8 @@
             call mqc_allocate_vector(vector%length,vector_res,'Complex')
             vector_res%vecc = scalar%scac * vector%vecr
           else
-            call mqc_error('unrecognised data type in mqc_vectorscalarproduct')
+            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+                 'scalar%Data_type', scalar%Data_type )
           endIf
         elseIf(vector%Data_type.eq.'Complex') then
           if(scalar%Data_type.eq.'Integer') then
@@ -2936,10 +3079,12 @@
             call mqc_allocate_vector(vector%length,vector_res,'Complex')
             vector_res%vecc = scalar%scac * vector%vecr
           else
-            call mqc_error('unrecognised data type in mqc_vectorscalarproduct')
+            call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
+                 'scalar%Data_type', scalar%Data_type )
           endIf
         else
-          call mqc_error('unrecognised data type in mqc_vectorscalarproduct')
+          call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+               'vector%Data_type', vector%Data_type )
         endif
 
       end function mqc_VectorScalarProduct
@@ -2993,7 +3138,8 @@
         if(allocated(work)) deallocate(work)
         if(allocated(tempc)) deallocate(tempc)
       Else
-        call mqc_error('unrecognised data type in mqc_vector_norm')
+        call mqc_error_a('unrecognised data type in mqc_vector_norm', 6, &
+             'vector%Data_Type', vector%Data_Type )
       EndIf
 
       End Function MQC_Vector_Norm
@@ -3214,7 +3360,8 @@
       if (A%data_type.eq.'Real'.or.A%data_type.eq.'Integer') then
         if(A%data_type.eq.'Integer') call mqc_matrix_copy_int2Real(A)
         if (A%storage .eq. 'StorFull') then
-          if(.not.mqc_matrix_test_symmetric(A)) call mqc_error('Input matrix not symmetric in MQC_Matrix_Diagonalize')
+          if(.not.mqc_matrix_test_symmetric(A)) call mqc_error_l('Input matrix not symmetric in MQC_Matrix_Diagonalize', 6, &
+               'mqc_matrix_test_symmetric(A)', mqc_matrix_test_symmetric(A) )
           if (A%NRow .eq. A%NCol) then
             Allocate(A_Symm((A%NRow*(A%NRow+1))/2),Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
             k = 0
@@ -3226,22 +3373,29 @@
             EndDo
             Call DSPEV('V','U',A%NRow,A_Symm,A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
             If(IError.ne.0) then
-              call mqc_error('Diagonalization error: the lapack routine DSPEV failed')
+              call mqc_error_i('Diagonalization error: the lapack routine DSPEV failed', 6, &
+                 'IError', IError )
             endif
             DeAllocate(A_Symm)
           else
-            call mqc_error('Diagonalization error: the matrix being passed is not square')
+            call mqc_error_I('Diagonalization error: the matrix being passed is not square', 6, &
+                 'A%NRow', A%NRow, &
+                 'A%NCol', A%NCol )
           endif
         else if (A%storage .eq. 'StorSymm') then
           Allocate(Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
           call DSPEV('V','U',A%NRow,A%matR(:,1),A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
           If(IError.ne.0) then
-            call mqc_error('Diagonalization error: the lapack routine DSPEV failed')
+            call mqc_error_I('Diagonalization error: the lapack routine DSPEV failed', 6, &
+                 'IError', IError )
           endif
         endif
         if(typeFlag.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(A)
       elseIf(A%data_type.eq.'Complex') then
-        if(.not.mqc_matrix_test_symmetric(A,'hermitian')) call mqc_error('Input matrix not Hermitian in MQC_Matrix_Diagonalize')
+
+        if(.not.mqc_matrix_test_symmetric(A,'hermitian')) call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize', &
+             6, &
+        "mqc_matrix_test_symmetric(A,'hermitian')", mqc_matrix_test_symmetric(A,'hermitian') )
         if(A%storage.eq.'StorFull') then
           if (A%NRow .eq. A%NCol) then
             allocate(AC_Symm((A%NRow*(A%NRow+1))/2),TempC_Vector(Max(1,2*A%NRow-1)),Temp_Vector(Max(1,3*A%NRow-2)), &
@@ -3255,21 +3409,26 @@
             endDo
             call ZHPEV('V','U',A%NRow,AC_Symm,A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
             if(IError.ne.0) then
-              call mqc_error('Diagonalization error: the lapack routine ZHPEV failed')
+              call mqc_error_i('Diagonalization error: the lapack routine ZHPEV failed', 6, &
+                 'IError', IError )
             endIf
             deallocate(AC_Symm)
           else
-            call mqc_error('Diagonalization error: the matrix being passed is not square')
+            call mqc_error_i('Diagonalization error: the matrix being passed is not square', 6, &
+                 'A%NRow', A%NRow, &
+                 'A%NCol', A%NCol )
           endif
         elseIf (A%storage .eq. 'StorSymm') then
           allocate(TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
           call ZHPEV('V','U',A%NRow,A%matC(:,1),A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
           if(IError.ne.0) then
-            call mqc_error('Diagonalization error: the lapack routine ZHPEV failed')
+            call mqc_error_i('Diagonalization error: the lapack routine ZHPEV failed', 6, &
+                 'IError', IError )
           endIf
         endIf
       else
-        call mqc_error('data type not recognsed in mqc_matrix_diagonalize')
+        call mqc_error_A('data type not recognsed in mqc_matrix_diagonalize', 6, &
+             'A%data_type', A%data_type )
       endIf
 
       if(present(EVecs)) then
@@ -3346,8 +3505,12 @@
       IndJ = J
       If (IndI.lt.0) IndI = Mat%NRow + IndI + 1
       If (IndJ.lt.0) IndJ = Mat%NRow + IndJ + 1
-      If (IndI.eq.0.or.IndI.gt.Mat%NRow) Call MQC_Error('Index I badly specified in mqc_matrix_scalar_at')
-      If (IndJ.eq.0.or.IndJ.gt.Mat%NRow) Call MQC_Error('Index J badly specified in mqc_matrix_scalar_at')
+      If (IndI.eq.0.or.IndI.gt.Mat%NRow) Call MQC_Error_I('Index I badly specified in mqc_matrix_scalar_at', 6, &
+           'IndI', IndI, &
+           'Mat%NRow', Mat%NRow )
+      If (IndJ.eq.0.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_at', 6, &
+           'IndJ', IndJ, &
+           'Mat%NRow', Mat%NRow )
 
       If (Mat%Storage.eq.'StorFull') then
         If (Mat%Data_Type.eq.'Integer') then
@@ -3357,7 +3520,8 @@
         Elseif (Mat%Data_Type.eq.'Complex') then
           Element = (Mat%MatC(IndI,IndJ))
         Else
-          Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_At')
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
         If (IndI>IndJ) then
@@ -3368,7 +3532,8 @@
           ElseIf (Mat%Data_Type.eq.'Complex') then
             Element = (Mat%MatC(IndI*(IndI-1)/2+IndJ,1))
           Else
-            Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_At')
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
           EndIf
         Else
           If (Mat%Data_Type.eq.'Integer') then
@@ -3378,7 +3543,8 @@
           ElseIf (Mat%Data_Type.eq.'Complex') then
             Element = (Mat%MatC(IndJ*(IndJ-1)/2+IndI,1))
           Else
-            Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_At')
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
           EndIf
         EndIf
       ElseIf (Mat%Storage.eq.'StorDiag') then
@@ -3390,7 +3556,8 @@
           ElseIf (Mat%Data_Type.eq.'Complex') then
             Element = (Mat%MatR(IndI,1))
           Else
-            Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_At')
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
           EndIf
         Else
           If (Mat%Data_Type.eq.'Integer') then
@@ -3400,11 +3567,13 @@
           ElseIf (Mat%Data_Type.eq.'Complex') then
             Element = cmplx(0.0,0.0,kind=8)
           Else
-            Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_At')
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
           EndIf
         EndIf
       Else
-        Call MQC_Error('MQC_Matrix_Scalar_At: Only full, Symm, and Diagonal type matrices are supported')
+        Call MQC_Error_A('MQC_Matrix_Scalar_At: Only full, Symm, and Diagonal type matrices are supported', 6, &
+             'Mat%Storage', Mat%Storage )
       EndIf
 
       End Function MQC_Matrix_Scalar_At
@@ -3428,7 +3597,9 @@
       Logical::Column
 
       If(Size(Rows).gt.1.and.Size(Cols).gt.1) then
-        Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_at')
+        Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_at', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       ElseIf(Size(Rows).eq.1.and.Size(Cols).eq.1) then
         If(Rows(1).eq.0.and.Cols(1).ne.0) then
           Column = .True.
@@ -3442,8 +3613,12 @@
           J = Mat%NCol
           K = Rows(1)
         EndIf
-        If(Rows(1).eq.0.and.Cols(1).eq.0) Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_at')
-        If(Rows(1).ne.0.and.Cols(1).ne.0) Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_at')
+        If(Rows(1).eq.0.and.Cols(1).eq.0) Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_at', 6, &
+            'Rows(1)', Rows(1), &
+             'Cols(1)', Cols(1) )
+        If(Rows(1).ne.0.and.Cols(1).ne.0) Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_at', 6, &
+             'Rows(1)', Rows(1), &
+             'Cols(1)', Cols(1) )
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.1) then
         Column = .True.
         I = Rows(1)
@@ -3455,14 +3630,19 @@
         J = Cols(2)
         K = Rows(1)
       Else
-        Call MQC_Error('Unspecified boundaries in mqc_matrix_vector_at')
+        Call MQC_Error_I('Unspecified boundaries in mqc_matrix_vector_at', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       EndIf
 
       IndK = K
       If (IndK.lt.0.and.Column) IndK = Mat%NCol + IndK + 1
       If (IndK.lt.0.and..not.Column) IndK = Mat%NRow + IndK + 1
       If (IndK.le.0.or.(IndK.gt.Mat%NCol.and.Column).or.(IndK.gt.Mat%NRow.and..not.Column)) &
-        Call MQC_Error('Cannot select the Kth Row/Column in MQC_Matrix_Vector_At')
+        Call MQC_Error_I('Cannot select the Kth Row/Column in MQC_Matrix_Vector_At', 6, &
+        'IndK', IndK, &
+        'Mat%NCol', Mat%NCol, &
+        'Mat%NRow', Mat%NRow )
 
       IndI = I
       IndJ = J
@@ -3473,19 +3653,35 @@
 
       Length = IndJ-IndI+1
       If(Column) then
-        If (Length.le.0.or.Length.gt.Mat%NRow) Call MQC_Error('Vector length badly &
-     &    defined in MQC_Matrix_Vector_At')
-        If (IndI.le.0.or.IndI.gt.(Mat%NRow-Length+1)) Call MQC_Error('Index I out of bounds &
-    &    in MQC_Matrix_Vector_At')
-        If (IndJ.lt.Length.or.IndJ.gt.Mat%NRow) Call MQC_Error('Index J out of bounds &
-    &     in MQC_Matrix_Vector_At')
+        If (Length.le.0.or.Length.gt.Mat%NRow) Call MQC_Error_I('Vector length badly &
+     &    defined in MQC_Matrix_Vector_At', 6, &
+     'Length', Length, &
+     'Mat%NRow', Mat%NRow )
+        If (IndI.le.0.or.IndI.gt.(Mat%NRow-Length+1)) Call MQC_Error_I('Index I out of bounds &
+    &    in MQC_Matrix_Vector_At', 6, &
+    'IndI', IndI, &
+    'Mat%NRow', Mat%NRow, &
+    'Length', Length )
+        If (IndJ.lt.Length.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J out of bounds &
+    &     in MQC_Matrix_Vector_At', 6, &
+    'IndJ', IndJ, &
+    'Length', Length, &
+    'Mat%NRow', Mat%NRow )
       ElseIf(.not.Column) then
-        If (Length.le.0.or.Length.gt.Mat%NCol) Call MQC_Error('Vector length badly &
-    &     defined in MQC_Matrix_Vector_At')
-        If (IndI.le.0.or.IndI.gt.(Mat%NCol-Length+1)) Call MQC_Error('Index I out of bounds &
-    &     in MQC_Matrix_Vector_At')
-        If (IndJ.lt.Length.or.IndJ.gt.Mat%NCol) Call MQC_Error('Index J out of bounds &
-    &     in MQC_Matrix_Vector_At')
+        If (Length.le.0.or.Length.gt.Mat%NCol) Call MQC_Error_I('Vector length badly &
+    &     defined in MQC_Matrix_Vector_At', 6, &
+    'Length', Length, &
+    'Mat%NCol', Mat%NCol )
+        If (IndI.le.0.or.IndI.gt.(Mat%NCol-Length+1)) Call MQC_Error_I('Index I out of bounds &
+    &     in MQC_Matrix_Vector_At', 6, &
+    'IndI', IndI, &
+    'Mat%NCol', Mat%NCol, &
+    'Length', Length )
+        If (IndJ.lt.Length.or.IndJ.gt.Mat%NCol) Call MQC_Error_I('Index J out of bounds &
+    &     in MQC_Matrix_Vector_At', 6, &
+    'IndJ', IndJ, &
+    'Length', Length, &
+    'Mat%NCol', Mat%NCol )
       EndIf
 
       If (Mat%Storage.eq.'StorFull') then
@@ -3514,7 +3710,8 @@
             Vector%VecC = (Mat%MatC(IndK,IndI:IndJ))
           EndIf
         Else
-          Call MQC_Error('Matrix type not defined in MQC_Matrix_Vector_At')
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
         If (Mat%Data_Type.eq.'Integer') then
@@ -3524,7 +3721,8 @@
         ElseIf (Mat%Data_Type.eq.'Complex') then
           Call MQC_Allocate_Vector(Length,Vector,'Complex')
         Else
-          Call MQC_Error('Matrix type not defined in MQC_Matrix_Vector_At')
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
         L = 1
         Do Cnt = IndI, IndJ
@@ -3547,7 +3745,8 @@
         ElseIf (Mat%Data_Type.eq.'Complex') then
           Call Vector%initialize(Length,cmplx(0.0,0.0))
         Else
-          Call MQC_Error('Matrix type not defined in MQC_Matrix_Vector_At')
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
         L = 1
         Do Cnt = IndI,IndJ
@@ -3559,7 +3758,8 @@
           L = L + 1
         EndDo
       Else
-        Call MQC_Error('MQC_Matrix_Vector_At: Only full, Symm, and Diagonal type matrices are supported')
+        Call MQC_Error_A('MQC_Matrix_Vector_At: Only full, Symm, and Diagonal type matrices are supported', 6, &
+             'Mat%Storage', Mat%Storage )
       EndIf
 
       Vector%Column = Column
@@ -3586,8 +3786,11 @@
       Integer::Length,IndI,IndJ,IndK,I,J,K
       Logical::Column
 
+ 1020 Format( " " )
       If(Size(Rows).gt.1.and.Size(Cols).gt.1) then
-        Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_put')
+        Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_put', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       ElseIf(Size(Rows).eq.1.and.Size(Cols).eq.1) then
         If(Rows(1).eq.0.and.Cols(1).ne.0) then
           Column = .True.
@@ -3601,8 +3804,12 @@
           J = Mat%NCol
           K = Rows(1)
         EndIf
-        If(Rows(1).eq.0.and.Cols(1).eq.0) Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_put')
-        If(Rows(1).ne.0.and.Cols(1).ne.0) Call MQC_Error('Vector bounds badly specified in mqc_matrix_vector_put')
+        If(Rows(1).eq.0.and.Cols(1).eq.0) Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_put', 6, &
+             'Rows(1)', Rows(1), &
+             'Cols(1)', Cols(1) )
+        If(Rows(1).ne.0.and.Cols(1).ne.0) Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_put', 6, &
+             'Rows(1)', Rows(1), &
+             'Cols(1)', Cols(1) )
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.1) then
         Column = .True.
         I = Rows(1)
@@ -3614,15 +3821,19 @@
         J = Cols(2)
         K = Rows(1)
       Else
-        Call MQC_Error('Unspecified boundaries in mqc_matrix_vector_put')
+        Call MQC_Error_I('Unspecified boundaries in mqc_matrix_vector_put', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       EndIf
 
       IndK = K
       If (IndK.lt.0.and.Column) IndK = Mat%NCol + IndK + 1
       If (IndK.lt.0.and..not.Column) IndK = Mat%NRow + IndK + 1
       If (IndK.le.0.or.(IndK.gt.Mat%NCol.and.Column).or.(IndK.gt.Mat%NRow.and..not.Column)) &
-        Call MQC_Error('Cannot select the Kth Row/Column in MQC_Matrix_Vector_Put')
-
+        Call MQC_Error_I('Cannot select the Kth Row/Column in MQC_Matrix_Vector_Put', 6, &
+        'IndK', IndK, &
+        'Mat%NCol', Mat%NCol, &
+        'Mat%NRow', Mat%NRow )
       IndI = I
       IndJ = J
       If (IndI.lt.0.and.Column) IndI = Mat%NRow + IndI + 1
@@ -3633,18 +3844,36 @@
       Length = IndJ-IndI+1
       If(Column) then
         If (Length.le.0.or.Length.gt.Mat%NRow.or.Length.ne.VectorIn%Length) &
-          Call MQC_Error('Vector length badly defined in MQC_Matrix_Vector_Put')
-        If (IndI.le.0.or.IndI.gt.(Mat%NRow-Length+1)) Call MQC_Error('Index I out of bounds &
-    &    in MQC_Matrix_Vector_Put')
-        If (IndJ.lt.Length.or.IndJ.gt.Mat%NRow) Call MQC_Error('Index J out of bounds &
-    &     in MQC_Matrix_Vector_Put')
+          Call MQC_Error_I('Vector length badly defined in MQC_Matrix_Vector_Put', 6, &
+          'Length', Length, &
+          'Mat%NRow', Mat%NRow, &
+          'VectorIn%Length', VectorIn%Length )
+        If (IndI.le.0.or.IndI.gt.(Mat%NRow-Length+1)) Call MQC_Error_I('Index I out of bounds &
+    &    in MQC_Matrix_Vector_Put', 6, &
+    'IndI', IndI, &
+    'Mat%NRow', Mat%NRow, &
+    'Length', Length )
+        If (IndJ.lt.Length.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J out of bounds &
+    &     in MQC_Matrix_Vector_Put', 6, &
+    'IndJ', IndJ, &
+    'Length', Length, &
+    'Mat%NRow', Mat%NRow )
       ElseIf(.not.Column) then
         If (Length.le.0.or.Length.gt.Mat%NCol.or.Length.ne.VectorIn%Length) &
-          Call MQC_Error('Vector length badly defined in MQC_Matrix_Vector_Put')
-        If (IndI.le.0.or.IndI.gt.(Mat%NCol-Length+1)) Call MQC_Error('Index I out of bounds &
-    &     in MQC_Matrix_Vector_Put')
-        If (IndJ.lt.Length.or.IndJ.gt.Mat%NCol) Call MQC_Error('Index J out of bounds &
-    &     in MQC_Matrix_Vector_Put')
+          Call MQC_Error_I('Vector length badly defined in MQC_Matrix_Vector_Put', 6, &
+          'Length', Length, &
+          'Mat%NCol', Mat%NCol, &
+          'VectorIn%Length', VectorIn%Length )
+        If (IndI.le.0.or.IndI.gt.(Mat%NCol-Length+1)) Call MQC_Error_I('Index I out of bounds &
+    &     in MQC_Matrix_Vector_Put', 6, &
+    'IndI', IndI, &
+    'Mat%NCol', Mat%NCol, &
+    'Length', Length )
+        If (IndJ.lt.Length.or.IndJ.gt.Mat%NCol) Call MQC_Error_I('Index J out of bounds &
+             &     in MQC_Matrix_Vector_Put', 6, &
+             'IndJ', IndJ, &
+             'Length', Length, &
+             'Mat%NCol', Mat%NCol )
       EndIf
 
       If (Mat%Storage.eq.'StorFull') then
@@ -3661,7 +3890,8 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
           If (VectorIn%Data_Type.eq.'Integer') then
@@ -3675,7 +3905,8 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
           If (VectorIn%Data_Type.eq.'Integer') then
@@ -3688,16 +3919,18 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error('VectorIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error('Mat type not defined in MQC_Vector_Vector_Put')
+          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,*)
+        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
@@ -3705,7 +3938,8 @@
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
         If(MQC_Matrix_Test_Diagonal(Mat)) Call MQC_Matrix_Full2Diag(Mat)
       Else
-        Call MQC_Error('Matrix type not recognosed in MQC_Matrix_Vector_Put')
+        Call MQC_Error_A('Matrix type not recognosed in MQC_Matrix_Vector_Put', 6, &
+             'Mat%Storage', Mat%Storage )
       EndIf
 
       End Subroutine MQC_Matrix_Vector_Put
@@ -3728,7 +3962,9 @@
       Integer::M,N,Cnt1,Cnt2,I,J,K,L
 
       If(Size(Rows).gt.2.and.Size(Cols).gt.2) then
-        Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_at')
+        Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_at', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.2) then
           I = Rows(1)
           J = Rows(2)
@@ -3741,7 +3977,11 @@
           K = 1
           L = Mat%NCol
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_at')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_at', 6, &
+               'Rows(1)', Rows(1), &
+               'Cols(1)', Cols(1), &
+               'Size(Rows)', Size(Rows) , &
+               'Size(Cols)', Size(Cols) )
         EndIf
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.1) then
         If(Cols(1).eq.0) then
@@ -3750,7 +3990,10 @@
           K = 1
           L = Mat%NCol
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_at')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_at', 6, &
+               'Cols(1)', Cols(1), &
+               'Size(Rows)', Size(Rows) , &
+               'Size(Cols)', Size(Cols) )
         EndIf
       ElseIf(Size(Rows).eq.1.and.Size(Cols).eq.2) then
         If(Rows(1).eq.0) then
@@ -3759,10 +4002,15 @@
           K = Cols(1)
           L = Cols(2)
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_at')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_at', 6, &
+               'Rows(1)', Rows(1), &
+               'Size(Rows)', Size(Rows) , &
+               'Size(Cols)', Size(Cols) )
         EndIf
       Else
-        Call MQC_Error('Unspecified boundaries in mqc_matrix_matrix_at')
+        Call MQC_Error_I('Unspecified boundaries in mqc_matrix_matrix_at', 6, &
+             'Size(Rows)', Size(Rows) , &
+             'Size(Cols)', Size(Cols) )
       EndIf
 
       IndI = I
@@ -3770,25 +4018,39 @@
       If (IndI.lt.0) IndI = Mat%NRow + IndI + 1
       If (IndJ.lt.0) IndJ = Mat%NRow + IndJ + 1
       LenRow = IndJ-IndI+1
-      If (LenRow.le.0.or.LenRow.gt.Mat%NRow) Call MQC_Error('Row length badly &
-    &   defined in MQC_Matrix_Matrix_At')
-      If (IndI.le.0.or.IndI.gt.(Mat%NRow-LenRow+1)) Call MQC_Error('Index I out of bounds &
-    &   in MQC_Matrix_Matrix_At')
-      If (IndJ.lt.LenRow.or.IndJ.gt.Mat%NRow) Call MQC_Error('Index J out of bounds &
-    &   in MQC_Matrix_Matrix_At')
-
+      If (LenRow.le.0.or.LenRow.gt.Mat%NRow) Call MQC_Error_I('Row length badly &
+           &   defined in MQC_Matrix_Matrix_At', 6, &
+           'LenRow', LenRow, &
+           'Mat%NRow', Mat%NRow )
+      If (IndI.le.0.or.IndI.gt.(Mat%NRow-LenRow+1)) Call MQC_Error_I('Index I out of bounds &
+           &   in MQC_Matrix_Matrix_At', 6, &
+           'IndI', IndI, &
+           'Mat%NRow', Mat%NRow, &
+           'LenRow', LenRow )
+      If (IndJ.lt.LenRow.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J out of bounds &
+           &   in MQC_Matrix_Matrix_At', 6, &
+           'IndJ', IndJ, &
+           'LenRow', LenRow, &
+           'Mat%NRow', Mat%NRow )
       IndK = K
       IndL = L
       If (IndK.lt.0) IndK = Mat%NCol + IndK + 1
       If (IndL.lt.0) IndL = Mat%NCol + IndL + 1
       LenCol = IndL-IndK+1
-      If (LenCol.le.0.or.LenCol.gt.Mat%NCol) Call MQC_Error('Column length badly &
-    &  defined in MQC_Matrix_Matrix_At')
-      If (IndK.le.0.or.IndK.gt.(Mat%NCol-LenCol+1)) Call MQC_Error('Index K out of bounds &
-    &   in MQC_Matrix_Matrix_At')
-      If (IndL.lt.LenCol.or.IndL.gt.Mat%NCol) Call MQC_Error('Index L out of bounds &
-    &   in MQC_Matrix_Matrix_At')
-
+      If (LenCol.le.0.or.LenCol.gt.Mat%NCol) Call MQC_Error_I('Column length badly &
+           &  defined in MQC_Matrix_Matrix_At', 6, &
+           'LenCol', LenCol, &
+           'Mat%NCol', Mat%NCol )
+      If (IndK.le.0.or.IndK.gt.(Mat%NCol-LenCol+1)) Call MQC_Error_I('Index K out of bounds &
+           &   in MQC_Matrix_Matrix_At', 6, &
+           'IndK', IndK, &
+           'Mat%NCol', Mat%NCol, &
+           'LenCol', LenCol )
+      If (IndL.lt.LenCol.or.IndL.gt.Mat%NCol) Call MQC_Error_I('Index L out of bounds &
+           &   in MQC_Matrix_Matrix_At', 6, &
+           'IndL', IndL, &
+           'LenCol', LenCol, &
+           'Mat%NCol', Mat%NCol )
       If (Mat%Storage.eq.'StorFull') then
         If (Mat%Data_Type.eq.'Integer') then
           Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Integer','StorFull')
@@ -3800,7 +4062,8 @@
           Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Complex','StorFull')
           Matrix%MatC = (Mat%MatC(IndI:IndJ,IndK:IndL))
         Else
-          Call MQC_Error('Matrix type not defined in MQC_Matrix_Vector_At')
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
         If (Mat%Data_Type.eq.'Integer') then
@@ -3859,7 +4122,8 @@
         EndDo
         If(MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Matrix_Full2Diag(Matrix)
       Else
-        Call MQC_Error('Matrix type not recognised in MQC_Matrix_Matrix_At')
+        Call MQC_Error_A('Matrix type not recognised in MQC_Matrix_Matrix_At', 6, &
+             'Mat%Storage', Mat%Storage )
       EndIf
 
       End Function MQC_Matrix_Matrix_At
@@ -3979,7 +4243,8 @@
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
       n = INT(realTemp1)
       realTemp2 = ABS(realTemp1 - float(n))
-      if(realTemp2.gt.1.d-5) call MQC_Error('Error in MQC_Matrix_SymmMatrix_Put')
+      if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
+           'realTemp2', realTemp2 )
       call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
       mat%matI(:,1) = symmMatrixIn(:)
 !
@@ -4014,7 +4279,9 @@
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
       n = INT(realTemp1)
       realTemp2 = ABS(realTemp1 - float(n))
-      if(realTemp2.gt.1.d-5) call MQC_Error('Error in MQC_Matrix_SymmMatrix_Put')
+      if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
+           'realTemp2', realTemp2 )
+
       call MQC_Allocate_Matrix(n,n,mat,'real','symm')
       mat%matR(:,1) = symmMatrixIn(:)
 !
@@ -4050,7 +4317,8 @@
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
       n = INT(realTemp1)
       realTemp2 = ABS(realTemp1 - float(n))
-      if(realTemp2.gt.1.d-5) call MQC_Error('Error in MQC_Matrix_SymmMatrix_Put')
+      if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
+           'realTemp2', realTemp2 )
       call MQC_Allocate_Matrix(n,n,mat,'Complex','symm')
       mat%matC(:,1) = symmMatrixIn(:)
 !
@@ -4078,8 +4346,11 @@
 !
 !     Do the work...
 !
+ 1020 Format( " " )
       If(Size(Rows).gt.2.and.Size(Cols).gt.2) then
-        Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_put')
+        Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_put', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.2) then
           I = Rows(1)
           J = Rows(2)
@@ -4092,7 +4363,9 @@
           K = 1
           L = Mat%NCol
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_put')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_put', 6, &
+               'Rows(1)', Rows(1), &
+               'Cols(1)', Cols(1) )
         EndIf
       ElseIf(Size(Rows).eq.2.and.Size(Cols).eq.1) then
         If(Cols(1).eq.0) then
@@ -4101,7 +4374,8 @@
           K = 1
           L = Mat%NCol
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_put')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_put', 6, &
+               'Cols(1)', Cols(1) )
         EndIf
       ElseIf(Size(Rows).eq.1.and.Size(Cols).eq.2) then
         If(Rows(1).eq.0) then
@@ -4110,10 +4384,13 @@
           K = Cols(1)
           L = Cols(2)
         Else
-          Call MQC_Error('Vector bounds badly specified in mqc_matrix_matrix_put')
+          Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_put', 6, &
+               'Rows(1)', Rows(1) )
         EndIf
       Else
-        Call MQC_Error('Unspecified boundaries in mqc_matrix_matrix_put')
+        Call MQC_Error_I('Unspecified boundaries in mqc_matrix_matrix_put', 6, &
+             'Size(Rows)', Size(Rows), &
+             'Size(Cols)', Size(Cols) )
       EndIf
 !
       IndI = I
@@ -4126,18 +4403,36 @@
       If (IndL.lt.0) IndL = Mat%NCol + IndL + 1
       LenRow = IndJ-IndI+1
       LenCol = IndL-IndK+1
-      If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error('Row length badly &
-     &  defined in MQC_Matrix_Matrix_At')
-      If (IndI.le.0.or.IndI.gt.(Mat%NRow-LenRow+1)) Call MQC_Error('Index I out of bounds &
-     &  in MQC_Matrix_Matrix_At')
-      If (IndJ.lt.LenRow.or.IndJ.gt.Mat%NRow) Call MQC_Error('Index J out of bounds &
-     &  in MQC_Matrix_Matrix_At')
-      If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error('Column length badly &
-     &  defined in MQC_Matrix_Matrix_At')
-      If (IndK.le.0.or.IndK.gt.(Mat%NCol-LenCol+1)) Call MQC_Error('Index K out of bounds &
-     &  in MQC_Matrix_Matrix_At')
-      If (IndL.lt.LenCol.or.IndL.gt.Mat%NCol) Call MQC_Error('Index L out of bounds &
-     &  in MQC_Matrix_Matrix_At')
+      If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
+     &  defined in MQC_Matrix_Matrix_At', 6, &
+     'LenRow', LenRow, &
+     'Mat%NRow', Mat%NRow, &
+     'MatrixIn%NRow', MatrixIn%NRow )
+      If (IndI.le.0.or.IndI.gt.(Mat%NRow-LenRow+1)) Call MQC_Error_I('Index I out of bounds &
+     &  in MQC_Matrix_Matrix_At', 6, &
+     'IndI', IndI, &
+     'Mat%NRow', Mat%NRow, &
+     'LenRow', LenRow )
+      If (IndJ.lt.LenRow.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J out of bounds &
+     &  in MQC_Matrix_Matrix_At', 6, &
+     'IndJ', IndJ, &
+     'LenRow', LenRow, &
+     'Mat%NRow', Mat%NRow )
+      If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
+     &  defined in MQC_Matrix_Matrix_At', 6, &
+     'LenCol', LenCol, &
+     'Mat%NCol', Mat%NCol, &
+     'MatrixIn%NCol', MatrixIn%NCol )
+      If (IndK.le.0.or.IndK.gt.(Mat%NCol-LenCol+1)) Call MQC_Error_I('Index K out of bounds &
+     &  in MQC_Matrix_Matrix_At', 6, &
+     'IndK', IndK, &
+     'Mat%NCol', Mat%NCol, &
+     'LenCol', LenCol )
+      If (IndL.lt.LenCol.or.IndL.gt.Mat%NCol) Call MQC_Error_I('Index L out of bounds &
+     &  in MQC_Matrix_Matrix_At', 6, &
+     'IndL', IndL, &
+     'LenCol', LenCol, &
+     'Mat%NCol', Mat%NCol )
 
       If (Mat%Storage.eq.'StorFull') then
         If (Mat%Data_Type.eq.'Integer') then
@@ -4177,7 +4472,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Real') then
             Call MQC_Matrix_Copy_Int2Real(Mat)
@@ -4216,7 +4512,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Complex') then
             Call MQC_Matrix_Copy_Int2Complex(Mat)
@@ -4255,10 +4552,12 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error('MatrixIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
           If (MatrixIn%Data_Type.eq.'Integer') then
@@ -4297,7 +4596,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Real') then
             If(MatrixIn%Storage.eq.'StorFull') then
@@ -4335,7 +4635,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Complex') then
             Call MQC_Matrix_Copy_Real2Complex(Mat)
@@ -4374,10 +4675,12 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error('MatrixIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
           If (MatrixIn%Data_Type.eq.'Integer') then
@@ -4416,7 +4719,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Real') then
             If(MatrixIn%Storage.eq.'StorFull') then
@@ -4454,7 +4758,8 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           ElseIf (MatrixIn%Data_Type.eq.'Complex') then
             If(MatrixIn%Storage.eq.'StorFull') then
@@ -4492,25 +4797,29 @@
                 M = M + 1
               EndDo
             Else
-              Call MQC_Error('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put')
+              Call MQC_Error_A('MatrixIn storage type not recognised in MQC_Matrix_Matrix_Put', 6, &
+                   'MatrixIn%Storage', MatrixIn%Storage)
             EndIf
           Else
-            Call MQC_Error('MatrixIn type not defined in MQC_Vector_Vector_Put')
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+                 'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error('Mat type not defined in MQC_Vector_Vector_Put')
+          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
         Call MQC_Matrix_Symm2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
-        Write(*,*)
+        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
         If(MQC_Matrix_Test_Diagonal(Mat)) Call MQC_Matrix_Full2Diag(Mat)
       Else
-        Call MQC_Error('Mat storage type not recognosed in MQC_Matrix_Vector_Put')
+        Call MQC_Error_A('Mat storage type not recognosed in MQC_Matrix_Vector_Put', 6, &
+             'Mat%Storage', Mat%Storage )
       EndIf
 
       End Subroutine MQC_Matrix_Matrix_Put
@@ -4564,7 +4873,11 @@
       integer::i,j
 
       if (A%NRow .ne. B%NRow .or. A%NCol .ne. B%NCol) then
-        call mqc_error('The two matrices must have the same dimensions in MQC_elementMatrixProduct')
+        call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixProduct', 6, &
+             'A%NRow', A%NRow, &
+             'B%NRow', B%NRow, &
+             'A%NCol', A%NCol, &
+             'B%NCol', B%NCol )
       endif
 
       if (A%data_type .eq. 'Integer') then
@@ -5048,7 +5361,11 @@
       integer::i,j
 
       if (A%NRow .ne. B%NRow .or. A%NCol .ne. B%NCol) then
-        call mqc_error('The two matrices must have the same dimensions in MQC_elementMatrixProduct')
+        call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixProduct', 6, &
+             'A%NRow', A%NRow, &
+             'B%NRow', B%NRow, &
+             'A%NCol', A%NCol, &
+             'B%NCol', B%NCol )
       endif
 
       if (A%data_type .eq. 'Integer') then
@@ -5582,7 +5899,8 @@
               EndDo
             EndDo
           Else
-            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
+            Call MQC_Error_A('Matrix type not identified in MQC_Matrix_Test_Symmetric', 6, &
+                 'Matrix%Storage', Matrix%Storage )
           EndIf
         EndIf
       Case ('antisymmetric')
@@ -5616,7 +5934,8 @@
               EndDo
             EndDo
           Else
-            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
+            Call MQC_Error_A('Matrix type not identified in MQC_Matrix_Test_Symmetric', 6, &
+                 'Matrix%Storage', Matrix%Storage )
           EndIf
         EndIf
       Case ('hermitian')
@@ -5629,7 +5948,8 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Symmetric = .False.
             Else
-              Call MQC_Error('Unrecognised data type in mqc_matrix_test_symmetric')
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
             EndIf
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
@@ -5654,7 +5974,8 @@
               EndDo
             EndDo
           Else
-            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
+            Call MQC_Error_A('Matrix type not identified in MQC_Matrix_Test_Symmetric', 6, &
+                 'Matrix%Storage', Matrix%Storage )
           EndIf
         EndIf
       Case ('antihermitian')
@@ -5686,11 +6007,15 @@
               EndDo
             EndDo
           Else
-            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
+            Call MQC_Error_A('Matrix type not identified in MQC_Matrix_Test_Symmetric', 6, &
+                 'Matrix%Storage', Matrix%Storage)
+
+!            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
           EndIf
         EndIf
       Case Default
-        Call MQC_Error('Invalid option sent to mqc_matrix_test_symmetric')
+        Call MQC_Error_A('Invalid option sent to mqc_matrix_test_symmetric', 6, &
+             'myOption', myOption )
       End Select
 
       Return
@@ -5758,7 +6083,8 @@
           EndDo
         EndDo
       Else
-        Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Diagonal')
+        Call MQC_Error_A('Matrix type not identified in MQC_Matrix_Test_Diagonal', 6, &
+             'Matrix%Storage', Matrix%Storage )
       EndIf
 
       Return
@@ -5783,7 +6109,9 @@
       Integer::MCur,NCur
 !
       If (M.lt.0 .or. N.lt.0) then
-        Call MQC_Error('Dimensions less than zero in MQC_Allocate_Matrix')
+        Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_Matrix', 6, &
+             'M', M, &
+             'N', N )
       EndIf
 
       Call MQC_Deallocate_Matrix(Matrix)
@@ -5793,7 +6121,9 @@
         MCur = M
         NCur = N
       ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
-        If(M.ne.N) Call MQC_Error('Attempting to assign non-square matrix to lower triangular in MQC_Allocate_Matrix')
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower triangular in MQC_Allocate_Matrix', 6, &
+              'M', M, &
+              'N', N )
         Matrix%Storage = 'StorSymm'
         MCur = (M*(M+1))/2
         NCur = 1
@@ -5810,7 +6140,8 @@
         EndIf
         NCur = 1
       Else
-        Call MQC_Error('Storage type not recognised in MQC_Allocate_Matrix')
+        Call MQC_Error_A('Storage type not recognised in MQC_Allocate_Matrix', 6, &
+             'Storage', Storage )
       EndIf
 
       If(Data_Type.eq.'Integer' .or. Data_Type.eq.'integer' .or. Data_Type.eq.'Int' .or. Data_Type.eq.'int') then
@@ -5978,7 +6309,8 @@
       Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
-        Call MQC_Error('MatrixIn storage type unkown in MQC_Matrix2Array')
+        Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
+             'MatrixIn%Storage', MatrixIn%Storage )
       EndIf
 !
       If(.not.Allocated(ArrayOut)) then
@@ -5995,7 +6327,8 @@
       ElseIf(MatrixIn%Data_Type.eq.'Complex') then
         ArrayOut = MatrixIn%MatC
       Else
-        Call MQC_Error('MatrixIn type unkown in MQC_Matrix2Array')
+        Call MQC_Error_A('MatrixIn type unkown in MQC_Matrix2Array', 6, &
+             'MatrixIn%Data_Type', MatrixIn%Data_Type )
       EndIf
 !
       Return
@@ -6033,7 +6366,8 @@
       Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
-        Call MQC_Error('MatrixIn storage type unkown in MQC_Matrix2Array')
+        Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
+             'MatrixIn%Storage', MatrixIn%Storage )
       EndIf
 !
       If(.not.Allocated(ArrayOut)) then
@@ -6051,7 +6385,8 @@
         ElseIf(MatrixIn%Data_Type.eq.'Complex') then
           ArrayOut = MatrixIn%MatC
         Else
-          Call MQC_Error('MatrixIn type unkown in MQC_Matrix2Array')
+          Call MQC_Error_A('MatrixIn type unkown in MQC_Matrix2Array', 6, &
+               'MatrixIn%Data_Type', MatrixIn%Data_Type )
         EndIf
       EndIf
 !
@@ -6090,7 +6425,8 @@
       Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
-        Call MQC_Error('MatrixIn storage type unkown in MQC_Matrix2Array')
+        Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
+             'MatrixIn%Storage', MatrixIn%Storage )
       EndIf
 !
       If(.not.Allocated(ArrayOut)) then
@@ -6108,7 +6444,8 @@
         ElseIf(MatrixIn%Data_Type.eq.'Complex') then
           ArrayOut = MatrixIn%MatC
         Else
-          Call MQC_Error('MatrixIn type unkown in MQC_Matrix2Array')
+          Call MQC_Error_A('MatrixIn type unkown in MQC_Matrix2Array', 6, &
+               'MatrixIn%Data_Type', MatrixIn%Data_Type )
         EndIf
       EndIf
 !
@@ -6152,8 +6489,8 @@
       End Subroutine MQC_Set_Matrix2Matrix
 !
 !
-!     PROCEDURE MQC_Print_Matrix
-      Subroutine MQC_Print_Matrix(Matrix,IOut,Header,Blank_At_Top, &
+!     PROCEDURE MQC_Print_Matrix_Algebra1
+      Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a MQC_Matrix type variable.
@@ -6175,6 +6512,7 @@
  1001 Format(5x,10(7x,I7))
  1002 Format(3x,'This is a diagonal matrix, so only diagonal elements are printed')
  1003 Format(10(17x,I7))
+ 1020 Format( " " )
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
@@ -6184,7 +6522,7 @@
       NRows = MQC_Matrix_Rows(Matrix)
 
       If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,*)
+        If(Blank_At_Top) Write(IOut,1020)
       EndIf
       Write(IOut,1000) TRIM(Header)
 
@@ -6209,7 +6547,8 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
             Else
-              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+              Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
+                 'Matrix%Data_Type', Matrix%Data_Type )
             EndIf
           EndDo
         EndDo
@@ -6235,7 +6574,8 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
             Else
-              Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+              Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
+                 'Matrix%Data_Type', Matrix%Data_Type )
             EndIf
           EndDo
         EndDo
@@ -6251,21 +6591,22 @@
           ElseIf(Matrix%Data_Type.eq.'Complex') then
             Write(IOut,2003) I, Matrix%MatC(I,1)
           Else
-            Call MQC_Error('Matrix data type unspecified in MQC_Print_Matrix')
+            Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
+                 'Matrix%Data_Type', Matrix%Data_Type )
           EndIf
         EndDo
 
       Else
-        Call MQC_Error('Matrix storage type unspecified in MQC_Print_Matrix')
+        Call MQC_Error_A('Matrix storage type unspecified in MQC_Print_Matrix_Algebra1', 6, &
+             'Matrix%Storage', Matrix%Storage )
       EndIf
 
-
       If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,*)
+        If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
 !
       Return
-      End Subroutine MQC_Print_Matrix
+      End Subroutine MQC_Print_Matrix_Algebra1
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Int2Real
@@ -6281,11 +6622,11 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error('Incoming matrix not integer in MQC_Matrix_Copy_Int2Real')
-      Call MQC_Allocate_Matrix(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix),Matrix, &
-        'Real',Matrix%Storage)
+      If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error_L('Incoming matrix not integer in MQC_Matrix_Copy_Int2Real', 6, &
+           'MQC_Matrix_HaveInteger(Matrix)', MQC_Matrix_HaveInteger(Matrix) )
       Matrix%MatR = Matrix%MatI
       If(Allocated(Matrix%MatI)) Deallocate(Matrix%MatI)
+      Matrix%Data_Type = 'Real'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Int2Real
@@ -6304,11 +6645,11 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error('Incoming matrix not integer in MQC_Matrix_Copy_Int2Complex')
-      Call MQC_Allocate_Matrix(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix),Matrix, &
-        'Complex',Matrix%Storage)
+      If(.not.MQC_Matrix_HaveInteger(Matrix)) Call MQC_Error_L('Incoming matrix not integer in MQC_Matrix_Copy_Int2Complex', 6, &
+           'MQC_Matrix_HaveInteger(Matrix)', MQC_Matrix_HaveInteger(Matrix) )
       Matrix%MatC = Matrix%MatI
       If(Allocated(Matrix%MatI)) Deallocate(Matrix%MatI)
+      Matrix%Data_Type = 'Complex'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Int2Complex
@@ -6327,7 +6668,8 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveReal(Matrix)) Call MQC_Error('Incoming matrix not real in MQC_Matrix_Copy_Real2Int')
+      If(.not.MQC_Matrix_HaveReal(Matrix)) Call MQC_Error_L('Incoming matrix not real in MQC_Matrix_Copy_Real2Int', 6, &
+           'MQC_Matrix_HaveReal(Matrix)', MQC_Matrix_HaveReal(Matrix) )
       Matrix%MatI = Matrix%MatR
       If(Allocated(Matrix%MatR)) Deallocate(Matrix%MatR)
       Matrix%Data_Type = 'Integer'
@@ -6349,7 +6691,8 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveReal(Matrix)) Call MQC_Error('Incoming matrix not real in MQC_Matrix_Copy_Real2Complex')
+      If(.not.MQC_Matrix_HaveReal(Matrix)) Call MQC_Error_L('Incoming matrix not real in MQC_Matrix_Copy_Real2Complex', 6, &
+           'MQC_Matrix_HaveReal(Matrix)', MQC_Matrix_HaveReal(Matrix) )
       Matrix%MatC = Matrix%MatR
       If(Allocated(Matrix%MatR)) Deallocate(Matrix%MatR)
       Matrix%Data_Type = 'Complex'
@@ -6371,7 +6714,8 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveComplex(Matrix)) Call MQC_Error('Incoming matrix not complex in MQC_Matrix_Copy_Complex2Int')
+      If(.not.MQC_Matrix_HaveComplex(Matrix)) Call MQC_Error_L('Incoming matrix not complex in MQC_Matrix_Copy_Complex2Int', 6, &
+           'MQC_Matrix_HaveComplex(Matrix)', MQC_Matrix_HaveComplex(Matrix) )
       Matrix%MatI = Real(Matrix%MatC)
       If(Allocated(Matrix%MatC)) Deallocate(Matrix%MatC)
       Matrix%Data_Type = 'Integer'
@@ -6393,10 +6737,11 @@
       Implicit None
       Type(MQC_Matrix)::Matrix
 !
-      If(.not.MQC_Matrix_HaveComplex(Matrix)) Call MQC_Error('Incoming matrix not real in MQC_Matrix_Copy_Complex2Real')
+      If(.not.MQC_Matrix_HaveComplex(Matrix)) Call MQC_Error_L('Incoming matrix not real in MQC_Matrix_Copy_Complex2Real', 6, &
+           'MQC_Matrix_HaveComplex(Matrix)', MQC_Matrix_HaveComplex(Matrix) )
       Matrix%MatR = Real(Matrix%MatC)
       If(Allocated(Matrix%MatC)) Deallocate(Matrix%MatC)
-      Matrix%Data_Type = 'Complex'
+      Matrix%Data_Type = 'Real'
 !
       Return
       End Subroutine MQC_Matrix_Copy_Complex2Real
@@ -6596,7 +6941,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatR = Matrix%MatR
         Else
-          Call MQC_Error('transposing a triD matrix is not supported yet')
+          Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
+               'Matrix%Storage', Matrix%Storage )
         EndIf
       ElseIf(MQC_Matrix_HaveInteger(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Transpose, &
@@ -6606,7 +6952,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatI = Matrix%MatI
         Else
-          Call MQC_Error('transposing a triD matrix is not supported yet')
+          Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
+               'Matrix%Storage', Matrix%Storage )
         EndIf
       ElseIf(MQC_Matrix_HaveComplex(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Transpose, &
@@ -6616,7 +6963,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatC = Matrix%MatC
         Else
-          Call MQC_Error('transposing a triD matrix is not supported yet')
+          Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
+          'Matrix%Storage', Matrix%Storage )
         EndIf
       EndIf
 !
@@ -6644,7 +6992,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatR = Matrix%MatR
         Else
-          Call MQC_Error('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose')
+          Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
+               'Matrix%Storage', Matrix%Storage )
         EndIf
       ElseIf(MQC_Matrix_HaveInteger(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Conjugate_Transpose, &
@@ -6654,7 +7003,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatI = Matrix%MatI
         Else
-          Call MQC_Error('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose')
+          Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
+               'Matrix%Storage', Matrix%Storage )
         EndIf
       ElseIf(MQC_Matrix_HaveComplex(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Conjugate_Transpose, &
@@ -6664,7 +7014,8 @@
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatC = conjg(Matrix%MatC)
         Else
-          Call MQC_Error('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose')
+          Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
+               'Matrix%Storage', Matrix%Storage )
         EndIf
       EndIf
 !
@@ -6688,9 +7039,12 @@
       Integer::I,J
       Real,Parameter::Pt5=0.5
 !
-      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error('Matrix not full packed in MQC_Matrix_Symmetrize')
-      If(Matrix%NCol.ne.Matrix%NRow) Call MQC_Error('Only square matricies can be symmetrixed &
-     &  in MQC_Matrix_Symmetrize')
+      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Matrix not full packed in MQC_Matrix_Symmetrize', 6, &
+           'Matrix%Storage', Matrix%Storage )
+      If(Matrix%NCol.ne.Matrix%NRow) Call MQC_Error_I('Only square matricies can be symmetrixed &
+     &  in MQC_Matrix_Symmetrize', 6, &
+     'Matrix%NCol', Matrix%NCol, &
+     'Matrix%NRow', Matrix%NRow )
       Call MQC_Set_Matrix2Matrix(MQC_Matrix_Symmetrize,Matrix)
       If(Matrix%Data_Type.eq.'Real') then
         Do I = 1, Matrix%NCol
@@ -6735,12 +7089,16 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I,J,II
 !
-      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error('Input matrix must be full &
-     &  packed in MQC_Matrix_Full2Symm')
+      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
+     &  packed in MQC_Matrix_Full2Symm', 6, &
+     'Matrix%Storage', Matrix%Storage )
       If(.not.MQC_Matrix_Test_Symmetric(Matrix).and. &
         .not.MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric').and. &
         .not.MQC_Matrix_Test_Symmetric(Matrix,'hermitian')) &
-        Call MQC_Error('Input matrix must be symmetric/antisymmetric/hermitian in MQC_Matrix_Full2Symm')
+        Call MQC_Error_L('Input matrix must be symmetric/antisymmetric/hermitian in MQC_Matrix_Full2Symm', 6, &
+        'MQC_Matrix_Test_Symmetric(Matrix)', MQC_Matrix_Test_Symmetric(Matrix), &
+        "MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')", MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric'), &
+        "MQC_Matrix_Test_Symmetric(Matrix,'hermitian')", MQC_Matrix_Test_Symmetric(Matrix,'hermitian') )
       If(MQC_Matrix_HaveReal(Matrix)) then
         Allocate(Temp(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
         Temp = Matrix%MatR
@@ -6802,8 +7160,9 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I,J,II,N,NTT
 !
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Full')
+      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
+     &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
+     'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
       If(Matrix%Data_Type.eq.'Real') then
@@ -6867,10 +7226,12 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I
 !
-      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error('Input matrix must be full &
-     &  packed in MQC_Matrix_Full2Diag')
-      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error('Input matrix must be &
-     &  diagonal in MQC_Matrix_Full2Diag')
+      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
+     &  packed in MQC_Matrix_Full2Diag', 6, &
+     'Matrix%Storage', Matrix%Storage )
+      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
+     &  diagonal in MQC_Matrix_Full2Diag', 6, &
+      'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       If(MQC_Matrix_HaveReal(Matrix)) then
         Allocate(Temp(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
         Temp = Matrix%MatR
@@ -6902,7 +7263,8 @@
         EndDo
         Deallocate(TempC)
       Else
-        Call MQC_Error('Matrix type not defined in MQC_Matrix_Full2Diag')
+        Call MQC_Error_L('Matrix type not defined in MQC_Matrix_Full2Diag', 6, &
+             'MQC_Matrix_HaveReal(Matrix)', MQC_Matrix_HaveReal(Matrix) )
       EndIf
 !
       Return
@@ -6924,8 +7286,9 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I,N,Columns,Rows
 !
-      If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Full')
+      If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
+     &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
+     'Matrix%Storage', Matrix%Storage )
       N = Min(MQC_Matrix_Columns(Matrix),MQC_Matrix_Rows(Matrix))
       Columns = MQC_Matrix_Columns(Matrix)
       Rows = MQC_Matrix_Rows(Matrix)
@@ -6977,10 +7340,12 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I,II,N,NTT
 !
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Diag')
-      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error('Input matrix must be &
-     &  diagonal in MQC_Matrix_Symm2Diag')
+      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
+     &  lower-triangular packed in MQC_Matrix_Symm2Diag', 6, &
+     'Matrix%Storage', Matrix%Storage )
+      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
+     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
+     'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
       If(Matrix%Data_Type.eq.'Real') then
@@ -7034,10 +7399,13 @@
       Complex(Kind=8),Dimension(:,:),Allocatable::TempC
       Integer::I,II
 !
-      If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Symm')
+      If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
+     &  diagonal packed in MQC_Matrix_Diag2Symm', 6, &
+     'Matrix%Storage', Matrix%Storage)
       If(MQC_Matrix_Columns(Matrix).ne.MQC_Matrix_Rows(Matrix)) &
-        Call MQC_Error('Input matrix must be square in MQC_Matrix_Diag2Symm')
+        Call MQC_Error_I('Input matrix must be square in MQC_Matrix_Diag2Symm', 6, &
+        'MQC_Matrix_Columns(Matrix)', MQC_Matrix_Columns(Matrix), &
+        'MQC_Matrix_Rows(Matrix)', MQC_Matrix_Rows(Matrix) )
       If(Matrix%Data_Type.eq.'Integer') then
         Allocate(Temp(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         Temp = Matrix%MatI
@@ -7096,8 +7464,9 @@
       type(MQC_Matrix)::Temp
       Integer::I,J,II,N
 !
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Full')
+      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
+     &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
+     'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Temp,Matrix%Data_Type,'StorFull')
       If(Matrix%Data_Type.eq.'Real') then
@@ -7256,9 +7625,13 @@
 !      write(*,*) 'Sam: Type of varible 1=', TRIM(MA%data_type)  
 !      write(*,*) 'Sam: Type of varible 2=', TRIM(MB%data_type)  
       if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error('MQC_MatrixMatrixSum: Sam Data types do NOT match.')
+        call mqc_error_a('MQC_MatrixMatrixSum: Sam Data types do NOT match.', 6, &
+        'TRIM(MA%data_type)', TRIM(MA%data_type), &
+        'TRIM(MB%data_type)', TRIM(MB%data_type) )
       if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error('MQC_MatrixMatrixSum: Storage forms do NOT match.')
+        call mqc_error_a('MQC_MatrixMatrixSum: Storage forms do NOT match.', 6, &
+        'TRIM(MA%storage)', TRIM(MA%storage), &
+        'TRIM(MB%storage', TRIM(MB%storage) )
       MC = MA
 !
 !     Do the work.
@@ -7272,7 +7645,8 @@
       case('COMPLEX')
         MC%MatC = MC%MatC + MB%MatC
       case default
-        call mqc_error('UNKNOWN matrix type in MQC_MatrixMatrixSum.')
+        call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
+             'TRIM(matrixType)', TRIM(matrixType) )
       end select
 !
       return
@@ -7297,9 +7671,13 @@
 !     same-storage pairs. Start by ensuring this limitation is honored.
 !
       if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error('MQC_MatrixMatrixSubtract: Data types do NOT match.')
+        call mqc_error_A('MQC_MatrixMatrixSubtract: Data types do NOT match.', 6, &
+        'TRIM(MA%data_type)', TRIM(MA%data_type), &
+        'TRIM(MB%data_type)', TRIM(MB%data_type) )
       if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error('MQC_MatrixMatrixSubtract: Storage forms do NOT match.')
+        call mqc_error_A('MQC_MatrixMatrixSubtract: Storage forms do NOT match.', 6, &
+        'TRIM(MA%storage)', TRIM(MA%storage), &
+        'TRIM(MB%storage)', TRIM(MB%storage) )
       MC = MA
 !
 !     Do the work.
@@ -7313,7 +7691,8 @@
       case('COMPLEX')
         MC%MatC = MC%MatC - MB%MatC
       case default
-        call mqc_error('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.')
+        call mqc_error_a('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+             'TRIM(matrixType)', TRIM(matrixType))
       end select
 !
       return
@@ -7339,9 +7718,13 @@
 !     same-storage pairs. Start by ensuring this limitation is honored.
 !
       if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error('MQC_MatrixMatrixProduct: Data types do NOT match.')
+        call mqc_error_a('MQC_MatrixMatrixProduct: Data types do NOT match.', 6, &
+        'TRIM(MA%data_type)', TRIM(MA%data_type), &
+        'TRIM(MB%data_type)', TRIM(MB%data_type) )
       if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error('MQC_MatrixMatrixProduct: Storage forms do NOT match.')
+        call mqc_error_a('MQC_MatrixMatrixProduct: Storage forms do NOT match.', 6, &
+        'TRIM(MA%storage)', TRIM(MA%storage), &
+        'TRIM(MB%storage)', TRIM(MB%storage) )
       MC = MA
 !
 !     Do the work.
@@ -7355,7 +7738,8 @@
       case('COMPLEX')
         MC%MatC = MC%MatC * MB%MatC
       case default
-        call mqc_error('UNKNOWN matrix type in MQC_MatrixMatrixProduct.')
+        call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixProduct.', 6, &
+             'TRIM(matrixType)', TRIM(matrixType) )
       end select
 !
       return
@@ -7376,7 +7760,9 @@
       Type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
       integer::i,j
 
-      If (MA%NCol /= MB%NRow) call MQC_Error('The two matrices are not conformable for multiplication')
+      If (MA%NCol /= MB%NRow) call MQC_Error_I('The two matrices are not conformable for multiplication', 6, &
+           'MA%NCol', MA%NCol, &
+           'MB%NRow', MB%NRow )
 
       If (MQC_Matrix_HaveInteger(MA)) MAreal = MQC_Cast_Real(MA)
       If (MQC_Matrix_HaveInteger(MB)) MBreal = MQC_Cast_Real(MB)
@@ -7928,7 +8314,9 @@
       Integer,Allocatable::Result(:,:)
 
       If (.not. VB%Column .or. MA%NCol /= VB%Length) then
-        Call MQC_Error('Matrix and vector are not conformable for multiplication')
+        Call MQC_Error_I('Matrix and vector are not conformable for multiplication', 6, &
+             'MA%NCol', MA%NCol, &
+             'VB%Length', VB%Length)
       EndIf
 
       If (MQC_Matrix_HaveInteger(MA)) MAreal = MQC_Cast_Real(MA)
@@ -8069,7 +8457,9 @@
       Integer,Allocatable::Result(:,:)
 
       If (VA%Column .or. VA%Length /= MB%NRow) then
-        Call MQC_Error('Matrix and vector are not conformable for multiplication')
+        Call MQC_Error_i('Matrix and vector are not conformable for multiplication', 6, &
+             'VA%Length', VA%Length, &
+             'MB%NRow', MB%NRow )
       EndIf
 
       If (.not. MQC_Matrix_HaveReal(MB)) MBreal = MQC_Cast_Real(MB)
@@ -8237,8 +8627,11 @@
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
         Matrix_Res%MatC = Scalar%ScaC * Matrix%MatC
       Else
-        Call MQC_Error('unrecognised data type in mqc_matrixscalarproduct')
-      EndIf
+        Call MQC_Error_A('unrecognised data type in mqc_matrixscalarproduct', 6, &
+             'Matrix%Data_Type', Matrix%Data_Type, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+     EndIf
+     
 
       End Function MQC_MatrixScalarProduct
 !
@@ -8284,7 +8677,9 @@
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
         Matrix_Res%MatC = Scalar%ScaC * Matrix%MatC
       Else
-        Call MQC_Error('unrecognised data type in mqc_matrixscalarproduct')
+        Call MQC_Error_A('unrecognised data type in mqc_matrixscalarproduct', 6, &
+             'Matrix%Data_Type', Matrix%Data_Type, &
+             'Scalar%Data_Type', Scalar%Data_Type )
       EndIf
 
       End Function MQC_ScalarMatrixProduct
@@ -8339,11 +8734,15 @@
       IndJ = J
       If (IndI.lt.0) IndI = Matrix%NRow + IndI + 1
       If (IndJ.lt.0) IndJ = Matrix%NRow + IndJ + 1
-      If (IndI.eq.0.or.IndI.gt.Matrix%NRow) Call MQC_Error('Index I badly specified in mqc_matrix_scalar_put')
-      If (IndJ.eq.0.or.IndJ.gt.Matrix%NRow) Call MQC_Error('Index J badly specified in mqc_matrix_scalar_put')
-
+      If (IndI.eq.0.or.IndI.gt.Matrix%NRow) Call MQC_Error_I('Index I badly specified in mqc_matrix_scalar_put', 6, &
+           'IndI', IndI, &
+           'Matrix%NRow', Matrix%NRow )
+      If (IndJ.eq.0.or.IndJ.gt.Matrix%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
+           'IndJ', IndJ, &
+           'Matrix%NRow', Matrix%NRow )
 !     storage types only for full at the moment
-      If (Matrix%Storage.ne.'StorFull') Call MQC_Error('MQC_Matrix_Scalar_Put only has StorFull implemented.')
+      If (Matrix%Storage.ne.'StorFull') Call MQC_Error_A('MQC_Matrix_Scalar_Put only has StorFull implemented.', 6, &
+           'Matrix%Storage', Matrix%Storage )
       If (Matrix%Data_Type.eq.'Integer') then
         If (Scalar%Data_Type.eq.'Integer') then
           Matrix%MatI(IndI,IndJ) = Scalar%ScaI
@@ -8354,7 +8753,8 @@
           Call MQC_Matrix_Copy_Int2Complex(Matrix)
           Matrix%MatC(IndI,IndJ) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Matrix_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+              'Scalar%Data_Type', Scalar%Data_Type ) 
         EndIf
       ElseIf (Matrix%Data_Type.eq.'Real') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -8365,7 +8765,8 @@
           Call MQC_Matrix_Copy_Real2Complex(Matrix)
           Matrix%MatC(IndI,IndJ) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Matrix_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+              'Scalar%Data_Type', Scalar%Data_Type ) 
         EndIf
       ElseIf (Matrix%Data_Type.eq.'Complex') then
         If (Scalar%Data_Type.eq.'Integer') then
@@ -8375,10 +8776,12 @@
         ElseIf (Scalar%Data_Type.eq.'Complex') then
           Matrix%MatC(IndI,IndJ) = Scalar%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_Matrix_Scalar_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+               'Scalar%Data_Type', Scalar%Data_Type ) 
         EndIf
       Else
-        Call MQC_Error('Matrix type not defined in MQC_Matrix_Scalar_Put')
+        Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
+             'Matrix%Data_Type', Matrix%Data_Type )
       EndIf
 
       End Subroutine MQC_Matrix_Scalar_Put
@@ -8423,7 +8826,7 @@
             Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
             Matrix%MatC = Scalar
         Class Default
-          Call MQC_Error('Scalar Type not defined in MQC_Matrix_Initialize')
+          Call MQC_Error_I('Scalar Type not defined in MQC_Matrix_Initialize', 6)
         End Select
       Else
         Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
@@ -8509,7 +8912,8 @@
         if(allocated(work)) deallocate(work)
         if(allocated(temp)) deallocate(temp)
       Else
-        call mqc_error('unrecognised data type in mqc_matrix_norm')
+        call mqc_error_a('unrecognised data type in mqc_matrix_norm', 6, &
+             'matrix%Data_Type', matrix%Data_Type )
       EndIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(matrix)
       if(StorFlag.eq.'StorSymm') Call MQC_Matrix_Full2Symm(matrix)
@@ -8521,8 +8925,6 @@
       function mqc_matrix_determinant(a) result(det)
 !
 !     This function returns the determinant of MQC matrix A.
-!     This is giving the right number but the sign is not working as
-!     IPIV is being returned strangely.
 !
 !     Lee M. Thompson, 2016.
 !
@@ -8543,7 +8945,7 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_diag2Symm(a)
+      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(rows,cols))
@@ -8553,7 +8955,8 @@
         iPiv = 0
         iError = 1
         call dgetrf(rows,cols,temp,rows,iPiv,iError)
-        if(iError.ne.0) call mqc_error('DGETRF exited with error in mqc_matrix_determinant')
+        if(iError.ne.0) call mqc_error_i('DGETRF exited with error in mqc_matrix_determinant', 6, &
+             'iError', iError )
         det = 1.0
         do i = 1,rows
           det = det%rval()*temp(i,i)
@@ -8576,7 +8979,8 @@
         iPiv = 0
         iError = 1
         call zgetrf(rows,cols,tempC,rows,iPiv,iError)
-        if(iError.ne.0) call mqc_error('ZGETRF exited with error in mqc_matrix_determinant')
+        if(iError.ne.0) call mqc_error_i('ZGETRF exited with error in mqc_matrix_determinant', 6, &
+             'iError', iError )
         det = cmplx(1.0,0.0,kind=8)
         do i = 1,rows
           det = det%cval()*tempC(i,i)
@@ -8691,9 +9095,15 @@
       nDim2A = mqc_matrix_columns(a)
       nDim1B = mqc_matrix_rows(b)
       nDim2B = mqc_matrix_columns(b)
-      if(nDim1A.ne.nDim1B) call mqc_error('Order of matrices A and B is different in mqc_matrix_generalized_eigensystem')
-      if(nDim1A.ne.nDim2A) call mqc_error('Matrix A is not square in mqc_matrix_generalized_eigensystem')
-      if(nDim1B.ne.nDim2B) call mqc_error('Matrix B is not square in mqc_matrix_generalized_eigensystem')
+      if(nDim1A.ne.nDim1B) call mqc_error_I('Order of matrices A and B is different in mqc_matrix_generalized_eigensystem', 6, &
+           'nDim1A', nDim1A, &
+           'nDim1B', nDim1B )
+      if(nDim1A.ne.nDim2A) call mqc_error_i('Matrix A is not square in mqc_matrix_generalized_eigensystem', 6, &
+           'nDim1A', nDim1A, &
+           'nDim2A', nDim2A )
+      if(nDim1B.ne.nDim2B) call mqc_error_i('Matrix B is not square in mqc_matrix_generalized_eigensystem', 6, &
+           'nDim1B', nDim1B, &
+           'nDim2B', nDim2B )
       storFlagA = a%Storage
       storFlagB = b%Storage
       typeFlagA = a%Data_Type
@@ -8713,22 +9123,26 @@
         allocate(eValsOut(nDim2A),work(1))
         if(present(reigenvecs).or.present(leigenvecs)) then
           call dsygv(1,'V','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem')
+          if(iError.ne.0) call mqc_error_i('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
           lWork = work(1)
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'V','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem')
+          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
           if(present(reigenvecs)) reigenvecs = tempA
           if(present(leigenvecs)) leigenvecs = tempA
         else
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem')
+          if(iError.ne.0) call mqc_error_i('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
           lWork = work(1)
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem')
+          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
         endIf
         eigenvals = eValsOut
         if(allocated(eValsOut)) deallocate(eValsOut)
@@ -8747,13 +9161,15 @@
             allocate(rightvecs(nDim2A,nDim2A),leftvecs(nDim2A,nDim2A))
             call dggev('V','V',nDim2A,tempA,nDim1A,tempB,NDim1B,eValsReal,eValsImag,eValsOut,leftvecs,NDim2A, &
               rightvecs,nDim2A,work,lWork,iError)
-            if(iError.ne.0) call mqc_error('Failure in DGGEV memory evaluation in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in DGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             lWork = work(1)
             deallocate(work)
             allocate(work(lWork))
             call dggev('V','V',nDim2A,tempA,nDim1A,tempB,NDim1B,eValsReal,eValsImag,eValsOut,leftvecs,nDim2A, &
               rightvecs,nDim2A,work,lWork,iError)
-            if(iError.ne.0) call mqc_error('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             if(present(reigenvecs)) reigenvecs = rightvecs
             if(present(leigenvecs)) leigenvecs = leftvecs
             do i = 1, NDim2A
@@ -8773,13 +9189,15 @@
             allocate(leftvecs(1,1),rightvecs(1,1))
             call dggev('N','N',nDim2A,tempA,nDim1A,tempB,NDim1B,eValsReal,eValsImag,eValsOut,leftvecs,1, &
               rightvecs,1,work,lWork,iError)
-            if(iError.ne.0) call mqc_error('Failure in DGGEV memory evaluation in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in DGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             lWork = work(1)
             deallocate(work)
             allocate(work(lwork))
             call dggev('N','N',nDim2A,tempA,nDim1A,tempB,NDim1B,eValsReal,eValsImag,eValsOut,leftvecs,1, &
               rightvecs,1,work,lwork,iError)
-            if(iError.ne.0) call mqc_error('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
           endIf
           eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=8)
           if(allocated(eValsReal)) deallocate(eValsReal)
@@ -8800,26 +9218,30 @@
             allocate(rightCvecs(nDim2A,nDim2A),leftCvecs(nDim2A,nDim2A))
             call zggev('V','V',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,nDim2A, &
               rightCvecs,nDim2A,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             lWork = workC(1)
             deallocate(workC)
             allocate(workC(lWork))
             call zggev('V','V',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,nDim2A, &
               rightCvecs,nDim2A,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             if(present(reigenvecs)) reigenvecs = rightCvecs
             if(present(leigenvecs)) leigenvecs = leftCvecs
           else
             allocate(rightCvecs(1,1),leftCvecs(1,1))
             call zggev('N','N',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,1, &
               rightCvecs,1,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
             lWork = workC(1)
             deallocate(workC)
             allocate(workC(lWork))
             call zggev('N','N',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,1, &
               rightCvecs,1,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem')
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+                 'iError', iError)
           endIf
           eigenvals = eValsA/eValsB
           if(allocated(eValsA)) deallocate(eValsA)
@@ -8867,6 +9289,7 @@
       NDim2 = MQC_Matrix_Columns(A)
       typeFlag = A%Data_Type
       storFlag = A%Storage
+ 1050 Format( A, I10 )
 !
       if(storFlag.eq.'StorDiag') return
       if(storFlag.eq.'StorSymm') call mqc_matrix_symm2Full(A)
@@ -8883,7 +9306,7 @@
           Allocate(Work(Work_Length))
           Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
             NDim2,Work,Work_Length,IError)
-          If(IError.ne.0) Write(*,*)' SVD FAILED: IError = ',IError
+          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
           DeAllocate(Work)
           Work_Length = -1
         elseIf(typeFlag.eq.'Complex') then
@@ -8897,11 +9320,12 @@
           Allocate(WorkC(Work_Length))
           Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
             NDim2,WorkC,Work_Length,Work,IError)
-          If(IError.ne.0) Write(*,*)' SVD FAILED: IError = ',IError
+          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
           DeAllocate(WorkC,Work)
           Work_Length = -1
         else
-          call mqc_error('typeFlag not recognised in mqc_matrix_svd')
+          call mqc_error_a('typeFlag not recognised in mqc_matrix_svd', 6, &
+               'typeFlag', typeFlag )
         endIf
 !
         if(present(EVals)) EVals = A_SVals
@@ -8922,8 +9346,9 @@
         if(allocated(AC_Temp)) deallocate(AC_Temp)
 !
       else
-        call mqc_error('storFlag not recognised in mqc_matrix_svd')
-      endIf
+        call mqc_error_a('storFlag not recognised in mqc_matrix_svd', 6, &
+             'storFlag', storFlag )
+     endIf
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
       if(storFlag.eq.'StorSymm') call mqc_matrix_full2Symm(A)
@@ -8967,10 +9392,12 @@
           max_A = real(maxval(abs(AC_Temp)))
           deallocate(AC_Temp)
         else
-          call mqc_error('Unrecognised type in mqc_matrix_rms_max')
+          call mqc_error_a('Unrecognised type in mqc_matrix_rms_max', 6, &
+               'typeFlag', typeFlag )
         endIf
       else
-        call mqc_error('storFlag not recognised in mqc_matrix_rms_max')
+        call mqc_error_a('storFlag not recognised in mqc_matrix_rms_max', 6, &
+             'storFlag', storFlag )
       endIf
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
@@ -9000,7 +9427,11 @@
       Integer::ICur,JCur,KCur,LCur
 
       If (I.lt.0 .or. J.lt.0 .or. K.lt.0 .or. L.lt.0) then
-        Call MQC_Error('Dimensions less than zero in MQC_Allocate_R4Tensor')
+        Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_R4Tensor', 6, &
+             'I', I, &
+             'J', J, &
+             'K', K, &
+             'L', L )
       EndIf
 
       Call MQC_Deallocate_R4Tensor(Tensor)
@@ -9012,7 +9443,8 @@
         KCur = K
         LCur = L
       Else
-        Call MQC_Error('Storage type not recognised in MQC_Allocate_R4Tensor')
+        Call MQC_Error_A('Storage type not recognised in MQC_Allocate_R4Tensor', 6, &
+             'Storage', Storage)
       EndIf
 
       If(Data_Type.eq.'Integer' .or. Data_Type.eq.'integer' .or. Data_Type.eq.'Int' .or. Data_Type.eq.'int') then
@@ -9078,11 +9510,18 @@
       If (IndJ.lt.0) IndJ = Tensor%J + IndJ + 1
       If (IndK.lt.0) IndK = Tensor%K + IndI + 1
       If (IndL.lt.0) IndL = Tensor%L + IndJ + 1
-      If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error('Index I badly specified in mqc_r4tensor_at')
-      If (IndJ.eq.0.or.IndJ.gt.Tensor%J) Call MQC_Error('Index J badly specified in mqc_r4tensor_at')
-      If (IndK.eq.0.or.IndK.gt.Tensor%K) Call MQC_Error('Index K badly specified in mqc_r4tensor_at')
-      If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error('Index L badly specified in mqc_r4tensor_at')
-
+      If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error_I('Index I badly specified in mqc_r4tensor_at', 6, &
+           'IndI', IndI, &
+           'Tensor%I', Tensor%I )
+      If (IndJ.eq.0.or.IndJ.gt.Tensor%J) Call MQC_Error_I('Index J badly specified in mqc_r4tensor_at', 6, &
+           'IndJ', IndJ, &
+           'Tensor%J', Tensor%J )
+      If (IndK.eq.0.or.IndK.gt.Tensor%K) Call MQC_Error_I('Index K badly specified in mqc_r4tensor_at', 6, &
+           'IndK', IndK, &
+           'Tensor%K', Tensor%K )
+      If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
+           'IndL', IndL, &
+           'Tensor%L', Tensor%L )
       If(Tensor%Data_Type.eq.'Integer') then
         Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
       ElseIf(Tensor%Data_Type.eq.'Real') then
@@ -9090,7 +9529,8 @@
       ElseIf(Tensor%Data_Type.eq.'Complex') then
         Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
       Else
-        Call MQC_Error('Tensor type not defined in MQC_R4Tensor_At')
+        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+             'Tensor%Data_Type', Tensor%Data_Type )
       EndIf
 
       End Function MQC_R4Tensor_At
@@ -9115,11 +9555,18 @@
       If (IndJ.lt.0) IndJ = Tensor%J + IndJ + 1
       If (IndK.lt.0) IndK = Tensor%K + IndI + 1
       If (IndL.lt.0) IndL = Tensor%L + IndJ + 1
-      If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error('Index I badly specified in mqc_r4tensor_put')
-      If (IndJ.eq.0.or.IndJ.gt.Tensor%J) Call MQC_Error('Index J badly specified in mqc_r4tensor_put')
-      If (IndK.eq.0.or.IndK.gt.Tensor%K) Call MQC_Error('Index K badly specified in mqc_r4tensor_put')
-      If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error('Index L badly specified in mqc_r4tensor_put')
-
+      If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error_I('Index I badly specified in mqc_r4tensor_put', 6, &
+           'IndI', IndI, &
+           'Tensor%I', Tensor%I)
+      If (IndJ.eq.0.or.IndJ.gt.Tensor%J) Call MQC_Error_I('Index J badly specified in mqc_r4tensor_put', 6, &
+           'IndJ', IndJ, &
+           'Tensor%J', Tensor%J)
+      If (IndK.eq.0.or.IndK.gt.Tensor%K) Call MQC_Error_I('Index K badly specified in mqc_r4tensor_put', 6, &
+           'IndK', IndK, &
+           'Tensor%K', Tensor%K)
+      If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_put', 6, &
+           'IndL', IndL, &
+           'Tensor%L', Tensor%L)
       !print*, 'tensor%ten(i,j,k,l)= ', tensor%ten(i,j,k,l)
       If (Tensor%Data_Type.eq.'Integer') then
         If (Element%Data_Type.eq.'Integer') then
@@ -9129,7 +9576,9 @@
         ElseIf (Element%Data_Type.eq.'Complex') then
           Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_R4Tensor_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+               'Element%Data_Type', Element%Data_Type, &
+               'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
       ElseIf (Tensor%Data_Type.eq.'Real') then
         If (Element%Data_Type.eq.'Integer') then
@@ -9139,7 +9588,9 @@
         ElseIf (Element%Data_Type.eq.'Complex') then
           Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_R4Tensor_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+               'Element%Data_Type', Element%Data_Type, &
+               'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
       ElseIf (Tensor%Data_Type.eq.'Complex') then
         If (Element%Data_Type.eq.'Integer') then
@@ -9149,10 +9600,13 @@
         ElseIf (Element%Data_Type.eq.'Complex') then
           Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
         Else
-          Call MQC_Error('Scalar type not defined in MQC_R4Tensor_Put')
+          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+               'Element%Data_Type', Element%Data_Type, &
+               'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
       Else
-        Call MQC_Error('Tensor type not defined in MQC_R4Tensor_Put')
+        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
+             'Tensor%Data_Type', Tensor%Data_Type )
       EndIf
       !call mqc_output_scalar(tensor%ten(i,j,k,l),element)
       !tensor%ten(i,j,k,l) = 60
@@ -9161,8 +9615,8 @@
       End Subroutine MQC_R4Tensor_Put
 !
 !
-!     PROCEDURE MQC_Print_R4Tensor
-      Subroutine MQC_Print_R4Tensor(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
+!     PROCEDURE MQC_Print_R4Tensor_Algebra1
+      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
 !     This Subroutine prints the MQC_R4Tensor Tensor.
 !
@@ -9174,12 +9628,13 @@
       Logical,Optional::blank_at_top,blank_at_bottom
 
  1000 Format(1x,A)
+ 1020 Format( " " )
  1100 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',I10)
  1200 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
  1300 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
 
       If(Present(blank_at_top)) then
-        If(blank_at_top) Write(IOut,*)
+        If(blank_at_top) Write(IOut,1020)
       EndIf
       If(Present(Header)) Write(IOut,1000) Trim(Header)
       Do I = 1, Tensor%I
@@ -9198,10 +9653,10 @@
         EndDo
       EndDo
       If(present(blank_at_bottom)) then
-        If(blank_at_bottom) Write(IOut,*)
+        If(blank_at_bottom) Write(IOut,1020)
       EndIf
 
-      End Subroutine MQC_Print_R4Tensor
+      End Subroutine MQC_Print_R4Tensor_Algebra1
 !
 !
 !     PROCEDURE MQC_Set_Array2Tensor
@@ -9228,7 +9683,7 @@
           Size(ArrayIn,4),TensorOut,'Complex','StorFull')
         TensorOut%CTen = ArrayIn
       Class Default
-        Call MQC_Error('Array type not determined in MQC_Array2Tensor')
+        Call MQC_Error_I('Array type not determined in MQC_Array2Tensor', 6)
       End Select
 
       End Subroutine MQC_Set_Array2Tensor
@@ -9262,7 +9717,7 @@
           Call MQC_Allocate_R4Tensor(I,J,K,L,R4Tensor,'Complex','StorFull')
           R4Tensor%CTen = Scalar
         Class Default
-          Call MQC_Error('Scalar Type not defined in MQC_R4Tensor_Initialize')
+          Call MQC_Error_I('Scalar Type not defined in MQC_R4Tensor_Initialize', 6)
         End Select
       Else
         Call MQC_Allocate_R4Tensor(I,J,K,L,R4Tensor,'Real','StorFull')
