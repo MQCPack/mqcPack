@@ -13,7 +13,6 @@ ERROR: Did not find Gaussian_not_in_path in the path
 test-Should be no problems
 test1071-Should be no problems
 test1129-Should be no problems
-test1130-Should be no problems
 test1132-Run Input should be no problems
 test1132-MatrixFile
 test1132-Run Input and MatrixFile

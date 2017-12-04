@@ -3,7 +3,7 @@
 cd tools
 rm outfile
 cd test
-echo "test-Intentional problems"&>> ../outfile
+echo "test-Intentional problems" >> ../outfile 2>&1
 ../CheckGauInput test.com >> ../outfile
 ../CheckGauInput test.com Gaussian_not_in_path >> ../outfile
 
@@ -33,11 +33,11 @@ echo "test1129-Should be no problems" >> ../outfile
 ../CheckGauInput test1129.com ${GauBINARY} >> ../outfile
 cd ..
 
-cd test1130
-echo "test1130-Should be no problems" >> ../outfile
-../CheckGauInput test1130.com ${GauBINARY} >> ../outfile
-cd ..
-
+#cd test1130
+#echo "test1130-Should be no problems" >> ../outfile
+#../CheckGauInput test1130.com ${GauBINARY} >> ../outfile
+#cd ..
+#
 cd test1132
 echo "test1132-Run Input should be no problems" >> ../outfile
 ../CheckGauInput test1132.com ${GauBINARY} >> ../outfile
