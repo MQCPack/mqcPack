@@ -3,20 +3,18 @@
 cd tools
 rm outfile
 cd test
-echo "test-Intentional problems"&>> ../outfile
+echo "test-Intentional problems" >> ../outfile
 ../CheckGauInput test.com >> ../outfile
 ../CheckGauInput test.com Gaussian_not_in_path >> ../outfile
 
 if command -v g16 > /dev/null 2>&1; then
  export GauBINARY="g16"
-else
-if command -v gdv > /dev/null 2>&1; then
+elif command -v gdv > /dev/null 2>&1; then
  export GauBINARY="gdv"
 else
  echo "Gaussian Binary not found" >> ../outfile
  diff -b -B outfile OUTPUT/out
  exit
-fi
 fi
 
 echo "test-Should be no problems">> ../outfile
@@ -24,21 +22,25 @@ echo "test-Should be no problems">> ../outfile
 cd ..
 
 cd test1071
+pwd
 echo "test1071-Should be no problems" >> ../outfile
 ../CheckGauInput test1071.com ${GauBINARY} >> ../outfile
 cd ..
 
 cd test1129
+pwd
 echo "test1129-Should be no problems" >> ../outfile
 ../CheckGauInput test1129.com ${GauBINARY} >> ../outfile
 cd ..
 
 cd test1130
+pwd
 echo "test1130-Should be no problems" >> ../outfile
 ../CheckGauInput test1130.com ${GauBINARY} >> ../outfile
 cd ..
 
 cd test1132
+pwd
 echo "test1132-Run Input should be no problems" >> ../outfile
 ../CheckGauInput test1132.com ${GauBINARY} >> ../outfile
 echo "test1132-MatrixFile" >> ../outfile
