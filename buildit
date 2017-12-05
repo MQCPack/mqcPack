@@ -22,7 +22,6 @@ endif
 
 echo ${LD_LIBRARY_PATH}
 
-chmod 755 ./configure
 ./configure --prefix=`pwd`/../install
 make
 
