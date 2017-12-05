@@ -1,6 +1,6 @@
 #! /bin/bash -f
 
-## Here's what I don on pinconning
+## Here's what I do on pinconning
 #module add gaussian/g16
 #export GAUSS_SCRDIR=/home/dmullally/scratch
 if command -v g16 > /dev/null 2>&1; then
