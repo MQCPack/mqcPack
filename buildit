@@ -1,6 +1,15 @@
 #! /bin/csh -f
 
+echo "The tools test will not pass unless you setup the Gaussian environment"
+echo "in advance.  Either g16 or a recent gdv will work."
+
 chmod 000 examples/algebra2/testit.sh
+
+if ( -d ../install ) then
+#   echo "../install does not need to be created"
+else
+   mkdir ../install
+endif
 
 autoreconf --install
 #rm src/*.o src/*.mod
@@ -13,6 +22,7 @@ endif
 
 echo ${LD_LIBRARY_PATH}
 
+chmod 755 ./configure
 ./configure --prefix=`pwd`/../install
 make
 
