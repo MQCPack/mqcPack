@@ -1,24 +1,32 @@
-#! /bin/csh -f
+#! /bin/bash -f
 
-echo "The tools test will not pass unless you setup the Gaussian environment"
-echo "in advance.  Either g16 or a recent gdv will work."
+## Here's what I don on pinconning
+#module add gaussian/g16
+#export GAUSS_SCRDIR=/home/dmullally/scratch
+if command -v g16 > /dev/null 2>&1; then
+ export GauBINARY="g16"
+elif command -v gdv > /dev/null 2>&1; then
+ export GauBINARY="gdv"
+else
+ echo "The tools check will not pass, because you have not setup the Gaussian environment"
+ echo "Please setup either g16 or a recent gdv"
+ exit
+fi
 
+# This is not needed.  The setup test should reset the permissions.  
+# This is just to force the test to do the reset
 chmod 000 examples/algebra2/testit.sh
 
-if ( -d ../install ) then
-#   echo "../install does not need to be created"
-else
-   mkdir ../install
-endif
+[ ! -d ../install ] && mkdir ../install
 
 autoreconf --install
-#rm src/*.o src/*.mod
 
-if ($?LD_LIBRARY_PATH ) then
-  setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:`pwd`/../install/lib
+if [ $?LD_LIBRARY_PATH ] 
+then
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:`pwd`/../install/lib
 else
-  setenv LD_LIBRARY_PATH `pwd`/../install/lib
-endif
+  export LD_LIBRARY_PATH=`pwd`/../install/lib
+fi
 
 echo ${LD_LIBRARY_PATH}
 
