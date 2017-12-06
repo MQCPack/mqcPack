@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ctype.h>
 /*
 #define DEBUG
 */
@@ -437,7 +438,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
     sprintf( InputFile, "%s.mod", JobName );
     mqc_Write_InputLines( InputFile, Start_Line );
   } else {
-    sprintf( InputFile, FileName );
+    strcpy( InputFile, FileName );
     MatFileName = mqc_DupString( Last_NonBlank->Name, (char *)NULL);
   }
   mqc_Free_InputLines( Start_Line );
@@ -585,7 +586,7 @@ char *mqc_DupString( char *old_str, char *free_this )
 
 InputLine *mqc_Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_struct )
 {
-  static Blank_count = 0;
+  static int Blank_count = 0;
 
   InputLine *new_struct = (InputLine *)NULL;
 
