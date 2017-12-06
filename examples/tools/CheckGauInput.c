@@ -71,20 +71,20 @@ int main(int argc, char *argv[])
     if ( i > 1 ) {
       sprintf( NextEnvName, "NxtMatFil%d", i-1 );
       if ( setenv( NextEnvName, EnvName, 1 ) != 0 ) {
-	sprintf( charBuf, "Not able to set env variable \"%\" to \"%s\"\n",
+	sprintf( charBuf, "Not able to set env variable \"%s\" to \"%s\"\n",
 	     NextEnvName, EnvName );
 	mqc_error( charBuf );
       }
     }
     sprintf( EnvName, "MatFil%d", i );
     if ( setenv( EnvName, MatFileName, 1 ) != 0 ) {
-      sprintf( charBuf, "Not able to set env variable \"%\" to \"%s\"\n",
+      sprintf( charBuf, "Not able to set env variable \"%s\" to \"%s\"\n",
 	       EnvName, MatFileName );
     }
   }
   sprintf( NextEnvName, "NxtMatFil%d", j-1 );
   if ( setenv( NextEnvName, "mqc_Done", 1 ) != 0 ) {
-    sprintf( charBuf, "Not able to set env variable \"%\" to \"mqc_Done\"\n",
+    sprintf( charBuf, "Not able to set env variable \"%s\" to \"mqc_Done\"\n",
 	     NextEnvName );
     mqc_error( charBuf );
   }
