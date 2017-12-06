@@ -33,20 +33,12 @@ echo "test1129-Should be no problems" >> ../outfile
 ../CheckGauInput test1129.com ${GauBINARY} >> ../outfile
 cd ..
 
-<<<<<<< HEAD
-#cd test1130
-#echo "test1130-Should be no problems" >> ../outfile
-#../CheckGauInput test1130.com ${GauBINARY} >> ../outfile
-#cd ..
-#
-=======
 cd test1130
 pwd
 echo "test1130-Should be no problems" >> ../outfile
 ../CheckGauInput test1130.com ${GauBINARY} >> ../outfile
 cd ..
 
->>>>>>> upstream/master
 cd test1132
 pwd
 echo "test1132-Run Input should be no problems" >> ../outfile
