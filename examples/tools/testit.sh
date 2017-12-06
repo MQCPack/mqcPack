@@ -3,7 +3,7 @@
 cd tools
 rm outfile
 cd test
-echo "test-Intentional problems" >> ../outfile
+echo "test-Intentional problems" >> ../outfile 2>&1
 ../CheckGauInput test.com >> ../outfile
 ../CheckGauInput test.com Gaussian_not_in_path >> ../outfile
 
