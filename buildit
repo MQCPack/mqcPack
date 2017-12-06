@@ -17,20 +17,24 @@ fi
 # This is just to force the test to do the reset
 chmod 000 examples/algebra2/testit.sh
 
-[ ! -d ../install ] && mkdir ../install
+# Configure usually installs into areas that most users don't have access to, 
+# so create an area for the MQC installation
+export MQC_InstallationDir=`pwd`/../install/lib
+
+[ ! -d ${MQC_InstallationDir} ] && mkdir ${MQC_InstallationDir}
 
 autoreconf --install
 
 if [ $?LD_LIBRARY_PATH ] 
 then
-  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:`pwd`/../install/lib
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MQC_InstallationDir}/lib
 else
-  export LD_LIBRARY_PATH=`pwd`/../install/lib
+  export LD_LIBRARY_PATH=${MQC_InstallationDir}/lib
 fi
 
 echo ${LD_LIBRARY_PATH}
 
-./configure --prefix=`pwd`/../install
+./configure --prefix=${MQC_InstallationDir}
 make
 
 make check
