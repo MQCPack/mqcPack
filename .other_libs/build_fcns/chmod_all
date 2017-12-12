@@ -1,0 +1,7 @@
+#! /bin/bash -x
+# 
+# This file is a work around.  The chmod with * fails with #! /bin/bash -f
+chmod 755 examples/*/*.sh 
+
+
+
