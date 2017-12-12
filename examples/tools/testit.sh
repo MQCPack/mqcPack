@@ -1,21 +1,15 @@
-#! /bin/bash
+#! /bin/bash -x
 
-cd tools
+cd ../tools
 rm outfile
 cd test
+# set up the Gaussian environment
+
 echo "test-Intentional problems" >> ../outfile 2>&1
 ../CheckGauInput test.com >> ../outfile
 ../CheckGauInput test.com Gaussian_not_in_path >> ../outfile
 
-if command -v g16 > /dev/null 2>&1; then
- export GauBINARY="g16"
-elif command -v gdv > /dev/null 2>&1; then
- export GauBINARY="gdv"
-else
- echo "Gaussian Binary not found" >> ../outfile
- diff -b -B outfile OUTPUT/out
- exit
-fi
+export GauBINARY="${GAU_BINARY}"
 
 echo "test-Should be no problems">> ../outfile
 ../CheckGauInput test.com ${GauBINARY} >> ../outfile
