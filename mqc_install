@@ -2,9 +2,48 @@
 # To debug:#! /bin/bash -x
 # Choose the FORTRAN to use.
 # configure will use the FC environment variable for this.
-export FC="g"
 
 export MQC_HOME="`pwd`"
+# This needs to be done by developers only:
+if [ ! -f Makefile.in ]; then
+    autoreconf --install
+elif [ ! -f src/Makefile.in ]; then
+    autoreconf --install
+elif [ ! -f examples/FCHK_Tests/Makefile.in ]; then
+    autoreconf --install
+elif [ ! -f configure ]; then
+    autoreconf --install
+elif [ configure.ac -nt configure ]; then
+    autoreconf --install
+elif [ Makefile.am -nt Makefile.in ]; then
+    autoreconf --install
+elif [ examples/FCHK_Tests/Makefile.am -nt examples/FCHK_Tests/Makefile.in ]; then
+    autoreconf --install
+elif [ src/Makefile.am -nt src/Makefile.in ]; then
+    autoreconf --install
+fi
+
+if [ ! -f examples/MatFile_Tests/Makefile.in ]; then
+    cd $MQC_HOME/examples/MatFile_Tests
+    autoreconf --install
+    cd $MQC_HOME
+elif [ ! -f examples/MatFile_Tests/configure ]; then
+    cd $MQC_HOME/examples/MatFile_Tests
+    autoreconf --install
+    cd $MQC_HOME
+elif [ examples/MatFile_Tests/configure.ac -nt examples/MatFile_Tests/configure ]; then
+    cd $MQC_HOME/examples/MatFile_Tests
+    autoreconf --install
+    cd $MQC_HOME
+elif [ examples/MatFile_Tests/Makefile.am -nt examples/MatFile_Tests/Makefile.in ]; then
+    cd $MQC_HOME/examples/MatFile_Tests
+    autoreconf --install
+    cd $MQC_HOME
+fi
+# Done with developers only section
+
+export FC="g"
+
 while [ "$FC" = "g" ]
 do
     echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: gfortran]?"
@@ -128,7 +167,7 @@ do
 	fi
     fi
 
-    $FC test_blas_lib.f03 ${MQC_BLAS} > blas.err 2>&1
+    ${FC} test_blas_lib.f03 ${MQC_BLAS} > blas.err 2>&1
     rm -f a.out
 
     if [ "`wc blas.err`" = "0 0 0 blas.err" ]; then
@@ -136,10 +175,12 @@ do
 	echo "${MQC_BLAS}" > default 2>&1
     else
 	echo "Warning: Problem when trying a test link with BLAS."
-	echo "         Error Message is:"
+	echo "The Link line is:"
+	echo ""
+	echo "${FC} test_blas_lib.f03 ${MQC_BLAS}"
+	echo ""
+	echo "The error message is the next `wc -l < blas.err` lines"
 	cat blas.err
-	echo ""
-	echo ""
 	echo ""
 	echo "Try entering the full path such as"
 	echo "\'/usr/lib/blas_LINUX.a\'"
@@ -179,7 +220,7 @@ do
 	fi
     fi
 
-    $FC test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS} > lapack.err 2>&1
+    ${FC} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS} > lapack.err 2>&1
     rm -f a.out
 
     if [ "`wc lapack.err`" = "0 0 0 lapack.err" ]; then
@@ -187,10 +228,12 @@ do
 	echo "${MQC_LAPACK}"  > default 2>&1
     else
 	echo "Warning: Problem when trying a test link with LAPACK."
-	echo "         Error Message is:"
+	echo "The Link line is:"
+	echo ""
+	echo "${FC} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS}"
+	echo ""
+	echo "The error message is the next `wc -l < lapack.err` lines"
 	cat lapack.err
-	echo ""
-	echo ""
 	echo ""
 	echo "Try entering \'-L{LAPACK Directory} -l{LAPACK Library}\' such as"
 	echo "\'-L/usr/lib -llapack\' or the full path such as"
@@ -212,15 +255,13 @@ chmod 755 ./configure
 # Remove the library.  So that is contains only what the build wants to add.
 rm -f ${MQC_HOME}/src/libmqc.a
 make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
-echo "Congratulations! The RWF functionality in libmqc is built!"
-make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
+echo "Congratulations! The FCHK functionality in libmqc is built!"
 
 # These functions are required because BASH has a problem with '*'
 chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all
-${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/lib 
 ${MQC_HOME}/.other_libs/build_fcns/chmod_all
 
-echo "Now perform RWF tests"
+echo "Now perform FCHK tests"
 make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 
 echo "Gaussian specific information"
@@ -416,7 +457,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
     rm ${GAUSS_SCRDIR}/MQC_TEST
     echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
 
-    cd ${MQC_HOME}/examples/MatFile_Test
+    cd ${MQC_HOME}/examples/MatFile_Tests
     chmod 755 configure
     ./configure --prefix=${MQC_INSTALLATIONDIR}
 
@@ -425,7 +466,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
     make MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
     ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen 2>&1
 # Check that we are expanding the library.
-# If this fails, first check examples/MatFile_Test/Makefile.am
+# If this fails, first check examples/MatFile_Tests/Makefile.am
     diff ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen > ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 2>&1
     if grep --quiet "<" ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs; then
 	echo "New library missing some objects that were in the previous library."
@@ -434,12 +475,17 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 	exit 1
     fi
     echo "Congratulations! The MQC library can now work with MatrixFiles!"
-    make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
-    ${MQC_HOME}/.other_libs/build_fcns/cp_all ../../src .mod ${MQC_INSTALLATIONDIR}/lib 
 
     make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
-    cd ${MQC_HOME}
 fi
+
+
+cd ${MQC_HOME}
+# /dev/null is not happy in this shell.  Use a file
+mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
+make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
+${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/lib > ${mqc_tmpfile} 2>&1
+rm ${mqc_tmpfile}
 
 echo "Finished! with installation and testing"
 exit
