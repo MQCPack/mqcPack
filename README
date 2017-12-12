@@ -1,0 +1,10 @@
+Required Software:
+	 - BLAS
+	 - LAPACK library
+Optional Software:
+	 - gauopen
+	 - Gaussian 16 or higher
+To build:
+   chmod 755 mqc_install
+   ./mqc_install
+   {Answer questions}

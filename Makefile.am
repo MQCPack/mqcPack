@@ -1,4 +1,4 @@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
-SUBDIRS = src examples
+SUBDIRS = src examples/RWF_Tests
 dist_doc_DATA = README
 

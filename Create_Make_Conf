@@ -1,0 +1,15 @@
+#! /bin/bash -f
+
+top_dir="`pwd`"
+echo "Make Config and Makefile.in in top level Directory"
+autoreconf --install
+# This creates Makefiles in the top directory, src and examples/RWF_Tests
+
+cd ${top_dir}/examples/MatFile_Test
+echo "Make Config and Makefile.in in ${top_dir}/examples/MatFile_Test"
+autoreconf --install
+
+
+
+
+
