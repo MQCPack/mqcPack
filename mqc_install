@@ -180,9 +180,10 @@ do
     fi
 
     ${FC} test_blas_lib.f03 ${MQC_BLAS} > blas.err 2>&1
-    rm -f a.out
-    if [ ! -s blas.err ]; then
+
+    if [ -f a.out ]; then
 	MQC_OLD_BLAS="y"
+	rm -f a.out
 	echo "${MQC_BLAS}" > default 2>&1
     else
 	echo "Warning: Problem when trying a test link with BLAS."
@@ -237,10 +238,10 @@ do
     fi
 
     ${FC} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS} > lapack.err 2>&1
-    rm -f a.out
 
-    if [ ! -s lapack.err ]; then
+    if [ -f a.out ]; then
 	MQC_OLD_LAPACK="y"
+	rm -f a.out
 	echo "${MQC_LAPACK}"  > default 2>&1
     else
 	echo "Warning: Problem when trying a test link with LAPACK."
