@@ -1,0 +1,5 @@
+#! /bin/bash -x
+# 
+# This file is a work around.  The copy with * fails with #! /bin/bash -f
+rm *$1
+
