@@ -4,6 +4,7 @@
 # configure will use the FC environment variable for this.
 
 export MQC_HOME="`pwd`"
+mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
 #
 # Developers need to add to or modify the makefiles
 # This needs to be done by developers only:
@@ -47,90 +48,77 @@ fi
 # Done with developers only section
 #
 export FC="g"
+export CC="g"
 while [ "$FC" = "g" ]
 do
-    if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
-	echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: `cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`]?"
-    else
-	echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: gfortran]?"
-    fi
-    read MQC_FORTRAN
-    if [ "${MQC_FORTRAN}a" = "a" ]; then
-	if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
-	    MQC_FORTRAN="`cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`"
-	else
-	    MQC_FORTRAN="gfortran"
-	fi
-    fi
-    if [ "${MQC_FORTRAN}" = "gfortran" ]; then
-	path_to_executable="`command -v gfortran`"
-	if [ -x "${path_to_executable}" ] ; then
-	    export FC="gfortran"
-	else
-	    echo "gfortran not found in path"
-	fi
-    elif [ "${MQC_FORTRAN}" = "pgfortran" ]; then
-	path_to_executable="`command -v pgfortran`"
-	if [ -x "${path_to_executable}" ] ; then
-	    export FC="pgfortran"
-	else
-	    echo "pgfortran not found in path"
-	fi
-   fi
-done
-chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all
-
-if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
-    if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`" != "$FC" ]; then
-	make clean
-	cd src
-	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod
-	cd $MQC_HOME/examples/MatFile_Tests
-	make clean
-	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod
-	cd ${MQC_HOME}
-    fi
-fi
-echo "${FC}"  > ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN
-
-#
-# Choose the C compiler to use.
-# configure will use the CC environment variable for this.
-#
-export CC="g"
-
-while [ "$CC" = "g" ]
-do
-    if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_C ]; then
-	echo "Do you wish to use gcc or pgcc to compile C [default: `cat ${MQC_HOME}/.other_libs/build_fcns/default_C`]?"
-    else
-	echo "Do you wish to use gcc or pgcc to compile C [default: gcc]?"
-    fi
-    read MQC_CC
-    if [ "${MQC_CC}a" = "a" ]; then
-	if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_C ]; then
-	    MQC_CC="`cat ${MQC_HOME}/.other_libs/build_fcns/default_C`"
-	else
-	    MQC_CC="gcc"
-	fi
-    fi
-    if [ "${MQC_CC}" = "gcc" ]; then
+    echo "Please select a compiler.  Available options are:"
+    echo "    G - GNU compilers (gfortran/gcc) "
+    echo "    P - PGI compilers (pgfortran/pgcc)"
+    read -n 1 MQC_Compiler
+    echo ""
+    if [ "${MQC_Compiler}" = "G" ]; then
 	path_to_executable="`command -v gcc`"
 	if [ -x "${path_to_executable}" ] ; then
 	    export CC="gcc"
+	    path_to_executable="`command -v gfortran`"
+	    if [ -x "${path_to_executable}" ] ; then
+		export FC="gfortran"
+	    else
+		echo "gfortran not found in path"
+		echo "Cannot use GNU option.  gfortran not found in path"
+	    fi
 	else
 	    echo "gcc not found in path"
+	    echo "Cannot use GNU option.  gcc not found in path"
 	fi
-    elif [ "${MQC_CC}" = "pgcc" ]; then
+    elif [ "${MQC_Compiler}" = "P" ]; then
 	path_to_executable="`command -v pgcc`"
 	if [ -x "${path_to_executable}" ] ; then
 	    export CC="pgcc"
 	else
 	    echo "pgcc not found in path"
+	    path_to_executable="`command -v gcc`"
+	    if [ -x "${path_to_executable}" ] ; then
+		export CC="gcc"
+		echo "gcc will be used"
+	    else
+		echo "gcc not found in path."
+		echo "Not finding a C compiler in path."
+		echo "Please fix path before you retry installing MQCPath"
+		exit 1
+	    fi
 	fi
-    fi
+	path_to_executable="`command -v pgfortran`"
+	if [ -x "${path_to_executable}" ] ; then
+	    export FC="pgfortran"
+	else
+	    echo "Cannot use PGI option.  pgfortran not found in path"
+	fi
+    elif [ "${FC}" = "g" ]; then
+	echo ""
+	echo "Please specify either GNU or PGI"
+	echo ""
+   fi
 done
-echo "${CC}"  > ${MQC_HOME}/.other_libs/build_fcns/default_C
+chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all
+
+if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ]; then
+    if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
+	echo ""
+	echo "The last build used a different compiler, so cleaning"
+	echo "objects and module files."
+	echo ""
+	make clean > ${mqc_tmpfile} 2>&1
+	cd src
+	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
+	cd $MQC_HOME/examples/MatFile_Tests > ${mqc_tmpfile} 2>&1
+	make clean > ${mqc_tmpfile} 2>&1
+	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
+	cd ${MQC_HOME}
+    fi
+fi
+echo "${MQC_Compiler}"  > ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER
+
 #
 # configure always wants a directory where users can find software later.
 # This just allows you to do this.
@@ -148,32 +136,53 @@ do
     fi
     read MQC_InstallationDir
     if [ "${MQC_InstallationDir}a" = "a" ]; then
-	if [ -f ${MQC_HOME}/.other_libs/BLAS/default ]; then
+	if [ -f ${MQC_HOME}/.other_libs/build_fcns/default ]; then
 	    MQC_InstallationDir="`cat ${MQC_HOME}/.other_libs/build_fcns/default`"
 	else 
 	    MQC_InstallationDir="/usr/local"
 	fi
     fi
     if [[ ${MQC_InstallationDir:0:1} == "~" ]]; then
-	echo "This tool does not understand ~.  Please enter the directory without using ~"
-    else
-	[ ! -d ${MQC_InstallationDir} ] && mkdir ${MQC_InstallationDir}
+	MQC_InstallationDir="`echo "${MQC_InstallationDir:1:${#MQC_InstallationDir}-1}"`"
+	MQC_InstallationDir="${HOME}${MQC_InstallationDir}"
+    fi
+    [ ! -d ${MQC_InstallationDir} ] && mkdir ${MQC_InstallationDir} > ${mqc_tmpfile} 2>&1
+    [ ! -d ${MQC_InstallationDir}/${MQC_Compiler} ] && mkdir ${MQC_InstallationDir}/${MQC_Compiler}  > ${mqc_tmpfile} 2>&1
+    [ ! -d ${MQC_InstallationDir}/${MQC_Compiler}/lib ] && mkdir ${MQC_InstallationDir}/${MQC_Compiler}/lib  > ${mqc_tmpfile} 2>&1
+    [ ! -d ${MQC_InstallationDir}/${MQC_Compiler}/mod ] && mkdir ${MQC_InstallationDir}/${MQC_Compiler}/mod  > ${mqc_tmpfile} 2>&1
 
-	if [ ! -d ${MQC_InstallationDir} ]; then
-	    echo "Failed to create "${MQC_InstallationDir}
+    if [ ! -d ${MQC_InstallationDir} ]; then
+	echo "Failed to create "${MQC_InstallationDir}
+    elif [ ! -d ${MQC_InstallationDir}/${MQC_Compiler} ]; then
+	echo "Failed to create "${MQC_InstallationDir}/${MQC_Compiler}
+    elif [ ! -d ${MQC_InstallationDir}/${MQC_Compiler}/lib ]; then
+	echo "Failed to create "${MQC_InstallationDir}/${MQC_Compiler}/lib
+    elif [ ! -d ${MQC_InstallationDir}/${MQC_Compiler}/mod ]; then
+	echo "Failed to create "${MQC_InstallationDir}/${MQC_Compiler}/mod
+    else
+	if [ ! -w ${MQC_InstallationDir} ]; then
+	    echo "Cannot write to ${MQC_InstallationDir}"
+	elif [ ! -r ${MQC_InstallationDir} ]; then
+	    echo "Cannot read from ${MQC_InstallationDir}"
+	elif [ ! -w ${MQC_InstallationDir}/${MQC_Compiler} ]; then
+	    echo "Cannot write to ${MQC_InstallationDir}/${MQC_Compiler}"
+	elif [ ! -r ${MQC_InstallationDir}/${MQC_Compiler} ]; then
+	    echo "Cannot read from ${MQC_InstallationDir}/${MQC_Compiler}"
+	elif [ ! -w ${MQC_InstallationDir}/${MQC_Compiler}/lib ]; then
+	    echo "Cannot write to ${MQC_InstallationDir}/${MQC_Compiler}/lib"
+	elif [ ! -r ${MQC_InstallationDir}/${MQC_Compiler}/lib ]; then
+	    echo "Cannot read from ${MQC_InstallationDir}/${MQC_Compiler}/lib"
+	elif [ ! -w ${MQC_InstallationDir}/${MQC_Compiler}/mod ]; then
+	    echo "Cannot write to ${MQC_InstallationDir}/${MQC_Compiler}/mod"
+	elif [ ! -r ${MQC_InstallationDir}/${MQC_Compiler}/mod ]; then
+	    echo "Cannot read from ${MQC_InstallationDir}/${MQC_Compiler}/mod"
 	else
-	    touch ${MQC_InstallationDir}/MQC_TEST
-	    if [ -f ${MQC_InstallationDir}/MQC_TEST ]; then
-		MQC_TEST="y"
-		export MQC_INSTALLATIONDIR="${MQC_InstallationDir}"
-	    else
-		rm -f ${MQC_InstallationDir}/MQC_TEST
-		echo "Cannot write to ${MQC_InstallationDir}"
-	    fi
+	    MQC_TEST="y"
+	    export MQC_INSTALLATIONDIR="${MQC_InstallationDir}/${MQC_Compiler}"
 	fi
     fi
 done
-echo ${MQC_INSTALLATIONDIR} > ${MQC_HOME}/.other_libs/build_fcns/default 2>&1
+echo ${MQC_InstallationDir} > ${MQC_HOME}/.other_libs/build_fcns/default 2>&1
 #
 # Need to link with the BLAS library.  The following section of script 
 # is where the installer to defines how to link the BLAS in for our tests.
@@ -219,7 +228,7 @@ do
 	cat blas.err
 	echo ""
 	echo "Try entering the full path such as"
-	echo "\'/usr/lib/blas_LINUX.a\'"
+	echo "'/usr/lib/blas_LINUX.a'"
 	echo "If you do not have BLAS, you can get it by "
 	echo "downloading from this site:"
 	echo "   http://www.netlib.org/blas/"
@@ -276,9 +285,9 @@ do
 	echo "The error message is the next `wc -l < lapack.err` lines"
 	cat lapack.err
 	echo ""
-	echo "Try entering \'-L{LAPACK Directory} -l{LAPACK Library}\' such as"
-	echo "\'-L/usr/lib -llapack\' or the full path such as"
-	echo "\'/usr/lib/liblapack.a\'"
+	echo "Try entering '-L{LAPACK Directory} -l{LAPACK Library}' such as"
+	echo "'-L/usr/lib -llapack' or the full path such as"
+	echo "'/usr/lib/liblapack.a'"
 	echo "If you do not have LAPACK, you can get it by "
 	echo "downloading from this site:"
 	echo "   http://www.netlib.org/lapack/"
@@ -515,29 +524,32 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 #
 # If the Gaussian scratch directory has not been specified, specify it now.
 #
-	if [ -z "${GAUSS_SCRDIR}" ]; then
-	    export GAUSS_SCRDIR=""
-	else
-	    touch ${GAUSS_SCRDIR}/MQC_TEST
+	if [ -v GAUSS_SCRDIR ]; then
+	    if [ ! -d "${GAUSS_SCRDIR}" ]; then
+		unset GAUSS_SCRDIR
+	    elif [ ! -w "${GAUSS_SCRDIR}" ]; then
+		unset GAUSS_SCRDIR
+	    elif [ ! -r "${GAUSS_SCRDIR}" ]; then
+		unset GAUSS_SCRDIR
+	    fi
 	fi
-	while [ ! -f ${GAUSS_SCRDIR}/MQC_TEST ]
+	while [ ! -v GAUSS_SCRDIR ]
 	do 
 	    echo "Please enter the scratch directory for Gaussian"
 	    if [ -f ${MQC_HOME}/.other_libs/gaussian/default_scratch ]; then
 		echo "[default:`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`]:"
 	    fi
 	    read INTERFACE
-	    export GAUSS_SCRDIR="$INTERFACE"
-	    touch ${GAUSS_SCRDIR}/MQC_TEST
-	    if [ ! -f "${GAUSS_SCRDIR}/MQC_TEST" ]; then
-		if [ ! -d "${GAUSS_SCRDIR}" ]; then
-		    echo "${GAUSS_SCRDIR} does not exist.  Please enter an existing directory."
-		else
-		    echo "Cannot write to ${GAUSS_SCRDIR}.  Please a directory with write permission."
-		fi
+	    if [ ! -d "${INTERFACE}" ]; then
+		echo "${INTERFACE} does not exist.  Please enter an existing directory."
+	    elif [ ! -w "${INTERFACE}" ]; then
+		echo "${INTERFACE} is not writable.  Please enter a writable directory."
+	    elif [ ! -r "${INTERFACE}" ]; then
+		echo "${INTERFACE} is not readable.  Please enter a readable directory."
+	    else
+		export GAUSS_SCRDIR="$INTERFACE"
 	    fi
 	done
-	rm ${GAUSS_SCRDIR}/MQC_TEST
 # Save the working GAUSS_SCRDIR for use as default next time
 	echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
 # Use the script that will run Gaussian
@@ -582,13 +594,9 @@ fi
 #
 cd ${MQC_HOME}
 # /dev/null is not happy in this shell.  Use a file
-mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
 make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 
-if [ ! -d ${MQC_INSTALLATIONDIR}/mod_${FC} ]; then
-    mkdir ${MQC_INSTALLATIONDIR}/mod_${FC} 
-fi
-${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/mod_${FC} > ${mqc_tmpfile} 2>&1
+${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/mod > ${mqc_tmpfile} 2>&1
 rm ${mqc_tmpfile}
 
 echo "Finished! with installation and testing"
