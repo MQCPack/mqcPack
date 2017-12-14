@@ -27,21 +27,21 @@ elif [ src/Makefile.am -nt src/Makefile.in ]; then
 fi
 
 if [ ! -f examples/MatFile_Tests/Makefile.in ]; then
-    cd $MQC_HOME/examples/MatFile_Tests
+    cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
-    cd $MQC_HOME
+    cd ${MQC_HOME}
 elif [ ! -f examples/MatFile_Tests/configure ]; then
-    cd $MQC_HOME/examples/MatFile_Tests
+    cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
-    cd $MQC_HOME
+    cd ${MQC_HOME}
 elif [ examples/MatFile_Tests/configure.ac -nt examples/MatFile_Tests/configure ]; then
-    cd $MQC_HOME/examples/MatFile_Tests
+    cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
-    cd $MQC_HOME
+    cd ${MQC_HOME}
 elif [ examples/MatFile_Tests/Makefile.am -nt examples/MatFile_Tests/Makefile.in ]; then
-    cd $MQC_HOME/examples/MatFile_Tests
+    cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
-    cd $MQC_HOME
+    cd ${MQC_HOME}
 fi
 #
 # Done with developers only section
@@ -49,8 +49,19 @@ fi
 export FC="g"
 while [ "$FC" = "g" ]
 do
-    echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: gfortran]?"
+    if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
+	echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: `cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`]?"
+    else
+	echo "Do you wish to use gfortran or pgfortran to compile FORTRAN[default: gfortran]?"
+    fi
     read MQC_FORTRAN
+    if [ "${MQC_FORTRAN}a" = "a" ]; then
+	if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
+	    MQC_FORTRAN="`cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`"
+	else
+	    MQC_FORTRAN="gfortran"
+	fi
+    fi
     if [ "${MQC_FORTRAN}" = "gfortran" ]; then
 	path_to_executable="`command -v gfortran`"
 	if [ -x "${path_to_executable}" ] ; then
@@ -65,15 +76,23 @@ do
 	else
 	    echo "pgfortran not found in path"
 	fi
-    elif [ "${MQC_FORTRAN}a" = "a" ]; then
-	path_to_executable="`command -v gfortran`"
-	if [ -x "${path_to_executable}" ] ; then
-	    export FC="gfortran"
-	else
-	    echo "gfortran not found in path"
-	fi
    fi
 done
+chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all
+
+if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN ]; then
+    if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN`" != "$FC" ]; then
+	make clean
+	cd src
+	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod
+	cd $MQC_HOME/examples/MatFile_Tests
+	make clean
+	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod
+	cd ${MQC_HOME}
+    fi
+fi
+echo "${FC}"  > ${MQC_HOME}/.other_libs/build_fcns/default_FORTRAN
+
 #
 # Choose the C compiler to use.
 # configure will use the CC environment variable for this.
@@ -82,8 +101,19 @@ export CC="g"
 
 while [ "$CC" = "g" ]
 do
-    echo "Do you wish to use gcc or pgcc to compile C [default: gcc]?"
+    if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_C ]; then
+	echo "Do you wish to use gcc or pgcc to compile C [default: `cat ${MQC_HOME}/.other_libs/build_fcns/default_C`]?"
+    else
+	echo "Do you wish to use gcc or pgcc to compile C [default: gcc]?"
+    fi
     read MQC_CC
+    if [ "${MQC_CC}a" = "a" ]; then
+	if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_C ]; then
+	    MQC_CC="`cat ${MQC_HOME}/.other_libs/build_fcns/default_C`"
+	else
+	    MQC_CC="gcc"
+	fi
+    fi
     if [ "${MQC_CC}" = "gcc" ]; then
 	path_to_executable="`command -v gcc`"
 	if [ -x "${path_to_executable}" ] ; then
@@ -98,15 +128,9 @@ do
 	else
 	    echo "pgcc not found in path"
 	fi
-    elif [ "${MQC_CC}a" = "a" ]; then
-	path_to_executable="`command -v gcc`"
-	if [ -x "${path_to_executable}" ] ; then
-	    export CC="gcc"
-	else
-	    echo "gcc not found in path"
-	fi
     fi
 done
+echo "${CC}"  > ${MQC_HOME}/.other_libs/build_fcns/default_C
 #
 # configure always wants a directory where users can find software later.
 # This just allows you to do this.
@@ -154,10 +178,10 @@ echo ${MQC_INSTALLATIONDIR} > ${MQC_HOME}/.other_libs/build_fcns/default 2>&1
 # Need to link with the BLAS library.  The following section of script 
 # is where the installer to defines how to link the BLAS in for our tests.
 # It also tests that the BLAS library has been correctly defined, so that 
-# a typo here doesn't cause problems cause problems when we test MQC.
+# a typo here doesn't cause problems cause problems when we test MQCPack.
 #
 echo ""
-echo "MQC requires the BLAS library."
+echo "MQCPack requires the BLAS library."
 echo ""
 
 cd ${MQC_HOME}/.other_libs/BLAS
@@ -210,10 +234,10 @@ cd ${MQC_HOME}
 # Need to link with the LAPACK library.  The following section of script 
 # is where the installer to defines how to link the LAPACK in for our tests.
 # It also tests that the LAPACK library has been correctly defined, so that 
-# a typo here doesn't cause problems cause problems when we test MQC.
+# a typo here doesn't cause problems cause problems when we test MQCPack.
 #
 echo ""
-echo "MQC requires the LAPACK library."
+echo "MQCPack requires the LAPACK library."
 echo ""
 
 cd ${MQC_HOME}/.other_libs/LAPACK
@@ -267,34 +291,37 @@ do
 done
 cd ${MQC_HOME}
 #
-# Now build the FCHK functionality in the MQC library.
+# Now build the FCHK functionality in the MQCPack library.
 #
 chmod 755 ./configure
-./configure --prefix=${MQC_INSTALLATIONDIR}
+./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
 # Remove the library.  So that is contains only what the build wants to add.
 rm -f ${MQC_HOME}/src/libmqc.a
 make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 echo "Congratulations! The FCHK functionality in libmqc is built!"
 
 # These functions are required because BASH has a problem with '*'
-chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all
 ${MQC_HOME}/.other_libs/build_fcns/chmod_all
 #
-# Now check the FCHK functionality in the MQC library.
+# Now check the FCHK functionality in the MQCPack library.
 #
 echo "Now perform FCHK tests"
 make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 #
-# Done with the build and check of the FCHK functionality in the MQC library.
+# Done with the build and check of the FCHK functionality in the MQCPack library.
 #
 #
-# Should we add MatrixFile ability to the MQC library?
+# Should we add MatrixFile ability to the MQCPack library?
 #
-echo "Gaussian specific information"
+echo "MatrixFile specific information"
+echo ""
+echo "The MACPack interface requires gauopen.  (If you don't have it"
+echo "there are instructions on how to obtain it below.)"
+echo ""
 MQC_INTERFACE="g"
 while [ "$MQC_INTERFACE" = "g" ]
 do
-    echo "Do you want to use and test the Gaussian specific interface in MQC? [y or n]:"
+    echo "Do you want to use and test the MatrixFile interface to MQCPack? [y or n]:"
     read -n 1 INTERFACE
     echo ""
     if [ "$INTERFACE" = "y" ]; then
@@ -524,27 +551,30 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 
     cd ${MQC_HOME}/examples/MatFile_Tests
     chmod 755 configure
-    ./configure --prefix=${MQC_INSTALLATIONDIR}
+    ./configure --prefix=${MQC_INSTALLATIONDIR} --silent
 
 # This is a check of the scripts.  Save a list of the objects in the MQC 
 # library for comparison later
     ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen 2>&1
+    cat ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen | sort > ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen_sorted
     rm -f ${MQC_HOME}/src/libmqc.a
 # Build the MQC library with MatrixFile functionality
     make MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
 # Find the objects in the MQC library with MatrixFile functionality
     ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen 2>&1
+    cat ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen | sort > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen_sorted
+
 # Check that we are expanding the library.
 # If this fails, first check examples/MatFile_Tests/Makefile.am
-    diff ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen > ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 2>&1
+    diff ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen_sorted ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen_sorted > ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 2>&1
     if grep --quiet "<" ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs; then
 	echo "New library missing some objects that were in the previous library."
 	echo "Here is the difference in objects:"
 	cat ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 
 	exit 1
     fi
-    echo "Congratulations! The MQC library can now work with MatrixFiles!"
-# Now check the MQC library with MatrixFile functionality
+    echo "Congratulations! The MQCPack library can now work with MatrixFiles!"
+# Now check the MQCPack library with MatrixFile functionality
     make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
 fi
 #
@@ -555,7 +585,10 @@ cd ${MQC_HOME}
 mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
 make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 
-${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/lib > ${mqc_tmpfile} 2>&1
+if [ ! -d ${MQC_INSTALLATIONDIR}/mod_${FC} ]; then
+    mkdir ${MQC_INSTALLATIONDIR}/mod_${FC} 
+fi
+${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/mod_${FC} > ${mqc_tmpfile} 2>&1
 rm ${mqc_tmpfile}
 
 echo "Finished! with installation and testing"
