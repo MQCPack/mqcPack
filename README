@@ -1,4 +1,5 @@
 Required Software:
+	 - autotools (only for developers)
 	 - BLAS
 	 - LAPACK library
 Optional Software:
