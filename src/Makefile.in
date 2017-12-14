@@ -126,7 +126,7 @@ libmqc_a_LIBADD =
 am_libmqc_a_OBJECTS = mqc_general.$(OBJEXT) mqc_algebra2.$(OBJEXT) \
 	mqc_algebra.$(OBJEXT) mqc_datastructures.$(OBJEXT) \
 	mqc_files.$(OBJEXT) mqc_molecule.$(OBJEXT) mqc_est.$(OBJEXT) \
-	mqc_gaussian.$(OBJEXT) mqc_util.$(OBJEXT)
+	mqc_util.$(OBJEXT)
 libmqc_a_OBJECTS = $(am_libmqc_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -287,7 +287,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 lib_LIBRARIES = libmqc.a
-libmqc_a_SOURCES = mqc_general.f03 mqc_algebra2.f03 mqc_algebra.f03 mqc_datastructures.f03 mqc_files.f03  mqc_molecule.f03 mqc_est.f03 mqc_gaussian.f03 mqc_util.c
+libmqc_a_SOURCES = mqc_general.f03 mqc_algebra2.f03 mqc_algebra.f03 mqc_datastructures.f03 mqc_files.f03  mqc_molecule.f03 mqc_est.f03 mqc_util.c
 all: all-am
 
 .SUFFIXES:
@@ -590,7 +590,7 @@ uninstall-am: uninstall-libLIBRARIES
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-libLIBRARIES
 
-build: mqc_general.(OBJEXT) mqc_algebra2.(OBJEXT) mqc_algebra.(OBJEXT) mqc_datastructures.(OBJEXT) mqc_files.(OBJEXT)  mqc_molecule.(OBJEXT) mqc_est.(OBJEXT) mqc_gaussian.(OBJEXT) mqc_util.(OBJEXT)
+build: mqc_general.(OBJEXT) mqc_algebra2.(OBJEXT) mqc_algebra.(OBJEXT) mqc_datastructures.(OBJEXT) mqc_files.(OBJEXT)  mqc_molecule.(OBJEXT) mqc_est.(OBJEXT)  mqc_util.(OBJEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
