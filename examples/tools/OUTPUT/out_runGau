@@ -1,0 +1,19 @@
+test-Intentional problems
+Error in number of argments to this program.  Arguments should be:
+     - Full path to a Gaussian file
+         - This can either be a MatrixFile
+         - This can be a Gaussian input file
+     - The name of the binary for the program that 
+       generates the MatrixFile, most likely "g16".  
+       The environment should be setup to run the program.
+ERROR: Only one argument to this program
+
+ERROR: Did not find Gaussian_not_in_path in the path
+
+test-Should be no problems
+test1071-Should be no problems
+test1129-Should be no problems
+test1130-Should be no problems
+test1132-Run Input should be no problems
+test1132-MatrixFile
+test1132-Run Input and MatrixFile
