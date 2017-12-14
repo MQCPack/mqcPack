@@ -17,6 +17,14 @@ elif [ ! -f examples/FCHK_Tests/Makefile.in ]; then
     autoreconf --install
 elif [ ! -f configure ]; then
     autoreconf --install
+elif [ ! -f install-sh ]; then
+    autoreconf --install
+elif [ ! -f test-driver ]; then
+    autoreconf --install
+elif [ ! -f missing ]; then
+    autoreconf --install
+elif [ ! -f depcomp ]; then
+    autoreconf --install
 elif [ configure.ac -nt configure ]; then
     autoreconf --install
 elif [ Makefile.am -nt Makefile.in ]; then
@@ -32,6 +40,14 @@ if [ ! -f examples/MatFile_Tests/Makefile.in ]; then
     autoreconf --install
     cd ${MQC_HOME}
 elif [ ! -f examples/MatFile_Tests/configure ]; then
+    cd ${MQC_HOME}/examples/MatFile_Tests
+    autoreconf --install
+    cd ${MQC_HOME}
+elif [ ! -f test-driver ]; then
+    cd ${MQC_HOME}/examples/MatFile_Tests
+    autoreconf --install
+    cd ${MQC_HOME}
+elif [ ! -f depcomp ]; then
     cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
     cd ${MQC_HOME}
