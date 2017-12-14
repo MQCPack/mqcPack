@@ -48,7 +48,6 @@ fi
 # Done with developers only section
 #
 export FC="g"
-export CC="g"
 while [ "$FC" = "g" ]
 do
     echo "Please select a compiler.  Available options are:"
@@ -63,6 +62,7 @@ do
 	    path_to_executable="`command -v gfortran`"
 	    if [ -x "${path_to_executable}" ] ; then
 		export FC="gfortran"
+		MQC_Compiler="GNU"
 	    else
 		echo "gfortran not found in path"
 		echo "Cannot use GNU option.  gfortran not found in path"
@@ -72,6 +72,7 @@ do
 	    echo "Cannot use GNU option.  gcc not found in path"
 	fi
     elif [ "${MQC_Compiler}" = "P" ]; then
+	export CC="g"
 	path_to_executable="`command -v pgcc`"
 	if [ -x "${path_to_executable}" ] ; then
 	    export CC="pgcc"
@@ -88,11 +89,14 @@ do
 		exit 1
 	    fi
 	fi
-	path_to_executable="`command -v pgfortran`"
-	if [ -x "${path_to_executable}" ] ; then
-	    export FC="pgfortran"
-	else
-	    echo "Cannot use PGI option.  pgfortran not found in path"
+	if [ "$CC" != "g" ]; then
+	    path_to_executable="`command -v pgfortran`"
+	    if [ -x "${path_to_executable}" ] ; then
+		export FC="pgfortran"
+		MQC_Compiler="PGI"
+	    else
+		echo "Cannot use PGI option.  pgfortran not found in path"
+	    fi
 	fi
     elif [ "${FC}" = "g" ]; then
 	echo ""
