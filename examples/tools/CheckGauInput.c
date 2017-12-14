@@ -215,14 +215,14 @@ char *mqc_GetMatrixFile( char *FileName, char *Program )
   fflush(stdout);
 #endif
 
-  sprintf( tmp_CheckGAU_File_NameA, "%sa%", tmp_CheckGAU_File_Name );
+  sprintf( tmp_CheckGAU_File_NameA, "%sa", tmp_CheckGAU_File_Name );
   sprintf( charBuf, "#! /bin/bash -f\nif command -v %s > /dev/null 2>&1; then\n echo 1 &> %s\nelse\n echo 2 &> %s\nfi\n", Program, tmp_CheckGAU_File_NameA, tmp_CheckGAU_File_NameA );
 
   CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"w");
   rtn_fputs=fputs(charBuf,CheckGAU_File);
   fclose_return = fclose(CheckGAU_File);
   CheckGAU_File = NULL;
-  sprintf( charBuf, "chmod 777 %s;%s\n", tmp_CheckGAU_File_Name, tmp_CheckGAU_File_Name );
+  sprintf( charBuf, "chmod 755 %s;%s\n", tmp_CheckGAU_File_Name, tmp_CheckGAU_File_Name );
 
 #ifdef DEBUG
   printf( "execute %s\n", charBuf );
