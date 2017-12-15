@@ -336,6 +336,7 @@ ${MQC_HOME}/.other_libs/build_fcns/chmod_all
 #
 echo "Now perform FCHK tests"
 make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
+if [ $? -ne 0 ] ; then exit $? ; fi
 #
 # Done with the build and check of the FCHK functionality in the MQCPack library.
 #
@@ -544,7 +545,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 #
 # If the Gaussian scratch directory has not been specified, specify it now.
 #
-	if [ -v GAUSS_SCRDIR ]; then
+	if [ ! -z "${GAUSS_SCRDIR}" ]; then
 	    if [ ! -d "${GAUSS_SCRDIR}" ]; then
 		unset GAUSS_SCRDIR
 	    elif [ ! -w "${GAUSS_SCRDIR}" ]; then
@@ -553,7 +554,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 		unset GAUSS_SCRDIR
 	    fi
 	fi
-	while [ ! -v GAUSS_SCRDIR ]
+	while [ -z "${GAUSS_SCRDIR}" ]
 	do 
 	    echo "Please enter the scratch directory for Gaussian"
 	    if [ -f ${MQC_HOME}/.other_libs/gaussian/default_scratch ]; then
@@ -592,6 +593,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
     rm -f ${MQC_HOME}/src/libmqc.a
 # Build the MQC library with MatrixFile functionality
     make MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
+    if [ $? -ne 0 ] ; then exit $? ; fi
 # Find the objects in the MQC library with MatrixFile functionality
     ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen 2>&1
     cat ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen | sort > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen_sorted
@@ -608,6 +610,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
     echo "Congratulations! The MQCPack library can now work with MatrixFiles!"
 # Now check the MQCPack library with MatrixFile functionality
     make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
+    if [ $? -ne 0 ] ; then exit $? ; fi
 fi
 #
 # Finally, install the library
@@ -615,6 +618,7 @@ fi
 cd ${MQC_HOME}
 # /dev/null is not happy in this shell.  Use a file
 make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
+if [ $? -ne 0 ] ; then exit $? ; fi
 
 ${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/mod > ${mqc_tmpfile} 2>&1
 rm ${mqc_tmpfile}
