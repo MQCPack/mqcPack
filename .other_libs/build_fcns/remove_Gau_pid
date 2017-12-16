@@ -1,0 +1,15 @@
+#! /bin/bash -x
+
+sed -e 's/Gau-1/Gau-/g' < $1 > tmp_remove_Gau_pid
+sed -e 's/Gau-2/Gau-/g' < tmp_remove_Gau_pid > tmp_remove_Gau_pid_1
+sed -e 's/Gau-3/Gau-/g' < tmp_remove_Gau_pid_1 > tmp_remove_Gau_pid
+sed -e 's/Gau-4/Gau-/g' < tmp_remove_Gau_pid > tmp_remove_Gau_pid_1
+sed -e 's/Gau-5/Gau-/g' < tmp_remove_Gau_pid_1 > tmp_remove_Gau_pid
+sed -e 's/Gau-6/Gau-/g' < tmp_remove_Gau_pid > tmp_remove_Gau_pid_1
+sed -e 's/Gau-7/Gau-/g' < tmp_remove_Gau_pid_1 > tmp_remove_Gau_pid
+sed -e 's/Gau-8/Gau-/g' < tmp_remove_Gau_pid > tmp_remove_Gau_pid_1
+sed -e 's/Gau-9/Gau-/g' < tmp_remove_Gau_pid_1 > tmp_remove_Gau_pid
+sed -e 's/Gau-0/Gau-/g' < tmp_remove_Gau_pid > $1
+rm tmp_remove_Gau_pid tmp_remove_Gau_pid_1
+
+
