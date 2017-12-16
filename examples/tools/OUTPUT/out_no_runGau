@@ -1,12 +1,13 @@
-test-Intentional problems
-Error in number of argments to this program.  Arguments should be:
+Intentional problems
+Error in number of argments to this program.
+Arguments should be:
      - Full path to a Gaussian file
-         - This can either be a MatrixFile
-         - This can be a Gaussian input file
-     - The name of the binary for the program that 
-       generates the MatrixFile, most likely "g16".  
+        - This can either be FormCheck File
+        - This can either be a MatrixFile
+        - This can be a Gaussian input file
+     - The name of the binary for the program that
+       generates the MatrixFile, most likely 'g16'.
        The environment should be setup to run the program.
-ERROR: Only one argument to this program
-
-ERROR: Did not find Gaussian_not_in_path in the path
-
+ MQC ERROR: No arguments to this program
+Did not find Gaussian_not_in_path in the path
+ MQC ERROR: Did not find Gaussian_not_in_path in the path
