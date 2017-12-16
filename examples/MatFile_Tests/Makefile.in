@@ -153,7 +153,8 @@ ___setup_set_permissions_OBJECTS =  \
 	$(am____setup_set_permissions_OBJECTS)
 ___setup_set_permissions_LDADD = $(LDADD)
 ___setup_set_permissions_DEPENDENCIES = ../../src/libmqc.a
-am____tools_CheckGauInput_OBJECTS = CheckGauInput.$(OBJEXT)
+am____tools_CheckGauInput_OBJECTS = Check.$(OBJEXT) \
+	main_CheckGauInput.$(OBJEXT) C_To_F_interface.$(OBJEXT)
 ___tools_CheckGauInput_OBJECTS = $(am____tools_CheckGauInput_OBJECTS)
 ___tools_CheckGauInput_LDADD = $(LDADD)
 ___tools_CheckGauInput_DEPENDENCIES = ../../src/libmqc.a
@@ -524,7 +525,7 @@ ______src_libmqc_a_LIBADD = ../../src/mqc_general.$(OBJEXT) ../../src/mqc_algebr
 SOURCES = ../setup/set_permissions.c ../algebra2/algebra_fun.f03 ../tools/CheckGauInput.c
 ___setup_set_permissions_SOURCES = ../setup/set_permissions.c
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.f03
-___tools_CheckGauInput_SOURCES = ../tools/CheckGauInput.c
+___tools_CheckGauInput_SOURCES = ../tools/Check.c ../tools/main_CheckGauInput.f03 ../tools/C_To_F_interface.f03
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 all: all-am
 
@@ -626,7 +627,7 @@ clean-checkPROGRAMS:
 
 ../tools/CheckGauInput$(EXEEXT): $(___tools_CheckGauInput_OBJECTS) $(___tools_CheckGauInput_DEPENDENCIES) $(EXTRA____tools_CheckGauInput_DEPENDENCIES) ../tools/$(am__dirstamp)
 	@rm -f ../tools/CheckGauInput$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___tools_CheckGauInput_OBJECTS) $(___tools_CheckGauInput_LDADD) $(LIBS)
+	$(AM_V_FCLD)$(FCLINK) $(___tools_CheckGauInput_OBJECTS) $(___tools_CheckGauInput_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -634,7 +635,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CheckGauInput.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Check.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_permissions.Po@am__quote@
 
 .c.o:
@@ -665,19 +666,19 @@ set_permissions.obj: ../setup/set_permissions.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_permissions.obj `if test -f '../setup/set_permissions.c'; then $(CYGPATH_W) '../setup/set_permissions.c'; else $(CYGPATH_W) '$(srcdir)/../setup/set_permissions.c'; fi`
 
-CheckGauInput.o: ../tools/CheckGauInput.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT CheckGauInput.o -MD -MP -MF $(DEPDIR)/CheckGauInput.Tpo -c -o CheckGauInput.o `test -f '../tools/CheckGauInput.c' || echo '$(srcdir)/'`../tools/CheckGauInput.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/CheckGauInput.Tpo $(DEPDIR)/CheckGauInput.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../tools/CheckGauInput.c' object='CheckGauInput.o' libtool=no @AMDEPBACKSLASH@
+Check.o: ../tools/Check.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT Check.o -MD -MP -MF $(DEPDIR)/Check.Tpo -c -o Check.o `test -f '../tools/Check.c' || echo '$(srcdir)/'`../tools/Check.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Check.Tpo $(DEPDIR)/Check.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../tools/Check.c' object='Check.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o CheckGauInput.o `test -f '../tools/CheckGauInput.c' || echo '$(srcdir)/'`../tools/CheckGauInput.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Check.o `test -f '../tools/Check.c' || echo '$(srcdir)/'`../tools/Check.c
 
-CheckGauInput.obj: ../tools/CheckGauInput.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT CheckGauInput.obj -MD -MP -MF $(DEPDIR)/CheckGauInput.Tpo -c -o CheckGauInput.obj `if test -f '../tools/CheckGauInput.c'; then $(CYGPATH_W) '../tools/CheckGauInput.c'; else $(CYGPATH_W) '$(srcdir)/../tools/CheckGauInput.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/CheckGauInput.Tpo $(DEPDIR)/CheckGauInput.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../tools/CheckGauInput.c' object='CheckGauInput.obj' libtool=no @AMDEPBACKSLASH@
+Check.obj: ../tools/Check.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT Check.obj -MD -MP -MF $(DEPDIR)/Check.Tpo -c -o Check.obj `if test -f '../tools/Check.c'; then $(CYGPATH_W) '../tools/Check.c'; else $(CYGPATH_W) '$(srcdir)/../tools/Check.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/Check.Tpo $(DEPDIR)/Check.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../tools/Check.c' object='Check.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o CheckGauInput.obj `if test -f '../tools/CheckGauInput.c'; then $(CYGPATH_W) '../tools/CheckGauInput.c'; else $(CYGPATH_W) '$(srcdir)/../tools/CheckGauInput.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Check.obj `if test -f '../tools/Check.c'; then $(CYGPATH_W) '../tools/Check.c'; else $(CYGPATH_W) '$(srcdir)/../tools/Check.c'; fi`
 
 .f03.o:
 	$(AM_V_FC)$(FCCOMPILE) -c -o $@ $<
@@ -696,6 +697,18 @@ algebra_fun.o: ../algebra2/algebra_fun.f03
 
 algebra_fun.obj: ../algebra2/algebra_fun.f03
 	$(AM_V_FC)$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o algebra_fun.obj `if test -f '../algebra2/algebra_fun.f03'; then $(CYGPATH_W) '../algebra2/algebra_fun.f03'; else $(CYGPATH_W) '$(srcdir)/../algebra2/algebra_fun.f03'; fi`
+
+main_CheckGauInput.o: ../tools/main_CheckGauInput.f03
+	$(AM_V_FC)$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o main_CheckGauInput.o `test -f '../tools/main_CheckGauInput.f03' || echo '$(srcdir)/'`../tools/main_CheckGauInput.f03
+
+main_CheckGauInput.obj: ../tools/main_CheckGauInput.f03
+	$(AM_V_FC)$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o main_CheckGauInput.obj `if test -f '../tools/main_CheckGauInput.f03'; then $(CYGPATH_W) '../tools/main_CheckGauInput.f03'; else $(CYGPATH_W) '$(srcdir)/../tools/main_CheckGauInput.f03'; fi`
+
+C_To_F_interface.o: ../tools/C_To_F_interface.f03
+	$(AM_V_FC)$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o C_To_F_interface.o `test -f '../tools/C_To_F_interface.f03' || echo '$(srcdir)/'`../tools/C_To_F_interface.f03
+
+C_To_F_interface.obj: ../tools/C_To_F_interface.f03
+	$(AM_V_FC)$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o C_To_F_interface.obj `if test -f '../tools/C_To_F_interface.f03'; then $(CYGPATH_W) '../tools/C_To_F_interface.f03'; else $(CYGPATH_W) '$(srcdir)/../tools/C_To_F_interface.f03'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

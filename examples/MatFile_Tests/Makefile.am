@@ -8,7 +8,7 @@ check_PROGRAMS = ../setup/set_permissions ../algebra2/algebra_fun ../tools/Check
 SOURCES = ../setup/set_permissions.c ../algebra2/algebra_fun.f03 ../tools/CheckGauInput.c
 ___setup_set_permissions_SOURCES = ../setup/set_permissions.c
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.f03
-___tools_CheckGauInput_SOURCES = ../tools/CheckGauInput.c
+___tools_CheckGauInput_SOURCES = ../tools/Check.c ../tools/main_CheckGauInput.f03 ../tools/C_To_F_interface.f03
 
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 
