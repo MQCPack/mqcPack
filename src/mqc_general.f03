@@ -188,25 +188,25 @@
 !
       Write(IOut,1030) TRIM(Message)
       If(Present(INT1)) then
-         Write(IOut,1000) Var_Name1, INT1
+         Write(IOut,1000) TRIM(Var_Name1), INT1
       endIf
       If(Present(INT2)) then
-         Write(IOut,1000) Var_Name2, INT2
+         Write(IOut,1000) TRIM(Var_Name2), INT2
       endIf
       If(Present(INT3)) then
-         Write(IOut,1000) Var_Name3, INT3
+         Write(IOut,1000) TRIM(Var_Name3), INT3
       endIf
       If(Present(INT4)) then
-         Write(IOut,1000) Var_Name4, INT4
+         Write(IOut,1000) TRIM(Var_Name4), INT4
       endIf
       If(Present(INT5)) then
-         Write(IOut,1000) Var_Name5, INT5
+         Write(IOut,1000) TRIM(Var_Name5), INT5
       endIf
       If(Present(INT6)) then
-         Write(IOut,1000) Var_Name6, INT6
+         Write(IOut,1000) TRIM(Var_Name6), INT6
       endIf
 !
-!      Stop 999
+      flush(IOut)
       call mqc_abort()
 
       Return
@@ -254,24 +254,25 @@
       Write(IOut,1030) TRIM(Message)
 
       If(Present(FLT1)) then
-         Write(IOut,1000) Var_NAME1, FLT1
+         Write(IOut,1000) TRIM(Var_NAME1), FLT1
       endIf
       If(Present(FLT2)) then
-         Write(IOut,1000) Var_NAME2, FLT2
+         Write(IOut,1000) TRIM(Var_NAME2), FLT2
       endIf
       If(Present(FLT3)) then
-         Write(IOut,1000) Var_NAME3, FLT3
+         Write(IOut,1000) TRIM(Var_NAME3), FLT3
       endIf
       If(Present(FLT4)) then
-         Write(IOut,1000) Var_NAME4, FLT4
+         Write(IOut,1000) TRIM(Var_NAME4), FLT4
       endIf
       If(Present(FLT5)) then
-         Write(IOut,1000) Var_NAME5, FLT5
+         Write(IOut,1000) TRIM(Var_NAME5), FLT5
       endIf
       If(Present(FLT6)) then
-         Write(IOut,1000) Var_NAME6, FLT6
+         Write(IOut,1000) TRIM(Var_NAME6), FLT6
       endIf
 !
+      flush(IOut)
       call mqc_abort()
 
       Return
@@ -320,49 +321,50 @@
       Write(IOut,1030) TRIM(Message)
       If(Present(LOG1)) then
          If(LOG1) then
-            Write(IOut,1050) Var_NAME1
+            Write(IOut,1050) TRIM(Var_NAME1)
          else 
-            Write(IOut,1060) Var_NAME1
+            Write(IOut,1060) TRIM(Var_NAME1)
          endif
       endif
       If(Present(LOG2)) then
          If(LOG2) then
-            Write(IOut,1050) Var_NAME2
+            Write(IOut,1050) TRIM(Var_NAME2)
          else 
-            Write(IOut,1060) Var_NAME2
+            Write(IOut,1060) TRIM(Var_NAME2)
          endif
       endif
       If(Present(LOG3)) then
          If(LOG3) then
-            Write(IOut,1050) Var_NAME3
+            Write(IOut,1050) TRIM(Var_NAME3)
          else 
-            Write(IOut,1060) Var_NAME3
+            Write(IOut,1060) TRIM(Var_NAME3)
          endif
       endif
       If(Present(LOG4)) then
          If(LOG4) then
-            Write(IOut,1050) Var_NAME4
+            Write(IOut,1050) TRIM(Var_NAME4)
          else 
-            Write(IOut,1060) Var_NAME4
+            Write(IOut,1060) TRIM(Var_NAME4)
          endif
       endif
 
       If(Present(LOG5)) then
          If(LOG5) then
-            Write(IOut,1050) Var_NAME5
+            Write(IOut,1050) TRIM(Var_NAME5)
          else 
-            Write(IOut,1060) Var_NAME5
+            Write(IOut,1060) TRIM(Var_NAME5)
          endif
       endif
 
       If(Present(LOG6)) then
          If(LOG6) then
-            Write(IOut,1050) Var_NAME6
+            Write(IOut,1050) TRIM(Var_NAME6)
          else 
-            Write(IOut,1060) Var_NAME6
+            Write(IOut,1060) TRIM(Var_NAME6)
          endif
       endif
 !
+      flush(IOut)
       call mqc_abort()
 
       Return
@@ -407,24 +409,26 @@
 
       Write(IOut,1030) TRIM(Message)
       If(Present(Var_NAME1)) then
-         Write(IOut,1000) CHAR1, Var_NAME1
+         Write(IOut,1000) TRIM(CHAR1), TRIM(Var_NAME1)
       endif
       If(Present(Var_NAME2)) then
-         Write(IOut,1000) CHAR2, Var_NAME2
+         Write(IOut,1000) TRIM(CHAR2), TRIM(Var_NAME2)
       endif
       If(Present(Var_NAME3)) then
-         Write(IOut,1000) CHAR3, Var_NAME3
+         Write(IOut,1000) TRIM(CHAR3), TRIM(Var_NAME3)
       endif
       If(Present(Var_NAME4)) then
-         Write(IOut,1000) CHAR4, Var_NAME4
+         Write(IOut,1000) TRIM(CHAR4), TRIM(Var_NAME4)
       endif
       If(Present(Var_NAME5)) then
-         Write(IOut,1000) CHAR5, Var_NAME5
+         Write(IOut,1000) TRIM(CHAR5), TRIM(Var_NAME5)
       endif
       If(Present(Var_NAME6)) then
-         Write(IOut,1000) CHAR6, Var_NAME6
+         Write(IOut,1000) TRIM(CHAR6), TRIM(Var_NAME6)
       endif
 !
+
+      flush(IOut)
       call mqc_abort()
 
       Return
