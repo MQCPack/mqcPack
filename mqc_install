@@ -120,7 +120,7 @@ do
 	echo ""
    fi
 done
-chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all
+chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid
 
 if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ]; then
     if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
