@@ -9,53 +9,27 @@ mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
 # Developers need to add to or modify the makefiles
 # This needs to be done by developers only:
 #
-if [ ! -f Makefile.in ]; then
-    autoreconf --install
-elif [ ! -f src/Makefile.in ]; then
-    autoreconf --install
-elif [ ! -f examples/FCHK_Tests/Makefile.in ]; then
-    autoreconf --install
-elif [ ! -f configure ]; then
-    autoreconf --install
-elif [ ! -f install-sh ]; then
-    autoreconf --install
-elif [ ! -f test-driver ]; then
-    autoreconf --install
-elif [ ! -f missing ]; then
-    autoreconf --install
-elif [ ! -f depcomp ]; then
-    autoreconf --install
-elif [ configure.ac -nt configure ]; then
-    autoreconf --install
-elif [ Makefile.am -nt Makefile.in ]; then
-    autoreconf --install
-elif [ examples/FCHK_Tests/Makefile.am -nt examples/FCHK_Tests/Makefile.in ]; then
-    autoreconf --install
-elif [ src/Makefile.am -nt src/Makefile.in ]; then
+if [ ! -f Makefile.in ] ||
+   [ ! -f src/Makefile.in ] ||
+   [ ! -f examples/FCHK_Tests/Makefile.in ] ||
+   [ ! -f configure ] ||
+   [ ! -f install-sh ] ||
+   [ ! -f test-driver ] ||
+   [ ! -f missing ] ||
+   [ ! -f depcomp ] ||
+   [ configure.ac -nt configure ] ||
+   [ Makefile.am -nt Makefile.in ] ||
+   [ examples/FCHK_Tests/Makefile.am -nt examples/FCHK_Tests/Makefile.in ] ||
+   [ src/Makefile.am -nt src/Makefile.in ]; then
     autoreconf --install
 fi
 
-if [ ! -f examples/MatFile_Tests/Makefile.in ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    autoreconf --install
-    cd ${MQC_HOME}
-elif [ ! -f examples/MatFile_Tests/configure ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    autoreconf --install
-    cd ${MQC_HOME}
-elif [ ! -f test-driver ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    autoreconf --install
-    cd ${MQC_HOME}
-elif [ ! -f depcomp ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    autoreconf --install
-    cd ${MQC_HOME}
-elif [ examples/MatFile_Tests/configure.ac -nt examples/MatFile_Tests/configure ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    autoreconf --install
-    cd ${MQC_HOME}
-elif [ examples/MatFile_Tests/Makefile.am -nt examples/MatFile_Tests/Makefile.in ]; then
+if [ ! -f examples/MatFile_Tests/Makefile.in ] ||
+   [ ! -f examples/MatFile_Tests/configure ] ||
+   [ ! -f test-driver ] ||
+   [ ! -f depcomp ] ||
+   [ examples/MatFile_Tests/configure.ac -nt examples/MatFile_Tests/configure ] ||
+   [ examples/MatFile_Tests/Makefile.am -nt examples/MatFile_Tests/Makefile.in ]; then
     cd ${MQC_HOME}/examples/MatFile_Tests
     autoreconf --install
     cd ${MQC_HOME}
@@ -66,12 +40,12 @@ fi
 export FC="g"
 while [ "$FC" = "g" ]
 do
-    echo "Please select a compiler.  Available options are:"
+    echo "Please select a compiler.  The case insenstive available options are:"
     echo "    G - GNU compilers (gfortran/gcc) "
     echo "    P - PGI compilers (pgfortran/pgcc)"
     read -n 1 MQC_Compiler
     echo ""
-    if [ "${MQC_Compiler}" = "G" ]; then
+    if [ "${MQC_Compiler}" = "G" ] || [ "${MQC_Compiler}" = "g" ]; then
 	path_to_executable="`command -v gcc`"
 	if [ -x "${path_to_executable}" ] ; then
 	    export CC="gcc"
@@ -87,7 +61,7 @@ do
 	    echo "gcc not found in path"
 	    echo "Cannot use GNU option.  gcc not found in path"
 	fi
-    elif [ "${MQC_Compiler}" = "P" ]; then
+    elif [ "${MQC_Compiler}" = "P" ] || [ "${MQC_Compiler}" = "p" ]; then
 	export CC="g"
 	path_to_executable="`command -v pgcc`"
 	if [ -x "${path_to_executable}" ] ; then
@@ -120,7 +94,7 @@ do
 	echo ""
    fi
 done
-chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid
+chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR
 
 if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ]; then
     if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
@@ -521,7 +495,6 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 		echo ". ${g16root}/g16/bsd/g16.profile"
 		echo ""
 	    fi
-
 	    read INTERFACE
 	    if [ "${INTERFACE}a" = "a" ]; then
 		MQC_tmpfile="${MQC_HOME}/.other_libs/gaussian/default"
@@ -537,6 +510,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 	    . ${MQC_tmpfile}	
 	    path_to_executable="`command -v ${GAU_BINARY}`"
 	done
+
 	if [ "${MQC_tmpfile}" != "${MQC_HOME}/.other_libs/gaussian/default" ]; then
 	    mv ${MQC_tmpfile} ${MQC_HOME}/.other_libs/gaussian/default
 	elif [ -f ${MQC_tmpfile_tmp} ] ; then
@@ -545,22 +519,33 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 #
 # If the Gaussian scratch directory has not been specified, specify it now.
 #
-	if [ ! -z "${GAUSS_SCRDIR}" ]; then
+	if [ "${GAUSS_SCRDIR}a" != "a" ]; then
 	    if [ ! -d "${GAUSS_SCRDIR}" ]; then
-		unset GAUSS_SCRDIR
+		echo "${GAUSS_SCRDIR} does not exist.  Please enter an existing directory."
+		export GAUSS_SCRDIR="Not set"
 	    elif [ ! -w "${GAUSS_SCRDIR}" ]; then
-		unset GAUSS_SCRDIR
+		echo "${GAUSS_SCRDIR} is not writable.  Please enter a writable directory."
+		export GAUSS_SCRDIR="Not set"
 	    elif [ ! -r "${GAUSS_SCRDIR}" ]; then
-		unset GAUSS_SCRDIR
+		echo "${GAUSS_SCRDIR} is not readable.  Please enter a readable directory."
+		export GAUSS_SCRDIR="Not set"
 	    fi
+	else
+	    export GAUSS_SCRDIR="Not set"
 	fi
-	while [ -z "${GAUSS_SCRDIR}" ]
+
+	while [ "${GAUSS_SCRDIR}" = "Not set" ]
 	do 
-	    echo "Please enter the scratch directory for Gaussian"
 	    if [ -f ${MQC_HOME}/.other_libs/gaussian/default_scratch ]; then
+		echo "Please enter the scratch directory for Gaussian"
 		echo "[default:`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`]:"
+	    else
+		echo "Please enter the scratch directory for Gaussian:"
 	    fi
 	    read INTERFACE
+	    if [ "${INTERFACE}a" == "a" ]; then
+		${INTERFACE}="`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`"
+	    fi
 	    if [ ! -d "${INTERFACE}" ]; then
 		echo "${INTERFACE} does not exist.  Please enter an existing directory."
 	    elif [ ! -w "${INTERFACE}" ]; then
@@ -571,6 +556,7 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 		export GAUSS_SCRDIR="$INTERFACE"
 	    fi
 	done
+	echo "Gaussian scratch directory is: ${GAUSS_SCRDIR}"
 # Save the working GAUSS_SCRDIR for use as default next time
 	echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
 # Use the script that will run Gaussian
