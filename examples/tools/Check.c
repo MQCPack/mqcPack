@@ -36,6 +36,7 @@ void mqc_error_i_c2f_0( char *, int * );
 void print_line_c2f ( char *, int * ); 
 void flush_c2f( int * );
 char CarriageReturn[8];
+char EndOfString[8];
 char Tab[8];
 int int_tolower;
 FILE *GAU_File=NULL;
@@ -99,7 +100,8 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
   Job_Number=0;
 
 #ifdef DEBUG
-  print_line_c2f ( "Open file to store temporaries.  This should be temporary\0", &iout ); 
+  sprintf( prnt_str, "Open file to store temporaries.  This should be temporary%s", EndOfString );
+  print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
   PID = (int)getpid();
@@ -110,32 +112,32 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
     sprintf( tmp_CheckGAU_File_Name, "%s/mqc_pass_File_%d", scrdir, PID);
   }
 #ifdef DEBUG
-  sprintf( prnt_str, " tmp_CheckGAU_File_Name %s\0", tmp_CheckGAU_File_Name );
+  sprintf( prnt_str, " tmp_CheckGAU_File_Name %s%s", tmp_CheckGAU_File_Name, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
   CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"w");
   if ( CheckGAU_File == NULL ) {
-    sprintf( charBuf, "Could not open CheckGAU file %s\0", tmp_CheckGAU_File_Name);
+    sprintf( charBuf, "Could not open CheckGAU file %s%s", tmp_CheckGAU_File_Name, EndOfString );
     mqc_error_i_c2f_0( charBuf, &iout); 
   }
   fclose_return = fclose(CheckGAU_File);
   CheckGAU_File = NULL;
   if ( fclose_return != 0 ) {
-    sprintf( charBuf, "Could not close CheckGAU File %s\0", tmp_CheckGAU_File_Name);
+    sprintf( charBuf, "Could not close CheckGAU File %s%s", tmp_CheckGAU_File_Name, EndOfString );
     mqc_error_i_c2f_0( charBuf, &iout); 
   }
   unlink(tmp_CheckGAU_File_Name);
   CheckGAU_File = NULL;
 #ifdef DEBUG
-  print_line_c2f ( "Check if the first argument is the name of a binary MatrixFile or if it is an ASCII Gaussian input file\0", &iout ); 
+  sprintf( prnt_str, "Check if the first argument is the name of a binary MatrixFile or if it is an ASCII Gaussian input file%s", EndOfString );
+  print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
-
   sprintf( charBuf, "file %s > %s\n", 
 	   FileName, tmp_CheckGAU_File_Name );
 #ifdef DEBUG
-  sprintf( prnt_str, "execute %s\0", charBuf );
+  sprintf( prnt_str, "execute %s%s", charBuf, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
@@ -145,9 +147,9 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
     /* the file on the First input failed.  Check if the file exists. */
     GAU_File = fopen( FileName,"r");
     if ( GAU_File == NULL ) {
-      sprintf( charBuf, "Could not open Gaussian File specified by the first argument %s\0", FileName);
+      sprintf( charBuf, "Could not open Gaussian File specified by the first argument %s%s", FileName, EndOfString );
     } else {
-      sprintf( charBuf, "file command on %s failed.  Tried to do this in the Bash shell\0", FileName);
+      sprintf( charBuf, "file command on %s failed.  Tried to do this in the Bash shell%s", FileName, EndOfString );
     }
     CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"w");
     unlink(tmp_CheckGAU_File_Name);
@@ -156,7 +158,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
 
   CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"r");
   if ( CheckGAU_File == NULL ) {
-    sprintf( charBuf, "Could not open CheckGAU file %s, should contain the output of a file command\0", tmp_CheckGAU_File_Name);
+    sprintf( charBuf, "Could not open CheckGAU file %s, should contain the output of a file command%s", tmp_CheckGAU_File_Name, EndOfString );
     mqc_error_i_c2f_0( charBuf, &iout); 
   }
   rtn_fgets=fgets(charBuf,1024,CheckGAU_File);
@@ -165,7 +167,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
   if ( -1 == mqc_FINDstrINline( " ASCII ", charBuf ) ) {
     /* The file is Binary, not ACSII. It is a MatrixFile */
 #ifdef DEBUG
-    sprintf( prnt_str, "%s is binary, so a MatrixFile\0",FileName);
+    sprintf( prnt_str, "%s is binary, so a MatrixFile%s",FileName, EndOfString );
     print_line_c2f ( prnt_str, &iout ); 
     flush_c2f( &iout );
 #endif
@@ -176,21 +178,22 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
 
 /* Input is a Gaussian Input file */
 #ifdef DEBUG
-  print_line_c2f ( "Check if the second argument is the name of an executable which is in the path\0", &iout ); 
+  sprintf( prnt_str, "Check if the second argument is the name of an executable which is in the path%s", EndOfString );
+  print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
 
   sprintf( tmp_CheckGAU_File_NameA, "%sa", tmp_CheckGAU_File_Name );
-  sprintf( charBuf, "#! /bin/bash -f\nif command -v %s > mqc_tmp_file 2>&1; then\n echo 1 > %s\nelse\n echo 2 > %s\nfi\n", Program, tmp_CheckGAU_File_NameA, tmp_CheckGAU_File_NameA );
+  sprintf( charBuf, "#! /bin/bash -f\nif command -v %s > mqc_tmp_file 2>&1; then\n echo 1 > %s\nelse\n echo 2 > %s\nfi\nexit\n", Program, tmp_CheckGAU_File_NameA, tmp_CheckGAU_File_NameA );
 
   CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"w");
   rtn_fputs=fputs(charBuf,CheckGAU_File);
   fclose_return = fclose(CheckGAU_File);
   CheckGAU_File = NULL;
-  sprintf( charBuf, "chmod 755 %s;%s\0", tmp_CheckGAU_File_Name, tmp_CheckGAU_File_Name );
+  sprintf( charBuf, "chmod 755 %s;%s%s", tmp_CheckGAU_File_Name, tmp_CheckGAU_File_Name, EndOfString );
 
 #ifdef DEBUG
-  sprintf( prnt_str, "execute %s\0", charBuf );
+  sprintf( prnt_str, "execute %s%s", charBuf, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
@@ -198,7 +201,7 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
   unlink("mqc_tmp_file");
   unlink(tmp_CheckGAU_File_Name);
   if ( system_failure == -1 ) {
-    sprintf(charBuf, "Failure in Script to determine if \"%s\" is an executable\0", Program );
+    sprintf(charBuf, "Failure in Script to determine if \"%s\" is an executable%s", Program, EndOfString );
     mqc_error_i_c2f_0( charBuf, &iout); 
   }
 
@@ -208,26 +211,24 @@ char *mqc_GetMatrixFile( char *FileName, char *Program, int iout )
   CheckGAU_File = NULL;
   unlink(tmp_CheckGAU_File_NameA);
   if ( strncmp( charBuf, "1", 1) != 0 ) {
-    sprintf( charBuf, "Did not find %s in the path\0", Program );
-
-printf( "%s\n", charBuf );
-
+    sprintf( charBuf, "Did not find %s in the path%s", Program, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout); 
   }
 #ifdef DEBUG
-  print_line_c2f ( "Open Gaussian input file\0", &iout ); 
+  sprintf( prnt_str, "Open Gaussian input file%s", EndOfString );
+  print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
   GAU_File = fopen( FileName,"r");
   if ( GAU_File == NULL ) {
-    sprintf( charBuf, "Could not open Gaussian Input File %s\0", FileName);
+    sprintf( charBuf, "Could not open Gaussian Input File %s%s", FileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
   last_job=-1;
   rtn_fgets=fgets(charBuf,1024,GAU_File);
   if ( rtn_fgets!= NULL ) {
 #ifdef DEBUG
-    sprintf( prnt_str, " Read from input: %s\0", charBuf );
+    sprintf( prnt_str, " Read from input: %s%s", charBuf, EndOfString );
     print_line_c2f ( prnt_str, &iout ); 
     flush_c2f( &iout );
 #endif
@@ -249,9 +250,11 @@ printf( "%s\n", charBuf );
 	i = mqc_FINDstrINline( "output=", Current_Line->Lower_Name );
 #ifdef DEBUG
 	if ( i != -1 ) {
-	  print_line_c2f ( "output= found\0", &iout ); 
+	  sprintf( prnt_str, "output= found%s", EndOfString ); 
+	  print_line_c2f ( prnt_str, &iout ); 
 	} else {
-	  print_line_c2f ( "output= not found\0", &iout ); 
+	  sprintf( prnt_str, "output= not found%s", EndOfString ); 
+	  print_line_c2f ( prnt_str, &iout ); 
 	}
 	flush_c2f( &iout );
 #endif
@@ -260,10 +263,10 @@ printf( "%s\n", charBuf );
 	  strcpy( charBuf, &lowerBuf[i] );
 	  i = mqc_FINDstrINline( " ", charBuf );
 	  if ( i != -1 ) {
-	    strcpy( &charBuf[i], "\0" );
+	    strcpy( &charBuf[i], EndOfString );
 	  }
 #ifdef DEBUG
-	  sprintf( prnt_str, "output instructions - \"%s\"\n Mat detection %d\n Raw detection %d\0", charBuf, mqc_FINDstrINline( "mat", charBuf ), mqc_FINDstrINline( "raw", charBuf ));
+	  sprintf( prnt_str, "output instructions - \"%s\"\n Mat detection %d\n Raw detection %d%s", charBuf, mqc_FINDstrINline( "mat", charBuf ), mqc_FINDstrINline( "raw", charBuf ),EndOfString);
 	  print_line_c2f ( prnt_str, &iout ); 
 	  flush_c2f( &iout );
 #endif
@@ -283,9 +286,9 @@ printf( "%s\n", charBuf );
 	  external = 0;
 	}
 #ifdef DEBUG
-	sprintf( prnt_str, "found is - %d\0", found );
+	sprintf( prnt_str, "found is - %d%s", found, EndOfString );
 	print_line_c2f ( prnt_str, &iout ); 
-	sprintf( prnt_str, "external is - %d %s\0", external, external_proc );
+	sprintf( prnt_str, "external is - %d %s%s", external, external_proc, EndOfString );
 	print_line_c2f ( prnt_str, &iout ); 
 	flush_c2f( &iout );
 #endif
@@ -295,7 +298,7 @@ printf( "%s\n", charBuf );
 	  if ( Current_job == 0 ) {
 	    MatrixFile_Jobs++;
 	  } else {
-	    sprintf( prnt_str, "WARNING: Detected multiple triggers to write MatrixFile in job %d\0", Job_Number );
+	    sprintf( prnt_str, "WARNING: Detected multiple triggers to write MatrixFile in job %d%s", Job_Number, EndOfString );
 	    print_line_c2f ( prnt_str, &iout ); 
 	  }
 	  Current_job=1;
@@ -304,7 +307,7 @@ printf( "%s\n", charBuf );
 	rtn_fgets=fgets(charBuf,1024,GAU_File);
 	if ( rtn_fgets!= NULL ) {
 #ifdef DEBUG
-	  sprintf( prnt_str, " Read from input: %s\0", charBuf );
+	  sprintf( prnt_str, " Read from input: %s%s", charBuf, EndOfString );
 	  print_line_c2f ( prnt_str, &iout ); 
 	  flush_c2f( &iout );
 #endif
@@ -319,7 +322,7 @@ printf( "%s\n", charBuf );
 	  /* been restarted my trigger a write of a MatrixFile.  It's not */
 	  /* possible to tell. */
 
-	  sprintf( prnt_str, "WARNING: Whether to write the MatrixFile in job %d is determined by the keywords in the job that has been restarted.\0", Job_Number);
+	  sprintf( prnt_str, "WARNING: Whether to write the MatrixFile in job %d is determined by the keywords in the job that has been restarted.%s", Job_Number, EndOfString);
 	  print_line_c2f ( prnt_str, &iout ); 
 
 	} else {
@@ -341,7 +344,7 @@ printf( "%s\n", charBuf );
       rtn_fgets=fgets(charBuf,1024,GAU_File);
       if ( rtn_fgets!= NULL ) {
 #ifdef DEBUG
-	sprintf( prnt_str, " Read from input: %s\0", charBuf );
+	sprintf( prnt_str, " Read from input: %s%s", charBuf, EndOfString );
 	print_line_c2f ( prnt_str, &iout ); 
 	flush_c2f( &iout );
 #endif
@@ -353,32 +356,34 @@ printf( "%s\n", charBuf );
   fclose_return = fclose(GAU_File);
   GAU_File = NULL;
   if ( fclose_return != 0 ) {
-    sprintf( charBuf, "Could not close Gaussian Input File %s\0", FileName);
+    sprintf( charBuf, "Could not close Gaussian Input File %s%s", FileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 #ifdef DEBUG
-  sprintf( prnt_str, "%d inputs of which %d generate Matrix files\0", 
-	   Total_Jobs, MatrixFile_Jobs );
+  sprintf( prnt_str, "%d inputs of which %d generate Matrix files%s", 
+	   Total_Jobs, MatrixFile_Jobs, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
-  sprintf( prnt_str, " Current_job %d, last_job %d\0", Current_job, last_job );
+  sprintf( prnt_str, " Current_job %d, last_job %d%s", Current_job, last_job, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
 #endif
   NoModNeeded = 1;
   if ( Current_job == 0 && last_job == -1 ) {
     if ( Restart != 1 ) {
 #ifdef DEBUG
-      print_line_c2f ( "WARNING: This input does not write a MartrixFile.\0", &iout ); 
+      sprintf( prnt_str, "WARNING: This input does not write a MartrixFile.%s", EndOfString );
+      print_line_c2f ( prnt_str, &iout );
 #endif
       NoModNeeded = 0;
     }
   } else if ( last_job == 0 ) {
 #ifdef DEBUG
-    print_line_c2f ( "WARNING: This input writes a MartrixFile, but the last job does not write the MatrixFile.\0", &iout );
+    sprintf( prnt_str, "WARNING: This input writes a MartrixFile, but the last job does not write the MatrixFile.%s", EndOfString );
+    print_line_c2f ( prnt_str, &iout );
 #endif
     NoModNeeded = 0;
   }
 #ifdef DEBUG
-  sprintf( prnt_str, " NoModNeeded pass 1 %d\0", NoModNeeded );
+  sprintf( prnt_str, " NoModNeeded pass 1 %d%s", NoModNeeded, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
@@ -391,7 +396,7 @@ printf( "%s\n", charBuf );
   strcpy( JobName, FileName );
   ilen = strlen( JobName );
   if ( strncmp( &JobName[ilen-4], ".com", 4 ) == 0 ) {
-    strcpy( &JobName[ilen-4], "\0" );
+    strcpy( &JobName[ilen-4], EndOfString );
   }
   Last_Line = (InputLine *)Last_NonBlank->last;
   if ( Last_Line->Blank == 0
@@ -399,13 +404,13 @@ printf( "%s\n", charBuf );
     NoModNeeded = 0;
   }
 #ifdef DEBUG
-  sprintf( prnt_str, "before nonblank \"%s\"\0",   Last_Line->Name );
+  sprintf( prnt_str, "before nonblank \"%s\"%s", Last_Line->Name, EndOfString);
   print_line_c2f ( prnt_str, &iout ); 
-  sprintf( prnt_str, "Blank %d\0", Last_Line->Blank );
+  sprintf( prnt_str, "Blank %d%s", Last_Line->Blank, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
-  sprintf( prnt_str, "blank \"%s\"\0", Last_NonBlank->Name );
+  sprintf( prnt_str, "blank \"%s\"%s", Last_NonBlank->Name, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
-  sprintf( prnt_str, " NoModNeeded pass 2 %d\0", NoModNeeded );
+  sprintf( prnt_str, " NoModNeeded pass 2 %d%s", NoModNeeded, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
@@ -427,13 +432,13 @@ printf( "%s\n", charBuf );
   sprintf( charBuf, "%s < %s >%s.log", Program, InputFile, JobName );
 
 #ifdef DEBUG
-  sprintf( prnt_str, "execute %s\0", charBuf );
+  sprintf( prnt_str, "execute %s%s", charBuf, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
   system_failure = system(charBuf);
   if ( system_failure == -1 ) {
-    sprintf( prnt_str, " Job failed. Command was:\n%s\0", charBuf );
+    sprintf( prnt_str, " Job failed. Command was:\n%s%s", charBuf, EndOfString );
     print_line_c2f ( prnt_str, &iout ); 
   }
 
@@ -441,7 +446,7 @@ printf( "%s\n", charBuf );
   sprintf( charBuf, "file %s > %s\n", 
 	   MatFileName, tmp_CheckGAU_File_Name );
 #ifdef DEBUG
-  sprintf( prnt_str, "Execute %s\0", charBuf );
+  sprintf( prnt_str, "Execute %s%s", charBuf, EndOfString );
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
@@ -449,14 +454,14 @@ printf( "%s\n", charBuf );
 
   if ( system_failure == -1 ) {
     /* the file on the First input failed.  Check if the file exists. */
-    sprintf( charBuf, "Problem with MatrixFile.  It may not exist \"file %s > %s\n failed\0", 
-	   MatFileName, tmp_CheckGAU_File_Name );
+    sprintf( charBuf, "Problem with MatrixFile.  It may not exist \"file %s > %s\n failed%s", 
+	     MatFileName, tmp_CheckGAU_File_Name, EndOfString );
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 
   CheckGAU_File = fopen( tmp_CheckGAU_File_Name,"r");
   if ( CheckGAU_File == NULL ) {
-    sprintf( charBuf, "Could not open CheckGAU file %s, should contain the output of a file command\0", tmp_CheckGAU_File_Name);
+    sprintf( charBuf, "Could not open CheckGAU file %s, should contain the output of a file command%s", tmp_CheckGAU_File_Name, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
   rtn_fgets=fgets(charBuf,1024,CheckGAU_File);
@@ -466,11 +471,11 @@ printf( "%s\n", charBuf );
   if ( -1 == mqc_FINDstrINline( " data", charBuf ) ) {
     /* The file is Binary, not ACSII. It is a MatrixFile */
 #ifdef DEBUG
-    sprintf( prnt_str, "result of file command %s\0", charBuf );
+    sprintf( prnt_str, "result of file command %s%s", charBuf, EndOfString);
     print_line_c2f ( prnt_str, &iout ); 
     flush_c2f( &iout );
 #endif
-    sprintf( charBuf, "%s is not binary, so not a MatrixFile\0",MatFileName);
+    sprintf( charBuf, "%s is not binary, so not a MatrixFile%s",MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 
@@ -497,7 +502,7 @@ void mqc_Remove_Return( char *charBuf )
   ilen = strlen(charBuf);
   while( strncmp( &charBuf[ilen-1], "\n", 1) == 0 ||
 	 strncmp( &charBuf[ilen-1], CarriageReturn, 1) == 0 ) {
-    strcpy( &charBuf[ilen-1], "\0" );
+    strcpy( &charBuf[ilen-1], EndOfString );
     ilen = strlen(charBuf);
   }
 
@@ -540,7 +545,10 @@ void mqc_Global_init(void)
   char charBuf[1024];
 
   CarriageReturn[0]=(char)13;
-  CarriageReturn[1]=(char)0;
+  CarriageReturn[1]=(char)0; 
+  /* Append EndOfString to end of all strings that go to FORTRAN */
+  /* FORTRAN needs this.  It should be always there, but sometimes it's not */
+  EndOfString[0]=(char)0; 
   strcpy( charBuf, "aA");
   int_tolower = (int)charBuf[0] - (int)charBuf[1];
 }
@@ -562,12 +570,14 @@ char *mqc_DupString( char *old_str, char *free_this )
 InputLine *mqc_Alloc_InputLine( char *InputLine_name, InputLine *LAST_InputLine_struct, int iout )
 {
   static int Blank_count = 0;
+  char charBuf[2096];
 
   InputLine *new_struct = (InputLine *)NULL;
 
   new_struct = (InputLine *)malloc ( (size_t)sizeof( InputLine )+128);
   if ( new_struct == (InputLine *)NULL ) {
-    mqc_error_i_c2f_0("Error: Not able to allocate memory in mqc_Alloc_InputLine.", &iout);
+    sprintf( charBuf,"Error: Not able to allocate memory in mqc_Alloc_InputLine.%s", EndOfString);
+    mqc_error_i_c2f_0(charBuf, &iout);
   }
   if ( LAST_InputLine_struct == (InputLine *)NULL ) {
     new_struct->last = (char *)NULL;
