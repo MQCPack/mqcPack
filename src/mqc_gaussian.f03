@@ -942,6 +942,15 @@
 !     Set the readWriteMode flag in fileinfo to 'W' and then write the
 !     header scalar flags.
 !
+      if(fileinfo%icgu.eq.111) then
+        iopcl = 0
+      elseIf(fileinfo%icgu.eq.112) then
+        iopcl = 1
+      elseIf(fileinfo%icgu.eq.121) then
+        iopcl = 2
+      elseIf(fileinfo%icgu.eq.221) then
+        iopcl = 6
+      endIf
       fileinfo%readWriteMode = 'W'
       call Open_Write(TRIM(fileinfo%filename),fileinfo%UnitNumber,  &
         fileinfo%labfil,fileinfo%gvers,fileinfo%title,  &
