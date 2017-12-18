@@ -1,0 +1,29 @@
+#! /bin/bash -x
+
+echo ${GAUSS_SCRDIR}
+sed -e 'sZ'${GAUSS_SCRDIR}'/GauZ/GauZg' < $1 > tmp_remove_Gau_pid
+mv tmp_remove_Gau_pid $1
+
+exit
+
+# incae Gaussian ever expands the directory names
+local_SCRDIR="${GAUSS_SCRDIR}"
+local1_SCRDIR="`echo "${local_SCRDIR:1:${#local_SCRDIR}-1}"`"
+local2_SCRDIR="`echo "${local_SCRDIR:2:${#local_SCRDIR}-1}"`"
+local3_SCRDIR="`echo "${local_SCRDIR:3:${#local_SCRDIR}-1}"`"
+if [[ "${local_SCRDIR}" == "~${local1_SCRDIR}" ]]; then
+    local_SCRDIR="${HOME}${local1_SCRDIR}"
+elif [[ "${local_SCRDIR}" == "../${local3_SCRDIR}" ]]; then
+    local_SCRDIR="`pwd`${local2_SCRDIR}"
+elif [[ "${local_SCRDIR}" == "..${local2_SCRDIR}" ]] ; then 
+    local_SCRDIR="`pwd`/${local2_SCRDIR}"
+elif [[ "${local_SCRDIR}" == "./${local2_SCRDIR}" ]] ; then 
+    local_SCRDIR="`pwd`${local1_SCRDIR}"
+elif [[ "$local_SCRDIR" == ".${local1_SCRDIR}" ]]; then
+    local_SCRDIR="`pwd`${local1_SCRDIR}"
+fi
+
+sed -e 's/${GAUSS_SCRDIR}//g' < $1 > tmp_remove_Gau_pid
+mv tmp_remove_Gau_pid $1
+
+
