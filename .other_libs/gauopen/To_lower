@@ -1,0 +1,32 @@
+#! /bin/bash -x
+
+sed -e 's/wr_libuf/wr_libuf_4/g' < $1 > mqc_tmp1
+sed -e 's/A/a/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/B/b/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/C/c/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/D/d/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/E/e/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/F/f/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/G/g/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/H/h/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/I/i/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/J/j/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/K/k/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/L/l/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/M/m/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/N/n/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/O/o/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/P/p/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/Q/q/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/R/r/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/S/s/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/T/t/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/U/u/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/V/v/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/W/w/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/X/x/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/Y/y/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/Z/z/g' < mqc_tmp2 > mqc_tmp1
+
+
+
