@@ -1,0 +1,82 @@
+---------------------------------
+Failure Test: no input to program
+---------------------------------
+Error in number of argments to this program.
+Arguments should be:
+     - Full path to a Gaussian file
+        - This can either be FormChk File
+        - This can either be a MatrixFile
+        - This can be a Gaussian input file
+     - Optional, only required if the first 
+          argument is a Gaussian input file.
+          The name of the binary for the 
+          program that generates the
+          FormChk/MatrixFile, most likely
+          'g16'. The environment should be
+          setup to run the program.
+ MQC ERROR: No arguments to this program
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+ MQC ERROR: The file test.com either does not exist, or cannot be read
+Finished with tests designed to fail
+------------------------
+Pass through MatFile test
+------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+-------------------------------
+test.com Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+
+-------------------------------
+test1071 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1071.mat
+-------------------------------
+test1129 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1129.dat
+
+--------------------------------
+test1132 Create MatrixFiles test
+--------------------------------
+echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132u.dat /Gau-.EUF
+echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132r.dat /Gau-.EUF
+echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132gr.dat /Gau-.EUF
+MatrixFiles:
+   - test1132.mat
+-----------------------------------------------------
+test1132 Pass one MatrixFile through test, no program
+-----------------------------------------------------
+MatrixFiles:
+   - test1132r.dat
+------------------------------------------------------------------
+test1132 Create One MartixFile and Pass through 3 MatrixFiles test
+------------------------------------------------------------------
+echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132u.dat /Gau-.EUF
+echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132r.dat /Gau-.EUF
+echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
+cp test1132gr.dat /Gau-.EUF
+MatrixFiles:
+   - test1132.mat
+   - test1132gr.dat
+   - test1132r.dat
+   - test1132u.dat
