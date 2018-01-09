@@ -122,11 +122,14 @@ am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
 am__v_AR_0 = @echo "  AR      " $@;
 am__v_AR_1 = 
 libmqc_a_AR = $(AR) $(ARFLAGS)
-libmqc_a_LIBADD =
+libmqc_a_DEPENDENCIES = GauOpen/qcmatrix_4.o GauOpen/qcmatrix_8.o \
+	GauOpen/qcmatrixio_4.o GauOpen/qcmatrixio_8.o
 am_libmqc_a_OBJECTS = mqc_general.$(OBJEXT) mqc_algebra2.$(OBJEXT) \
 	mqc_algebra.$(OBJEXT) mqc_datastructures.$(OBJEXT) \
 	mqc_files.$(OBJEXT) mqc_molecule.$(OBJEXT) mqc_est.$(OBJEXT) \
-	mqc_util.$(OBJEXT)
+	mqc_util.$(OBJEXT) mqc_interface.$(OBJEXT) \
+	mqc_matwrapper.$(OBJEXT) mqc_gaussian.$(OBJEXT) \
+	mqc_FullWavefunction.$(OBJEXT)
 libmqc_a_OBJECTS = $(am_libmqc_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -144,6 +147,19 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
+AM_V_PPFC = $(am__v_PPFC_@AM_V@)
+am__v_PPFC_ = $(am__v_PPFC_@AM_DEFAULT_V@)
+am__v_PPFC_0 = @echo "  PPFC    " $@;
+am__v_PPFC_1 = 
+FCLD = $(FC)
+FCLINK = $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
+	$@
+AM_V_FCLD = $(am__v_FCLD_@AM_V@)
+am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
+am__v_FCLD_0 = @echo "  FCLD    " $@;
+am__v_FCLD_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_@AM_V@)
@@ -161,13 +177,6 @@ AM_V_FC = $(am__v_FC_@AM_V@)
 am__v_FC_ = $(am__v_FC_@AM_DEFAULT_V@)
 am__v_FC_0 = @echo "  FC      " $@;
 am__v_FC_1 = 
-FCLD = $(FC)
-FCLINK = $(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
-	$@
-AM_V_FCLD = $(am__v_FCLD_@AM_V@)
-am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
-am__v_FCLD_0 = @echo "  FCLD    " $@;
-am__v_FCLD_1 = 
 SOURCES = $(libmqc_a_SOURCES)
 DIST_SOURCES = $(libmqc_a_SOURCES)
 am__can_run_installinfo = \
@@ -227,6 +236,7 @@ LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+MQC_CPPFLAGS = @MQC_CPPFLAGS@
 MQC_SPECIFIC_FCFLAGS = @MQC_SPECIFIC_FCFLAGS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -286,12 +296,14 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
+AM_CPPFLAGS = $(MQC_CPPFLAGS)
 lib_LIBRARIES = libmqc.a
-libmqc_a_SOURCES = mqc_general.f03 mqc_algebra2.f03 mqc_algebra.f03 mqc_datastructures.f03 mqc_files.f03  mqc_molecule.f03 mqc_est.f03 mqc_util.c
+libmqc_a_LIBADD = GauOpen/qcmatrix_4.o GauOpen/qcmatrix_8.o GauOpen/qcmatrixio_4.o GauOpen/qcmatrixio_8.o
+libmqc_a_SOURCES = mqc_general.f03 mqc_algebra2.f03 mqc_algebra.f03 mqc_datastructures.f03 mqc_files.f03 mqc_molecule.f03 mqc_est.f03 mqc_util.c mqc_interface.F03 mqc_matwrapper.F03 mqc_gaussian.f03 mqc_FullWavefunction.F03
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .f03 .o .obj
+.SUFFIXES: .F03 .c .f03 .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -366,6 +378,12 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mqc_util.Po@am__quote@
+
+.F03.o:
+	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ $<
+
+.F03.obj:
+	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -590,7 +608,7 @@ uninstall-am: uninstall-libLIBRARIES
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-libLIBRARIES
 
-build: mqc_general.(OBJEXT) mqc_algebra2.(OBJEXT) mqc_algebra.(OBJEXT) mqc_datastructures.(OBJEXT) mqc_files.(OBJEXT)  mqc_molecule.(OBJEXT) mqc_est.(OBJEXT)  mqc_util.(OBJEXT)
+build: mqc_general.$(OBJEXT) mqc_algebra2.$(OBJEXT) mqc_algebra.$(OBJEXT) mqc_datastructures.$(OBJEXT) mqc_files.$(OBJEXT) mqc_molecule.$(OBJEXT) mqc_est.$(OBJEXT) mqc_util.$(OBJEXT) mqc_interface.$(OBJEXT) mqc_matwrapper.$(OBJEXT) mqc_gaussian.$(OBJEXT) mqc_FullWavefunction.$(OBJEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
