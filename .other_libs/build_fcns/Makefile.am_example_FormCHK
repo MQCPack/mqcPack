@@ -1,0 +1,10 @@
+AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
+AM_CPPFLAGS = $(MQC_CPPFLAGS)
+TESTS = ../algebra2/testit.sh
+check_PROGRAMS = ../algebra2/algebra_fun
+SOURCES = ../algebra2/algebra_fun.F03
+___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.F03
+LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
+build: ../algebra2/algebra_fun.$(OBJEXT)
+
+
