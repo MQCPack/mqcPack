@@ -1,30 +1,42 @@
-test-Intentional problems
-Error in number of argments to this program.
-Arguments should be:
-     - Full path to a Gaussian file
-        - This can either be FormCheck File
-        - This can either be a MatrixFile
-        - This can be a Gaussian input file
-     - The name of the binary for the program that
-       generates the MatrixFile, most likely 'g16'.
-       The environment should be setup to run the program.
- MQC ERROR: No arguments to this program
- MQC ERROR: Did not find Gaussian_not_in_path in the path
-test-Should be no problems
-test1071-Should be no problems
-test1129-Should be no problems
-test1132-Run Input should be no problems
-echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132u.dat /Gau-.EUF
-echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132r.dat /Gau-.EUF
-echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132gr.dat /Gau-.EUF
-test1132-MatrixFile
-test1132-Run Input and MatrixFile
-echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132u.dat /Gau-.EUF
-echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132r.dat /Gau-.EUF
-echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132gr.dat /Gau-.EUF
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+ MQC ERROR: The file test.com either does not exist, or cannot be read
+Finished with tests designed to fail
+------------------------
+Pass through MatFile test
+------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+-------------------------------
+test.com Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+-------------------------------
+test1071 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1071.mat
+-------------------------------
+test1129 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1129.dat
+--------------------------------
+test1132 Create MatrixFiles test
+--------------------------------
+-----------------------------------------
+test1132 Pass one MatrixFile through test
+-----------------------------------------
+------------------------------------------------------------------
+test1132 Create One MartixFile and Pass through 3 MatrixFiles test
+------------------------------------------------------------------

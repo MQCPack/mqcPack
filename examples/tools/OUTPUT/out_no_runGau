@@ -1,13 +1,17 @@
-Intentional problems
-Error in number of argments to this program.
-Arguments should be:
-     - Full path to a Gaussian file
-        - This can either be FormCheck File
-        - This can either be a MatrixFile
-        - This can be a Gaussian input file
-     - The name of the binary for the program that
-       generates the MatrixFile, most likely 'g16'.
-       The environment should be setup to run the program.
- MQC ERROR: No arguments to this program
-Did not find Gaussian_not_in_path in the path
- MQC ERROR: Did not find Gaussian_not_in_path in the path
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+ MQC ERROR: The file test.com either does not exist, or cannot be read
+Finished with tests designed to fail
+-------------
+MatFile test
+-------------
+ MQC ERROR: The file not_in_path either does not exist, or cannot be read
