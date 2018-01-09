@@ -1,15 +1,16 @@
       program algebra_fun
       use MQC_Algebra2
+      use iso_fortran_env
 !
 !     This program tests the key functionality of MQC module MQC_Algebra2. 
 !
 !
       implicit none
       type(MQC_Variable)::var1,var2,vec1,vec2,vec3,mat1,mat2
-      integer::intrinsicInt1
-      integer,dimension(5)::aaa=[1,2,3,4,5]
-      integer::iout=6
-      real::intrinsicReal1
+      integer(kind=int64)::intrinsicInt1
+      integer(kind=int64),dimension(5)::aaa=[1,2,3,4,5]
+      integer(kind=int64)::iout=6
+      real(kind=real64)::intrinsicReal1
 !
 !
 !     Test scalars...
@@ -99,7 +100,11 @@
 
       write(Iout,1010)
       write(Iout,1000)' Resetting vec1 as a real and printing again...'
+#ifdef PGI
+      vec1 = dfloat([6,4,2,0,-2,-4])
+#else
       vec1 = float([6,4,2,0,-2,-4])
+#endif
       call vec1%print(header='vec1:')
 
       vec3 = [1.3,2.4,3.5,3.2,-1.43,-12.0]
