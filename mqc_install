@@ -5,38 +5,118 @@
 
 export MQC_HOME="`pwd`"
 mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
+
+cd ${MQC_HOME}
 #
 # Developers need to add to or modify the makefiles
 # This needs to be done by developers only:
 #
-if [ ! -f Makefile.in ] ||
-   [ ! -f src/Makefile.in ] ||
-   [ ! -f examples/FCHK_Tests/Makefile.in ] ||
-   [ ! -f configure ] ||
-   [ ! -f install-sh ] ||
-   [ ! -f test-driver ] ||
-   [ ! -f missing ] ||
-   [ ! -f depcomp ] ||
-   [ configure.ac -nt configure ] ||
-   [ Makefile.am -nt Makefile.in ] ||
-   [ examples/FCHK_Tests/Makefile.am -nt examples/FCHK_Tests/Makefile.in ] ||
-   [ src/Makefile.am -nt src/Makefile.in ]; then
-    autoreconf --install
+if [ ! -f configure.ac_FormCHK ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK .
+fi
+if [ ! -f configure.ac_MatrixFile ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile .
+fi
+if [ ! -f Makefile.am_FormCHK ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK .
+fi
+if [ ! -f Makefile.am_MatrixFile ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile .
 fi
 
-if [ ! -f examples/MatFile_Tests/Makefile.in ] ||
-   [ ! -f examples/MatFile_Tests/configure ] ||
-   [ ! -f test-driver ] ||
+cd ${MQC_HOME}/examples/Build_Tests
+if [ ! -f Makefile.am_example_FormCHK ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK .
+fi
+if [ ! -f Makefile.am_example_MatrixFile ]; then
+    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile .
+fi
+
+cd ${MQC_HOME}
+if [ ! -f test-driver ] ||
+   [ ! -f install-sh ] ||
+   [ ! -f missing ] ||
    [ ! -f depcomp ] ||
-   [ examples/MatFile_Tests/configure.ac -nt examples/MatFile_Tests/configure ] ||
-   [ examples/MatFile_Tests/Makefile.am -nt examples/MatFile_Tests/Makefile.in ]; then
-    cd ${MQC_HOME}/examples/MatFile_Tests
+   [ ! -f Makefile.in ] ||
+   [ ! -f src/Makefile.in ] ||
+   [ ! -f examples/Build_Tests/Makefile.in ] ||
+   [ ! -f configure ] ||
+   [ configure.ac -nt configure ] ||
+   [ configure.ac_FormCHK -nt configure ] ||
+   [ configure.ac_MatrixFile -nt configure ] ||
+   [ Makefile.am -nt Makefile.in ] ||
+   [ Makefile.am_FormCHK -nt Makefile.in ] ||
+   [ Makefile.am_MatrixFile -nt Makefile.in ] ||
+
+   [ examples/Build_Tests/Makefile.am_MatrixFile -nt examples/Build_Tests/Makefile.in ] ||
+   [ examples/Build_Tests/Makefile.am_FormCHK -nt examples/Build_Tests/Makefile.in ] ||
+   [ src/Makefile.am -nt src/Makefile.in ]; then
+    if [ -f Makefile ]; then
+	make clean > ${mqc_tmpfile} 2>&1
+    fi
+    cd ${MQC_HOME}/src
+    ${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
+    cd ${MQC_HOME}
+    rm -f  Makefile.in src/Makefile.in examples/Build_Tests/Makefile.in > ${mqc_tmpfile} 2>&1
+    rm -f  Makefile src/Makefile examples/Build_Tests/Makefile > ${mqc_tmpfile} 2>&1
+    cp configure.ac_FormCHK configure.ac
+    cp Makefile.am_FormCHK Makefile.am
+    cd ${MQC_HOME}/examples/Build_Tests
+    cp Makefile.am_example_FormCHK Makefile.am
+    cd ${MQC_HOME}
     autoreconf --install
+    cp configure ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK
+    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK
+
+    cp configure.ac_MatrixFile configure.ac
+    cp Makefile.am_MatrixFile Makefile.am
+    cd ${MQC_HOME}/examples/Build_Tests
+    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK
+    cp Makefile.am_example_MatrixFile Makefile.am
+    cd ${MQC_HOME}
+    autoreconf --install
+    cp configure ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile
+    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile
+    cd ${MQC_HOME}/examples/Build_Tests
+    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile
     cd ${MQC_HOME}
 fi
+
 #
 # Done with developers only section
 #
+
+#
+# Should we add MatrixFile ability to the MQCPack library?
+#
+echo "MatrixFile specific information"
+echo ""
+echo "MACPack requires gauopen to process MatrixFiles."
+echo "(If you don't have it there are instructions"
+echo "on how to obtain it below.)"
+echo ""
+MQC_Use_GauOpen="g"
+while [ "$MQC_Use_GauOpen" = "g" ]
+do
+    echo "Do you want to use and test the MatrixFile interface to MQCPack? [y or n]:"
+    read -n 1 INTERFACE
+    echo ""
+    if [ "$INTERFACE" = "y" ]; then
+	MQC_Use_GauOpen="y"
+	cp ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile configure
+	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile Makefile.in
+	cd ${MQC_HOME}/examples/Build_Tests
+	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile Makefile.in
+    elif [ "$INTERFACE" = "n" ]; then
+	cp ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK configure
+	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK Makefile.in
+	cd ${MQC_HOME}/examples/Build_Tests
+	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK Makefile.in
+	MQC_Use_GauOpen="n"
+    fi
+    cd ${MQC_HOME}
+done
+
 export FC="g"
 while [ "$FC" = "g" ]
 do
@@ -52,6 +132,12 @@ do
 	    path_to_executable="`command -v gfortran`"
 	    if [ -x "${path_to_executable}" ] ; then
 		export FC="gfortran"
+		if [ "${Isize}" = "8" ]; then
+		    MQC_INTEGER_Compiler_Flag="-fdefault-integer-8"
+		else
+		    MQC_INTEGER_Compiler_Flag=" "
+		fi
+		MQC_L_INTEGER_Compiler_Flag="-fdefault-integer-8"
 		MQC_Compiler="GNU"
 	    else
 		echo "gfortran not found in path"
@@ -84,6 +170,12 @@ do
 	    if [ -x "${path_to_executable}" ] ; then
 		export FC="pgfortran"
 		MQC_Compiler="PGI"
+		if [ "${Isize}" = "8" ]; then
+		    MQC_INTEGER_Compiler_Flag
+		else
+		    MQC_INTEGER_Compiler_Flag=" "
+		fi
+		MQC_L_INTEGER_Compiler_Flag="-i8"
 	    else
 		echo "Cannot use PGI option.  pgfortran not found in path"
 	    fi
@@ -96,21 +188,31 @@ do
 done
 chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR
 
-if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ]; then
-    if [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
-	echo ""
-	echo "The last build used a different compiler, so cleaning"
-	echo "objects and module files."
-	echo ""
-	make clean > ${mqc_tmpfile} 2>&1
-	cd src
-	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
-	cd $MQC_HOME/examples/MatFile_Tests > ${mqc_tmpfile} 2>&1
-	make clean > ${mqc_tmpfile} 2>&1
-	${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
-	cd ${MQC_HOME}
-    fi
+MQC_CLEAN="0"
+if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ] &&
+   [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
+    MQC_CLEAN="1"
+elif [ -f ${MQC_HOME}/.other_libs/build_fcns/default_GauOpen ] &&
+     [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_GauOpen`" != "${MQC_Use_GauOpen}" ]; then
+    MQC_CLEAN="1"
 fi
+if [ "${MQC_CLEAN}" != "0" ]; then
+    echo ""
+    echo "Cleaning objects and module files."
+    echo ""
+    make clean > ${mqc_tmpfile} 2>&1
+    cd ${MQC_HOME}/src
+    ${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
+    ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
+    cd ${MQC_HOME}/src/GauOpen > ${mqc_tmpfile} 2>&1
+    ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
+    rm -f qcmatrixio_4.F qcmatrix_4.F qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
+    cd ${MQC_HOME}/examples/Build_Tests > ${mqc_tmpfile} 2>&1
+    ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
+    cd ${MQC_HOME}
+fi
+
+echo "${MQC_Use_GauOpen}"  > ${MQC_HOME}/.other_libs/build_fcns/default_GauOpen
 echo "${MQC_Compiler}"  > ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER
 
 #
@@ -206,7 +308,7 @@ do
 	fi
     fi
 
-    ${FC} test_blas_lib.f03 ${MQC_BLAS} > blas.err 2>&1
+    ${FC} ${MQC_INTEGER_Compiler_Flag} test_blas_lib.f03 ${MQC_BLAS} > blas.err 2>&1
 
     if [ -f a.out ]; then
 	MQC_OLD_BLAS="y"
@@ -216,7 +318,7 @@ do
 	echo "Warning: Problem when trying a test link with BLAS."
 	echo "The Link line is:"
 	echo ""
-	echo "${FC} test_blas_lib.f03 ${MQC_BLAS}"
+	echo "${FC} ${MQC_INTEGER_Compiler_Flag} test_blas_lib.f03 ${MQC_BLAS}"
 	echo ""
 	echo "The error message is the next `wc -l < blas.err` lines"
 	cat blas.err
@@ -264,7 +366,7 @@ do
 	fi
     fi
 
-    ${FC} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS} > lapack.err 2>&1
+    ${FC} ${MQC_INTEGER_Compiler_Flag} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS} > lapack.err 2>&1
 
     if [ -f a.out ]; then
 	MQC_OLD_LAPACK="y"
@@ -274,7 +376,7 @@ do
 	echo "Warning: Problem when trying a test link with LAPACK."
 	echo "The Link line is:"
 	echo ""
-	echo "${FC} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS}"
+	echo "${FC} ${MQC_INTEGER_Compiler_Flag} test_lapack_lib.f03 ${MQC_LAPACK} ${MQC_BLAS}"
 	echo ""
 	echo "The error message is the next `wc -l < lapack.err` lines"
 	cat lapack.err
@@ -288,143 +390,112 @@ do
 	echo "Then you will have to:"
 	echo "     - Create make.inc (see make.inc.example)"
 	echo "     - make"
-	echo "When the build is finished, please enter the directory"
+	echo "When your finish the build, please enter the directory"
 	echo "and hit return again"
     fi
 done
-cd ${MQC_HOME}
-#
-# Now build the FCHK functionality in the MQCPack library.
-#
-chmod 755 ./configure
-./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
+
+# Start making objects.  Make the GauOpen objects first.
 # Remove the library.  So that is contains only what the build wants to add.
 rm -f ${MQC_HOME}/src/libmqc.a
-make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
-echo "Congratulations! The FCHK functionality in libmqc is built!"
 
-# These functions are required because BASH has a problem with '*'
-${MQC_HOME}/.other_libs/build_fcns/chmod_all
-#
-# Now check the FCHK functionality in the MQCPack library.
-#
-echo "Now perform FCHK tests"
-make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
-if [ $? -ne 0 ] ; then exit $? ; fi
-#
-# Done with the build and check of the FCHK functionality in the MQCPack library.
-#
-#
-# Should we add MatrixFile ability to the MQCPack library?
-#
-echo "MatrixFile specific information"
-echo ""
-echo "The MACPack interface requires gauopen.  (If you don't have it"
-echo "there are instructions on how to obtain it below.)"
-echo ""
-MQC_INTERFACE="g"
-while [ "$MQC_INTERFACE" = "g" ]
-do
-    echo "Do you want to use and test the MatrixFile interface to MQCPack? [y or n]:"
-    read -n 1 INTERFACE
-    echo ""
-    if [ "$INTERFACE" = "y" ]; then
-	MQC_INTERFACE="y"
-    elif [ "$INTERFACE" = "n" ]; then
-	MQC_INTERFACE="n"
-    fi
-done
-
-if [ "${MQC_INTERFACE}" = "y" ]; then
+if [ ! -d "${MQC_HOME}/src/GauOpen" ]; then
+    mkdir ${MQC_HOME}/src/GauOpen
+fi
+if [ "${MQC_Use_GauOpen}" = "y" ]; then
 #
 # We are going to add MatrixFile ability to the MQC library
 #
-# Build the 2 gauopen objects that MQC requires.  These objects
+# Build the gauopen objects that MQC requires.  These objects
 # will be added to the MQC library
 #
-    cd ${MQC_HOME}/.other_libs/gauopen
+    cd ${MQC_HOME}/src/GauOpen > ${mqc_tmpfile} 2>&1
+
     MQC_INTERFACE="g"
 # First find out where the gauopen sources reside
     while [ "$MQC_INTERFACE" = "g" ]
     do
-	if [ -f default ]; then
+	if [ -f ${MQC_HOME}/.other_libs/gauopen/default ]; then
 	    echo "Enter the path to the gauopen directory"
-	    echo "    [default: `cat default`]:"
+	    echo "    [default: `cat ${MQC_HOME}/.other_libs/gauopen/default`]:"
 	else
 	    echo "Enter the path to the gauopen directory:"
 	fi
 	read MQC_GAUOPEN_DIR
 	if [ "${MQC_GAUOPEN_DIR}a" = "a" ]; then
-	    if [ -f default ]; then
-		MQC_GAUOPEN_DIR="`cat default`"
+	    if [ -f ${MQC_HOME}/.other_libs/gauopen/default ]; then
+		MQC_GAUOPEN_DIR="`cat ${MQC_HOME}/.other_libs/gauopen/default`"
 	    fi
 	fi
-# Copy and use just 3 files to a local directory.  If all three files are not 
+# Copy and use just 2 gauopen files to a local directory.  If all three files are not 
 # in the directory, ask again.
 	found="t"
 	if [ -d ${MQC_GAUOPEN_DIR} ]; then
-	    if [ -f ${MQC_GAUOPEN_DIR}/qc.make ]; then
-		if [ -f qc.make  ]; then
-		    diff ${MQC_GAUOPEN_DIR}/qc.make qc.make > gauopen.diff 2>&1
-		    if [ -s gauopen.diff ]; then
-			cp ${MQC_GAUOPEN_DIR}/qc.make .
-# if the makefile is new, be sure to make both objects
-			rm -f *.o
-		    fi
-		else
-		    cp ${MQC_GAUOPEN_DIR}/qc.make .
-		fi
-	    else
-		found="f"
-	    fi
 # Copy qcmatrixio.F in if the local copy is different from the source
-	    if [ -f ${MQC_GAUOPEN_DIR}/qcmatrixio.F  ]; then
-		if [ -f qcmatrixio.F ]; then
-		    diff ${MQC_GAUOPEN_DIR}/qcmatrixio.F qcmatrixio.F  > gauopen.diff 2>&1
-		    if [ -s gauopen.diff ]; then
+	    if [ -f ${MQC_GAUOPEN_DIR}/qcmatrixio.F  ] &&
+	       [ -f ${MQC_GAUOPEN_DIR}/qcmatrix.F ]; then
+		if [ -f qcmatrixio.F ] &&
+		   [ -f qcmatrix.F ]; then
+# Check that the gauopen sources are right
+		    diff ${MQC_GAUOPEN_DIR}/qcmatrixio.F qcmatrixio.F  > ${mqc_tmpfile} 2>&1
+		    if [ ! -s ${mqc_tmpfile} ]; then
+			diff ${MQC_GAUOPEN_DIR}/qcmatrix.F qcmatrix.F > ${mqc_tmpfile} 2>&1
+		    fi
+# if the gauopen files are right, but the processed sources don't exist:
+		    if [ ! -s ${mqc_tmpfile} ]; then
+			if [ ! -s qcmatrixio_4.F ] ||
+			    [ ! -s qcmatrix_4.F ] ||
+			    [ ! -s qcmatrixio_8.F ] ||
+			    [ ! -s qcmatrix_8.F ]; then
+			    cp qcmatrix.F ${mqc_tmpfile}
+			fi
+		    fi
+
+		    if [ -s ${mqc_tmpfile} ]; then
 			cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
+			cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
+			chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific
+			${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
 		    fi
 		else
 		    cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
+		    cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
+		    chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific
+		    ${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
 		fi
 	    else
 		found="f"
 	    fi
 # Copy qcmatrix.F in if the local copy is different from the source
-	    if [ -f ${MQC_GAUOPEN_DIR}/qcmatrix.F ]; then
-		if [ -f qcmatrix.F ]; then
-		    diff ${MQC_GAUOPEN_DIR}/qcmatrix.F qcmatrix.F > gauopen.diff 2>&1
-		    if [ -s gauopen.diff ]; then
-			cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-		    fi
-		else
-		    cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-		fi
-	    else
-		found="f"
-	    fi
 	    if [ "${found}" = "t" ]; then
-		make -f qc.make qcmatrixio.o qcmatrix.o > gauopen.err 2>&1
-		if [ ! -f qcmatrixio.o ]; then
-		    rm -f qcmatrix.o
+		${FC} -c -g -O0 qcmatrixio_4.F qcmatrix_4.F > ${mqc_tmpfile} 2>&1
+		${FC} -c -g -O0 -Duse_i8 ${MQC_L_INTEGER_Compiler_Flag} qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
+		if [ ! -f qcmatrixio_4.o ]; then
+		    rm -f qcmatrixio_8.o qcmatrix_4.o qcmatrix_8.o
+		elif [ ! -f qcmatrixio_8.o ]; then
+		    rm -f qcmatrix_4.o qcmatrix_4.o qcmatrix_8.o
+		elif [ ! -f qcmatrix_4.o ]; then
+		    rm -f qcmatrix_4.o qcmatrixio_8.o qcmatrix_8.o
+		elif [ ! -f qcmatrix_8.o ]; then
+		    rm -f qcmatrix_4.o qcmatrixio_8.o qcmatrix_4.o
 		fi
-		if [ -f qcmatrix.o ]; then
+		if [ -f qcmatrix_4.o ]; then
 		    MQC_INTERFACE="y"
-		    echo ${MQC_GAUOPEN_DIR}  > default 2>&1
+		    echo ${MQC_GAUOPEN_DIR}  > ${MQC_HOME}/.other_libs/gauopen/default 2>&1
 		else
 		    echo ""
 		    echo "Failed to build the required gauopen routines."
-		    echo "The next `wc -l gauopen.err` lines are the output of make:"
-		    cat gauopen.err
+		    echo "The next `wc -l ${mqc_tmpfile}` lines are the output of make:"
+		    cat ${mqc_tmpfile}
 		    echo ""
 		    echo ""
 		fi
+		rm -r ${mqc_tmpfile}
 	    else 
 		echo ""
 		echo "Did not find required gauopen sources." 
 		echo "Please check that the directory that you supplied" 
 		echo "is readable and contains:"
-		echo "     qc.make "
 		echo "     qcmatrixio.F "
 		echo "     qcmatrix.F"
 		echo "If you need to get gauopen:"
@@ -446,169 +517,182 @@ if [ "${MQC_INTERFACE}" = "y" ]; then
 #
 # Done building gauopen
 #
-    cd ${MQC_HOME}
+else
+    cd ${MQC_HOME}/src/GauOpen
+    rm -f qcmatrixio.F qcmatrix.F > ${mqc_tmpfile} 2>&1
+    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrixio_4.F .
+    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrix_4.F .
+    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrixio_8.F .
+    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrix_8.F .
+    ${FC} -c -g -O0 qcmatrixio_4.F qcmatrix_4.F > ${mqc_tmpfile} 2>&1
+    ${FC} -c -g -O0 -Duse_i8 ${MQC_L_INTEGER_Compiler_Flag} qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
+fi
+
+cd ${MQC_HOME}
+#
+# Now build the MQCPack library.
+#
+chmod 755 ./configure
+./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
+make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
+if [ $? -ne 0 ] ; then 
+    echo "Failure to build"
+    exit $? 
+fi
+echo "Congratulations! The libmqc is built!"
+
 # 
 # Some of the tests run Gaussian.  Find out if the installer wants to run
 # these tests.
 #
-    MQC_RUN_GAU="g"
-    while [ "$MQC_RUN_GAU" = "g" ]
-    do
-	echo "Do you want to execute the tests that run Gaussian calculations? [y or n]:"
-	read -n 1 INTERFACE
-	echo ""
-	if [ "$INTERFACE" = "y" ]; then
-	    MQC_RUN_GAU="y"
-	elif [ "$INTERFACE" = "n" ]; then
-	    MQC_RUN_GAU="n"
-	fi
-    done
+MQC_RUN_GAU="g"
+while [ "$MQC_RUN_GAU" = "g" ]
+do
+    echo "Do you want to execute the tests that run Gaussian calculations? [y or n]:"
+    read -n 1 INTERFACE
+    echo ""
+    if [ "$INTERFACE" = "y" ]; then
+	MQC_RUN_GAU="y"
+    elif [ "$INTERFACE" = "n" ]; then
+	MQC_RUN_GAU="n"
+    fi
+done
 
-    if [ "${MQC_RUN_GAU}" = "y" ]; then
+if [ "${MQC_RUN_GAU}" = "y" ]; then
 #
 # Setup to run Gaussian.
 #
-	echo ""
-	echo "Specify the Gaussian binary to use [default: g16]"
+    echo ""
+    echo "Specify the Gaussian binary to use [default: g16]"
+    read INTERFACE
+    if [ "${INTERFACE}a" = "a" ]; then
+	export GAU_BINARY="g16"
+    else
+	export GAU_BINARY="${INTERFACE}"
+    fi
+    MQC_tmpfile_tmp="/tmp/Invoke_$BASHPID"
+    MQC_tmpfile="${MQC_HOME}/.other_libs/gaussian/default"
+    
+    path_to_executable="`command -v ${GAU_BINARY}`"
+    while [ ! -x "${path_to_executable}" ]
+    do
+	echo "Specify how to get the Gaussian environment from the BASH shell."
+	echo "You MUST enter many lines.  The final line MUST be blank."
+	if [ -f ${MQC_HOME}/.other_libs/gaussian/default ]; then
+	    echo "[enter a blank line to get default:"
+	    echo "`cat ${MQC_HOME}/.other_libs/gaussian/default`"
+	    echo ""
+	    echo "]:"
+	else
+	    echo "for example:"
+	    echo "export g16root=/opt"
+	    echo ". ${g16root}/g16/bsd/g16.profile"
+	    echo ""
+	fi
 	read INTERFACE
 	if [ "${INTERFACE}a" = "a" ]; then
-	    export GAU_BINARY="g16"
+	    MQC_tmpfile="${MQC_HOME}/.other_libs/gaussian/default"
 	else
-	    export GAU_BINARY="${INTERFACE}"
+	    MQC_tmpfile="${MQC_tmpfile_tmp}"
+	    echo "${INTERFACE}" > ${MQC_tmpfile}
+	    while [ "${INTERFACE}a" != "a" ]
+	    do
+		read INTERFACE
+		echo "${INTERFACE}" >> ${MQC_tmpfile}
+	    done
 	fi
-	MQC_tmpfile_tmp="/tmp/Invoke_$BASHPID"
-	MQC_tmpfile="${MQC_HOME}/.other_libs/gaussian/default"
-
+	. ${MQC_tmpfile}	
 	path_to_executable="`command -v ${GAU_BINARY}`"
-	while [ ! -x "${path_to_executable}" ]
-	do
-	    echo "Specify how to get the Gaussian environment from the BASH shell."
-	    echo "You MUST enter many lines.  The final line MUST be blank."
-	    if [ -f ${MQC_HOME}/.other_libs/gaussian/default ]; then
-		echo "[enter a blank line to get default:"
-		echo "`cat ${MQC_HOME}/.other_libs/gaussian/default`"
-		echo ""
-		echo "]:"
-	    else
-		echo "for example:"
-		echo "export g16root=/opt"
-		echo ". ${g16root}/g16/bsd/g16.profile"
-		echo ""
-	    fi
-	    read INTERFACE
-	    if [ "${INTERFACE}a" = "a" ]; then
-		MQC_tmpfile="${MQC_HOME}/.other_libs/gaussian/default"
-	    else
-		MQC_tmpfile="${MQC_tmpfile_tmp}"
-		echo "${INTERFACE}" > ${MQC_tmpfile}
-		while [ "${INTERFACE}a" != "a" ]
-		do
-		    read INTERFACE
-		    echo "${INTERFACE}" >> ${MQC_tmpfile}
-		done
-	    fi
-	    . ${MQC_tmpfile}	
-	    path_to_executable="`command -v ${GAU_BINARY}`"
-	done
+    done
 
-	if [ "${MQC_tmpfile}" != "${MQC_HOME}/.other_libs/gaussian/default" ]; then
-	    mv ${MQC_tmpfile} ${MQC_HOME}/.other_libs/gaussian/default
-	elif [ -f ${MQC_tmpfile_tmp} ] ; then
-	    rm -f ${MQC_tmpfile_tmp}
-	fi
+    if [ "${MQC_tmpfile}" != "${MQC_HOME}/.other_libs/gaussian/default" ]; then
+	mv ${MQC_tmpfile} ${MQC_HOME}/.other_libs/gaussian/default
+    elif [ -f ${MQC_tmpfile_tmp} ] ; then
+	rm -f ${MQC_tmpfile_tmp}
+    fi
 #
 # If the Gaussian scratch directory has not been specified, specify it now.
 #
-	if [ "${GAUSS_SCRDIR}a" != "a" ]; then
-	    if [ ! -d "${GAUSS_SCRDIR}" ]; then
-		echo "${GAUSS_SCRDIR} does not exist.  Please enter an existing directory."
-		export GAUSS_SCRDIR="Not set"
-	    elif [ ! -w "${GAUSS_SCRDIR}" ]; then
-		echo "${GAUSS_SCRDIR} is not writable.  Please enter a writable directory."
-		export GAUSS_SCRDIR="Not set"
-	    elif [ ! -r "${GAUSS_SCRDIR}" ]; then
-		echo "${GAUSS_SCRDIR} is not readable.  Please enter a readable directory."
-		export GAUSS_SCRDIR="Not set"
-	    fi
-	else
+    if [ "${GAUSS_SCRDIR}a" != "a" ]; then
+	if [ ! -d "${GAUSS_SCRDIR}" ]; then
+	    echo "${GAUSS_SCRDIR} does not exist.  Please enter an existing directory."
+	    export GAUSS_SCRDIR="Not set"
+	elif [ ! -w "${GAUSS_SCRDIR}" ]; then
+	    echo "${GAUSS_SCRDIR} is not writable.  Please enter a writable directory."
+	    export GAUSS_SCRDIR="Not set"
+	elif [ ! -r "${GAUSS_SCRDIR}" ]; then
+	    echo "${GAUSS_SCRDIR} is not readable.  Please enter a readable directory."
 	    export GAUSS_SCRDIR="Not set"
 	fi
-
-	while [ "${GAUSS_SCRDIR}" = "Not set" ]
-	do 
-	    if [ -f ${MQC_HOME}/.other_libs/gaussian/default_scratch ]; then
-		echo "Please enter the scratch directory for Gaussian"
-		echo "[default:`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`]:"
-	    else
-		echo "Please enter the scratch directory for Gaussian:"
-	    fi
-	    read INTERFACE
-	    if [ "${INTERFACE}a" == "a" ]; then
-		${INTERFACE}="`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`"
-	    fi
-	    if [ ! -d "${INTERFACE}" ]; then
-		echo "${INTERFACE} does not exist.  Please enter an existing directory."
-	    elif [ ! -w "${INTERFACE}" ]; then
-		echo "${INTERFACE} is not writable.  Please enter a writable directory."
-	    elif [ ! -r "${INTERFACE}" ]; then
-		echo "${INTERFACE} is not readable.  Please enter a readable directory."
-	    else
-		export GAUSS_SCRDIR="$INTERFACE"
-	    fi
-	done
-	echo "Gaussian scratch directory is: ${GAUSS_SCRDIR}"
-# Save the working GAUSS_SCRDIR for use as default next time
-	echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
-# Use the script that will run Gaussian
-	cp ${MQC_HOME}/examples/tools/testit_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
     else
+	export GAUSS_SCRDIR="Not set"
+    fi
+
+    while [ "${GAUSS_SCRDIR}" = "Not set" ]
+    do 
+	if [ -f ${MQC_HOME}/.other_libs/gaussian/default_scratch ]; then
+	    echo "Please enter the scratch directory for Gaussian"
+	    echo "[default:`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`]:"
+	else
+	    echo "Please enter the scratch directory for Gaussian:"
+	fi
+	read INTERFACE
+	if [ "${INTERFACE}a" == "a" ]; then
+	    ${INTERFACE}="`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`"
+	fi
+	if [ ! -d "${INTERFACE}" ]; then
+	    echo "${INTERFACE} does not exist.  Please enter an existing directory."
+	elif [ ! -w "${INTERFACE}" ]; then
+	    echo "${INTERFACE} is not writable.  Please enter a writable directory."
+	elif [ ! -r "${INTERFACE}" ]; then
+	    echo "${INTERFACE} is not readable.  Please enter a readable directory."
+	else
+	    export GAUSS_SCRDIR="$INTERFACE"
+	fi
+    done
+    echo "Gaussian scratch directory is: ${GAUSS_SCRDIR}"
+# Save the working GAUSS_SCRDIR for use as default next time
+    echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
+# Use the script that will run Gaussian
+    cp ${MQC_HOME}/examples/CreateDataList/testit_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
+    cp ${MQC_HOME}/examples/tools/testit_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
+else
 # Use the script that will not run Gaussian
-	cp ${MQC_HOME}/examples/tools/testit_no_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
-    fi
-# Make sure that we can execute the script to run or not run Gaussian
-    chmod 755 ${MQC_HOME}/examples/tools/testit.sh
-
-    cd ${MQC_HOME}/examples/MatFile_Tests
-    chmod 755 configure
-    ./configure --prefix=${MQC_INSTALLATIONDIR} --silent
-
-# This is a check of the scripts.  Save a list of the objects in the MQC 
-# library for comparison later
-    ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen 2>&1
-    cat ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen | sort > ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen_sorted
-    rm -f ${MQC_HOME}/src/libmqc.a
-# Build the MQC library with MatrixFile functionality
-    make MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
-    if [ $? -ne 0 ] ; then exit $? ; fi
-# Find the objects in the MQC library with MatrixFile functionality
-    ar t ${MQC_HOME}/src/libmqc.a > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen 2>&1
-    cat ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen | sort > ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen_sorted
-
-# Check that we are expanding the library.
-# If this fails, first check examples/MatFile_Tests/Makefile.am
-    diff ${MQC_HOME}/.other_libs/gauopen/libmqc_pre_gauopen_sorted ${MQC_HOME}/.other_libs/gauopen/libmqc_post_gauopen_sorted > ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 2>&1
-    if grep --quiet "<" ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs; then
-	echo "New library missing some objects that were in the previous library."
-	echo "Here is the difference in objects:"
-	cat ${MQC_HOME}/.other_libs/gauopen/libmqc_gauopen_diffs 
-	exit 1
-    fi
-    echo "Congratulations! The MQCPack library can now work with MatrixFiles!"
-# Now check the MQCPack library with MatrixFile functionality
-    make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} 
-    if [ $? -ne 0 ] ; then exit $? ; fi
+    cp ${MQC_HOME}/examples/CreateDataList/testit_no_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
+    cp ${MQC_HOME}/examples/tools/testit_no_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
 fi
+chmod 755 ${MQC_HOME}/examples/CreateDataList/testit.sh
+chmod 755 ${MQC_HOME}/examples/tools/testit.sh
+
+# These functions are required because BASH has a problem with '*'
+${MQC_HOME}/.other_libs/build_fcns/chmod_all
+#
+# Now check the FCHK functionality in the MQCPack library.
+#
+echo "Now check the build"
+make check MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
+if [ $? -ne 0 ] ; then exit $? ; fi
+#
+# Done with the build and check of the FCHK functionality in the MQCPack library.
+#
+
 #
 # Finally, install the library
 #
 cd ${MQC_HOME}
 # /dev/null is not happy in this shell.  Use a file
-make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
-if [ $? -ne 0 ] ; then exit $? ; fi
+make install MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS} > make.install.log 2>&1
+if [ $? -ne 0 ] 
+then 
+    echo "Installation failure see make.install.log"
+    exit 1
+fi
+
+rm -f make.install.log
 
 ${MQC_HOME}/.other_libs/build_fcns/cp_all  src .mod ${MQC_INSTALLATIONDIR}/mod > ${mqc_tmpfile} 2>&1
-rm ${mqc_tmpfile}
+rm -f ${mqc_tmpfile}
 
-echo "Finished! with installation and testing"
+echo "Successfully Finished! with installation and testing"
 exit
 
