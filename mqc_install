@@ -122,6 +122,7 @@ while [ "$FC" = "g" ]
 do
     echo "Please select a compiler.  The case insenstive available options are:"
     echo "    G - GNU compilers (gfortran/gcc) "
+    echo "    I - Intel compilers (ifort/icc) "
     echo "    P - PGI compilers (pgfortran/pgcc)"
     read -n 1 MQC_Compiler
     echo ""
@@ -159,7 +160,7 @@ do
 		export CC="gcc"
 		echo "gcc will be used"
 	    else
-		echo "gcc not found in path."
+		echo "Neither pgcc nor gcc found in path."
 		echo "Not finding a C compiler in path."
 		echo "Please fix path before you retry installing MQCPath"
 		exit 1
@@ -171,7 +172,7 @@ do
 		export FC="pgfortran"
 		MQC_Compiler="PGI"
 		if [ "${Isize}" = "8" ]; then
-		    MQC_INTEGER_Compiler_Flag
+		    MQC_INTEGER_Compiler_Flag="-i8"
 		else
 		    MQC_INTEGER_Compiler_Flag=" "
 		fi
@@ -180,7 +181,40 @@ do
 		echo "Cannot use PGI option.  pgfortran not found in path"
 	    fi
 	fi
-    elif [ "${FC}" = "g" ]; then
+    elif [ "${MQC_Compiler}" = "I" ] || [ "${MQC_Compiler}" = "i" ]; then
+	export CC="g"
+	path_to_executable="`command -v icc`"
+	if [ -x "${path_to_executable}" ] ; then
+	    export CC="icc"
+	else
+	    echo "pgcc not found in path"
+	    path_to_executable="`command -v gcc`"
+	    if [ -x "${path_to_executable}" ] ; then
+		export CC="gcc"
+		echo "icc not found.  gcc will be used"
+	    else
+		echo "Neither icc nor gcc found in path."
+		echo "Not finding a C compiler in path."
+		echo "Please fix path before you retry installing MQCPath"
+		exit 1
+	    fi
+	fi
+	if [ "$CC" != "g" ]; then
+	    path_to_executable="`command -v ifort`"
+	    if [ -x "${path_to_executable}" ] ; then
+		export FC="ifort"
+		MQC_Compiler="Intel"
+		if [ "${Isize}" = "8" ]; then
+		    MQC_INTEGER_Compiler_Flag="-integer-size 64"
+		else
+		    MQC_INTEGER_Compiler_Flag=" "
+		fi
+		MQC_L_INTEGER_Compiler_Flag="-integer-size 64"
+	    else
+		echo "Cannot use Intel option.  ifort not found in path"
+	    fi
+	fi
+    elif [ "${FC}" = "no" ]; then
 	echo ""
 	echo "Please specify either GNU or PGI"
 	echo ""

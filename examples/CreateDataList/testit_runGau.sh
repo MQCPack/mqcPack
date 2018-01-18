@@ -76,16 +76,18 @@ rm -f test1132.com
 cd ..
 
 # Now, remove the process IDs from the names of Gaussian file names
-../../.other_libs/build_fcns/remove_Gau_pid outfile
-../../.other_libs/build_fcns/remove_Gau_pid outfile
-../../.other_libs/build_fcns/remove_Gau_pid outfile
-../../.other_libs/build_fcns/remove_Gau_pid outfile
-../../.other_libs/build_fcns/remove_Gau_pid outfile
-../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
+#../../.other_libs/build_fcns/remove_Gau_pid outfile
 # remove the location of the scratch directory from outfile
-../../.other_libs/build_fcns/remove_SCRDIR outfile
+#../../.other_libs/build_fcns/remove_SCRDIR outfile
 
-sync
+grep -v "echo argv" outfile > tmpfile 2>1
+grep -v "cp test1132" tmpfile > outfile 2>1
+rm tmpfile
 
 diff -b -B outfile OUTPUT/out_runGau
 

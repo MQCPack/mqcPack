@@ -53,12 +53,6 @@ MatrixFiles:
 --------------------------------
 test1132 Create MatrixFiles test
 --------------------------------
-echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132u.dat /Gau-.EUF
-echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132r.dat /Gau-.EUF
-echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132gr.dat /Gau-.EUF
 MatrixFiles:
    - test1132.mat
 -----------------------------------------------------
@@ -69,12 +63,6 @@ MatrixFiles:
 ------------------------------------------------------------------
 test1132 Create One MartixFile and Pass through 3 MatrixFiles test
 ------------------------------------------------------------------
-echo argv is test1132u.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132u.dat /Gau-.EUF
-echo argv is test1132r.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132r.dat /Gau-.EUF
-echo argv is test1132gr.dat R /Gau-.EIn /Gau-.EOu /Gau-.EMs /Gau-.EFC /Gau-.EUF
-cp test1132gr.dat /Gau-.EUF
 MatrixFiles:
    - test1132.mat
    - test1132gr.dat
