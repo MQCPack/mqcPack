@@ -84,7 +84,9 @@
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
         procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+        procedure,pass::getMolData   => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
+        procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
         procedure,pass::writeArray     => MQC_Gaussian_Unformatted_Matrix_Write_Array
         procedure,pass::writeESTObj    => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
       End Type MQC_Gaussian_Unformatted_Matrix_File
@@ -1703,6 +1705,47 @@
 
 !=====================================================================
 !
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+      Subroutine MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data(fileinfo,moleculeData)
+!
+!     This function is used to obtain the molecule information object
+!     associated with the Gaussian unformatted matrix file sent in object
+!     fileinfo.
+!
+!     L. M. Thompson, 20178.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_gaussian_unformatted_matrix_file),intent(inout)::fileinfo
+      class(mqc_molecule_data),intent(out)::moleculeData
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      call mqc_gaussian_fill_molecule_data(moleculeData,fileInfo%nAtoms,fileInfo%atomicNumbers, &
+        fileInfo%atomicWeights,fileInfo%atomicCharges,fileInfo%cartesians,fileInfo%iCharge, &
+        fileInfo%multiplicity)
+      return
+      end Subroutine MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+
+
+!=====================================================================
+!
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
       subroutine mqc_gaussian_unformatted_matrix_write_EST_object(fileinfo,label, &
         est_wavefunction,est_integral,est_eigenvalues,filename,override)
@@ -2101,7 +2144,7 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::label
-      type(mqc_wavefunction),optional::est_wavefunction
+      class(mqc_wavefunction),optional::est_wavefunction
       type(mqc_scf_integral),optional::est_integral
       type(mqc_scf_eigenvalues),optional::est_eigenvalues
       character(len=*),intent(in),optional::filename
@@ -2436,6 +2479,129 @@
       end subroutine MQC_Gaussian_Unformatted_Matrix_Get_EST_Object 
 
 
+!
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_twoERIs   
+      subroutine mqc_gaussian_unformatted_matrix_get_twoERIs(fileinfo,label, &
+        est_twoeris,filename)
+!
+!     This subroutine loads the two-electron resonance integrals from a 
+!     Gaussian unformatted matrix file sent in object <fileinfo>. The 
+!     relevant information will be loaded into output dummy mqc_twoERIs 
+!     argument <est_twoeris>.
+!
+!     Dummy argument <filename> is optional and is only used if fileinfo
+!     hasn't already been defined using Routine
+!     MQC_Gaussian_Unformatted_Matrix_Open or if it is determined that the
+!     filename sent is different from the filename associated with object
+!     fileinfo.
+!
+!     NOTE: The routine MQC_Gaussian_Unformatted_Matrix_Open is meant to be
+!     called before calling this routine. The expectation is that
+!     MQC_Gaussian_Unformatted_Matrix_Read_Header is also called before this
+!     routine. However, it is also OK to call this routine first. In that case,
+!     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
+!
+!     The recognized labels and their meaning include:
+!           'regular'            return the regular stored 2ERIs 
+!                                  R(i,j,k,l) = (ij|kl)
+!           'raffenetti1'        return the raffenetti 1 stored 2ERIs  
+!                                  R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
+!           'raffenetti2'        return the raffenetti 2 stored 2ERIs  
+!                                  R(i,j,k,l) = (ij|kl) + (il|jk)
+!           'raffenetti3'        return the raffenetti 3 stored 2ERIs  
+!                                  R(i,j,k,l) = (ik|jl) - (il|jk)
+!           'molecular'          return the molecular orbital basis 2ERIs
+
+!     L. M. Thompson, 2018.
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      type(mqc_twoERIs),optional::est_twoeris
+      character(len=*),intent(in),optional::filename
+      character(len=256)::my_filename
+      character(len=64)::myLabel
+      integer::nBasis,nAlpha,nBeta
+      type(mqc_r4tensor)::tmpR4TensorAlpha,tmpR4TensorBeta,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        else
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'R' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          filename)
+      endIf
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('regular')
+        call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'full','regular',tmpR4TensorAlpha)
+      case('raffenetti')
+        call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'full','raffenetti',tmpR4TensorAlpha)
+      case('molecular')
+        if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
+          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha)
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
+          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
+          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
+          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
+          call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta)
+          call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha)
+          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+            tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case default
+        call mqc_error_A('Invalid label sent to %get2ERIs.', 6, &
+             'mylabel', mylabel )
+      end select
+!
+      return
+
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+
+
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
@@ -2536,7 +2702,7 @@
       if(NR.lt.0.or.NI.lt.0) return
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
-        if(NR.eq.1.and.NI.eq.4) then
+        if((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "2ERIS"
         else
           return
