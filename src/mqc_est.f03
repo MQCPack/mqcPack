@@ -45,9 +45,7 @@
 !
 !     MQC_SCF_Integral
       Type MQC_SCF_Integral
-!       we should make Alpha, Beta etc. private once MQC_Gaussian discards old 
-!       matrix file reading routine
-        Type(MQC_Matrix)::Alpha,Beta,AlphaBeta,BetaAlpha
+        Type(MQC_Matrix),Private::Alpha,Beta,AlphaBeta,BetaAlpha
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General 
       Contains 
@@ -65,9 +63,7 @@
 !
 !     MQC_SCF_Eigenvalues
       Type MQC_SCF_Eigenvalues
-!       we should make Alpha, Beta private once MQC_Gaussian discards old 
-!       matrix file reading routine
-        Type(MQC_Vector)::Alpha,Beta
+        Type(MQC_Vector),Private::Alpha,Beta
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General 
       Contains 
@@ -125,11 +121,13 @@
 !     Two electron integrals....
 !
 !     Parent Type
-      Type MQC_TwoERIs
-        Type(MQC_R4Tensor)::TwoERIs
-        Logical::AO,UHF
-        Character(Len=64)::Integral_Type,Storage_Type
-      End Type MQC_TwoERIs
+      type mqc_twoERIs
+        type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha
+        character(Len=64),private::integralType !regular,raffenetti,molecular
+        character(Len=64),private::storageType !full,symm
+      contains 
+        procedure, public::print => mqc_print_twoERIs
+      end type mqc_twoERIs
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -137,11 +135,12 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-      Interface MQC_Print
-        Module Procedure MQC_Print_Wavefunction
-        Module Procedure MQC_Print_Integral
-        Module Procedure MQC_Print_Eigenvalues
-      End Interface
+      interface mqc_print
+        module procedure mqc_print_wavefunction
+        module procedure mqc_print_integral
+        module procedure mqc_print_eigenvalues
+        module procedure mqc_print_twoERIS
+      end interface
 !
       Interface MatMul
         Module Procedure MQC_Integral_Matrix_Multiply
@@ -309,7 +308,7 @@
       class(mqc_scf_eigenvalues)::eigenvalues
       integer,intent(in)::iOut
       character(len=*),intent(in)::header
-      character(len=64)::arrayType
+      character(len=64)::integralType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
 !
  1000 Format(1x,A)
@@ -336,6 +335,47 @@
       endif
 !
       end subroutine mqc_print_eigenvalues
+!
+!
+!     PROCEDURE MQC_Print_TwoERIs 
+      subroutine mqc_print_twoERIs(twoERIs,iOut,header, &
+          blank_at_top,blank_at_bottom)
+!
+      implicit none
+      class(mqc_twoERIs)::twoERIs
+      integer,intent(in)::iOut
+      character(len=*),intent(in)::header
+      character(len=64)::integralType
+      logical,intent(In),optional::blank_at_top,blank_at_bottom
+!
+ 1000 Format(1x,A)
+ 1020 Format( " " )
+!  
+      if(present(blank_at_top)) then
+        if(blank_at_top) write(iout,1020)
+      endif
+      write(iout,1000) trim(header)
+      
+      call string_change_case(twoERIs%integraltype,'L')
+      if(twoERIs%integralType.eq.'regular') then
+        call twoERIs%alpha%print(iout,'Regular 2ERIs')
+      elseIf(twoERIs%integralType.eq.'raffenetti') then
+        call twoERIs%alpha%print(iout,'Raffenetti 2ERIs')
+      elseIf(twoERIs%integralType.eq.'molecular') then
+        call twoERIs%alpha%print(iout,'Alpha-Alpha Block')
+        call twoERIs%alphaBeta%print(iout,'Alpha-Beta Block')
+        call twoERIs%betaAlpha%print(iout,'Beta-Alpha Block')
+        call twoERIs%beta%print(iout,'Beta-Beta Block')
+      else
+        call mqc_error_A('Integral type unrecogised in mqc_print_twoERIs', 6, &
+             'twoERIs%integralType', twoERIs%integralType )
+      endIf
+
+      if(present(blank_at_bottom)) then
+        if(blank_at_bottom) write(iout,1020)
+      endif
+!
+      end subroutine mqc_print_twoERIs 
 !
 !
 !     PROCEDURE MQC_Integral_Has_Alpha
@@ -556,6 +596,28 @@
       end select 
 !
       end function mqc_eigenvalues_dimension 
+!
+!
+!     PROCEDURE MQC_TwoERIs_Allocate
+      subroutine mqc_twoeris_allocate(twoERIs,storageType,integralType,alpha, &
+          beta,alphaBeta,betaAlpha) 
+!
+      implicit none
+      class(mqc_twoERIs)::twoERIs
+      character(len=*)::storageType,integralType
+      type(mqc_r4tensor),optional::alpha,beta,alphaBeta,betaAlpha
+!
+      call string_change_case(storageType,'L')
+      call string_change_case(integralType,'L')
+      twoERIs%storageType = storageType 
+      twoERIs%integralType = integralType 
+!
+      if(present(alpha)) twoERIs%alpha = alpha
+      if(present(beta))  twoERIs%beta = beta
+      if(present(alphaBeta)) twoERIs%alphaBeta = alphaBeta
+      if(present(betaAlpha)) twoERIs%betaAlpha = betaAlpha
+!
+      end subroutine mqc_twoeris_allocate  
 !
 !
 !     PROCEDURE MQC_Integral_Allocate
@@ -1231,11 +1293,11 @@
         case('space')
           tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
           tmpMatrixBeta = integralA%beta.dot.integralB%alpha
-          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha,tmpMatrixBeta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('spin')
           tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
           tmpMatrixBeta = integralA%beta.dot.integralB%beta
-          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha,tmpMatrixBeta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('general')
           tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
           tmpMatrixBeta = integralA%beta.dot.integralB%beta
@@ -2047,13 +2109,13 @@
 !             This section computes the value of the matrix element
 !
               If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
+                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(3),Orbs(2)+NBasis,Orbs(4)+NBasis)
+                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(3)+NBasis,Orbs(2),Orbs(4))
+                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(3)+NBasis,Orbs(2)+NBasis,Orbs(4)+NBasis)
+                ERI1 = ERIs%beta%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
               EndIf
 !              
 !             This section changes sign accounting for the ordering of alpha and
@@ -2222,13 +2284,13 @@
               EndIf
 !
               If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
+                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(4),Orbs(2)+NBasis,Orbs(3)+NBasis)
+                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(4)+NBasis,Orbs(2),Orbs(3))
+                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(4)+NBasis,Orbs(2)+NBasis,Orbs(3)+NBasis)
+                ERI2 = ERIs%beta%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
               EndIf
 !
               If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
@@ -2394,13 +2456,13 @@
                 EndIf
               EndIf
               If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
+                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
               ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(2),Orbs(3)+NBasis,Orbs(4)+NBasis)
+                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,Orbs(3),Orbs(4))
+                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,Orbs(3)+NBasis,Orbs(4)+NBasis)
+                ERI1 = ERIs%beta%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
               EndIf
               If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
               If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
@@ -2562,13 +2624,13 @@
                 EndIf
               EndIf
               If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
+                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
               ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(4),Orbs(3)+NBasis,Orbs(2)+NBasis)
+                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(4)+NBasis,Orbs(3),Orbs(2))
+                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(4)+NBasis,Orbs(3)+NBasis,Orbs(2)+NBasis)
+                ERI2 = ERIs%beta%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
               EndIf
               If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
               If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
@@ -2733,13 +2795,13 @@
                 EndIf
               EndIf
               If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
+                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
               ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1),Orbs(2),Orbs(4)+NBasis,Orbs(3)+NBasis)
+                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,Orbs(4),Orbs(3))
+                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                ERI1 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,Orbs(4)+NBasis,Orbs(3)+NBasis)
+                ERI1 = ERIs%beta%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
               EndIf
               If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
               If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
@@ -2893,13 +2955,13 @@
                 EndIf
               EndIf
               If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
+                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
               ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1),Orbs(3),Orbs(4)+NBasis,Orbs(2)+NBasis)
+                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(3)+NBasis,Orbs(4),Orbs(2))
+                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                ERI2 = ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(3)+NBasis,Orbs(4)+NBasis,Orbs(2)+NBasis)
+                ERI2 = ERIs%beta%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
               EndIf
               If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
               If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
@@ -2987,19 +3049,19 @@
             If(BTest(Alpha_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
 !                Write(IOut,*) 'ALPHA: UHF False and 1 and 2 same spin, adding:',ISgn*ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1)
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
+                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
                 If(Spin(1).eq.0.and.Spin(2).eq.0) then
 !                  Write(IOut,*) 'ALPHA: UHF False and 1 and 2 both alpha, subtracting:',ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
-                  MatEl = MatEl - Sgn*ERIs%TwoERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
+                  MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
                 EndIf
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
 !                Write(IOut,*) 'ALPHA: UHF True and 1 and 2 both alpha, adding:', &
 !                  ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1) - ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
-                  Sgn*ERIs%TwoERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
+                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
+                  Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !                Write(IOut,*) 'ALPHA: UHF True and 1 and 2 both beta, adding:', ISgn*ERIs(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1,IPos+1)
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1,IPos+1)
+                MatEl = MatEl + Sgn*ERIs%betaAlpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
               EndIf
             EndIf
           EndDo
@@ -3010,20 +3072,20 @@
             If(BTest(Beta_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
 !                Write(IOut,*) 'BETA: UHF False and 1 and 2 same spin, adding:',ISgn*ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1)
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
+                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
                 If(Spin(1).eq.1.and.Spin(2).eq.1) then
 !                  Write(IOut,*) 'BETA: UHF False and 1 and 2 both beta, subtracting:',ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
-                  MatEl = MatEl - Sgn*ERIs%TwoERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
+                  MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
                 EndIf
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
 !                Write(IOut,*) 'BETA: UHF True and 1 and 2 both alpha, adding:', ISgn*ERIs(Orbs(1),Orbs(2),IPos+1+NBasis,IPos+1+NBasis)
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1),Orbs(2),IPos+1+NBasis,IPos+1+NBasis) 
+                MatEl = MatEl + Sgn*ERIs%alphaBeta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) 
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !                Write(IOut,*) 'BETA: UHF True and 1 and 2 both beta, adding:', &
 !                ISgn*ERIs(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1+NBasis,IPos+1+NBasis) - &
 !                  ISgn*ERIs(Orbs(1)+NBasis,IPos+1+NBasis,IPos+1+NBasis,Orbs(2)+NBasis)
-                MatEl = MatEl + Sgn*ERIs%TwoERIs%at(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1+NBasis,IPos+1+NBasis) - &
-                  Sgn*ERIs%TwoERIs%at(Orbs(1)+NBasis,IPos+1+NBasis,IPos+1+NBasis,Orbs(2)+NBasis)
+                MatEl = MatEl + Sgn*ERIs%beta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
+                  Sgn*ERIs%beta%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
               EndIf
             EndIf
           EndDo
@@ -3071,9 +3133,9 @@
               If(BTest(Alpha_String_1(I),J)) then
                 If(BTest(Alpha_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-!                  Call MQC_Print(ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-!                  Call MQC_Print(ERIs%TwoERIs%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
-                  MatEl = MatEl + ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1) - ERIs%TwoERIs%at(IPos+1,JPos+1,JPos+1,IPos+1)
+!                  Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
+!                  Call MQC_Print(ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
+                  MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1) - ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1)
                 EndIf
               EndIf
             EndDo
@@ -3089,15 +3151,15 @@
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
                   If(UHF) then
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1+NBasis,IPos+1+NBasis,JPos+1+NBasis,JPos+1+NBasis),IOut,'(II|JJ)')
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1+NBasis,JPos+1+NBasis,JPos+1+NBasis,IPos+1+NBasis),IOut,'(IJ|JI)') 
-                    MatEl = MatEl + ERIs%TwoERIs%at(IPos+1+NBasis,IPos+1+NBasis,JPos+1+NBasis,JPos+1+NBasis) - & 
-                      ERIs%TwoERIs%at(IPos+1+NBasis,JPos+1+NBasis,JPos+1+NBasis,IPos+1+NBasis)
+!                    Call MQC_Print(ERIs%beta%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
+!                    Call MQC_Print(ERIs%beta%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
+                    MatEl = MatEl + ERIs%beta%at(IPos+1,IPos+1,JPos+1,JPos+1) - & 
+                      ERIs%beta%at(IPos+1,JPos+1,JPos+1,IPos+1)
                   Else
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
-                    MatEl = MatEl + ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1) - &
-                      ERIs%TwoERIs%at(IPos+1,JPos+1,JPos+1,IPos+1)
+!                    Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
+!                    Call MQC_Print(ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
+                    MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1) - &
+                      ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1)
                   EndIf
                 EndIf
               EndIf
@@ -3114,11 +3176,11 @@
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
                   If(UHF) then
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1+NBasis,JPos+1+NBasis),IOut,'(II|JJ)')
-                    MatEl = MatEl + ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1+NBasis,JPos+1+NBasis)
+!                    Call MQC_Print(ERIs%alphaBeta%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
+                    MatEl = MatEl + ERIs%alphaBeta%at(IPos+1,IPos+1,JPos+1,JPos+1)
                   Else
-!                    Call MQC_Print(ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-                    MatEl = MatEl + ERIs%TwoERIs%at(IPos+1,IPos+1,JPos+1,JPos+1)
+!                    Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
+                    MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1)
                   EndIf
                 EndIf
               EndIf
@@ -3160,6 +3222,8 @@
       Real::Zero=0.0d0
       Logical::DoON5,UHF
       Type(MQC_Matrix)::X,Y
+      Type(MQC_R4Tensor) tmpR4TensorAlpha,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha, &
+        tmpR4TensorBeta
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_TwoERIs),Intent(Out)::MO_ERIs
       Type(MQC_SCF_Integral),Intent(In)::MO_Coeff
@@ -3174,13 +3238,15 @@
 
       NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
       If(.not.UHF) then
-        Call MO_ERIs%TwoERIs%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
       ElseIf(UHF) then
-        Call MO_ERIs%TwoERIs%initialize(NBasis*2,NBasis*2,NBasis*2,NBasis*2)
+        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlphaBeta%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBetaAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBeta%initialize(NBasis,NBasis,NBasis,NBasis)
       EndIf
-      MO_ERIs%AO = .False.
-      MO_ERIs%Storage_Type = 'Full'
-      MO_ERIs%Integral_Type = 'Regular'
+      MO_ERIs%StorageType = 'Full'
+      MO_ERIs%IntegralType = 'Regular'
 
       If(.not.DoON5) then
 
@@ -3193,26 +3259,26 @@
                   Do Nu = 1, NBasis
                     Do Lambda = 1, NBasis
                       Do Sigma = 1, NBasis
-                        Call MO_ERIs%TwoERIs%put(MO_ERIs%TwoERIs%at(P,Q,R,S) + &
+                        Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
                           MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
-                          ERIs%TwoERIs%at(Mu,Nu,Lambda,Sigma) * MO_Coeff%Alpha%at(Lambda,R) * &
+                          ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * MO_Coeff%Alpha%at(Lambda,R) * &
                           MO_Coeff%Alpha%at(Sigma,S),P,Q,R,S)
                           If(UHF) then
-                           Call MO_ERIs%TwoERIs%put(MO_ERIs%TwoERIs%at(P,Q,R+NBasis,S+NBasis) + &
+                           Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
                              MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
-                             ERIs%TwoERIs%at(Mu,Nu,Lambda,Sigma) * &
+                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
                              MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
-                             P,Q,R+NBasis,S+NBasis)
-                           Call MO_ERIs%TwoERIs%put(MO_ERIs%TwoERIs%at(P+NBasis,Q+NBasis,R,S) + &
+                             P,Q,R,S)
+                           Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
                              MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
-                             ERIs%TwoERIs%at(Mu,Nu,Lambda,Sigma) * & 
+                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * & 
                              MO_Coeff%Alpha%at(Lambda,R) * MO_Coeff%Alpha%at(Sigma,S), &
                              P+NBasis,Q+NBasis,R,S)
-                           Call MO_ERIs%TwoERIs%put(MO_ERIs%TwoERIs%at(P+NBasis,Q+NBasis,R+NBasis,S+NBasis) + &
+                           Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P+NBasis,Q+NBasis,R+NBasis,S+NBasis) + &
                              MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
-                             ERIs%TwoERIs%at(Mu,Nu,Lambda,Sigma) * &
+                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
                              MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
-                             P+NBasis,Q+NBasis,R+NBasis,S+NBasis)
+                             P,Q,R,S)
                         EndIf
                       EndDo
                     EndDo
@@ -3234,14 +3300,14 @@
           Do Q = 1, NBasis
             Do R = 1, NBasis
               Do S = 1, NBasis
-                Call X%put(ERIs%TwoERIs%at(P,Q,R,S),R,S) 
+                Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
               EndDo
             EndDo
             Y = Transpose(MO_Coeff%Alpha).dot.X
             X = Y.dot.MO_Coeff%Alpha
             Do R = 1, NBasis
               Do S = 1, NBasis
-                Call MO_ERIs%TwoERIs%put(X%at(R,S),P,Q,R,S)
+                Call tmpR4TensorAlpha%put(X%at(R,S),P,Q,R,S)
               EndDo
             EndDo
           EndDo
@@ -3251,14 +3317,14 @@
           Do S = 1, NBasis
             Do P = 1, NBasis
               Do Q = 1, NBasis 
-                Call X%put(MO_ERIs%TwoERIs%at(P,Q,R,S),P,Q)
+                Call X%put(tmpR4TensorAlpha%at(P,Q,R,S),P,Q)
               EndDo
             EndDo
             Y = Transpose(MO_Coeff%Alpha).dot.X
             X = Y.dot.MO_Coeff%Alpha
             Do P = 1, NBasis
               Do Q = 1, NBasis
-                Call MO_ERIs%TwoERIs%put(X%at(P,Q),P,Q,R,S)
+                Call tmpR4TensorAlpha%put(X%at(P,Q),P,Q,R,S)
               EndDo
             EndDo
           EndDo
@@ -3270,14 +3336,14 @@
             Do Q = 1, NBasis
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call X%put(ERIs%TwoERIs%at(P,Q,R,S),R,S)
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S)
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(R,S),P,Q,R+NBasis,S+NBasis)
+                  Call tmpR4TensorAlphaBeta%put(X%at(R,S),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3287,14 +3353,14 @@
             Do S = 1, NBasis
               Do P = 1, NBasis
                 Do Q = 1, NBasis 
-                  Call X%put(MO_ERIs%TwoERIs%at(P,Q,R+NBasis,S+NBasis),P,Q)
+                  Call X%put(tmpR4TensorAlphaBeta%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Alpha).dot.X
               X = Y.dot.MO_Coeff%Alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(P,Q),P,Q,R+NBasis,S+NBasis)
+                  Call tmpR4TensorAlphaBeta%put(X%at(P,Q),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3304,14 +3370,14 @@
             Do Q = 1, NBasis
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call X%put(ERIs%TwoERIs%at(P,Q,R,S),R,S) 
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Alpha).dot.X
               X = Y.dot.MO_Coeff%Alpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(R,S),P+NBasis,Q+NBasis,R,S)
+                  Call tmpR4TensorBetaAlpha%put(X%at(R,S),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3321,14 +3387,14 @@
             Do S = 1, NBasis
               Do P = 1, NBasis
                 Do Q = 1, NBasis 
-                  Call X%put(MO_ERIs%TwoERIs%at(P+NBasis,Q+NBasis,R,S),P,Q)
+                  Call X%put(tmpR4TensorBetaAlpha%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(P,Q),P+NBasis,Q+NBasis,R,S)
+                  Call tmpR4TensorBetaAlpha%put(X%at(P,Q),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3338,14 +3404,14 @@
             Do Q = 1, NBasis
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call X%put(ERIs%TwoERIs%at(P,Q,R,S),R,S) 
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(R,S),P+NBasis,Q+NBasis,R+NBasis,S+NBasis)
+                  Call tmpR4TensorBeta%put(X%at(R,S),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3355,14 +3421,14 @@
             Do S = 1, NBasis
               Do P = 1, NBasis
                 Do Q = 1, NBasis 
-                  Call X%put(MO_ERIs%TwoERIs%at(P+NBasis,Q+NBasis,R+NBasis,S+NBasis),P,Q)
+                  Call X%put(tmpR4TensorBeta%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
               Y = Transpose(MO_Coeff%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
-                  Call MO_ERIs%TwoERIs%put(X%at(P,Q),P+NBasis,Q+NBasis,R+NBasis,S+NBasis)
+                  Call tmpR4TensorBeta%put(X%at(P,Q),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -3372,7 +3438,21 @@
     
       EndIf
       
-      If(IPrint.ge.2) Call MQC_Print(MO_ERIs%TwoERIs,IOut,'Transformed MO 2ERIs')
+      If(.not.UHF) then
+        call mqc_twoeris_allocate(mo_eris,'full','molecular',tmpR4TensorAlpha)
+      ElseIf(UHF) then
+        call mqc_twoeris_allocate(mo_eris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
+      EndIf
+
+      If(IPrint.ge.2) then
+        Call MQC_Print(MO_ERIs%alpha,IOut,'Transformed MO 2ERIs (aa|aa)')
+        If(UHF) then
+          Call MQC_Print(MO_ERIs%alphaBeta,IOut,'Transformed MO 2ERIs (aa|bb)')
+          Call MQC_Print(MO_ERIs%BetaAlpha,IOut,'Transformed MO 2ERIs (bb|aa)')
+          Call MQC_Print(MO_ERIs%beta,IOut,'Transformed MO 2ERIs (bb|bb)')
+        EndIf
+      EndIf
 !
       End Subroutine TwoERI_Trans
 !
