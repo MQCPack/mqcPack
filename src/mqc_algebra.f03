@@ -95,6 +95,7 @@
         Procedure, Public::transpose => MQC_Matrix_Transpose
         Procedure, Public::diag => MQC_Matrix_Diagonalize
         Procedure, Public::svd => MQC_Matrix_SVD
+        Procedure, Public::eigensys => mqc_matrix_generalized_eigensystem
         Procedure, Public::inv => MQC_Matrix_Inverse
         Procedure, Public::det => mqc_matrix_determinant
         Procedure, Public::trace => mqc_matrix_trace
@@ -5885,13 +5886,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).ne.0.0) then
+                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).ne.0.0 .or. &
-                    (Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).ne.0.0) then
+                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh .or. &
+                    (Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
@@ -9074,11 +9075,12 @@
       end function mqc_matrix_trace
 !
 !
-!     PROCEDURE mqc_generalized_eigensystem
+!     PROCEDURE mqc_matrix_generalized_eigensystem
       subroutine mqc_matrix_generalized_eigensystem(a,b,eigenvals,reigenvecs,leigenvecs)
 !
       implicit none
-      type(mqc_matrix),intent(inOut)::a,b
+      class(mqc_matrix),intent(inOut)::a
+      type(mqc_matrix),intent(inOut)::b
       type(mqc_vector),intent(out)::eigenvals
       type(mqc_matrix),intent(out),optional::reigenvecs,leigenvecs
       real,dimension(:,:),allocatable::tempA,tempB,rightvecs,leftvecs
