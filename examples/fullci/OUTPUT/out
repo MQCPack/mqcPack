@@ -1,13 +1,6 @@
 ---------------------------------
 Failure Test: no input to program
 ---------------------------------
-
- Full Configuration Interaction Energy Calculator
-
- L. M. Thompson 2017
-
- MQC ERROR: Error Opening File
-    MatFileName = 
 Finished with tests designed to fail
 -------------
 MatFile test
@@ -20,71 +13,38 @@ MatFile test
     Label Gaussian matrix elements IVers= 2 NLab=11 Version=ES64L-G16RevA.03
     Title test
     NAtoms=     2 NBasis=     2 NBsUse=     2 ICharg=     0 Multip=     1 NElec=     2 Len12L=8 Len4L=8 IOpCl=     1 ICGU=112
- DJM iu in rd_labl is       57
  Label                                SHELL TO ATOM MAP NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                      SHELL TYPES NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                   NUMBER OF PRIMITIVES PER SHELL NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                              PRIMITIVE EXPONENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
  Label                         CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
  Label                  P(S=P) CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
  Label                        COORDINATES OF EACH SHELL NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
  Label                                 GAUSSIAN SCALARS NI= 1 NR= 1 NRI=1 NTot=      10 LenBuf=    2000 N=  1000     1     1     1     1 ASym=F LR= 1000
- DJM iu in rd_labl is       57
  Label                                      INTEGER ISO NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                     INTEGER SPIN NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                  REAL ZEFFECTIVE NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                     REAL GFACTOR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                    REAL ZNUCLEAR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                                 NUCLEAR GRADIENT NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     3     2     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
  Label                           ELECTRIC DIPOLE MOMENT NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=     3     1     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                                          OVERLAP NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                           CORE HAMILTONIAN ALPHA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                            CORE HAMILTONIAN BETA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                                   KINETIC ENERGY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                                 ORTHOGONAL BASIS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
  Label                                 DIPOLE INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=F LR=    9
- DJM iu in rd_labl is       57
  Label                                DIP VEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- DJM iu in rd_labl is       57
  Label                                R X DEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- DJM iu in rd_labl is       57
  Label                           ALPHA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                            BETA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
  Label                            ALPHA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
  Label                             BETA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
  Label                             ALPHA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                              BETA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                         ALPHA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                          BETA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                                ALPHA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
  Label                                 BETA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
  
  nBasis =              2
@@ -160,7 +120,6 @@ Complex   =          F
        1     -0.079309
        2     -0.053049     -0.079309
  
- DJM iu in rd_labl is       57
  Label                             REGULAR 2E INTEGRALS NI= 4 NR= 1 NRI=1 NTot=       6 LenBuf=     800 N=    -2    -2    -2     2     1 ASym=F LR=    6
  AO 2ERIs
  Regular 2ERIs
@@ -275,8 +234,8 @@ Beta Strings
  CI Eigenvectors
                   1             2             3             4
        1     -0.706846      0.000000      0.000000      0.707367
-       2      0.000000      0.707107      0.707107     -0.000000
-       3     -0.000000     -0.707107      0.707107     -0.000000
+       2     -0.000000     -0.707107     -0.707107      0.000000
+       3      0.000000      0.707107     -0.707107      0.000000
        4      0.707367     -0.000000      0.000000      0.706846
  CI Eigenvalues
        1       -1.038999
@@ -288,289 +247,3 @@ Beta Strings
        2       -0.933164
        3       -0.264393
        4       -0.264393
-
- Full Configuration Interaction Energy Calculator
-
- L. M. Thompson 2017
-
-    Label Gaussian matrix elements IVers= 2 NLab=11 Version=EM64M-GDVRevI.10+
-    Title test
-    NAtoms=     2 NBasis=     2 NBsUse=     2 ICharg=     0 Multip=     1 NElec=     2 Len12L=8 Len4L=8 IOpCl=     1 ICGU=112
- DJM iu in rd_labl is       57
- Label                                SHELL TO ATOM MAP NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                      SHELL TYPES NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                   NUMBER OF PRIMITIVES PER SHELL NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                              PRIMITIVE EXPONENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                         CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                  P(S=P) CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                        COORDINATES OF EACH SHELL NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                                 GAUSSIAN SCALARS NI= 1 NR= 1 NRI=1 NTot=      13 LenBuf=    2000 N=  1000     1     1     1     1 ASym=F LR= 1000
- DJM iu in rd_labl is       57
- Label                                      INTEGER ISO NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                     INTEGER SPIN NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                  REAL ZEFFECTIVE NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                     REAL GFACTOR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                    REAL ZNUCLEAR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                 MULLIKEN CHARGES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                                 NUCLEAR GRADIENT NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     3     2     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                           ELECTRIC DIPOLE MOMENT NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=     3     1     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                           NON-ADIABATIC COUPLING NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     3     2     1     1     1 ASym=F LR=    6
- DJM iu in rd_labl is       57
- Label                                          OVERLAP NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                           CORE HAMILTONIAN ALPHA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                            CORE HAMILTONIAN BETA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                                   KINETIC ENERGY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                                 ORTHOGONAL BASIS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
- Label                                 DIPOLE INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=F LR=    9
- DJM iu in rd_labl is       57
- Label                                DIP VEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- DJM iu in rd_labl is       57
- Label                                R X DEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- DJM iu in rd_labl is       57
- Label                           ALPHA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                            BETA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- DJM iu in rd_labl is       57
- Label                            ALPHA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
- Label                             BETA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- DJM iu in rd_labl is       57
- Label                             ALPHA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                              BETA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                         ALPHA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                          BETA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                                ALPHA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                                 BETA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- 
- nBasis =              2
- 
- nAlpha =              1
- 
- nBeta =              1
- 
- nElectrons =              2
- 
- Charge =              0
- 
- Multiplicity =              1
- 
-Wavefunction Type = U                                                                                                                                                                                                                                                               
-Complex   =          F
- 
- Overlap matrix
- Alpha Array
-                  1             2
-       1      1.000000
-       2      0.119217      1.000000
- Beta Array
-                  1             2
-       1      1.000000
-       2      0.119217      1.000000
- 
- Core Hamiltonian matrix
- Alpha Array
-                  1             2
-       1     -0.731071
-       2     -0.140711     -0.731071
- Beta Array
-                  1             2
-       1     -0.731071
-       2     -0.140711     -0.731071
- 
- Orbital Energies
- Alpha Array
-       1       -0.269459
-       2        0.108997
- Beta Array
-       1       -0.269459
-       2        0.108997
- 
- Molecular orbital coefficients
- Alpha Array
-                  1             2
-       1      0.668387      0.753443
-       2      0.668387     -0.753443
- Beta Array
-                  1             2
-       1      0.668387      0.753443
-       2      0.668387     -0.753443
- 
- Density matrix
- Alpha Array
-                  1             2
-       1      0.446741
-       2      0.446741      0.446741
- Beta Array
-                  1             2
-       1      0.446741
-       2      0.446741      0.446741
- 
- Fock matrix
- Alpha Array
-                  1             2
-       1     -0.102790
-       2     -0.198793     -0.102790
- Beta Array
-                  1             2
-       1     -0.102790
-       2     -0.198793     -0.102790
- 
- DJM iu in rd_labl is       57
- Label                                ALPHA SCF DENSITY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                                 BETA SCF DENSITY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- DJM iu in rd_labl is       57
- Label                            TRANS MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       8 LenBuf=    4000 N=     2     2     2     1     1 ASym=F LR=    8
- DJM iu in rd_labl is       57
- Label                             REGULAR 2E INTEGRALS NI= 4 NR= 1 NRI=1 NTot=       6 LenBuf=     800 N=    -2    -2    -2     2     1 ASym=F LR=    6
- AO 2ERIs
- Regular 2ERIs
- (  1,  1|  1,  1) =      0.77460594
- (  1,  1|  1,  2) =      0.05584872
- (  1,  1|  2,  1) =      0.05584872
- (  1,  1|  2,  2) =      0.26369505
- (  1,  2|  1,  1) =      0.05584872
- (  1,  2|  1,  2) =      0.00732843
- (  1,  2|  2,  1) =      0.00732843
- (  1,  2|  2,  2) =      0.05584872
- (  2,  1|  1,  1) =      0.05584872
- (  2,  1|  1,  2) =      0.00732843
- (  2,  1|  2,  1) =      0.00732843
- (  2,  1|  2,  2) =      0.05584872
- (  2,  2|  1,  1) =      0.26369505
- (  2,  2|  1,  2) =      0.05584872
- (  2,  2|  2,  1) =      0.05584872
- (  2,  2|  2,  2) =      0.77460594
- found UHF wavefunction
- Nuclear Repulsion Energy (au) =       0.264589
-Alpha Strings
-       1                                                                10
-       2                                                                 1
-Beta Strings
-       1                                                                10
-       2                                                                 1
- MO Basis Core Hamiltonian
- Alpha Array
-                  1             2
-       1     -0.778922      0.000000
-       2      0.000000     -0.670267
- Beta Array
-                  1             2
-       1     -0.778922      0.000000
-       2      0.000000     -0.670267
- Doing O(N**5) integral transformation algorithm
- Transformed MO 2ERIs (aa|aa)
- (  1,  1|  1,  1) =      0.50946281
- (  1,  1|  1,  2) =      0.00000000
- (  1,  1|  2,  1) =      0.00000000
- (  1,  1|  2,  2) =      0.51920126
- (  1,  2|  1,  1) =      0.00000000
- (  1,  2|  1,  2) =      0.25913847
- (  1,  2|  2,  1) =      0.25913847
- (  1,  2|  2,  2) =     -0.00000000
- (  2,  1|  1,  1) =      0.00000000
- (  2,  1|  1,  2) =      0.25913847
- (  2,  1|  2,  1) =      0.25913847
- (  2,  1|  2,  2) =     -0.00000000
- (  2,  2|  1,  1) =      0.51920126
- (  2,  2|  1,  2) =     -0.00000000
- (  2,  2|  2,  1) =     -0.00000000
- (  2,  2|  2,  2) =      0.53466412
- Transformed MO 2ERIs (aa|bb)
- (  1,  1|  1,  1) =      0.50946281
- (  1,  1|  1,  2) =      0.00000000
- (  1,  1|  2,  1) =      0.00000000
- (  1,  1|  2,  2) =      0.51920126
- (  1,  2|  1,  1) =      0.00000000
- (  1,  2|  1,  2) =      0.25913847
- (  1,  2|  2,  1) =      0.25913847
- (  1,  2|  2,  2) =     -0.00000000
- (  2,  1|  1,  1) =      0.00000000
- (  2,  1|  1,  2) =      0.25913847
- (  2,  1|  2,  1) =      0.25913847
- (  2,  1|  2,  2) =     -0.00000000
- (  2,  2|  1,  1) =      0.51920126
- (  2,  2|  1,  2) =     -0.00000000
- (  2,  2|  2,  1) =     -0.00000000
- (  2,  2|  2,  2) =      0.53466412
- Transformed MO 2ERIs (bb|aa)
- (  1,  1|  1,  1) =      0.50946281
- (  1,  1|  1,  2) =      0.00000000
- (  1,  1|  2,  1) =      0.00000000
- (  1,  1|  2,  2) =      0.51920126
- (  1,  2|  1,  1) =      0.00000000
- (  1,  2|  1,  2) =      0.25913847
- (  1,  2|  2,  1) =      0.25913847
- (  1,  2|  2,  2) =     -0.00000000
- (  2,  1|  1,  1) =      0.00000000
- (  2,  1|  1,  2) =      0.25913847
- (  2,  1|  2,  1) =      0.25913847
- (  2,  1|  2,  2) =     -0.00000000
- (  2,  2|  1,  1) =      0.51920126
- (  2,  2|  1,  2) =     -0.00000000
- (  2,  2|  2,  1) =     -0.00000000
- (  2,  2|  2,  2) =      0.53466412
- Transformed MO 2ERIs (bb|bb)
- (  1,  1|  1,  1) =      0.50946281
- (  1,  1|  1,  2) =      0.00000000
- (  1,  1|  2,  1) =      0.00000000
- (  1,  1|  2,  2) =      0.51920126
- (  1,  2|  1,  1) =      0.00000000
- (  1,  2|  1,  2) =      0.25913847
- (  1,  2|  2,  1) =      0.25913847
- (  1,  2|  2,  2) =     -0.00000000
- (  2,  1|  1,  1) =      0.00000000
- (  2,  1|  1,  2) =      0.25913847
- (  2,  1|  2,  1) =      0.25913847
- (  2,  1|  2,  2) =     -0.00000000
- (  2,  2|  1,  1) =      0.51920126
- (  2,  2|  1,  2) =     -0.00000000
- (  2,  2|  2,  1) =     -0.00000000
- (  2,  2|  2,  2) =      0.53466412
- CI Hamiltonian
-                  1             2             3             4
-       1     -0.805869     -0.000000     -0.000000      0.259138
-       2     -0.000000     -0.929987      0.259138      0.000000
-       3     -0.000000      0.259138     -0.929987      0.000000
-       4      0.259138      0.000000      0.000000     -1.048381
- CI Eigenvectors
-                  1             2             3             4
-       1     -0.536741      0.000000     -0.000000     -0.843747
-       2     -0.000000      0.707107     -0.707107      0.000000
-       3     -0.000000     -0.707107     -0.707107      0.000000
-       4      0.843747     -0.000000     -0.000000     -0.536741
- CI Eigenvalues
-       1       -1.213230
-       2       -1.189126
-       3       -0.670849
-       4       -0.641021
- Final Energy
-       1       -0.948641
-       2       -0.924537
-       3       -0.406260
-       4       -0.376432
