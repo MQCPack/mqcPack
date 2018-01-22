@@ -40,9 +40,8 @@ rm -f test.com
 
 cd ..
 rm -r test2
-grep -v "echo argv" outfile > tmpfile 2>1
-grep -v "cp test1132" tmpfile > outfile 2>1
-rm 1
+grep -v "echo argv" outfile > tmpfile 2>&1
+grep -v "cp test1132" tmpfile > outfile 2>&1
 rm tmpfile
 
 diff -b -B outfile OUTPUT/out_no_runGau

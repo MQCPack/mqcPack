@@ -98,10 +98,9 @@ rm -r test1132
 # remove the location of the scratch directory from outfile
 #../../.other_libs/build_fcns/remove_SCRDIR outfile
 
-grep -v "echo argv" outfile > tmpfile 2>1
-grep -v "cp test1132" tmpfile > outfile 2>1
+grep -v "echo argv" outfile > tmpfile 2>&1
+grep -v "cp test1132" tmpfile > outfile 2>&1
 rm tmpfile
-rm 1
 
 diff -b -B outfile OUTPUT/out_runGau
 
