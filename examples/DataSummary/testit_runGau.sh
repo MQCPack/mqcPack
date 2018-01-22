@@ -83,11 +83,10 @@ rm -f test1132.com
 cd ..
 rm -r test1132
 
-grep -v "echo argv" outfile > tmpfile 2>1
-grep -v "cp test1132" tmpfile > outfile 2>1
-grep -v "Gaussian Version:" outfile > tmpfile 2>1
+grep -v "echo argv" outfile > tmpfile 2>&1
+grep -v "cp test1132" tmpfile > outfile 2>&1
+grep -v "Gaussian Version:" outfile > tmpfile 2>&1
 mv tmpfile outfile
-rm 1
 
 diff -b -B outfile OUTPUT/out_runGau
 
