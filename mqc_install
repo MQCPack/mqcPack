@@ -11,43 +11,27 @@ cd ${MQC_HOME}
 # Developers need to add to or modify the makefiles
 # This needs to be done by developers only:
 #
-if [ ! -f configure.ac_FormCHK ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK .
-fi
-if [ ! -f configure.ac_MatrixFile ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile .
-fi
-if [ ! -f Makefile.am_FormCHK ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK .
-fi
-if [ ! -f Makefile.am_MatrixFile ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile .
-fi
-
-cd ${MQC_HOME}/examples/Build_Tests
-if [ ! -f Makefile.am_example_FormCHK ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK .
-fi
-if [ ! -f Makefile.am_example_MatrixFile ]; then
-    cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile .
-fi
 
 cd ${MQC_HOME}
+chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR > ${mqc_tmpfile} 2>&1
+
 if [ ! -f test-driver ] ||
    [ ! -f install-sh ] ||
    [ ! -f missing ] ||
    [ ! -f depcomp ] ||
-   [ ! -f Makefile.in ] ||
    [ ! -f src/Makefile.in ] ||
-   [ ! -f examples/Build_Tests/Makefile.in ] ||
-   [ ! -f configure ] ||
-   [ configure.ac -nt configure ] ||
-   [ configure.ac_FormCHK -nt configure ] ||
-   [ configure.ac_MatrixFile -nt configure ] ||
-   [ Makefile.am -nt Makefile.in ] ||
-   [ Makefile.am_FormCHK -nt Makefile.in ] ||
-   [ Makefile.am_MatrixFile -nt Makefile.in ] ||
-
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK ] ||
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile ] ||
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK ] ||
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile ] ||
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
+   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK ] ||
+   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile ] ||
    [ examples/Build_Tests/Makefile.am_MatrixFile -nt examples/Build_Tests/Makefile.in ] ||
    [ examples/Build_Tests/Makefile.am_FormCHK -nt examples/Build_Tests/Makefile.in ] ||
    [ src/Makefile.am -nt src/Makefile.in ]; then
@@ -59,26 +43,31 @@ if [ ! -f test-driver ] ||
     cd ${MQC_HOME}
     rm -f  Makefile.in src/Makefile.in examples/Build_Tests/Makefile.in > ${mqc_tmpfile} 2>&1
     rm -f  Makefile src/Makefile examples/Build_Tests/Makefile > ${mqc_tmpfile} 2>&1
-    cp configure.ac_FormCHK configure.ac
-    cp Makefile.am_FormCHK Makefile.am
+    rm -f  configure.ac Makefile.am configure > ${mqc_tmpfile} 2>&1
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK configure.ac
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK Makefile.am
     cd ${MQC_HOME}/examples/Build_Tests
-    cp Makefile.am_example_FormCHK Makefile.am
+    rm -f Makefile.am > ${mqc_tmpfile} 2>&1
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK Makefile.am
     cd ${MQC_HOME}
+    rm -rf autom4te.cache > ${mqc_tmpfile} 2>&1
     autoreconf --install
-    cp configure ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK
-    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK
-
-    cp configure.ac_MatrixFile configure.ac
-    cp Makefile.am_MatrixFile Makefile.am
+    mv configure ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK
+    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK
+    rm -f  configure.ac Makefile.am > ${mqc_tmpfile} 2>&1
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile configure.ac
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile Makefile.am
     cd ${MQC_HOME}/examples/Build_Tests
-    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK
-    cp Makefile.am_example_MatrixFile Makefile.am
+    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK
+    rm -f Makefile.am > ${mqc_tmpfile} 2>&1
+    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile Makefile.am
     cd ${MQC_HOME}
+    rm -rf autom4te.cache > ${mqc_tmpfile} 2>&1
     autoreconf --install
-    cp configure ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile
-    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile
+    mv configure ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile
+    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile
     cd ${MQC_HOME}/examples/Build_Tests
-    cp Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile
+    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile
     cd ${MQC_HOME}
 fi
 
@@ -103,15 +92,19 @@ do
     echo ""
     if [ "$INTERFACE" = "y" ]; then
 	MQC_Use_GauOpen="y"
-	cp ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile configure
-	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile Makefile.in
+	rm -f Makefile.in configure > ${mqc_tmpfile} 2>&1
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile configure
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile Makefile.in
 	cd ${MQC_HOME}/examples/Build_Tests
-	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile Makefile.in
+	rm -f Makefile.in > ${mqc_tmpfile} 2>&1
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile Makefile.in
     elif [ "$INTERFACE" = "n" ]; then
-	cp ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK configure
-	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK Makefile.in
+	rm -f Makefile.in configure > ${mqc_tmpfile} 2>&1
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK configure
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK Makefile.in
 	cd ${MQC_HOME}/examples/Build_Tests
-	cp ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK Makefile.in
+	rm -f Makefile.in > ${mqc_tmpfile} 2>&1
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK Makefile.in
 	MQC_Use_GauOpen="n"
     fi
     cd ${MQC_HOME}
@@ -220,8 +213,6 @@ do
 	echo ""
    fi
 done
-chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR
-
 MQC_CLEAN="0"
 if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ] &&
    [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
@@ -488,13 +479,13 @@ if [ "${MQC_Use_GauOpen}" = "y" ]; then
 		    if [ -s ${mqc_tmpfile} ]; then
 			cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
 			cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-			chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific
+			chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific  > ${mqc_tmpfile} 2>&1
 			${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
 		    fi
 		else
 		    cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
 		    cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-		    chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific
+		    chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
 		    ${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
 		fi
 	    else
@@ -566,7 +557,7 @@ cd ${MQC_HOME}
 #
 # Now build the MQCPack library.
 #
-chmod 755 ./configure
+chmod 755 ./configure  > ${mqc_tmpfile} 2>&1
 ./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
 make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 if [ $? -ne 0 ] ; then 
@@ -688,18 +679,20 @@ if [ "${MQC_RUN_GAU}" = "y" ]; then
 # Save the working GAUSS_SCRDIR for use as default next time
     echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
 # Use the script that will run Gaussian
-    cp ${MQC_HOME}/examples/CreateDataList/testit_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
-    cp ${MQC_HOME}/examples/tools/testit_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
+    rm ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    ln -s ${MQC_HOME}/examples/CreateDataList/testit_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
+    ln -s ${MQC_HOME}/examples/DataSummary/testit_runGau.sh ${MQC_HOME}/examples/DataSummary/testit.sh
 else
 # Use the script that will not run Gaussian
-    cp ${MQC_HOME}/examples/CreateDataList/testit_no_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
-    cp ${MQC_HOME}/examples/tools/testit_no_runGau.sh ${MQC_HOME}/examples/tools/testit.sh
+    rm ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    ln -s ${MQC_HOME}/examples/CreateDataList/testit_no_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
+    ln -s ${MQC_HOME}/examples/DataSummary/testit_no_runGau.sh ${MQC_HOME}/examples/DataSummary/testit.sh
 fi
-chmod 755 ${MQC_HOME}/examples/CreateDataList/testit.sh
-chmod 755 ${MQC_HOME}/examples/tools/testit.sh
+chmod 755 ${MQC_HOME}/examples/CreateDataList/testit.sh > ${mqc_tmpfile} 2>&1
+chmod 755 ${MQC_HOME}/examples/DataSummary/testit.sh > ${mqc_tmpfile} 2>&1
 
 # These functions are required because BASH has a problem with '*'
-${MQC_HOME}/.other_libs/build_fcns/chmod_all
+${MQC_HOME}/.other_libs/build_fcns/chmod_all > ${mqc_tmpfile} 2>&1
 #
 # Now check the FCHK functionality in the MQCPack library.
 #
