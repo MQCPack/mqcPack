@@ -1,0 +1,1857 @@
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+ MQC ERROR: The file test.com either does not exist, or cannot be read
+Finished with tests designed to fail
+------------------------
+Pass through MatFile test
+------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+********************************************************
+          rhf_h2-sto3g.mat
+********************************************************
+Job Title:test
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 112
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 6
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Types
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Charges
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (2 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atomic Weights
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 10
+	         - VECTOR(10)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+INTEGER SPIN                                                    
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL GFACTOR                                                    
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (3 x 2)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+CORE HAMILTONIAN BETA                                           
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+KINETIC ENERGY                                                  
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ORTHOGONAL BASIS                                                
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+DIPOLE INTEGRALS                                                
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+R X DEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+BETA ORBITAL ENERGIES                                           
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+ALPHA MO COEFFICIENTS                                           
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+BETA MO COEFFICIENTS                                            
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+ALPHA DENSITY MATRIX                                            
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA DENSITY MATRIX                                             
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA SCF DENSITY MATRIX                                         
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ALPHA FOCK MATRIX                                               
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA FOCK MATRIX                                                
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+REGULAR 2E INTEGRALS                                            
+	         - 2ERIS
+	         - Total elements: 6
+	         - SYM SYM R4 TENSOR
+-------------------------------
+test.com Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - rhf_h2-sto3g.mat
+********************************************************
+          rhf_h2-sto3g.mat
+********************************************************
+Job Title:test
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 112
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 6
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Types
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Charges
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (2 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atomic Weights
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 10
+	         - VECTOR(10)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+INTEGER SPIN                                                    
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL GFACTOR                                                    
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (3 x 2)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+CORE HAMILTONIAN BETA                                           
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+KINETIC ENERGY                                                  
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ORTHOGONAL BASIS                                                
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+DIPOLE INTEGRALS                                                
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+R X DEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 9
+	         - MULTIPLE SYMMETIC MATRICES (((2+1)x2/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+BETA ORBITAL ENERGIES                                           
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+ALPHA MO COEFFICIENTS                                           
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+BETA MO COEFFICIENTS                                            
+	         - REAL
+	         - Total elements: 4
+	         - 2-D MATRIX allocated full (2 x 2)
+ALPHA DENSITY MATRIX                                            
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA DENSITY MATRIX                                             
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA SCF DENSITY MATRIX                                         
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+ALPHA FOCK MATRIX                                               
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+BETA FOCK MATRIX                                                
+	         - REAL
+	         - Total elements: 3
+	         - SYMMETRIC MATRIX ((2+1)*2/2)
+REGULAR 2E INTEGRALS                                            
+	         - 2ERIS
+	         - Total elements: 6
+	         - SYM SYM R4 TENSOR
+-------------------------------
+test1071 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1071.mat
+********************************************************
+          test1071.mat
+********************************************************
+Job Title:Gaussian Test Job 1071 (Part 5): PCM external iterations reading
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 4
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 48
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 48
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 48
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 16
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 111
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 18
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 36
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 6
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+Atom Types
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+Atom Charges
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 12
+	         - 2-D MATRIX allocated full (4 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 48
+	         - VECTOR(48)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 48
+	         - VECTOR(48)
+Atomic Weights
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 18
+	         - VECTOR(18)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 18
+	         - VECTOR(18)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 18
+	         - VECTOR(18)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 36
+	         - VECTOR(36)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 36
+	         - VECTOR(36)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 36
+	         - VECTOR(36)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 54
+	         - VECTOR(54)
+BONDS PER ATOM                                                  
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+BONDED ATOMS                                                    
+	         - INTEGER
+	         - Total elements: 6
+	         - VECTOR(6)
+BOND TYPES                                                      
+	         - REAL
+	         - Total elements: 6
+	         - VECTOR(6)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 11
+	         - VECTOR(11)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+INTEGER SPIN                                                    
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+REAL GFACTOR                                                    
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 12
+	         - 2-D MATRIX allocated full (3 x 4)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+CORE HAMILTONIAN BETA                                           
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+KINETIC ENERGY                                                  
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+ORTHOGONAL BASIS                                                
+	         - REAL
+	         - Total elements: 2304
+	         - 2-D MATRIX allocated full (48 x 48)
+DIPOLE INTEGRALS                                                
+	         - REAL
+	         - Total elements: 3528
+	         - MULTIPLE SYMMETIC MATRICES (((48+1)x48/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 3528
+	         - MULTIPLE SYMMETIC MATRICES (((48+1)x48/2) x 3)
+R X DEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 3528
+	         - MULTIPLE SYMMETIC MATRICES (((48+1)x48/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 48
+	         - VECTOR(48)
+ALPHA MO COEFFICIENTS                                           
+	         - REAL
+	         - Total elements: 2304
+	         - 2-D MATRIX allocated full (48 x 48)
+ALPHA DENSITY MATRIX                                            
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+ALPHA FOCK MATRIX                                               
+	         - REAL
+	         - Total elements: 1176
+	         - SYMMETRIC MATRIX ((48+1)*48/2)
+-------------------------------
+test1129 Create MatrixFile test
+-------------------------------
+MatrixFiles:
+   - test1129.dat
+********************************************************
+          test1129.dat
+********************************************************
+Job Title:Gaussian Test Job 1129 (Part 2): hof, test of matrix element fil
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 3
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 11
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 11
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 11
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 17
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 112
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 5
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 15
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 4
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 4
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+Atom Types
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+Atom Charges
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 9
+	         - 2-D MATRIX allocated full (3 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 11
+	         - VECTOR(11)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 11
+	         - VECTOR(11)
+Atomic Weights
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 5
+	         - VECTOR(5)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 5
+	         - VECTOR(5)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 5
+	         - VECTOR(5)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+BONDS PER ATOM                                                  
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+BONDED ATOMS                                                    
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+BOND TYPES                                                      
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 9
+	         - VECTOR(9)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+INTEGER SPIN                                                    
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL GFACTOR                                                    
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 9
+	         - 2-D MATRIX allocated full (3 x 3)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+CORE HAMILTONIAN BETA                                           
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+KINETIC ENERGY                                                  
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+ORTHOGONAL BASIS                                                
+	         - REAL
+	         - Total elements: 121
+	         - 2-D MATRIX allocated full (11 x 11)
+DIPOLE INTEGRALS                                                
+	         - REAL
+	         - Total elements: 198
+	         - MULTIPLE SYMMETIC MATRICES (((11+1)x11/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 198
+	         - MULTIPLE SYMMETIC MATRICES (((11+1)x11/2) x 3)
+R X DEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 198
+	         - MULTIPLE SYMMETIC MATRICES (((11+1)x11/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 11
+	         - VECTOR(11)
+BETA ORBITAL ENERGIES                                           
+	         - REAL
+	         - Total elements: 11
+	         - VECTOR(11)
+ALPHA MO COEFFICIENTS                                           
+	         - REAL
+	         - Total elements: 121
+	         - 2-D MATRIX allocated full (11 x 11)
+BETA MO COEFFICIENTS                                            
+	         - REAL
+	         - Total elements: 121
+	         - 2-D MATRIX allocated full (11 x 11)
+ALPHA DENSITY MATRIX                                            
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+BETA DENSITY MATRIX                                             
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+BETA SCF DENSITY MATRIX                                         
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+ALPHA FOCK MATRIX                                               
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+BETA FOCK MATRIX                                                
+	         - REAL
+	         - Total elements: 66
+	         - SYMMETRIC MATRIX ((11+1)*11/2)
+RAFFENETTI 2E INTEGRALS                                         
+	         - MIXED
+	         - Total elements: 941
+	         - SYM SYM R4 TENSOR
+AA MO 2E INTEGRALS                                              
+	         - REAL
+	         - Total elements: 2835
+	         - MULTIPLE SYMMETIC MATRICES (((9+1)x9/2) x (9x7))
+AB MO 2E INTEGRALS                                              
+	         - REAL
+	         - Total elements: 2430
+	         - MULTIPLE SYMMETIC MATRICES (((9+1)x9/2) x (9x6))
+BA MO 2E INTEGRALS                                              
+	         - REAL
+	         - Total elements: 2835
+	         - MULTIPLE SYMMETIC MATRICES (((9+1)x9/2) x (9x7))
+BB MO 2E INTEGRALS                                              
+	         - REAL
+	         - Total elements: 2430
+	         - MULTIPLE SYMMETIC MATRICES (((9+1)x9/2) x (9x6))
+--------------------------------
+test1132 Create MatrixFiles test
+--------------------------------
+MatrixFiles:
+   - test1132.mat
+********************************************************
+          test1132.mat
+********************************************************
+Job Title:Gaussian Test Job 1132 (Part 9): O2 ghf reading from updated chk
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 16
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 6
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 221
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 8
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 22
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Types
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Charges
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (2 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 28
+	         - VECTOR(28)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 28
+	         - VECTOR(28)
+Atomic Weights
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 24
+	         - VECTOR(24)
+BONDS PER ATOM                                                  
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+BONDED ATOMS                                                    
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+BOND TYPES                                                      
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 10
+	         - VECTOR(10)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (3 x 2)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+KINETIC ENERGY                                                  
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ORTHOGONAL BASIS                                                
+	         - COMPLEX
+	         - Total elements: 3136
+	         - 2-D MATRIX allocated full (56 x 56)
+DIPOLE INTEGRALS                                                
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+R X DEL INTEGRALS                                               
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 56
+	         - VECTOR(56)
+ALPHA MO COEFFICIENTS                                           
+	         - COMPLEX
+	         - Total elements: 3136
+	         - 2-D MATRIX allocated full (56 x 56)
+ALPHA DENSITY MATRIX                                            
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ALPHA FOCK MATRIX                                               
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+-----------------------------------------
+test1132 Pass one MatrixFile through test
+-----------------------------------------
+MatrixFiles:
+   - test1132r.dat
+Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
+------------------------------------------------------------------
+test1132 Create One MartixFile and Pass through 3 MatrixFiles test
+------------------------------------------------------------------
+MatrixFiles:
+   - test1132.mat
+********************************************************
+          test1132.mat
+********************************************************
+Job Title:Gaussian Test Job 1132 (Part 9): O2 ghf reading from updated chk
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 28
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 16
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 6
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 221
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 8
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 22
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 2
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Types
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+Atom Charges
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (2 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 28
+	         - VECTOR(28)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 28
+	         - VECTOR(28)
+Atomic Weights
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 22
+	         - VECTOR(22)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 24
+	         - VECTOR(24)
+BONDS PER ATOM                                                  
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+BONDED ATOMS                                                    
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+BOND TYPES                                                      
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 10
+	         - VECTOR(10)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 2
+	         - VECTOR(2)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 6
+	         - 2-D MATRIX allocated full (3 x 2)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+KINETIC ENERGY                                                  
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ORTHOGONAL BASIS                                                
+	         - COMPLEX
+	         - Total elements: 3136
+	         - 2-D MATRIX allocated full (56 x 56)
+DIPOLE INTEGRALS                                                
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+R X DEL INTEGRALS                                               
+	         - COMPLEX
+	         - Total elements: 4788
+	         - MULTIPLE SYMMETIC MATRICES (((56+1)x56/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 56
+	         - VECTOR(56)
+ALPHA MO COEFFICIENTS                                           
+	         - COMPLEX
+	         - Total elements: 3136
+	         - 2-D MATRIX allocated full (56 x 56)
+ALPHA DENSITY MATRIX                                            
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+ALPHA FOCK MATRIX                                               
+	         - COMPLEX
+	         - Total elements: 1596
+	         - SYMMETRIC MATRIX ((56+1)*56/2)
+   - test1132gr.dat
+Warning: MQC Pack cannot process file 'test1132gr.dat' it may have been created with the raw attribute.
+   - test1132r.dat
+Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
+   - test1132u.dat
+********************************************************
+          test1132u.dat
+********************************************************
+Job Title:Gaussian Test Job 1132 (Part 1): hof excited triplet saving unfo
+***************************
+ Scalar Data 
+***************************
+Number of Atoms
+	         - Value: 3
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 20
+	         - INTEGER
+	         - SCALAR
+Number of Basis Functions
+	         - Value: 20
+	         - INTEGER
+	         - SCALAR
+Number of Linearly Independent Basis Functions
+	         - Value: 20
+	         - INTEGER
+	         - SCALAR
+Molecular Charge
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Spin Multiplicity
+	         - Value: 3
+	         - INTEGER
+	         - SCALAR
+Number of Electrons
+	         - Value: 18
+	         - INTEGER
+	         - SCALAR
+Closed/open-shell flag
+	         - Value: 1
+	         - INTEGER
+	         - SCALAR
+	         - Set if the matrix element file is written after
+	         an initial guess or the SCF has completed 
+	         (otherwise it is -1, meaning unspecified).
+Encoded Indicator of whether the calculation is complex and/or GHF
+	         - Value: 112
+	         - INTEGER
+	         - SCALAR
+	         - Its three-digit value is interpreted as klm,
+	         where k is 1 for the spin-aligned case and
+	         2 for GHF; l is 1 for real and 2 for complex;
+	         and m is 1 for RHF/GHF and 2 for UHF (i.e., 
+	         1 vs. 2 spin blocks). When k=2, then NBasis is
+	         the number of spatial basis functions, but the
+	         operator matrices are over the spin orbital
+	         basis and hence have dimension k*NBasis.
+Number of Frozen Core Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Frozen Virtual Orbitals
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of AO Basis Functions
+	         - Value: 8
+	         - INTEGER
+	         - SCALAR
+	         - Needed if shell data is provided.
+Number of Primitive AO Shells
+	         - Value: 15
+	         - INTEGER
+	         - SCALAR
+Number of Contracted Shells of Density Fitting Functions
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - Needed if fitting shell data is provided
+Number of Primitive Density Fitting Shells
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+Total Number of Bonds In Connectivity Data, If Any
+	         - Value: 4
+	         - INTEGER
+	         - SCALAR
+ITRAN
+	         - Value: 0
+	         - INTEGER
+	         - SCALAR
+	         - If no MO integrals were stored, ITran=4 if
+	         only MOs involving at least one occupied
+	         orbital were stored, or ITran=5 if a full
+	         transformation was done.
+***************************
+ Non-Scalar Data 
+***************************
+Atomic Numbers
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+Atom Types
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+Atom Charges
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+	         - Nuclear charges may be different from atomic
+	         numbers if ECPs were used.
+Cartesian Nuclear Coordinates In Bohr
+	         - REAL
+	         - Total elements: 9
+	         - 2-D MATRIX allocated full (3 x 3)
+Map From Basis Functions to Atoms
+	         - INTEGER
+	         - Total elements: 20
+	         - VECTOR(20)
+Type Flag For Each Basis Function
+	         - INTEGER
+	         - Total elements: 20
+	         - VECTOR(20)
+Atomic Weights
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+SHELL TO ATOM MAP                                               
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+SHELL TYPES                                                     
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+NUMBER OF PRIMITIVES PER SHELL                                  
+	         - INTEGER
+	         - Total elements: 8
+	         - VECTOR(8)
+PRIMITIVE EXPONENTS                                             
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+CONTRACTION COEFFICIENTS                                        
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+P(S=P) CONTRACTION COEFFICIENTS                                 
+	         - REAL
+	         - Total elements: 15
+	         - VECTOR(15)
+COORDINATES OF EACH SHELL                                       
+	         - REAL
+	         - Total elements: 24
+	         - VECTOR(24)
+BONDS PER ATOM                                                  
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+BONDED ATOMS                                                    
+	         - INTEGER
+	         - Total elements: 4
+	         - VECTOR(4)
+BOND TYPES                                                      
+	         - REAL
+	         - Total elements: 4
+	         - VECTOR(4)
+GAUSSIAN SCALARS                                                
+	         - MIXED
+	         - Total elements: 12
+	         - VECTOR(12)
+INTEGER ISO                                                     
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+INTEGER SPIN                                                    
+	         - INTEGER
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL ZEFFECTIVE                                                 
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL GFACTOR                                                    
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+REAL ZNUCLEAR                                                   
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+NUCLEAR GRADIENT                                                
+	         - REAL
+	         - Total elements: 9
+	         - 2-D MATRIX allocated full (3 x 3)
+ELECTRIC DIPOLE MOMENT                                          
+	         - REAL
+	         - Total elements: 3
+	         - VECTOR(3)
+OVERLAP                                                         
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+CORE HAMILTONIAN ALPHA                                          
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+CORE HAMILTONIAN BETA                                           
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+KINETIC ENERGY                                                  
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+ORTHOGONAL BASIS                                                
+	         - REAL
+	         - Total elements: 400
+	         - 2-D MATRIX allocated full (20 x 20)
+DIPOLE INTEGRALS                                                
+	         - REAL
+	         - Total elements: 630
+	         - MULTIPLE SYMMETIC MATRICES (((20+1)x20/2) x 3)
+DIP VEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 630
+	         - MULTIPLE SYMMETIC MATRICES (((20+1)x20/2) x 3)
+R X DEL INTEGRALS                                               
+	         - REAL
+	         - Total elements: 630
+	         - MULTIPLE SYMMETIC MATRICES (((20+1)x20/2) x 3)
+ALPHA ORBITAL ENERGIES                                          
+	         - REAL
+	         - Total elements: 20
+	         - VECTOR(20)
+BETA ORBITAL ENERGIES                                           
+	         - REAL
+	         - Total elements: 20
+	         - VECTOR(20)
+ALPHA MO COEFFICIENTS                                           
+	         - REAL
+	         - Total elements: 400
+	         - 2-D MATRIX allocated full (20 x 20)
+BETA MO COEFFICIENTS                                            
+	         - REAL
+	         - Total elements: 400
+	         - 2-D MATRIX allocated full (20 x 20)
+ALPHA DENSITY MATRIX                                            
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+BETA DENSITY MATRIX                                             
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+ALPHA SCF DENSITY MATRIX                                        
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+BETA SCF DENSITY MATRIX                                         
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+ALPHA FOCK MATRIX                                               
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
+BETA FOCK MATRIX                                                
+	         - REAL
+	         - Total elements: 210
+	         - SYMMETRIC MATRIX ((20+1)*20/2)
