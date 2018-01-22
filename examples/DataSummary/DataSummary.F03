@@ -12,15 +12,16 @@
       use mqc_General
       use mqc_FullWavefunction
       use mqc_matwrapper
+      use iso_fortran_env
       implicit none
 
       character(len=1024)::program_name
       character(len=1024)::no_program_name
       character(len=1024)::FileName
-      integer cmd_count
-      integer IAllocated
+      integer(kind=int64) cmd_count
+      integer(kind=int64) IAllocated
 !
-      integer iout, i, status
+      integer(kind=int64) iout, i, status
       class(mqc_link_list), allocatable:: self
 
  1010 Format( A )
