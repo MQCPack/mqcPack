@@ -12,7 +12,6 @@ cd ${MQC_HOME}
 # This needs to be done by developers only:
 #
 
-cd ${MQC_HOME}
 chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR > ${mqc_tmpfile} 2>&1
 
 if [ ! -f test-driver ] ||
@@ -47,7 +46,7 @@ if [ ! -f test-driver ] ||
     ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK configure.ac
     ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK Makefile.am
     cd ${MQC_HOME}/examples/Build_Tests
-    rm -f Makefile.am > ${mqc_tmpfile} 2>&1
+    rm -f Makefile.am Makefile.in > ${mqc_tmpfile} 2>&1
     ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK Makefile.am
     cd ${MQC_HOME}
     rm -rf autom4te.cache > ${mqc_tmpfile} 2>&1
@@ -92,19 +91,25 @@ do
     echo ""
     if [ "$INTERFACE" = "y" ]; then
 	MQC_Use_GauOpen="y"
-	rm -f Makefile.in configure > ${mqc_tmpfile} 2>&1
+	rm -f Makefile.in Makefile.am configure configure.ac > ${mqc_tmpfile} 2>&1
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile configure
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile configure.ac
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile Makefile.in
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile Makefile.am
 	cd ${MQC_HOME}/examples/Build_Tests
-	rm -f Makefile.in > ${mqc_tmpfile} 2>&1
+	rm -f Makefile.in Makefile.am > ${mqc_tmpfile} 2>&1
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile Makefile.in
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile Makefile.am
     elif [ "$INTERFACE" = "n" ]; then
-	rm -f Makefile.in configure > ${mqc_tmpfile} 2>&1
+	rm -f Makefile.in Makefile.am configure configure.ac > ${mqc_tmpfile} 2>&1
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK configure
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK configure.ac
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK Makefile.in
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK Makefile.am
 	cd ${MQC_HOME}/examples/Build_Tests
-	rm -f Makefile.in > ${mqc_tmpfile} 2>&1
+	rm -f Makefile.in Makefile.am > ${mqc_tmpfile} 2>&1
 	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK Makefile.in
+	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK Makefile.am
 	MQC_Use_GauOpen="n"
     fi
     cd ${MQC_HOME}
