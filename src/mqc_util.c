@@ -345,7 +345,7 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
   /* Does the MatrixFile exist? */
   mqc_File_Exists( MatFileName, &Status );
   if ( Status == 0 ) {
-    sprintf( charBuf, "MatrixFile %s does not exist%s%s", MatFileName, EndOfString);
+    sprintf( charBuf, "MatrixFile %s does not exist%s", MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
   /* */
@@ -357,7 +357,7 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
     /* */
     /* The input file is ACSII. It is a MatrixFile */
     /* */
-    sprintf( charBuf, "MatrixFile %s does not ASCII %s%s", MatFileName, EndOfString);
+    sprintf( charBuf, "MatrixFile %s does not ASCII %s", MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 
@@ -956,7 +956,7 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
      matfile = fopen(FileName ,"rb") ;
      if ( matfile == NULL ) {
        printf( "Warning: mqc_Matfile_Guide could not open File \'%s\'\n", FileName ); 
-       sprintf( DataType, "Could not open File%s", FileName, EndOfString ); 
+       sprintf( DataType, "Could not open File%s%s", FileName, EndOfString ); 
        return;
      }
      LastFileName = mqc_DupString( FileName, LastFileName );
