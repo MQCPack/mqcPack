@@ -219,6 +219,7 @@ do
    fi
 done
 MQC_CLEAN="0"
+chmod 755 install-sh
 if [ -f ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER ] &&
    [ "`cat ${MQC_HOME}/.other_libs/build_fcns/default_COMPILER`" != "${MQC_Compiler}" ]; then
     MQC_CLEAN="1"
@@ -668,7 +669,7 @@ if [ "${MQC_RUN_GAU}" = "y" ]; then
 	fi
 	read INTERFACE
 	if [ "${INTERFACE}a" == "a" ]; then
-	    ${INTERFACE}="`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`"
+	    INTERFACE="`cat ${MQC_HOME}/.other_libs/gaussian/default_scratch`"
 	fi
 	if [ ! -d "${INTERFACE}" ]; then
 	    echo "${INTERFACE} does not exist.  Please enter an existing directory."
