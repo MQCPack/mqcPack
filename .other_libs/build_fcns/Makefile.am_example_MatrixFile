@@ -1,5 +1,6 @@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 AM_CPPFLAGS = $(MQC_CPPFLAGS)
+AUTOMAKE_OPTIONS = subdir-objects
 TESTS = ../algebra2/testit.sh ../fullci/testit.sh ../CreateDataList/testit.sh ../DataSummary/testit.sh
 check_PROGRAMS = ../algebra2/algebra_fun ../fullci/fullci ../CreateDataList/CheckInput ../DataSummary/DataSummary
 SOURCES = ../algebra2/algebra_fun.F03 ../fullci/fullci.F03 ../CreateDataList/CheckInput.F03 ../DataSummary/DataSummary.F03
