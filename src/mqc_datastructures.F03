@@ -31,6 +31,7 @@
 !     **********************************************************************
 !
       Use MQC_General
+      use iso_fortran_env
 !
 !
 !     MQC_LinkedList Type
@@ -64,7 +65,7 @@
 !
       Implicit None
       Type(MQC_LinkedList),Pointer::LL_Cur
-      Integer,Allocatable,Intent(InOut)::Return_Value
+      Integer(kind=int64),Allocatable,Intent(InOut)::Return_Value
 !
 !     Allocate Return_Value, set it to LL_Cur%Val, and return to the
 !     calling procedure.
@@ -98,7 +99,7 @@
 !
       Implicit None
       Type(MQC_LinkedList),Pointer::LL_Cur
-      Real,Allocatable,Intent(InOut)::Return_Value
+      Real(kind=real64),Allocatable,Intent(InOut)::Return_Value
 !
 !     Allocate Return_Value, set it to LL_Cur%Val, and return to the
 !     calling procedure.
@@ -160,7 +161,7 @@
 !     This routine prints the whole list. The head of the list is required.
 !
       Implicit None
-      Integer::IOut
+      Integer(kind=int64)::IOut
       Class(*),Allocatable::Val
       Type(MQC_LinkedList),Pointer::LL_Head, LL_Cur
       LL_Cur => LL_Head

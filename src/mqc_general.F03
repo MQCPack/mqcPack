@@ -47,24 +47,25 @@
 !
 !     Define Types and Classes.
 !
+        use iso_fortran_env
       implicit none
-      real,public,parameter::angPBohr=0.52917706d0                                                          ! Angstom per Bohr
-      real,public,parameter::kGPAMU=1.660538921d-27                                                         ! Kilograms per atomic mass unit
-      real,public,parameter::planck=6.62606957d-34                                                          ! Planck constant
-      real,public,parameter::avogadro=6.02214129d+23                                                        ! Avogadro's number
-      real,public,parameter::jPCal=4.184d00                                                                 ! Joules per calorie
-      real,public,parameter::jPHartree=4.35974434d-18                                                       ! Joules per Hartree
-      real,public,parameter::sLight=2.99792458d10                                                           ! Speed of light
-      real,public,parameter::boltzman=1.3806488d-23                                                         ! Boltzman Constant
-      real,public,parameter::molVol=22.4139679d-3                                                           ! Molar volume of ideal gass in m**3 at 273.15 K 
-      real,public,parameter::eMM=928.476430d-26                                                             ! Electron magnetic moment (J T**-1) (sign flipped).
-      real,public,parameter::pRM=1.672621777d-27                                                            ! Proton rest mass (Kg)
-      real,public,parameter::gFree=2.00231930436153d0                                                       ! Free-electron g-factor
-      real,public,parameter::ESUPElec = 1.602176565d-19 * sLight / 10.0                                     ! Electrostatic units (ESU) per electron
-      real,public,parameter::mPBohr = 0.52917706d0/1.0d10                                                   ! Meters per Bohr
-      real,public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
-      real,public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
-      real,public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
+      real(kind=real64),public,parameter::angPBohr=0.52917706d0                                                          ! Angstom per Bohr
+      real(kind=real64),public,parameter::kGPAMU=1.660538921d-27                                                         ! Kilograms per atomic mass unit
+      real(kind=real64),public,parameter::planck=6.62606957d-34                                                          ! Planck constant
+      real(kind=real64),public,parameter::avogadro=6.02214129d+23                                                        ! Avogadro's number
+      real(kind=real64),public,parameter::jPCal=4.184d00                                                                 ! Joules per calorie
+      real(kind=real64),public,parameter::jPHartree=4.35974434d-18                                                       ! Joules per Hartree
+      real(kind=real64),public,parameter::sLight=2.99792458d10                                                           ! Speed of light
+      real(kind=real64),public,parameter::boltzman=1.3806488d-23                                                         ! Boltzman Constant
+      real(kind=real64),public,parameter::molVol=22.4139679d-3                                                           ! Molar volume of ideal gass in m**3 at 273.15 K 
+      real(kind=real64),public,parameter::eMM=928.476430d-26                                                             ! Electron magnetic moment (J T**-1) (sign flipped).
+      real(kind=real64),public,parameter::pRM=1.672621777d-27                                                            ! Proton rest mass (Kg)
+      real(kind=real64),public,parameter::gFree=2.00231930436153d0                                                       ! Free-electron g-factor
+      real(kind=real64),public,parameter::ESUPElec = 1.602176565d-19 * sLight / 10.0                                     ! Electrostatic units (ESU) per electron
+      real(kind=real64),public,parameter::mPBohr = 0.52917706d0/1.0d10                                                   ! Meters per Bohr
+      real(kind=real64),public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
+      real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
+      real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -131,8 +132,8 @@
 !
       implicit none
       character(LEN=*),intent(in),OPTIONAL::Message
-      integer,intent(in),OPTIONAL::IOut
-      integer::IJunk
+      integer(kind=int64),intent(in),OPTIONAL::IOut
+      integer(kind=int64)::IJunk
 !
  1000 Format(/,1x,'MQC ERROR: ',A,/)
 !
@@ -168,20 +169,20 @@
 !
       implicit none
       character(LEN=*),intent(in)::Message
-      integer,intent(in)::IOut
+      integer(kind=int64),intent(in)::IOut
       character(LEN=*),intent(in),OPTIONAL::Var_Name1
       character(LEN=*),intent(in),OPTIONAL::Var_Name2
       character(LEN=*),intent(in),OPTIONAL::Var_Name3
       character(LEN=*),intent(in),OPTIONAL::Var_Name4
       character(LEN=*),intent(in),OPTIONAL::Var_Name5
       character(LEN=*),intent(in),OPTIONAL::Var_Name6
-      integer,intent(in),OPTIONAL::INT1
-      integer,intent(in),OPTIONAL::INT2
-      integer,intent(in),OPTIONAL::INT3
-      integer,intent(in),OPTIONAL::INT4
-      integer,intent(in),OPTIONAL::INT5
-      integer,intent(in),OPTIONAL::INT6
-      integer::IJunk
+      integer(kind=int64),intent(in),OPTIONAL::INT1
+      integer(kind=int64),intent(in),OPTIONAL::INT2
+      integer(kind=int64),intent(in),OPTIONAL::INT3
+      integer(kind=int64),intent(in),OPTIONAL::INT4
+      integer(kind=int64),intent(in),OPTIONAL::INT5
+      integer(kind=int64),intent(in),OPTIONAL::INT6
+      integer(kind=int64)::IJunk
 !
  1000 Format(4x,A,' = ',I15)
  1030 Format(1x,'MQC ERROR: ',A)
@@ -233,20 +234,20 @@
 !
       implicit none
       character(LEN=*),intent(in)::Message
-      integer,intent(in)::IOut
+      integer(kind=int64),intent(in)::IOut
       character(LEN=*),intent(in),OPTIONAL::Var_NAME1
       character(LEN=*),intent(in),OPTIONAL::Var_NAME2
       character(LEN=*),intent(in),OPTIONAL::Var_NAME3
       character(LEN=*),intent(in),OPTIONAL::Var_NAME4
       character(LEN=*),intent(in),OPTIONAL::Var_NAME5
       character(LEN=*),intent(in),OPTIONAL::Var_NAME6
-      real,intent(in),OPTIONAL::FLT1
-      real,intent(in),OPTIONAL::FLT2
-      real,intent(in),OPTIONAL::FLT3
-      real,intent(in),OPTIONAL::FLT4
-      real,intent(in),OPTIONAL::FLT5
-      real,intent(in),OPTIONAL::FLT6
-      integer::IJunk
+      real(kind=real64),intent(in),OPTIONAL::FLT1
+      real(kind=real64),intent(in),OPTIONAL::FLT2
+      real(kind=real64),intent(in),OPTIONAL::FLT3
+      real(kind=real64),intent(in),OPTIONAL::FLT4
+      real(kind=real64),intent(in),OPTIONAL::FLT5
+      real(kind=real64),intent(in),OPTIONAL::FLT6
+      integer(kind=int64)::IJunk
 !
  1000 Format(4x,A,' = ',E20.14)
  1030 Format(1x,'MQC ERROR: ',A)
@@ -299,7 +300,7 @@
 !
       implicit none
       character(LEN=*),intent(in)::Message
-      integer,intent(in)::IOut
+      integer(kind=int64),intent(in)::IOut
       character(LEN=*),intent(in),OPTIONAL::Var_NAME1
       character(LEN=*),intent(in),OPTIONAL::Var_NAME2
       character(LEN=*),intent(in),OPTIONAL::Var_NAME3
@@ -312,7 +313,7 @@
       logical,intent(in),OPTIONAL::LOG4
       logical,intent(in),OPTIONAL::LOG5
       logical,intent(in),OPTIONAL::LOG6
-      integer::IJunk
+      integer(kind=int64)::IJunk
 !
  1030 Format(1x,'MQC ERROR: ',A)
  1050 Format(4x,A,' = ','.TRUE.')
@@ -388,7 +389,7 @@
 !
       implicit none
       character(LEN=*),intent(in)::Message
-      integer,intent(in)::IOut
+      integer(kind=int64),intent(in)::IOut
       character(LEN=*),intent(in),OPTIONAL::CHAR1
       character(LEN=*),intent(in),OPTIONAL::Var_NAME1
       character(LEN=*),intent(in),OPTIONAL::CHAR2
@@ -401,7 +402,7 @@
       character(LEN=*),intent(in),OPTIONAL::Var_NAME5
       character(LEN=*),intent(in),OPTIONAL::CHAR6
       character(LEN=*),intent(in),OPTIONAL::Var_NAME6
-      integer::IJunk
+      integer(kind=int64)::IJunk
 !
  1000 Format(4x,A,' = ',A)
  1030 Format(1x,'MQC ERROR: ',A)
@@ -447,8 +448,8 @@
 !
       implicit none
       character(len=:),allocatable::argument
-      integer,intent(in)::argNum
-      integer::argLen
+      integer(kind=int64),intent(in)::argNum
+      integer(kind=int64)::argLen
 !
 !     Do the work...
 !
@@ -479,8 +480,8 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::iOut
-      Integer,Intent(In)::scalar
+      Integer(kind=int64),Intent(In)::iOut
+      Integer(kind=int64),Intent(In)::scalar
       Character(Len=*),Intent(In),optional::Header,formatString
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
@@ -522,8 +523,8 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::iOut
-      Real,Intent(In)::scalar
+      Integer(kind=int64),Intent(In)::iOut
+      Real(kind=real64),Intent(In)::scalar
       Character(Len=*),Intent(In),optional::Header,formatString
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
@@ -565,12 +566,12 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
-      Integer,dimension(:,:),Intent(In)::Array
+      Integer(kind=int64),Intent(In)::IOut
+      Integer(kind=int64),dimension(:,:),Intent(In)::Array
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer::I,J,NCols,NRows,IFirst,ILast
-      Integer,Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
 !
  1000 Format(/,1x,A)
@@ -614,12 +615,12 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
-      Real,dimension(:,:),Intent(In)::Array
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),dimension(:,:),Intent(In)::Array
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer::I,J,NCols,NRows,IFirst,ILast
-      Integer,Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
  1000 Format(/,1x,A)
  1001 Format(5x,10(7x,I7))
@@ -662,11 +663,11 @@
 !
 !     Variable Declarations.
       implicit none
-      integer,Intent(In)::IOut
-      integer,Dimension(:),Intent(In)::Vector
+      integer(kind=int64),Intent(In)::IOut
+      integer(kind=int64),Dimension(:),Intent(In)::Vector
       character(Len=*),Intent(In),Optional::Header
-      logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      integer::I,Length
+      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      integer(kind=int64)::I,Length
 !
  1000 Format(/,1x,A)
  1001 Format(1x,I7,2x,I14)
@@ -702,11 +703,11 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
-      Real,Dimension(:),Intent(In)::Vector
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),Dimension(:),Intent(In)::Vector
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer::I,Length
+      Integer(kind=int64)::I,Length
 !
  1000 Format(/,1x,A)
  1002 Format(1x,I7,2X,F14.6)
@@ -757,7 +758,7 @@
       character(len=1),intent(in)::upperlower
       character(len=*),optional::stringOut
 !
-      integer::i,charVal
+      integer(kind=int64)::i,charVal
 !
 !     Do the work...
 !
@@ -810,7 +811,7 @@
 !
 !
       implicit none
-      integer,intent(in)::integerIn
+      integer(kind=int64),intent(in)::integerIn
       character(*),intent(in),optional::formatString
       character(len=256)::myFormatString,integerString
 !
@@ -840,7 +841,7 @@
 !
 !
       implicit none
-      real,intent(in)::realIn
+      real(kind=real64),intent(in)::realIn
       character(*),intent(in),optional::formatString
       character(len=256)::myFormatString,realString
 !
@@ -866,10 +867,10 @@
 !
 !
       Implicit None
-      Integer,Intent(In)::IntIn
+      Integer(kind=int64),Intent(In)::IntIn
       Character(Len=*),Intent(InOut)::String
-      Integer,Optional,Intent(In)::IntWidth,NDigits
-      Integer::My_IntWidth
+      Integer(kind=int64),Optional,Intent(In)::IntWidth,NDigits
+      Integer(kind=int64)::My_IntWidth
       Character(Len=512)::FormatString,TempChar
 
 !     Set-up My_IntWidth and then fill FormatString.
@@ -919,9 +920,9 @@
 !
 !     Variable Declarations.
       implicit none
-      integer,dimension(:),intent(in)::matrixDiagonal
-      integer,dimension(:,:),intent(out)::matrixFull
-      integer::nDim,i
+      integer(kind=int64),dimension(:),intent(in)::matrixDiagonal
+      integer(kind=int64),dimension(:,:),intent(out)::matrixFull
+      integer(kind=int64)::nDim,i
 !
       nDim = SIZE(matrixDiagonal)
       if(nDim.ne.SIZE(matrixFull,1).or.nDim.ne.SIZE(matrixFull,2))  &
@@ -952,9 +953,9 @@
 !
 !     Variable Declarations.
       implicit none
-      real,dimension(:),intent(in)::matrixDiagonal
-      real,dimension(:,:),intent(out)::matrixFull
-      integer::nDim,i
+      real(kind=real64),dimension(:),intent(in)::matrixDiagonal
+      real(kind=real64),dimension(:,:),intent(out)::matrixFull
+      integer(kind=int64)::nDim,i
 !
       nDim = SIZE(matrixDiagonal)
       if(nDim.ne.SIZE(matrixFull,1).or.nDim.ne.SIZE(matrixFull,2))  &

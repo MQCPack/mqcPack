@@ -44,6 +44,7 @@
 
 !
       Use MQC_General
+      use iso_fortran_env
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -53,11 +54,11 @@
 !
 !     Variable...
       type MQC_Variable
-        integer,private::rank=-1
+        integer(kind=int64),private::rank=-1
         character(len=64),private::dataType,storageFormat
-        integer,dimension(10),private::dimensions=0
-        real,dimension(:),allocatable,private::realArray
-        integer,dimension(:),allocatable,private::integerArray
+        integer(kind=int64),dimension(10),private::dimensions=0
+        real(kind=real64),dimension(:),allocatable,private::realArray
+        integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
       Contains
         procedure,public::initialize    => MQC_Variable_initialize
@@ -249,12 +250,12 @@
       implicit none
       class(MQC_Variable),intent(inOut)::mqcVariable
       character(len=*),intent(in)::dataType
-      integer,dimension(:),intent(in),optional::dimensions
-      integer,intent(in),optional::rank
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
+      integer(kind=int64),intent(in),optional::rank
       character(len=*),intent(in),optional::storageFormat
 !
       character(len=64)::myDataType
-      integer::myRank,myLength
+      integer(kind=int64)::myRank,myLength
       character(len=64)::myStorageFormat
 !
 !
@@ -369,9 +370,9 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer,dimension(:)::arrayElement
-      integer::k
-      integer::i,subLength
+      integer(kind=int64),dimension(:)::arrayElement
+      integer(kind=int64)::k
+      integer(kind=int64)::i,subLength
 !
 !
 !     Do the work...
@@ -408,9 +409,9 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer::myLen
+      integer(kind=int64)::myLen
 !
-      integer::i
+      integer(kind=int64)::i
 !
 !
       select case(mqcVariable%rank)
@@ -444,7 +445,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer::myRank
+      integer(kind=int64)::myRank
 !
 !
       myRank = mqcVariable%rank
@@ -471,10 +472,10 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer,intent(in),optional::iDimension
-      integer::mySize
+      integer(kind=int64),intent(in),optional::iDimension
+      integer(kind=int64)::mySize
 !
-      integer::myDimension
+      integer(kind=int64)::myDimension
 !
 !
       if(Present(iDimension)) then
@@ -563,7 +564,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer::myTypeCode
+      integer(kind=int64)::myTypeCode
 !
 !
 !     Determine the right value for OUTPUT argument <myTypeCode>.
@@ -597,7 +598,7 @@
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       logical::conformable
-      integer::i
+      integer(kind=int64)::i
 !
 !
 !     Initialize <conformable> and then check ranks followed by dimension
@@ -718,11 +719,11 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,optional,intent(In)::iOut
+      integer(kind=int64),optional,intent(In)::iOut
       character(len=*),intent(in),optional::header,formatString
       logical,intent(in),optional::blankAtTop,blankAtBottom
 !
-      integer::myIOut
+      integer(kind=int64)::myIOut
       logical::myBlankAtTop,myBlankAtBottom
 !
 !
@@ -847,8 +848,8 @@
       implicit none
       class(MQC_Variable)::mqcVariable
       class(MQC_Variable),intent(in)::valueMQC
-      integer,dimension(:)::arrayElement
-      integer::k
+      integer(kind=int64),dimension(:)::arrayElement
+      integer(kind=int64)::k
 !
 !
 !     Do the work...
@@ -895,9 +896,9 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,intent(in)::valueInteger
-      integer,dimension(:)::arrayElement
-      integer::k
+      integer(kind=int64),intent(in)::valueInteger
+      integer(kind=int64),dimension(:)::arrayElement
+      integer(kind=int64)::k
 !
 !
 !     Do the work...
@@ -942,9 +943,9 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      real,intent(in)::valueReal
-      integer,dimension(:)::arrayElement
-      integer::k
+      real(kind=real64),intent(in)::valueReal
+      integer(kind=int64),dimension(:)::arrayElement
+      integer(kind=int64)::k
 !
 !
 !     Do the work...
@@ -995,12 +996,12 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,intent(in),optional::valueInteger
-      real,intent(in),optional::valueReal
-      integer,dimension(:),intent(in),optional::dimensions
+      integer(kind=int64),intent(in),optional::valueInteger
+      real(kind=real64),intent(in),optional::valueReal
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
 !
-      integer::nInputs,myRank
-      integer,dimension(:),allocatable::myDimensions
+      integer(kind=int64)::nInputs,myRank
+      integer(kind=int64),dimension(:),allocatable::myDimensions
       logical::fillInteger,fillReal
       character(len=64)::myDataType
 !
@@ -1082,7 +1083,7 @@
       implicit none
       class(MQC_Variable)::mqcVariable
       class(MQC_Variable),intent(in)::valueMQC
-      integer,dimension(:),intent(in),optional::dimensions
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
 !
 !     Call Procedure MQC_Variable_clear_general.
 !
@@ -1135,8 +1136,8 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,intent(in)::valueInteger
-      integer,dimension(:),intent(in),optional::dimensions
+      integer(kind=int64),intent(in)::valueInteger
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
 !
 !     Call Procedure MQC_Variable_clear_general.
 !
@@ -1172,8 +1173,8 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      real,intent(in)::valueReal
-      integer,dimension(:),intent(in),optional::dimensions
+      real(kind=real64),intent(in)::valueReal
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
 !
 !     Call Procedure MQC_Variable_clear_general.
 !
@@ -1247,13 +1248,13 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,intent(in),optional::scalarIntegerIn
-      real,intent(in),optional::scalarRealIn
-      integer,dimension(:),optional::arrayIntegerIn
-      real,dimension(:),optional::arrayRealIn
+      integer(kind=int64),intent(in),optional::scalarIntegerIn
+      real(kind=real64),intent(in),optional::scalarRealIn
+      integer(kind=int64),dimension(:),optional::arrayIntegerIn
+      real(kind=real64),dimension(:),optional::arrayRealIn
 !
-      integer::nInputs,myRank
-      integer,dimension(:),allocatable::myDimensions
+      integer(kind=int64)::nInputs,myRank
+      integer(kind=int64),dimension(:),allocatable::myDimensions
       logical::fillInteger,fillReal,fillScalar,fillArray
       character(len=64)::myDataType
 !
@@ -1360,7 +1361,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,intent(in)::intrinsicIn
+      integer(kind=int64),intent(in)::intrinsicIn
 !
 !
 !     Load the MQC variable.
@@ -1385,7 +1386,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      real,intent(in)::intrinsicIn
+      real(kind=real64),intent(in)::intrinsicIn
 !
 !
 !     Load the MQC variable.
@@ -1410,7 +1411,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      integer,dimension(:),intent(in)::intrinsicIn
+      integer(kind=int64),dimension(:),intent(in)::intrinsicIn
 !
 !
 !     Load the MQC variable.
@@ -1435,7 +1436,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable)::mqcVariable
-      real,dimension(:),intent(in)::intrinsicIn
+      real(kind=real64),dimension(:),intent(in)::intrinsicIn
 !
 !
 !     Begin by figuring out if we are working with integer/real and scalar/
@@ -1460,7 +1461,7 @@
 !
 !     Variable Declarations.
       implicit none
-      integer::intrinsicOut
+      integer(kind=int64)::intrinsicOut
       class(MQC_Variable),intent(in)::mqcVariable
 !
 !
@@ -1496,7 +1497,7 @@
 !
 !     Variable Declarations.
       implicit none
-      real,intent(inOut)::intrinsicOut
+      real(kind=real64),intent(inOut)::intrinsicOut
       type(MQC_Variable),intent(in)::mqcVariable
 !
 !
@@ -1532,7 +1533,7 @@
 !
 !     Variable Declarations.
       implicit none
-      integer,intent(in)::intrinsicIn
+      integer(kind=int64),intent(in)::intrinsicIn
       type(MQC_Variable)::mqcVariable
 !
 !
@@ -1557,7 +1558,7 @@
 !
 !     Variable Declarations.
       implicit none
-      real,intent(in)::intrinsicIn
+      real(kind=real64),intent(in)::intrinsicIn
       type(MQC_Variable)::mqcVariable
 !
 !
@@ -1582,7 +1583,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      integer::intrinsicOut
+      integer(kind=int64)::intrinsicOut
 !
 !
 !     Do the work...
@@ -1606,7 +1607,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      real::intrinsicOut
+      real(kind=real64)::intrinsicOut
 !
 !
 !     Do the work...
@@ -1694,9 +1695,9 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer::typeCode1,typeCode2
-      integer,dimension(:),allocatable::sumVectorInteger
-      real,dimension(:),allocatable::sumVectorReal
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::sumVectorInteger
+      real(kind=real64),dimension(:),allocatable::sumVectorReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -1778,9 +1779,9 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer::typeCode1,typeCode2
-      integer,dimension(:),allocatable::differenceVectorInteger
-      real,dimension(:),allocatable::differenceVectorReal
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::differenceVectorInteger
+      real(kind=real64),dimension(:),allocatable::differenceVectorReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -1862,9 +1863,9 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer::typeCode1,typeCode2
-      integer,dimension(:),allocatable::productVectorInteger
-      real,dimension(:),allocatable::productVectorReal
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::productVectorInteger
+      real(kind=real64),dimension(:),allocatable::productVectorReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -1945,9 +1946,9 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer::typeCode1,typeCode2
-      integer,dimension(:),allocatable::quotientVectorInteger
-      real,dimension(:),allocatable::quotientVectorReal
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::quotientVectorInteger
+      real(kind=real64),dimension(:),allocatable::quotientVectorReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -2027,9 +2028,9 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer::typeCode1,typeCode2
-      integer::contractionInteger
-      real::contractionReal
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64)::contractionInteger
+      real(kind=real64)::contractionReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.

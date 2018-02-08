@@ -5,13 +5,14 @@
 !     L. M. Thompson, 2016
 !
       use mqc_gaussian
+      use iso_fortran_env
 !
 !     Variable Declarations...
 !
       implicit none
       character(len=:),allocatable::fileName
       type(mqc_gaussian_unformatted_matrix_file)::fileInfo 
-      integer::iOut=6,iPrint=2
+      integer(kind=int64)::iOut=6,iPrint=2
       logical::UHF
       type(mqc_pscf_wavefunction)::wavefunction
       type(mqc_molecule_data)::moleculeInfo

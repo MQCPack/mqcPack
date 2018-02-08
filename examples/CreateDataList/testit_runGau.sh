@@ -2,6 +2,8 @@
 
 cd ../CreateDataList
 rm outfile
+
+mkdir test
 cd test
 echo "---------------------------------" >> ../outfile 2>&1
 echo "Failure Test: no input to program" >> ../outfile 2>&1
@@ -19,7 +21,11 @@ echo "------------------------------------" >> ../outfile 2>&1
 
 # set up the Gaussian environment
 export GauBINARY="${GAU_BINARY}"
-cd ../test2
+cd ..
+rm -r test
+
+mkdir test2
+cd test2
 rm -f test.com
 echo "---------------------------------------------------" >> ../outfile 2>&1
 echo "Failure Test: Test for when input file is not there" >> ../outfile 2>&1
@@ -39,7 +45,9 @@ echo "-------------------------------" >> ../outfile 2>&1
 rm -f rhf_h2-sto3g.mat
 rm -f test.com
 cd ..
+rm -r test2
 
+mkdir test1071
 cd test1071
 echo "-------------------------------" >> ../outfile 2>&1
 echo "test1071 Create MatrixFile test" >> ../outfile 2>&1
@@ -48,7 +56,9 @@ cp ../../data/Gaussian_input/test1071.com . >> ../outfile
 ../CheckInput test1071.com ${GauBINARY} >> ../outfile 2>&1
 rm -f test1071.com
 cd ..
+rm -r test1071
 
+mkdir test1129
 cd test1129
 cp ../../data/Gaussian_input/test1129.com . >> ../outfile
 echo "-------------------------------" >> ../outfile 2>&1
@@ -57,7 +67,9 @@ echo "-------------------------------" >> ../outfile 2>&1
 ../CheckInput test1129.com ${GauBINARY} >> ../outfile 2>&1
 rm -f test1129.com
 cd ..
+rm -r test1129
 
+mkdir test1132
 cd test1132
 cp ../../data/Gaussian_input/test1132.com . >> ../outfile
 echo "--------------------------------" >> ../outfile 2>&1
@@ -74,6 +86,7 @@ echo "------------------------------------------------------------------" >> ../
 ../CheckInput test1132.com test1132gr.dat test1132r.dat test1132u.dat ${GauBINARY} >> ../outfile 2>&1
 rm -f test1132.com
 cd ..
+rm -r test1132
 
 # Now, remove the process IDs from the names of Gaussian file names
 #../../.other_libs/build_fcns/remove_Gau_pid outfile
@@ -85,8 +98,8 @@ cd ..
 # remove the location of the scratch directory from outfile
 #../../.other_libs/build_fcns/remove_SCRDIR outfile
 
-grep -v "echo argv" outfile > tmpfile 2>1
-grep -v "cp test1132" tmpfile > outfile 2>1
+grep -v "echo argv" outfile > tmpfile 2>&1
+grep -v "cp test1132" tmpfile > outfile 2>&1
 rm tmpfile
 
 diff -b -B outfile OUTPUT/out_runGau

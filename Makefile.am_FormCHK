@@ -1,5 +1,0 @@
-AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
-AM_CPPFLAGS = $(MQC_CPPFLAGS)
-SUBDIRS = src examples/Build_Tests
-dist_doc_DATA = README
-

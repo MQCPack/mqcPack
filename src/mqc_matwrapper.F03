@@ -67,6 +67,9 @@
         Integer(kind=int32) IError
         Integer(kind=int64) IError_8
         Integer(kind=int64) IOut
+        Integer(kind=int64) rec_len, bufsize
+        Integer(kind=int64) LStr64
+        Character(len=LStr)::DataType
         logical I_OPENED
 
         Len12D=4
@@ -80,43 +83,22 @@
  1030      format( "File was Open. Close then open ", a)
            call Close_MatF(IU)
         endif
-! There can be trouble reading files that were just written.  The file system
-! may need to be flushed
 
-        Open (Unit=IU,File=TRIM(MatFileName),Form='Unformatted',Status='Old', IOStat=IError)
-        If (IError.ne.0) then
-           IOut = 6
-           call MQC_Error_A('Error Opening File', Iout, 'MatFileName', MatFileName)
-        endif
-
-        Read(IU) LabFil(1:LStr), IVers, NLab, GVers(1:LStr)
-        Read(IU,err=2000,end=2000) Title(1:LStr), NAtoms, NBasis, NBsUse, ICharg, Multip, NE, Len12L, Len4L
-2000    continue
-        If(Len4L.ne.Len4D.or.Len12L.ne.Len12D) then
+        LStr64 = LStr
+        call mqc_Matfile_Guide_F2C(MatFileName, DataType, LStr64, rec_len, bufsize)
+        if ( trim(DataType) .eq. "Long" ) then
            IntPrecision = 8
-#ifdef DEBUG
-           Write(6,1000) Len12D, Len4D, Len12L, Len4L, IntPrecision
-1000       Format(' Read_Precision_Test compiled with Len12=',I1,' Len4=',I1, &
-              ' but file has Len12=',I1,' Len4=', I1,' Precision=',I1,'.')
-#endif
-           call Close_MatF(IU)
-
-           Len12D_8=8
-           Len4D_8=8
-           Open (Unit=IUUse,File=TRIM(MatFileName),Form='Unformatted',Status='Old', IOStat=IError)
-           Read(IU) LabFil(1:LStr), IVers_8, NLab_8, GVers(1:LStr)
-           Read(IU) Title(1:LStr), NAtoms_8, NBasis_8, NBsUse_8, ICharg_8, Multip_8, NE_8, Len12L_8, Len4L_8
-           If(Len4L_8.ne.Len4D_8.or.Len12L_8.ne.Len12D_8) then
-              Write(6,1080) trim(MatFileName)
-1080          Format(' File:', A)
-              IOut = 6
-              call MQC_Error_I('Unable to make sense of File', Iout, 'Len4L_8', &
-                   Len4L_8,'Len4D_8',Len4D_8,'Len12L_8',Len12L_8,'Len12D_8',Len12D_8)
-           endif
-        else
+        else if ( trim(DataType) .eq. "Int" ) then
            IntPrecision = 4
+        else if ( trim(DataType) .eq. "Raw" ) then
+           IntPrecision = 0
+        else if ( trim(DataType) .eq. "Could not open File" ) then
+           IntPrecision = -1
+        else
+           Iout = 6
+           call MQC_Error_I( DataType, Iout )
+!           call MQC_Error_A('Unknown DataType - should be Long, Int or Raw', Iout, 'trim(DataType)', trim(DataType))
         endIf
-        call Close_MatF(IU)
 
         Return
       end subroutine MQC_Read_Mat_Precision_Test
@@ -356,13 +338,23 @@
            Len4L = Len4L_4
            IOpCl = IOpCl_4
            ICGU = ICGU_4
-        else
+        else if ( IntPrecision .eq. 8 ) then
 ! File requires 64-bit integers, so no change
            call OpenRead8(Name,IU,LabFil,IVers,NLab,GVers,Title,NAtoms,NBasis,NBsUse,ICharg,Multip,NE,Len12L,Len4L,IOpCl,ICGU)
+        else if ( IntPrecision .eq. 0 ) then
+! Raw file
+           IU = -2
+        else if ( IntPrecision .eq. -1 ) then
+! Failure to open file
+           IU = -1
+        else
+           IOut = 6
+           ICGU = IntPrecision
+           call MQC_Error_I('IntPrecision should be 4 or 8', Iout, 'IntPrecision', ICGU )
         endif
         if ( IU .eq. -1 ) then
            IOut = 6
-           call MQC_Error_A('Unable to Open File', Iout, 'Name', Name)
+           call MQC_Error_A('Open_Read: Unable to Open File', Iout, 'Name', Name)
         endif
       Return
       End Subroutine Open_Read
@@ -379,6 +371,7 @@
         Integer(kind=int32)::IU_4,NAtoms_4,NBasis_4,NBsUse_4,ICharg_4,Multip_4,NE_4,IOpCl_4,ICGU_4
 
         Integer(kind=int32)::IntPrecision, Call_Test
+        Integer(kind=int64)::IOut
         Call_Test = 1
         call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
         if ( IntPrecision .eq. 4 ) then
@@ -393,9 +386,12 @@
            ICGU_4 = ICGU
            call OpenWrite4(Name,IU_4,LabFil,GVers,Title,NAtoms_4,NBasis_4,NBsUse_4,ICharg_4,Multip_4,NE_4,IOpCl_4,ICGU_4)
            IU = IU_4
-        else
+        else if ( IntPrecision .eq. 8 ) then
 ! File requires 64-bit integers, so no change
            call OpenWrite8(Name,IU,LabFil,GVers,Title,NAtoms,NBasis,NBsUse,ICharg,Multip,NE,IOpCl,ICGU)
+        else
+           IOut = 6
+           call MQC_Error_A('Open_Write: Unable to Open File', Iout, 'Name', Name)
         endif
       Return
       End Subroutine Open_Write
@@ -744,10 +740,6 @@
            NRI = NRI_4
         else
 ! File requires 64-bit integers, so no change
-
-      write( 6, 1234) iu
-1234  format( " DJM iu in rd_labl is ", I8 )
-
            Call RdLabl8(IU,IVers,CBuf,NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,ASym,NRI,EOF)
         endif
       Return
@@ -1074,7 +1066,7 @@
 ! This routine does no I/O
         Call ExpAN8(NE,N,LR,RI,RO)
       Return
-      End Subroutine
+      End Subroutine ExpAON
 
       Subroutine AClear(N,A)
         Implicit None

@@ -140,6 +140,54 @@
     end subroutine mqc_create_File_Name_lists_F2C
 
 #ifdef MATRIXFILE
+    subroutine mqc_Matfile_Guide_F2C(FileName_F, DataType_F, Char_Len_F, rec_len_F, bufsize_F )
+
+      use iso_c_binding
+      use iso_fortran_env
+      implicit none
+
+      interface
+         subroutine mqc_Matfile_Guide(FileName_C, DataType_C, Char_Len_C, rec_len_C, bufsize_C ) bind(C, name="mqc_Matfile_Guide")
+           import
+           character(kind=c_char) :: FileName_C
+           character(kind=c_char) :: DataType_C
+           integer(kind=c_int) :: Char_Len_C
+           integer(kind=c_int) :: rec_len_C
+           integer(kind=c_int) :: bufsize_C
+         end subroutine mqc_Matfile_Guide
+      end interface
+
+      character(len=*), intent(in)::FileName_F
+      character(len=*), intent(out)::DataType_F
+      integer( kind=int64 ), intent(in) :: Char_Len_F
+      integer( kind=int64 ), intent(out) :: rec_len_F
+      integer( kind=int64 ), intent(out) :: bufsize_F
+
+      character(kind=c_char, len=len_trim(FileName_F)+1) :: FileName_CALL
+      character(kind=c_char, len=2048) :: DataType_CALL
+      integer(kind=c_int) :: Char_Len_CALL
+      integer(kind=c_int) :: rec_len_CALL
+      integer(kind=c_int) :: bufsize_CALL
+      integer(kind=c_int) :: i
+
+      FileName_CALL = trim(FileName_F) // c_null_char
+      Char_Len_CALL = Char_Len_F
+
+      call mqc_Matfile_Guide(FileName_CALL, DataType_CALL, Char_Len_CALL, rec_len_CALL, bufsize_CALL )
+
+      DataType_F = " "
+      DataType_string: do i=1, 2048
+         if ( DataType_CALL(i:i) .eq. c_null_char ) then
+            exit DataType_string
+         else
+            DataType_F(i:i) = DataType_CALL(i:i)
+         end if
+      end do DataType_string
+      rec_len_F = rec_len_CALL
+      bufsize_F = bufsize_CALL
+
+    end subroutine mqc_Matfile_Guide_F2C
+
     subroutine mqc_get_MatrixFile_Name_F2C(FileName_F, iout_F)
       use iso_c_binding
       use iso_fortran_env
@@ -262,4 +310,45 @@
       Status_F = Status_CALL
 
       end subroutine mqc_File_Is_Executable_F2C
+
+#ifdef MATRIXFILE
+!
+! This routine is here, because if violates typing.  Want to copy all 
+! the bits of integerTmp to arrayTmp.  This is a way to get real and integer
+! data from a single read of the MatrixFile
+! arrayTmp is was real in the calling subroutine.
+! integerTmp is was integer in the calling subroutine.
+!
+      subroutine mqc_copy_vec( integerTmp8, integerTmp4, arrayTmp, LR)
+      use MQC_MatWrapper
+      use iso_fortran_env
+      Implicit None
+      integer(kind=int64),dimension(:),intent(inout)::integerTmp8
+      integer(kind=int32),dimension(:),intent(in)::integerTmp4
+      real(kind=real64),dimension(:),intent(out)::arrayTmp
+      integer(kind=int64),intent(in):: LR
+      integer(kind=int64):: i
+      Character(Len=64)::Ignorable
+      Integer(kind=int32)::IntPrecision
+      Integer(kind=int32)::Call_Test
+
+      Call_Test=0 
+      call MQC_Mat_Precision(Ignorable, IntPrecision, Call_Test)
+
+      do i=1, LR
+         arrayTmp(i) = integerTmp8(i) 
+      end do
+
+      if ( IntPrecision .eq. 4 ) then
+!
+! These 2 arrays are the same, with different size declarations.
+! Starting from the end allows us to expand the array without overwriting data
+!
+         do i = LR, 1, -1
+            integerTmp8(i) = integerTmp4(i)
+         end do
+      endif
+      return
+      end subroutine mqc_copy_vec
+#endif
 

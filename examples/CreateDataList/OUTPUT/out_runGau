@@ -38,7 +38,6 @@ test.com Create MatrixFile test
 -------------------------------
 MatrixFiles:
    - rhf_h2-sto3g.mat
-
 -------------------------------
 test1071 Create MatrixFile test
 -------------------------------
@@ -49,7 +48,6 @@ test1129 Create MatrixFile test
 -------------------------------
 MatrixFiles:
    - test1129.dat
-
 --------------------------------
 test1132 Create MatrixFiles test
 --------------------------------

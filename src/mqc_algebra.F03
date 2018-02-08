@@ -31,6 +31,7 @@
 !     **********************************************************************
 !
       Use MQC_General
+      use iso_fortran_env
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -40,9 +41,9 @@
 !
 !     Scalars...
       Type MQC_Scalar
-        Real,Private,Allocatable::ScaR
-        Integer,Private,Allocatable::ScaI
-        Complex(Kind=8),Private,Allocatable::ScaC
+        Real(kind=real64),Private,Allocatable::ScaR
+        Integer(kind=int64),Private,Allocatable::ScaI
+        Complex(Kind=real64),Private,Allocatable::ScaC
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
       Contains
         Procedure, Public::print => MQC_Print_Scalar_Algebra1
@@ -53,12 +54,12 @@
 !
 !     Vectors...
       Type MQC_Vector
-        Integer,Private::Length=0
+        Integer(kind=int64),Private::Length=0
         Logical,Private::Column=.True.
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Real,Dimension(:),Private,Allocatable::VecR
-        Integer,Dimension(:),Private,Allocatable::VecI
-        Complex(Kind=8),Dimension(:),Private,Allocatable::VecC
+        Real(kind=real64),Dimension(:),Private,Allocatable::VecR
+        Integer(kind=int64),Dimension(:),Private,Allocatable::VecI
+        Complex(Kind=real64),Dimension(:),Private,Allocatable::VecC
       Contains
         Procedure, Public::print => MQC_Print_Vector_Algebra1
         Procedure, Public::initialize => MQC_Vector_Initialize
@@ -80,12 +81,12 @@
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
       Type MQC_Matrix
-        Integer,Private::NCol=0,NRow=0
+        Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
-        Real,Dimension(:,:),Private,Allocatable::MatR
-        Integer,Dimension(:,:),Private,Allocatable::MatI
-        Complex(Kind=8),Dimension(:,:),Private,Allocatable::MatC
+        Real(kind=real64),Dimension(:,:),Private,Allocatable::MatR
+        Integer(kind=int64),Dimension(:,:),Private,Allocatable::MatI
+        Complex(Kind=real64),Dimension(:,:),Private,Allocatable::MatC
       Contains
         Procedure, Public::print => MQC_Print_Matrix_Algebra1
         Procedure, Public::initialize => MQC_Matrix_Initialize
@@ -109,12 +110,12 @@
       End Type MQC_Matrix
 
       Type MQC_R4Tensor
-        Integer,Private::I,J,K,L
+        Integer(kind=int64),Private::I,J,K,L
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull
-        Real,Allocatable,Private::RTen(:,:,:,:)
-        Integer,Allocatable,Private::ITen(:,:,:,:)
-        Complex(Kind=8),Allocatable,Private::CTen(:,:,:,:)
+        Real(kind=real64),Allocatable,Private::RTen(:,:,:,:)
+        Integer(kind=int64),Allocatable,Private::ITen(:,:,:,:)
+        Complex(Kind=real64),Allocatable,Private::CTen(:,:,:,:)
       Contains
         Procedure, Public::print => MQC_Print_r4tensor_Algebra1
         Procedure, Public::at => MQC_R4Tensor_At
@@ -337,8 +338,8 @@
 !     Variable Declarations...
 !
       Implicit None
-      Integer,Intent(In)::N
-      Integer::I,Ans,Factorial
+      Integer(kind=int64),Intent(In)::N
+      Integer(kind=int64)::I,Ans,Factorial
 !
       ans = 1
       Do I = 1, N
@@ -358,8 +359,8 @@
 !     Variable Declarations...
 !
       Implicit None
-      Integer,Intent(In)::N,K
-      Integer::I,J,Ans,Bin_Coeff
+      Integer(kind=int64),Intent(In)::N,K
+      Integer(kind=int64)::I,J,Ans,Bin_Coeff
 !
       If(K.lt.0.or.K.gt.N) then
         Ans = 0
@@ -473,7 +474,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar),Intent(InOut)::ScalarOut
-      Integer,Intent(In)::ScalarIn
+      Integer(kind=int64),Intent(In)::ScalarIn
 !
       Call MQC_Allocate_Scalar(ScalarOut,'Integer')
       ScalarOut%scai = ScalarIn
@@ -493,7 +494,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar),Intent(InOut)::ScalarOut
-      Real,Intent(In)::ScalarIn
+      Real(kind=real64),Intent(In)::ScalarIn
 !
       Call MQC_Allocate_Scalar(ScalarOut,'Real')
       ScalarOut%scar = ScalarIn
@@ -513,7 +514,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar),Intent(InOut)::ScalarOut
-      Complex(Kind=8),Intent(In)::ScalarIn
+      Complex(Kind=real64),Intent(In)::ScalarIn
 !
       Call MQC_Allocate_Scalar(ScalarOut,'Complex')
       ScalarOut%scac = ScalarIn
@@ -565,7 +566,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(InOut)::ScalarOut
+      Integer(kind=int64),Intent(InOut)::ScalarOut
       Type(MQC_Scalar),Intent(In)::ScalarIn
 !
       If(ScalarIn%Data_type.eq.'Integer') then
@@ -590,7 +591,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Real,Intent(InOut)::ScalarOut
+      Real(kind=real64),Intent(InOut)::ScalarOut
       Type(MQC_Scalar),Intent(In)::ScalarIn
 !
       If(ScalarIn%Data_type.eq.'Real') then
@@ -615,7 +616,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Complex(Kind=8),Intent(InOut)::ScalarOut
+      Complex(Kind=real64),Intent(InOut)::ScalarOut
       Type(MQC_Scalar),Intent(In)::ScalarIn
 !
       If(ScalarIn%Data_type.eq.'Real') then
@@ -644,7 +645,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
+      Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Scalar),Intent(In)::Scalar
       Character(Len=*),Intent(In)::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
@@ -693,7 +694,11 @@
         MQC_Scalar_Sqrt%ScaR = Sqrt(Scalar%ScaR)
         MQC_Scalar_Sqrt%Data_type = 'Real'
       ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Sqrt%ScaR = Sqrt(dFloat(Scalar%ScaI))
+#else
         MQC_Scalar_Sqrt%ScaR = Sqrt(Float(Scalar%ScaI))
+#endif
         MQC_Scalar_Sqrt%Data_type = 'Real'
       ElseIf(Scalar%Data_Type.eq.'Integer') then
         MQC_Scalar_Sqrt%ScaC = Sqrt(Scalar%ScaC)
@@ -778,7 +783,7 @@
 !     Variable Declarations.
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Real::Output
+      Real(kind=real64)::Output
 !
       If(Scalar%Data_Type.eq.'Integer') then
         Output = Real(Scalar%ScaI)
@@ -806,7 +811,7 @@
 !     Variable Declarations.
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Integer::Output
+      Integer(kind=int64)::Output
 !
       If(Scalar%Data_Type.eq.'Integer') then
         Output = Scalar%ScaI
@@ -834,7 +839,7 @@
 !     Variable Declarations.
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Complex(Kind=8)::Output
+      Complex(Kind=real64)::Output
 !
       If(Scalar%Data_Type.eq.'Integer') then
         Output = cmplx(Scalar%ScaI,0)
@@ -871,10 +876,18 @@
         MQC_ScalarAdd%ScaR = Scalar1%ScaR + Scalar2%ScaR
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarAdd,'Real')
+#ifdef PGI
+        MQC_ScalarAdd%ScaR = Scalar1%ScaR + dFloat(Scalar2%ScaI)
+#else
         MQC_ScalarAdd%ScaR = Scalar1%ScaR + Float(Scalar2%ScaI)
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         Call MQC_Allocate_Scalar(MQC_ScalarAdd,'Real')
+#ifdef PGI
+        MQC_ScalarAdd%ScaR = dFloat(Scalar1%ScaI) + Scalar2%ScaR
+#else
         MQC_ScalarAdd%ScaR = Float(Scalar1%ScaI) + Scalar2%ScaR
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarAdd,'Integer')
         MQC_ScalarAdd%ScaI = Scalar1%ScaI + Scalar2%ScaI
@@ -924,10 +937,18 @@
         MQC_ScalarSubtract%ScaR = Scalar1%ScaR - Scalar2%ScaR
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarSubtract,'Real')
+#ifdef PGI
+        MQC_ScalarSubtract%ScaR = Scalar1%ScaR - dFloat(Scalar2%ScaI)
+#else
         MQC_ScalarSubtract%ScaR = Scalar1%ScaR - Float(Scalar2%ScaI)
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         Call MQC_Allocate_Scalar(MQC_ScalarSubtract,'Real')
+#ifdef PGI
+        MQC_ScalarSubtract%ScaR = dFloat(Scalar1%ScaI) - Scalar2%ScaR
+#else
         MQC_ScalarSubtract%ScaR = Float(Scalar1%ScaI) - Scalar2%ScaR
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarSubtract,'Integer')
         MQC_ScalarSubtract%ScaI = Scalar1%ScaI - Scalar2%ScaI
@@ -975,10 +996,18 @@
         MQC_ScalarMultiply%ScaR = Scalar1%ScaR * Scalar2%ScaR
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarMultiply,'Real')
+#ifdef PGI
+        MQC_ScalarMultiply%ScaR = Scalar1%ScaR * dFloat(Scalar2%ScaI)
+#else
         MQC_ScalarMultiply%ScaR = Scalar1%ScaR * Float(Scalar2%ScaI)
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         Call MQC_Allocate_Scalar(MQC_ScalarMultiply,'Real')
+#ifdef PGI
+        MQC_ScalarMultiply%ScaR = dFloat(Scalar1%ScaI) * Scalar2%ScaR
+#else
         MQC_ScalarMultiply%ScaR = Float(Scalar1%ScaI) * Scalar2%ScaR
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarMultiply,'Integer')
         MQC_ScalarMultiply%ScaI = Scalar1%ScaI * Scalar2%ScaI
@@ -1026,10 +1055,18 @@
         MQC_ScalarDivide%ScaR = Scalar1%ScaR / Scalar2%ScaR
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarDivide,'Real')
+#ifdef PGI
+        MQC_ScalarDivide%ScaR = Scalar1%ScaR / dFloat(Scalar2%ScaI)
+#else
         MQC_ScalarDivide%ScaR = Scalar1%ScaR / Float(Scalar2%ScaI)
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         Call MQC_Allocate_Scalar(MQC_ScalarDivide,'Real')
+#ifdef PGI
+        MQC_ScalarDivide%ScaR = dFloat(Scalar1%ScaI) / Scalar2%ScaR
+#else
         MQC_ScalarDivide%ScaR = Float(Scalar1%ScaI) / Scalar2%ScaR
+#endif
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         Call MQC_Allocate_Scalar(MQC_ScalarDivide,'Integer')
         MQC_ScalarDivide%ScaI = Scalar1%ScaI / Scalar2%ScaI
@@ -1300,7 +1337,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::N
+      Integer(kind=int64),Intent(In)::N
       Character(Len=*),Intent(In)::Data_Type
       Type(MQC_Vector),Intent(InOut)::Vector
 !
@@ -1360,7 +1397,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer::MQC_Length_Vector
+      Integer(kind=int64)::MQC_Length_Vector
       Type(MQC_Vector),Intent(In)::Vector
 !
       MQC_Length_Vector = Vector%Length
@@ -1591,8 +1628,8 @@
       Implicit None
       Class(MQC_Vector)::Vec
       Type(MQC_Scalar)::Element
-      Integer,Intent(In)::I
-      Integer::IndI
+      Integer(kind=int64),Intent(In)::I
+      Integer(kind=int64)::IndI
 
       IndI = I
       If(IndI.lt.0) IndI = Vec%Length + IndI + 1
@@ -1624,9 +1661,9 @@
       Implicit None
       Class(MQC_Vector)::Vec
       Type(MQC_Vector)::Vector
-      Integer,Intent(In)::I
-      Integer,Optional,Intent(In)::J
-      Integer::Length,IndI,IndJ
+      Integer(kind=int64),Intent(In)::I
+      Integer(kind=int64),Optional,Intent(In)::J
+      Integer(kind=int64)::Length,IndI,IndJ
 
       IndI = I
       If(Present(J)) then
@@ -1686,9 +1723,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Allocatable,Intent(InOut)::ArrayOut(:)
+      Integer(kind=int64),Allocatable,Intent(InOut)::ArrayOut(:)
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer::LenVectorIn
+      Integer(kind=int64)::LenVectorIn
 !
       LenVectorIn = MQC_Length_Vector(VectorIn)
       If(.not.Allocated(ArrayOut)) then
@@ -1725,9 +1762,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Real,Allocatable,Intent(InOut)::ArrayOut(:)
+      Real(kind=real64),Allocatable,Intent(InOut)::ArrayOut(:)
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer::LenVectorIn
+      Integer(kind=int64)::LenVectorIn
 !
       LenVectorIn = MQC_Length_Vector(VectorIn)
       If(.not.Allocated(ArrayOut)) then
@@ -1764,9 +1801,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Complex(Kind=8),Allocatable,Intent(InOut)::ArrayOut(:)
+      Complex(Kind=real64),Allocatable,Intent(InOut)::ArrayOut(:)
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer::LenVectorIn
+      Integer(kind=int64)::LenVectorIn
 !
       LenVectorIn = MQC_Length_Vector(VectorIn)
       If(.not.Allocated(ArrayOut)) then
@@ -1804,7 +1841,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector),Intent(InOut)::VectorOut
-      Integer,Dimension(:),Intent(In)::ArrayIn
+      Integer(kind=int64),Dimension(:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Vector(VectorOut)
       Call MQC_Allocate_Vector(Size(ArrayIn),VectorOut,'Integer')
@@ -1825,7 +1862,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector),Intent(InOut)::VectorOut
-      Real,Dimension(:),Intent(In)::ArrayIn
+      Real(kind=real64),Dimension(:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Vector(VectorOut)
       Call MQC_Allocate_Vector(Size(ArrayIn),VectorOut,'Real')
@@ -1846,7 +1883,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector),Intent(InOut)::VectorOut
-      Complex(Kind=8),Dimension(:),Intent(In)::ArrayIn
+      Complex(Kind=real64),Dimension(:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Vector(VectorOut)
       Call MQC_Allocate_Vector(Size(ArrayIn),VectorOut,'Complex')
@@ -1907,7 +1944,7 @@
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorSum
       Type(MQC_Vector),Intent(In)::Vector1In, Vector2In
-      Integer :: Vector1Len, Vector2Len, VectorOutLen
+      Integer(kind=int64) :: Vector1Len, Vector2Len, VectorOutLen
 
       Vector1Len = MQC_Length_Vector(Vector1In)
       Vector2Len = MQC_Length_Vector(Vector2In)
@@ -1995,7 +2032,7 @@
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorDifference
       Type(MQC_Vector),Intent(In)::Vector1In, Vector2In
-      Integer :: Vector1Len, Vector2Len, VectorOutLen
+      Integer(kind=int64) :: Vector1Len, Vector2Len, VectorOutLen
 
       Vector1Len = MQC_Length_Vector(Vector1In)
       Vector2Len = MQC_Length_Vector(Vector2In)
@@ -2084,7 +2121,7 @@
       Type(MQC_Vector)::MQC_ScalarVectorSum
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer :: VectorLen
+      Integer(kind=int64) :: VectorLen
 
       VectorLen = MQC_Length_Vector(VectorIn)
 
@@ -2160,7 +2197,7 @@
       Type(MQC_Vector)::MQC_ScalarVectorDifference
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer :: VectorLen
+      Integer(kind=int64) :: VectorLen
 
       VectorLen = MQC_Length_Vector(VectorIn)
 
@@ -2238,7 +2275,7 @@
       Implicit None
       Type(MQC_Vector)::MQC_ElementVectorProduct
       Type(MQC_Vector),Intent(In)::Vector1In, Vector2In
-      Integer :: Vector1Len, Vector2Len, VectorOutLen, I
+      Integer(kind=int64) :: Vector1Len, Vector2Len, VectorOutLen, I
 
       Vector1Len = MQC_Length_Vector(Vector1In)
       Vector2Len = MQC_Length_Vector(Vector2In)
@@ -2448,7 +2485,7 @@
       implicit none
       type(mqc_vector),intent(in)::VA,VB
       type(mqc_matrix)::M
-      integer::i,j
+      integer(kind=int64)::i,j
       type(mqc_vector)::VC
 
       If (VA%Column.eqv.VB%Column) then
@@ -2510,7 +2547,7 @@
       Implicit None
       Type(MQC_Vector)::MQC_CrossProduct
       Type(MQC_Vector),Intent(In)::Vector1In,Vector2In
-      Integer :: Vector1Len, Vector2Len, VectorOutLen, I
+      Integer(kind=int64) :: Vector1Len, Vector2Len, VectorOutLen, I
 
       Vector1Len = MQC_Length_Vector(Vector1In)
       Vector2Len = MQC_Length_Vector(Vector2In)
@@ -2648,11 +2685,11 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
+      Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Vector),Intent(In)::Vector
       Character(Len=*),Intent(In)::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose
-      Integer::I,Length
+      Integer(kind=int64)::I,Length
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
@@ -2748,10 +2785,10 @@
 !     Variable Declarations.
 !
       Implicit None
-      Integer,Intent(In)::I
+      Integer(kind=int64),Intent(In)::I
       Class(MQC_Vector),Intent(InOut)::Vector
       Type(MQC_Scalar),Intent(In)::Scalar
-      Integer::IndI
+      Integer(kind=int64)::IndI
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
@@ -2813,10 +2850,10 @@
 !     Variable Declarations.
 !
       Implicit None
-      Integer,Intent(In)::I
+      Integer(kind=int64),Intent(In)::I
       Class(MQC_Vector),Intent(InOut)::Vector
       Type(MQC_Scalar),Intent(In)::Scalar
-      Integer::IndI
+      Integer(kind=int64)::IndI
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
@@ -2836,7 +2873,11 @@
         EndIf
       ElseIf (Vector%Data_Type.eq.'Real') then
         If (Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+          Vector%VecR(IndI) = Vector%VecR(IndI) + dfloat(Scalar%ScaI)
+#else
           Vector%VecR(IndI) = Vector%VecR(IndI) + float(Scalar%ScaI)
+#endif
         ElseIf (Scalar%Data_Type.eq.'Real') then
           Vector%VecR(IndI) = Vector%VecR(IndI) + Scalar%ScaR
         ElseIf (Scalar%Data_Type.eq.'Complex') then
@@ -2876,8 +2917,8 @@
       Implicit None
       Class(MQC_Vector),Intent(InOut)::Vector
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer,Optional,Intent(In)::I
-      Integer::Length,IndI,IndJ
+      Integer(kind=int64),Optional,Intent(In)::I
+      Integer(kind=int64)::Length,IndI,IndJ
 
       If(Present(I)) then
         IndI = I
@@ -2961,8 +3002,8 @@
 !     Variable Declarations.
 !
       Implicit None
-      Real::Zero=0.0d0
-      Integer,Intent(In)::Length
+      Real(kind=real64)::Zero=0.0d0
+      Integer(kind=int64),Intent(In)::Length
       Class(*),Optional::Scalar
       Class(MQC_Vector),Intent(InOut)::Vector
 
@@ -2974,7 +3015,7 @@
         Type is (Real)
           Call MQC_Allocate_Vector(Length,Vector,'Real')
           Vector%VecR = Scalar
-        Type is (Complex(Kind=8))
+        Type is (Complex(Kind=real64))
           Call MQC_Allocate_Vector(Length,Vector,'Complex')
           Vector%VecC = Scalar
         Type is (MQC_Scalar)
@@ -3111,11 +3152,11 @@
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::TypeFlag
-      real,dimension(:),allocatable::work
-      real::dlange
-      Complex(Kind=8)::zlange
-      real,dimension(:),allocatable::temp
-      Complex(Kind=8),dimension(:),allocatable::tempc
+      real(kind=real64),dimension(:),allocatable::work
+      real(kind=real64)::dlange
+      Complex(Kind=real64)::zlange
+      real(kind=real64),dimension(:),allocatable::temp
+      Complex(Kind=real64),dimension(:),allocatable::tempc
       Type(MQC_Scalar)::norm
 
       if(Present(methodIn)) method = methodIn
@@ -3348,13 +3389,13 @@
       Type(MQC_Matrix)::B
       Type(MQC_Matrix),Optional,Intent(InOut)::EVecs
       Type(MQC_Vector),Optional,Intent(InOut)::EVals
-      Real,Dimension(:,:),allocatable::A_EVecs
-      Complex(Kind=8),Dimension(:,:),allocatable::AC_EVecs
-      Real,Dimension(:),allocatable::A_EVals
+      Real(kind=real64),Dimension(:,:),allocatable::A_EVecs
+      Complex(Kind=real64),Dimension(:,:),allocatable::AC_EVecs
+      Real(kind=real64),Dimension(:),allocatable::A_EVals
 !
-      Integer::NDim,i,j,k,IError=1
-      Real,Dimension(:),Allocatable::A_Symm,Temp_Vector
-      Complex(Kind=8),Dimension(:),Allocatable::AC_Symm,TempC_Vector
+      Integer(kind=int64)::NDim,i,j,k,IError=1
+      Real(kind=real64),Dimension(:),Allocatable::A_Symm,Temp_Vector
+      Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
 !
       typeFlag = a%Data_Type
@@ -3499,8 +3540,8 @@
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
       Type(MQC_Scalar)::Element
-      Integer,Intent(In)::I,J
-      Integer::IndI,IndJ
+      Integer(kind=int64),Intent(In)::I,J
+      Integer(kind=int64)::IndI,IndJ
 
       IndI = I
       IndJ = J
@@ -3566,7 +3607,7 @@
           ElseIf (Mat%Data_Type.eq.'Real') then
             Element = 0.0
           ElseIf (Mat%Data_Type.eq.'Complex') then
-            Element = cmplx(0.0,0.0,kind=8)
+            Element = cmplx(0.0,0.0,kind=real64)
           Else
             Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
                  'Mat%Data_Type', Mat%Data_Type )
@@ -3593,8 +3634,8 @@
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
       Type(MQC_Vector)::Vector
-      Integer,Dimension(:),Intent(In)::Rows,Cols
-      Integer::Length,IndI,IndJ,IndK,Cnt,L,I,J,K
+      Integer(kind=int64),Dimension(:),Intent(In)::Rows,Cols
+      Integer(kind=int64)::Length,IndI,IndJ,IndK,Cnt,L,I,J,K
       Logical::Column
 
       If(Size(Rows).gt.1.and.Size(Cols).gt.1) then
@@ -3782,9 +3823,9 @@
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::Mat
-      Integer,Dimension(:),Intent(In)::Rows,Cols
+      Integer(kind=int64),Dimension(:),Intent(In)::Rows,Cols
       Type(MQC_Vector),Intent(In)::VectorIn
-      Integer::Length,IndI,IndJ,IndK,I,J,K
+      Integer(kind=int64)::Length,IndI,IndJ,IndK,I,J,K
       Logical::Column
 
  1020 Format( " " )
@@ -3958,9 +3999,9 @@
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
       Type(MQC_Matrix)::Matrix
-      Integer,Dimension(:),Intent(In)::Rows,Cols
-      Integer::LenCol,LenRow,IndI,IndJ,IndK,IndL
-      Integer::M,N,Cnt1,Cnt2,I,J,K,L
+      Integer(kind=int64),Dimension(:),Intent(In)::Rows,Cols
+      Integer(kind=int64)::LenCol,LenRow,IndI,IndJ,IndK,IndL
+      Integer(kind=int64)::M,N,Cnt1,Cnt2,I,J,K,L
 
       If(Size(Rows).gt.2.and.Size(Cols).gt.2) then
         Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_matrix_at', 6, &
@@ -4143,9 +4184,9 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      integer,dimension(:),intent(in)::diagMatrixIn
+      integer(kind=int64),dimension(:),intent(in)::diagMatrixIn
 !
-      integer::n
+      integer(kind=int64)::n
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4172,9 +4213,9 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      real,dimension(:),intent(in)::diagMatrixIn
+      real(kind=real64),dimension(:),intent(in)::diagMatrixIn
 !
-      integer::n
+      integer(kind=int64)::n
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4201,9 +4242,9 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      Complex(Kind=8),dimension(:),intent(in)::diagMatrixIn
+      Complex(Kind=real64),dimension(:),intent(in)::diagMatrixIn
 !
-      integer::n
+      integer(kind=int64)::n
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4230,10 +4271,10 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      integer,dimension(:),intent(in)::symmMatrixIn
+      integer(kind=int64),dimension(:),intent(in)::symmMatrixIn
 !
-      integer::n,nSymm,intTemp1
-      real::realTemp1,realTemp2
+      integer(kind=int64)::n,nSymm,intTemp1
+      real(kind=real64)::realTemp1,realTemp2
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4241,9 +4282,17 @@
 !
       nSymm = SIZE(symmMatrixIn)
       intTemp1 = 1+8*nSymm
+#ifdef PGI
+      realTemp1 = (sqrt(dfloat(intTemp1))-1)/dfloat(2)
+#else
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
+#endif
       n = INT(realTemp1)
+#ifdef PGI
+      realTemp2 = ABS(realTemp1 - dfloat(n))
+#else
       realTemp2 = ABS(realTemp1 - float(n))
+#endif
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
       call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
@@ -4266,10 +4315,10 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      real,dimension(:),intent(in)::symmMatrixIn
+      real(kind=real64),dimension(:),intent(in)::symmMatrixIn
 !
-      integer::n,nSymm,intTemp1
-      real::realTemp1,realTemp2
+      integer(kind=int64)::n,nSymm,intTemp1
+      real(kind=real64)::realTemp1,realTemp2
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4277,9 +4326,17 @@
 !
       nSymm = SIZE(symmMatrixIn)
       intTemp1 = 1+8*nSymm
+#ifdef PGI
+      realTemp1 = (sqrt(dfloat(intTemp1))-1)/dfloat(2)
+#else
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
+#endif
       n = INT(realTemp1)
+#ifdef PGI
+      realTemp2 = ABS(realTemp1 - dfloat(n))
+#else
       realTemp2 = ABS(realTemp1 - float(n))
+#endif
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
 
@@ -4304,10 +4361,10 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
-      Complex(Kind=8),dimension(:),intent(in)::symmMatrixIn
+      Complex(Kind=real64),dimension(:),intent(in)::symmMatrixIn
 !
-      integer::n,nSymm,intTemp1
-      real::realTemp1,realTemp2
+      integer(kind=int64)::n,nSymm,intTemp1
+      real(kind=real64)::realTemp1,realTemp2
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -4315,9 +4372,17 @@
 !
       nSymm = SIZE(symmMatrixIn)
       intTemp1 = 1+8*nSymm
+#ifdef PGI
+      realTemp1 = (sqrt(dfloat(intTemp1))-1)/dfloat(2)
+#else
       realTemp1 = (sqrt(float(intTemp1))-1)/float(2)
+#endif
       n = INT(realTemp1)
+#ifdef PGI
+      realTemp2 = ABS(realTemp1 - dfloat(n))
+#else
       realTemp2 = ABS(realTemp1 - float(n))
+#endif
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
       call MQC_Allocate_Matrix(n,n,mat,'Complex','symm')
@@ -4340,9 +4405,9 @@
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::Mat
       Type(MQC_Matrix),Intent(In)::MatrixIn
-      Integer,Dimension(:),Intent(In)::Rows,Cols
-      Integer::IndI,IndJ,IndK,IndL,LenCol,LenRow
-      Integer::M,N,Cnt1,Cnt2,I,J,K,L
+      Integer(kind=int64),Dimension(:),Intent(In)::Rows,Cols
+      Integer(kind=int64)::IndI,IndJ,IndK,IndL,LenCol,LenRow
+      Integer(kind=int64)::M,N,Cnt1,Cnt2,I,J,K,L
 !
 !
 !     Do the work...
@@ -4834,9 +4899,9 @@
 !     L. M. Thompson, 2017
 
       implicit none
-      integer,intent(in)::i,j
-      integer,intent(in),optional::k,l
-      integer::ij,kl,ijkl,hash
+      integer(kind=int64),intent(in)::i,j
+      integer(kind=int64),intent(in),optional::k,l
+      integer(kind=int64)::ij,kl,ijkl,hash
 
       if(i.gt.j) then
         ij = i*(i-1)/2+j
@@ -4871,7 +4936,7 @@
       implicit none
       type(mqc_matrix),intent(in)::A,B
       type(mqc_matrix)::C
-      integer::i,j
+      integer(kind=int64)::i,j
 
       if (A%NRow .ne. B%NRow .or. A%NCol .ne. B%NCol) then
         call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixProduct', 6, &
@@ -5359,7 +5424,7 @@
       implicit none
       type(mqc_matrix),intent(in)::A,B
       type(mqc_matrix)::C
-      integer::i,j
+      integer(kind=int64)::i,j
 
       if (A%NRow .ne. B%NRow .or. A%NCol .ne. B%NCol) then
         call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixProduct', 6, &
@@ -5858,8 +5923,8 @@
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(len=*),Optional,Intent(In)::Option
       Logical::Symmetric
-      Integer::I,J
-      Real::Thresh=1e-11
+      Integer(kind=int64)::I,J
+      Real(kind=real64)::Thresh=1e-11
       Character(len=64)::myOption
 
       If(Present(Option)) then
@@ -6033,8 +6098,8 @@
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
       Logical::Diagonal
-      Integer::I,J,II
-      Real::Thresh=1e-14
+      Integer(kind=int64)::I,J,II
+      Real(kind=real64)::Thresh=1e-14
 
       Diagonal = .True.
       If(Matrix%Storage.eq.'StorDiag') then
@@ -6104,10 +6169,10 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::M,N
+      Integer(kind=int64),Intent(In)::M,N
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Character(Len=*),Intent(In)::Data_Type,Storage
-      Integer::MCur,NCur
+      Integer(kind=int64)::MCur,NCur
 !
       If (M.lt.0 .or. N.lt.0) then
         Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_Matrix', 6, &
@@ -6225,7 +6290,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::MatrixOut
-      Integer,Dimension(:,:),Intent(In)::ArrayIn
+      Integer(kind=int64),Dimension(:,:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Matrix(MatrixOut)
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Integer', &
@@ -6247,7 +6312,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::MatrixOut
-      Real,Dimension(:,:),Intent(In)::ArrayIn
+      Real(kind=real64),Dimension(:,:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Matrix(MatrixOut)
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Real', &
@@ -6269,7 +6334,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::MatrixOut
-      Complex(Kind=8),Dimension(:,:),Intent(In)::ArrayIn
+      Complex(Kind=real64),Dimension(:,:),Intent(In)::ArrayIn
 !
       Call MQC_Deallocate_Matrix(MatrixOut)
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Complex', &
@@ -6289,9 +6354,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
+      Integer(kind=int64),Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
       Type(MQC_Matrix),Intent(In)::MatrixIn
-      Integer::ColsMatIn,RowsMatIn,I,J
+      Integer(kind=int64)::ColsMatIn,RowsMatIn,I,J
 !
 !     Need to have a way of determining output based on matrix packing which
 !     depends on type of array in as well ( here assuming full).
@@ -6346,9 +6411,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Real,Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
+      Real(kind=real64),Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
       Type(MQC_Matrix),Intent(In)::MatrixIn
-      Integer::ColsMatIn,RowsMatIn,I,J
+      Integer(kind=int64)::ColsMatIn,RowsMatIn,I,J
 !
 !     Need to have a way of determining output based on matrix packing which
 !     depends on type of array in as well ( here assuming full).
@@ -6405,9 +6470,9 @@
 !
 !     Variable Declarations.
       Implicit None
-      Complex(Kind=8),Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
+      Complex(Kind=real64),Dimension(:,:),Allocatable,Intent(InOut)::ArrayOut
       Type(MQC_Matrix),Intent(In)::MatrixIn
-      Integer::ColsMatIn,RowsMatIn,I,J
+      Integer(kind=int64)::ColsMatIn,RowsMatIn,I,J
 !
 !     Need to have a way of determining output based on matrix packing which
 !     depends on type of array in as well ( here assuming full).
@@ -6502,12 +6567,12 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer,Intent(In)::IOut
+      Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(Len=*),Intent(In)::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer::I,J,II,ILim,NCols,NRows,IFirst,ILast
-      Integer,Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64)::I,J,II,ILim,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -6759,7 +6824,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer::MQC_Matrix_Rows
+      Integer(kind=int64)::MQC_Matrix_Rows
       Type(MQC_Matrix),Intent(In)::Matrix
 !
       MQC_Matrix_Rows = Matrix%NRow
@@ -6779,7 +6844,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer::MQC_Matrix_Columns
+      Integer(kind=int64)::MQC_Matrix_Columns
       Type(MQC_Matrix),Intent(In)::Matrix
 !
       MQC_Matrix_Columns = Matrix%NCol
@@ -7037,8 +7102,8 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Symmetrize
       Type(MQC_Matrix),Intent(In)::Matrix
-      Integer::I,J
-      Real,Parameter::Pt5=0.5
+      Integer(kind=int64)::I,J
+      Real(kind=real64),Parameter::Pt5=0.5
 !
       If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Matrix not full packed in MQC_Matrix_Symmetrize', 6, &
            'Matrix%Storage', Matrix%Storage )
@@ -7086,9 +7151,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I,J,II
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,II
 !
       If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
      &  packed in MQC_Matrix_Full2Symm', 6, &
@@ -7157,9 +7222,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I,J,II,N,NTT
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,II,N,NTT
 !
       If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
      &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
@@ -7223,9 +7288,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I
 !
       If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
      &  packed in MQC_Matrix_Full2Diag', 6, &
@@ -7283,9 +7348,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I,N,Columns,Rows
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I,N,Columns,Rows
 !
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
      &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
@@ -7337,9 +7402,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I,II,N,NTT
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I,II,N,NTT
 !
       If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
      &  lower-triangular packed in MQC_Matrix_Symm2Diag', 6, &
@@ -7396,9 +7461,9 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Real,Dimension(:,:),Allocatable::Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::TempC
-      Integer::I,II
+      Real(kind=real64),Dimension(:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
+      Integer(kind=int64)::I,II
 !
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
      &  diagonal packed in MQC_Matrix_Diag2Symm', 6, &
@@ -7463,7 +7528,7 @@
       Implicit None
       Type(MQC_Matrix),Intent(In)::Matrix
       type(MQC_Matrix)::Temp
-      Integer::I,J,II,N
+      Integer(kind=int64)::I,J,II,N
 !
       If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
      &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
@@ -7507,11 +7572,11 @@
 !     dimension N and expands it to a N x N square matrix (I_Sq).
 !
       Implicit None
-      Integer,Intent(In)::N
-      Integer,Dimension(:),Intent(In)::I_Symm
-      Integer,Dimension(N,N),Intent(Out)::I_Sq
+      Integer(kind=int64),Intent(In)::N
+      Integer(kind=int64),Dimension(:),Intent(In)::I_Symm
+      Integer(kind=int64),Dimension(N,N),Intent(Out)::I_Sq
 !
-      Integer::i,j,k
+      Integer(kind=int64)::i,j,k
 !
 !     Do the work...
 !
@@ -7534,11 +7599,11 @@
 !     dimension N and expands it to a N x N square matrix (A_Sq).
 !
       Implicit None
-      Integer,Intent(In)::N
-      Real,Dimension(:),Intent(In)::A_Symm
-      Real,Dimension(N,N),Intent(Out)::A_Sq
+      Integer(kind=int64),Intent(In)::N
+      Real(kind=real64),Dimension(:),Intent(In)::A_Symm
+      Real(kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
-      Integer::i,j,k
+      Integer(kind=int64)::i,j,k
 !
 !     Do the work...
 !
@@ -7561,11 +7626,11 @@
 !     dimension N and expands it to a N x N square matrix (A_Sq).
 !
       Implicit None
-      Integer,Intent(In)::N
-      Complex(Kind=8),Dimension(:),Intent(In)::A_Symm
-      Complex(Kind=8),Dimension(N,N),Intent(Out)::A_Sq
+      Integer(kind=int64),Intent(In)::N
+      Complex(Kind=real64),Dimension(:),Intent(In)::A_Symm
+      Complex(Kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
-      Integer::i,j,k
+      Integer(kind=int64)::i,j,k
 !
 !     Do the work...
 !
@@ -7759,7 +7824,7 @@
       Type(MQC_Matrix),Intent(In)::MA,MB
       Type(MQC_Matrix)::MC
       Type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
-      integer::i,j
+      integer(kind=int64)::i,j
 
       If (MA%NCol /= MB%NRow) call MQC_Error_I('The two matrices are not conformable for multiplication', 6, &
            'MA%NCol', MA%NCol, &
@@ -8312,7 +8377,7 @@
       Type(MQC_Vector),Intent(In)::VB
       Type(MQC_Vector)::VC,VBreal
       Type(MQC_Matrix)::MAreal,Tmp1
-      Integer,Allocatable::Result(:,:)
+      Integer(kind=int64),Allocatable::Result(:,:)
 
       If (.not. VB%Column .or. MA%NCol /= VB%Length) then
         Call MQC_Error_I('Matrix and vector are not conformable for multiplication', 6, &
@@ -8455,7 +8520,7 @@
       Type(MQC_Vector),Intent(In)::VA
       Type(MQC_Vector)::VC,VAreal
       Type(MQC_Matrix)::MBreal,Tmp1
-      Integer,Allocatable::Result(:,:)
+      Integer(kind=int64),Allocatable::Result(:,:)
 
       If (VA%Column .or. VA%Length /= MB%NRow) then
         Call MQC_Error_i('Matrix and vector are not conformable for multiplication', 6, &
@@ -8700,7 +8765,7 @@
       Implicit None
       Type(MQC_Matrix),Intent(In)::Matrix1,Matrix2
       Type(MQC_Scalar)::Contraction
-      Integer::N,M,i,j
+      Integer(kind=int64)::N,M,i,j
 !
       Contraction = 0.0
       N = Min(MQC_Matrix_Rows(Matrix1),MQC_Matrix_Rows(Matrix2))
@@ -8726,10 +8791,10 @@
 !     Variable Declarations.
 !
       Implicit None
-      Integer,Intent(in)::I,J
+      Integer(kind=int64),Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Type(MQC_Scalar),Intent(In)::Scalar
-      Integer::IndI,IndJ
+      Integer(kind=int64)::IndI,IndJ
 
       IndI = I
       IndJ = J
@@ -8802,8 +8867,8 @@
 !     Variable Declarations.
 !
       Implicit None
-      Real::Zero=0.0d0
-      Integer,Intent(in)::Rows,Columns
+      Real(kind=real64)::Zero=0.0d0
+      Integer(kind=int64),Intent(in)::Rows,Columns
       Class(*),Optional::Scalar
       Character(Len=*),Intent(in),OPTIONAL::Storage
       Class(MQC_Matrix),Intent(InOut)::Matrix
@@ -8823,7 +8888,7 @@
         Type is (Real)
             Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
             Matrix%MatR = Scalar
-        Type is (Complex(Kind=8))
+        Type is (Complex(Kind=real64))
             Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
             Matrix%MatC = Scalar
         Class Default
@@ -8850,7 +8915,7 @@
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::matrix
-      integer::n,m,i
+      integer(kind=int64)::n,m,i
       type(MQC_Scalar)::one
 
       one = 1.0
@@ -8882,11 +8947,11 @@
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::StorFlag,TypeFlag
-      real,dimension(:),allocatable::work
-      real::dlange
-      Complex(Kind=8)::zlange
-      real,dimension(:,:),allocatable::temp
-      Complex(Kind=8),dimension(:,:),allocatable::tempC
+      real(kind=real64),dimension(:),allocatable::work
+      real(kind=real64)::dlange
+      Complex(Kind=real64)::zlange
+      real(kind=real64),dimension(:,:),allocatable::temp
+      Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
 
       if(Present(methodIn)) method = methodIn
@@ -8933,10 +8998,10 @@
       class(mqc_matrix)::a
       type(mqc_scalar)::det
       character(len=64)::StorFlag,TypeFlag
-      real,dimension(:,:),allocatable::temp
-      Complex(Kind=8),dimension(:,:),allocatable::tempC
-      integer::sgn,rows,cols,minrc,iError,i
-      integer(kind=4),dimension(:),allocatable::iPiv
+      real(kind=real64),dimension(:,:),allocatable::temp
+      Complex(Kind=real64),dimension(:,:),allocatable::tempC
+      integer(kind=int64)::sgn,rows,cols,minrc,iError,i
+      integer(kind=int32),dimension(:),allocatable::iPiv
 !
 !     Determinant of matrix A.
 !
@@ -8982,7 +9047,7 @@
         call zgetrf(rows,cols,tempC,rows,iPiv,iError)
         if(iError.ne.0) call mqc_error_i('ZGETRF exited with error in mqc_matrix_determinant', 6, &
              'iError', iError )
-        det = cmplx(1.0,0.0,kind=8)
+        det = cmplx(1.0,0.0,kind=real64)
         do i = 1,rows
           det = det%cval()*tempC(i,i)
         enddo
@@ -9009,10 +9074,10 @@
       class(mqc_matrix)::a
       type(mqc_matrix)::a_inv
       character(len=64)::StorFlag,TypeFlag
-      real,dimension(:,:),allocatable::temp
-      Complex(Kind=8),dimension(:,:),allocatable::tempC
-      integer::iError,nDim1,nDim2
-      integer,dimension(:),allocatable::iPiv,work
+      real(kind=real64),dimension(:,:),allocatable::temp
+      Complex(Kind=real64),dimension(:,:),allocatable::tempC
+      integer(kind=int64)::iError,nDim1,nDim2
+      integer(kind=int64),dimension(:),allocatable::iPiv,work
 !
 !     Inverse of matrix A.
 !
@@ -9065,7 +9130,7 @@
       Implicit None
       class(mqc_matrix),intent(in)::matrix
       type(mqc_scalar)::trace
-      integer::i
+      integer(kind=int64)::i
 !
       trace = 0.0
       do i = 1, min(mqc_matrix_rows(matrix),mqc_matrix_columns(matrix))
@@ -9083,11 +9148,11 @@
       type(mqc_matrix),intent(inOut)::b
       type(mqc_vector),intent(out)::eigenvals
       type(mqc_matrix),intent(out),optional::reigenvecs,leigenvecs
-      real,dimension(:,:),allocatable::tempA,tempB,rightvecs,leftvecs
-      real,dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
-      Complex(Kind=8),dimension(:,:),allocatable::tempAC,tempBC,rightCvecs,leftCvecs
-      Complex(Kind=8),dimension(:),allocatable::eValsA,eValsB,workC
-      integer::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i
+      real(kind=real64),dimension(:,:),allocatable::tempA,tempB,rightvecs,leftvecs
+      real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
+      Complex(Kind=real64),dimension(:,:),allocatable::tempAC,tempBC,rightCvecs,leftCvecs
+      Complex(Kind=real64),dimension(:),allocatable::eValsA,eValsB,workC
+      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i
       character(len=64)::StorFlagA,StorFlagB,TypeFlagA,TypeFlagB
       type(mqc_vector)::tmp_vec
 !
@@ -9177,13 +9242,13 @@
             do i = 1, NDim2A
               if(eValsImag(i).ne.0.0) then
                 if(eValsImag(i-1).ne.0.0) cycle
-                tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=8)
+                tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=real64)
                 call reigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=8)
+                tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=real64)
                 call reigenvecs%vput(tmp_vec,[0],[i+1])
-                tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=8)
+                tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=real64)
                 call leigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=8)
+                tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=real64)
                 call leigenvecs%vput(tmp_vec,[0],[i+1])
               endIf
             endDo
@@ -9201,7 +9266,7 @@
             if(iError.ne.0) call mqc_error_i('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
           endIf
-          eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=8)
+          eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=real64)
           if(allocated(eValsReal)) deallocate(eValsReal)
           if(allocated(eValsImag)) deallocate(eValsImag)
           if(allocated(rightvecs)) deallocate(rightvecs)
@@ -9280,11 +9345,11 @@
       Type(MQC_Matrix),Optional,Intent(InOut)::EVVecs
       Type(MQC_Vector),Optional,Intent(InOut)::EVals
 !
-      Integer::NDim1=0,NDim2=0,Work_Length=-1,IError=1
-      Real,Dimension(:),Allocatable::A_SVals,Work
-      Complex(Kind=8),Dimension(:),Allocatable::WorkC
-      Real,Dimension(:,:),Allocatable::A_Temp,A_UVecs,A_VVecs
-      Complex(Kind=8),Dimension(:,:),Allocatable::AC_Temp,AC_UVecs,AC_VVecs
+      Integer(kind=int64)::NDim1=0,NDim2=0,Work_Length=-1,IError=1
+      Real(kind=real64),Dimension(:),Allocatable::A_SVals,Work
+      Complex(Kind=real64),Dimension(:),Allocatable::WorkC
+      Real(kind=real64),Dimension(:,:),Allocatable::A_Temp,A_UVecs,A_VVecs
+      Complex(Kind=real64),Dimension(:,:),Allocatable::AC_Temp,AC_UVecs,AC_VVecs
       Character(len=64)::typeFlag,storFlag
 !
       NDim1 = MQC_Matrix_Rows(A)
@@ -9367,11 +9432,11 @@
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::A
-      Real,Dimension(:,:),Allocatable::A_Temp
-      Complex(Kind=8),Dimension(:,:),Allocatable::AC_Temp
+      Real(kind=real64),Dimension(:,:),Allocatable::A_Temp
+      Complex(Kind=real64),Dimension(:,:),Allocatable::AC_Temp
       Type(MQC_Scalar),Intent(Out)::rms_A,max_A
 !
-      Integer::N
+      Integer(kind=int64)::N
       Character(len=64)::typeFlag,storFlag
 !
 !     Do the work.
@@ -9423,10 +9488,10 @@
 !     I x J x K x L
 !
       Implicit None
-      Integer,Intent(In)::I,J,K,L
+      Integer(kind=int64),Intent(In)::I,J,K,L
       Character(Len=*),Intent(In)::Data_Type,Storage
       Type(MQC_R4Tensor),Intent(InOut)::Tensor
-      Integer::ICur,JCur,KCur,LCur
+      Integer(kind=int64)::ICur,JCur,KCur,LCur
 
       If (I.lt.0 .or. J.lt.0 .or. K.lt.0 .or. L.lt.0) then
         Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_R4Tensor', 6, &
@@ -9499,10 +9564,10 @@
 !     This Function returns the MQC_Scalar Scalar at I, J, K, L.
 !
       Implicit None
-      Integer,Intent(In)::I,J,K,L
+      Integer(kind=int64),Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(In)::Tensor
       Type(MQC_Scalar)::Element
-      Integer::IndI,IndJ,IndK,IndL
+      Integer(kind=int64)::IndI,IndJ,IndK,IndL
 
       IndI = I
       IndJ = J
@@ -9544,10 +9609,10 @@
 !     This Subroutine places the MQC_Scalar Scalar at I, J, K, L.
 !
       Implicit None
-      Integer,Intent(In)::I,J,K,L
+      Integer(kind=int64),Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(InOut)::Tensor
       Type(MQC_Scalar),Intent(In)::Element
-      Integer::IndI,IndJ,IndK,IndL
+      Integer(kind=int64)::IndI,IndJ,IndK,IndL
 
       IndI = I
       IndJ = J
@@ -9623,9 +9688,9 @@
 !     This Subroutine prints the MQC_R4Tensor Tensor.
 !
       Implicit None
-      Integer,Intent(In)::IOut
+      Integer(kind=int64),Intent(In)::IOut
       Class(MQC_R4Tensor),Intent(In)::Tensor
-      Integer::I,J,K,L
+      Integer(kind=int64)::I,J,K,L
       Character(Len=*),intent(in),optional::Header
       Logical,Optional::blank_at_top,blank_at_bottom
 
@@ -9680,7 +9745,7 @@
         Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
           Size(ArrayIn,4),TensorOut,'Real','StorFull')
         TensorOut%RTen = ArrayIn
-      Type Is (Complex(Kind=8))
+      Type Is (Complex(Kind=real64))
         Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
           Size(ArrayIn,4),TensorOut,'Complex','StorFull')
         TensorOut%CTen = ArrayIn
@@ -9702,8 +9767,8 @@
 !     Variable Declarations.
 !
       Implicit None
-      Real::Zero=0.0d0
-      Integer,Intent(In)::I,J,K,L
+      Real(kind=real64)::Zero=0.0d0
+      Integer(kind=int64),Intent(In)::I,J,K,L
       Class(*),Optional::Scalar
       Class(MQC_R4Tensor),Intent(InOut)::R4Tensor
 
@@ -9715,7 +9780,7 @@
         Type is (Real)
           Call MQC_Allocate_R4Tensor(I,J,K,L,R4Tensor,'Real','StorFull')
           R4Tensor%RTen = Scalar
-        Type is (Complex(Kind=8))
+        Type is (Complex(Kind=real64))
           Call MQC_Allocate_R4Tensor(I,J,K,L,R4Tensor,'Complex','StorFull')
           R4Tensor%CTen = Scalar
         Class Default
@@ -9741,10 +9806,10 @@
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
-      real,dimension(:),intent(in)::symmSymmMatrixIn
+      real(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
 !
-      real,dimension(:,:,:,:),allocatable::eRIs
-      integer::ii,jj,kk,ll,n,nSymm
+      real(kind=real64),dimension(:,:,:,:),allocatable::eRIs
+      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
       logical::DEBUG=.false.
 !
  5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
@@ -9794,10 +9859,10 @@
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
-      complex(kind=8),dimension(:),intent(in)::symmSymmMatrixIn
+      complex(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
 !
-      complex(kind=8),dimension(:,:,:,:),allocatable::eRIs
-      integer::ii,jj,kk,ll,n,nSymm
+      complex(kind=real64),dimension(:,:,:,:),allocatable::eRIs
+      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
       logical::DEBUG=.false.
 !
  5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
