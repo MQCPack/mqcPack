@@ -32,10 +32,6 @@ Number of Basis Functions
 	         - Value: 2
 	         - INTEGER
 	         - SCALAR
-Number of Basis Functions
-	         - Value: 2
-	         - INTEGER
-	         - SCALAR
 Number of Linearly Independent Basis Functions
 	         - Value: 2
 	         - INTEGER
@@ -173,7 +169,7 @@ COORDINATES OF EACH SHELL
 GAUSSIAN SCALARS                                                
 	         - MIXED
 	         - Total elements: 10
-	         - VECTOR(10)
+	         - VECTOR(1000)
 INTEGER ISO                                                     
 	         - INTEGER
 	         - Total elements: 2
@@ -275,6 +271,6 @@ BETA FOCK MATRIX
 	         - Total elements: 3
 	         - SYMMETRIC MATRIX ((2+1)*2/2)
 REGULAR 2E INTEGRALS                                            
-	         - 2ERIS
+	         - TENSOR
 	         - Total elements: 6
-	         - SYM SYM R4 TENSOR
+	         - SYMMETRIC SUPER MATRIX (((2+1) x 2)/2+1) x ((2+1) x 2)/4
