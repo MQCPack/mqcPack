@@ -45,6 +45,30 @@ module MQC_FullWavefunction
 !----------------------------------------------------------------    
   implicit none
 
+  ! Linked list array data type
+  type :: mqc_array_link_list_node
+     private
+     character(Len=64) :: Data_Name
+     integer(kind=int64) :: NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR
+     character(Len=64):: Data_Type,Shape
+     character(Len=1024):: Formula
+     Real(Kind=real64),Dimension(:),Allocatable::VecR
+     Integer(kind=int64),Dimension(:),Allocatable::VecI
+     Complex(Kind=real64),Dimension(:),Allocatable::VecC
+     type(mqc_array_link_list_node),pointer :: next =>null()
+  end type mqc_array_link_list_node
+
+  type :: mqc_array_link_list
+     private
+     type(mqc_array_link_list_node),pointer,private :: first => null()
+     type(mqc_array_link_list_node),pointer,private :: last => null()
+     type(mqc_array_link_list_node),pointer,private :: current => null()
+     integer(kind=int64),private :: length = 0
+   contains
+     procedure :: start => mqc_array_link_list_start
+     procedure :: next => mqc_array_link_list_next
+  end type mqc_array_link_list
+
   ! A public variable to use as a MOLD for transfer()
   integer(kind=int64), dimension(:), allocatable :: list_data
 
@@ -62,64 +86,12 @@ module MQC_FullWavefunction
      Integer(kind=int64)::NAlpha,NBeta,NElectrons,NBasis,iCharge,Multiplicity
      integer,dimension(:),allocatable::atomicNumbers,atomTypes, &
           basisFunction2Atom,IBasisFunctionType
-     real(kind=real64),dimension(:),allocatable::atomicCharges,atomicWeights,cartesians
-
-     Type(mqc_vector)::SHELL_TO_ATOM_MAP
-     Type(mqc_vector)::SHELL_TYPES
-     Type(mqc_vector)::NUMBER_OF_PRIMITIVES_PER_SHELL
-     Type(mqc_vector)::PRIMITIVE_EXPONENTS
-     Type(mqc_vector)::CONTRACTION_COEFFICIENTS
-     Type(mqc_vector)::P__S_P__CONTRACTION_COEFFICIENTS
-     Type(mqc_vector)::COORDINATES_OF_EACH_SHELL
-     Type(mqc_vector)::INTEGER_ISO
-     Type(mqc_vector)::INTEGER_SPIN
-     Type(mqc_vector)::REAL_ZEFFECTIVE
-     Type(mqc_vector)::REAL_GFACTOR
-     Type(mqc_vector)::REAL_ZNUCLEAR
-     Type(mqc_vector)::ELECTRIC_DIPOLE_MOMENT
-     Type(mqc_vector)::ALPHA_ORBITAL_ENERGIES
-     Type(mqc_vector)::BETA_ORBITAL_ENERGIES
-     Type(mqc_vector)::BONDS_PER_ATOM
-     Type(mqc_vector)::BONDED_ATOMS
-     Type(mqc_vector)::BOND_TYPES
-     Type(mqc_vector)::GAUSSIAN_SCALARS_I
-     Type(mqc_vector)::GAUSSIAN_SCALARS_A
-
-     Type(mqc_matrix)::NUCLEAR_GRADIENT
-     Type(mqc_matrix)::OVERLAP
-     Type(mqc_matrix)::CORE_HAMILTONIAN_ALPHA
-     Type(mqc_matrix)::CORE_HAMILTONIAN_BETA
-     Type(mqc_matrix)::KINETIC_ENERGY
-     Type(mqc_matrix)::ORTHOGONAL_BASIS
-     Type(mqc_matrix)::ALPHA_MO_COEFFICIENTS
-     Type(mqc_matrix)::BETA_MO_COEFFICIENTS
-     Type(mqc_matrix)::ALPHA_DENSITY_MATRIX
-     Type(mqc_matrix)::BETA_DENSITY_MATRIX
-     Type(mqc_matrix)::ALPHA_SCF_DENSITY_MATRIX
-     Type(mqc_matrix)::BETA_SCF_DENSITY_MATRIX
-     Type(mqc_matrix)::ALPHA_FOCK_MATRIX
-     Type(mqc_matrix)::BETA_FOCK_MATRIX
-     Type(MQC_R4Tensor)::DIPOLE_INTEGRALS
-     Type(MQC_R4Tensor)::DIP_VEL_INTEGRALS
-     Type(MQC_R4Tensor)::R_X_DEL_INTEGRALS
-     Type(MQC_R4Tensor)::RAFFENETTI_2E_INTEGRALS
-     Type(MQC_R4Tensor)::AA_MO_2E_INTEGRALS
-     Type(MQC_R4Tensor)::AB_MO_2E_INTEGRALS
-     Type(MQC_R4Tensor)::BA_MO_2E_INTEGRALS
-     Type(MQC_R4Tensor)::BB_MO_2E_INTEGRALS
-     Type(MQC_R4Tensor)::REGULAR_2E_INTEGRALS
-! There is no logic for the types below
-     Type(MQC_SCF_Integral)::MO_Coefficients
-     Type(MQC_SCF_Eigenvalues)::MO_Energies
-     Type(MQC_SCF_Eigenvalues)::MO_Symmetries
-     Type(MQC_SCF_Integral)::Core_Hamiltonian
-     Type(MQC_SCF_Integral)::Fock_Matrix
-     Type(MQC_SCF_Integral)::Density_Matrix
-     Type(MQC_SCF_Integral)::Overlap_Matrix
      Logical::WF_Complex
      Integer(kind=int64)::NCore,NVal,NActive
-     Type(MQC_Matrix)::PSCF_Amplitudes
-     Type(MQC_Vector)::PSCF_Energies
+     real(kind=real64),dimension(:),allocatable::atomicCharges,atomicWeights,cartesians
+
+     Type(mqc_array_link_list)::Array_Data
+
   End Type MQC_ALL_Wavefunction
 
    ! Linked list node data type
@@ -137,7 +109,6 @@ module MQC_FullWavefunction
    contains
      procedure :: start => mqc_link_list_start
      procedure :: add => mqc_link_list_add
-     procedure :: add_summary => mqc_summary_link_list_add
      procedure :: next => mqc_link_list_next
   end type mqc_link_list
 
@@ -147,24 +118,21 @@ CONTAINS
       class(MQC_ALL_Wavefunction),intent(inout)::current_wavefunction
       integer(kind=int64),intent(in)::Print_Options
       integer(kind=int64),intent(in)::iOut
-      type(mqc_scf_integral)::mo_coefficients,overlap
-      type(MQC_Matrix)::matrixOut
-      type(MQC_Vector)::vectorOut
       Integer(kind=int64):: NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,NRI,LR
       logical ASym
-!      Integer(kind=int64):: LStr64, rec_len, bufsize
       Character(Len=64)::CBuf
+      Character(Len=2048)::DataType,Shape,Formula
       logical EOF
       character(len=64)::OutMath1,OutMath2,OutMath3,OutMath4
-      integer(kind=int64),allocatable,dimension(:)::integerTmp
-      real(kind=real64),allocatable,dimension(:)::arrayTmp
+      integer(kind=int32)::i
+      integer(kind=int64)::IERROR
 !
 !     Format statements.
 !
  1000 format( "Warning: MQC Pack cannot process file '",a,"' it may have been created with the raw attribute.")
- 1010 format('CBuf  ',a,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
+ 1010 format('DataName  ',a,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
- 1050 format( a,": implement proper handling of this data type")
+ 1050 format( 'ERROR:',a,': please implement proper handling of this data type')
  1060 format( "The data is identifyed as: ",a)
  1070 format('NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
@@ -240,289 +208,633 @@ CONTAINS
       endif
 
       EOF = .false.
+      IERROR = 0
       do while(.not.EOF)
          call Rd_Labl(current_wavefunction%unitNumber, &
               current_wavefunction%IVers,CBuf,NI,NR,NTot,LenBuf,N1,N2, &
               N3,N4,N5,ASym,NRI,EOF)
-         LR = LenArr(N1,N2,N3,N4,N5)
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,DataType,Shape,Formula)
 #ifdef DEBUG 
          write(IOut,1010) TRIM(cBuf),NI,NR,NRI,NTot,LenBuf,  &
               N1,N2,N3,N4,N5,ASym,LR
 #endif
          call String_Change_Case(cBuf,'u')
+
          if ( Print_Options == 1 ) then
             if('END'.eq.trim(cBuf)) then
                Call Close_MatF(current_wavefunction%unitNumber)
                return
             else
                call MQC_PRINT_DATA_TYPE(Iout,cBuf, &
-                 NI,NR,N1,N2,N3,N4,N5,NRI,NTot,LenBuf,LR,Asym)
+                 NI,NR,N1,N2,N3,N4,N5,NRI,NTot,LR, &
+                 DataType,Shape,Formula)
                Call Rd_Skip(current_wavefunction%UnitNumber,NTot,LenBuf)
             endif
          else
             call String_Change_Case(cBuf,'u')
-            select case(trim(CBuf))
-            case('END')
+            if(trim(cBuf).eq.'END') then
                Call Close_MatF(current_wavefunction%unitNumber)
+               call mqc_print_all_wavefunction(current_wavefunction, IOut)
+               if (IERROR .ne. 0 ) then
+                  call mqc_error_I('mqc_read_all_wavefunction: Found errors reading Matrix Element File', 6)
+               endif
                return
-            case('SHELL TO ATOM MAP')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%SHELL_TO_ATOM_MAP)
-            case('SHELL TYPES')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%SHELL_TYPES)
-            case('NUMBER OF PRIMITIVES PER SHELL')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%NUMBER_OF_PRIMITIVES_PER_SHELL)
-            case('PRIMITIVE EXPONENTS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%PRIMITIVE_EXPONENTS)
-            case('CONTRACTION COEFFICIENTS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%CONTRACTION_COEFFICIENTS)
-            case('P(S=P) CONTRACTION COEFFICIENTS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%P__S_P__CONTRACTION_COEFFICIENTS)
-            case('COORDINATES OF EACH SHELL')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%COORDINATES_OF_EACH_SHELL)
-            case('GAUSSIAN SCALARS')
-               allocate(integerTmp(LR))
-               allocate(arrayTmp(LR))
+            endif
+
+            call MQC_Unformatted_Read_Array(current_wavefunction,cBuf, &
+                 NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,DataType,Shape,&
+                 Formula,IOut,IERROR)
 !
-! Need to make sure to read in all the bits without possible 32/64 bit
-! conversion of the results.  So forcing a 64 bit integer read.
-!
-               call RdIBuf8(current_wavefunction%unitNumber,NTot,LenBuf,integerTmp)
-               call mqc_copy_vec( integerTmp, integerTmp, arrayTmp, LR)
-               current_wavefunction%GAUSSIAN_SCALARS_I = Reshape(integerTmp,[LR])
-               current_wavefunction%GAUSSIAN_SCALARS_A = Reshape(arrayTmp,[LR])
-               deallocate(integerTmp)
-               deallocate(arrayTmp)
-            case('INTEGER ISO')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%INTEGER_ISO)
-            case('INTEGER SPIN')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%INTEGER_SPIN)
-            case('REAL ZEFFECTIVE')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%REAL_ZEFFECTIVE)
-            case('REAL GFACTOR')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%REAL_GFACTOR)
-            case('REAL ZNUCLEAR')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%REAL_ZNUCLEAR)
-            case('NUCLEAR GRADIENT')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%NUCLEAR_GRADIENT)
-            case('ELECTRIC DIPOLE MOMENT')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%ELECTRIC_DIPOLE_MOMENT)
-            case('OVERLAP')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%OVERLAP)
-            case('CORE HAMILTONIAN ALPHA')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%CORE_HAMILTONIAN_ALPHA)
-            case('CORE HAMILTONIAN BETA')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%CORE_HAMILTONIAN_BETA)
-            case('KINETIC ENERGY')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%KINETIC_ENERGY)
-            case('ORTHOGONAL BASIS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%ORTHOGONAL_BASIS)
-            case('DIPOLE INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%DIPOLE_INTEGRALS)
-            case('DIP VEL INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%DIP_VEL_INTEGRALS)
-            case('R X DEL INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%R_X_DEL_INTEGRALS)
-            case('RAFFENETTI 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%RAFFENETTI_2E_INTEGRALS)
-            case('AA MO 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%AA_MO_2E_INTEGRALS)
-            case('AB MO 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%AB_MO_2E_INTEGRALS)
-            case('BA MO 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%BA_MO_2E_INTEGRALS)
-            case('BB MO 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%BB_MO_2E_INTEGRALS)
-            case('ALPHA ORBITAL ENERGIES')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%ALPHA_ORBITAL_ENERGIES)
-            case('BETA ORBITAL ENERGIES')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%BETA_ORBITAL_ENERGIES)
-            case('ALPHA MO COEFFICIENTS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%ALPHA_MO_COEFFICIENTS)
-            case('BETA MO COEFFICIENTS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%BETA_MO_COEFFICIENTS)
-            case('ALPHA DENSITY MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%ALPHA_DENSITY_MATRIX)
-            case('BETA DENSITY MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%BETA_DENSITY_MATRIX)
-            case('ALPHA SCF DENSITY MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%ALPHA_SCF_DENSITY_MATRIX)
-            case('BETA SCF DENSITY MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%BETA_SCF_DENSITY_MATRIX)
-            case('ALPHA FOCK MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%ALPHA_FOCK_MATRIX)
-            case('BETA FOCK MATRIX')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    current_wavefunction%BETA_FOCK_MATRIX)
-            case('REGULAR 2E INTEGRALS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut,vectorOut, &
-                    current_wavefunction%REGULAR_2E_INTEGRALS)
-            case('BONDS PER ATOM')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%BONDS_PER_ATOM)
-            case('BONDED ATOMS')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%BONDED_ATOMS)
-            case('BOND TYPES')
-               call MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-                    NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf, &
-                    matrixOut, current_wavefunction%BOND_TYPES)
-            case default
-               write( 6, 1050 ) trim(CBuf)
-               write( 6, 1060 ) MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)
-               write(IOut,1070) NI,NR,NRI,NTot,LenBuf,  &
-                    N1,N2,N3,N4,N5,ASym,LR
-            Call Rd_Skip(current_wavefunction%UnitNumber,NTot,LenBuf)
-            end select
          endif
       enddo
       return
       end subroutine mqc_read_all_wavefunction
 !
 !     PROCEDURE MQC_Print_all_Wavefunction     
-      subroutine mqc_print_all_wavefunction(wavefunction,iOut,label)
+      subroutine mqc_print_all_wavefunction(wavefunction,iOut)
 !
       implicit none
       class(MQC_ALL_Wavefunction)::wavefunction
       integer(kind=int64),intent(in)::iOut
-      character(len=*),optional,intent(in)::label
-      character(len=64)::arrayType,myLabel
+      integer(kind=int64)::LR
 !                                                                                    write( iout, 1050) "In mqc_print_all_wavefunction"
  1050 Format( 2A )
  1060 Format( A,L10 )
-!                                                                              
-      if(present(label)) then
-        call string_change_case(label,'l',myLabel)
-      else
-        myLabel = 'all'
-      endIf
 
-      select case (myLabel)
-      case('mo coefficients')
-!        call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
-      case default
-!        call mqc_error_A('Invalid label sent to wavefunction print', 6, &
-!             'myLabel', myLabel )
-      end select
+      call MQC_PRINT_SCALAR_HEAD( iOut, wavefunction )
+      call MQC_PRINT_DEFAULT_VECTOR_HEAD( iOut, wavefunction)
+!                                                                              
+      wavefunction%Array_Data%last => wavefunction%Array_Data%first
+      Do While( associated(wavefunction%Array_Data%last) )
+         if (trim(wavefunction%Array_Data%last%Data_Type).eq."INTEGER" ) then
+            call MQC_Print_Array_Integer(IOut, wavefunction%Array_Data%last)
+         else if (trim(wavefunction%Array_Data%last%Data_Type).eq."REAL" ) then
+            call MQC_Print_Array_REAL(IOut, wavefunction%Array_Data%last)
+         else if (trim(wavefunction%Array_Data%last%Data_Type).eq."COMPLEX" ) then
+            call MQC_Print_Array_COMPLEX(IOut, wavefunction%Array_Data%last)
+         else if (trim(wavefunction%Array_Data%last%Data_Type).eq."MIXED" ) then
+! For some reason, LR and N1 are improperly much larger than NTot.  
+! For write purposes, set LR to NTot
+
+            LR = wavefunction%Array_Data%last%LR
+            wavefunction%Array_Data%last%LR = min( LR, &
+                 wavefunction%Array_Data%last%NTot)
+            call MQC_Print_Array_Integer(IOut, &
+              wavefunction%Array_Data%last)
+            if (wavefunction%Array_Data%last%NR.lt.0 ) then
+               call MQC_Print_Array_COMPLEX(IOut, &
+                    wavefunction%Array_Data%last)
+            else
+               call MQC_Print_Array_REAL(IOut, &
+                    wavefunction%Array_Data%last)
+            endif
+            wavefunction%Array_Data%last%LR=LR
+         else if (trim(wavefunction%Array_Data%last%Data_Type).eq."TENSOR" ) then
+            if (wavefunction%Array_Data%last%NR.lt.0 ) then
+               call MQC_Print_Array_COMPLEX(IOut, &
+                    wavefunction%Array_Data%last)
+            else
+               call MQC_Print_Array_REAL(IOut, &
+                    wavefunction%Array_Data%last)
+            endif
+         else
+            call MQC_PRINT_DATA_TYPE(IOut, &
+              wavefunction%Array_Data%last%Data_Name, &
+              wavefunction%Array_Data%last%NI, &
+              wavefunction%Array_Data%last%NR, &
+              wavefunction%Array_Data%last%N1, &
+              wavefunction%Array_Data%last%N2, &
+              wavefunction%Array_Data%last%N3, &
+              wavefunction%Array_Data%last%N4, &
+              wavefunction%Array_Data%last%N5, &
+              wavefunction%Array_Data%last%NRI, &
+              wavefunction%Array_Data%last%NTot, &
+              wavefunction%Array_Data%last%LR, &
+              wavefunction%Array_Data%last%Data_Type, &
+              wavefunction%Array_Data%last%Shape, &
+              wavefunction%Array_Data%last%Formula)
+         endif
+         wavefunction%Array_Data%last => wavefunction%Array_Data%last%next
+      enddo
 !
-      write( iout, 1050) "Out mqc_print_all_wavefunction"
+      write( iout, 1050) "Finished mqc_print_all_wavefunction"
       end subroutine mqc_print_all_wavefunction
 
-      subroutine mqc_summary_link_list_add(self,FileName,iout)
-        class(mqc_link_list),intent(inout) :: self
-        character(len=256),intent(in) :: FileName
-        integer(kind=int64),intent(inout)::iOut
-        integer(kind=int64)::Print_Options
+      Subroutine MQC_Print_Array_Integer(IOut, Array,Blank_At_Top, &
+        Blank_At_Bottom)
+      implicit none
+      class(mqc_array_link_list_node),intent(in):: Array
+      integer(kind=int64),intent(in)::iOut
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64),Parameter::ColWidth=10 
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64)::N1,N2,N3,N4,K,L,IBase,JBase,LMAX
+!
+!     Format statements.
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(1x,I7,2x,I14)
+ 1010 Format(1x,A,2x,I14)
+ 1020 Format(" ")
+ 2001 Format(5x,10(7x,I7))
+ 2011 Format(1x,I7,10I14)
+ 3010 Format("  Dimension 3:",I5 )
+ 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
+ 4010 format( "(",I5,",",I5,"|",I5,",",I5,") = ",I10 )
+ 4020 format( "(",I5,",",I5,",",I5,") = ",I10 )
+ 5010 Format("Warning: Do Not know how do deal with the shape of ",A)
 
-        Print_Options = 1;
-        if (.not.associated(self%last)) then
-           allocate(self%first)
-           self%last => self%first
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if ( Array%Shape.ne."SCALAR") then
+         Write(IOut,1000) TRIM(Array%Data_Name)
+      EndIf
+
+      if ( Array%Shape.eq."SCALAR") then
+         Write(IOut,1010) TRIM(Array%Data_Name), Array%VecI(1)
+      else if ( Array%Shape.eq."VECTOR") then
+         Do I = 1, Array%LR
+            Write(IOut,1001) I,  Array%VecI(I)
+         EndDo
+      else if ( Array%Shape.eq."MATRIX") then
+         NRows = Array%N1
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = 1,NRows
+               Write(IOut,2011) I, (Array%VecI(I+(J-1)*NRows),J=IFirst,ILast)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMMATRIX") then
+         NRows = Array%N2
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = IFirst, ILAST
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (Array%VecI(IBase+J),J=IFirst,I)
+            EndDo
+            Do I = ILAST+1, NCols
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (Array%VecI(IBase+J),J=IFirst,ILast)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."MULTISYMMATRICES") then
+         NRows = Array%N2
+         NCols = Array%N2
+         N3 = Array%N3
+         N4 = Array%N4
+         Do L = 1,N4
+            Do K = 1,N3
+               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               Do IFirst = 1,NCols,ColWidth
+                  ILast = Min(IFirst+ColWidth-1,NCols)
+                  if ( N4 .eq. 1 ) then
+                     write(Iout,3010) K
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  else 
+                     write(Iout,3020) K, L
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  endif
+                  Do I = IFirst, ILAST
+                     JBase = IBase+(I*(I-1))/2
+                     Write(IOut,2011) I, (Array%VecI(JBase+J),J=IFirst,I)
+                  EndDo
+                  Do I = ILAST+1, NCols
+                     Write(IOut,2011) I, (Array%VecI(JBase+J),J=IFirst,ILast)
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMSYM") then
+         N4 = Array%N4
+         IBase=0
+         Do I = 1,N4
+            Do J = 1,I
+               Do K = 1,I
+                  if ( I .eq. K ) then
+                     LMax = J
+                  else
+                     LMax = K
+                  endif
+                  Do L = 1,LMax
+                     IBase=IBase+1
+                     write(Iout,4010) I,J,K,L,Array%VecI(IBase)
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."TRISYMMATRICES") then
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N3
+            Do J = 1,I
+               Do K = 1,J
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,Array%VecI(IBase)
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."3DMATRIX") then
+         N1 = Array%N1
+         N2 = Array%N2
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N1
+            Do J = 1,N2
+               Do K = 1,N3
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,Array%VecI(IBase)
+               EndDo
+            EndDo
+         EndDo
+      else
+         write(IOut,5010) trim(Array%Data_Name)
+         call MQC_PRINT_DATA_TYPE(IOut, Array%Data_Name, Array%NI, Array%NR, &
+              Array%N1, Array%N2, Array%N3, Array%N4, Array%N5, Array%NRI, &
+              Array%NTot, Array%LR, Array%Data_Type, Array%Shape, &
+              Array%Formula)
+      endif
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+      return
+      end Subroutine MQC_Print_Array_Integer
+
+      Subroutine MQC_Print_Array_REAL(IOut, Array,Blank_At_Top, &
+        Blank_At_Bottom)
+      implicit none
+      class(mqc_array_link_list_node),intent(in):: Array
+      integer(kind=int64),intent(in)::iOut
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64),Parameter::ColWidth=10 
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64)::N1,N2,N3,N4,K,L,IBase,JBase,LMAX
+!
+!     Format statements.
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(1x,I7,2x,F14.6)
+ 1010 Format(1x,A,2x,F14.6)
+ 1020 Format(" ")
+ 2001 Format(5x,10(7x,I7))
+ 2011 Format(1x,I7,10F14.6)
+ 3010 Format("  Dimension 3:",I5 )
+ 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
+ 4010 format( "(",I5,",",I5,"|",I5,",",I5,") = ",F14.6 )
+ 4020 format( "(",I5,",",I5,",",I5,") = ",F14.6 )
+ 5010 Format("Warning: Do Not know how do deal with the shape of ",A)
+
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if ( Array%Shape.ne."SCALAR") then
+         Write(IOut,1000) TRIM(Array%Data_Name)
+      EndIf
+
+      if ( Array%Shape.eq."SCALAR") then
+         Write(IOut,1010) TRIM(Array%Data_Name), Array%VecR(1)
+      else if ( Array%Shape.eq."VECTOR") then
+         Do I = 1, Array%LR
+            Write(IOut,1001) I,  Array%VecR(I)
+         EndDo
+      else if ( Array%Shape.eq."MATRIX") then
+         NRows = Array%N1
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = 1,NRows
+               Write(IOut,2011) I, (Array%VecR(I+(J-1)*NRows),J=IFirst,ILast)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMMATRIX") then
+         NRows = Array%N2
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = IFirst, ILAST
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (Array%VecR(IBase+J),J=IFirst,I)
+            EndDo
+            Do I = ILAST+1, NCols
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (Array%VecR(IBase+J),J=IFirst,ILast)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."MULTISYMMATRICES") then
+         NRows = Array%N2
+         NCols = Array%N2
+         N3 = Array%N3
+         N4 = Array%N4
+         Do L = 1,N4
+            Do K = 1,N3
+               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               Do IFirst = 1,NCols,ColWidth
+                  ILast = Min(IFirst+ColWidth-1,NCols)
+                  if ( N4 .eq. 1 ) then
+                     write(Iout,3010) K
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  else 
+                     write(Iout,3020) K, L
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  endif
+                  Do I = IFirst, ILAST
+                     JBase = IBase+(I*(I-1))/2
+                     Write(IOut,2011) I, (Array%VecR(JBase+J),J=IFirst,I)
+                  EndDo
+                  Do I = ILAST+1, NCols
+                     Write(IOut,2011) I, (Array%VecR(JBase+J),J=IFirst,ILast)
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMSYM") then
+         N4 = Array%N4
+         IBase=0
+         Do I = 1,N4
+            Do J = 1,I
+               Do K = 1,I
+                  if ( I .eq. K ) then
+                     LMax = J
+                  else
+                     LMax = K
+                  endif
+                  Do L = 1,LMax
+                     IBase=IBase+1
+                     write(Iout,4010) I,J,K,L,Array%VecR(IBase)
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+         If ( IBASE .ne. Array%LR ) then
+            call mqc_error_I('MQC_Print_Array_REAL: Calculated wrong size of Super Symmertric array.', IOut, &
+            'IBASE', IBASE, 'Array%LR', Array%LR )
+         EndIf
+      else if ( Array%Shape.eq."TRISYMMATRICES") then
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N3
+            Do J = 1,I
+               Do K = 1,J
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,Array%VecR(IBase)
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."3DMATRIX") then
+         N1 = Array%N1
+         N2 = Array%N2
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N1
+            Do J = 1,N2
+               Do K = 1,N3
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,Array%VecR(IBase)
+               EndDo
+            EndDo
+         EndDo
+      else
+         write(IOut,5010) trim(Array%Data_Name)
+         call MQC_PRINT_DATA_TYPE(IOut, Array%Data_Name, Array%NI, Array%NR, &
+              Array%N1, Array%N2, Array%N3, Array%N4, Array%N5, Array%NRI, &
+              Array%NTot, Array%LR, Array%Data_Type, Array%Shape, &
+              Array%Formula)
+      EndIf
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+      return
+      end Subroutine MQC_Print_Array_REAL
+
+      Subroutine MQC_Print_Array_COMPLEX(IOut, Array,Blank_At_Top, &
+        Blank_At_Bottom)
+      implicit none
+      class(mqc_array_link_list_node),intent(in):: Array
+      integer(kind=int64),intent(in)::iOut
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64),Parameter::ColWidth=5 
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64)::N1,N2,N3,N4,K,L,IBase,JBase,LMAX
+!
+!     Format statements.
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(1x,I7,2x,"(",F14.6,",",F14.6,"i)")
+ 1010 Format(1x,A,2x,"(",F14.6,",",F14.6,"i)")
+ 1020 Format(" ")
+ 2001 Format(5x,5(20x,I7))
+ 2011 Format(1x,I7," (",F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)  (", &
+           F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)")
+ 3010 Format("  Dimension 3:",I5 )
+ 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
+ 4010 format( "(",I5,",",I5,"|",I5,",",I5,") = (",F14.6,",",F14.6,"i)")
+ 4020 format( "(",I5,",",I5,",",I5,") = (",F14.6,",",F14.6,"i)")
+ 5010 Format("Warning: Do Not know how do deal with the shape of ",A)
+
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if ( Array%Shape.ne."SCALAR") then
+         Write(IOut,1000) TRIM(Array%Data_Name)
+      EndIf
+
+      if ( Array%Shape.eq."SCALAR") then
+         Write(IOut,1010) TRIM(Array%Data_Name), REAL(Array%VecC(I)), &
+              AIMAG(Array%VecC(I))
+      else if ( Array%Shape.eq."VECTOR") then
+         Do I = 1, Array%LR
+            Write(IOut,1001) I, REAL(Array%VecC(I)), AIMAG(Array%VecC(I))
+         EndDo
+      else if ( Array%Shape.eq."MATRIX") then
+         NRows = Array%N1
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = 1,NRows
+               Write(IOut,2011) I, (REAL(Array%VecC(I+(J-1)*NRows)), &
+                    AIMAG(Array%VecC(I+(J-1)*NRows)),J=IFirst,ILast)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMMATRIX") then
+         NRows = Array%N2
+         NCols = Array%N2
+         Do IFirst = 1,NCols,ColWidth
+            ILast = Min(IFirst+ColWidth-1,NCols)
+            Write(IOut,2001) (I,I=IFirst,ILast)
+            Do I = IFirst, ILAST
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (REAL(Array%VecC(IBase+J)), &
+                    AIMAG(Array%VecC(IBase+J)),J=IFirst,I)
+            EndDo
+            Do I = ILAST+1, NCols
+               IBase = (I*(I-1))/2
+               Write(IOut,2011) I, (REAL(Array%VecC(IBase+J)), &
+                    AIMAG(Array%VecC(IBase+J)),J=IFirst,ILAST)
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."MULTISYMMATRICES") then
+         NRows = Array%N2
+         NCols = Array%N2
+         N3 = Array%N3
+         N4 = Array%N4
+         Do L = 1,N4
+            Do K = 1,N3
+               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               Do IFirst = 1,NCols,ColWidth
+                  ILast = Min(IFirst+ColWidth-1,NCols)
+                  if ( N4 .eq. 1 ) then
+                     write(Iout,3010) K
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  else 
+                     write(Iout,3020) K, L
+                     Write(IOut,2001) (I,I=IFirst,ILast)
+                  endif
+                  Do I = IFirst, ILAST
+                     JBase = IBase+(I*(I-1))/2
+                     Write(IOut,2011) I, (REAL(Array%VecC(JBase+J)), &
+                          AIMAG(Array%VecC(JBase+J)),J=IFirst,I)
+                  EndDo
+                  Do I = ILAST+1, NCols
+                     Write(IOut,2011) I, (REAL(Array%VecC(JBase+J)), &
+                          AIMAG(Array%VecC(JBase+J)),J=IFirst,ILAST)
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."SYMSYM") then
+         N4 = Array%N4
+         IBase=0
+         Do I = 1,N4
+            Do J = 1,I
+               Do K = 1,I
+                  if ( I .eq. K ) then
+                     LMax = J
+                  else
+                     LMax = K
+                  endif
+                  Do L = 1,LMax
+                     IBase=IBase+1
+                     write(Iout,4010) I,J,K,L,REAL(Array%VecC(IBase)), &
+                          AIMAG(Array%VecC(IBase))
+                  EndDo
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."TRISYMMATRICES") then
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N3
+            Do J = 1,I
+               Do K = 1,J
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,REAL(Array%VecC(IBase)), &
+                       AIMAG(Array%VecC(IBase))
+               EndDo
+            EndDo
+         EndDo
+      else if ( Array%Shape.eq."3DMATRIX") then
+         N1 = Array%N1
+         N2 = Array%N2
+         N3 = Array%N3
+         IBase=0
+         Do I = 1,N1
+            Do J = 1,N2
+               Do K = 1,N3
+                  IBase=IBase+1
+                  write(Iout,4020) I,J,K,REAL(Array%VecC(IBase)), &
+                       AIMAG(Array%VecC(IBase))
+               EndDo
+            EndDo
+         EndDo
+      else
+         write(IOut,5010) trim(Array%Data_Name)
+         call MQC_PRINT_DATA_TYPE(IOut, Array%Data_Name, Array%NI, Array%NR, &
+              Array%N1, Array%N2, Array%N3, Array%N4, Array%N5, Array%NRI, &
+              Array%NTot, Array%LR, Array%Data_Type, Array%Shape, &
+              Array%Formula)
+      endif
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+      return
+      end Subroutine MQC_Print_Array_COMPLEX
+
+!=====================================================================
+!
+! Functions for mqc_array_link_list class structures
+!
+!=====================================================================
+      subroutine mqc_array_link_list_add(wavefunction,DataName,NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,IOut, &
+           Data_Type,Shape,Formula)
+        class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+        character(len=*),intent(in) :: DataName
+        integer(kind=int64),intent(in) :: NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,IOut
+        character(Len=*),intent(in):: Data_Type, Shape, Formula
+        Integer(kind=int32)::AllocateStatus
+
+        if (.not.associated(wavefunction%Array_Data%first)) then
+           allocate(wavefunction%Array_Data%first, STAT = AllocateStatus)
+           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', Iout, 'DataName', DataName)
+           wavefunction%Array_Data%last => wavefunction%Array_Data%first
         else
-           allocate(self%last%next)
-           self%last => self%last%next
+           allocate(wavefunction%Array_Data%last%next, STAT = AllocateStatus)
+           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', Iout, 'DataName', DataName)
+           wavefunction%Array_Data%last => wavefunction%Array_Data%last%next
         endif
+        wavefunction%Array_Data%last%Data_Name=trim(DataName)
+        wavefunction%Array_Data%last%NR=NR
+        wavefunction%Array_Data%last%NI=NI
+        wavefunction%Array_Data%last%NRI=NRI
+        wavefunction%Array_Data%last%NTot=NTot
+        wavefunction%Array_Data%last%N1=N1
+        wavefunction%Array_Data%last%N2=N2
+        wavefunction%Array_Data%last%N3=N3
+        wavefunction%Array_Data%last%N4=N4
+        wavefunction%Array_Data%last%N5=N5
+        wavefunction%Array_Data%last%LR=LR
+        wavefunction%Array_Data%last%Data_Type=trim(Data_Type)
+        wavefunction%Array_Data%last%Shape=trim(Shape)
+        wavefunction%Array_Data%last%Formula=trim(Formula)
+      end subroutine mqc_array_link_list_add
 
-        self%last%current_wavefunction%FileName=trim(FileName)
+      subroutine mqc_array_link_list_start(self,wavefunction)
+        class(MQC_ALL_Wavefunction),intent(in) :: wavefunction
+        class(mqc_array_link_list),intent(inout) :: self
 
-        call mqc_read_all_wavefunction( self%last%current_wavefunction, &
-             Print_Options,iout)
+        self%current => wavefunction%Array_Data%first
+      end subroutine mqc_array_link_list_start
 
-        self%length = self%length + 1
-      end subroutine mqc_summary_link_list_add
+      subroutine mqc_array_link_list_next(self)
+        class(mqc_array_link_list),intent(inout) :: self
 
+        if (associated(self%current)) then
+           self%current => self%current%next
+        else
+           self%current => null()
+        end if
+      end subroutine mqc_array_link_list_next
 
-      subroutine mqc_link_list_add(self,FileName,iout)
+!=====================================================================
+!
+! Functions for mqc_link_list class structures
+!
+!=====================================================================
+      subroutine mqc_link_list_add(self,Print_Options,FileName,iout)
         class(mqc_link_list),intent(inout) :: self
+        integer(kind=int64),intent(in)::Print_Options
         character(len=256),intent(in) :: FileName
-        integer(kind=int64),intent(inout)::iOut
-        integer(kind=int64)::Print_Options
+        integer(kind=int64),intent(in)::iOut
 
-        Print_Options = 0;
         if (.not.associated(self%last)) then
            allocate(self%first)
            self%last => self%first
@@ -546,8 +858,8 @@ CONTAINS
       end subroutine mqc_link_list_start
 
       subroutine mqc_link_list_next(self,wavefunction)
-        class(mqc_link_list),intent(inout) :: self
-        class(MQC_ALL_Wavefunction),pointer,intent(out) :: wavefunction
+        class(mqc_link_list),intent(inout)::self
+        class(MQC_ALL_Wavefunction),pointer,intent(out)::wavefunction
 
         if (associated(self%current)) then
            wavefunction => self%current%current_wavefunction
@@ -559,9 +871,10 @@ CONTAINS
 
 !=====================================================================
 !
-!PROCEDURE MQC_Unformatted_Matrix_Read_Array
-      subroutine MQC_Unformatted_Matrix_Read_Array(current_wavefunction, &
-       NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf,matrixOut,vectorOut,r4TensorOut)
+!PROCEDURE MQC_Unformatted_Read_Array
+      subroutine MQC_Unformatted_Read_Array(wavefunction,Data_Name, &
+          NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Data_Type,Shape,Formula, &
+          IOut,IERROR)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -588,229 +901,150 @@ CONTAINS
 !     Variable Declarations.
 !
       implicit none
-      class(MQC_ALL_Wavefunction),intent(inout)::current_wavefunction
-      integer(kind=int64),intent(in)::NI,NR,N1,N2,N3,N4,N5,NRI,LR,NTot,LenBuf
-      type(MQC_Matrix),intent(inout)::matrixOut
-      type(MQC_Vector),intent(inout),OPTIONAL::vectorOut
-      type(MQC_R4Tensor),intent(inout),OPTIONAL::r4TensorOut
-!
-! The last Out structure (matrixOut, vectorOut, r4TensorOut).  Just put in
-! unused Out arguments before the desired structure.
-!
-      integer::iout=6
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      character(len=*),intent(in)::Data_Name
+      integer(kind=int64),intent(in)::NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf
+      character(len=*),intent(in)::Data_Type,Shape,Formula
+      integer(kind=int64),intent(in)::IOut
+      integer(kind=int64),intent(inout)::IERROR
 !
 !     Temporary local variables used when calling the gauopen routines.
-      character(len=64)::cBuffer,tmpLabel
-!
 !     Local temp variables.
-      integer::i,nOutputArrays
-      integer(kind=int64),allocatable,dimension(:)::integerTmp
-      real(kind=real64),allocatable,dimension(:)::arrayTmp
-      complex(kind=real64),allocatable,dimension(:)::complexTmp
-      character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.true.,ok,found
-      integer::Matrix=0;
-      integer::Vector=1;
-      integer::r4Tensor=2;
-!
+      character(len=256)::errorMsg
+      Integer(kind=int32)::AllocateStatus
 !
 !     Format statements.
 !
- 1020 Format( " " )
-!
- 1040 Format( A, I15 )
- 1050 Format( 2A )
- 1060 Format( A )
+ 1010 Format(A,/,' Data Name:',a,/,'  NI =',I9,/,'  NR =',I9,/,'  NRI =',I9,/,&
+          '  NTot =',I9,/, '  LenBuf =',I9,/, '  N1 =',I9,/, '  N2 =',I9,/ &
+          '  N3 =',I9,/, '  N4 =',I9,/, '  N5 =',I9,/, '  LR =',I9, &
+          '  Calculated Type: ',A )
+ 1100 Format( "Error Allocating Memory for ",A)
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
 !     program unit. If so, then get the file declared before reading the
 !     header information.
 !
-!
-!     Ensure that one and only one output MQC-type array has been sent from the
-!     calling program unit.
-!
-      nOutputArrays = 0
-      if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
-      if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
-!
 !     Look for the label sent by the calling program unit. If the label is
 !     found, then load <matrixOut> with the data on the file.
 !
-
-      select case(MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
-
-      case('INTEGER-VECTOR')
-         allocate(integerTmp(LR))
-         call Rd_IBuf(current_wavefunction%unitNumber,NTot,LenBuf,integerTmp)
-         if(Vector.eq.nOutputArrays ) then
-            vectorOut = integerTmp
-         elseif(Matrix.eq.nOutputArrays ) then
-            call MQC_Matrix_DiagMatrix_Put(matrixOut,integerTmp)
-         else
-            call mqc_error_I('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                 & procedure.', 6, &
-                 'Matrix', Matrix, 'Vector', Vector, &
-                 'nOutputArrays', nOutputArrays )
-         endIf
-         deallocate(integerTmp)
-      case('INTEGER-MATRIX')
-         if(Matrix.NE.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(integerTmp(LR))
-         call Rd_IBuf(current_wavefunction%unitNumber,NTot,LenBuf,integerTmp)
-         matrixOut = Reshape(integerTmp,[N1,N2])
-         deallocate(integerTmp)
-      case('INTEGER-SYMMATRIX')
-         if(Matrix.NE.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(integerTmp(LR))
-         call Rd_IBuf(current_wavefunction%unitNumber,NTot,LenBuf,integerTmp)
-         call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
-         deallocate(integerTmp)
-      case('INTEGER-MULTISYMMATRICES')
-         if(Matrix.NE.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(integerTmp(LR))
-         call Rd_IBuf(current_wavefunction%unitNumber,NTot,LenBuf,integerTmp)
-         matrixOut = Reshape(integerTmp,[((N2+1)*N2)/2,N3*N4])
-         deallocate(integerTmp)
-      case('REAL-VECTOR')
-         allocate(arrayTmp(LR))
-         call Rd_RBuf(current_wavefunction%unitNumber,NTot,LenBuf,arrayTmp)
-         if(Matrix.eq.nOutputArrays ) then
-            vectorOut = arrayTmp
-         elseif(Vector.eq.nOutputArrays ) then
-            call MQC_Matrix_DiagMatrix_Put(matrixOut,arrayTmp)
-         else
-            call mqc_error_i('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                 & procedure.', 6, &
-                 'Matrix', Matrix, 'Vector', Vector, &
-                 'nOutputArrays', nOutputArrays )
-         endIf
-         deallocate(arrayTmp)
-      case('REAL-MATRIX')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(arrayTmp(LR))
-         call Rd_RBuf(current_wavefunction%unitNumber,NTot,LenBuf,arrayTmp)
-         matrixOut = Reshape(arrayTmp,[N1,N2])
-         deallocate(arrayTmp)
-      case('REAL-SYMMATRIX')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(arrayTmp(LR))
-         call Rd_RBuf(current_wavefunction%unitNumber,NTot,LenBuf,arrayTmp)
-         call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
-         deallocate(arrayTmp)
-      case('REAL-MULTISYMMATRICES')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(arrayTmp(LR))
-         call Rd_RBuf(current_wavefunction%unitNumber,NTot,LenBuf,arrayTmp)
-         matrixOut = Reshape(arrayTmp,[((N2+1)*N2)/2,N3*N4])
-         deallocate(arrayTmp)
-      case('COMPLEX-VECTOR')
-         allocate(complexTmp(LR))
-         call Rd_CBuf(current_wavefunction%unitNumber,NTot,LenBuf,complexTmp)
-         if(Vector.eq.nOutputArrays ) then
-            vectorOut = complexTmp
-         elseif(Matrix.eq.nOutputArrays ) then
-            call MQC_Matrix_DiagMatrix_Put(matrixOut,complexTmp)
-         else
-            call mqc_error_I('Reading vector from Gaussian matrix file, but NO VECTOR SENT &
-                 & to procedure.', 6, &
-                 'Matrix', Matrix, 'Vector', Vector, &
-                 'nOutputArrays', nOutputArrays )
-         endIf
-         deallocate(complexTmp)
-      case('COMPLEX-MATRIX')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix &
-              & file, but NO MATRIX SENT to procedure.', 6, &
-                 'Matrix', Matrix, 'Vector', Vector, &
-                 'nOutputArrays', nOutputArrays )
-         allocate(complexTmp(LR))
-         call Rd_CBuf(current_wavefunction%unitNumber,NTot,LenBuf,complexTmp)
-         matrixOut = Reshape(complexTmp,[N1,N2])
-         deallocate(complexTmp)
-      case('COMPLEX-SYMMATRIX')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix & 
-              & file, but NO MATRIX SENT to procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(complexTmp(LR))
-         call Rd_CBuf(current_wavefunction%unitNumber,NTot,LenBuf,complexTmp)
-         call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
-         deallocate(complexTmp)
-      case('COMPLEX-MULTISYMMATRICES')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix & 
-              & file, but NO MATRIX SENT to procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(complexTmp(LR))
-         call Rd_CBuf(current_wavefunction%unitNumber,NTot,LenBuf,complexTmp)
-         matrixOut = Reshape(complexTmp,[((N2+1)*N2)/2,N3*N4])
-         deallocate(complexTmp)
+      call mqc_array_link_list_add(wavefunction,Data_Name,NR,NI,NRI,NTot, & 
+           N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+!
+      select case(Data_Type)
+      case('INTEGER')
+         allocate(wavefunction%Array_Data%last%VecI(LR), STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) then
+            write( errorMsg, 1100 ) trim(Data_Name)
+            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+         EndIf
+         call Rd_IBuf(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%VecI)
+      case('REAL')
+         allocate(wavefunction%Array_Data%last%VecR(LR), STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) then
+            write( errorMsg, 1100 ) trim(Data_Name)
+            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+         EndIf
+         call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%VecR)
+      case('COMPLEX')
+         allocate(wavefunction%Array_Data%last%VecC(LR), STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) then
+            write( errorMsg, 1100 ) trim(Data_Name)
+            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+         EndIf
+         call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%VecC)
       case('MIXED')
-         write(*,1020)
-         write(*,1040)' Hrant - LR   = ',LR
-         write(*,1040)' Hrant - NR   = ',NR
-         write(*,1040)' Hrant - NI   = ',NI
-         write(*,1040)' Hrant - NRI  = ',NRI
-         write(*,1040)' Hrant - NTot = ',NTot
-         write(*,1020)
-         call mqc_error_a('No general way to load mixed types as of yet &
-              &         We are doing it case-by-case at the moment and this does not match.', 6, &
-              'MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
-              MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
-      case('2ERIS-SYMSYMR4TENSOR')
-         if(r4Tensor.ne.nOutputArrays ) call mqc_error_I('Reading r4 tensor from Gaussian matrix file, but NO R4TENSOR SENT to &
-              & procedure.', 6, &
-              'r4Tensor', r4Tensor, 'nOutputArrays', nOutputArrays )
+         allocate(wavefunction%Array_Data%last%VecI(LR), STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) then
+            write( errorMsg, 1100 ) trim(Data_Name)
+            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+         EndIf
+         if ( NR .ge. 0 ) then
+            allocate(wavefunction%Array_Data%last%VecR(LR), &
+                 STAT = AllocateStatus)
+            IF (AllocateStatus /= 0) then
+               write( errorMsg, 1100 ) trim(Data_Name)
+               call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+            EndIf
+            call Rd_RMixed(wavefunction%unitNumber,NTot,LenBuf, &
+                 wavefunction%Array_Data%last%VecI, &
+                 wavefunction%Array_Data%last%VecR)
+         else
+            allocate(wavefunction%Array_Data%last%VecC(LR), &
+                 STAT = AllocateStatus)
+            IF (AllocateStatus /= 0) then
+               write( errorMsg, 1100 ) trim(Data_Name)
+               call MQC_Error_I(errorMsg, Iout, 'LR', LR)
+            EndIf
+            call Rd_CMixed(wavefunction%unitNumber,NTot,LenBuf, &
+                 wavefunction%Array_Data%last%VecI, &
+                 wavefunction%Array_Data%last%VecC)
+         endif
+      case('TENSOR')
          if(NRI.eq.1) then
-            allocate(arrayTmp(LR))
-            call Rd_2EN(current_wavefunction%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
-            call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,arrayTmp)
-            deallocate(arrayTmp)
+            allocate(wavefunction%Array_Data%last%VecR(LR*NR), &
+                 STAT=AllocateStatus)
+            IF (AllocateStatus /= 0) then
+               write( errorMsg, 1100 ) trim(Data_Name)
+               call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
+            EndIf
+            call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR,NTot,LenBuf, &
+                 wavefunction%Array_Data%last%VecR)
+!            call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,arrayTmp)
+!            deallocate(arrayTmp)
          elseIf(NRI.eq.2) then
-            allocate(arrayTmp(LR*2))
-            !                allocate(complexTmp(LR))
-            call Rd_2EN(current_wavefunction%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,arrayTmp)
-!                call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,complexTmp)
-            complexTmp = reshape(arrayTmp, shape(complexTmp))
-            call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut,complexTmp)
-            !                deallocate(complexTmp)
-            deallocate(arrayTmp)
+            allocate(wavefunction%Array_Data%last%VecR(LR*NR), &
+                 STAT = AllocateStatus)
+            IF (AllocateStatus /= 0) then
+               write( errorMsg, 1100 ) trim(Data_Name)
+               call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
+            EndIf
+            call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR, &
+                 2*NTot,2*LenBuf,wavefunction%Array_Data%last%VecR)
+!!                call Rd_2EN(fileinfo%unitNumber,NR,NTot,NR*NTot,2*NTot,2*LenBuf,complexTmp)
+!            complexTmp = reshape(arrayTmp, shape(complexTmp))
+!            call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut,complexTmp)
+!            !                deallocate(complexTmp)
+!            deallocate(arrayTmp)
+         else
+            if ( NR .ge. 0 ) then
+               allocate(wavefunction%Array_Data%last%VecR(LR), &
+                    STAT = AllocateStatus)
+               IF (AllocateStatus /= 0) then
+                  write( errorMsg, 1100 ) trim(Data_Name)
+                  call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
+               EndIf
+               call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
+                    wavefunction%Array_Data%last%VecR)
+            else
+               allocate(wavefunction%Array_Data%last%VecC(LR), &
+                    STAT = AllocateStatus)
+               IF (AllocateStatus /= 0) then
+                  write( errorMsg, 1100 ) trim(Data_Name)
+                  call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
+               EndIf
+               call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
+                    wavefunction%Array_Data%last%VecC)
+            endif
          endIf
-      case('2ERIS-MULTISYMMATRICES')
-         if(Matrix.ne.nOutputArrays ) call mqc_error_I('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-              & procedure.', 6, &
-              'Matrix', Matrix, 'nOutputArrays', nOutputArrays )
-         allocate(arrayTmp(LR))
-         call Rd_RBuf(current_wavefunction%unitNumber,NTot,LenBuf,arrayTmp)
-         matrixOut = Reshape(arrayTmp,[((N2+1)*N2)/2,N3*N4])
-         deallocate(arrayTmp)
       case default
-         write(*,1050)' Matrix type: ',Trim(MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
-         call mqc_error_A('Found strange matrix type in Gaussian matrix read routine.', 6, &
-              'MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
-              MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
+         write(IOut,1010) 'UnExpected data type, found:', &
+              TRIM(Data_Name),NI,NR,NRI,NTot,LenBuf,  &
+              N1,N2,N3,N4,N5,LR
+         Call Rd_Skip(wavefunction%UnitNumber,NTot,LenBuf)
+         IERROR = IERROR + 1
       end select
-! if you want to skip:
-!            Call Rd_Skip(current_wavefunction%UnitNumber,NTot,LenBuf)
-
 !
       return
-      end subroutine MQC_Unformatted_Matrix_Read_Array
+    end subroutine MQC_Unformatted_Read_Array
 
 !=====================================================================
 !
 !PROCEDURE MQC_PRINT_DATA_TYPE
-      Subroutine MQC_PRINT_DATA_TYPE(Iout,DataName,NI,NR,N1,N2,N3,N4,N5,NRI,NTot,LenBuf,LR,Asym)
+      Subroutine MQC_PRINT_DATA_TYPE(Iout,DataName,NI,NR,N1,N2,N3,N4,N5,NRI,NTot,LR,DataType,Shape,Formula)
 !
 !     This function returns a character string indicating the type of array
 !     found in a Gaussian matrix file. This is done using NI, NR, N1, N2, N3,
@@ -835,11 +1069,11 @@ CONTAINS
 !
       implicit none
       integer(kind=int64),intent(in)::iOut
-      character(len=64),intent(in)::DataName
+      character(len=*),intent(in)::DataName
       integer(kind=int64),intent(in)::NI,NR,N1,N2,N3,N4,N5,NRI
-      integer(kind=int64),intent(in)::NTot,LenBuf,LR
-      logical,intent(in)::Asym
-      integer::i
+      integer(kind=int64),intent(in)::NTot,LR
+      character(len=*),intent(in)::DataType,Shape,Formula
+      integer(kind=int64)::i,size
       real(kind=real64)::a
       character(len=64)::OutMath1,OutMath2,OutMath3,OutMath4
       character(len=8)::tab
@@ -848,130 +1082,28 @@ CONTAINS
 !
  1010 Format( A )
  1020 Format( A,"  - ",A )
- 1030 Format( A,"  - 2-D MATRIX allocated full (",a," x ",a,")" )
+ 1030 Format( 2A )
  1040 Format( A,"  - Total elements: ",a )
- 1050 Format( A,"  - SYMMETRIC MATRIX ((",a,"+1)*",a,"/2)" )
- 1060 Format( A,"  - VECTOR(",a,")" )
  1070 format('NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
- 1080 Format( A,"  - MULTIPLE SYMMETIC MATRICES (((",a,"+1)x",a,"/2) x ",a,")" )
- 1090 Format( A,"  - MULTIPLE SYMMETIC MATRICES (((",a,"+1)x",a,"/2) x (",a,"x",a,"))" )
+ 1100 Format('Error: Bad shape for',a,': Calculated size: ',i9,' Actual size:' &
+          ,i9,/,'  NI =',I9,/,'  NR =',I9,/,'  NRI =',I9,/,&
+          '  LenBuf =',I9,/, '  N1 =',I9,/, '  N2 =',I9,/ &
+          '  N3 =',I9,/, '  N4 =',I9,/, '  N5 =',I9 )
  2010 Format( i15 )
 !
 !     Do the work...
 !
       tab = char( 9 )
       write( iout, 1010) DataName
-      if(NR.lt.0.or.NI.lt.0) then
-         write( iout, 1020) tab, "UNKNOWN"
-         write( OutMath1, 2010) NTot
-         call mqc_StripSpaces(OutMath1)
-         write( iout, 1040) tab, trim(OutMath1)
-         return
-      else if(NR.gt.0.and.NI.gt.0) then
-        if(NR.eq.1.and.NI.eq.4) then
-           write( iout, 1020) tab, "2ERIS"
-           write( OutMath1, 2010) NTot
-           call mqc_StripSpaces(OutMath1)
-           write( iout, 1040) tab, trim(OutMath1)
-        else
-           write( iout, 1020) tab, "MIXED"
-           write( OutMath1, 2010) NTot
-           call mqc_StripSpaces(OutMath1)
-           write( iout, 1040) tab, trim(OutMath1)
-        endIf
-      elseIf(NI.eq.1) then
-         write( iout, 1020) tab, "INTEGER"
-         write( OutMath1, 2010) NTot
-         call mqc_StripSpaces(OutMath1)
-         write( iout, 1040) tab, trim(OutMath1)
-      elseIf(NR.eq.1) then
-        if(NRI.eq.1) then
-           write( iout, 1020) tab, "REAL"
-           write( OutMath1, 2010) NTot
-           call mqc_StripSpaces(OutMath1)
-           write( iout, 1040) tab, trim(OutMath1)
-        elseIf(NRI.eq.2) then
-           write( iout, 1020) tab, "COMPLEX"
-           write( OutMath1, 2010) NTot
-           call mqc_StripSpaces(OutMath1)
-           write( iout, 1040) tab, trim(OutMath1)
-        endIf
-      endIf
-      if(N1.gt.1.and.N2.eq.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-         write( OutMath1, 2010) NTot
-         call mqc_StripSpaces(OutMath1)
-         write( iout, 1060) tab, trim(OutMath1)
-      elseIf(N1.gt.1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-         write( OutMath1, 2010) n1
-         call mqc_StripSpaces(OutMath1)
-         write( OutMath2, 2010) n2
-         call mqc_StripSpaces(OutMath2)
-         write( iout, 1030) tab, trim(OutMath1), trim(OutMath2)
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-         a = sqrt( 2.0*NTot )
-         i = a
-         write( OutMath1, 2010) i
-         call mqc_StripSpaces(OutMath1)
-         write( iout, 1050) tab, trim(OutMath1), trim(OutMath1)
-      elseIf(N1.le.-1.and.N2.le.-1.and.N3.le.-1.and.N4.gt.1.and.N5.eq.1) then
-         write( iout, 1020) tab, "SYM SYM R4 TENSOR"
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.gt.1.and.N4.eq.1.and.N5.eq.1) then
-         if ( (abs(N1)+1)*N2/2*n3 .eq. ntot ) then
-            write( OutMath1, 2010) abs(n1)
-            call mqc_StripSpaces(OutMath1)
-            write( OutMath2, 2010) n2
-            call mqc_StripSpaces(OutMath2)
-            write( OutMath3, 2010) n3
-            call mqc_StripSpaces(OutMath3)
-            write( iout, 1080) tab, trim(OutMath1), trim(OutMath2), trim(OutMath3)
-         else
-            write( iout, 1020) tab, "Bad assumption about size Unknown Data Form"
-            write(IOut,1070) NI,NR,NRI,NTot,LenBuf,N1,N2,N3,N4,N5,ASym,LR
-         endif
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.gt.1.and.N4.gt.1.and.N5.eq.1) then
-         if ( (abs(N1)+1)*N2/2*n3*n4 .eq. ntot ) then
-            write( OutMath1, 2010) abs(n1)
-            call mqc_StripSpaces(OutMath1)
-            write( OutMath2, 2010) n2
-            call mqc_StripSpaces(OutMath2)
-            write( OutMath3, 2010) n3
-            call mqc_StripSpaces(OutMath3)
-            write( OutMath4, 2010) n4
-            call mqc_StripSpaces(OutMath4)
-            write( iout, 1090) tab, trim(OutMath1), trim(OutMath2), trim(OutMath3), trim(OutMath4)
-         else
-            write( iout, 1020) tab, "Bad assumption about size Unknown Data Form"
-            write(IOut,1070) NI,NR,NRI,NTot,LenBuf,N1,N2,N3,N4,N5,ASym,LR
-         endif
-      else
-         write( iout, 1020) tab, "Unknown Data Form"
-         write(IOut,1070) NI,NR,NRI,NTot,LenBuf,N1,N2,N3,N4,N5,ASym,LR
-      endIf
+      write( iout, 1020) tab, trim(DataType)
+      write( OutMath1, 2010) NTot
+      call mqc_StripSpaces(OutMath1)
+      write( iout, 1040) tab, trim(OutMath1)
+      write( iout, 1030) tab, trim(formula)
 !
       return
       end subroutine MQC_PRINT_DATA_TYPE
-      subroutine mqc_StripSpaces(string)
-        character(len=*) :: string
-        integer :: stringLen 
-        integer :: last, actual
-
-        stringLen = len (string)
-        last = 1
-        actual = 1
-
-        do while (actual < stringLen)
-           if (string(last:last) == ' ') then
-              actual = actual + 1
-              string(last:last) = string(actual:actual)
-              string(actual:actual) = ' '
-           else
-              last = last + 1
-              if (actual < last) &
-                   actual = last
-           endif
-        end do
-      end subroutine mqc_StripSpaces
 
       subroutine MQC_PRINT_SCALAR_SUMMARY( iOut, current_wavefunction)
       implicit none
@@ -993,10 +1125,6 @@ CONTAINS
       write( OutMath1, 2010 ) current_wavefunction%natoms
       call mqc_StripSpaces(OutMath1)
       write( IOut, 2030) "Number of Atoms", tab, trim(OutMath1), tab, "INTEGER", tab
-
-      write( OutMath1, 2010 ) current_wavefunction%nbasis
-      call mqc_StripSpaces(OutMath1)
-      write( IOut, 2030) "Number of Basis Functions", tab, trim(OutMath1), tab, "INTEGER", tab
 
       write( OutMath1, 2010 ) current_wavefunction%nbasis
       call mqc_StripSpaces(OutMath1)
@@ -1149,76 +1277,104 @@ CONTAINS
     end subroutine MQC_PRINT_DEFAULT_VECTOR_SUMMARY
 !=====================================================================
 !
-!PROCEDURE MQC_Unformatted_Matrix_Array_Type
-      Function MQC_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)
-!
-!     This function returns a character string indicating the type of array
-!     found in a Gaussian matrix file. This is done using NI, NR, N1, N2, N3,
-!     N4, N5 and NRIfrom a matrix header in a Gaussian unformatted matrix file to
-!     determine the type of array the data corresponds to. The return value will
-!     be prepended by "REAL-", "INTEGER-", or "COMPLEX-" and appended by one of
-!     the following:
-!
-!           "VECTOR"           A vector.
-!           "MATRIX"           A matrix that is allocated full (M x N).
-!           "SYMMATRIX"        A symmetric matrix.
-!           "MULTISYMMATRICES" A number of symmetric matrices.
-!
-!     If the input flags do not uniquely identify a known array type, then this
-!     function returns "UNKNOWN".
-!
-!
-!     H. P. Hratchian, 2017.
-!
-!
-!     Variable Declarations.
-!
+
+      subroutine MQC_PRINT_SCALAR_HEAD( iOut, wavefunction)
       implicit none
-      integer(kind=int64),intent(in)::NI,NR,N1,N2,N3,N4,N5,NRI
-      character(len=64)::MQC_Unformatted_Matrix_Array_Type
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      integer(kind=int64),intent(in)::iOut
 !
+!     Format statements.
 !
-!     Do the work...
-!
-      MQC_Unformatted_Matrix_Array_Type = "UNKNOWN"
-      if(NR.lt.0.or.NI.lt.0) return
-      if(NR.gt.0.and.NI.gt.0) then
-        if((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
-          MQC_Unformatted_Matrix_Array_Type = "2ERIS"
-        else
-           MQC_Unformatted_Matrix_Array_Type = "MIXED"
-        endIf
-      elseIf(NI.eq.1) then 
-        MQC_Unformatted_Matrix_Array_Type = "INTEGER"
-      elseIf(NR.eq.1) then
-        if(NRI.eq.1) then
-          MQC_Unformatted_Matrix_Array_Type = "REAL"
-        elseIf(NRI.eq.2) then
-          MQC_Unformatted_Matrix_Array_Type = "COMPLEX"
-        endIf
-      endIf
-      if(N1.gt.1.and.N2.eq.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-VECTOR"
-      elseIf(N1.gt.1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-MATRIX"
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-SYMMATRIX"
-      elseIf(N1.le.-1.and.N2.le.-1.and.N3.le.-1.and.N4.gt.1.and.N5.eq.1) then
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-SYMSYMR4TENSOR"
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.gt.1.and.N4.ge.1.and.N5.eq.1) then
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-MULTISYMMATRICES"
-      else
-        MQC_Unformatted_Matrix_Array_Type = &
-          TRIM(MQC_Unformatted_Matrix_Array_Type)//"-UnknownDataForm"
-      endIf
-!
+ 1000 Format("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&",/, &
+           1x,A,/,"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+ 1010 Format(1x,A,2x,I14)
+
+      write( IOut, 1000) "Contents of Matrix File"
+      write( IOut, 1010) "NUMBER OF ATOMS", wavefunction%natoms
+      write( IOut, 1010) "NUMBER OF BASIS FUNCTIONS", wavefunction%nbasis
+      write( IOut, 1010) "NUMBER OF LINEARLY INDEPENDENT BASIS FUNCTIONS", &
+           wavefunction%nbasisUse
+      write( IOut, 1010) "MOLECULAR CHARGE", wavefunction%iCharge
+      write( IOut, 1010) "SPIN MULTIPLICITY", wavefunction%Multiplicity
+      write( IOut, 1010) "NUMBER OF ELECTRONS", wavefunction%nelectrons
+      write( IOut, 1010) 'CLOSED/OPEN-SHELL FLAG', wavefunction%IOpCl
+      write( IOut, 1010) "ENCODED INDICATOR OF WHETHER THE CALCULATION IS COMPLEX AND/OR GHF", &
+           wavefunction%ICGU
+      write( IOut, 1010) "NUMBER OF FROZEN CORE ORBITALS", wavefunction%NFC
+      write( IOut, 1010) "NUMBER OF FROZEN VIRTUAL ORBITALS", wavefunction%NFV
+      write( IOut, 1010) "NUMBER OF CONTRACTED SHELLS OF AO BASIS FUNCTIONS", &
+           wavefunction%NShlAO
+      write( IOut, 1010) "NUMBER OF PRIMITIVE AO SHELLS", wavefunction%NPrmAO
+      write( IOut, 1010) "NUMBER OF CONTRACTED SHELLS OF DENSITY FITTING FUNCTIONS", &
+           wavefunction%NShlDB
+      write( IOut, 1010) "NUMBER OF PRIMITIVE DENSITY FITTING SHELLS", &
+           wavefunction%NPrmDB
+      write( IOut, 1010) "TOTAL NUMBER OF BONDS IN CONNECTIVITY DATA", &
+           wavefunction%NBTot
+      write( IOut, 1010) "ITRAN", wavefunction%ITran
       return
-      end function MQC_Unformatted_Matrix_Array_Type
+    end subroutine MQC_PRINT_SCALAR_HEAD
+
+      subroutine MQC_PRINT_DEFAULT_VECTOR_HEAD( iOut, wavefunction)
+      implicit none
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      integer(kind=int64),intent(in)::iOut
+      character(len=64)::OutMath1,OutMath2,OutMath3,OutMath4
+      Integer(kind=int64),Parameter::ColWidth=10 
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+!
+!     Format statements.
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(1x,I7,2x,I14)
+ 2001 Format(1x,I7,2x,F14.6)
+ 2021 Format(5x,5(20x,I7))
+ 2011 Format(1x,I7,10F14.6)
+
+! current_wavefunction%atomicNumbers
+      write( IOut, 1000 ) "ATOMIC NUMBERS"
+      Do I = 1, wavefunction%natoms
+         Write(IOut,1001) I, wavefunction%atomicNumbers(I)
+      EndDo
+
+      write( IOut, 1000 ) "ATOMIC TYPES"
+      Do I = 1, wavefunction%natoms
+         Write(IOut,1001) I, wavefunction%atomTypes(I)
+      EndDo
+
+      write( IOut, 1000 ) "ATOM CHARGES"
+      Do I = 1, wavefunction%natoms
+         Write(IOut,2001) I, wavefunction%atomicCharges(I)
+      EndDo
+
+      write( IOut, 1000 ) "CARTESIAN NUCLEAR COORDINATES IN BOHR"
+      NRows = wavefunction%natoms
+      NCols = 3
+      Do IFirst = 1,NCols,ColWidth
+         ILast = Min(IFirst+ColWidth-1,NCols)
+         Write(IOut,2021) (I,I=IFirst,ILast)
+         Do I = 1,NRows
+            Write(IOut,2011) I, (wavefunction%cartesians(I+(J-1)*NRows), &
+                 J=IFirst,ILast)
+         EndDo
+      EndDo
+
+      write( IOut, 1000 ) "MAP FROM BASIS FUNCTIONS TO ATOMS"
+      Do I = 1, wavefunction%nbasis
+         Write(IOut,1001) I, wavefunction%basisFunction2Atom(I)
+      EndDo
+
+      write( IOut, 1000 ) "TYPE FLAG FOR EACH BASIS FUNCTION"
+      Do I = 1, wavefunction%nbasis
+         Write(IOut,1001) I, wavefunction%IBasisFunctionType(I)
+      EndDo
+
+      write( IOut, 1000 ) "ATOMIC WEIGHTS"
+      Do I = 1, wavefunction%natoms
+         Write(IOut,2001) I, wavefunction%atomicWeights(I)
+      EndDo
+      return
+    end subroutine MQC_PRINT_DEFAULT_VECTOR_HEAD
 
     End module MQC_FullWavefunction
 
