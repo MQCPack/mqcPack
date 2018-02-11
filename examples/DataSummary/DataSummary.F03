@@ -21,7 +21,7 @@
       integer(kind=int64) cmd_count
       integer(kind=int64) IAllocated
 !
-      integer(kind=int64) iout, i, status
+      integer(kind=int64) iout, i, status, Print_Options
       class(mqc_link_list), allocatable:: self
 
  1010 Format( A )
@@ -74,9 +74,10 @@
          allocate(self)
          IAllocated = 1
       endif
+      Print_Options = 1
       Do While( trim(FileName).ne.'Done with MatrixFiles' )
          write(iout,1020) trim(FileName)
-         call self%add_summary(FileName,iout)
+         call  mqc_link_list_add(self,Print_Options,FileName,iout)
 
          call  mqc_get_MatrixFile_Name_F2C(FileName, iout)
       EndDo

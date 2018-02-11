@@ -88,7 +88,19 @@ grep -v "cp test1132" tmpfile > outfile 2>&1
 grep -v "Gaussian Version:" outfile > tmpfile 2>&1
 mv tmpfile outfile
 
+cd OUTPUT
+rm -f out_runGau
+var1=$(stat -c%s out_runGau_v2)
+var2=$(stat -c%s ../outfile)
+if [[ "$var1" -eq "$var2" ]]; then
+    ln -s out_runGau_v2 out_runGau
+else
+    ln -s out_runGau_v1 out_runGau
+fi
+cd ..
+
 diff -b -B outfile OUTPUT/out_runGau
+
 
 exit
 # tests 1130, 1135 and 1136 require R.  So a pain to run.
