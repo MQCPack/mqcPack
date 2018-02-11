@@ -1,1 +1,17 @@
-overwrite this
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+ MQC ERROR: Did not find Unknown in the path
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+ MQC ERROR: The file test.com either does not exist, or cannot be read
+Finished with tests designed to fail
+-------------
+MatFile test
+-------------
+ MQC ERROR: The file not_in_path either does not exist, or cannot be read
