@@ -685,17 +685,20 @@ if [ "${MQC_RUN_GAU}" = "y" ]; then
 # Save the working GAUSS_SCRDIR for use as default next time
     echo ${GAUSS_SCRDIR} > ${MQC_HOME}/.other_libs/gaussian/default_scratch 2>&1
 # Use the script that will run Gaussian
-    rm ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    rm -f ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh ${MQC_HOME}/examples/PrintAllData/testit.sh
     ln -s ${MQC_HOME}/examples/CreateDataList/testit_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
     ln -s ${MQC_HOME}/examples/DataSummary/testit_runGau.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    ln -s ${MQC_HOME}/examples/PrintAllData/testit_runGau.sh ${MQC_HOME}/examples/PrintAllData/testit.sh
 else
 # Use the script that will not run Gaussian
-    rm ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    rm -f ${MQC_HOME}/examples/CreateDataList/testit.sh ${MQC_HOME}/examples/DataSummary/testit.sh ${MQC_HOME}/examples/PrintAllData/testit.sh
     ln -s ${MQC_HOME}/examples/CreateDataList/testit_no_runGau.sh ${MQC_HOME}/examples/CreateDataList/testit.sh
     ln -s ${MQC_HOME}/examples/DataSummary/testit_no_runGau.sh ${MQC_HOME}/examples/DataSummary/testit.sh
+    ln -s ${MQC_HOME}/examples/PrintAllData/testit_no_runGau.sh ${MQC_HOME}/examples/PrintAllData/testit.sh
 fi
 chmod 755 ${MQC_HOME}/examples/CreateDataList/testit.sh > ${mqc_tmpfile} 2>&1
 chmod 755 ${MQC_HOME}/examples/DataSummary/testit.sh > ${mqc_tmpfile} 2>&1
+chmod 755 ${MQC_HOME}/examples/PrintAllData/testit.sh > ${mqc_tmpfile} 2>&1
 
 # These functions are required because BASH has a problem with '*'
 ${MQC_HOME}/.other_libs/build_fcns/chmod_all > ${mqc_tmpfile} 2>&1
