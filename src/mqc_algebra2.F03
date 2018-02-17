@@ -113,6 +113,11 @@
         module procedure MQC_Variable_FLOAT_Scalar
       end interface
 !
+!     Interface MQC Varaiable full contraction for vectors --> dot_product.
+      interface dot_product
+        module procedure MQC_Variable_dot_product
+      end interface
+!
 !     Interface routines that clear MQC variable objects.
       interface MQC_Variable_clear
         module procedure MQC_Variable_clear_mqc
@@ -126,6 +131,8 @@
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_real
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_integer
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
+        module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
+        module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
       end interface
 !
 !     Interface routines that fill specific elements of MQC variable objects.
@@ -154,6 +161,8 @@
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_real
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_integer
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
+        module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
+        module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
         module procedure MQC_Variable_mqc2intrinsicIntegerScalar
         module procedure MQC_Variable_mqc2intrinsicRealScalar
       end interface
@@ -637,58 +646,6 @@
 !
       return
       end function MQC_Variable_isInitialized
-
-
-!hph+
-!!
-!!PROCEDURE MQC_Variable_print
-!      subroutine MQC_Variable_print(mqcVariable,iOut,header,  &
-!        blankAtTop,blankAtBottom)
-!!
-!!     This subroutine prints an MQC_Variable object.
-!!
-!!
-!!     Variable Declarations.
-!      implicit none
-!      class(MQC_Variable),intent(in)::mqcVariable
-!      integer,intent(in)::iOut
-!      character(len=*),intent(in)::header
-!      logical,intent(in),optional::blankAtTop,blankAtBottom
-!!
-!      character(len=64)::my_error
-!      logical::my_blankAtTop,my_blankAtBottom
-!!
-! 1000 Format(1x,A)
-! 1001 Format(1x,I7,2x,I14)
-! 1002 Format(1x,I7,2X,F14.6)
-!!
-!!
-!!     Start by setting local variables.
-!!
-!      my_blankAtTop = .false.
-!      my_blankAtBottom = .false.
-!      if(PRESENT(blankAtTop)) my_blankAtTop = blankAtTop
-!      if(PRESENT(blankAtBottom)) my_blankAtBottom = blankAtBottom
-!!
-!!     Run through a CASE statement over the variable type and then by array
-!!     rank.
-!!
-!      select case(TRIM(mqcVariable%getType))
-!      case('INTEGER')
-!        if(mqcVariable%getRank().eq.1) then
-!          call MQC_Print_Vector_Array_Integer(iOut,Vector,Header,Blank_At_Top, &
-!          Blank_At_Bottom)
-!
-!      case default
-!        my_error = TRIM(mqcVariable%getType)
-!        call mqc_error('Unable to print MQC variable type '//TRIM(mqcVariable%getType)//'.')
-!      end select
-!
-!!
-!      return
-!      end subroutine MQC_Variable_print
-!hph-
-
 
 
 !
@@ -1234,7 +1191,7 @@
 !
 !PROCEDURE MQC_Variable_setVal
       subroutine MQC_Variable_setVal(mqcVariable,scalarIntegerIn,  &
-        scalarRealIn,arrayIntegerIn,arrayRealIn)
+        scalarRealIn,arrayIntegerIn,arrayRealIn,dimensions,DEBUGPRINT)
 !
 !     This subroutine is used to set one or more values in the packed storage
 !     array of MQC_Variable dummy argument <mqcVariable> to an scalar or array
@@ -1252,16 +1209,37 @@
       real(kind=real64),intent(in),optional::scalarRealIn
       integer(kind=int64),dimension(:),optional::arrayIntegerIn
       real(kind=real64),dimension(:),optional::arrayRealIn
+      integer(kind=int64),dimension(:),optional::dimensions
+      logical,optional::DEBUGPRINT
 !
       integer(kind=int64)::nInputs,myRank
       integer(kind=int64),dimension(:),allocatable::myDimensions
-      logical::fillInteger,fillReal,fillScalar,fillArray
+      logical::DEBUG,fillInteger,fillReal,fillScalar,fillArray
       character(len=64)::myDataType
 !
 !
-!     Begin by figuring out if we are working with integer/real and scalar/
-!     array. Make sure only one of the four possibilities has been sent.
+!     Begin by setting DEBUG and then figuring out if we are working with
+!     integer/real and scalar/array. Make sure only one of the four
+!     possibilities has been sent.
 !
+      if(Present(DEBUGPRINT)) then
+        DEBUG = DEBUGPRINT
+      else
+        DEBUG = .False.
+      endIf
+      if(DEBUG) then
+        write(*,*)
+        write(*,*)' ---------------------------------------------------'
+        write(*,*)' DEBUG PRINT FOR MQC_Variable_setVal'
+        write(*,*)' ---------------------------------------------------'
+        write(*,*)' INPUT ARGUMENTS:'
+        write(*,*)'   PRESENT(scalarIntegerIn) = ',PRESENT(scalarIntegerIn)
+        write(*,*)'   PRESENT(scalarRealIn)    = ',PRESENT(scalarRealIn)
+        write(*,*)'   PRESENT(arrayIntegerIn)  = ',PRESENT(arrayIntegerIn)
+        write(*,*)'   PRESENT(arrayRealIn)     = ',PRESENT(arrayRealIn)
+        write(*,*)'   PRESENT(dimensions)      = ',PRESENT(dimensions)
+        write(*,*)
+      endIf
       nInputs = 0
       if(Present(scalarIntegerIn)) nInputs = nInputs+1
       if(Present(scalarRealIn)) nInputs = nInputs+1
@@ -1277,6 +1255,12 @@
       fillReal = Present(scalarRealIn).or.Present(arrayRealIn)
       fillScalar = Present(scalarIntegerIn).or.Present(scalarRealIn)
       fillArray = Present(arrayIntegerIn).or.Present(arrayRealIn)
+      if(DEBUG) then
+        write(*,*)'   fillInteger=',fillInteger
+        write(*,*)'   fillReal   =',fillReal
+        write(*,*)'   fillScalar =',fillScalar
+        write(*,*)'   fillArray  =',fillArray
+      endIf
 !
 !     Set myDataType and myRank.
 !
@@ -1289,35 +1273,56 @@
              'fillInteger', fillInteger, &
              'fillReal', fillReal )
       endIf
-      if(fillScalar) then
-        myRank = 0
-      elseIf(fillArray) then
-        myRank = 1
-        Allocate(myDimensions(myRank))
-        if(fillInteger) then
-          myDimensions(1) = SIZE(arrayIntegerIn)
-        elseIf(fillReal) then
-          myDimensions(1) = SIZE(arrayRealIn)
-        else
-          call mqc_error_l('MQC_Variable_setVal: Confused setting myDimensions.', 6, &
-             'fillScalar', fillScalar, &
-             'fillArray', fillArray, &
-             'fillInteger', fillInteger, &
-             'fillReal', fillReal )
+      if(DEBUG) write(*,*)'   myDataType = ',myDataType
+      if(PRESENT(dimensions)) then
+        myRank = SIZE(dimensions)
+        if(myRank.eq.1.and.fillScalar) myRank = 0
+        if(myRank.gt.0) then
+          Allocate(myDimensions(myRank))
+          myDimensions = dimensions
         endIf
       else
-        call MQC_Error_L('MQC_Variable_setVal: Confused setting myRank.', 6, &
-             'fillScalar', fillScalar, &
-             'fillArray', fillArray )
+        if(fillScalar) then
+          myRank = 0
+        elseIf(fillArray) then
+          myRank = 1
+          Allocate(myDimensions(myRank))
+          if(fillInteger) then
+            myDimensions(1) = SIZE(arrayIntegerIn)
+          elseIf(fillReal) then
+            myDimensions(1) = SIZE(arrayRealIn)
+          else
+            call mqc_error_l('MQC_Variable_setVal: Confused setting myDimensions.', 6, &
+              'fillScalar', fillScalar, &
+              'fillArray', fillArray, &
+              'fillInteger', fillInteger, &
+              'fillReal', fillReal )
+          endIf
+        else
+          call MQC_Error_L('MQC_Variable_setVal: Confused setting myRank.', 6, &
+              'fillScalar', fillScalar, &
+              'fillArray', fillArray )
+        endIf
       endIf
+      if(DEBUG) write(*,*)'   myRank = ',myRank
 !
 !     Initialize mqcVariable and then set the value appropriately.
 !
+      if(DEBUG) write(*,*)'   Calling Init...'
       if(myRank.eq.0) then
         call MQC_Variable_initialize(mqcVariable,myDataType)
       else
         call MQC_Variable_initialize(mqcVariable,myDataType,myDimensions,  &
           myRank,'FULL')
+      endIf
+      if(DEBUG) then
+        write(*,*)'   Back from init.'
+        write(*,*)'   rank = ',mqcVariable%rank
+        write(*,*)'   dimensions = ',mqcVariable%dimensions
+        write(*,*)'   ALLOCATED(realArray) ?    = ',ALLOCATED(mqcVariable%realArray)
+        write(*,*)'   ALLOCATED(integerArray) ? = ',ALLOCATED(mqcVariable%integerArray)
+        if(Allocated(mqcVariable%realArray)) write(*,*)'   SIZE(realArray) = ',SIZE(mqcVariable%realArray)
+        if(Allocated(mqcVariable%integerArray)) write(*,*)'   SIZE(integerArray) = ',SIZE(mqcVariable%integerArray)
       endIf
       if(fillScalar) then
         if(fillInteger) then
@@ -1343,6 +1348,12 @@
         endIf
       endIf
 !
+      if(DEBUG) then
+        write(*,*)' ---------------------------------------------------'
+        write(*,*)' ---------------------------------------------------'
+        write(*,*)
+        write(*,*)
+      endIf
       return
       end subroutine MQC_Variable_setVal
 
@@ -1446,6 +1457,76 @@
 !
       return
       end subroutine MQC_Variable_setVal_intrinsicVector2mqcVector_real
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
+      subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer(mqcVariable,intrinsicIn)
+!
+!     This subroutine is used to set an MQC Variable matrix (full storage form)
+!     equal to an intrinsic integer fortran matrix.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      integer(kind=int64),dimension(:,:),intent(in)::intrinsicIn
+      integer(kind=int64)::myLength
+      integer(kind=int64),dimension(2)::myDimensions
+!
+!
+!     Load the MQC variable.
+!
+      myLength = SIZE(intrinsicIn)
+      myDimensions(1) = SIZE(intrinsicIn,1)
+      myDimensions(2) = SIZE(intrinsicIn,2)
+      write(*,*)
+      write(*,*)' hrant - new routine:'
+      write(*,*)' myLength = ',myLength
+      call mqc_print(6,myDimensions,'myDimensions:')
+
+      write(*,*)
+      write(*,*)' HRANT -- Calling SetVal routine....'
+      write(*,*)
+      call MQC_Variable_setVal(mqcVariable,arrayIntegerIn=RESHAPE(intrinsicIn,[myLength]),  &
+        dimensions=myDimensions,DEBUGPRINT=.False.)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+      subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real(mqcVariable,intrinsicIn)
+!
+!     This subroutine is used to set an MQC Variable matrix (full storage form)
+!     equal to an intrinsic integer fortran matrix.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      real(kind=real64),dimension(:,:),intent(in)::intrinsicIn
+      integer(kind=int64)::myLength
+      integer(kind=int64),dimension(2)::myDimensions
+!
+!
+!     Load the MQC variable.
+!
+      myLength = SIZE(intrinsicIn)
+      myDimensions(1) = SIZE(intrinsicIn,1)
+      myDimensions(2) = SIZE(intrinsicIn,2)
+      call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
+        dimensions=myDimensions,DEBUGPRINT=.False.)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
 
 
 !
@@ -2085,6 +2166,42 @@
 !
       return
       end function MQC_Variable_Contraction_Full
+
+
+!
+!PROCEDURE MQC_Variable_dot_product
+      function MQC_Variable_dot_product(mqcVariable1,mqcVariable2) result(mqcVariableOut)
+!
+!     This function solves the dot product of two vectors stored in the input
+!     dummy MQC_Variables arguments <mqcVariable1> and <mqcVariable2>. If these
+!     two arguments do not correspond to vectors, this function fails.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
+      type(MQC_Variable)::mqcVariableOut
+!
+!
+!     Start by ensuring the two MQC Variables are vectors and are conformable.
+!
+      if(mqcVariable1%getRank.ne.1.or.mqcVariable2%getRank().ne.1)  &
+        call mqc_error_i('dot_product must be between two vectors.',6, &
+        'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
+        'RANK(mqcVariable2)',mqcVariable2%getRank())
+      if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
+        call mqc_error_l('MQC Division only allowed for conformable values.',6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(mqcVariable1,mqcVariable2))
+!
+!     Calculate the dot product.
+!
+      mqcVariableOut = MQC_Variable_Contraction_Full(mqcVariable1,mqcVariable2)
+!
+      return
+      end function MQC_Variable_dot_product
 
 
 !

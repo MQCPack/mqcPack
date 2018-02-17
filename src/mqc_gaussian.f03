@@ -36,6 +36,7 @@
       USE MQC_General
       USE MQC_Files
       USE MQC_Algebra
+      USE MQC_Algebra2
       USE MQC_EST
       USE MQC_molecule
       USE MQC_matwrapper
@@ -84,7 +85,7 @@
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
         procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
-        procedure,pass::getMolData   => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+        procedure,pass::getMolData     => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
         procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
         procedure,pass::writeArray     => MQC_Gaussian_Unformatted_Matrix_Write_Array
@@ -974,14 +975,14 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Read_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
-       label,matrixOut,vectorOut,r4TensorOut,filename)
+       label,matrixOut,vectorOut,r4TensorOut,filename,mqcVarOut)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
-!     <matrixOut>, (OPTIONAL) output dummy MQC_Vector argument <vectorOut>, or
-!     (OPTIONAL) output dummy MQC_R4Tensor argument <r4TensorOut>. The character
-!     label for the array of interest is sent to this routine in dummy argument
-!     <label>.
+!     <matrixOut>, (OPTIONAL) output dummy MQC_Vector argument <vectorOut>,
+!     (OPTIONAL) output dummy MQC_R4Tensor argument <r4TensorOut>, or (OPTIONAL)
+!     output dummy MQC_Variable argument <mqcVarOut>. The character label for
+!     the array of interest is sent to this routine in dummy argument <label>.
 !
 !     Dummy argument <filename> is optional and is only used if fileinfo
 !     hasn't already been defined using Routine
@@ -995,7 +996,7 @@
 !     routine. However, it is also OK to call this routine first. In that case,
 !     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2018.
 !     L. M. Thompson, 2017
 !
 !     Variable Declarations.
@@ -1007,6 +1008,7 @@
       type(MQC_Vector),intent(inout),OPTIONAL::vectorOut
       type(MQC_R4Tensor),intent(inout),OPTIONAL::r4TensorOut
       character(len=*),intent(in),OPTIONAL::filename
+      type(MQC_Variable),intent(inout),OPTIONAL::mqcVarOut
 !
       integer::iout=6
 !
@@ -1075,11 +1077,13 @@
       if(Present(matrixOut)) nOutputArrays = nOutputArrays+1
       if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
       if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
+      if(Present(mqcVarOut)) nOutputArrays = nOutputArrays+1
       if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
            'nOutputArrays', nOutputArrays )
 !
 !     Look for the label sent by the calling program unit. If the label is
-!     found, then load <matrixOut> with the data on the file.
+!     found, then load the appropriate output argument with the data on the
+!     file.
 !
       found = .false.
       outerLoop:do i = 1,2
@@ -1093,8 +1097,11 @@
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
+!
+!           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
+!           type (integer, real, etc.) and data structure (scalar, vector,
+!           matrix, etc.).
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
-
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
@@ -1102,10 +1109,11 @@
                 vectorOut = integerTmp
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,integerTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = integerTmp
               else
-                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.', 6, &
-'Present(matrixOut)', Present(matrixOut) )
+                call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to procedure.',  &
+                  6,'Present(vectorOut)',Present(vectorOut),'Present(matrixOut)',Present(matrixOut) )
               endIf
               deallocate(integerTmp)
             case('INTEGER-MATRIX')
@@ -1124,7 +1132,6 @@
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
               deallocate(integerTmp)
-
             case('REAL-VECTOR')
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
@@ -1132,19 +1139,24 @@
                 vectorOut = arrayTmp
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,arrayTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = arrayTmp
               else
-                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.', 6, &
-                  'Present(matrixOut)', Present(matrixOut) )
+                call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to procedure.',  &
+                  6,'Present(vectorOut)',Present(vectorOut),'Present(matrixOut)',Present(matrixOut) )
               endIf
               deallocate(arrayTmp)
             case('REAL-MATRIX')
-              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.', 6, &
-                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
-              matrixOut = Reshape(arrayTmp,[N1,N2])
+              if(Present(matrixOut)) then
+                matrixOut = Reshape(arrayTmp,[N1,N2])
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = Reshape(arrayTmp,[N1,N2])
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
               deallocate(arrayTmp)
             case('REAL-SYMMATRIX')
               if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
