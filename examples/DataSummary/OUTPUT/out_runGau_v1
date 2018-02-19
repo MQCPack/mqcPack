@@ -14,8 +14,7 @@ Finished with tests designed to fail
 ------------------------
 Pass through MatFile test
 ------------------------
-MatrixFiles:
-   - rhf_h2-sto3g.mat
+MatrixFile:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -107,33 +106,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 6
 	         - 2-D MATRIX allocated full (2 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -276,8 +275,7 @@ REGULAR 2E INTEGRALS
 -------------------------------
 test.com Create MatrixFile test
 -------------------------------
-MatrixFiles:
-   - rhf_h2-sto3g.mat
+MatrixFile:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -369,33 +367,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 6
 	         - 2-D MATRIX allocated full (2 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -538,8 +536,7 @@ REGULAR 2E INTEGRALS
 -------------------------------
 test1071 Create MatrixFile test
 -------------------------------
-MatrixFiles:
-   - test1071.mat
+MatrixFile:  test1071.mat
 ********************************************************
           test1071.mat
 ********************************************************
@@ -631,33 +628,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 4
 	         - VECTOR(4)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 4
 	         - VECTOR(4)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 4
 	         - VECTOR(4)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 12
 	         - 2-D MATRIX allocated full (4 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 48
 	         - VECTOR(48)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 48
 	         - VECTOR(48)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 4
 	         - VECTOR(4)
@@ -788,8 +785,7 @@ ALPHA FOCK MATRIX
 -------------------------------
 test1129 Create MatrixFile test
 -------------------------------
-MatrixFiles:
-   - test1129.dat
+MatrixFile:  test1129.dat
 ********************************************************
           test1129.dat
 ********************************************************
@@ -881,33 +877,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 3
 	         - VECTOR(3)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 3
 	         - VECTOR(3)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 9
 	         - 2-D MATRIX allocated full (3 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 11
 	         - VECTOR(11)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 11
 	         - VECTOR(11)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
@@ -1078,8 +1074,7 @@ BB MO 2E INTEGRALS
 --------------------------------
 test1132 Create MatrixFiles test
 --------------------------------
-MatrixFiles:
-   - test1132.mat
+MatrixFile:  test1132.mat
 ********************************************************
           test1132.mat
 ********************************************************
@@ -1171,33 +1166,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 6
 	         - 2-D MATRIX allocated full (2 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -1316,14 +1311,11 @@ ALPHA FOCK MATRIX
 -----------------------------------------
 test1132 Pass one MatrixFile through test
 -----------------------------------------
-MatrixFiles:
-   - test1132r.dat
 Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
 ------------------------------------------------------------------
 test1132 Create One MartixFile and Pass through 3 MatrixFiles test
 ------------------------------------------------------------------
-MatrixFiles:
-   - test1132.mat
+MatrixFile:  test1132.mat
 ********************************************************
           test1132.mat
 ********************************************************
@@ -1415,33 +1407,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 6
 	         - 2-D MATRIX allocated full (2 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -1557,11 +1549,9 @@ ALPHA FOCK MATRIX
 	         - COMPLEX
 	         - Total elements: 1596
 	         - SYMMETRIC MATRIX ((56+1)*56/2)
-   - test1132gr.dat
 Warning: MQC Pack cannot process file 'test1132gr.dat' it may have been created with the raw attribute.
-   - test1132r.dat
 Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
-   - test1132u.dat
+MatrixFile:  test1132u.dat
 ********************************************************
           test1132u.dat
 ********************************************************
@@ -1653,33 +1643,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 3
 	         - VECTOR(3)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 3
 	         - VECTOR(3)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 9
 	         - 2-D MATRIX allocated full (3 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 20
 	         - VECTOR(20)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 20
 	         - VECTOR(20)
-Atomic Weights
+ATOMIC WEIGHTS
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
