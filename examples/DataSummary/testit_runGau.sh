@@ -13,11 +13,11 @@ echo "------------------------------------" >> ../outfile 2>&1
 echo "Failure Test: Program is not in path" >> ../outfile 2>&1
 echo "------------------------------------" >> ../outfile 2>&1
 ../DataSummary test.com not_in_path >> ../outfile
+cd ..
+rm -r test
 
 # set up the Gaussian environment
 export GauBINARY="${GAU_BINARY}"
-cd ..
-rm -r test
 
 mkdir test2
 cd test2
