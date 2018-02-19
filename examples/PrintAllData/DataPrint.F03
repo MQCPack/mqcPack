@@ -1,5 +1,5 @@
 ! This program tests Reading everthing in a MartixFile
-     program FullWavefunction_RW
+     program DataPrint
 !
 !     This program contains examples of the matrix file read and write routines
 !
@@ -18,78 +18,30 @@
       character(len=1024)::program_name
       character(len=1024)::no_program_name
       character(len=1024)::FileName
-      integer(kind=int64) cmd_count
-      integer(kind=int64) IAllocated
 !
       integer(kind=int64) iout, i, status
       integer(kind=int64) Print_Options
-      class(mqc_link_list), allocatable:: self
+      class(mqc_link_list), allocatable:: mqc_input_file_list
+      class(mqc_READONLY_list), allocatable:: my_READONLY_list
 
  1010 Format( A )
  1020 Format( '   - ',A )
-      cmd_count = COMMAND_ARGUMENT_COUNT()
-      iout = 6
-      IAllocated = 0
-      if ( cmd_count .eq. 0 ) then
-         write( iout, 1010 ) "Error in number of argments to this program."
-         write( iout, 1010 ) "Arguments should be:"
-         write( iout, 1010 ) "     - Full path to a Gaussian file"
-         write( iout, 1010 ) "        - This can either be FormChk File"
-         write( iout, 1010 ) "        - This can either be a MatrixFile"
-         write( iout, 1010 ) "        - This can be a Gaussian input file"
-         write( iout, 1010 ) "     - Optional, only required if the first "
-         write( iout, 1010 ) "          argument is a Gaussian input file."
-         write( iout, 1010 ) "          The name of the binary for the "
-         write( iout, 1010 ) "          program that generates the"
-         write( iout, 1010 ) "          FormChk/MatrixFile, most likely"
-         write( iout, 1010 ) "          'g16'. The environment should be"
-         write( iout, 1010 ) "          setup to run the program."
-         call mqc_error_i( "No arguments to this program", iout)
-      endif
-      if ( cmd_count.eq. 1 ) then
-         no_program_name = 'Unknown'
-         call get_command_argument(1, FileName)
-         call mqc_create_File_Name_lists_F2C(FileName, no_program_name, iout)
-      else
-         call get_command_argument(cmd_count, program_name)
-         call mqc_File_Is_Executable_F2C( program_name, Status, iout )
-         if ( Status .eq. 1 ) then
-            do i = 1, cmd_count-1
-               call get_command_argument(i, FileName)
-               call mqc_create_File_Name_lists_F2C(FileName,Program_name,iout)
-            end do
-         else
-            no_program_name = 'Unknown'
-            do i = 1, cmd_count
-               call get_command_argument(i, FileName)
-               call mqc_create_File_Name_lists_F2C(FileName,no_program_name,iout)
-            end do
-         endif
-      endif
-#ifdef MATRIXFILE
-      call  mqc_get_MatrixFile_Name_F2C(FileName, iout)
-      if ( trim(FileName).ne.'Done with MatrixFiles' ) then
-         write(iout,1010) 'MatrixFiles:'
-      endif
-      if ( trim(FileName).ne.'Done with MatrixFiles' ) then
-         allocate(self)
-         IAllocated = 1
-      endif
-      Print_Options=0
-      Do While( trim(FileName).ne.'Done with MatrixFiles' )
-         write(iout,1020) trim(FileName)
-         call mqc_link_list_add(self,Print_Options,FileName,iout)
 
-         call  mqc_get_MatrixFile_Name_F2C(FileName, iout)
-      EndDo
-#endif
+      iout = 6
+      allocate(mqc_input_file_list)
+      allocate(my_READONLY_list)
+      Print_Options=2
+
+      Call MQC_Create_Wavefunctions( Print_Options, my_READONLY_list, &
+           mqc_input_file_list, Iout)
+
       call  mqc_get_FormChk_Name_F2C(FileName, iout)
       if ( trim(FileName).ne.'Done with FormChk' ) then
          write(iout,1010) 'FormChk Files:'
       endif
       if ( trim(FileName).ne.'Done with FormChk' ) then
-         if ( IAllocated .ne. 1 ) then
-            allocate(self)
+         if ( .not.allocated(mqc_input_file_list) ) then
+            allocate(mqc_input_file_list)
          endif
       endif
       Do While( trim(FileName).ne.'Done with FormChk' )
@@ -97,4 +49,5 @@
          call  mqc_get_FormChk_Name_F2C(FileName, iout)
       EndDo
 
-    end program FullWavefunction_RW
+    end program DataPrint
+
