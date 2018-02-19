@@ -47,48 +47,39 @@ module MQC_FullWavefunction
 
   ! Linked list array data type
   type :: mqc_array_link_list_node
-     private
      character(Len=64) :: Data_Name
      integer(kind=int64) :: NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR
      character(Len=64):: Data_Type,Shape
      character(Len=1024):: Formula
-     Real(Kind=real64),Dimension(:),Allocatable::VecR
-     Integer(kind=int64),Dimension(:),Allocatable::VecI
-     Complex(Kind=real64),Dimension(:),Allocatable::VecC
+     Real(Kind=real64),Dimension(:,:,:,:,:),Allocatable::ArrR
+     Integer(kind=int64),Dimension(:,:,:,:,:),Allocatable::ArrI
+     Complex(Kind=real64),Dimension(:,:,:,:,:),Allocatable::ArrC
      type(mqc_array_link_list_node),pointer :: next =>null()
   end type mqc_array_link_list_node
 
   type :: mqc_array_link_list
-     private
-     type(mqc_array_link_list_node),pointer,private :: first => null()
-     type(mqc_array_link_list_node),pointer,private :: last => null()
-     type(mqc_array_link_list_node),pointer,private :: current => null()
+     type(mqc_array_link_list_node),pointer :: first => null()
+     type(mqc_array_link_list_node),pointer :: last => null()
+     type(mqc_array_link_list_node),pointer :: current => null()
      integer(kind=int64),private :: length = 0
    contains
      procedure :: start => mqc_array_link_list_start
      procedure :: next => mqc_array_link_list_next
   end type mqc_array_link_list
 
-  ! A public variable to use as a MOLD for transfer()
-  integer(kind=int64), dimension(:), allocatable :: list_data
-
-!       we should make Alpha, Beta etc. private once MQC_Gaussian discards old 
-!       matrix file reading routine      
   Type MQC_ALL_Wavefunction
      Character(Len=256)::FileName,Basis,Symmetry,WF_Type
      Character(Len=64)::LabFil
      Character(Len=64)::GVers
      Character(Len=64)::Title
-     Integer(kind=int64)::UnitNumber,IVers,NLab,NAtoms,nbasisUse,Len12L,Len4L
 
+     Integer(kind=int64)::UnitNumber,IVers,NLab,NAtoms,nbasisUse,Len12L,Len4L
      Integer(kind=int64)::IOpCl,ICGU,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB
      Integer(kind=int64)::NPrmDB,NBTot
      Integer(kind=int64)::NAlpha,NBeta,NElectrons,NBasis,iCharge,Multiplicity
-     integer,dimension(:),allocatable::atomicNumbers,atomTypes, &
-          basisFunction2Atom,IBasisFunctionType
-     Logical::WF_Complex
      Integer(kind=int64)::NCore,NVal,NActive
-     real(kind=real64),dimension(:),allocatable::atomicCharges,atomicWeights,cartesians
+
+     Logical::WF_Complex
 
      Type(mqc_array_link_list)::Array_Data
 
@@ -101,10 +92,9 @@ module MQC_FullWavefunction
   end type mqc_link_list_node
 
   type :: mqc_link_list
-     private
-     type(mqc_link_list_node),pointer,private :: first => null()
-     type(mqc_link_list_node),pointer,private :: last => null()
-     type(mqc_link_list_node),pointer,private :: current => null()
+     type(mqc_link_list_node),pointer :: first => null()
+     type(mqc_link_list_node),pointer :: last => null()
+     type(mqc_link_list_node),pointer :: current => null()
      integer(kind=int64),private :: length = 0
    contains
      procedure :: start => mqc_link_list_start
@@ -112,10 +102,28 @@ module MQC_FullWavefunction
      procedure :: next => mqc_link_list_next
   end type mqc_link_list
 
+  ! Linked list READONLY data type
+  type :: mqc_READONLY_list_node
+     character(Len=64) :: Data_Name
+     type(mqc_READONLY_list_node),pointer :: next =>null()
+  end type mqc_READONLY_list_node
+
+  type :: mqc_READONLY_list
+     type(mqc_READONLY_list_node),pointer :: first => null()
+     type(mqc_READONLY_list_node),pointer :: last => null()
+     type(mqc_READONLY_list_node),pointer :: current => null()
+     integer(kind=int64),private :: length = 0
+   contains
+     procedure :: start => mqc_READONLY_list_start
+     procedure :: next => mqc_READONLY_list_next
+  end type mqc_READONLY_list
+
 CONTAINS
-      subroutine mqc_read_all_wavefunction( current_wavefunction, Print_Options, iout)
+      subroutine mqc_read_all_wavefunction( current_wavefunction, &
+           my_READONLY_list, Print_Options, iout)
       implicit none
       class(MQC_ALL_Wavefunction),intent(inout)::current_wavefunction
+      class(mqc_READONLY_list),intent(inout):: my_READONLY_list
       integer(kind=int64),intent(in)::Print_Options
       integer(kind=int64),intent(in)::iOut
       Integer(kind=int64):: NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,NRI,LR
@@ -125,11 +133,12 @@ CONTAINS
       logical EOF
       character(len=64)::OutMath1,OutMath2,OutMath3,OutMath4
       integer(kind=int32)::i
-      integer(kind=int64)::IERROR
+      integer(kind=int64)::IERROR, natoms, NBasis
 !
 !     Format statements.
 !
  1000 format( "Warning: MQC Pack cannot process file '",a,"' it may have been created with the raw attribute.")
+ 1005 format( "MatrixFile:  ",a)
  1010 format('DataName  ',a,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
  1050 format( 'ERROR:',a,': please implement proper handling of this data type')
@@ -137,11 +146,6 @@ CONTAINS
  1070 format('NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
  2010 Format( i15 )
- 2020 Format ( "********************************************************", &
-           /,10x,A,/, &
-           "********************************************************",/, &
-           "Gaussian Version:",A,/,&
-           "Job Title:",A)
 !
 ! Open the file and read the first 2 records
 !
@@ -163,49 +167,24 @@ CONTAINS
            current_wavefunction%IOpCl, &
            current_wavefunction%ICGU )
 
-      if ( current_wavefunction%UnitNumber.eq.-2 ) then
-         write( 6, 1000 ) trim(current_wavefunction%FileName)
+      If ( current_wavefunction%UnitNumber.eq.-2 ) then
+         write( IOut, 1000 ) trim(current_wavefunction%FileName)
+!
+! Flag that this wavefunction is empty and should be ignored later
+!
+         current_wavefunction%NAtoms = -1
          return
-      endif
+      EndIF
+      If ( Print_Options .eq. 1 .or. Print_Options .eq. 2 ) then
+         write( IOut, 1005 ) trim(current_wavefunction%FileName)
+      EndIF
 !
 ! Read the next 9 records
 !
-      allocate(current_wavefunction%atomicNumbers(current_wavefunction%natoms),  &
-          current_wavefunction%atomTypes(current_wavefunction%natoms),  &
-          current_wavefunction%atomicCharges(current_wavefunction%natoms),  &
-          current_wavefunction%atomicWeights(current_wavefunction%natoms))
-
-      allocate(current_wavefunction%cartesians(current_wavefunction%natoms*3))
-      allocate(current_wavefunction%basisFunction2Atom(current_wavefunction%NBasis),  &
-         current_wavefunction%IBasisFunctionType(current_wavefunction%NBasis))
-      call Rd_Head(current_wavefunction%unitNumber, &
-           current_wavefunction%NLab, &
-           current_wavefunction%natoms, &
-           current_wavefunction%nbasis, &
-           current_wavefunction%atomicNumbers, &
-           current_wavefunction%atomTypes, &
-           current_wavefunction%atomicCharges, &
-           current_wavefunction%cartesians, &
-           current_wavefunction%basisFunction2Atom, &
-           current_wavefunction%IBasisFunctionType, &
-           current_wavefunction%atomicWeights, &
-           current_wavefunction%NFC, &
-           current_wavefunction%NFV, &
-           current_wavefunction%ITran, &
-           current_wavefunction%IDum9, &
-           current_wavefunction%NShlAO, &
-           current_wavefunction%NPrmAO, &
-           current_wavefunction%NShlDB, &
-           current_wavefunction%NPrmDB, &
-           current_wavefunction%NBTot)
-!
-      if ( Print_Options == 1 ) then
-         write( IOut, 2020) trim(current_wavefunction%FileName), &
-              trim(current_wavefunction%GVers), &
-              trim(current_wavefunction%Title)
-         call MQC_PRINT_SCALAR_SUMMARY( iOut, current_wavefunction )
-         call MQC_PRINT_DEFAULT_VECTOR_SUMMARY( iOut, current_wavefunction)
-      endif
+      natoms = current_wavefunction%natoms
+      NBasis = current_wavefunction%NBasis
+      call MQC_Read_MatFile_9_Records( current_wavefunction, &
+           my_READONLY_list, Print_Options, Natoms, NBASIS, IOut)
 
       EOF = .false.
       IERROR = 0
@@ -219,7 +198,6 @@ CONTAINS
               N1,N2,N3,N4,N5,ASym,LR
 #endif
          call String_Change_Case(cBuf,'u')
-
          if ( Print_Options == 1 ) then
             if('END'.eq.trim(cBuf)) then
                Call Close_MatF(current_wavefunction%unitNumber)
@@ -230,18 +208,20 @@ CONTAINS
                  DataType,Shape,Formula)
                Call Rd_Skip(current_wavefunction%UnitNumber,NTot,LenBuf)
             endif
-         else
-            call String_Change_Case(cBuf,'u')
+         else 
             if(trim(cBuf).eq.'END') then
                Call Close_MatF(current_wavefunction%unitNumber)
-               call mqc_print_all_wavefunction(current_wavefunction, IOut)
+               if ( Print_Options == 2 ) then
+                  call mqc_print_all_wavefunction(current_wavefunction, IOut)
+               endif
                if (IERROR .ne. 0 ) then
-                  call mqc_error_I('mqc_read_all_wavefunction: Found errors reading Matrix Element File', 6)
+                  call mqc_error_I('mqc_read_all_wavefunction: Found errors reading Matrix Element File', IOut)
                endif
                return
             endif
 
-            call MQC_Unformatted_Read_Array(current_wavefunction,cBuf, &
+            call MQC_Unformatted_Read_Array(current_wavefunction, &
+                 my_READONLY_list, cBuf, &
                  NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,DataType,Shape,&
                  Formula,IOut,IERROR)
 !
@@ -250,19 +230,160 @@ CONTAINS
       return
       end subroutine mqc_read_all_wavefunction
 !
+!     PROCEDURE MQC_Read_MatFile_9_Records
+      Subroutine MQC_Read_MatFile_9_Records( wavefunction, &
+           my_READONLY_list, Print_Options, Natoms, NBASIS, IOut)
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      class(mqc_READONLY_list),intent(inout):: my_READONLY_list
+      integer(kind=int64),intent(in)::Print_Options
+      integer(kind=int64),intent(in)::NAtoms,NBasis
+      integer(kind=int64),intent(in)::iOut
+      Integer(kind=int64)::atomicNumbers(natoms)
+      Integer(kind=int64)::atomTypes(natoms)
+      Integer(kind=int64)::basisFunction2Atom(NBasis)
+      INTEGER(kind=int64)::IBasisFunctionType(NBasis)
+      INTEGER(kind=int64)::NR,NI,NRI,N1,N2,N3,N4,N5,LR
+
+      Real(kind=real64)::atomicCharges(natoms)
+      Real(kind=real64)::atomicWeights(natoms)
+      Real(kind=real64)::cartesians(3,natoms,1,1,1)
+      Character(Len=2048)::Data_Type,Shape,Formula
+      Integer(kind=int32)::I,J,K
+      Integer(kind=int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 2020 Format ( "********************************************************", &
+           /,10x,A,/, &
+           "********************************************************",/, &
+           "Gaussian Version:",A,/,&
+           "Job Title:",A)
+
+      call Rd_Head_G(wavefunction%unitNumber, wavefunction%NLab, &
+           natoms, nbasis, atomicNumbers, atomTypes, atomicCharges, &
+           cartesians, basisFunction2Atom, IBasisFunctionType, &
+           atomicWeights, wavefunction%NFC, wavefunction%NFV, &
+           wavefunction%ITran, wavefunction%IDum9, wavefunction%NShlAO, &
+           wavefunction%NPrmAO, wavefunction%NShlDB, wavefunction%NPrmDB, &
+           wavefunction%NBTot)
+!
+      if ( Print_Options == 1 ) then
+!        Write a Summary of the data.  No need to save it
+         write( IOut, 2020) trim(wavefunction%FileName), &
+              trim(wavefunction%GVers), trim(wavefunction%Title)
+         call MQC_PRINT_SCALAR_SUMMARY( iOut, wavefunction )
+         call MQC_PRINT_DEFAULT_VECTOR_SUMMARY( iOut, wavefunction)
+      else
+         NRI=1
+         N1=NAtoms
+         N2=1
+         N3=1
+         N4=1
+         N5=1
+         NR=0
+         NI=1
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,Data_Type,Shape,Formula)
+         call mqc_array_link_list_add(wavefunction, "ATOMIC NUMBERS", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrI(natoms,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'ATOMIC NUMBERS')
+         wavefunction%Array_Data%last%ArrI(1:NAtoms,1,1,1,1) = &
+              atomicNumbers(1:NAtoms)
+
+         call mqc_array_link_list_add(wavefunction, "ATOM TYPES", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrI(NAtoms,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'ATOM TYPES')
+         wavefunction%Array_Data%last%ArrI(1:NAtoms,1,1,1,1) = &
+              atomTypes(1:NAtoms)
+
+         NR=1
+         NI=0
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,Data_Type,Shape,Formula)
+         call mqc_array_link_list_add(wavefunction,"ATOM CHARGES", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrR(natoms,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'ATOM CHARGES')
+         wavefunction%Array_Data%last%ArrR(1:NAtoms,1,1,1,1) = &
+              atomicCharges(1:NAtoms)
+         N1=3
+         N2=NAtoms
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,Data_Type,Shape,Formula)
+         call mqc_array_link_list_add(wavefunction, &
+              'CARTESIAN NUCLEAR COORDINATES(BOHR)', &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrR(3,natoms,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'CARTESIAN NUCLEAR COORDINATES(BOHR)')
+         wavefunction%Array_Data%last%ArrR(1:3,1:NAtoms,1,1,1) = &
+              cartesians(1:3,1:NAtoms,1,1,1)
+         N1=NBasis
+         N2=1
+         NR=0
+         NI=1
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,Data_Type,Shape,Formula)
+         call mqc_array_link_list_add(wavefunction, &
+              "MAP FROM BASIS FUNCTIONS TO ATOMS", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrI(NBasis,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'MAP FROM BASIS FUNCTIONS TO ATOMS')
+         wavefunction%Array_Data%last%ArrI(1:NBasis,1,1,1,1) = &
+              basisFunction2Atom(1:NBasis)
+
+         call mqc_array_link_list_add(wavefunction, &
+              "TYPE FLAG FOR EACH BASIS FUNCTION", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrI(NBasis,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'TYPE FLAG FOR EACH BASIS FUNCTION')
+         wavefunction%Array_Data%last%ArrI(1:NBasis,1,1,1,1) = &
+              IBasisFunctionType(1:NBasis)
+
+         N1=NAtoms
+         NR=1
+         NI=0
+         LR = mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5,Data_Type,Shape,Formula)
+         call mqc_array_link_list_add(wavefunction, "ATOM WEIGHTS", &
+              NR,NI,NRI,LR,N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
+         allocate(wavefunction%Array_Data%last%ArrR(NAtoms,1,1,1,1), &
+              STAT = AllocateStatus)
+         IF (AllocateStatus /= 0) call MQC_Error_A( & 
+              'Not Enough Memory to allocate data structure', Iout, &
+              'DataName', 'ATOM WEIGHTS')
+         wavefunction%Array_Data%last%ArrR(1:NAtoms,1,1,1,1) = &
+              atomicWeights(1:NAtoms)
+      endif
+      return
+      end Subroutine MQC_Read_MatFile_9_Records
+!
 !     PROCEDURE MQC_Print_all_Wavefunction     
       subroutine mqc_print_all_wavefunction(wavefunction,iOut)
 !
       implicit none
-      class(MQC_ALL_Wavefunction)::wavefunction
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
       integer(kind=int64),intent(in)::iOut
       integer(kind=int64)::LR
-!                                                                                    write( iout, 1050) "In mqc_print_all_wavefunction"
+
  1050 Format( 2A )
  1060 Format( A,L10 )
 
       call MQC_PRINT_SCALAR_HEAD( iOut, wavefunction )
-      call MQC_PRINT_DEFAULT_VECTOR_HEAD( iOut, wavefunction)
 !                                                                              
       wavefunction%Array_Data%last => wavefunction%Array_Data%first
       Do While( associated(wavefunction%Array_Data%last) )
@@ -320,6 +441,47 @@ CONTAINS
       write( iout, 1050) "Finished mqc_print_all_wavefunction"
       end subroutine mqc_print_all_wavefunction
 
+!
+!     PROCEDURE MQC_Find_mqc_array_link_list_node
+      Integer(kind=int64) Function MQC_Find_mqc_array_link_list_node(wavefunction,Name,Found, &
+           iOut)
+!
+      implicit none
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      character(len=*),intent(in) :: Name
+      integer(kind=int64),intent(in)::iOut
+      type(mqc_array_link_list_node),pointer,intent(out) ::Found
+      integer(kind=int64)::LR
+ 1050 Format( 2A )
+ 1060 Format( A,L10 )
+
+      wavefunction%Array_Data%last => wavefunction%Array_Data%first
+      Do While( associated(wavefunction%Array_Data%last) )
+         if (trim(wavefunction%Array_Data%last%Data_Name) .eq. trim(Name) ) then
+            Found => wavefunction%Array_Data%last
+            If ( allocated(Found%ArrI) ) then
+               If ( allocated(Found%ArrR) ) then
+                  MQC_Find_mqc_array_link_list_node = 4
+               Else If ( allocated(Found%ArrC) ) then
+                  MQC_Find_mqc_array_link_list_node = 5
+               Else 
+                  MQC_Find_mqc_array_link_list_node = 1
+               EndIf
+            Else If ( allocated(Found%ArrR) ) then
+               MQC_Find_mqc_array_link_list_node = 2
+            Else If ( allocated(Found%ArrC) ) then
+               MQC_Find_mqc_array_link_list_node = 3
+            EndIf
+            return
+         endif
+         wavefunction%Array_Data%last => wavefunction%Array_Data%last%next
+      enddo
+!
+      Found => null()
+      MQC_Find_mqc_array_link_list_node = 0
+
+      end Function MQC_Find_mqc_array_link_list_node
+
       Subroutine MQC_Print_Array_Integer(IOut, Array,Blank_At_Top, &
         Blank_At_Bottom)
       implicit none
@@ -337,9 +499,12 @@ CONTAINS
  1010 Format(1x,A,2x,I14)
  1020 Format(" ")
  2001 Format(5x,10(7x,I7))
+ 2002 Format(5x,10(5x,I7,",",I1))
+ 2003 Format(5x,10(4x,I7,",",I2))
+ 2004 Format(5x,10(I7,",",I6))
+ 2005 Format(5x,10(3x,I7,",",I1,",",I1))
+ 2006 Format(5x,10(3x,I7,",",I7,",",I7))
  2011 Format(1x,I7,10I14)
- 3010 Format("  Dimension 3:",I5 )
- 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
  4010 format( "(",I5,",",I5,"|",I5,",",I5,") = ",I10 )
  4020 format( "(",I5,",",I5,",",I5,") = ",I10 )
  5010 Format("Warning: Do Not know how do deal with the shape of ",A)
@@ -352,10 +517,10 @@ CONTAINS
       EndIf
 
       if ( Array%Shape.eq."SCALAR") then
-         Write(IOut,1010) TRIM(Array%Data_Name), Array%VecI(1)
+         Write(IOut,1010) TRIM(Array%Data_Name), Array%ArrI(1,1,1,1,1)
       else if ( Array%Shape.eq."VECTOR") then
          Do I = 1, Array%LR
-            Write(IOut,1001) I,  Array%VecI(I)
+            Write(IOut,1001) I,  Array%ArrI(I,1,1,1,1)
          EndDo
       else if ( Array%Shape.eq."MATRIX") then
          NRows = Array%N1
@@ -364,7 +529,7 @@ CONTAINS
             ILast = Min(IFirst+ColWidth-1,NCols)
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = 1,NRows
-               Write(IOut,2011) I, (Array%VecI(I+(J-1)*NRows),J=IFirst,ILast)
+               Write(IOut,2011) I, (Array%ArrI(I,J,1,1,1),J=IFirst,ILast)
             EndDo
          EndDo
       else if ( Array%Shape.eq."SYMMATRIX") then
@@ -375,11 +540,11 @@ CONTAINS
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = IFirst, ILAST
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (Array%VecI(IBase+J),J=IFirst,I)
+               Write(IOut,2011) I, (Array%ArrI(IBase+J,1,1,1,1),J=IFirst,I)
             EndDo
             Do I = ILAST+1, NCols
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (Array%VecI(IBase+J),J=IFirst,ILast)
+               Write(IOut,2011) I, (Array%ArrI(IBase+J,1,1,1,1),J=IFirst,ILast)
             EndDo
          EndDo
       else if ( Array%Shape.eq."MULTISYMMATRICES") then
@@ -389,22 +554,30 @@ CONTAINS
          N4 = Array%N4
          Do L = 1,N4
             Do K = 1,N3
-               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               IBase = 0
                Do IFirst = 1,NCols,ColWidth
                   ILast = Min(IFirst+ColWidth-1,NCols)
                   if ( N4 .eq. 1 ) then
-                     write(Iout,3010) K
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     if ( K .lt. 10 ) then
+                        Write(IOut,2002) (I,K,I=IFirst,ILast)
+                     else if ( K .lt. 100 ) then
+                        Write(IOut,2003) (I,K,I=IFirst,ILast)
+                     else
+                        Write(IOut,2004) (I,K,I=IFirst,ILast)
+                     endif
                   else 
-                     write(Iout,3020) K, L
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     If ( K .lt. 10 .and. L .lt. 10 ) then
+                        Write(IOut,2005) (I,K,L,I=IFirst,ILast)
+                     Else
+                        Write(IOut,2006) (I,K,L,I=IFirst,ILast)
+                     EndIf
                   endif
                   Do I = IFirst, ILAST
                      JBase = IBase+(I*(I-1))/2
-                     Write(IOut,2011) I, (Array%VecI(JBase+J),J=IFirst,I)
+                     Write(IOut,2011) I, (Array%ArrI(JBase+J,K,L,1,1),J=IFirst,I)
                   EndDo
                   Do I = ILAST+1, NCols
-                     Write(IOut,2011) I, (Array%VecI(JBase+J),J=IFirst,ILast)
+                     Write(IOut,2011) I, (Array%ArrI(JBase+J,K,L,1,1),J=IFirst,ILast)
                   EndDo
                EndDo
             EndDo
@@ -422,7 +595,7 @@ CONTAINS
                   endif
                   Do L = 1,LMax
                      IBase=IBase+1
-                     write(Iout,4010) I,J,K,L,Array%VecI(IBase)
+                     write(Iout,4010) I,J,K,L,Array%ArrI(IBase,1,1,1,1)
                   EndDo
                EndDo
             EndDo
@@ -434,7 +607,7 @@ CONTAINS
             Do J = 1,I
                Do K = 1,J
                   IBase=IBase+1
-                  write(Iout,4020) I,J,K,Array%VecI(IBase)
+                  write(Iout,4020) I,J,K,Array%ArrI(IBase,1,1,1,1)
                EndDo
             EndDo
          EndDo
@@ -443,11 +616,11 @@ CONTAINS
          N2 = Array%N2
          N3 = Array%N3
          IBase=0
-         Do I = 1,N1
+         Do K = 1,N3
             Do J = 1,N2
-               Do K = 1,N3
+               Do I = 1,N1
                   IBase=IBase+1
-                  write(Iout,4020) I,J,K,Array%VecI(IBase)
+                  write(Iout,4020) I,J,K,Array%ArrI(I,J,K,1,1)
                EndDo
             EndDo
          EndDo
@@ -482,9 +655,12 @@ CONTAINS
  1010 Format(1x,A,2x,F14.6)
  1020 Format(" ")
  2001 Format(5x,10(7x,I7))
+ 2002 Format(5x,10(5x,I7,",",I1))
+ 2003 Format(5x,10(4x,I7,",",I2))
+ 2004 Format(5x,10(I7,",",I6))
+ 2005 Format(5x,10(3x,I7,",",I1,",",I1))
+ 2006 Format(5x,10(3x,I7,",",I7,",",I7))
  2011 Format(1x,I7,10F14.6)
- 3010 Format("  Dimension 3:",I5 )
- 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
  4010 format( "(",I5,",",I5,"|",I5,",",I5,") = ",F14.6 )
  4020 format( "(",I5,",",I5,",",I5,") = ",F14.6 )
  5010 Format("Warning: Do Not know how do deal with the shape of ",A)
@@ -497,10 +673,10 @@ CONTAINS
       EndIf
 
       if ( Array%Shape.eq."SCALAR") then
-         Write(IOut,1010) TRIM(Array%Data_Name), Array%VecR(1)
+         Write(IOut,1010) TRIM(Array%Data_Name), Array%ArrR(1,1,1,1,1)
       else if ( Array%Shape.eq."VECTOR") then
          Do I = 1, Array%LR
-            Write(IOut,1001) I,  Array%VecR(I)
+            Write(IOut,1001) I,  Array%ArrR(I,1,1,1,1)
          EndDo
       else if ( Array%Shape.eq."MATRIX") then
          NRows = Array%N1
@@ -509,7 +685,7 @@ CONTAINS
             ILast = Min(IFirst+ColWidth-1,NCols)
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = 1,NRows
-               Write(IOut,2011) I, (Array%VecR(I+(J-1)*NRows),J=IFirst,ILast)
+               Write(IOut,2011) I, (Array%ArrR(I,J,1,1,1),J=IFirst,ILast)
             EndDo
          EndDo
       else if ( Array%Shape.eq."SYMMATRIX") then
@@ -520,11 +696,11 @@ CONTAINS
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = IFirst, ILAST
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (Array%VecR(IBase+J),J=IFirst,I)
+               Write(IOut,2011) I, (Array%ArrR(IBase+J,1,1,1,1),J=IFirst,I)
             EndDo
             Do I = ILAST+1, NCols
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (Array%VecR(IBase+J),J=IFirst,ILast)
+               Write(IOut,2011) I, (Array%ArrR(IBase+J,1,1,1,1),J=IFirst,ILast)
             EndDo
          EndDo
       else if ( Array%Shape.eq."MULTISYMMATRICES") then
@@ -534,22 +710,30 @@ CONTAINS
          N4 = Array%N4
          Do L = 1,N4
             Do K = 1,N3
-               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               IBase = 0
                Do IFirst = 1,NCols,ColWidth
                   ILast = Min(IFirst+ColWidth-1,NCols)
                   if ( N4 .eq. 1 ) then
-                     write(Iout,3010) K
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     if ( K .lt. 10 ) then
+                        Write(IOut,2002) (I,K,I=IFirst,ILast)
+                     else if ( K .lt. 100 ) then
+                        Write(IOut,2003) (I,K,I=IFirst,ILast)
+                     else
+                        Write(IOut,2004) (I,K,I=IFirst,ILast)
+                     endif
                   else 
-                     write(Iout,3020) K, L
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     If ( K .lt. 10 .and. L .lt. 10 ) then
+                        Write(IOut,2005) (I,K,L,I=IFirst,ILast)
+                     Else
+                        Write(IOut,2006) (I,K,L,I=IFirst,ILast)
+                     EndIf
                   endif
                   Do I = IFirst, ILAST
                      JBase = IBase+(I*(I-1))/2
-                     Write(IOut,2011) I, (Array%VecR(JBase+J),J=IFirst,I)
+                     Write(IOut,2011) I, (Array%ArrR(JBase+J,K,L,1,1),J=IFirst,I)
                   EndDo
                   Do I = ILAST+1, NCols
-                     Write(IOut,2011) I, (Array%VecR(JBase+J),J=IFirst,ILast)
+                     Write(IOut,2011) I, (Array%ArrR(JBase+J,K,L,1,1),J=IFirst,ILast)
                   EndDo
                EndDo
             EndDo
@@ -567,7 +751,7 @@ CONTAINS
                   endif
                   Do L = 1,LMax
                      IBase=IBase+1
-                     write(Iout,4010) I,J,K,L,Array%VecR(IBase)
+                     write(Iout,4010) I,J,K,L,Array%ArrR(IBase,1,1,1,1)
                   EndDo
                EndDo
             EndDo
@@ -583,7 +767,7 @@ CONTAINS
             Do J = 1,I
                Do K = 1,J
                   IBase=IBase+1
-                  write(Iout,4020) I,J,K,Array%VecR(IBase)
+                  write(Iout,4020) I,J,K,Array%ArrR(IBase,1,1,1,1)
                EndDo
             EndDo
          EndDo
@@ -592,11 +776,11 @@ CONTAINS
          N2 = Array%N2
          N3 = Array%N3
          IBase=0
-         Do I = 1,N1
+         Do K = 1,N3
             Do J = 1,N2
-               Do K = 1,N3
+               Do I = 1,N1
                   IBase=IBase+1
-                  write(Iout,4020) I,J,K,Array%VecR(IBase)
+                  write(Iout,4020) I,J,K,Array%ArrR(I,J,K,1,1)
                EndDo
             EndDo
          EndDo
@@ -631,10 +815,13 @@ CONTAINS
  1010 Format(1x,A,2x,"(",F14.6,",",F14.6,"i)")
  1020 Format(" ")
  2001 Format(5x,5(20x,I7))
+ 2002 Format(5x,5(18x,I7,",",I1))
+ 2003 Format(5x,5(17x,I7,",",I2))
+ 2004 Format(5x,5(13x,I7,",",I6))
+ 2005 Format(5x,5(16x,I7,",",I1,",",I1))
+ 2006 Format(5x,5(4x,I7,",",I7,",",I7))
  2011 Format(1x,I7," (",F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)  (", &
            F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)  (",F13.6,",",F13.6,"i)")
- 3010 Format("  Dimension 3:",I5 )
- 3020 Format("  Dimension 3:",I5, "  Dimension 4:",I5 )
  4010 format( "(",I5,",",I5,"|",I5,",",I5,") = (",F14.6,",",F14.6,"i)")
  4020 format( "(",I5,",",I5,",",I5,") = (",F14.6,",",F14.6,"i)")
  5010 Format("Warning: Do Not know how do deal with the shape of ",A)
@@ -647,11 +834,12 @@ CONTAINS
       EndIf
 
       if ( Array%Shape.eq."SCALAR") then
-         Write(IOut,1010) TRIM(Array%Data_Name), REAL(Array%VecC(I)), &
-              AIMAG(Array%VecC(I))
+         Write(IOut,1010) TRIM(Array%Data_Name), REAL(Array%ArrC(1,1,1,1,1)), &
+              AIMAG(Array%ArrC(1,1,1,1,1))
       else if ( Array%Shape.eq."VECTOR") then
          Do I = 1, Array%LR
-            Write(IOut,1001) I, REAL(Array%VecC(I)), AIMAG(Array%VecC(I))
+            Write(IOut,1001) I, REAL(Array%ArrC(I,1,1,1,1)), &
+                 AIMAG(Array%ArrC(I,1,1,1,1))
          EndDo
       else if ( Array%Shape.eq."MATRIX") then
          NRows = Array%N1
@@ -660,8 +848,8 @@ CONTAINS
             ILast = Min(IFirst+ColWidth-1,NCols)
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = 1,NRows
-               Write(IOut,2011) I, (REAL(Array%VecC(I+(J-1)*NRows)), &
-                    AIMAG(Array%VecC(I+(J-1)*NRows)),J=IFirst,ILast)
+               Write(IOut,2011) I, (REAL(Array%ArrC(I,J,1,1,1)), &
+                    AIMAG(Array%ArrC(I,J,1,1,1)),J=IFirst,ILast)
             EndDo
          EndDo
       else if ( Array%Shape.eq."SYMMATRIX") then
@@ -672,13 +860,13 @@ CONTAINS
             Write(IOut,2001) (I,I=IFirst,ILast)
             Do I = IFirst, ILAST
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (REAL(Array%VecC(IBase+J)), &
-                    AIMAG(Array%VecC(IBase+J)),J=IFirst,I)
+               Write(IOut,2011) I, (REAL(Array%ArrC(IBase+J,1,1,1,1)), &
+                    AIMAG(Array%ArrC(IBase+J,1,1,1,1)),J=IFirst,I)
             EndDo
             Do I = ILAST+1, NCols
                IBase = (I*(I-1))/2
-               Write(IOut,2011) I, (REAL(Array%VecC(IBase+J)), &
-                    AIMAG(Array%VecC(IBase+J)),J=IFirst,ILAST)
+               Write(IOut,2011) I, (REAL(Array%ArrC(IBase+J,1,1,1,1)), &
+                    AIMAG(Array%ArrC(IBase+J,1,1,1,1)),J=IFirst,ILAST)
             EndDo
          EndDo
       else if ( Array%Shape.eq."MULTISYMMATRICES") then
@@ -688,24 +876,32 @@ CONTAINS
          N4 = Array%N4
          Do L = 1,N4
             Do K = 1,N3
-               IBase = ((NCols+1)*NCols/2)*((L-1)*N3+K-1)
+               IBase = 0
                Do IFirst = 1,NCols,ColWidth
                   ILast = Min(IFirst+ColWidth-1,NCols)
                   if ( N4 .eq. 1 ) then
-                     write(Iout,3010) K
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     if ( K .lt. 10 ) then
+                        Write(IOut,2002) (I,K,I=IFirst,ILast)
+                     else if ( K .lt. 100 ) then
+                        Write(IOut,2003) (I,K,I=IFirst,ILast)
+                     else
+                        Write(IOut,2004) (I,K,I=IFirst,ILast)
+                     endif
                   else 
-                     write(Iout,3020) K, L
-                     Write(IOut,2001) (I,I=IFirst,ILast)
+                     If ( K .lt. 10 .and. L .lt. 10 ) then
+                        Write(IOut,2005) (I,K,L,I=IFirst,ILast)
+                     Else
+                        Write(IOut,2006) (I,K,L,I=IFirst,ILast)
+                     EndIf
                   endif
                   Do I = IFirst, ILAST
                      JBase = IBase+(I*(I-1))/2
-                     Write(IOut,2011) I, (REAL(Array%VecC(JBase+J)), &
-                          AIMAG(Array%VecC(JBase+J)),J=IFirst,I)
+                     Write(IOut,2011) I, (REAL(Array%ArrC(JBase+J,K,L,1,1)), &
+                          AIMAG(Array%ArrC(JBase+J,K,L,1,1)),J=IFirst,I)
                   EndDo
                   Do I = ILAST+1, NCols
-                     Write(IOut,2011) I, (REAL(Array%VecC(JBase+J)), &
-                          AIMAG(Array%VecC(JBase+J)),J=IFirst,ILAST)
+                     Write(IOut,2011) I, (REAL(Array%ArrC(JBase+J,K,L,1,1)), &
+                          AIMAG(Array%ArrC(JBase+J,K,L,1,1)),J=IFirst,ILAST)
                   EndDo
                EndDo
             EndDo
@@ -723,8 +919,8 @@ CONTAINS
                   endif
                   Do L = 1,LMax
                      IBase=IBase+1
-                     write(Iout,4010) I,J,K,L,REAL(Array%VecC(IBase)), &
-                          AIMAG(Array%VecC(IBase))
+                     write(Iout,4010) I,J,K,L,REAL(Array%ArrC(IBase,1,1,1,1)), &
+                          AIMAG(Array%ArrC(IBase,1,1,1,1))
                   EndDo
                EndDo
             EndDo
@@ -736,8 +932,8 @@ CONTAINS
             Do J = 1,I
                Do K = 1,J
                   IBase=IBase+1
-                  write(Iout,4020) I,J,K,REAL(Array%VecC(IBase)), &
-                       AIMAG(Array%VecC(IBase))
+                  write(Iout,4020) I,J,K,REAL(Array%ArrC(IBase,1,1,1,1)), &
+                       AIMAG(Array%ArrC(IBase,1,1,1,1))
                EndDo
             EndDo
          EndDo
@@ -746,12 +942,11 @@ CONTAINS
          N2 = Array%N2
          N3 = Array%N3
          IBase=0
-         Do I = 1,N1
+         Do K = 1,N3
             Do J = 1,N2
-               Do K = 1,N3
-                  IBase=IBase+1
-                  write(Iout,4020) I,J,K,REAL(Array%VecC(IBase)), &
-                       AIMAG(Array%VecC(IBase))
+               Do I = 1,N1
+                  write(Iout,4020) I,J,K,REAL(Array%ArrC(I,J,K,1,1)), &
+                       AIMAG(Array%ArrC(I,J,K,1,1))
                EndDo
             EndDo
          EndDo
@@ -829,9 +1024,11 @@ CONTAINS
 ! Functions for mqc_link_list class structures
 !
 !=====================================================================
-      subroutine mqc_link_list_add(self,Print_Options,FileName,iout)
+      subroutine mqc_link_list_add(self,Print_Options, &
+              my_READONLY_list,FileName,iout)
         class(mqc_link_list),intent(inout) :: self
         integer(kind=int64),intent(in)::Print_Options
+        class(mqc_READONLY_list),intent(inout):: my_READONLY_list
         character(len=256),intent(in) :: FileName
         integer(kind=int64),intent(in)::iOut
 
@@ -846,35 +1043,112 @@ CONTAINS
         self%last%current_wavefunction%FileName=trim(FileName)
 
         call mqc_read_all_wavefunction( self%last%current_wavefunction, &
-             Print_Options,iout)
+             my_READONLY_list, Print_Options,iout)
 
         self%length = self%length + 1
       end subroutine mqc_link_list_add
 
-      subroutine mqc_link_list_start(self)
+      subroutine mqc_link_list_start(self,Status,wavefunction)
         class(mqc_link_list),intent(inout) :: self
+        integer(kind=int64),intent(out)::Status
+        class(MQC_ALL_Wavefunction),pointer,intent(out)::wavefunction
 
         self%current => self%first
+        If (associated(self%current)) then
+           wavefunction => self%current%current_wavefunction
+           Status=1
+           if ( wavefunction%NAtoms .eq. -1 ) then
+              call mqc_link_list_next(self,Status,wavefunction)
+           endif
+        Else
+           Status=0
+        Endif
       end subroutine mqc_link_list_start
 
-      subroutine mqc_link_list_next(self,wavefunction)
+      RECURSIVE subroutine mqc_link_list_next(self,Status,wavefunction)
         class(mqc_link_list),intent(inout)::self
+        integer(kind=int64),intent(out)::Status
         class(MQC_ALL_Wavefunction),pointer,intent(out)::wavefunction
 
         if (associated(self%current)) then
-           wavefunction => self%current%current_wavefunction
            self%current => self%current%next
+           If (associated(self%current)) then
+              wavefunction => self%current%current_wavefunction
+              Status=1
+              if ( wavefunction%NAtoms .eq. -1 ) then
+!
+! if the wavefunction is empty, skip it and go to the next one
+!
+                 call mqc_link_list_next(self,Status,wavefunction)
+              EndIf
+           Else
+              Status=0
+           EndIf
         else
            wavefunction => null()
+           Status=0
         end if
       end subroutine mqc_link_list_next
 
 !=====================================================================
 !
+! Functions for mqc_link_list class structures
+!
+!=====================================================================
+      subroutine mqc_READONLY_list_add(self,Data_In)
+        class(mqc_READONLY_list),intent(inout) :: self
+        character(len=*),intent(in) :: Data_In
+
+        if (.not.associated(self%last)) then
+           allocate(self%first)
+           self%last => self%first
+        else
+           allocate(self%last%next)
+           self%last => self%last%next
+        endif
+
+        self%last%Data_Name=trim(Data_In)
+      end subroutine mqc_READONLY_list_add
+
+      subroutine mqc_READONLY_list_start(self,Status,Data_Name)
+        class(mqc_READONLY_list),intent(inout) :: self
+        integer(kind=int64),intent(out)::Status
+        character(len=64),intent(out) :: Data_Name
+
+        self%current => self%first
+        If (associated(self%current)) then
+           Data_Name = self%current%Data_Name
+           Status=1
+        Else
+           Status=0
+        Endif
+      end subroutine mqc_READONLY_list_start
+
+      subroutine mqc_READONLY_list_next(self,Status,Data_Name)
+        class(mqc_READONLY_list),intent(inout)::self
+        integer(kind=int64),intent(out)::Status
+        character(len=64),intent(out) :: Data_Name
+
+        if (associated(self%current)) then
+           If (associated(self%current%next)) then
+              self%current => self%current%next
+              Data_Name = self%current%Data_Name
+              Status=1
+           Else
+              Status=0
+           EndIf
+        else
+           Status=0
+        end if
+      end subroutine mqc_READONLY_list_next
+
+!=====================================================================
+!
 !PROCEDURE MQC_Unformatted_Read_Array
-      subroutine MQC_Unformatted_Read_Array(wavefunction,Data_Name, &
-          NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Data_Type,Shape,Formula, &
-          IOut,IERROR)
+      subroutine MQC_Unformatted_Read_Array(wavefunction, &
+           my_READONLY_list,Data_Name, &
+           NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Data_Type,Shape,Formula, &
+           IOut,IERROR)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -902,6 +1176,7 @@ CONTAINS
 !
       implicit none
       class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      class(mqc_READONLY_list),intent(inout):: my_READONLY_list
       character(len=*),intent(in)::Data_Name
       integer(kind=int64),intent(in)::NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf
       character(len=*),intent(in)::Data_Type,Shape,Formula
@@ -928,82 +1203,163 @@ CONTAINS
 !     Look for the label sent by the calling program unit. If the label is
 !     found, then load <matrixOut> with the data on the file.
 !
+      If ( .not.mqc_read_this_MatrixFile_Element(my_READONLY_list,Data_Name )) then
+         Call Rd_Skip(wavefunction%UnitNumber,NTot,LenBuf)
+         return
+      EndIf
+
       call mqc_array_link_list_add(wavefunction,Data_Name,NR,NI,NRI,NTot, & 
            N1,N2,N3,N4,N5,LR,IOut,Data_Type,Shape,Formula)
 !
       select case(Data_Type)
       case('INTEGER')
-         allocate(wavefunction%Array_Data%last%VecI(LR), STAT = AllocateStatus)
+         If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+              Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+              Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+            allocate(wavefunction%Array_Data%last%ArrI(LR,1,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrI(N1,N2,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MULTISYMMATRICES") then
+            allocate(wavefunction%Array_Data%last%ArrI(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."3DMATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrI(N1,N2,N3,1,1), STAT = AllocateStatus)
+         Else
+            call MQC_Error_A("Do not know how to allocate array", Iout, &
+                 "Shape",Shape)
+         Endif
          IF (AllocateStatus /= 0) then
             write( errorMsg, 1100 ) trim(Data_Name)
             call MQC_Error_I(errorMsg, Iout, 'LR', LR)
          EndIf
-         call Rd_IBuf(wavefunction%unitNumber,NTot,LenBuf, &
-              wavefunction%Array_Data%last%VecI)
+         call Rd_IBuf_G(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%ArrI)
       case('REAL')
-         allocate(wavefunction%Array_Data%last%VecR(LR), STAT = AllocateStatus)
+         If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+              Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+              Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+            allocate(wavefunction%Array_Data%last%ArrR(LR,1,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrR(N1,N2,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MULTISYMMATRICES") then
+            allocate(wavefunction%Array_Data%last%ArrR(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."3DMATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrR(N1,N2,N3,1,1), STAT = AllocateStatus)
+         Else
+            call MQC_Error_A("Do not know how to allocate array", Iout, &
+                 "Shape",Shape)
+         Endif
          IF (AllocateStatus /= 0) then
             write( errorMsg, 1100 ) trim(Data_Name)
             call MQC_Error_I(errorMsg, Iout, 'LR', LR)
          EndIf
-         call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
-              wavefunction%Array_Data%last%VecR)
+         call Rd_RBuf_G(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%ArrR)
       case('COMPLEX')
-         allocate(wavefunction%Array_Data%last%VecC(LR), STAT = AllocateStatus)
+         If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+              Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+              Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+            allocate(wavefunction%Array_Data%last%ArrC(LR,1,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrC(N1,N2,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MULTISYMMATRICES") then
+            allocate(wavefunction%Array_Data%last%ArrC(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."3DMATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrC(N1,N2,N3,1,1), STAT = AllocateStatus)
+         Else
+            call MQC_Error_A("Do not know how to allocate array", Iout, &
+                 "Shape",Shape)
+         Endif
          IF (AllocateStatus /= 0) then
             write( errorMsg, 1100 ) trim(Data_Name)
             call MQC_Error_I(errorMsg, Iout, 'LR', LR)
          EndIf
-         call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
-              wavefunction%Array_Data%last%VecC)
+         call Rd_CBuf_G(wavefunction%unitNumber,NTot,LenBuf, &
+              wavefunction%Array_Data%last%ArrC)
       case('MIXED')
-         allocate(wavefunction%Array_Data%last%VecI(LR), STAT = AllocateStatus)
+         If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+              Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+              Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+            allocate(wavefunction%Array_Data%last%ArrI(LR,1,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrI(N1,N2,1,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."MULTISYMMATRICES") then
+            allocate(wavefunction%Array_Data%last%ArrI(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+         Else If ( Shape.eq."3DMATRIX") then
+            allocate(wavefunction%Array_Data%last%ArrI(N1,N2,N3,1,1), STAT = AllocateStatus)
+         Else
+            call MQC_Error_A("Do not know how to allocate array", Iout, &
+                 "Shape",Shape)
+         Endif
          IF (AllocateStatus /= 0) then
             write( errorMsg, 1100 ) trim(Data_Name)
             call MQC_Error_I(errorMsg, Iout, 'LR', LR)
          EndIf
          if ( NR .ge. 0 ) then
-            allocate(wavefunction%Array_Data%last%VecR(LR), &
-                 STAT = AllocateStatus)
+            If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+                 Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+                 Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+               allocate(wavefunction%Array_Data%last%ArrR(LR,1,1,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."MATRIX") then
+               allocate(wavefunction%Array_Data%last%ArrR(N1,N2,1,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."MULTISYMMATRICES") then
+               allocate(wavefunction%Array_Data%last%ArrR(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."3DMATRIX") then
+               allocate(wavefunction%Array_Data%last%ArrR(N1,N2,N3,1,1), STAT = AllocateStatus)
+            Else
+               call MQC_Error_A("Do not know how to allocate array", Iout, &
+                    "Shape",Shape)
+            Endif
             IF (AllocateStatus /= 0) then
                write( errorMsg, 1100 ) trim(Data_Name)
                call MQC_Error_I(errorMsg, Iout, 'LR', LR)
             EndIf
             call Rd_RMixed(wavefunction%unitNumber,NTot,LenBuf, &
-                 wavefunction%Array_Data%last%VecI, &
-                 wavefunction%Array_Data%last%VecR)
+                 wavefunction%Array_Data%last%ArrI, &
+                 wavefunction%Array_Data%last%ArrR)
          else
-            allocate(wavefunction%Array_Data%last%VecC(LR), &
-                 STAT = AllocateStatus)
+            If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
+                 Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
+                 Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
+               allocate(wavefunction%Array_Data%last%ArrC(LR,1,1,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."MATRIX") then
+               allocate(wavefunction%Array_Data%last%ArrC(N1,N2,1,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."MULTISYMMATRICES") then
+               allocate(wavefunction%Array_Data%last%ArrC(((N2+1)*N2)/2,N3,N4,1,1), STAT = AllocateStatus)
+            Else If ( Shape.eq."3DMATRIX") then
+               allocate(wavefunction%Array_Data%last%ArrC(N1,N2,N3,1,1), STAT = AllocateStatus)
+            Else
+               call MQC_Error_A("Do not know how to allocate array", Iout, &
+                    "Shape",Shape)
+            Endif
             IF (AllocateStatus /= 0) then
                write( errorMsg, 1100 ) trim(Data_Name)
                call MQC_Error_I(errorMsg, Iout, 'LR', LR)
             EndIf
             call Rd_CMixed(wavefunction%unitNumber,NTot,LenBuf, &
-                 wavefunction%Array_Data%last%VecI, &
-                 wavefunction%Array_Data%last%VecC)
+                 wavefunction%Array_Data%last%ArrI, &
+                 wavefunction%Array_Data%last%ArrC)
          endif
       case('TENSOR')
          if(NRI.eq.1) then
-            allocate(wavefunction%Array_Data%last%VecR(LR*NR), &
+            allocate(wavefunction%Array_Data%last%ArrR(LR,NR,1,1,1), &
                  STAT=AllocateStatus)
             IF (AllocateStatus /= 0) then
                write( errorMsg, 1100 ) trim(Data_Name)
                call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
             EndIf
-            call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR,NTot,LenBuf, &
-                 wavefunction%Array_Data%last%VecR)
+            call Rd_2EN_G(wavefunction%unitNumber,NR,LR,NR*LR,NTot,LenBuf, &
+                 wavefunction%Array_Data%last%ArrR)
 !            call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,arrayTmp)
 !            deallocate(arrayTmp)
          elseIf(NRI.eq.2) then
-            allocate(wavefunction%Array_Data%last%VecR(LR*NR), &
+            allocate(wavefunction%Array_Data%last%ArrR(LR,NR,1,1,1), &
                  STAT = AllocateStatus)
             IF (AllocateStatus /= 0) then
                write( errorMsg, 1100 ) trim(Data_Name)
                call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
             EndIf
-            call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR, &
-                 2*NTot,2*LenBuf,wavefunction%Array_Data%last%VecR)
+            call Rd_2EN_G(wavefunction%unitNumber,NR,LR,NR*LR, &
+                 2*NTot,2*LenBuf,wavefunction%Array_Data%last%ArrR)
 !!                call Rd_2EN(fileinfo%unitNumber,NR,NTot,NR*NTot,2*NTot,2*LenBuf,complexTmp)
 !            complexTmp = reshape(arrayTmp, shape(complexTmp))
 !            call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut,complexTmp)
@@ -1011,23 +1367,23 @@ CONTAINS
 !            deallocate(arrayTmp)
          else
             if ( NR .ge. 0 ) then
-               allocate(wavefunction%Array_Data%last%VecR(LR), &
+               allocate(wavefunction%Array_Data%last%ArrR(LR,1,1,1,1), &
                     STAT = AllocateStatus)
                IF (AllocateStatus /= 0) then
                   write( errorMsg, 1100 ) trim(Data_Name)
                   call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
                EndIf
-               call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
-                    wavefunction%Array_Data%last%VecR)
+               call Rd_RBuf_G(wavefunction%unitNumber,NTot,LenBuf, &
+                    wavefunction%Array_Data%last%ArrR)
             else
-               allocate(wavefunction%Array_Data%last%VecC(LR), &
+               allocate(wavefunction%Array_Data%last%ArrC(LR,1,1,1,1), &
                     STAT = AllocateStatus)
                IF (AllocateStatus /= 0) then
                   write( errorMsg, 1100 ) trim(Data_Name)
                   call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
                EndIf
-               call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
-                    wavefunction%Array_Data%last%VecC)
+               call Rd_CBuf_G(wavefunction%unitNumber,NTot,LenBuf, &
+                    wavefunction%Array_Data%last%ArrC)
             endif
          endIf
       case default
@@ -1232,17 +1588,17 @@ CONTAINS
 ! current_wavefunction%atomicNumbers
       write( OutMath2, 2010 ) current_wavefunction%natoms
       call mqc_StripSpaces(OutMath2)
-      write( IOut, 2060) "Atomic Numbers", tab, "INTEGER", tab, trim(OutMath2), tab, trim(OutMath2)
+      write( IOut, 2060) "ATOMIC NUMBERS", tab, "INTEGER", tab, trim(OutMath2), tab, trim(OutMath2)
 
 ! current_wavefunction%atomTypes
       write( OutMath2, 2010 ) current_wavefunction%natoms
       call mqc_StripSpaces(OutMath2)
-      write( IOut, 2060) "Atom Types", tab, "INTEGER", tab, trim(OutMath2), tab, trim(OutMath2)
+      write( IOut, 2060) "ATOM TYPES", tab, "INTEGER", tab, trim(OutMath2), tab, trim(OutMath2)
 
 ! current_wavefunction%atomicCharges
       write( OutMath2, 2010 ) current_wavefunction%natoms
       call mqc_StripSpaces(OutMath2)
-      write( IOut, 2070) "Atom Charges", tab, "REAL", tab, trim(OutMath2), tab, trim(OutMath2), tab, &
+      write( IOut, 2070) "ATOM CHARGES", tab, "REAL", tab, trim(OutMath2), tab, trim(OutMath2), tab, &
            'Nuclear charges may be different from atomic'//NEW_LINE('A')//tab//' &
            & numbers if ECPs were used.'
 
@@ -1253,25 +1609,25 @@ CONTAINS
       call mqc_StripSpaces(OutMath2)
       write( OutMath3, 2010 ) 3
       call mqc_StripSpaces(OutMath3)
-      write( IOut, 2080) "Cartesian Nuclear Coordinates In Bohr", tab, "REAL", &
+      write( IOut, 2080) "CARTESIAN NUCLEAR COORDINATES(BOHR)", tab, "REAL", &
            tab, trim(OutMath1), tab, trim(OutMath2), trim(OutMath3)
 
 ! First half of current_wavefunction%basisFunction2Atom
       write( OutMath1, 2010 ) current_wavefunction%nbasis
       call mqc_StripSpaces(OutMath1)
-      write( IOut, 2060) "Map From Basis Functions to Atoms", tab, &
+      write( IOut, 2060) "MAP FROM BASIS FUNCTIONS TO ATOMS", tab, &
            "INTEGER", tab, trim(OutMath1), tab, trim(OutMath1)
 
 ! Second half half of current_wavefunction%basisFunction2Atom
       write( OutMath1, 2010 ) current_wavefunction%nbasis
       call mqc_StripSpaces(OutMath1)
-      write( IOut, 2060) "Type Flag For Each Basis Function", tab, &
+      write( IOut, 2060) "TYPE FLAG FOR EACH BASIS FUNCTION", tab, &
            "INTEGER", tab, trim(OutMath1), tab, trim(OutMath1)
 
 !           current_wavefunction%atomicWeights
       write( OutMath2, 2010 ) current_wavefunction%natoms
       call mqc_StripSpaces(OutMath2)
-      write( IOut, 2060) "Atomic Weights", tab, "REAL", tab, &
+      write( IOut, 2060) "ATOMIC WEIGHTS", tab, "REAL", tab, &
            trim(OutMath2), tab, trim(OutMath2)
       return
     end subroutine MQC_PRINT_DEFAULT_VECTOR_SUMMARY
@@ -1315,66 +1671,165 @@ CONTAINS
       return
     end subroutine MQC_PRINT_SCALAR_HEAD
 
-      subroutine MQC_PRINT_DEFAULT_VECTOR_HEAD( iOut, wavefunction)
+    Subroutine MQC_Create_Wavefunctions( Print_Options, my_READONLY_list, &
+         mqc_input_file_list, Iout)
       implicit none
-      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+
+      integer(kind=int64),intent(in):: Print_Options
+      class(mqc_READONLY_list),intent(inout):: my_READONLY_list
+      class(mqc_link_list),intent(inout) :: mqc_input_file_list
       integer(kind=int64),intent(in)::iOut
-      character(len=64)::OutMath1,OutMath2,OutMath3,OutMath4
-      Integer(kind=int64),Parameter::ColWidth=10 
-      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+
+      character(len=1024)::program_name
+      character(len=1024)::no_program_name
+      character(len=1024)::FileName
+      integer(kind=int64) cmd_count, I
+      integer(kind=int64) status
+
 !
 !     Format statements.
 !
- 1000 Format(/,1x,A)
- 1001 Format(1x,I7,2x,I14)
- 2001 Format(1x,I7,2x,F14.6)
- 2021 Format(5x,5(20x,I7))
- 2011 Format(1x,I7,10F14.6)
-
-! current_wavefunction%atomicNumbers
-      write( IOut, 1000 ) "ATOMIC NUMBERS"
-      Do I = 1, wavefunction%natoms
-         Write(IOut,1001) I, wavefunction%atomicNumbers(I)
+ 1010 Format( A )
+!
+!     Do the work...
+!
+      cmd_count = COMMAND_ARGUMENT_COUNT()
+      if ( cmd_count .eq. 0 ) then
+         write( iout, 1010 ) "Error in number of argments to this program."
+         write( iout, 1010 ) "Arguments should be:"
+         write( iout, 1010 ) "     - Full path to a Gaussian file"
+         write( iout, 1010 ) "        - This can either be FormChk File"
+         write( iout, 1010 ) "        - This can either be a MatrixFile"
+         write( iout, 1010 ) "        - This can be a Gaussian input file"
+         write( iout, 1010 ) "     - Optional, only required if the first "
+         write( iout, 1010 ) "          argument is a Gaussian input file."
+         write( iout, 1010 ) "          The name of the binary for the "
+         write( iout, 1010 ) "          program that generates the"
+         write( iout, 1010 ) "          FormChk/MatrixFile, most likely"
+         write( iout, 1010 ) "          'g16'. The environment should be"
+         write( iout, 1010 ) "          setup to run the program."
+         call mqc_error_i( "No arguments to this program", iout)
+      endif
+!
+!     Create a list of MatrixFiles.  Use MatrixFiles supplied.
+!     If Gaussian input has been supplied:
+!     1. Modify the input include MatrixFile options
+!     2. Run the job to generate MatrixFiles
+!     If the name of the Gaussian binary is not given, and Gaussian is not
+!     in the path, this will fail.
+!
+      if ( cmd_count.eq. 1 ) then
+         no_program_name = 'Unknown'
+         call get_command_argument(1, FileName)
+         call mqc_create_File_Name_lists_F2C(FileName, no_program_name, iout)
+      else
+         call get_command_argument(cmd_count, program_name)
+         call mqc_File_Is_Executable_F2C( program_name, Status, iout )
+         if ( Status .eq. 1 ) then
+            do i = 1, cmd_count-1
+               call get_command_argument(i, FileName)
+               call mqc_create_File_Name_lists_F2C(FileName,Program_name,iout)
+            end do
+         else
+            no_program_name = 'Unknown'
+            do i = 1, cmd_count
+               call get_command_argument(i, FileName)
+               call mqc_create_File_Name_lists_F2C(FileName,no_program_name,iout)
+            end do
+         endif
+      endif
+#ifdef MATRIXFILE
+! 
+! Figure out is a MatrixFile name was supplied.
+! Or if an input file has been supplied, and then run the job.
+! Whatever has happened, get a list of the MatrixFiles
+!
+      call  mqc_get_MatrixFile_Name_F2C(FileName, iout)
+      if ( trim(FileName).eq.'Done with MatrixFiles' ) then
+         call mqc_error_I('No MatrixFiles supplied.  (Remove this when FormCHK files are implimented', IOut)
+      endif
+!  
+      Do While( trim(FileName).ne.'Done with MatrixFiles' )
+!
+! Read the MatrixFile and put data into a wavefunction structure
+!
+         call mqc_link_list_add(mqc_input_file_list,Print_Options, &
+              my_READONLY_list,FileName,iout)
+!
+! Get the next MatrixFile Name
+!
+         call mqc_get_MatrixFile_Name_F2C(FileName, iout)
       EndDo
-
-      write( IOut, 1000 ) "ATOMIC TYPES"
-      Do I = 1, wavefunction%natoms
-         Write(IOut,1001) I, wavefunction%atomTypes(I)
-      EndDo
-
-      write( IOut, 1000 ) "ATOM CHARGES"
-      Do I = 1, wavefunction%natoms
-         Write(IOut,2001) I, wavefunction%atomicCharges(I)
-      EndDo
-
-      write( IOut, 1000 ) "CARTESIAN NUCLEAR COORDINATES IN BOHR"
-      NRows = wavefunction%natoms
-      NCols = 3
-      Do IFirst = 1,NCols,ColWidth
-         ILast = Min(IFirst+ColWidth-1,NCols)
-         Write(IOut,2021) (I,I=IFirst,ILast)
-         Do I = 1,NRows
-            Write(IOut,2011) I, (wavefunction%cartesians(I+(J-1)*NRows), &
-                 J=IFirst,ILast)
-         EndDo
-      EndDo
-
-      write( IOut, 1000 ) "MAP FROM BASIS FUNCTIONS TO ATOMS"
-      Do I = 1, wavefunction%nbasis
-         Write(IOut,1001) I, wavefunction%basisFunction2Atom(I)
-      EndDo
-
-      write( IOut, 1000 ) "TYPE FLAG FOR EACH BASIS FUNCTION"
-      Do I = 1, wavefunction%nbasis
-         Write(IOut,1001) I, wavefunction%IBasisFunctionType(I)
-      EndDo
-
-      write( IOut, 1000 ) "ATOMIC WEIGHTS"
-      Do I = 1, wavefunction%natoms
-         Write(IOut,2001) I, wavefunction%atomicWeights(I)
-      EndDo
+#endif
       return
-    end subroutine MQC_PRINT_DEFAULT_VECTOR_HEAD
+    end Subroutine MQC_Create_Wavefunctions
+
+!     PROCEDURE MQC_GET_NUCLEAR_REPULSION
+      Function MQC_Wave_To_Nuclear_Repulsion(wavefunction,IOut) Result(Vnn)
+!
+!     This function returns the nuclear repulsion energy given the
+!     molecular data object.
+!
+!     Lee M. Thompson, 2017.
+!
+!
+      Implicit None
+      class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
+      real(kind=real64) Vnn
+      type(mqc_array_link_list_node),pointer::Coord
+      type(mqc_array_link_list_node),pointer::Charges
+      Real::Zero=0.0d0
+      Real::DX,DY,DZ
+      Integer::IOut,I,J
+      Integer(kind=int64)::NAtoms
+      Integer(kind=int64)::Found_Cart, Found_Charge
+!
+      Vnn = Zero
+      NAtoms = wavefunction%NAtoms
+      Found_Cart = MQC_Find_mqc_array_link_list_node(wavefunction,&
+           "CARTESIAN NUCLEAR COORDINATES(BOHR)", Coord, iout)
+      Found_Charge = MQC_Find_mqc_array_link_list_node(wavefunction,&
+           "ATOM CHARGES", Charges, iout)
+      If ( Found_Cart .ne. 2 .or. Found_Charge .ne. 2 ) then
+         call mqc_error_I('MQC_Wave_To_Nuclear_Repulsion: Did not find all compnents of Nuclear Replusion', IOut, &
+         'Found_Cart', Found_Cart, 'Found_Charge',Found_Charge )
+      EndIf
+      Do I = 1,NAtoms-1
+        Do J = I+1,NAtoms
+           DX = Coord%ArrR(1,I,1,1,1) - Coord%ArrR(1,J,1,1,1)
+           DY = Coord%ArrR(2,I,1,1,1) - Coord%ArrR(2,J,1,1,1)
+           DZ = Coord%ArrR(3,I,1,1,1) - Coord%ArrR(3,J,1,1,1)
+           Vnn = Vnn + Charges%ArrR(I,1,1,1,1) * Charges%ArrR(J,1,1,1,1) / &
+                SQRT(DX*DX+DY*DY+DZ*DZ)
+        EndDo
+      EndDo
+      End Function MQC_Wave_To_Nuclear_Repulsion
+
+      Function mqc_read_this_MatrixFile_Element(my_READONLY_list,Data_Name ) &
+           Result( ReadIt )
+      class(mqc_READONLY_list),intent(inout):: my_READONLY_list
+      character(len=*),intent(in)::Data_Name
+      logical ReadIt
+      integer(kind=int64) Status
+      character(len=64)::List_Name
+
+      If (.not.associated(my_READONLY_list%first)) then
+         ReadIt = .true.
+         return
+      else
+         call mqc_READONLY_list_start(my_READONLY_list,Status,List_Name)
+         Do While( Status.eq.1 )
+            If ( trim(Data_Name) .eq. trim(List_Name) ) then
+               ReadIt = .true.
+               return
+            EndIf
+            call mqc_READONLY_list_next(my_READONLY_list,Status,List_Name)
+         EndDo
+      EndIf
+      ReadIt = .false.
+
+      Return
+    end Function mqc_read_this_MatrixFile_Element
 
     End module MQC_FullWavefunction
 

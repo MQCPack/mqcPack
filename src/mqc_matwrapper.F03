@@ -122,14 +122,14 @@
         return
       end subroutine MQC_Mat_Precision
 
-      Subroutine Wr_LIBuf(IU,Label,NI,LenBuf,N1,N2,N3,N4,N5,ASym,IX)
+      Subroutine Wr_LIBuf_G(IU,Label,NI,LenBuf,N1,N2,N3,N4,N5,ASym,IX)
         Implicit None
 !
         Character(Len=*),Intent(In)::Label
         Integer(kind=int64),Intent(In)::IU
         Logical,Intent(In)::ASym
         Integer(kind=int64),Intent(In)::NI,LenBuf,N1,N2,N3,N4,N5
-        Integer(kind=int64),Dimension(:),Intent(In)::IX
+        Integer(kind=int64),Dimension(:,:,:,:,:),Intent(In)::IX
 
         Integer(kind=int32) IU_4,NI_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
 
@@ -163,7 +163,7 @@
            Allocate ( IX_4(NTot), STAT = AllocateStatus)
            IF (AllocateStatus /= 0) call MQC_Error_I('Not Enough Memory', Iout, 'NTot', NTot)
            do i=1, NTot
-              IX_4(i) = IX(i)
+              IX_4(i) = IX(i,1,1,1,1)
            enddo
            call WrLIBuf4(IU_4,Label,NI_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4,ASym,IX_4)
            DEALLOCATE (IX_4, STAT = DeAllocateStatus)
@@ -173,16 +173,16 @@
            call WrLIBuf8(IU,Label,NI,LenBuf,N1,N2,N3,N4,N5,ASym,IX)
         endif
       Return
-      End Subroutine Wr_LIBuf
+      End Subroutine Wr_LIBuf_G
 
-      Subroutine Wr_LRBuf(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+      Subroutine Wr_LRBuf_G(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         Implicit None
 
         Character(Len=*),Intent(In)::Label
         Integer(kind=int64),Intent(In)::IU
         Logical,Intent(In)::ASym
         Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
-        Real(kind=real64),Dimension(:),Intent(InOut)::X
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
 
         Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
         Integer(kind=int32)::IU_4
@@ -207,16 +207,16 @@
            call WrLRBuf8(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         endif
       Return
-      End Subroutine Wr_LRBuf
+      End Subroutine Wr_LRBuf_G
 
-      Subroutine Wr_LCBuf(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+      Subroutine Wr_LCBuf_G(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         Implicit None
 
         Character(Len=*),Intent(In)::Label
         Integer(kind=int64),Intent(In)::IU
         Logical,Intent(In)::ASym
         Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
-        Complex(kind=real64),Dimension(:),Intent(InOut)::X
+        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
 
         Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
         Integer(kind=int32)::IU_4
@@ -240,7 +240,7 @@
            call WrLCBuf8(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         endif
       Return
-      End Subroutine Wr_LCBuf
+      End Subroutine Wr_LCBuf_G
 
       Subroutine Wr_LRInd(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         Implicit None
@@ -249,7 +249,7 @@
         Integer(kind=int64),Intent(In)::IU
         Logical,Intent(In)::ASym
         Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
-        Real(kind=real64),Dimension(:,:),Intent(InOut)::X
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
 
         Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
         Integer(kind=int32)::IU_4
@@ -281,7 +281,7 @@
         Character(Len=*),Intent(In)::Label
         Integer(kind=int64),Intent(In)::IU
         Integer(kind=int64),Intent(In)::NR,LenBuf,N
-        Real(kind=real64),Dimension(:),Intent(InOut)::RInt
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::RInt
 
         Integer(kind=int32)::NR_4,LenBuf_4,N_4
         Integer(kind=int32)::IU_4
@@ -516,7 +516,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(InOUT)::NR,NTot
-        Real(kind=real64),Dimension(NTOT,NR),Intent(InOut)::X
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
 
         Integer(kind=int64), external::N8mNZA
         Integer(kind=int64)::Numz
@@ -528,7 +528,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(InOUT)::NR,NTot
-        Real(kind=real64),Dimension(NR,NTOT),Intent(InOut)::X
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
 
         Integer(kind=int64), external::N8mNZr
         Integer(kind=int64)::Numz
@@ -540,7 +540,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,LR,NTOT,LenBuf
-        Real(kind=real64),Dimension(LR),Intent(InOut)::RArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::RArr
 
         Integer(kind=int32)::IU_4,LR_4,NTOT_4,LenBuf_4
         Integer(kind=int32)::IntPrecision, Call_Test
@@ -561,11 +561,11 @@
       Return
       End Subroutine Rd_2E1
 
-      Subroutine Rd_2EN(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
+      Subroutine Rd_2EN_G(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NR,LR,LRNR,NTot,LenBuf
-        Real(kind=real64),Dimension(LRNR),Intent(InOut)::RArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::RArr
 
         Integer(kind=int32)::IU_4,NR_4,LR_4,LRNR_4,NTot_4,LenBuf_4
         Integer(kind=int32)::IntPrecision, Call_Test
@@ -587,13 +587,13 @@
            call Rd2EN8(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
         endif
       Return
-      End Subroutine Rd_2EN
+      End Subroutine Rd_2EN_G
 
-      Subroutine Rd_CBuf(IU,NTot,LenBuf,Arr)
+      Subroutine Rd_CBuf_G(IU,NTot,LenBuf,Arr)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Complex(kind=real64),Dimension(NTot),Intent(InOut)::Arr
+        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::Arr
 
         Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
         Integer(kind=int32)::IntPrecision, Call_Test
@@ -612,21 +612,21 @@
            call RdCBuf8(IU,NTot,LenBuf,Arr)
         endif
       Return
-      End Subroutine Rd_CBuf
+      End Subroutine Rd_CBuf_G
 
-      Subroutine Rd_Head(IU,NLab,NAtoms,NBasis,IAn,IAtTyp,AtmChg,C, &
+      Subroutine Rd_Head_G(IU,NLab,NAtoms,NBasis,IAn,IAtTyp,AtmChg,C, &
        IBfAtm,IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB, &
        NPrmDB,NBTot)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NAtoms,NBasis,NLab
-        Integer(kind=int64),Dimension(NAtoms),Intent(Out)::IAn
-        Integer(kind=int64),Dimension(NAtoms),Intent(Out)::IAtTyp
-        Real(kind=real64),Dimension(NAtoms),Intent(Out)::AtmChg
-        Real(kind=real64),Dimension(3*NAtoms),Intent(Out)::C
-        Integer(kind=int64),Dimension(NBasis),Intent(Out)::IBfAtm
-        Integer(kind=int64),Dimension(NBasis),Intent(Out)::IBfTyp
-        Real(kind=real64),Dimension(NAtoms),Intent(Out)::AtmWgt
+        Integer(kind=int64),Dimension(:),Intent(Out)::IAn
+        Integer(kind=int64),Dimension(:),Intent(Out)::IAtTyp
+        Real(kind=real64),Dimension(:),Intent(Out)::AtmChg
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::C
+        Integer(kind=int64),Dimension(:),Intent(Out)::IBfAtm
+        Integer(kind=int64),Dimension(:),Intent(Out)::IBfTyp
+        Real(kind=real64),Dimension(:),Intent(InOut)::AtmWgt
         Integer(kind=int64),Intent(Out)::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
 
         Integer(kind=int32)::IU_4,NAtoms_4,NBasis_4,NLab_4
@@ -670,11 +670,11 @@
         else
 ! File requires 64-bit integers, so no change
            Call RdHead8(IU,NLab,NAtoms,NBasis,IAn,IAtTyp,AtmChg,C, &
-                IBfAtm,IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB, &
-                NPrmDB,NBTot)
+                IBfAtm,IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO, &
+                NShlDB,NPrmDB,NBTot)
         Endif
       Return
-      End Subroutine Rd_Head
+      End Subroutine Rd_Head_G
 
       Subroutine Rd_IBuf(IU,NTot,LenBuf,Arr)
         Implicit None
@@ -745,11 +745,11 @@
       Return
       End Subroutine Rd_Labl
 
-      Subroutine Rd_RBuf(IU,NTot,LenBuf,Arr)
+      Subroutine Rd_RBuf_G(IU,NTot,LenBuf,Arr)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Real(kind=real64),Dimension(NTot),Intent(Out)::Arr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
         Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
 
@@ -769,14 +769,14 @@
            Call RdRBuf8(IU,NTot,LenBuf,Arr)
         endif
       Return
-      End Subroutine Rd_RBuf
+      End Subroutine Rd_RBuf_G
 
       Subroutine Rd_RInd(IU,NR,LR,NTot,LenBuf,LNZ,RArr)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NR,LR,NTot,LenBuf
         Integer(kind=int64),Intent(Out)::LNZ
-        Real(kind=real64),Dimension(NR,LR),Intent(Out)::RArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RArr
 
         Integer(kind=int32)::IU_4,NR_4,LR_4,NTot_4,LenBuf_4
         Integer(kind=int32)::LNZ_4
@@ -814,7 +814,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,NR,N,LR,LenBuf
-        Real(kind=real64),Dimension(LR,NR),Intent(Out)::RArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RArr
 
         Integer(kind=int32)::IU_4,NTot_4,NR_4,N_4,LR_4,LenBuf_4
 
@@ -840,11 +840,11 @@
       Return
       End Subroutine Wr_2E
 
-      Subroutine Wr_CBuf(IU,NTot,LenBuf,Arr)
+      Subroutine Wr_CBuf_G(IU,NTot,LenBuf,Arr)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Complex(kind=real64),Dimension(NTot),Intent(In)::Arr
+        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(In)::Arr
 
         Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
 
@@ -864,20 +864,20 @@
            call WrCBuf8(IU,NTot,LenBuf,Arr)
         endif
       Return
-      End Subroutine Wr_CBuf
+      End Subroutine Wr_CBuf_G
 
-      Subroutine Wr_Head(IU,NAtoms,NAt3,NBasis,IAn,IAtTyp,AtmChg,C,IBfAtm, &
+      Subroutine Wr_Head_G(IU,NAtoms,NAt3,NBasis,IAn,IAtTyp,AtmChg,C,IBfAtm, &
            IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot)
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NAtoms,NAt3,NBasis
         INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAn
         INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAtTyp
-        REAL(kind=real64),Dimension(NAtoms),Intent(In)::AtmChg
-        REAL(kind=real64),Dimension(NAt3),Intent(In)::C
+        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::AtmChg
+        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::C
         INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfTyp
         INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfAtm
-        REAL(kind=real64),Dimension(NAtoms),Intent(In)::AtmWgt
+        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::AtmWgt
         Integer(kind=int64),Intent(In)::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
 
         Integer(kind=int32)::IU_4,NAtoms_4,NAt3_4,NBasis_4
@@ -926,7 +926,7 @@
                 IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot)
         endif
       Return
-      End Subroutine Wr_Head
+      End Subroutine Wr_Head_G
 
       Subroutine Wr_IBuf(IU,NTot,LenBuf,Arr)
         Implicit None
@@ -996,7 +996,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Real(kind=real64),Dimension(NTot),Intent(In)::Arr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(In)::Arr
 
         Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
 
@@ -1022,7 +1022,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NR,LR,NTot,LenBuf
-        Real(kind=real64),Dimension(NR,LR),Intent(In)::RArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(In)::RArr
 
         Integer(kind=int32)::IU_4,NR_4,LR_4,NTot_4,LenBuf_4
 
@@ -1050,8 +1050,8 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::N, LR
-        Real(kind=real64),Dimension(LR),Intent(Out)::RI
-        Real(kind=real64),Dimension(N,N,N,N),Intent(Out)::RO
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RI
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RO
 ! This routine does no I/O
         Call ExpA18(N,LR,RI,RO)
       Return
@@ -1061,8 +1061,8 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::NE,N, LR
-        Real(kind=real64),Dimension(NE,LR),Intent(Out)::RI
-        Real(kind=real64),Dimension(NE,N,N,N,N),Intent(Out)::RO
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RI
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::RO
 ! This routine does no I/O
         Call ExpAN8(NE,N,LR,RI,RO)
       Return
@@ -1072,7 +1072,7 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::N
-        Real(kind=real64),Dimension(N),Intent(Out)::A
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::A
 
         call AClea8(N,A)
       Return
@@ -1937,8 +1937,8 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
-        Real(kind=real64),Dimension(NTot),Intent(Out)::Arr
+        Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
         Integer(kind=int32)::IntPrecision, Call_Test
         Character(Len=64)::Name
@@ -1958,8 +1958,8 @@
       subroutine RdRMixed8(IU,NTot,LenBuf,IArr,Arr)
       implicit none
       Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-      Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
-      Real(kind=real64),Dimension(NTot),Intent(Out)::Arr
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
       Integer(kind=int64),Dimension(lenbuf)::iBuf
       Real(kind=real64),Dimension(lenbuf)::Buf
@@ -1970,8 +1970,8 @@
          ndo = min(lenbuf,ntot-ind)
          read(iu) iBuf, buf
          do i = 1, ndo
-            iarr(ind+i) = ibuf(i)
-            arr(ind+i) = buf(i)
+            iarr(ind+i,1,1,1,1) = ibuf(i)
+            arr(ind+i,1,1,1,1) = buf(i)
          enddo
       enddo
       return
@@ -1980,8 +1980,8 @@
       subroutine RdRMixed4(IU,NTot,LenBuf,IArr,Arr)
       implicit none
       Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-      Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
-      Real(kind=real64),Dimension(NTot),Intent(Out)::Arr
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
       Integer(kind=int32),Dimension(lenbuf)::iBuf
       Real(kind=real64),Dimension(lenbuf)::Buf
@@ -1992,8 +1992,8 @@
          ndo = min(lenbuf,ntot-ind)
          read(iu) iBuf, buf
          do i = 1, ndo
-            iarr(ind+i) = ibuf(i)
-            arr(ind+i) = buf(i)
+            iarr(ind+i,1,1,1,1) = ibuf(i)
+            arr(ind+i,1,1,1,1) = buf(i)
          enddo
       enddo
       return
@@ -2003,8 +2003,8 @@
         Implicit None
 
         Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-        Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
-        Complex(kind=real64),Dimension(NTot),Intent(Out)::Arr
+        Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
         Integer(kind=int32)::IntPrecision, Call_Test
         Character(Len=64)::Name
@@ -2024,8 +2024,8 @@
       subroutine RdCMixed8(IU,NTot,LenBuf,IArr,Arr)
       implicit none
       Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
-      Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
-      Complex(kind=real64),Dimension(NTot),Intent(Out)::Arr
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Complex(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
 
       Integer(kind=int64),Dimension(lenbuf)::iBuf
       Complex(kind=real64),Dimension(lenbuf)::Buf
@@ -2036,8 +2036,8 @@
          ndo = min(lenbuf,ntot-ind)
          read(iu) iBuf, buf
          do i = 1, ndo
-            iarr(ind+i) = ibuf(i)
-            arr(ind+i) = buf(i)
+            iarr(ind+i,1,1,1,1) = ibuf(i)
+            arr(ind+i,1,1,1,1) = buf(i)
          enddo
       enddo
       return
@@ -2064,5 +2064,385 @@
       enddo
       return
       end subroutine RdCMixed4
+
+      Subroutine Rd_2EN(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NR,LR,LRNR,NTot,LenBuf
+        Real(kind=real64),Dimension(:),Intent(InOut)::RArr
+
+        Integer(kind=int32)::IU_4,NR_4,LR_4,LRNR_4,NTot_4,LenBuf_4
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NR_4 = NR
+           LR_4 = LR
+           LRNR_4 = LRNR
+           NTot_4 = NTot
+           LenBuf_4 = LenBuf
+           call Rd2EN4(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
+        else
+! File requires 64-bit integers, so no change
+           call Rd2EN8(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
+        endif
+      Return
+      End Subroutine Rd_2EN
+
+      Subroutine Rd_RBuf(IU,NTot,LenBuf,Arr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Real(kind=real64),Dimension(:),Intent(Out)::Arr
+
+        Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NTot_4 = NTot
+           LenBuf_4 = LenBuf
+           Call RdRBuf4(IU_4,NTot_4,LenBuf_4,Arr)
+        else
+! File requires 64-bit integers, so no change
+           Call RdRBuf8(IU,NTot,LenBuf,Arr)
+        endif
+      Return
+      End Subroutine Rd_RBuf
+
+      Subroutine Wr_LRBuf(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+        Implicit None
+
+        Character(Len=*),Intent(In)::Label
+        Integer(kind=int64),Intent(In)::IU
+        Logical,Intent(In)::ASym
+        Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
+        Real(kind=real64),Dimension(:),Intent(InOut)::X
+
+        Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
+        Integer(kind=int32)::IU_4
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NR_4 = NR
+           LenBuf_4 = LenBuf
+           N1_4 = N1
+           N2_4 = N2
+           N3_4 = N3
+           N4_4 = N4
+           N5_4 = N5
+           call WrLRBuf4(IU_4,Label,NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4,ASym,X)
+        else
+! File requires 64-bit integers, so no change
+           call WrLRBuf8(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+        endif
+      Return
+      End Subroutine Wr_LRBuf
+
+      Subroutine Wr_Head(IU,NAtoms,NAt3,NBasis,IAn,IAtTyp,AtmChg,C,IBfAtm, &
+           IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NAtoms,NAt3,NBasis
+        INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAn
+        INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAtTyp
+        REAL(kind=real64),Dimension(:),Intent(In)::AtmChg
+        REAL(kind=real64),Dimension(:),Intent(In)::C
+        INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfTyp
+        INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfAtm
+        REAL(kind=real64),Dimension(:),Intent(In)::AtmWgt
+        Integer(kind=int64),Intent(In)::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
+
+        Integer(kind=int32)::IU_4,NAtoms_4,NAt3_4,NBasis_4
+        INTEGER(kind=int32),Dimension(NAtoms)::IAn_4
+        INTEGER(kind=int32),Dimension(NAtoms)::IAtTyp_4
+        INTEGER(kind=int32),Dimension(NBasis)::IBfTyp_4
+        INTEGER(kind=int32),Dimension(NBasis)::IBfAtm_4
+        Integer(kind=int32)::NFC_4,NFV_4,ITran_4,IDum9_4,NShlAO_4,NPrmAO_4,NShlDB_4,NPrmDB_4,NBTot_4
+
+        Integer(kind=int64) I
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NAtoms_4 = NAtoms
+           NAt3_4 = NAt3
+           NBasis_4 = NBasis
+           DO i = 1, NAtoms
+              IAn_4(I) = IAn(I)
+              IAtTyp_4(I) = IAtTyp(I)
+           Enddo
+           DO i = 1, NBasis
+              IBfTyp_4(I) = IBfTyp(I)
+              IBfAtm_4(I) = IBfAtm(I)
+           Enddo
+           NFC_4 = NFC
+           NFV_4 = NFV
+           ITran_4 = ITran
+           IDum9_4 = IDum9
+           NShlAO_4 = NShlAO
+           NPrmAO_4 = NPrmAO
+           NShlDB_4 = NShlDB
+           NPrmDB_4 = NPrmDB
+           NBTot_4 = NBTot
+           Call WrHead4(IU_4,NAtoms_4,NAt3_4,NBasis_4,IAn_4,IAtTyp_4,AtmChg,C,IBfAtm_4, &
+           IBfTyp_4,AtmWgt,NFC_4,NFV_4,ITran_4,IDum9_4,NShlAO_4,NPrmAO_4,NShlDB_4,NPrmDB_4,NBTot_4)
+
+        else
+! File requires 64-bit integers, so no change
+           Call WrHead8(IU,NAtoms,NAt3,NBasis,IAn,IAtTyp,AtmChg,C,IBfAtm, &
+                IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot)
+        endif
+      Return
+      End Subroutine Wr_Head
+
+      Subroutine Rd_Head(IU,NLab,NAtoms,NBasis,IAn,IAtTyp,AtmChg,C, &
+       IBfAtm,IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB, &
+       NPrmDB,NBTot)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NAtoms,NBasis,NLab
+        Integer(kind=int64),Dimension(NAtoms),Intent(Out)::IAn
+        Integer(kind=int64),Dimension(NAtoms),Intent(Out)::IAtTyp
+        Real(kind=real64),Dimension(:),Intent(Out)::AtmChg
+        Real(kind=real64),Dimension(:),Intent(InOut)::C
+        Integer(kind=int64),Dimension(NBasis),Intent(Out)::IBfAtm
+        Integer(kind=int64),Dimension(NBasis),Intent(Out)::IBfTyp
+        Real(kind=real64),Dimension(:),Intent(InOut)::AtmWgt
+        Integer(kind=int64),Intent(Out)::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
+
+        Integer(kind=int32)::IU_4,NAtoms_4,NBasis_4,NLab_4
+        Integer(kind=int32),Dimension(NAtoms)::IAn_4
+        Integer(kind=int32),Dimension(NAtoms)::IAtTyp_4
+        Integer(kind=int32),Dimension(NBasis)::IBfAtm_4
+        Integer(kind=int32),Dimension(NBasis)::IBfTyp_4
+        Integer(kind=int32)::NFC_4,NFV_4,ITran_4,IDum9_4,NShlAO_4,NPrmAO_4,NShlDB_4,NPrmDB_4,NBTot_4
+        Integer(kind=int64)::I
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NAtoms_4 = NAtoms
+           NBasis_4 = NBasis
+           NLab_4 = NLab
+           Call RdHead4(IU_4,NLab_4,NAtoms_4,NBasis_4,IAn_4,IAtTyp_4,AtmChg,C, &
+                IBfAtm_4,IBfTyp_4,AtmWgt,NFC_4,NFV_4,ITran_4,IDum9_4,NShlAO_4,NPrmAO_4,NShlDB_4, &
+                NPrmDB_4,NBTot_4)
+           DO I = 1,NAtoms
+              IAn(I) = IAn_4(I)
+              IAtTyp(I) = IAtTyp_4(I)
+           ENDDO
+           DO I = 1,NBasis
+              IBfAtm(I) = IBfAtm_4(I)
+              IBfTyp(I) = IBfTyp_4(I)
+           ENDDO
+           NFC = NFC_4
+           NFV = NFV_4
+           ITran = ITran_4
+           IDum9 = IDum9_4
+           NShlAO = NShlAO_4
+           NPrmAO = NPrmAO_4
+           NShlDB = NShlDB_4
+           NPrmDB = NPrmDB_4
+           NBTot = NBTot_4
+        else
+! File requires 64-bit integers, so no change
+           Call RdHead8(IU,NLab,NAtoms,NBasis,IAn,IAtTyp,AtmChg,C, &
+                IBfAtm,IBfTyp,AtmWgt,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB, &
+                NPrmDB,NBTot)
+        Endif
+      Return
+      End Subroutine Rd_Head
+
+      Subroutine Rd_IBuf_G(IU,NTot,LenBuf,Arr)
+        Implicit None
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Integer(kind=int64),Dimension(NTot),Intent(Out)::Arr
+
+        Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
+        Integer(kind=int32),Dimension(NTot)::Arr_4
+
+        Integer(kind=int64)::I
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NTot_4 = NTot
+           LenBuf_4 = LenBuf
+
+           Call RdIBuf4(IU_4,NTot_4,LenBuf_4,Arr_4)
+           DO I = 1,NTot
+              Arr(I) = Arr_4(I)
+           ENDDO
+        else
+! File requires 64-bit integers, so no change
+           Call RdIBuf8(IU,NTot,LenBuf,Arr)
+        endif
+      Return
+      End Subroutine Rd_IBuf_G
+
+      Subroutine Wr_LIBuf(IU,Label,NI,LenBuf,N1,N2,N3,N4,N5,ASym,IX)
+        Implicit None
+!
+        Character(Len=*),Intent(In)::Label
+        Integer(kind=int64),Intent(In)::IU
+        Logical,Intent(In)::ASym
+        Integer(kind=int64),Intent(In)::NI,LenBuf,N1,N2,N3,N4,N5
+        Integer(kind=int64),Dimension(:),Intent(In)::IX
+
+        Integer(kind=int32) IU_4,NI_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
+
+        Integer(kind=int32),Dimension(:),Allocatable::IX_4
+        Integer(kind=int32)::I
+        Integer(kind=int64)::NTot
+!
+! This routine writes and integer array, so it needs to be copied.
+!
+        Integer(kind=int32)::AllocateStatus
+        Integer(kind=int32)::DeAllocateStatus
+        Integer(kind=int64), external::LenAr8
+!
+        Integer(kind=int64)::Iout
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NI_4 = NI
+           LenBuf_4 = LenBuf
+           N1_4 = N1
+           N2_4 = N2
+           N3_4 = N3
+           N4_4 = N4
+           N5_4 = N5
+           NTot = LenAr8(N1,N2,N3,N4,N5)
+           Iout = 6
+           Allocate ( IX_4(NTot), STAT = AllocateStatus)
+           IF (AllocateStatus /= 0) call MQC_Error_I('Not Enough Memory', Iout, 'NTot', NTot)
+           do i=1, NTot
+              IX_4(i) = IX(i)
+           enddo
+           call WrLIBuf4(IU_4,Label,NI_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4,ASym,IX_4)
+           DEALLOCATE (IX_4, STAT = DeAllocateStatus)
+           IF (DeAllocateStatus /= 0) call MQC_Error_I('Not able to deallocate Memory', Iout, 'NTot', NTot)
+        else
+! File requires 64-bit integers, so no change
+           call WrLIBuf8(IU,Label,NI,LenBuf,N1,N2,N3,N4,N5,ASym,IX)
+        endif
+      Return
+      End Subroutine Wr_LIBuf
+
+      Subroutine Wr_LCBuf(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+        Implicit None
+
+        Character(Len=*),Intent(In)::Label
+        Integer(kind=int64),Intent(In)::IU
+        Logical,Intent(In)::ASym
+        Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
+        Complex(kind=real64),Dimension(:),Intent(InOut)::X
+
+        Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
+        Integer(kind=int32)::IU_4
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NR_4 = NR
+           LenBuf_4 = LenBuf
+           N1_4 = N1
+           N2_4 = N2
+           N3_4 = N3
+           N4_4 = N4
+           N5_4 = N5
+           call WrLCBuf4(IU_4,Label,NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4,ASym,X)
+        else
+! File requires 64-bit integers, so no change
+           call WrLCBuf8(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
+        endif
+      Return
+      End Subroutine Wr_LCBuf
+
+      Subroutine Rd_CBuf(IU,NTot,LenBuf,Arr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Complex(kind=real64),Dimension(NTot),Intent(InOut)::Arr
+
+        Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NTot_4 = NTot
+           LenBuf_4 = LenBuf
+           call RdCBuf8(IU_4,NTot_4,LenBuf_4,Arr)
+        else
+! File requires 64-bit integers, so no change
+           call RdCBuf8(IU,NTot,LenBuf,Arr)
+        endif
+      Return
+      End Subroutine Rd_CBuf
+
+      Subroutine Wr_CBuf(IU,NTot,LenBuf,Arr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Complex(kind=real64),Dimension(NTot),Intent(In)::Arr
+
+        Integer(kind=int32)::IU_4,NTot_4,LenBuf_4
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           IU_4 = IU
+           NTot_4 = NTot
+           LenBuf_4 = LenBuf
+           call WrCBuf4(IU_4,NTot_4,LenBuf_4,Arr)
+        else
+! File requires 64-bit integers, so no change
+           call WrCBuf8(IU,NTot,LenBuf,Arr)
+        endif
+      Return
+      End Subroutine Wr_CBuf
 
       End Module MQC_MatWrapper
