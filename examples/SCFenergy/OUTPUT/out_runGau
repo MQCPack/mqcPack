@@ -1,0 +1,66 @@
+------------------------
+Pass through MatFile test
+------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Matrix File:  rhf_h2-sto3g.mat
+   Electronic Energy:	       	          -0.5725160428E+00
+   Electronic/Nuclear Energy:	           -0.132344272E+00
+   Nuclear Energy:	       	           0.1058354422E+00
+   Total Energy:	       	          -0.5990248730E+00
+-------------------------------
+test.com Create MatrixFile test
+-------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Matrix File:  rhf_h2-sto3g.mat
+   Electronic Energy:	       	          -0.5725160428E+00
+   Electronic/Nuclear Energy:	           -0.132344272E+00
+   Nuclear Energy:	       	           0.1058354422E+00
+   Total Energy:	       	          -0.5990248730E+00
+-------------------------------
+test1071 Create MatrixFile test
+-------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Matrix File:  test1071.mat
+   Electronic Energy:	       	          -0.1088279672E+03
+   Electronic/Nuclear Energy:	           -0.327330701E+02
+   Nuclear Energy:	       	           0.3127909036E+02
+   Total Energy:	       	          -0.1102819469E+03
+-------------------------------
+test1129 Create MatrixFile test
+-------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Matrix File:  test1129.dat
+   Electronic Energy:	       	          -0.1496326082E+03
+   Electronic/Nuclear Energy:	           -0.560798523E+02
+   Nuclear Energy:	       	           0.3366958311E+02
+   Total Energy:	       	          -0.1720428773E+03
+--------------------------------
+test1132 Create MatrixFiles test
+--------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Matrix File:  test1132.mat
+   Electronic Energy:	       	          -0.2609384339E+03
+   Electronic/Nuclear Energy:	           -0.938021404E+02
+   Nuclear Energy:	       	           0.2776011598E+02
+   Total Energy:	       	          -0.3269804583E+03
+-----------------------------------------
+test1132 Pass one MatrixFile through test
+-----------------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
+------------------------------------------------------------------
+test1132 Create One MartixFile and Pass through 3 MatrixFiles test
+------------------------------------------------------------------
+Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Warning: MQC Pack cannot process file 'test1132gr.dat' it may have been created with the raw attribute.
+Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
+Matrix File:  test1132.mat
+   Electronic Energy:	       	          -0.2609384339E+03
+   Electronic/Nuclear Energy:	           -0.938021404E+02
+   Nuclear Energy:	       	           0.2776011598E+02
+   Total Energy:	       	          -0.3269804583E+03
+Matrix File:  test1132u.dat
+   Electronic Energy:	       	          -0.1547413859E+03
+   Electronic/Nuclear Energy:	           -0.523606670E+02
+   Nuclear Energy:	       	           0.3366958311E+02
+   Total Energy:	       	          -0.1734324698E+03
