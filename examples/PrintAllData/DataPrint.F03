@@ -1,5 +1,5 @@
 ! This program tests Reading everthing in a MartixFile
-     program DataSummary
+     program DataPrint
 !
 !     This program contains examples of the matrix file read and write routines
 !
@@ -18,10 +18,9 @@
       character(len=1024)::program_name
       character(len=1024)::no_program_name
       character(len=1024)::FileName
-      integer(kind=int64) cmd_count
-      integer(kind=int64) IAllocated
 !
-      integer(kind=int64) iout, i, status, Print_Options
+      integer(kind=int64) iout, i, status
+      integer(kind=int64) Print_Options
       class(mqc_link_list), allocatable:: mqc_input_file_list
       class(mqc_READONLY_list), allocatable:: my_READONLY_list
 
@@ -31,7 +30,8 @@
       iout = 6
       allocate(mqc_input_file_list)
       allocate(my_READONLY_list)
-      Print_Options = 1
+      Print_Options=2
+
       Call MQC_Create_Wavefunctions( Print_Options, my_READONLY_list, &
            mqc_input_file_list, Iout)
 
@@ -49,4 +49,5 @@
          call  mqc_get_FormChk_Name_F2C(FileName, iout)
       EndDo
 
-    end program DataSummary
+    end program DataPrint
+

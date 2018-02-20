@@ -76,9 +76,9 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 check_PROGRAMS = ../algebra2/algebra_fun$(EXEEXT) \
-	../fullci/fullci$(EXEEXT) \
-	../CreateDataList/CheckInput$(EXEEXT) \
-	../DataSummary/DataSummary$(EXEEXT)
+	../fullci/fullci$(EXEEXT) ../DataSummary/DataSummary$(EXEEXT) \
+	../PrintAllData/DataPrint$(EXEEXT) \
+	../SCFenergy/SCFenergy$(EXEEXT)
 subdir = examples/Build_Tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/test-driver README
@@ -90,18 +90,22 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__dirstamp = $(am__leading_dot)dirstamp
-am____CreateDataList_CheckInput_OBJECTS =  \
-	../CreateDataList/CheckInput.$(OBJEXT)
-___CreateDataList_CheckInput_OBJECTS =  \
-	$(am____CreateDataList_CheckInput_OBJECTS)
-___CreateDataList_CheckInput_LDADD = $(LDADD)
-___CreateDataList_CheckInput_DEPENDENCIES = ../../src/libmqc.a
 am____DataSummary_DataSummary_OBJECTS =  \
 	../DataSummary/DataSummary.$(OBJEXT)
 ___DataSummary_DataSummary_OBJECTS =  \
 	$(am____DataSummary_DataSummary_OBJECTS)
 ___DataSummary_DataSummary_LDADD = $(LDADD)
 ___DataSummary_DataSummary_DEPENDENCIES = ../../src/libmqc.a
+am____PrintAllData_DataPrint_OBJECTS =  \
+	../PrintAllData/DataPrint.$(OBJEXT)
+___PrintAllData_DataPrint_OBJECTS =  \
+	$(am____PrintAllData_DataPrint_OBJECTS)
+___PrintAllData_DataPrint_LDADD = $(LDADD)
+___PrintAllData_DataPrint_DEPENDENCIES = ../../src/libmqc.a
+am____SCFenergy_SCFenergy_OBJECTS = ../SCFenergy/SCFenergy.$(OBJEXT)
+___SCFenergy_SCFenergy_OBJECTS = $(am____SCFenergy_SCFenergy_OBJECTS)
+___SCFenergy_SCFenergy_LDADD = $(LDADD)
+___SCFenergy_SCFenergy_DEPENDENCIES = ../../src/libmqc.a
 am____algebra2_algebra_fun_OBJECTS =  \
 	../algebra2/algebra_fun.$(OBJEXT)
 ___algebra2_algebra_fun_OBJECTS =  \
@@ -138,8 +142,9 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-DIST_SOURCES = $(___CreateDataList_CheckInput_SOURCES) \
-	$(___DataSummary_DataSummary_SOURCES) \
+DIST_SOURCES = $(___DataSummary_DataSummary_SOURCES) \
+	$(___PrintAllData_DataPrint_SOURCES) \
+	$(___SCFenergy_SCFenergy_SOURCES) \
 	$(___algebra2_algebra_fun_SOURCES) $(___fullci_fullci_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -464,12 +469,13 @@ top_srcdir = @top_srcdir@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 AM_CPPFLAGS = $(MQC_CPPFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
-TESTS = ../algebra2/testit.sh ../fullci/testit.sh ../CreateDataList/testit.sh ../DataSummary/testit.sh
-SOURCES = ../algebra2/algebra_fun.F03 ../fullci/fullci.F03 ../CreateDataList/CheckInput.F03 ../DataSummary/DataSummary.F03
+TESTS = ../algebra2/testit.sh ../fullci/testit.sh ../DataSummary/testit.sh ../PrintAllData/testit.sh ../SCFenergy/testit.sh
+SOURCES = ../algebra2/algebra_fun.F03 ../fullci/fullci.F03 ../DataSummary/DataSummary.F03 ../PrintAllData/DataPrint.F03 ../SCFenergy/SCFenergy.F03
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.F03
 ___fullci_fullci_SOURCES = ../fullci/fullci.F03
-___CreateDataList_CheckInput_SOURCES = ../CreateDataList/CheckInput.F03
 ___DataSummary_DataSummary_SOURCES = ../DataSummary/DataSummary.F03
+___PrintAllData_DataPrint_SOURCES = ../PrintAllData/DataPrint.F03
+___SCFenergy_SCFenergy_SOURCES = ../SCFenergy/SCFenergy.F03
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 all: all-am
 
@@ -508,19 +514,6 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-../CreateDataList/$(am__dirstamp):
-	@$(MKDIR_P) ../CreateDataList
-	@: > ../CreateDataList/$(am__dirstamp)
-../CreateDataList/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ../CreateDataList/$(DEPDIR)
-	@: > ../CreateDataList/$(DEPDIR)/$(am__dirstamp)
-../CreateDataList/CheckInput.$(OBJEXT):  \
-	../CreateDataList/$(am__dirstamp) \
-	../CreateDataList/$(DEPDIR)/$(am__dirstamp)
-
-../CreateDataList/CheckInput$(EXEEXT): $(___CreateDataList_CheckInput_OBJECTS) $(___CreateDataList_CheckInput_DEPENDENCIES) $(EXTRA____CreateDataList_CheckInput_DEPENDENCIES) ../CreateDataList/$(am__dirstamp)
-	@rm -f ../CreateDataList/CheckInput$(EXEEXT)
-	$(AM_V_FCLD)$(FCLINK) $(___CreateDataList_CheckInput_OBJECTS) $(___CreateDataList_CheckInput_LDADD) $(LIBS)
 ../DataSummary/$(am__dirstamp):
 	@$(MKDIR_P) ../DataSummary
 	@: > ../DataSummary/$(am__dirstamp)
@@ -533,6 +526,30 @@ clean-checkPROGRAMS:
 ../DataSummary/DataSummary$(EXEEXT): $(___DataSummary_DataSummary_OBJECTS) $(___DataSummary_DataSummary_DEPENDENCIES) $(EXTRA____DataSummary_DataSummary_DEPENDENCIES) ../DataSummary/$(am__dirstamp)
 	@rm -f ../DataSummary/DataSummary$(EXEEXT)
 	$(AM_V_FCLD)$(FCLINK) $(___DataSummary_DataSummary_OBJECTS) $(___DataSummary_DataSummary_LDADD) $(LIBS)
+../PrintAllData/$(am__dirstamp):
+	@$(MKDIR_P) ../PrintAllData
+	@: > ../PrintAllData/$(am__dirstamp)
+../PrintAllData/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../PrintAllData/$(DEPDIR)
+	@: > ../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+../PrintAllData/DataPrint.$(OBJEXT): ../PrintAllData/$(am__dirstamp) \
+	../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+
+../PrintAllData/DataPrint$(EXEEXT): $(___PrintAllData_DataPrint_OBJECTS) $(___PrintAllData_DataPrint_DEPENDENCIES) $(EXTRA____PrintAllData_DataPrint_DEPENDENCIES) ../PrintAllData/$(am__dirstamp)
+	@rm -f ../PrintAllData/DataPrint$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___PrintAllData_DataPrint_OBJECTS) $(___PrintAllData_DataPrint_LDADD) $(LIBS)
+../SCFenergy/$(am__dirstamp):
+	@$(MKDIR_P) ../SCFenergy
+	@: > ../SCFenergy/$(am__dirstamp)
+../SCFenergy/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../SCFenergy/$(DEPDIR)
+	@: > ../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+../SCFenergy/SCFenergy.$(OBJEXT): ../SCFenergy/$(am__dirstamp) \
+	../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+
+../SCFenergy/SCFenergy$(EXEEXT): $(___SCFenergy_SCFenergy_OBJECTS) $(___SCFenergy_SCFenergy_DEPENDENCIES) $(EXTRA____SCFenergy_SCFenergy_DEPENDENCIES) ../SCFenergy/$(am__dirstamp)
+	@rm -f ../SCFenergy/SCFenergy$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___SCFenergy_SCFenergy_OBJECTS) $(___SCFenergy_SCFenergy_LDADD) $(LIBS)
 ../algebra2/$(am__dirstamp):
 	@$(MKDIR_P) ../algebra2
 	@: > ../algebra2/$(am__dirstamp)
@@ -560,8 +577,9 @@ clean-checkPROGRAMS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f ../CreateDataList/*.$(OBJEXT)
 	-rm -f ../DataSummary/*.$(OBJEXT)
+	-rm -f ../PrintAllData/*.$(OBJEXT)
+	-rm -f ../SCFenergy/*.$(OBJEXT)
 	-rm -f ../algebra2/*.$(OBJEXT)
 	-rm -f ../fullci/*.$(OBJEXT)
 
@@ -781,16 +799,23 @@ recheck: all $(check_PROGRAMS)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../CreateDataList/testit.sh.log: ../CreateDataList/testit.sh
-	@p='../CreateDataList/testit.sh'; \
-	b='../CreateDataList/testit.sh'; \
+../DataSummary/testit.sh.log: ../DataSummary/testit.sh
+	@p='../DataSummary/testit.sh'; \
+	b='../DataSummary/testit.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../DataSummary/testit.sh.log: ../DataSummary/testit.sh
-	@p='../DataSummary/testit.sh'; \
-	b='../DataSummary/testit.sh'; \
+../PrintAllData/testit.sh.log: ../PrintAllData/testit.sh
+	@p='../PrintAllData/testit.sh'; \
+	b='../PrintAllData/testit.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+../SCFenergy/testit.sh.log: ../SCFenergy/testit.sh
+	@p='../SCFenergy/testit.sh'; \
+	b='../SCFenergy/testit.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -875,10 +900,12 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f ../CreateDataList/$(DEPDIR)/$(am__dirstamp)
-	-rm -f ../CreateDataList/$(am__dirstamp)
 	-rm -f ../DataSummary/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../DataSummary/$(am__dirstamp)
+	-rm -f ../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../PrintAllData/$(am__dirstamp)
+	-rm -f ../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../SCFenergy/$(am__dirstamp)
 	-rm -f ../algebra2/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../algebra2/$(am__dirstamp)
 	-rm -f ../fullci/$(DEPDIR)/$(am__dirstamp)
@@ -969,7 +996,7 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	recheck tags tags-am uninstall uninstall-am
 
-build: ../algebra2/algebra_fun.$(OBJEXT) ../fullci/fullci.$(OBJEXT) ../CreateDataList/CheckInput.$(OBJEXT) ../DataSummary/DataSummary.$(OBJEXT)
+build: ../algebra2/algebra_fun.$(OBJEXT) ../fullci/fullci.$(OBJEXT) ../DataSummary/DataSummary.$(OBJEXT) ../PrintAllData/DataPrint.$(OBJEXT) ../SCFenergy/SCFenergy.$(OBJEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
