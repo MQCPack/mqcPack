@@ -103,6 +103,11 @@
         module procedure mqc_packedDiagonalMatrix2FullMatrix_real
       end interface
 !
+      interface mqc_matrixSymm2Full
+        module procedure mqc_matrixSymm2Full_integer
+        module procedure mqc_matrixSymm2Full_real
+      end interface
+!
 !
 !
 !     Subroutines/Functions...
@@ -1038,7 +1043,7 @@
       matrixFull = float(0.0)
 #endif
       select case(myUpperLower)
-      case('U')
+      case('u','U')
         k = 0
         do i = 1,nDim
           do j = 1,i
@@ -1047,7 +1052,7 @@
             matrixFull(j,i) = matrixSymmetric(k)
           endDo
         endDo
-      case('L')
+      case('l','L')
         k = 0
         do i = 1,nDim
           do j = i,nDim
@@ -1063,6 +1068,104 @@
 !
       return
       end Subroutine mqc_packedSymmetricMatrix2FullMatrix_real
+
+
+!PROCEDURE mqc_matrixSymm2Full_integer
+      function mqc_matrixSymm2Full_integer(matrixSymmetric,upperLower) result(matrixFull)
+!
+!     This function accepts an input one-dimensional array of a symmetric matrix
+!     (input dummy argument <matrixSymmetric>) stored in packed form and returns
+!     a full matrix.
+!
+!     Optional input dummy argument <upperLower> is a character string with 'U'
+!     or 'L' to denote whether <matrixSymmetric> is sent in an upper- or
+!     lower-symmetric column-wise storage format. If not sent, the default value
+!     for <upperLower> is 'U'.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),dimension(:),intent(in)::matrixSymmetric
+      integer(kind=int64),dimension(:,:),allocatable::matrixFull
+      integer(kind=int64)::iTmp,nDim,nSymm
+      character(len=*),intent(in),optional::upperLower
+      character(len=1)::myUpperLower
+!
+!     Set-up myUpperLower and alloacte matrixFull.
+!
+      if(PRESENT(upperLower)) then
+        myUpperLower = TRIM(upperLower)
+      else
+        myUpperLower = 'U'
+      endIf
+      nSymm = SIZE(matrixSymmetric)
+      iTmp = mqc_isqrt(1+8*nSymm) - 1
+      nDim = iTmp/2
+      write(*,*)
+      write(*,*)' Hrant - nSymm = ',nSymm
+      write(*,*)' Hrant - nDim  = ',nDim
+      write(*,*)
+      allocate(matrixFull(nDim,nDim))
+      call mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
+        matrixFull,myUpperLower)
+!
+      return
+      end Function mqc_matrixSymm2Full_integer
+
+
+!PROCEDURE mqc_matrixSymm2Full_real
+      function mqc_matrixSymm2Full_real(matrixSymmetric,upperLower) result(matrixFull)
+!
+!     This function accepts an input one-dimensional array of a symmetric matrix
+!     (input dummy argument <matrixSymmetric>) stored in packed form and returns
+!     a full matrix.
+!
+!     Optional input dummy argument <upperLower> is a character string with 'U'
+!     or 'L' to denote whether <matrixSymmetric> is sent in an upper- or
+!     lower-symmetric column-wise storage format. If not sent, the default value
+!     for <upperLower> is 'U'.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::matrixSymmetric
+      real(kind=real64),dimension(:,:),allocatable::matrixFull
+      integer(kind=int64)::iTmp,nDim,nSymm
+      character(len=*),intent(in),optional::upperLower
+      character(len=1)::myUpperLower
+!
+!     Set-up myUpperLower and alloacte matrixFull.
+!
+      if(PRESENT(upperLower)) then
+        myUpperLower = TRIM(upperLower)
+      else
+        myUpperLower = 'U'
+      endIf
+      nSymm = SIZE(matrixSymmetric)
+      iTmp = mqc_isqrt(1+8*nSymm) - 1
+      nDim = iTmp/2
+      write(*,*)
+      write(*,*)' Hrant - nSymm = ',nSymm
+      write(*,*)' Hrant - nDim  = ',nDim
+      write(*,*)
+      allocate(matrixFull(nDim,nDim))
+      call mqc_packedSymmetricMatrix2FullMatrix_real(matrixSymmetric,  &
+        matrixFull,myUpperLower)
+!
+      return
+      end Function mqc_matrixSymm2Full_real
+
+
+
+
+
+
 
 
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_integer
@@ -1087,7 +1190,7 @@
 !
       nDim = SIZE(matrixDiagonal)
       if(nDim.ne.SIZE(matrixFull,1).or.nDim.ne.SIZE(matrixFull,2))  &
-        call mqc_error_i('mqc_packedDiagonalMatrix2FullMatrix_real: disagreement in input/output array size!', 6, &
+        call mqc_error_i('mqc_packedDiagonalMatrix2FullMatrix_integer: disagreement in input/output array size!', 6, &
         'nDim', nDim, &
         'SIZE(matrixFull,1)', SIZE(matrixFull,1), &
         'SIZE(matrixFull,2)', SIZE(matrixFull,2))
@@ -1146,7 +1249,30 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-
+!PROCEDURE mqc_isqrt
+      function mqc_isqrt(iArg) result(iResult)
+!
+!     This function carries out integer sqrt.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),intent(in)::iArg
+      integer(kind=int64),intent(out)::iResult
+      real(kind=real64)::tmp
+!
+#ifdef PGI
+      tmp = dfloat(iArg)
+#else
+      tmp = float(iArg)
+#endif
+      iResult = int(sqrt(tmp))
+!
+      return
+      end function mqc_isqrt
 !
 !
       End Module MQC_General

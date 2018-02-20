@@ -1159,14 +1159,17 @@
               endIf
               deallocate(arrayTmp)
             case('REAL-SYMMATRIX')
-              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.', 6, &
-                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
-              call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+              if(Present(matrixOut)) then
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
               deallocate(arrayTmp)
-
             case('COMPLEX-VECTOR')
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
