@@ -61,7 +61,9 @@
       call mqc_READONLY_list_add(my_READONLY_list,"CARTESIAN NUCLEAR COORDINATES(BOHR)")
       call mqc_READONLY_list_add(my_READONLY_list,"ATOM CHARGES")
 ! This data is needed for components that include electronic interactions
+      call mqc_READONLY_list_add(my_READONLY_list,"ALPHA SCF DENSITY MATRIX")
       call mqc_READONLY_list_add(my_READONLY_list,"ALPHA DENSITY MATRIX")
+      call mqc_READONLY_list_add(my_READONLY_list,"BETA SCF DENSITY MATRIX")
       call mqc_READONLY_list_add(my_READONLY_list,"BETA DENSITY MATRIX")
       call mqc_READONLY_list_add(my_READONLY_list,"CORE HAMILTONIAN ALPHA")
       call mqc_READONLY_list_add(my_READONLY_list,"CORE HAMILTONIAN BETA")
@@ -90,9 +92,17 @@
          Vnn = MQC_Wave_To_Nuclear_Repulsion(current_wavefunction,IOut)
 ! Get all possible components of Electronic part of energy
          Found_DenA=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
-              "ALPHA DENSITY MATRIX", DenA, iout)
+              "ALPHA SCF DENSITY MATRIX", DenA, iout)
+         If ( Found_DenA .eq. 0 ) then
+            Found_DenA=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
+                 "ALPHA DENSITY MATRIX", DenA, iout)
+         EndIf
          Found_DenB=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
-              "BETA DENSITY MATRIX", DenB, iout)
+              "BETA SCF DENSITY MATRIX", DenB, iout)
+         If ( Found_DenB .eq. 0 ) then
+            Found_DenB=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
+                 "BETA DENSITY MATRIX", DenB, iout)
+         EndIf
          Found_HamA=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
               "CORE HAMILTONIAN ALPHA", HamA, iout)
          Found_HamB=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
