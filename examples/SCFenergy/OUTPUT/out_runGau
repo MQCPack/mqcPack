@@ -2,6 +2,7 @@
 Pass through MatFile test
 ------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'rhf_h2-sto3g.mat'
 Matrix File:  rhf_h2-sto3g.mat
    Electronic Energy:	       	          -0.5725160428E+00
    Electronic/Nuclear Energy:	           -0.132344272E+00
@@ -11,6 +12,7 @@ Matrix File:  rhf_h2-sto3g.mat
 test.com Create MatrixFile test
 -------------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'rhf_h2-sto3g.mat'
 Matrix File:  rhf_h2-sto3g.mat
    Electronic Energy:	       	          -0.5725160428E+00
    Electronic/Nuclear Energy:	           -0.132344272E+00
@@ -20,6 +22,7 @@ Matrix File:  rhf_h2-sto3g.mat
 test1071 Create MatrixFile test
 -------------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'test1071.mat'
 Matrix File:  test1071.mat
    Electronic Energy:	       	          -0.1088279672E+03
    Electronic/Nuclear Energy:	           -0.327330701E+02
@@ -29,6 +32,7 @@ Matrix File:  test1071.mat
 test1129 Create MatrixFile test
 -------------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'test1129.dat'
 Matrix File:  test1129.dat
    Electronic Energy:	       	          -0.1496326082E+03
    Electronic/Nuclear Energy:	           -0.560798523E+02
@@ -38,6 +42,7 @@ Matrix File:  test1129.dat
 test1132 Create MatrixFiles test
 --------------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'test1132.mat'
 Matrix File:  test1132.mat
    Electronic Energy:	       	          -0.2609384339E+03
    Electronic/Nuclear Energy:	           -0.938021404E+02
@@ -52,8 +57,10 @@ Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created w
 test1132 Create One MartixFile and Pass through 3 MatrixFiles test
 ------------------------------------------------------------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'test1132.mat'
 Warning: MQC Pack cannot process file 'test1132gr.dat' it may have been created with the raw attribute.
 Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
+Finished reading file 'test1132u.dat'
 Matrix File:  test1132.mat
    Electronic Energy:	       	          -0.2609384339E+03
    Electronic/Nuclear Energy:	           -0.938021404E+02
