@@ -14,7 +14,7 @@ Finished with tests designed to fail
 ------------------------
 Pass through MatFile test
 ------------------------
-MatrixFile:  rhf_h2-sto3g.mat
+Matrix Element File:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -132,7 +132,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -272,10 +272,11 @@ REGULAR 2E INTEGRALS
 	         - TENSOR
 	         - Total elements: 6
 	         - SYMMETRIC SUPER MATRIX (((2+1) x 2)/2+1) x ((2+1) x 2)/4
+Finished reading file 'rhf_h2-sto3g.mat'
 -------------------------------
 test.com Create MatrixFile test
 -------------------------------
-MatrixFile:  rhf_h2-sto3g.mat
+Matrix Element File:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -393,7 +394,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -549,10 +550,11 @@ REGULAR 2E INTEGRALS
 	         - TENSOR
 	         - Total elements: 6
 	         - SYMMETRIC SUPER MATRIX (((2+1) x 2)/2+1) x ((2+1) x 2)/4
+Finished reading file 'rhf_h2-sto3g.mat'
 -------------------------------
 test1071 Create MatrixFile test
 -------------------------------
-MatrixFile:  test1071.mat
+Matrix Element File:  test1071.mat
 ********************************************************
           test1071.mat
 ********************************************************
@@ -670,7 +672,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 48
 	         - VECTOR(48)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 4
 	         - VECTOR(4)
@@ -810,10 +812,11 @@ ALPHA SCF DENSITY
 	         - REAL
 	         - Total elements: 1176
 	         - SYMMETRIC MATRIX ((48+1)*48/2)
+Finished reading file 'test1071.mat'
 -------------------------------
 test1129 Create MatrixFile test
 -------------------------------
-MatrixFile:  test1129.dat
+Matrix Element File:  test1129.dat
 ********************************************************
           test1129.dat
 ********************************************************
@@ -931,7 +934,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 11
 	         - VECTOR(11)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
@@ -1119,10 +1122,11 @@ BB MO 2E INTEGRALS
 	         - REAL
 	         - Total elements: 2430
 	         - MULTIPLE SYMMETIC MATRICES (((9+1)x9/2) x (9x6))
+Finished reading file 'test1129.dat'
 --------------------------------
 test1132 Create MatrixFiles test
 --------------------------------
-MatrixFile:  test1132.mat
+Matrix Element File:  test1132.mat
 ********************************************************
           test1132.mat
 ********************************************************
@@ -1240,7 +1244,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -1364,6 +1368,7 @@ ALPHA SCF DENSITY
 	         - COMPLEX
 	         - Total elements: 1596
 	         - SYMMETRIC MATRIX ((56+1)*56/2)
+Finished reading file 'test1132.mat'
 -----------------------------------------
 test1132 Pass one MatrixFile through test
 -----------------------------------------
@@ -1371,7 +1376,7 @@ Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created w
 ------------------------------------------------------------------
 test1132 Create One MartixFile and Pass through 3 MatrixFiles test
 ------------------------------------------------------------------
-MatrixFile:  test1132.mat
+Matrix Element File:  test1132.mat
 ********************************************************
           test1132.mat
 ********************************************************
@@ -1489,7 +1494,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 28
 	         - VECTOR(28)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -1613,9 +1618,10 @@ ALPHA SCF DENSITY
 	         - COMPLEX
 	         - Total elements: 1596
 	         - SYMMETRIC MATRIX ((56+1)*56/2)
+Finished reading file 'test1132.mat'
 Warning: MQC Pack cannot process file 'test1132gr.dat' it may have been created with the raw attribute.
 Warning: MQC Pack cannot process file 'test1132r.dat' it may have been created with the raw attribute.
-MatrixFile:  test1132u.dat
+Matrix Element File:  test1132u.dat
 ********************************************************
           test1132u.dat
 ********************************************************
@@ -1733,7 +1739,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 20
 	         - VECTOR(20)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 3
 	         - VECTOR(3)
@@ -1897,3 +1903,4 @@ BETA SCF DENSITY
 	         - REAL
 	         - Total elements: 210
 	         - SYMMETRIC MATRIX ((20+1)*20/2)
+Finished reading file 'test1132u.dat'
