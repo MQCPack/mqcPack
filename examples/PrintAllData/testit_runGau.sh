@@ -66,7 +66,7 @@ rm -r test1132
 grep -v "echo argv" outfile > tmpfile 2>&1
 grep -v "cp test1132" tmpfile > outfile 2>&1
 grep -v "Gaussian Version:" outfile > tmpfile 2>&1
-mv tmpfile outfile
+sed -e 'sZ-0.000000Z 0.000000Zg' < tmpfile > outfile
 
 cd OUTPUT
 rm -f out_runGau
