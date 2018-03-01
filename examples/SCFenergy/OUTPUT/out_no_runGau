@@ -2,6 +2,7 @@
 MatFile test
 -------------
 Warning, SCFenergy gives incorrect energies for DFT and GHF wavefunctions
+Finished reading file 'rhf_h2-sto3g.mat'
 Matrix File:  rhf_h2-sto3g.mat
    Electronic Energy:	       	          -0.5725160428E+00
    Electronic/Nuclear Energy:	           -0.132344272E+00

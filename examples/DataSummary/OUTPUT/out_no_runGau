@@ -14,7 +14,7 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
-MatrixFile:  rhf_h2-sto3g.mat
+Matrix Element File:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -133,7 +133,7 @@ TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-ATOMIC WEIGHTS
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -273,3 +273,4 @@ REGULAR 2E INTEGRALS
 	         - TENSOR
 	         - Total elements: 6
 	         - SYMMETRIC SUPER MATRIX (((2+1) x 2)/2+1) x ((2+1) x 2)/4
+Finished reading file 'rhf_h2-sto3g.mat'

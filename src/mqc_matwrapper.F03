@@ -112,13 +112,23 @@
         Integer(kind=int32),Intent(Out)::IntPrecision
         Integer(kind=int32),Intent(In)::Call_Test
         Integer(kind=int32),save::Save_IntPrecision
+        Data Save_IntPrecision/0/
 
-        if ( Call_Test .eq. 0 ) then
+        If ( Call_Test .EQ. 0 ) then
            IntPrecision = Save_IntPrecision
-        else
+        Else If ( Call_Test .EQ. 2 ) then
+!
+! Write the Matrix Element file.  Set Integer precision to what is was 
+! for the Matrix Element file read.  If nothing has been read, set it 
+! to 8 Bytes.
+           If ( Save_IntPrecision .EQ. 0 ) then
+              Save_IntPrecision = 8
+           EndIf
+           IntPrecision = Save_IntPrecision
+        Else
            call MQC_Read_Mat_Precision_Test(MatFileName, IntPrecision)
            Save_IntPrecision = IntPrecision
-        endif
+        EndIf
         return
       end subroutine MQC_Mat_Precision
 
@@ -208,39 +218,6 @@
         endif
       Return
       End Subroutine Wr_LRBuf_G
-
-      Subroutine Wr_LCBuf_G(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
-        Implicit None
-
-        Character(Len=*),Intent(In)::Label
-        Integer(kind=int64),Intent(In)::IU
-        Logical,Intent(In)::ASym
-        Integer(kind=int64),Intent(In)::NR,LenBuf,N1,N2,N3,N4,N5
-        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::X
-
-        Integer(kind=int32)::NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4
-        Integer(kind=int32)::IU_4
-        Integer(kind=int32)::IntPrecision, Call_Test
-        Character(Len=64)::Name
-        Call_Test = 0
-        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
-        if ( IntPrecision .eq. 4 ) then
-! File requires 32-bit integers
-           IU_4 = IU
-           NR_4 = NR
-           LenBuf_4 = LenBuf
-           N1_4 = N1
-           N2_4 = N2
-           N3_4 = N3
-           N4_4 = N4
-           N5_4 = N5
-           call WrLCBuf4(IU_4,Label,NR_4,LenBuf_4,N1_4,N2_4,N3_4,N4_4,N5_4,ASym,X)
-        else
-! File requires 64-bit integers, so no change
-           call WrLCBuf8(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
-        endif
-      Return
-      End Subroutine Wr_LCBuf_G
 
       Subroutine Wr_LRInd(IU,Label,NR,LenBuf,N1,N2,N3,N4,N5,ASym,X)
         Implicit None
@@ -350,7 +327,8 @@
         else
            IOut = 6
            ICGU = IntPrecision
-           call MQC_Error_I('IntPrecision should be 4 or 8', Iout, 'IntPrecision', ICGU )
+           call MQC_Error_I('Open_Read: IntPrecision should be 4 or 8', Iout, &
+                'IntPrecision', ICGU )
         endif
         if ( IU .eq. -1 ) then
            IOut = 6
@@ -371,8 +349,10 @@
         Integer(kind=int32)::IU_4,NAtoms_4,NBasis_4,NBsUse_4,ICharg_4,Multip_4,NE_4,IOpCl_4,ICGU_4
 
         Integer(kind=int32)::IntPrecision, Call_Test
+        Integer(kind=int64)::IERR
         Integer(kind=int64)::IOut
-        Call_Test = 1
+        Call_Test = 2
+
         call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
@@ -391,7 +371,9 @@
            call OpenWrite8(Name,IU,LabFil,GVers,Title,NAtoms,NBasis,NBsUse,ICharg,Multip,NE,IOpCl,ICGU)
         else
            IOut = 6
-           call MQC_Error_A('Open_Write: Unable to Open File', Iout, 'Name', Name)
+           IERR = IntPrecision
+           call MQC_Error_I('Open_Write: IntPrecision should be 4 or 8', Iout, &
+                'IntPrecision', IERR)
         endif
       Return
       End Subroutine Open_Write
@@ -623,7 +605,7 @@
         Integer(kind=int64),Dimension(:),Intent(Out)::IAn
         Integer(kind=int64),Dimension(:),Intent(Out)::IAtTyp
         Real(kind=real64),Dimension(:),Intent(Out)::AtmChg
-        Real(kind=real64),Dimension(:,:,:,:,:),Intent(InOut)::C
+        Real(kind=real64),Dimension(:,:),Intent(InOut)::C
         Integer(kind=int64),Dimension(:),Intent(Out)::IBfAtm
         Integer(kind=int64),Dimension(:),Intent(Out)::IBfTyp
         Real(kind=real64),Dimension(:),Intent(InOut)::AtmWgt
@@ -873,11 +855,11 @@
         Integer(kind=int64),Intent(In)::IU,NAtoms,NAt3,NBasis
         INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAn
         INTEGER(kind=int64),Dimension(NAtoms),Intent(In)::IAtTyp
-        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::AtmChg
-        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::C
+        REAL(kind=real64),Dimension(:),Intent(In)::AtmChg
+        REAL(kind=real64),Dimension(:,:),Intent(In)::C
         INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfTyp
         INTEGER(kind=int64),Dimension(NBasis),Intent(In)::IBfAtm
-        REAL(kind=real64),Dimension(:,:,:,:,:),Intent(In)::AtmWgt
+        REAL(kind=real64),Dimension(:),Intent(In)::AtmWgt
         Integer(kind=int64),Intent(In)::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
 
         Integer(kind=int32)::IU_4,NAtoms_4,NAt3_4,NBasis_4
@@ -1219,7 +1201,7 @@
          write( s_formula, 1130)trim(s_N1X),trim(s_N2X),trim(s_N3X)
          return
       endif
-      s_shape="Unknown"
+      s_shape="UNKNOWN"
       N1X = N1
       If(N1X.eq.0) N1X = 1
       N2X = N2
@@ -1999,6 +1981,72 @@
       return
       end subroutine RdRMixed4
 
+      Subroutine Wr_RMixed(IU,NTot,LenBuf,IArr,Arr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+        Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           Call WrRMixed4(IU,NTot,LenBuf,IArr,Arr)
+        else
+! File requires 64-bit integers, so no change
+           Call WrRMixed8(IU,NTot,LenBuf,IArr,Arr)
+        endif
+      Return
+      End Subroutine Wr_RMixed
+
+      subroutine WrRMixed8(IU,NTot,LenBuf,IArr,Arr)
+      implicit none
+      Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
+
+      Integer(kind=int64),Dimension(lenbuf)::iBuf
+      Real(kind=real64),Dimension(lenbuf)::Buf
+
+      integer ind,ndo,i
+!
+      do ind = 0, (ntot-1), lenbuf
+         ndo = min(lenbuf,ntot-ind)
+         do i = 1, ndo
+            ibuf(i) = iarr(ind+i,1,1,1,1)
+            buf(i) = arr(ind+i,1,1,1,1)
+         enddo
+         write(iu) iBuf, buf
+      enddo
+      return
+      end subroutine WrRMixed8
+
+      subroutine WrRMixed4(IU,NTot,LenBuf,IArr,Arr)
+      implicit none
+      Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Real(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
+
+      Integer(kind=int32),Dimension(lenbuf)::iBuf
+      Real(kind=real64),Dimension(lenbuf)::Buf
+
+      integer ind,ndo,i
+!
+      do ind = 0, (ntot-1), lenbuf
+         ndo = min(lenbuf,ntot-ind)
+         do i = 1, ndo
+            ibuf(i) = iarr(ind+i,1,1,1,1)
+            buf(i) = arr(ind+i,1,1,1,1)
+         enddo
+         write(iu) iBuf, buf
+      enddo
+      return
+      end subroutine WrRMixed4
+
       Subroutine Rd_CMixed(IU,NTot,LenBuf,IArr,Arr)
         Implicit None
 
@@ -2064,6 +2112,72 @@
       enddo
       return
       end subroutine RdCMixed4
+
+      Subroutine Wr_CMixed(IU,NTot,LenBuf,IArr,Arr)
+        Implicit None
+
+        Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+        Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+        Complex(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
+
+        Integer(kind=int32)::IntPrecision, Call_Test
+        Character(Len=64)::Name
+
+        Call_Test = 0
+        call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+        if ( IntPrecision .eq. 4 ) then
+! File requires 32-bit integers
+           Call WrCMixed4(IU,NTot,LenBuf,IArr,Arr)
+        else
+! File requires 64-bit integers, so no change
+           Call WrCMixed8(IU,NTot,LenBuf,IArr,Arr)
+        endif
+      Return
+      End Subroutine Wr_CMixed
+
+      subroutine WrCMixed8(IU,NTot,LenBuf,IArr,Arr)
+      implicit none
+      Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+      Integer(kind=int64),Dimension(:,:,:,:,:),Intent(Out)::IArr
+      Complex(kind=real64),Dimension(:,:,:,:,:),Intent(Out)::Arr
+
+      Integer(kind=int64),Dimension(lenbuf)::iBuf
+      Complex(kind=real64),Dimension(lenbuf)::Buf
+
+      integer ind,ndo,i
+!
+      do ind = 0, (ntot-1), lenbuf
+         ndo = min(lenbuf,ntot-ind)
+         do i = 1, ndo
+            ibuf(i) = iarr(ind+i,1,1,1,1)
+            buf(i) = arr(ind+i,1,1,1,1)
+         enddo
+         write(iu) iBuf, buf
+      enddo
+      return
+      end subroutine WrCMixed8
+
+      subroutine WrCMixed4(IU,NTot,LenBuf,IArr,Arr)
+      implicit none
+      Integer(kind=int64),Intent(In)::IU,NTot,LenBuf
+      Integer(kind=int64),Dimension(NTot),Intent(Out)::IArr
+      Complex(kind=real64),Dimension(NTot),Intent(Out)::Arr
+
+      Integer(kind=int32),Dimension(lenbuf)::iBuf
+      Complex(kind=real64),Dimension(lenbuf)::Buf
+
+      integer ind,ndo,i
+!
+      do  ind = 0, (ntot-1), lenbuf
+         ndo = min(lenbuf,ntot-ind)
+         do  i = 1, ndo
+            ibuf(i) = iarr(ind+i)
+            buf(i) = arr(ind+i)
+         enddo
+         write(iu) iBuf, buf
+      enddo
+      return
+      end subroutine WrCMixed4
 
       Subroutine Rd_2EN(IU,NR,LR,LRNR,NTot,LenBuf,RArr)
         Implicit None

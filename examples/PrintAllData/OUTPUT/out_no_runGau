@@ -1,9 +1,9 @@
 ------------------------
 Pass through MatFile test
 ------------------------
-MatrixFile:  rhf_h2-sto3g.mat
+Matrix Element File:  rhf_h2-sto3g.mat
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
- Contents of Matrix File
+ Contents of Matrix Element File
 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  NUMBER OF ATOMS               2
  NUMBER OF BASIS FUNCTIONS               2
@@ -111,11 +111,11 @@ MatrixFile:  rhf_h2-sto3g.mat
  GAUSSIAN SCALARS
        1        1.394181
        2        0.440172
-       3       -0.000000
+       3        0.000000
        4       -0.599025
        5        0.105835
        6       -0.599025
-       7       -0.000000
+       7        0.000000
        8       -0.599025
        9        1.000000
       10        1.000000
@@ -149,7 +149,7 @@ MatrixFile:  rhf_h2-sto3g.mat
  ELECTRIC DIPOLE MOMENT
        1        0.000000
        2        0.000000
-       3       -0.000000
+       3        0.000000
 
  OVERLAP
                   1             2
@@ -189,14 +189,14 @@ MatrixFile:  rhf_h2-sto3g.mat
 
  DIP VEL INTEGRALS
                 1,1           2,1
-       1     -0.000000
-       2     -0.000000     -0.000000
+       1      0.000000
+       2      0.000000      0.000000
                 1,2           2,2
-       1     -0.000000
-       2     -0.000000     -0.000000
+       1      0.000000
+       2      0.000000      0.000000
                 1,3           2,3
-       1     -0.000000
-       2     -0.000174     -0.000000
+       1      0.000000
+       2     -0.000174      0.000000
 
  R X DEL INTEGRALS
                 1,1           2,1
@@ -264,4 +264,4 @@ MatrixFile:  rhf_h2-sto3g.mat
 (    2,    2|    1,    1) =       0.105835
 (    2,    2|    2,    1) =       0.000023
 (    2,    2|    2,    2) =       0.774606
-Finished mqc_print_all_wavefunction
+Finished reading file 'rhf_h2-sto3g.mat'
