@@ -611,11 +611,26 @@
 !
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+
+!hph+
+      logical::tmp_open
+!hph-
+
 !
 !
 !     Close the matrix file using the gauopen routines.
 !
       if(fileinfo%isOpen()) call Close_MatF(fileinfo%UnitNumber)
+
+!hph+
+      write(*,*)
+      write(*,*)' Hrant - The unit number is ',fileinfo%UnitNumber
+      Inquire(fileinfo%UnitNumber,opened=tmp_open)
+      write(*,*)'         Is the file still open? ',tmp_open
+      write(*,*)
+      write(*,*)
+!hph-
+
       fileinfo%filename       = ' '
       fileinfo%CurrentlyOpen  = .false.
       fileinfo%UnitNumber     = 0
