@@ -1,5 +1,6 @@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 AM_CPPFLAGS = $(MQC_CPPFLAGS)
+AUTOMAKE_OPTIONS = subdir-objects
 TESTS = ../algebra2/testit.sh
 check_PROGRAMS = ../algebra2/algebra_fun
 SOURCES = ../algebra2/algebra_fun.F03

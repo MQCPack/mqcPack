@@ -9,6 +9,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <sys/wait.h>
+
 /*
 #define DEBUG
 */
@@ -46,6 +47,11 @@ void mqc_File_Exists( char *, int * );
 void mqc_File_Is_Executable( char *, int *, int );
 void mqc_get_scratch_dir( int );
 int mqc_ASCII_or_Binary( char *, char *, int );
+void mqc_Matfile_Guide( char *, char *, int *, int *, int *);
+void Invalid_int_len( int );
+int Get_Unformated_Data( FILE *, char *, int , char *, int, char *, char *, 
+			 int, long *, int *, double *, char * );
+
 Input_Link_List *mqc_Read_to_Link_List( char *, char *, int, int *, int*, int * );
 
 char CarriageReturn[8];
@@ -329,8 +335,6 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
   print_line_c2f ( prnt_str, &iout ); 
   flush_c2f( &iout );
 #endif
-  /* MatrixFiles are not readable just after the job finishes. */
-  /* The fork is an attempt to distance this process from the jobs. */
   system_failure = system(charBuf);
   if ( system_failure == -1 ) {
     sprintf( prnt_str, " Job failed. Command was:\n%s%s", charBuf, EndOfString );
@@ -341,7 +345,7 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
   /* Does the MatrixFile exist? */
   mqc_File_Exists( MatFileName, &Status );
   if ( Status == 0 ) {
-    sprintf( charBuf, "MatrixFile %s does not exist%s%s", MatFileName, EndOfString);
+    sprintf( charBuf, "MatrixFile %s does not exist%s", MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
   /* */
@@ -353,7 +357,7 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
     /* */
     /* The input file is ACSII. It is a MatrixFile */
     /* */
-    sprintf( charBuf, "MatrixFile %s does not ASCII %s%s", MatFileName, EndOfString);
+    sprintf( charBuf, "MatrixFile %s does not ASCII %s", MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 
@@ -573,10 +577,10 @@ void mqc_abort_(void)
 void mqc_File_Exists( char *FileName, int *Status )
 {
   if( access( FileName, F_OK ) != -1 ) {
-     Status[0] = 1;
-   } else {
-     Status[0] = 0;
-   }
+    Status[0] = 1;
+  } else {
+    Status[0] = 0;
+  }
 }
 
 /* */
@@ -906,3 +910,463 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
   return( Start_Link_List);
 }
 
+ off_t fsize(const char *filename) {
+   struct stat st; 
+
+   if (stat(filename, &st) == 0)
+     return st.st_size;
+
+   return -1; 
+ }
+
+ void mqc_Matfile_Guide( char *FileName, char *DataType, int *Char_Len, int *rec_len, int *bufsize )
+ {
+   int record_size=24;
+   int num_records;
+   int i32_val[2048];
+   int seek_success;
+   int i, j;
+   int NewRecord;
+   static int int_len;
+   static int char_len;
+   int iout;
+   int Len;
+   int fclose_return;
+   long i64_val[2048];
+   static int File_Location;
+   static FILE* matfile = NULL;
+   size_t result ;
+   static char *LastFileName=NULL;
+   char charBuf[2048];
+   long ivers;
+   long NAtoms;
+   long NBasis;
+   long NLab;
+   long Rec10Plus, Rec10;
+   long NI, NR, NTot, NPerRec, N1, N2, N3, N4, N5, ISym;
+   double r64_val[2048];
+   int Len12L_4, Len4L_4;
+   long Len12L_8,Len4L_8;
+
+   if ( LastFileName == NULL ) {
+     LastFileName = mqc_DupString( "Not a valid Matfile name", LastFileName );
+   }
+   if ( strcmp( LastFileName, FileName ) != 0 ) {
+     /* New file.  Open it then check if raw or uses 32 or 64 bit integers */
+     matfile = fopen(FileName ,"rb") ;
+     if ( matfile == NULL ) {
+       printf( "Warning: mqc_Matfile_Guide could not open File \'%s\'\n", FileName ); 
+       sprintf( DataType, "Could not open File%s%s", FileName, EndOfString ); 
+       return;
+     }
+     LastFileName = mqc_DupString( FileName, LastFileName );
+     /* Starts at 4! */
+     File_Location = 4;
+     char_len = sizeof(char)*Char_Len[0];
+     NewRecord=8;
+
+     /* read Len12L */
+     Len = 1;
+     if( Get_Unformated_Data( matfile, FileName, Len, "Len12L (int)",
+			      File_Location+8*sizeof(int)+char_len*3+NewRecord,
+			      DataType, "Int", 4, i64_val,
+			      &Len12L_4, r64_val, charBuf ) == 1 ) return;
+
+     if( Get_Unformated_Data( matfile, FileName, Len, "Len12L (long)",
+			      File_Location+8*sizeof(long)+char_len*3+NewRecord,
+			      DataType, "Int", 8, &Len12L_8,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* read Len4L */
+     if( Get_Unformated_Data( matfile, FileName, Len, "Len4L (int)",
+			      File_Location+9*sizeof(int)+char_len*3+NewRecord,
+			      DataType, "Int", 4, i64_val,
+			      &Len4L_4, r64_val, charBuf ) == 1 ) return;
+
+     if( Get_Unformated_Data( matfile, FileName, Len, "Len4L (long)",
+			      File_Location+9*sizeof(long)+char_len*3+NewRecord,
+			      DataType, "Int", 8, &Len4L_8,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     if ( Len12L_4 == 4 && Len4L_4 == 4 ) {
+       sprintf( DataType, "Int%s", EndOfString ); 
+       int_len = sizeof(int);
+     } else if ( Len12L_8 == 8 && Len4L_8 == 8 ) {
+       sprintf( DataType, "Long%s", EndOfString ); 
+       int_len = sizeof(long);
+     } else {
+       sprintf( DataType, "Raw%s", EndOfString ); 
+       return;
+     }
+
+#ifndef DEBUG
+     fclose_return = fclose(matfile);
+#endif
+#ifdef DEBUG
+     /* read ivers */
+     Len = 1;
+     if( Get_Unformated_Data( matfile, FileName, Len, "ivers",
+			      File_Location+char_len,
+			      DataType, "Int", int_len, &ivers,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read NAtoms */
+     if( Get_Unformated_Data( matfile, FileName, Len, "NAtoms",
+			      File_Location+2*int_len+char_len*3+NewRecord,
+			      DataType, "Int", int_len, &NAtoms,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     /* Atomic numbers, padded to an even number of integers if using I*4.*/
+     if ( int_len == 4 ) {
+       NAtoms = NAtoms + NAtoms%2;
+     }
+
+     /* Read NBasis */
+     if( Get_Unformated_Data( matfile, FileName, Len, "NBasis",
+			      File_Location+3*int_len+char_len*3+NewRecord,
+			      DataType, "Int", int_len, &NBasis,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read NLab */
+     if( Get_Unformated_Data( matfile, FileName, Len, "NLab",
+			      File_Location+char_len+int_len,
+			      DataType, "Int", int_len, &NLab,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read the first string */
+     if( Get_Unformated_Data( matfile, FileName, char_len, "First String",
+			      File_Location,
+			      DataType, "Char", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read Gaussian Version */
+     if( Get_Unformated_Data( matfile, FileName, char_len, "Gvers",
+			      File_Location+2*int_len+char_len,
+			      DataType, "Char", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read Title */
+     if( Get_Unformated_Data( matfile, FileName, char_len, "Title",
+			      File_Location+char_len*2+2*int_len+NewRecord,
+			      DataType, "Char", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+
+     /* Read NBsUse */
+     if( Get_Unformated_Data( matfile, FileName, Len, "NBsUse",
+			      File_Location+4*int_len+char_len*3+NewRecord,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     /* Read ICharg */
+     if( Get_Unformated_Data( matfile, FileName, Len, "ICharg",
+			      File_Location+5*int_len+char_len*3+NewRecord,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     /* Read Multip */
+     if( Get_Unformated_Data( matfile, FileName, Len, "Multip",
+			      File_Location+6*int_len+char_len*3+NewRecord, 
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     /* Read NE */
+     if( Get_Unformated_Data( matfile, FileName, Len, "NE",
+			      File_Location+7*int_len+char_len*3+NewRecord,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     /* Advance File_Location to the start of Record 3 */
+     if(ivers == 1){
+       File_Location+=10*int_len+char_len*3+2*NewRecord;
+     } else {
+       File_Location+=12*int_len+char_len*3+2*NewRecord;
+     }
+     printf( " Record %d File_Location %d \n", 2, File_Location );
+     /* Record 3 is Integer IAn(NAtoms) */
+
+     if( Get_Unformated_Data( matfile, FileName, NAtoms, "IAn",
+			      File_Location,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=int_len*NAtoms+NewRecord;
+     printf( " Record %d File_Location %d \n", 3, File_Location );
+     /* Record 4 Integer IAtTyp(NAtoms) */
+     /* Atom type information. The main aspect of interest to other */
+     /* programs is that negative values indicate inactive atoms during */
+     /* an ONIOM model system calculation. By default, the file is written */
+     /* with inactive atoms omitted from all arrays and NAtoms set to the */
+     /* number of active atoms, but all atoms can optionally be included. */
+     /* It is padded to an even number of integers if using I*4. */
+     if( Get_Unformated_Data( matfile, FileName, NAtoms, "IAtTyp",
+			      File_Location,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=int_len*NAtoms+NewRecord;
+     printf( " Record %d File_Location %d \n", 4, File_Location );
+     /* Record 5 Real*8 AtmChg(NAtoms) */
+     /* Nuclear charges; may be different from atomic numbers if ECPs were */
+     /* used. */
+     if( Get_Unformated_Data( matfile, FileName, NAtoms, "AtmChg",
+			      File_Location,
+			      DataType, "Double", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=8*NAtoms+NewRecord;
+     printf( " Record %d File_Location %d \n", 5, File_Location );
+     /* Record 6 Real*8 C(3,NAtoms) */
+     /* Cartesian nuclear coordinates in Bohr. */
+     if( Get_Unformated_Data( matfile, FileName, NAtoms*3, "C",
+			      File_Location,
+			      DataType, "Double", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=3*8*NAtoms+NewRecord;
+     printf( " Record %d File_Location %d \n", 6, File_Location );
+     /* Record 7 Integer IBfAtm(NBasis), IBfTyp(NBasis) */
+     /* IBfAtm is the map from basis functions to atoms. IBfTyp is a type */
+     /* flag for each basis function. Each is of the form lllmmm, where */
+     /* lll is the angular momentum and mmm is the component number. */
+     /* Negative values indicate pure functions, and positive values */
+     /* indicate Cartesian functions. Thus, Cartesian d functions are */
+     /* numbered 2001 through 2006, and pure d functions are -2001 */
+     /* through -2005. */
+     if( Get_Unformated_Data( matfile, FileName, NBasis, "IBfAtm",
+                              File_Location,
+                              DataType, "Int", int_len, i64_val,
+                              i32_val, r64_val, charBuf ) == 1 ) return;
+     if( Get_Unformated_Data( matfile, FileName, NBasis, "IBfTyp",
+                              File_Location+NBasis*int_len,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=2*int_len*NBasis+NewRecord;
+     printf( " Record %d File_Location %d \n", 7, File_Location );
+     /*Record 8 Real*8 AtmWgt(NAtoms) */
+     /* Atomic weights. */
+     if( Get_Unformated_Data( matfile, FileName, NAtoms, "AtmWgt",
+			      File_Location,
+			      DataType, "Double", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     File_Location+=8*NAtoms+NewRecord;
+     printf( " Record %d File_Location %d \n", 8, File_Location );
+     /* Record 9 NFC, NFV, ITran, IDum */
+     /* Window information for MO 2 electron integrals. The MOs include */
+     /* NFC frozen core orbitals and NFV frozen virtuals, so the MO 2 */
+     /* electron integrals will be over NBsUse–NFC–NFV orbitals. ITran=0 */
+     /* if no MO integrals were stored, ITran=4 if only MOs involving at */
+     /* least one occupied orbital were stored, or ITran=5 if a full */
+     /* transformation was done. */
+
+     if( Get_Unformated_Data( matfile, FileName, 4, "Record9",
+			      File_Location,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     printf( "NFC=%d\n", i64_val[0] );
+     printf( "NFV=%d\n", i64_val[1] );
+     printf( "ITran=%d\n", i64_val[2] );
+     printf( "IDum=%d\n", i64_val[3] );
+     File_Location+=4*int_len+NewRecord;
+     printf( " Record %d File_Location %d \n", 9, File_Location );
+     /* 10 to NLab Other scalar data about the calculation (if applicable). */
+     /* Record 10 is only present when NLab>9. It contains NLab-10 integers, */
+     /* each of which specifies the number of 32-bit words in the */
+     /* corresponding initial record (allowing programs to skip them */
+     /* when the file is stored without record marks/lengths). E.g., if */
+     /* NLab were to be 13, record 10 will contain 3 integers, specifying */
+     /* the lengths of the eleventh through thirteenth initial records. */
+     /* Currently, NLab’s maximum value is 11, and record 10 contains the */
+     /* single integer 16. */
+     Rec10Plus = 0;
+     if ( NLab > 9 ) {
+       for (i=0; i < NLab-10; i++ ) {
+	 /* Read integer i from record 10 */
+	 if( Get_Unformated_Data( matfile, FileName, Len, "Record10_value should be 16",
+				  File_Location+int_len*i,
+				  DataType, "Int", int_len, i64_val,
+				  i32_val, r64_val, charBuf ) == 1 ) return;
+	 Rec10 = i64_val[0];
+	 /* Rec10 is a number of 4 byte words */
+	 /*	 Rec10Plus += Rec10*4+NewRecord; */
+	 Rec10Plus += Rec10;
+       }
+     }
+     /* The record length seems to be the 8 byte length + 1 byte*value */
+     File_Location+=int_len+Rec10Plus+NewRecord;
+     printf( " Record %d File_Location %d \n", 10, File_Location );
+     /* Record 11 16 additional integers */
+     /* Only the first five integers are currently used: */
+     /*    NShellAO: Number of contracted shells of AO basis functions, */
+     /*              needed if shell data is provided. */
+     /*    NPrimAO:  Number of primitive AO shells. */
+     /*    NShellDB: Number of contracted shells of density fitting */
+     /*              functions, needed if fitting shell data is provided. */
+     /*    NPrimDB:  Number of primitive density fitting shells. */
+     /*    NBTot:    Total Number of bonds in connectivity data, if any. */
+     /* In general, programs should read (or skip) NLab records at the */
+     /* beginning of the file in order to reach the matrix element data. */
+     /* Doing so will ensure that additional initial records added in */
+     /* subsequent versions of the matrix element file are handled properly. */
+     /* */
+     /* These NLab records are followed by zero or more matrix sections, */
+     /* each of which has an initial record: */
+     /*     Character*64 Label, Integer NI, NR, NTot, NPerRec, */
+     /*     N1, N2, N3, N4, N5, ISym */
+     /* */
+     /* where the fields contain a label, the number of integers and number */
+     /* of reals for each element, the total number of elements, and number */
+     /* of elements per record. NI can be zero for dense matrices (stored */
+     /* with zeros included). NR is negative to flag complex rather than */
+     /* real data. */
+     /* N1 through N5 are dimensions for the object as a matrix, with 0 for */
+     /* unused dimensions and negative values for ones which are lower */
+     /* triangular. For example, if NBasis=50 and NBsUse=49 then N1 … N5 */
+     /* would be –50 50 0 0 0 for the overlap matrix and 50 49 0 0 0 for */
+     /* the transformation to an orthogonal basis. ISym=-1 for */
+     /* anti-symmetric/Hermetian matrices. */
+     /* */
+     /* The end of the file is marked with a record whose label is END and */
+     /* having all 0 values for the integers. */
+     /* */
+     /* This initial record is followed by (NTot+NPerRec-1)/NPerRec records, */
+     /* each of the one of the following forms: */
+     /*    Integer ID(NI,NPerRec), Real*8 DX(NR,NPerRec) */
+     /*  	 or just: */
+     /*	   Real*8 DX(NR,NPerRec) */
+     /* If NI=0 or NR<0, then the format is: */
+     /*    Integer ID(NI,NPerRec), Complex*16 DX(-NR,NPerRec) */
+     /*        or */
+     /*    Complex*16 DX(NR,NPerRec) */
+     /* with the labels (if any) in ID, and values in DX. All matrix */
+     /* elements are over pure or Cartesian basis functions in accord */
+     /* with that specified in the Gaussian route or defaulted for the */
+     /* particular basis set. */
+
+     if( Get_Unformated_Data( matfile, FileName, 5, "Record11",
+			      File_Location,
+			      DataType, "Int", int_len, i64_val,
+			      i32_val, r64_val, charBuf ) == 1 ) return;
+     printf( "NShellAO %d\nNPrimAO %d\nNShellDB %d\nNPrimDB %d\nNBTot %d\n",
+	     i64_val[0], i64_val[1], i64_val[2], i64_val[3], i64_val[4]);
+     File_Location+=16*int_len;
+     printf( " Record %d File_Location %d \n", 11, File_Location );
+#endif
+   }
+}
+
+void Invalid_int_len( int int_len )
+{
+  int iout;
+  char charBuf[1024];
+
+  iout = 6;
+  sprintf( charBuf, "Integer length should be 4 or 8, but it is %d%s", int_len, EndOfString);
+  mqc_error_i_c2f_0( charBuf, &iout );
+}
+ 
+int Get_Unformated_Data( FILE* matfile, char *FileName, int Len, char *Name,
+			 int File_Location, char *DataType, char *Type, 
+			 int int_len, long *i64_val,
+			 int *i32_val, double *r64_val, char *charBuf )
+{
+  int seek_success;
+  int iout, i;
+  size_t result ;
+
+  seek_success = fseek(matfile, File_Location, SEEK_SET) ;
+  if ( seek_success != 0 ) {
+    printf( "Warning: mqc_Matfile_Guide fseek problem File \'%s\'\nOffset is %d\n", FileName, File_Location ); 
+    sprintf( DataType, "Raw%s", EndOfString ); 
+    return(1);
+  }
+  if ( strcmp( Type, "Int" ) == 0 ) {
+    if ( int_len == 4 ) {
+      result=fread(i32_val,int_len,Len,matfile) ;
+      for ( i=0; i<Len; i++ ){
+	i64_val[i] = i32_val[i];
+      }
+    } else if ( int_len == 8 ) {
+      result=fread(i64_val,int_len,Len,matfile) ;
+    } else {
+      Invalid_int_len( int_len );
+    }
+    if ( result != Len ) {
+      printf( "Warning: Get_Unformated_Data fread found %d elements; should have been %d element\n", result, Len ); 
+      sprintf( DataType, "Done%s", EndOfString ); 
+      return(1);
+    }
+#ifdef DEBUG
+    if ( Len == 1 ) {
+      printf( "%s = %d\n", Name, i64_val[0]);
+    } else {
+      for ( i=0; i<Len; i++ ){
+	printf( "%s[%d] = %d\n", Name, i+1, i64_val[i]);
+      }
+    }
+#endif
+  } else if ( strcmp( Type, "Double" ) == 0 ) {
+    result=fread(r64_val,sizeof(double),Len,matfile) ;
+    if ( result != Len ) {
+      printf( "Warning: Get_Unformated_Data fread found %d elements; should have been %d element\n", result, Len ); 
+      sprintf( DataType, "Done%s", EndOfString ); 
+      return(1);
+    }
+#ifdef DEBUG
+    if ( Len == 1 ) {
+      printf( "%s = %f\n", Name, r64_val[0]);
+    } else {
+      for ( i=0; i<Len; i++ ){
+	printf( "%s[%d] = %f\n", Name, i+1, r64_val[i]);
+      }
+    }
+#endif
+  } else if ( strcmp( Type, "Char" ) == 0 ) {
+    result=fread(charBuf,sizeof(char),Len,matfile) ;
+    if ( result != Len ) {
+      printf( "Warning: Get_Unformated_Data fread found %d elements; should have been %d element\n", result, Len ); 
+      sprintf( DataType, "Done%s", EndOfString ); 
+      return(1);
+    }
+    strcpy( &charBuf[Len], EndOfString ); 
+#ifdef DEBUG
+    printf( "%s: %s\n", Name, charBuf);
+#endif
+  } else {
+    iout = 6;
+    sprintf( charBuf, "%s Type should be Int or Double, but it is %s%s", Name, Type, EndOfString);
+    mqc_error_i_c2f_0( charBuf, &iout );
+  }
+  return(0);
+}
+
+void mqc_Simplify_Formula( char *Formula )
+{
+  char *Local_char;
+  int len;
+
+  Local_char = mqc_DupString( Formula, (char *)NULL );
+  Local_char = mqc_Replace_String( "1*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "0+0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "1*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "0+0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "+(NA-1)+", "+NA-1+", Local_char );
+  Local_char = mqc_Replace_String( "1)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "+0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "1))*0", "0))*0", Local_char );
+  Local_char = mqc_Replace_String( "-0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "(NA)", "NA", Local_char );
+  Local_char = mqc_Replace_String( "NA*0+", "", Local_char );
+  Local_char = mqc_Replace_String( "1)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "-0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "(NA)", "NA", Local_char );
+  Local_char = mqc_Replace_String( "NA*0+", "", Local_char );
+  Local_char = mqc_Replace_String( "(NB*0+", "(", Local_char );
+  Local_char = mqc_Replace_String( "NA)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "((NB-1))", "(NB-1)", Local_char );
+  Local_char = mqc_Replace_String( "+0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "-1))*0", "-0))*0", Local_char );
+  Local_char = mqc_Replace_String( "NB-0", "NB", Local_char );
+  Local_char = mqc_Replace_String( "(NB)", "NB", Local_char );
+  Local_char = mqc_Replace_String( "NB)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "NA*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "+0*0+", "+", Local_char );
+
+  strcpy( Formula, Local_char );
+  len = strlen( Local_char );
+  strcpy( &Formula[len], EndOfString );
+  return;
+}
