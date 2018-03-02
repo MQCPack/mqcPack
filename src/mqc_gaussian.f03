@@ -611,26 +611,11 @@
 !
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
-
-!hph+
-      logical::tmp_open
-!hph-
-
 !
 !
 !     Close the matrix file using the gauopen routines.
 !
       if(fileinfo%isOpen()) call Close_MatF(fileinfo%UnitNumber)
-
-!hph+
-      write(*,*)
-      write(*,*)' Hrant - The unit number is ',fileinfo%UnitNumber
-      Inquire(fileinfo%UnitNumber,opened=tmp_open)
-      write(*,*)'         Is the file still open? ',tmp_open
-      write(*,*)
-      write(*,*)
-!hph-
-
       fileinfo%filename       = ' '
       fileinfo%CurrentlyOpen  = .false.
       fileinfo%UnitNumber     = 0
@@ -644,6 +629,7 @@
       if(allocated(fileinfo%atomicNumbers)) deallocate(fileinfo%atomicNumbers)
       if(allocated(fileinfo%atomTypes)) deallocate(fileinfo%atomTypes)
       if(allocated(fileinfo%basisFunction2Atom)) deallocate(fileinfo%basisFunction2Atom)
+      if(allocated(fileinfo%IBasisFunctionType)) deallocate(fileinfo%IBasisFunctionType)
       if(allocated(fileinfo%atomicCharges)) deallocate(fileinfo%atomicCharges)
       if(allocated(fileinfo%atomicWeights)) deallocate(fileinfo%atomicWeights)
       if(allocated(fileinfo%cartesians)) deallocate(fileinfo%cartesians)
@@ -779,8 +765,8 @@
           fileinfo%atomicCharges(fileinfo%natoms),  &
           fileinfo%atomicWeights(fileinfo%natoms))
         allocate(fileinfo%cartesians(fileinfo%natoms*3))
-        allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis),  &
-          fileinfo%IBasisFunctionType(fileinfo%NBasis))
+        allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
+        allocate(fileinfo%IBasisFunctionType(fileinfo%NBasis))
         call Rd_Head(fileinfo%unitNumber,NLab,fileinfo%natoms,fileinfo%nbasis,  &
           fileinfo%atomicNumbers,fileinfo%atomTypes,fileinfo%atomicCharges,  &
           fileinfo%cartesians,fileinfo%basisFunction2Atom,fileinfo%IBasisFunctionType,  &
