@@ -1038,9 +1038,9 @@
 !     Convert the symmetric matrix to full storage.
 !
 #ifdef PGI
-      matrixFull = dfloat(0.0)
+      matrixFull = dfloat(0)
 #else
-      matrixFull = float(0.0)
+      matrixFull = float(0)
 #endif
       select case(myUpperLower)
       case('u','U')
@@ -1229,9 +1229,9 @@
         'SIZE(matrixFull,1)', SIZE(matrixFull,1), &
         'SIZE(matrixFull,2)', SIZE(matrixFull,2))
 #ifdef PGI
-      matrixFull = dfloat(0.0)
+      matrixFull = dfloat(0)
 #else
-      matrixFull = float(0.0)
+      matrixFull = float(0)
 #endif
       do i = 1,nDim
         matrixFull(i,i) = matrixDiagonal(i)
@@ -1261,7 +1261,7 @@
 !     Variable Declarations.
       implicit none
       integer(kind=int64),intent(in)::iArg
-      integer(kind=int64),intent(out)::iResult
+      integer(kind=int64)::iResult
       real(kind=real64)::tmp
 !
 #ifdef PGI
