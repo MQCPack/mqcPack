@@ -948,6 +948,8 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
    int Len12L_4, Len4L_4;
    long Len12L_8,Len4L_8;
 
+   /* LastFileName=NULL; */
+
    if ( LastFileName == NULL ) {
      LastFileName = mqc_DupString( "Not a valid Matfile name", LastFileName );
    }

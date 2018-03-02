@@ -1,14 +1,18 @@
 #! /bin/bash -x
 
 cd ../WriteTest
-rm Copy Original
+if [ -f Copy ]; then
+    rm Copy
+fi
+if [ -f Original ]; then
+    rm Original
+fi
 
 # set up the Gaussian environment
 export GauBINARY="${GAU_BINARY}"
 
 mkdir test2
 cd test2
-rm -f test.com
 echo "------------------------"
 echo "Pass through MatFile test"
 echo "------------------------" 
@@ -27,8 +31,19 @@ cd test1071
 echo "-------------------------------"
 echo "test1071 Create MatrixFile test"
 echo "-------------------------------"
-cp ../../data/Gaussian_input/test1071.com .
-../../PrintAllData/DataPrint test1071.com ${GauBINARY} > Original
+!
+! If mat file from DataSummary run is around, use it
+!
+if [ -d ../../DataSummary/test1071 ]; then
+    cp ../../DataSummary/test1071/test1071.mat .
+    ../../PrintAllData/DataPrint test1071.mat > Original
+else
+    cp ../../data/Gaussian_input/test1071.com .
+    ../../PrintAllData/DataPrint test1071.com ${GauBINARY} > Original
+    mkdir ../../DataSummary/test1071
+    cp test1071.mat ../../DataSummary/test1071/test1071.mat
+    rm -f test1071.com
+fi
 sed -e 'sZ-0.000000Z 0.000000Zg' < Original >> ../Original
 ../ReadWrite test1071.mat 
 ../../PrintAllData/DataPrint test1071.mat.copy > Copy
@@ -39,11 +54,22 @@ rm -r test1071
 
 mkdir test1129
 cd test1129
-cp ../../data/Gaussian_input/test1129.com .
 echo "-------------------------------"
 echo "test1129 Create MatrixFile test"
 echo "-------------------------------"
-../../PrintAllData/DataPrint test1129.com ${GauBINARY} > Original
+!
+! If mat file from DataSummary run is around, use it
+!
+if [ -d ../../DataSummary/test1129 ]; then
+    cp ../../DataSummary/test1129/test1129.dat .
+    ../../PrintAllData/DataPrint test1129.dat > Original
+else
+    cp ../../data/Gaussian_input/test1129.com .
+    ../../PrintAllData/DataPrint test1129.com ${GauBINARY} > Original
+    mkdir ../../DataSummary/test1129
+    cp test1129.dat ../../DataSummary/test1129/test1129.dat
+    rm -f test1129.com
+fi
 sed -e 'sZ-0.000000Z 0.000000Zg' < Original >> ../Original
 ../ReadWrite test1129.dat 
 ../../PrintAllData/DataPrint test1129.dat.copy > Copy
@@ -54,11 +80,28 @@ rm -r test1129
 
 mkdir test1132
 cd test1132
-cp ../../data/Gaussian_input/test1132.com .
 echo "--------------------------------"
 echo "test1132 Create MatrixFiles test"
 echo "--------------------------------"
-../../PrintAllData/DataPrint test1132.com ${GauBINARY} > Original
+!
+! If mat file from DataSummary run is around, use it
+!
+if [ -d ../../DataSummary/test1132 ]; then
+    cp ../../DataSummary/test1132/test1132.mat .
+    cp ../../DataSummary/test1132/test1132r.dat .
+    cp ../../DataSummary/test1132/test1132gr.dat .
+    cp ../../DataSummary/test1132/test1132u.dat .
+    ../../PrintAllData/DataPrint test1132.mat > Original
+else
+    cp ../../data/Gaussian_input/test1132.com .
+    ../../PrintAllData/DataPrint test1132.com ${GauBINARY} > Original
+    mkdir ../../DataSummary/test1132
+    cp test1132.mat ../../DataSummary/test1132/test1132.mat
+    cp test1132r.dat ../../DataSummary/test1132/test1132r.dat
+    cp test1132gr.dat ../../DataSummary/test1132/test1132gr.dat
+    cp test1132u.dat ../../DataSummary/test1132/test1132u.dat
+    rm -f test1132.com
+fi
 ../../PrintAllData/DataPrint test1132u.dat >> Original
 sed -e 'sZ-0.000000Z 0.000000Zg' < Original >> ../Original
 ../ReadWrite test1132.mat 
