@@ -2187,7 +2187,7 @@
 !
 !     Start by ensuring the two MQC Variables are vectors and are conformable.
 !
-      if(mqcVariable1%getRank.ne.1.or.mqcVariable2%getRank().ne.1)  &
+      if(mqcVariable1%getRank().ne.1.or.mqcVariable2%getRank().ne.1)  &
         call mqc_error_i('dot_product must be between two vectors.',6, &
         'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
         'RANK(mqcVariable2)',mqcVariable2%getRank())
