@@ -96,8 +96,7 @@
            IntPrecision = -1
         else
            Iout = 6
-           call MQC_Error_I( DataType, Iout )
-!           call MQC_Error_A('Unknown DataType - should be Long, Int or Raw', Iout, 'trim(DataType)', trim(DataType))
+           call MQC_Error_A('Unknown DataType - should be Long, Int or Raw', Iout, 'trim(DataType)', trim(DataType))
         endIf
 
         Return
