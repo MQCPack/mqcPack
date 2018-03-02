@@ -14,8 +14,7 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
-MatrixFiles:
-   - rhf_h2-sto3g.mat
+Matrix Element File:  rhf_h2-sto3g.mat
 ********************************************************
           rhf_h2-sto3g.mat
 ********************************************************
@@ -25,10 +24,6 @@ Job Title:test
  Scalar Data 
 ***************************
 Number of Atoms
-	         - Value: 2
-	         - INTEGER
-	         - SCALAR
-Number of Basis Functions
 	         - Value: 2
 	         - INTEGER
 	         - SCALAR
@@ -112,33 +107,33 @@ ITRAN
 ***************************
  Non-Scalar Data 
 ***************************
-Atomic Numbers
+ATOMIC NUMBERS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Types
+ATOM TYPES
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atom Charges
+ATOM CHARGES
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
 	         - Nuclear charges may be different from atomic
 	         numbers if ECPs were used.
-Cartesian Nuclear Coordinates In Bohr
+CARTESIAN NUCLEAR COORDINATES(BOHR)
 	         - REAL
 	         - Total elements: 6
 	         - 2-D MATRIX allocated full (2 x 3)
-Map From Basis Functions to Atoms
+MAP FROM BASIS FUNCTIONS TO ATOMS
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Type Flag For Each Basis Function
+TYPE FLAG FOR EACH BASIS FUNCTION
 	         - INTEGER
 	         - Total elements: 2
 	         - VECTOR(2)
-Atomic Weights
+ATOM WEIGHTS
 	         - REAL
 	         - Total elements: 2
 	         - VECTOR(2)
@@ -173,7 +168,7 @@ COORDINATES OF EACH SHELL
 GAUSSIAN SCALARS                                                
 	         - MIXED
 	         - Total elements: 10
-	         - VECTOR(10)
+	         - VECTOR(1000)
 INTEGER ISO                                                     
 	         - INTEGER
 	         - Total elements: 2
@@ -275,6 +270,7 @@ BETA FOCK MATRIX
 	         - Total elements: 3
 	         - SYMMETRIC MATRIX ((2+1)*2/2)
 REGULAR 2E INTEGRALS                                            
-	         - 2ERIS
+	         - TENSOR
 	         - Total elements: 6
-	         - SYM SYM R4 TENSOR
+	         - SYMMETRIC SUPER MATRIX (((2+1) x 2)/2+1) x ((2+1) x 2)/4
+Finished reading file 'rhf_h2-sto3g.mat'

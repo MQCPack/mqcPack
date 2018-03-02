@@ -18,6 +18,9 @@ cp ../../data/MatrixFile/rhf_h2-sto3g.mat . >> ../outfile
 cd ..
 rm -r workdir
 
+sed -e 'sZ-0.000000Z 0.000000Zg' < outfile > outfile_tmp
+mv outfile_tmp outfile
+
 diff -b -B outfile OUTPUT/out
 
 exit

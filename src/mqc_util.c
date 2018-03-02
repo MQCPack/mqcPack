@@ -1330,4 +1330,43 @@ int Get_Unformated_Data( FILE* matfile, char *FileName, int Len, char *Name,
   return(0);
 }
 
+void mqc_Simplify_Formula( char *Formula )
+{
+  char *Local_char;
+  int len;
 
+  Local_char = mqc_DupString( Formula, (char *)NULL );
+  Local_char = mqc_Replace_String( "1*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "0+0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "1*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "0+0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "+(NA-1)+", "+NA-1+", Local_char );
+  Local_char = mqc_Replace_String( "1)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "+0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "1))*0", "0))*0", Local_char );
+  Local_char = mqc_Replace_String( "-0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "(NA)", "NA", Local_char );
+  Local_char = mqc_Replace_String( "NA*0+", "", Local_char );
+  Local_char = mqc_Replace_String( "1)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "-0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "(NA)", "NA", Local_char );
+  Local_char = mqc_Replace_String( "NA*0+", "", Local_char );
+  Local_char = mqc_Replace_String( "(NB*0+", "(", Local_char );
+  Local_char = mqc_Replace_String( "NA)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "((NB-1))", "(NB-1)", Local_char );
+  Local_char = mqc_Replace_String( "+0)", ")", Local_char );
+  Local_char = mqc_Replace_String( "-1))*0", "-0))*0", Local_char );
+  Local_char = mqc_Replace_String( "NB-0", "NB", Local_char );
+  Local_char = mqc_Replace_String( "(NB)", "NB", Local_char );
+  Local_char = mqc_Replace_String( "NB)*0", "0)*0", Local_char );
+  Local_char = mqc_Replace_String( "NA*0", "0", Local_char );
+  Local_char = mqc_Replace_String( "(0)", "0", Local_char );
+  Local_char = mqc_Replace_String( "+0*0+", "+", Local_char );
+
+  strcpy( Formula, Local_char );
+  len = strlen( Local_char );
+  strcpy( &Formula[len], EndOfString );
+  return;
+}
