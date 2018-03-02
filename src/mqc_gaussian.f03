@@ -1030,7 +1030,7 @@
 !     Format statements.
 !
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
-        I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5,' EOF=',L1)
+        I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
  1020 Format( " " )!
  1040 Format( A, I15 )
  1050 Format( 2A )
@@ -1093,11 +1093,8 @@
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
         LR = LenArr(N1,N2,N3,N4,N5)
         if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
-          N1,N2,N3,N4,N5,ASym,LR,EOF
+          N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
-          write(*,*)' Hrant - EOF  = ',EOF
-          write(*,*)'         NTot = ',NTot
-          write(*,*)
           call String_Change_Case(cBuffer,'u')
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
 !
@@ -1247,7 +1244,6 @@
             found = .true.
             exit outerLoop
           elseIf(NTot.gt.0) then
-            write(*,*)' Hrant - Calling Rd_Skip with NTot = ',NTot
             Call Rd_Skip(fileinfo%UnitNumber,NTot,LenBuf)
           endIf
           Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
@@ -1255,10 +1251,8 @@
           LR = LenArr(N1,N2,N3,N4,N5)
           EOF = EOF.or.cBuffer.eq.'END'
           if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
-            N1,N2,N3,N4,N5,ASym,LR,EOF
+            N1,N2,N3,N4,N5,ASym,LR
         endDo
-        write(*,*)
-        write(*,*)' Hrant - EOF reached...i=',i
         if(i==1) then
           write(*,*)' Inside re-open block.'
           my_filename = TRIM(fileinfo%filename)
@@ -1271,9 +1265,6 @@
         endIf
       endDo outerLoop
       if(.not.found) then
-        write(*,*)
-        write(*,*)' Hrant - HIT .not.found ERROR Trap'
-        write(*,*)
         errorMsg = 'Could NOT find requested matrix file label "'//TRIM(label)//'".'
         call MQC_Error_L(errorMsg, 6, &
              'found', found )
