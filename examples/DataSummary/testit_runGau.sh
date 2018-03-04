@@ -1,7 +1,12 @@
 #! /bin/bash -x
 
 cd ../DataSummary
-rm outfile
+if [ -f outfile ]; then
+    rm outfile
+fi
+if [ -d test ]; then
+    rm -r test
+fi
 mkdir test
 cd test
 echo "-------------------------------------" >> ../outfile 2>&1
@@ -14,11 +19,13 @@ echo "Failure Test: Program is not in path" >> ../outfile 2>&1
 echo "------------------------------------" >> ../outfile 2>&1
 ../DataSummary test.com not_in_path >> ../outfile
 cd ..
-rm -r test
 
 # set up the Gaussian environment
 export GauBINARY="${GAU_BINARY}"
 
+if [ -d test2 ]; then
+    rm -r test2
+fi
 mkdir test2
 cd test2
 rm -f test.com
@@ -40,8 +47,10 @@ echo "-------------------------------" >> ../outfile 2>&1
 rm -f rhf_h2-sto3g.mat
 rm -f test.com
 cd ..
-rm -r test2
 
+if [ -d test1071 ]; then
+    rm -r test1071
+fi
 mkdir test1071
 cd test1071
 echo "-------------------------------" >> ../outfile 2>&1
@@ -51,8 +60,10 @@ cp ../../data/Gaussian_input/test1071.com . >> ../outfile
 ../DataSummary test1071.com ${GauBINARY} >> ../outfile 2>&1
 rm -f test1071.com
 cd ..
-rm -r  test1071
 
+if [ -d test1129 ]; then
+    rm -r  test1129
+fi
 mkdir test1129
 cd test1129
 cp ../../data/Gaussian_input/test1129.com . >> ../outfile
@@ -62,8 +73,10 @@ echo "-------------------------------" >> ../outfile 2>&1
 ../DataSummary test1129.com ${GauBINARY} >> ../outfile 2>&1
 rm -f test1129.com
 cd ..
-rm -r test1129
 
+if [ -d test1132 ]; then
+    rm -r  test1132
+fi
 mkdir test1132
 cd test1132
 cp ../../data/Gaussian_input/test1132.com . >> ../outfile
@@ -81,7 +94,6 @@ echo "------------------------------------------------------------------" >> ../
 ../DataSummary test1132.com test1132gr.dat test1132r.dat test1132u.dat ${GauBINARY} >> ../outfile 2>&1
 rm -f test1132.com
 cd ..
-rm -r test1132
 
 grep -v "echo argv" outfile > tmpfile 2>&1
 grep -v "cp test1132" tmpfile > outfile 2>&1

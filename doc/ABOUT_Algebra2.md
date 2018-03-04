@@ -5,6 +5,10 @@ This is a list of Hrant's ongoing to-do list for MQC -- focusing primarily on th
 
 #### TO DO
 
+* Array element get/put
+* Vector (row/column) get/put for matrices
+* Build a block diagonal matrix from individual blocks
+* Augment a matrix by adding rows or columns 
 * Matrix-Matrix multiply
 * Matrix-Vector multiply
 * Matrix diagonalization

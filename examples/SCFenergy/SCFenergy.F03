@@ -89,7 +89,7 @@
       Do While( Status.eq.1 )
          write(iout,1020) trim(current_wavefunction%FileName)
 ! Get Nuclear repulsion Energy
-         Vnn = MQC_Wave_To_Nuclear_Repulsion(current_wavefunction,IOut)
+         Vnn = MQC_FULL_Wave_To_Nuclear_Repulsion(current_wavefunction,IOut)
 ! Get all possible components of Electronic part of energy
          Found_DenA=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
               "ALPHA SCF DENSITY MATRIX", DenA, iout)
@@ -125,17 +125,17 @@
             J = 0
             DO K = 1, current_wavefunction%nbasis
                J = J+K
-               DenA%ArrR(J,1,1,1,1) = DenA%ArrR(J,1,1,1,1)*0.5D0
-               DenB%ArrR(J,1,1,1,1) = DenB%ArrR(J,1,1,1,1)*0.5D0
+               DenA%ArrR(J) = DenA%ArrR(J)*0.5D0
+               DenB%ArrR(J) = DenB%ArrR(J)*0.5D0
             EndDo
             EE = 0.0
             EN = 0.0
             DO K = 1, N
-               EE = EE + DenA%ArrR(K,1,1,1,1) * HamA%ArrR(K,1,1,1,1) &
-                    + DenB%ArrR(K,1,1,1,1) * HamB%ArrR(K,1,1,1,1)
+               EE = EE + DenA%ArrR(K) * HamA%ArrR(K) &
+                    + DenB%ArrR(K) * HamB%ArrR(K)
 
-               EN = EN + DenA%ArrR(K,1,1,1,1) * FockA%ArrR(K,1,1,1,1) &
-                    + DenB%ArrR(K,1,1,1,1) * FockB%ArrR(K,1,1,1,1)
+               EN = EN + DenA%ArrR(K) * FockA%ArrR(K) &
+                    + DenB%ArrR(K) * FockB%ArrR(K)
             enddo
             SCFe = EE + EN + Vnn
          Else If ( Found_DenA .eq. 2 .and. Found_HamA .eq. 2 .and. &
@@ -148,13 +148,13 @@
             J = 0
             DO K = 1, current_wavefunction%nbasis
                J = J+K
-               DenA%ArrR(J,1,1,1,1) = DenA%ArrR(J,1,1,1,1)*0.5D0
+               DenA%ArrR(J) = DenA%ArrR(J)*0.5D0
             EndDo
             EE = 0.0
             EN = 0.0
             DO K = 1, N
-               EE = EE + DenA%ArrR(K,1,1,1,1) * HamA%ArrR(K,1,1,1,1)
-               EN = EN + DenA%ArrR(K,1,1,1,1) * FockA%ArrR(K,1,1,1,1)
+               EE = EE + DenA%ArrR(K) * HamA%ArrR(K)
+               EN = EN + DenA%ArrR(K) * FockA%ArrR(K)
             enddo
             EE = EE*2.0D0
             EN = EN*2.0D0
@@ -169,16 +169,16 @@
             J = 0
             DO K = 1, DenA%N2
                J = J+K
-               DenA%ArrC(J,1,1,1,1) = DenA%ArrC(J,1,1,1,1)*0.5D0
-               DenB%ArrC(J,1,1,1,1) = DenB%ArrC(J,1,1,1,1)*0.5D0
+               DenA%ArrC(J) = DenA%ArrC(J)*0.5D0
+               DenB%ArrC(J) = DenB%ArrC(J)*0.5D0
             EndDo
             EE_C = 0.0
             EN_C = 0.0
             DO K = 1, N
-               EE_C = EE_C + DenA%ArrC(K,1,1,1,1) * HamA%ArrC(K,1,1,1,1) &
-                    + DenB%ArrC(K,1,1,1,1) * HamB%ArrC(K,1,1,1,1)
-               EN_C = EN_C + DenA%ArrC(K,1,1,1,1) * FockA%ArrC(K,1,1,1,1) &
-                    + DenB%ArrC(K,1,1,1,1) * FockB%ArrC(K,1,1,1,1)
+               EE_C = EE_C + DenA%ArrC(K) * HamA%ArrC(K) &
+                    + DenB%ArrC(K) * HamB%ArrC(K)
+               EN_C = EN_C + DenA%ArrC(K) * FockA%ArrC(K) &
+                    + DenB%ArrC(K) * FockB%ArrC(K)
             enddo
             EE = DBLE(EE_C)
             EN = DBLE(EN_C)
@@ -193,13 +193,13 @@
             J = 0
             DO K = 1, DenA%N2
                J = J+K
-               DenA%ArrC(J,1,1,1,1) = DenA%ArrC(J,1,1,1,1)*0.5D0
+               DenA%ArrC(J) = DenA%ArrC(J)*0.5D0
             EndDo
             EE_C = 0.0
             EN_C = 0.0
             DO K = 1, N
-               EE_C = EE_C + DenA%ArrC(K,1,1,1,1) * HamA%ArrC(K,1,1,1,1)
-               EN_C = EN_C + DenA%ArrC(K,1,1,1,1) * FockA%ArrC(K,1,1,1,1)
+               EE_C = EE_C + DenA%ArrC(K) * HamA%ArrC(K)
+               EN_C = EN_C + DenA%ArrC(K) * FockA%ArrC(K)
             enddo
             EE = DBLE(EE_C)*2.0D0
             EN = DBLE(EN_C)*2.0D0
