@@ -1024,7 +1024,7 @@
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.true.,ok,found
+      logical::DEBUG=.false.,ok,found
 !
 !
 !     Format statements.
