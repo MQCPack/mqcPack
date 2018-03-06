@@ -75,6 +75,7 @@
         generic,public   ::put          => MQC_Variable_put_MQC,  &
                                            MQC_Variable_put_intrinsicInteger,  &
                                            MQC_Variable_put_intrinsicReal
+!        generic,public   ::getVal       => MQC_Variable_get_MQC
         procedure,public::getRank       => MQC_Variable_getRank
         procedure,public::getType       => MQC_Variable_getType
         procedure,public::print         => MQC_Print_mqcVariable
@@ -140,12 +141,6 @@
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
       end interface
 !
-!     Interface for transposing a matric.
-      interface transpose
-        module procedure MQC_Variable_Matrix_Transpose
-      end interface
-
-!
 !     Interface routines that fill specific elements of MQC variable objects.
       interface mqc_variable_put
         module procedure MQC_Variable_put_MQC
@@ -156,6 +151,16 @@
 !     Interface print routines for MQC_Variable types.
       interface mqc_print
          module procedure MQC_Print_mqcVariable
+      end interface
+!
+!     Interface for transposing a matrix.
+      interface transpose
+        module procedure MQC_Variable_Matrix_Transpose
+      end interface
+!
+!     Interface for MatMul.
+      interface MatMul
+        module procedure MQC_Variable_Matrix_Multiplication
       end interface
 !
 !
@@ -796,9 +801,56 @@
 !
 !----------------------------------------------------------------
 !                                                               |
-!     MQC_Variable VALUE SETTING & BASIC MANIPULATION PROCEDURES|
+!     MQC_Variable VALUE SETTING, RETREVAL, & BASIC             |
+!     MANIPULATION PROCEDURES                                   |
 !                                                               |
 !----------------------------------------------------------------
+!
+!PROCEDURE MQC_Variable_get_MQC
+      function MQC_Variable_get_MQC(mqcVariable,arrayElement) result(valueMQC)
+!
+!     This subroutine is used to get a value from a specified element of an
+!     MQC_Variable array. The value is returned as an MQC variable type. The
+!     array element is sent in dummy argument <arrayElement>.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::valueMQC
+      class(MQC_Variable)::mqcVariable
+      integer(kind=int64)::arrayElement(:)
+      integer(kind=int64)::k
+!
+!
+!     Do the work...
+!
+      if(.not.mqcVariable%initialized) call mqc_error_l('Cannot use MQC_Variable_Get with uninitialized MQC variable.', 6, &
+        'mqcVariable%initialized', mqcVariable%initialized )
+      if(mqcVariable%rank.ne.SIZE(arrayElement))  &
+        call mqc_error_i('MQC_Variable_Get: Rank of variable does NOT match number of array indices provided.', 6, &
+        'mqcVariable%rank', mqcVariable%rank, &
+        'SIZE(arrayElement)', SIZE(arrayElement))
+      k = MQC_Variable_getArrayPosition(mqcVariable,arrayElement)
+      if(k.gt.MQC_Variable_getLength(mqcVariable)) call mqc_error_i('MQC_Variable_Get: Invalid array index provided.', 6, &
+        'k', k, &
+        'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
+      select case(TRIM(MQC_Variable_getType(mqcVariable)))
+      case('REAL')
+        valueMQC = mqcVariable%realArray(k)
+      case('INTEGER')
+        valueMQC = mqcVariable%integerArray(k)
+      case default
+        call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
+          'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
+      end select
+!
+      return
+      end function MQC_Variable_get_MQC
+
+
 !
 !PROCEDURE MQC_Variable_put_MQC
       subroutine MQC_Variable_put_MQC(mqcVariable,valueMQC,arrayElement)
@@ -2243,6 +2295,116 @@
 !
       return
       end function MQC_Variable_dot_product
+
+
+!
+!PROCEDURE MQC_Variable_Matrix_Multiplication
+      function MQC_Variable_Matrix_Multiplication(mqcVariable1,mqcVariable2) result(mqcVariableOut)
+!
+!     This function carries out matrix multiplication using two input
+!     MQC_Variables. The output is an MQC_Variable type. This function provides
+!     the same functionality as the fortran standard provides for intrinsic
+!     MatMul.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:,:),allocatable::productMatrixInteger
+      real(kind=real64),dimension(:,:),allocatable::productMatrixReal
+!
+!
+!     Start by ensuring the two MQC Variables are conformable.
+!
+      if(.not.MQC_Variable_isConformable(TRANSPOSE(mqcVariable1),mqcVariable2))  &
+        call mqc_error_l('MQC Multiplication only allowed for conformable values.', 6, &
+        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
+        MQC_Variable_isConformable(TRANSPOSE(mqcVariable1),mqcVariable2))
+!
+!     Get the right combination of integer/real and build a temporary result
+!     array. This will allow uses of this function to work for C = MatMul(A,B),
+!     C = MatMul(C,B), and C = MatMul(A,C).
+!
+!     To keep things simple in the code, we use an encoding scheme here where
+!     the current situation is encoded as a two-digit integer. The ten's digit
+!     corresponds to the type code of <mqcVariable1> and the one's digit
+!     corresponds to <mqcVariable2>. The individual digit values follow the
+!     convension in Procedure MQC_Variable_getTypeCode.
+!
+!     Here is some prelim work...
+!
+      typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
+      typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
+      if(typeCode1.eq.0)  &
+        call mqc_error_I('MQC_Variable_Multiplication: Var1 is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1)
+      if(typeCode2.eq.0)  &
+        call mqc_error_I('MQC_Variable_Multiplication: Var2 is of UNKONWN type.', 6, &
+        'typeCode2' ,typeCode2);
+      select case(MIN(typeCode1,typeCode2))
+      case(2)
+        allocate(productMatrixReal(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+      case(3)
+        allocate(productMatrixInteger(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+      case default
+        call mqc_error_i('MQC_Variable_Multiplication: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
+      end select
+!
+!     Now, do the addition and set the output function value accordingly.
+!
+      select case(typeCode1*10 + typeCode2)
+
+!hph+
+      case(22)
+        productMatrixReal = MatMul(  &
+          RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+          RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
+        mqcVariableOut = productMatrixReal
+      case(23)
+        productMatrixReal = MatMul(  &
+          RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+          RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
+        mqcVariableOut = productMatrixReal
+      case(32)
+        productMatrixReal = MatMul(  &
+          RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+          RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
+        mqcVariableOut = productMatrixReal
+      case(33)
+        productMatrixInteger = MatMul(  &
+          RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+          RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
+        mqcVariableOut = productMatrixInteger
+!
+!
+!      case(22)
+!        productMatrixReal = mqcVariable1%realArray * mqcVariable2%realArray
+!        mqcVariableOut = productMatrixReal
+!      case(23)
+!        productMatrixReal = mqcVariable1%realArray * mqcVariable2%integerArray
+!        mqcVariableOut = productMatrixReal
+!      case(32)
+!        productMatrixReal = mqcVariable1%integerArray(:) * mqcVariable2%realArray(:)
+!        mqcVariableOut = productMatrixReal
+!      case(33)
+!        productMatrixInteger = mqcVariable1%integerArray * mqcVariable2%integerArray
+!        mqcVariableOut = productMatrixInteger
+!hph-
+
+      case default
+        call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2 )
+      end select
+!
+      return
+      end function MQC_Variable_Matrix_Multiplication
 
 
 !

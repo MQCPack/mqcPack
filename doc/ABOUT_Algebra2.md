@@ -5,7 +5,6 @@ This is a list of Hrant's ongoing to-do list for MQC -- focusing primarily on th
 
 #### TO DO
 
-* Array element get/put
 * Vector (row/column) get/put for matrices
 * Build a block diagonal matrix from individual blocks
 * Augment a matrix by adding rows or columns 
@@ -16,7 +15,10 @@ This is a list of Hrant's ongoing to-do list for MQC -- focusing primarily on th
 
 #### DONE
 
+* Array element get/put
+
 * Matrix transpose (for full storage matrices only)
+
   ```
   type(mqc_gaussian_unformatted_matrix_file)::fileInfo 
   type(MQC_Variable)::moCoefficientsAlpha
