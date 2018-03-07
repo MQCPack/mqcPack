@@ -51,6 +51,7 @@ void mqc_Matfile_Guide( char *, char *, int *, int *, int *);
 void Invalid_int_len( int );
 int Get_Unformated_Data( FILE *, char *, int , char *, int, char *, char *, 
 			 int, long *, int *, double *, char * );
+void mqc_abort_(void);
 
 Input_Link_List *mqc_Read_to_Link_List( char *, char *, int, int *, int*, int * );
 
@@ -357,7 +358,7 @@ void mqc_File_Name_list( char *FileName, char *Program, int iout )
     /* */
     /* The input file is ACSII. It is a MatrixFile */
     /* */
-    sprintf( charBuf, "MatrixFile %s does not ASCII %s", MatFileName, EndOfString);
+    sprintf( charBuf, "MatrixFile %s is not ASCII %s", MatFileName, EndOfString);
     mqc_error_i_c2f_0( charBuf, &iout);
   }
 
@@ -929,6 +930,7 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
    int NewRecord;
    static int int_len;
    static int char_len;
+   static char SaveDataType[64];
    int iout;
    int Len;
    int fclose_return;
@@ -948,12 +950,12 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
    int Len12L_4, Len4L_4;
    long Len12L_8,Len4L_8;
 
-   /* LastFileName=NULL; */
-
    if ( LastFileName == NULL ) {
      LastFileName = mqc_DupString( "Not a valid Matfile name", LastFileName );
    }
-   if ( strcmp( LastFileName, FileName ) != 0 ) {
+   if ( strcmp( LastFileName, FileName ) == 0 ) {
+     sprintf( DataType, "%s%s", SaveDataType, EndOfString ); 
+   } else {
      /* New file.  Open it then check if raw or uses 32 or 64 bit integers */
      matfile = fopen(FileName ,"rb") ;
      if ( matfile == NULL ) {
@@ -992,9 +994,11 @@ Input_Link_List *mqc_Read_to_Link_List(char *FileName, char *charBuf, int iout,
 
      if ( Len12L_4 == 4 && Len4L_4 == 4 ) {
        sprintf( DataType, "Int%s", EndOfString ); 
+       sprintf( SaveDataType, "Int%s", EndOfString ); 
        int_len = sizeof(int);
      } else if ( Len12L_8 == 8 && Len4L_8 == 8 ) {
        sprintf( DataType, "Long%s", EndOfString ); 
+       sprintf( SaveDataType, "Long%s", EndOfString ); 
        int_len = sizeof(long);
      } else {
        sprintf( DataType, "Raw%s", EndOfString ); 

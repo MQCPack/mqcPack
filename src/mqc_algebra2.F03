@@ -113,6 +113,11 @@
         module procedure MQC_Variable_FLOAT_Scalar
       end interface
 !
+!     Interface MQC Varaiable full contraction.
+      interface contraction
+        module procedure MQC_Variable_Contraction_Full
+      end interface
+!
 !     Interface MQC Varaiable full contraction for vectors --> dot_product.
       interface dot_product
         module procedure MQC_Variable_dot_product
@@ -134,6 +139,12 @@
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
       end interface
+!
+!     Interface for transposing a matric.
+      interface transpose
+        module procedure MQC_Variable_Matrix_Transpose
+      end interface
+
 !
 !     Interface routines that fill specific elements of MQC variable objects.
       interface mqc_variable_put
@@ -1354,6 +1365,7 @@
         write(*,*)
         write(*,*)
       endIf
+!
       return
       end subroutine MQC_Variable_setVal
 
@@ -1699,11 +1711,40 @@
       end function MQC_Variable_FLOAT_Scalar
 
 
-
-
-
-
-
+!
+!PROCEDURE MQC_Variable_Matrix_Transpose
+      function MQC_Variable_Matrix_Transpose(mqcVariable) result(mqcVariableOut)
+!
+!     This function provides FLOAT as a function for MQC Variables.
+!
+!
+!     H. P. Hratchian, 2017.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      class(MQC_Variable)::mqcVariableOut
+!
+!
+!     Do the work...
+!
+      if(RANK(mqcVariable).ne.2) call mqc_error_i('Transpose invoked on non-matrix. RANK=',  &
+        6,'RANK=',RANK(mqcVariable))
+      if(TRIM(mqcVariable%storageFormat).ne.'FULL')   &
+        call mqc_error_a('Transpose invoked on non-FULL storage format matrix NYI.',6,'Storage form:',  &
+        TRIM(mqcVariable%storageFormat))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        mqcVariableOut = Transpose(RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)))
+      case(3)
+        mqcVariableOut = Transpose(RESHAPE(mqcVariable%integerArray(:),mqcVariable%dimensions(1:2)))
+      case default
+        call mqc_error('Transpose: Erroneous typing found.')
+      end select
+!
+      return
+      end function MQC_Variable_Matrix_Transpose
 
 
 !hph+
