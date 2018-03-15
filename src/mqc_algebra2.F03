@@ -1275,7 +1275,7 @@
       integer(kind=int64),dimension(:),optional::dimensions
       logical,optional::DEBUGPRINT
 !
-      integer(kind=int64)::nInputs,myRank
+      integer(kind=int64)::i,nInputs,myRank
       integer(kind=int64),dimension(:),allocatable::myDimensions
       logical::DEBUG,fillInteger,fillReal,fillScalar,fillArray
       character(len=64)::myDataType
@@ -1336,13 +1336,17 @@
              'fillInteger', fillInteger, &
              'fillReal', fillReal )
       endIf
-      if(DEBUG) write(*,*)'   myDataType = ',myDataType
+      if(DEBUG) write(*,*)'   myDataType = ',TRIM(myDataType)
       if(PRESENT(dimensions)) then
         myRank = SIZE(dimensions)
+        do i = SIZE(dimensions),1,-1
+          if(dimensions(i).ne.0) exit
+          myRank = myRank - 1
+        endDo
         if(myRank.eq.1.and.fillScalar) myRank = 0
         if(myRank.gt.0) then
           Allocate(myDimensions(myRank))
-          myDimensions = dimensions
+          myDimensions = dimensions(1:myRank)
         endIf
       else
         if(fillScalar) then
@@ -1547,14 +1551,7 @@
       myLength = SIZE(intrinsicIn)
       myDimensions(1) = SIZE(intrinsicIn,1)
       myDimensions(2) = SIZE(intrinsicIn,2)
-      write(*,*)
-      write(*,*)' hrant - new routine:'
-      write(*,*)' myLength = ',myLength
       call mqc_print(6,myDimensions,'myDimensions:')
-
-      write(*,*)
-      write(*,*)' HRANT -- Calling SetVal routine....'
-      write(*,*)
       call MQC_Variable_setVal(mqcVariable,arrayIntegerIn=RESHAPE(intrinsicIn,[myLength]),  &
         dimensions=myDimensions,DEBUGPRINT=.False.)
 !
@@ -1869,9 +1866,10 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64)::typeCode1,typeCode2,sumScalarInteger
       integer(kind=int64),dimension(:),allocatable::sumVectorInteger
       real(kind=real64),dimension(:),allocatable::sumVectorReal
+      real(kind=real64)::sumScalarReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -1880,6 +1878,10 @@
         call mqc_error_l('MQC Addition only allowed for conformable values.', 6, &
         'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
         MQC_Variable_isConformable(mqcVariable1,mqcVariable2) )
+      if(mqcVariable1%storageFormat.ne.mqcVariable2%storageFormat)  &
+        call mqc_error_a('MQC Addition only allowed for same storage types.', 6, &
+        'mqcVariable1 storage type:',TRIM(mqcVariable1%storageFormat),  &
+        'mqcVariable2 storage type:',TRIM(mqcVariable2%storageFormat))
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = A + B and for
@@ -1914,23 +1916,56 @@
 !
 !     Now, do the addition and set the output function value accordingly.
 !
-      select case(typeCode1*10 + typeCode2)
-      case(22)
-        sumVectorReal = mqcVariable1%realArray + mqcVariable2%realArray
-        mqcVariableOut = sumVectorReal
-      case(23)
-        sumVectorReal = mqcVariable1%realArray + mqcVariable2%integerArray
-        mqcVariableOut = sumVectorReal
-      case(32)
-        sumVectorReal = mqcVariable1%integerArray(:) + mqcVariable2%realArray(:)
-        mqcVariableOut = sumVectorReal
-      case(33)
-        sumVectorInteger = mqcVariable1%integerArray + mqcVariable2%integerArray
-        mqcVariableOut = sumVectorInteger
+      select case(mqcVariable1%rank)
+      case(0)
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          sumScalarReal = mqcVariable1%realArray(1) + mqcVariable2%realArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=sumScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(23)
+          sumScalarReal = mqcVariable1%realArray(1) + mqcVariable2%integerArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=sumScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(32)
+          sumScalarReal = mqcVariable1%integerArray(1) + mqcVariable2%realArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=sumScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(33)
+          sumScalarInteger = mqcVariable1%integerArray(1) + mqcVariable2%integerArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarIntegerIn=sumScalarInteger,  &
+            dimensions=mqcVariable1%dimensions)
+        case default
+          call mqc_error_I('MQC_Variable_Addition: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2)
+        end select
+      case(1:)
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          sumVectorReal = mqcVariable1%realArray + mqcVariable2%realArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=sumVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(23)
+          sumVectorReal = mqcVariable1%realArray + mqcVariable2%integerArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=sumVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(32)
+          sumVectorReal = mqcVariable1%integerArray(:) + mqcVariable2%realArray(:)
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=sumVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(33)
+          sumVectorInteger = mqcVariable1%integerArray + mqcVariable2%integerArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayIntegerIn=sumVectorInteger,  &
+            dimensions=mqcVariable1%dimensions)
+        case default
+          call mqc_error_I('MQC_Variable_Addition: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2)
+        end select
+        write(*,*)
       case default
-        call mqc_error_I('MQC_Variable_Addition: Combination of var1 and var 2 types is UNKNOWN.', 6, &
-             'typeCode1*10', typeCode1*10, &
-             'typeCode2', typeCode2)
+        call mqc_error('MQC_Variable_Addition is confused!')
       end select
 !
       return
