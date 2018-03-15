@@ -439,7 +439,7 @@
 
       Return
       end Subroutine mqc_error_A
-      !
+
       
 !
 !PROCEDURE mqc_get_command_argument
@@ -464,6 +464,7 @@
 !
       Return
       End Subroutine mqc_get_command_argument
+
 
 !
 !----------------------------------------------------------------

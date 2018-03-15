@@ -84,7 +84,8 @@
         procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
-        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+        procedure,pass::getBasisArray  => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
         procedure,pass::getMolData     => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
         procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
@@ -107,6 +108,8 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!
+
 
 
 !
@@ -1647,8 +1650,8 @@
 
 !=====================================================================
 !
-!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
-      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info(fileinfo,element,label)
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element(fileinfo,element,label)
 !
 !     This function is used to get info about specific basis functions
 !     associated with the Gaussian unformatted matrix file sent in object
@@ -1673,7 +1676,7 @@
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       integer::element
       character(len=*),intent(in)::label
-      integer::MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+      integer::MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
       integer::value_out=0
       character(len=64)::myLabel
       character(len=256)::my_filename
@@ -1718,9 +1721,82 @@
              'mylabel', mylabel )
       endSelect
 !
-      MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info = value_out
+      MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element = value_out
       return
-      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array(fileinfo,label)  &
+        Result(arrayOut)
+!
+!     This function is used to get info about specific basis functions
+!     associated with the Gaussian unformatted matrix file sent in object
+!     fileinfo. This function returns the full array requested, not just a
+!     single element.
+!
+!     Input argument element refers to a specific basis function by number or
+!     some other element related to the info requested by input argument label.
+!
+!     The recognized labels and their meaning include:
+!           'basis2Atom'      return an integer array giving the atomic center
+!                             number on which each basis function is centered.
+!           'basis type'      return an integer array giving the atomic orbital
+!                             basis type of each basis function as a numerical
+!                             label. 
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      integer,dimension(:),allocatable::arrayOut
+      integer::value_out=0
+      character(len=64)::myLabel
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('basis2atom')
+        if(.not.allocated(fileinfo%basisFunction2Atom))  &
+          call MQC_Error_L('Requested basis2Atom not possible.', 6, &
+          'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
+        allocate(arrayOut(fileinfo%NBasis))
+        arrayOut = fileinfo%basisFunction2Atom
+      case('basis type')
+        if(.not.allocated(fileinfo%IBasisFunctionType))  &
+          call MQC_Error_l('Requested basis type not possible.', 6, &
+          'allocated(fileinfo%IBasisFunctionType)', allocated(fileinfo%IBasisFunctionType) )
+        allocate(arrayOut(fileinfo%NBasis))
+        arrayOut = fileinfo%IBasisFunctionType
+      case default
+        call mqc_error_a('Invalid label sent to %getBasisInfo.', 6, &
+             'mylabel', mylabel )
+      endSelect
+!
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
 
 
 !=====================================================================
