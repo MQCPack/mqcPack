@@ -819,7 +819,7 @@
 !
 !     Variable Declarations.
       implicit none
-      class(MQC_Variable)::valueMQC
+      type(MQC_Variable)::valueMQC
       class(MQC_Variable)::mqcVariable
       integer(kind=int64)::arrayElement(:)
       integer(kind=int64)::k
@@ -1627,6 +1627,43 @@
 
 
 !
+!PROCEDURE MQC_Variable_mqc2intrinsicInteger1Array
+      subroutine MQC_Variable_mqc2intrinsicInteger1Array(intrinsicOut,mqcVariable)
+!
+!     This subroutine is used to set an (output) intrinsic integer vector equal
+!     to an (input) MQC Variable scalar.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),dimension(:),allocatable::intrinsicOut
+      class(MQC_Variable),intent(in)::mqcVariable
+!
+!
+!     Do the work...
+!
+      if(Rank(mqcVariable).ne.1)  &
+        call mqc_error_i('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.', 6, &
+        'Rank(mqcVariable)', Rank(mqcVariable) )
+      allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        intrinsicOut = INT(mqcVariable%realArray(:))
+      case(3)
+        intrinsicOut = mqcVariable%integerArray(:)
+      case default
+        call mqc_error_I('MQC_Variable_mqc2intrinsicInteger1Array: Unknown MQC_Variable type found.', 6, &
+             'MQC_Variable_getTypeCode(mqcVariable)', MQC_Variable_getTypeCode(mqcVariable) )
+      end select
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicInteger1Array
+
+
+!
 !PROCEDURE MQC_Variable_mqc2intrinsicRealScalar
       subroutine MQC_Variable_mqc2intrinsicRealScalar(intrinsicOut,mqcVariable)
 !
@@ -1660,6 +1697,43 @@
 !
       return
       end subroutine MQC_Variable_mqc2intrinsicRealScalar
+
+
+!
+!PROCEDURE MQC_Variable_mqc2intrinsicReal1Array
+      subroutine MQC_Variable_mqc2intrinsicReal1Array(intrinsicOut,mqcVariable)
+!
+!     This subroutine is used to set an (output) intrinsic real vector equal to
+!     an (input) MQC Variable vector.
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),allocatable::intrinsicOut
+      type(MQC_Variable),intent(in)::mqcVariable
+!
+!
+!     Do the work...
+!
+      if(Rank(mqcVariable).ne.1)  &
+        call mqc_error_I('Attemp to convert MQC_Variable array to intrinsic SCALAR not allowed.', 6, &
+        'Rank(mqcVariable)', Rank(mqcVariable) )
+      allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        intrinsicOut = mqcVariable%realArray(:)
+      case(3)
+        intrinsicOut = mqcVariable%integerArray(:)
+      case default
+        call mqc_error_I('MQC_Variable_mqc2intrinsicReal1Array: Unknown MQC_Variable type found.', 6, &
+             'MQC_Variable_getTypeCode(mqcVariable)', MQC_Variable_getTypeCode(mqcVariable) )
+      end select
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicReal1Array
 
 
 !
