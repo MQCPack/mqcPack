@@ -821,7 +821,7 @@
       implicit none
       type(MQC_Variable)::valueMQC
       class(MQC_Variable)::mqcVariable
-      integer(kind=int64)::arrayElement(:)
+      integer(kind=int64),dimension(:)::arrayElement
       integer(kind=int64)::k
 !
 !
@@ -2062,9 +2062,10 @@
 !     Variable Declarations.
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
-      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64)::typeCode1,typeCode2,differenceScalarInteger
       integer(kind=int64),dimension(:),allocatable::differenceVectorInteger
       real(kind=real64),dimension(:),allocatable::differenceVectorReal
+      real(kind=real64)::differenceScalarReal
 !
 !
 !     Start by ensuring the two MQC Variables are conformable.
@@ -2105,26 +2106,80 @@
              'typeCode2', typeCode2 )
       end select
 !
-!     Now, do the addition and set the output function value accordingly.
+!     Now, do the subtraction and set the output function value accordingly.
 !
-      select case(typeCode1*10 + typeCode2)
-      case(22)
-        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%realArray
-        mqcVariableOut = differenceVectorReal
-      case(23)
-        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%integerArray
-        mqcVariableOut = differenceVectorReal
-      case(32)
-        differenceVectorReal = mqcVariable1%integerArray(:) - mqcVariable2%realArray(:)
-        mqcVariableOut = differenceVectorReal
-      case(33)
-        differenceVectorInteger = mqcVariable1%integerArray - mqcVariable2%integerArray
-        mqcVariableOut = differenceVectorInteger
+!hph+
+!      select case(typeCode1*10 + typeCode2)
+!      case(22)
+!        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%realArray
+!        mqcVariableOut = differenceVectorReal
+!      case(23)
+!        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%integerArray
+!        mqcVariableOut = differenceVectorReal
+!      case(32)
+!        differenceVectorReal = mqcVariable1%integerArray(:) - mqcVariable2%realArray(:)
+!        mqcVariableOut = differenceVectorReal
+!      case(33)
+!        differenceVectorInteger = mqcVariable1%integerArray - mqcVariable2%integerArray
+!        mqcVariableOut = differenceVectorInteger
+!      case default
+!        call mqc_error_I('MQC_Variable_Subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+!             'typeCode1*10', typeCode1*10, &
+!             'typeCode2', typeCode2 )
+!      end select
+      select case(mqcVariable1%rank)
+      case(0)
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          differenceScalarReal = mqcVariable1%realArray(1) - mqcVariable2%realArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=differenceScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(23)
+          differenceScalarReal = mqcVariable1%realArray(1) - mqcVariable2%integerArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=differenceScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(32)
+          differenceScalarReal = mqcVariable1%integerArray(1) - mqcVariable2%realArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarRealIn=differenceScalarReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(33)
+          differenceScalarInteger = mqcVariable1%integerArray(1) - mqcVariable2%integerArray(1)
+          call MQC_Variable_setVal(mqcVariableOut,scalarIntegerIn=differenceScalarInteger,  &
+            dimensions=mqcVariable1%dimensions)
+        case default
+          call mqc_error_I('MQC_Variable_subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2)
+        end select
+      case(1:)
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          differenceVectorReal = mqcVariable1%realArray - mqcVariable2%realArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=differenceVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(23)
+          differenceVectorReal = mqcVariable1%realArray - mqcVariable2%integerArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=differenceVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(32)
+          differenceVectorReal = mqcVariable1%integerArray(:) - mqcVariable2%realArray(:)
+          call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=differenceVectorReal,  &
+            dimensions=mqcVariable1%dimensions)
+        case(33)
+          differenceVectorInteger = mqcVariable1%integerArray - mqcVariable2%integerArray
+          call MQC_Variable_setVal(mqcVariableOut,arrayIntegerIn=differenceVectorInteger,  &
+            dimensions=mqcVariable1%dimensions)
+        case default
+          call mqc_error_I('MQC_Variable_subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2)
+        end select
+        write(*,*)
       case default
-        call mqc_error_I('MQC_Variable_Subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
-             'typeCode1*10', typeCode1*10, &
-             'typeCode2', typeCode2 )
+        call mqc_error('MQC_Variable_Subtraction is confused!')
       end select
+!hph-
+
 !
       return
       end function MQC_Variable_Subtraction
