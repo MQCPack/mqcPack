@@ -36,6 +36,7 @@
       USE MQC_General
       USE MQC_Files
       USE MQC_Algebra
+      USE MQC_Algebra2
       USE MQC_EST
       USE MQC_molecule
       USE MQC_matwrapper
@@ -83,8 +84,9 @@
         procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
-        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
-        procedure,pass::getMolData   => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+        procedure,pass::getBasisArray  => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+        procedure,pass::getMolData     => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
         procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
         procedure,pass::writeArray     => MQC_Gaussian_Unformatted_Matrix_Write_Array
@@ -106,6 +108,8 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!
+
 
 
 !
@@ -628,6 +632,7 @@
       if(allocated(fileinfo%atomicNumbers)) deallocate(fileinfo%atomicNumbers)
       if(allocated(fileinfo%atomTypes)) deallocate(fileinfo%atomTypes)
       if(allocated(fileinfo%basisFunction2Atom)) deallocate(fileinfo%basisFunction2Atom)
+      if(allocated(fileinfo%IBasisFunctionType)) deallocate(fileinfo%IBasisFunctionType)
       if(allocated(fileinfo%atomicCharges)) deallocate(fileinfo%atomicCharges)
       if(allocated(fileinfo%atomicWeights)) deallocate(fileinfo%atomicWeights)
       if(allocated(fileinfo%cartesians)) deallocate(fileinfo%cartesians)
@@ -748,7 +753,6 @@
 !     header scalar flags.
 !
       if(.not.fileinfo%header_read) then
-
         fileinfo%readWriteMode = 'R'
         allocate(fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,fileinfo%icharge, &
           fileinfo%multiplicity,fileinfo%nelectrons,fileinfo%icgu,fileinfo%NFC, &
@@ -764,8 +768,8 @@
           fileinfo%atomicCharges(fileinfo%natoms),  &
           fileinfo%atomicWeights(fileinfo%natoms))
         allocate(fileinfo%cartesians(fileinfo%natoms*3))
-        allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis),  &
-          fileinfo%IBasisFunctionType(fileinfo%NBasis))
+        allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
+        allocate(fileinfo%IBasisFunctionType(fileinfo%NBasis))
         call Rd_Head(fileinfo%unitNumber,NLab,fileinfo%natoms,fileinfo%nbasis,  &
           fileinfo%atomicNumbers,fileinfo%atomTypes,fileinfo%atomicCharges,  &
           fileinfo%cartesians,fileinfo%basisFunction2Atom,fileinfo%IBasisFunctionType,  &
@@ -974,14 +978,14 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Read_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
-       label,matrixOut,vectorOut,r4TensorOut,filename)
+       label,matrixOut,vectorOut,r4TensorOut,filename,mqcVarOut)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
-!     <matrixOut>, (OPTIONAL) output dummy MQC_Vector argument <vectorOut>, or
-!     (OPTIONAL) output dummy MQC_R4Tensor argument <r4TensorOut>. The character
-!     label for the array of interest is sent to this routine in dummy argument
-!     <label>.
+!     <matrixOut>, (OPTIONAL) output dummy MQC_Vector argument <vectorOut>,
+!     (OPTIONAL) output dummy MQC_R4Tensor argument <r4TensorOut>, or (OPTIONAL)
+!     output dummy MQC_Variable argument <mqcVarOut>. The character label for
+!     the array of interest is sent to this routine in dummy argument <label>.
 !
 !     Dummy argument <filename> is optional and is only used if fileinfo
 !     hasn't already been defined using Routine
@@ -995,7 +999,7 @@
 !     routine. However, it is also OK to call this routine first. In that case,
 !     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2018.
 !     L. M. Thompson, 2017
 !
 !     Variable Declarations.
@@ -1007,6 +1011,7 @@
       type(MQC_Vector),intent(inout),OPTIONAL::vectorOut
       type(MQC_R4Tensor),intent(inout),OPTIONAL::r4TensorOut
       character(len=*),intent(in),OPTIONAL::filename
+      type(MQC_Variable),intent(inout),OPTIONAL::mqcVarOut
 !
       integer::iout=6
 !
@@ -1022,7 +1027,7 @@
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.true.,ok,found
+      logical::DEBUG=.false.,ok,found
 !
 !
 !     Format statements.
@@ -1075,11 +1080,13 @@
       if(Present(matrixOut)) nOutputArrays = nOutputArrays+1
       if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
       if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
+      if(Present(mqcVarOut)) nOutputArrays = nOutputArrays+1
       if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
            'nOutputArrays', nOutputArrays )
 !
 !     Look for the label sent by the calling program unit. If the label is
-!     found, then load <matrixOut> with the data on the file.
+!     found, then load the appropriate output argument with the data on the
+!     file.
 !
       found = .false.
       outerLoop:do i = 1,2
@@ -1093,8 +1100,11 @@
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
+!
+!           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
+!           type (integer, real, etc.) and data structure (scalar, vector,
+!           matrix, etc.).
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
-
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
@@ -1102,10 +1112,11 @@
                 vectorOut = integerTmp
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,integerTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = integerTmp
               else
-                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.', 6, &
-'Present(matrixOut)', Present(matrixOut) )
+                call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to procedure.',  &
+                  6,'Present(vectorOut)',Present(vectorOut),'Present(matrixOut)',Present(matrixOut) )
               endIf
               deallocate(integerTmp)
             case('INTEGER-MATRIX')
@@ -1124,7 +1135,6 @@
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
               deallocate(integerTmp)
-
             case('REAL-VECTOR')
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
@@ -1132,29 +1142,37 @@
                 vectorOut = arrayTmp
               elseIf(Present(matrixOut)) then
                 call MQC_Matrix_DiagMatrix_Put(matrixOut,arrayTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = arrayTmp
               else
-                if(.not.Present(matrixOut)) call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to &
-                  & procedure.', 6, &
-                  'Present(matrixOut)', Present(matrixOut) )
+                call mqc_error_l('Reading vector from Gaussian matrix file, but NO VECTOR SENT to procedure.',  &
+                  6,'Present(vectorOut)',Present(vectorOut),'Present(matrixOut)',Present(matrixOut) )
               endIf
               deallocate(arrayTmp)
             case('REAL-MATRIX')
-              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.', 6, &
-                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
-              matrixOut = Reshape(arrayTmp,[N1,N2])
+              if(Present(matrixOut)) then
+                matrixOut = Reshape(arrayTmp,[N1,N2])
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = Reshape(arrayTmp,[N1,N2])
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
               deallocate(arrayTmp)
             case('REAL-SYMMATRIX')
-              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
-                & procedure.', 6, &
-                'Present(matrixOut)', Present(matrixOut) )
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
-              call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+              if(Present(matrixOut)) then
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
               deallocate(arrayTmp)
-
             case('COMPLEX-VECTOR')
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
@@ -1228,20 +1246,25 @@
             end select
             found = .true.
             exit outerLoop
-          else
+          elseIf(NTot.gt.0) then
             Call Rd_Skip(fileinfo%UnitNumber,NTot,LenBuf)
           endIf
           Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
             N1,N2,N3,N4,N5,ASym,NRI,EOF)
           LR = LenArr(N1,N2,N3,N4,N5)
+          EOF = EOF.or.cBuffer.eq.'END'
           if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
             N1,N2,N3,N4,N5,ASym,LR
         endDo
         if(i==1) then
+          write(*,*)' Inside re-open block.'
           my_filename = TRIM(fileinfo%filename)
+          write(*,*)' my_filename = ',TRIM(my_filename)
           call fileinfo%CLOSEFILE()
+          write(*,*)' Just closed the file.'
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             my_filename)
+          write(*,*)' Just re-opened the file.'
         endIf
       endDo outerLoop
       if(.not.found) then
@@ -1627,8 +1650,8 @@
 
 !=====================================================================
 !
-!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
-      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info(fileinfo,element,label)
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element(fileinfo,element,label)
 !
 !     This function is used to get info about specific basis functions
 !     associated with the Gaussian unformatted matrix file sent in object
@@ -1653,7 +1676,7 @@
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       integer::element
       character(len=*),intent(in)::label
-      integer::MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+      integer::MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
       integer::value_out=0
       character(len=64)::myLabel
       character(len=256)::my_filename
@@ -1698,9 +1721,82 @@
              'mylabel', mylabel )
       endSelect
 !
-      MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info = value_out
+      MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element = value_out
       return
-      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array(fileinfo,label)  &
+        Result(arrayOut)
+!
+!     This function is used to get info about specific basis functions
+!     associated with the Gaussian unformatted matrix file sent in object
+!     fileinfo. This function returns the full array requested, not just a
+!     single element.
+!
+!     Input argument element refers to a specific basis function by number or
+!     some other element related to the info requested by input argument label.
+!
+!     The recognized labels and their meaning include:
+!           'basis2Atom'      return an integer array giving the atomic center
+!                             number on which each basis function is centered.
+!           'basis type'      return an integer array giving the atomic orbital
+!                             basis type of each basis function as a numerical
+!                             label. 
+!
+!
+!     H. P. Hratchian, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      integer,dimension(:),allocatable::arrayOut
+      integer::value_out=0
+      character(len=64)::myLabel
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('basis2atom')
+        if(.not.allocated(fileinfo%basisFunction2Atom))  &
+          call MQC_Error_L('Requested basis2Atom not possible.', 6, &
+          'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
+        allocate(arrayOut(fileinfo%NBasis))
+        arrayOut = fileinfo%basisFunction2Atom
+      case('basis type')
+        if(.not.allocated(fileinfo%IBasisFunctionType))  &
+          call MQC_Error_l('Requested basis type not possible.', 6, &
+          'allocated(fileinfo%IBasisFunctionType)', allocated(fileinfo%IBasisFunctionType) )
+        allocate(arrayOut(fileinfo%NBasis))
+        arrayOut = fileinfo%IBasisFunctionType
+      case default
+        call mqc_error_a('Invalid label sent to %getBasisInfo.', 6, &
+             'mylabel', mylabel )
+      endSelect
+!
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
 
 
 !=====================================================================

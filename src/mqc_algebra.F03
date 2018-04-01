@@ -54,12 +54,12 @@
 !
 !     Vectors...
       Type MQC_Vector
-        Integer(kind=int64),Private::Length=0
+        Integer(kind=int64)::Length=0
         Logical,Private::Column=.True.
-        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Real(kind=real64),Dimension(:),Private,Allocatable::VecR
-        Integer(kind=int64),Dimension(:),Private,Allocatable::VecI
-        Complex(Kind=real64),Dimension(:),Private,Allocatable::VecC
+        Character(Len=64)::Data_Type ! Real,Integer,Complex
+        Real(kind=real64),Dimension(:),Allocatable::VecR
+        Integer(kind=int64),Dimension(:),Allocatable::VecI
+        Complex(Kind=real64),Dimension(:),Allocatable::VecC
       Contains
         Procedure, Public::print => MQC_Print_Vector_Algebra1
         Procedure, Public::initialize => MQC_Vector_Initialize
@@ -84,9 +84,9 @@
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
-        Real(kind=real64),Dimension(:,:),Private,Allocatable::MatR
-        Integer(kind=int64),Dimension(:,:),Private,Allocatable::MatI
-        Complex(Kind=real64),Dimension(:,:),Private,Allocatable::MatC
+        Real(kind=real64),Dimension(:,:),Allocatable::MatR
+        Integer(kind=int64),Dimension(:,:),Allocatable::MatI
+        Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
       Contains
         Procedure, Public::print => MQC_Print_Matrix_Algebra1
         Procedure, Public::initialize => MQC_Matrix_Initialize

@@ -1,5 +1,5 @@
 ! This program tests Reading everthing in a MartixFile
-     program DataSummary
+     program DataPrint
 !
 !     This program contains examples of the matrix file read and write routines
 !
@@ -18,8 +18,6 @@
       character(len=1024)::program_name
       character(len=1024)::no_program_name
       character(len=1024)::FileName
-      integer(kind=int64) cmd_count
-      integer(kind=int64) IAllocated
 !
       integer(kind=int64) iout, i, status
       integer(kind=int64) Print_Options
@@ -30,16 +28,15 @@
  1010 Format( A )
  1020 Format( '   - ',A )
 
-      IOut = 6
+      iout = 6
       allocate(mqc_input_file_list)
       allocate(my_READONLY_list)
-      Print_Options = 1
-      Storage_Options = 0
+      Print_Options=2
+      Storage_Options=0
+
       Call MQC_Create_Wavefunctions( Print_Options, Storage_Options, &
-           my_READONLY_list, mqc_input_file_list, IOut)
-!
-! The rest of this is stubs for when we can read FCHK files.
-!
+           my_READONLY_list, mqc_input_file_list, Iout)
+! The rest is stubs for use with FCHK files and can be ignored.  
       call  mqc_get_FormChk_Name_F2C(FileName, iout)
       if ( trim(FileName).ne.'Done with FormChk' ) then
          write(iout,1010) 'FormChk Files:'
@@ -54,4 +51,5 @@
          call  mqc_get_FormChk_Name_F2C(FileName, iout)
       EndDo
 
-    end program DataSummary
+    end program DataPrint
+

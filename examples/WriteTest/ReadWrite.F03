@@ -1,5 +1,5 @@
 ! This program tests Reading everthing in a MartixFile
-     program DataSummary
+     program ReadWrite
 !
 !     This program contains examples of the matrix file read and write routines
 !
@@ -17,41 +17,35 @@
 
       character(len=1024)::program_name
       character(len=1024)::no_program_name
-      character(len=1024)::FileName
-      integer(kind=int64) cmd_count
-      integer(kind=int64) IAllocated
+      character(len=64)::FileName
 !
       integer(kind=int64) iout, i, status
       integer(kind=int64) Print_Options
       integer(kind=int64) Storage_Options
+      class(MQC_ALL_Wavefunction),pointer::current_wavefunction
       class(mqc_link_list), allocatable:: mqc_input_file_list
       class(mqc_READONLY_list), allocatable:: my_READONLY_list
 
  1010 Format( A )
  1020 Format( '   - ',A )
+ 1030 Format( 2A )
 
-      IOut = 6
+      iout = 6
       allocate(mqc_input_file_list)
       allocate(my_READONLY_list)
-      Print_Options = 1
-      Storage_Options = 0
+      Print_Options=0
+      Storage_Options=1
       Call MQC_Create_Wavefunctions( Print_Options, Storage_Options, &
            my_READONLY_list, mqc_input_file_list, IOut)
-!
-! The rest of this is stubs for when we can read FCHK files.
-!
-      call  mqc_get_FormChk_Name_F2C(FileName, iout)
-      if ( trim(FileName).ne.'Done with FormChk' ) then
-         write(iout,1010) 'FormChk Files:'
-      endif
-      if ( trim(FileName).ne.'Done with FormChk' ) then
-         if ( .not.allocated(mqc_input_file_list) ) then
-            allocate(mqc_input_file_list)
-         endif
-      endif
-      Do While( trim(FileName).ne.'Done with FormChk' )
-         write(iout,1020) trim(FileName)
-         call  mqc_get_FormChk_Name_F2C(FileName, iout)
+
+      call mqc_link_list_start(mqc_input_file_list,Status,current_wavefunction)
+      Do While( Status.eq.1 )
+         write(FileName,1030) trim(current_wavefunction%FileName),".copy"
+         Current_wavefunction%FileName=FileName
+         call mqc_WRITE_all_wavefunction(current_wavefunction,iOut)
+         call mqc_link_list_next(mqc_input_file_list,Status, &
+              current_wavefunction)
       EndDo
 
-    end program DataSummary
+    end program ReadWrite
+

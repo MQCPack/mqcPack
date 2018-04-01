@@ -52,7 +52,7 @@
         character (len=2048) :: out_message
         integer( kind=int32 ) :: i
         integer( kind=int64 ) :: IOUT_F
-
+ 1010   Format( "IOut should be 0 or 6.  It is %d" )
         out_message = " "
         message_string: do i=1, 2048
            if ( in_message (i) == c_null_char ) then
@@ -140,14 +140,47 @@
     end subroutine mqc_create_File_Name_lists_F2C
 
 #ifdef MATRIXFILE
-    subroutine mqc_Matfile_Guide_F2C(FileName_F, DataType_F, Char_Len_F, rec_len_F, bufsize_F )
+    subroutine mqc_simplify_formula_F2C(Formula_F)
+      use iso_c_binding
+      use iso_fortran_env
+      implicit none
+
+      interface
+         subroutine mqc_simplify_formula(Formula_C) bind(C, name="mqc_Simplify_Formula")
+           import
+           character(kind=c_char) :: Formula_C
+         end subroutine mqc_simplify_formula
+      end interface
+
+      character(len=*), intent(inout)::Formula_F
+      character(kind=c_char, len=len_trim(Formula_F)+1) :: Formula_CALL
+      integer i
+
+      Formula_CALL = trim(Formula_F) // c_null_char
+
+      call mqc_simplify_formula(Formula_CALL)
+           
+      Formula_F = " "
+      DataType_string: do i=1, 2048
+         if ( Formula_CALL(i:i) .eq. c_null_char ) then
+            exit DataType_string
+         else
+            Formula_F(i:i) = Formula_CALL(i:i)
+         end if
+      end do DataType_string
+
+    end subroutine mqc_simplify_formula_F2C
+
+    subroutine mqc_Matfile_Guide_F2C(FileName_F, DataType_F, Char_Len_F, &
+         rec_len_F, bufsize_F )
 
       use iso_c_binding
       use iso_fortran_env
       implicit none
 
       interface
-         subroutine mqc_Matfile_Guide(FileName_C, DataType_C, Char_Len_C, rec_len_C, bufsize_C ) bind(C, name="mqc_Matfile_Guide")
+         subroutine mqc_Matfile_Guide(FileName_C, DataType_C, Char_Len_C, &
+              rec_len_C, bufsize_C ) bind(C, name="mqc_Matfile_Guide")
            import
            character(kind=c_char) :: FileName_C
            character(kind=c_char) :: DataType_C
@@ -335,9 +368,20 @@
       Call_Test=0 
       call MQC_Mat_Precision(Ignorable, IntPrecision, Call_Test)
 
+      write(6,1234) lr
+1234  format( i10 )
+        flush(6)
+      write(6,1234) integerTmp8(1) 
+        flush(6)
+      return
+
       do i=1, LR
+      write(6,1234) integerTmp8(i) 
+        flush(6)
          arrayTmp(i) = integerTmp8(i) 
       end do
+
+      return
 
       if ( IntPrecision .eq. 4 ) then
 !

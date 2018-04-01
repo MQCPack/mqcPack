@@ -5,47 +5,14 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
-
+ 
  Full Configuration Interaction Energy Calculator
-
+ 
  L. M. Thompson 2017
-
+ 
     Label Gaussian matrix elements IVers= 2 NLab=11 Version=ES64L-G16RevA.03
     Title test
     NAtoms=     2 NBasis=     2 NBsUse=     2 ICharg=     0 Multip=     1 NElec=     2 Len12L=8 Len4L=8 IOpCl=     1 ICGU=112
- Label                                SHELL TO ATOM MAP NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                      SHELL TYPES NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                   NUMBER OF PRIMITIVES PER SHELL NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                              PRIMITIVE EXPONENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                         CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                  P(S=P) CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                        COORDINATES OF EACH SHELL NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                                 GAUSSIAN SCALARS NI= 1 NR= 1 NRI=1 NTot=      10 LenBuf=    2000 N=  1000     1     1     1     1 ASym=F LR= 1000
- Label                                      INTEGER ISO NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                     INTEGER SPIN NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                  REAL ZEFFECTIVE NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                     REAL GFACTOR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                    REAL ZNUCLEAR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                 NUCLEAR GRADIENT NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     3     2     1     1     1 ASym=F LR=    6
- Label                           ELECTRIC DIPOLE MOMENT NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=     3     1     1     1     1 ASym=F LR=    3
- Label                                          OVERLAP NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                           CORE HAMILTONIAN ALPHA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                            CORE HAMILTONIAN BETA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                   KINETIC ENERGY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                 ORTHOGONAL BASIS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                                 DIPOLE INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=F LR=    9
- Label                                DIP VEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- Label                                R X DEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- Label                           ALPHA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                            BETA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                            ALPHA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                             BETA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                             ALPHA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                              BETA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                         ALPHA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                          BETA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                ALPHA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                 BETA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
  
  nBasis =              2
  
@@ -120,7 +87,6 @@ Complex   =          F
        1     -0.079309
        2     -0.053049     -0.079309
  
- Label                             REGULAR 2E INTEGRALS NI= 4 NR= 1 NRI=1 NTot=       6 LenBuf=     800 N=    -2    -2    -2     2     1 ASym=F LR=    6
  AO 2ERIs
  Regular 2ERIs
  (  1,  1|  1,  1) =      0.77460594
@@ -150,23 +116,23 @@ Beta Strings
  MO Basis Core Hamiltonian
  Alpha Array
                   1             2
-       1     -0.572516     -0.000000
-       2     -0.000000     -0.572319
+       1     -0.572516      0.000000
+       2      0.000000     -0.572319
  Beta Array
                   1             2
-       1     -0.572516     -0.000000
-       2     -0.000000     -0.572319
+       1     -0.572516      0.000000
+       2      0.000000     -0.572319
  Doing O(N**5) integral transformation algorithm
  Transformed MO 2ERIs (aa|aa)
  (  1,  1|  1,  1) =      0.44017177
- (  1,  1|  1,  2) =     -0.00000000
- (  1,  1|  2,  1) =     -0.00000000
+ (  1,  1|  1,  2) =      0.00000000
+ (  1,  1|  2,  1) =      0.00000000
  (  1,  1|  2,  2) =      0.44022069
- (  1,  2|  1,  1) =     -0.00000000
+ (  1,  2|  1,  1) =      0.00000000
  (  1,  2|  1,  2) =      0.33438525
  (  1,  2|  2,  1) =      0.33438525
  (  1,  2|  2,  2) =      0.00000000
- (  2,  1|  1,  1) =     -0.00000000
+ (  2,  1|  1,  1) =      0.00000000
  (  2,  1|  1,  2) =      0.33438525
  (  2,  1|  2,  1) =      0.33438525
  (  2,  1|  2,  2) =      0.00000000
@@ -176,14 +142,14 @@ Beta Strings
  (  2,  2|  2,  2) =      0.44026964
  Transformed MO 2ERIs (aa|bb)
  (  1,  1|  1,  1) =      0.44017177
- (  1,  1|  1,  2) =     -0.00000000
- (  1,  1|  2,  1) =     -0.00000000
+ (  1,  1|  1,  2) =      0.00000000
+ (  1,  1|  2,  1) =      0.00000000
  (  1,  1|  2,  2) =      0.44022069
- (  1,  2|  1,  1) =     -0.00000000
+ (  1,  2|  1,  1) =      0.00000000
  (  1,  2|  1,  2) =      0.33438525
  (  1,  2|  2,  1) =      0.33438525
  (  1,  2|  2,  2) =      0.00000000
- (  2,  1|  1,  1) =     -0.00000000
+ (  2,  1|  1,  1) =      0.00000000
  (  2,  1|  1,  2) =      0.33438525
  (  2,  1|  2,  1) =      0.33438525
  (  2,  1|  2,  2) =      0.00000000
@@ -193,14 +159,14 @@ Beta Strings
  (  2,  2|  2,  2) =      0.44026964
  Transformed MO 2ERIs (bb|aa)
  (  1,  1|  1,  1) =      0.44017177
- (  1,  1|  1,  2) =     -0.00000000
- (  1,  1|  2,  1) =     -0.00000000
+ (  1,  1|  1,  2) =      0.00000000
+ (  1,  1|  2,  1) =      0.00000000
  (  1,  1|  2,  2) =      0.44022069
- (  1,  2|  1,  1) =     -0.00000000
+ (  1,  2|  1,  1) =      0.00000000
  (  1,  2|  1,  2) =      0.33438525
  (  1,  2|  2,  1) =      0.33438525
  (  1,  2|  2,  2) =      0.00000000
- (  2,  1|  1,  1) =     -0.00000000
+ (  2,  1|  1,  1) =      0.00000000
  (  2,  1|  1,  2) =      0.33438525
  (  2,  1|  2,  1) =      0.33438525
  (  2,  1|  2,  2) =      0.00000000
@@ -210,14 +176,14 @@ Beta Strings
  (  2,  2|  2,  2) =      0.44026964
  Transformed MO 2ERIs (bb|bb)
  (  1,  1|  1,  1) =      0.44017177
- (  1,  1|  1,  2) =     -0.00000000
- (  1,  1|  2,  1) =     -0.00000000
+ (  1,  1|  1,  2) =      0.00000000
+ (  1,  1|  2,  1) =      0.00000000
  (  1,  1|  2,  2) =      0.44022069
- (  1,  2|  1,  1) =     -0.00000000
+ (  1,  2|  1,  1) =      0.00000000
  (  1,  2|  1,  2) =      0.33438525
  (  1,  2|  2,  1) =      0.33438525
  (  1,  2|  2,  2) =      0.00000000
- (  2,  1|  1,  1) =     -0.00000000
+ (  2,  1|  1,  1) =      0.00000000
  (  2,  1|  1,  2) =      0.33438525
  (  2,  1|  2,  1) =      0.33438525
  (  2,  1|  2,  2) =      0.00000000
@@ -228,15 +194,15 @@ Beta Strings
  CI Hamiltonian
                   1             2             3             4
        1     -0.704367      0.000000      0.000000      0.334385
-       2      0.000000     -0.704614      0.334385     -0.000000
-       3      0.000000      0.334385     -0.704614     -0.000000
-       4      0.334385     -0.000000     -0.000000     -0.704860
+       2      0.000000     -0.704614      0.334385      0.000000
+       3      0.000000      0.334385     -0.704614      0.000000
+       4      0.334385      0.000000      0.000000     -0.704860
  CI Eigenvectors
                   1             2             3             4
        1     -0.706846      0.000000      0.000000      0.707367
-       2     -0.000000     -0.707107     -0.707107      0.000000
+       2      0.000000     -0.707107     -0.707107      0.000000
        3      0.000000      0.707107     -0.707107      0.000000
-       4      0.707367     -0.000000      0.000000      0.706846
+       4      0.707367      0.000000      0.000000      0.706846
  CI Eigenvalues
        1       -1.038999
        2       -1.038999
