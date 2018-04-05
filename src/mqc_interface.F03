@@ -52,7 +52,7 @@
         character (len=2048) :: out_message
         integer( kind=int32 ) :: i
         integer( kind=int64 ) :: IOUT_F
-
+ 1010   Format( "IOut should be 0 or 6.  It is %d" )
         out_message = " "
         message_string: do i=1, 2048
            if ( in_message (i) == c_null_char ) then
@@ -171,14 +171,16 @@
 
     end subroutine mqc_simplify_formula_F2C
 
-    subroutine mqc_Matfile_Guide_F2C(FileName_F, DataType_F, Char_Len_F, rec_len_F, bufsize_F )
+    subroutine mqc_Matfile_Guide_F2C(FileName_F, DataType_F, Char_Len_F, &
+         rec_len_F, bufsize_F )
 
       use iso_c_binding
       use iso_fortran_env
       implicit none
 
       interface
-         subroutine mqc_Matfile_Guide(FileName_C, DataType_C, Char_Len_C, rec_len_C, bufsize_C ) bind(C, name="mqc_Matfile_Guide")
+         subroutine mqc_Matfile_Guide(FileName_C, DataType_C, Char_Len_C, &
+              rec_len_C, bufsize_C ) bind(C, name="mqc_Matfile_Guide")
            import
            character(kind=c_char) :: FileName_C
            character(kind=c_char) :: DataType_C
