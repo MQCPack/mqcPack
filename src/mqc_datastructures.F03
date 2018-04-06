@@ -296,6 +296,50 @@
       End Subroutine LinkedList_GetNext
 !
 !
+!PROCEDURE LinkedList_GetPrevious
+      Subroutine LinkedList_GetPrevious(Current,First,First_Looks_Back)
+!
+!     This routine moves the argument Current backwards to the previous member of
+!     the link list to which Current belongs. If optional logical dummy
+!     argument First_Looks_Back, the logical argument First is returned as
+!     TRUE if Current is the first member of the list on return; otherwise,
+!     First is sent as TRUE if the requested previous member of the linked list
+!     does not exist because the beginning of the list has been reached.
+!     Regardless of First_Looks_Back, if the first member of the list is
+!     sent as input Current then First is always set to TRUE and this
+!     routine returns to the calling procedure without updating Current.
+!
+!     If First_Looks_Back is not sent, it is taken to be TRUE by default.
+!
+!
+!     L. M. Thompson, 2018
+!
+!
+      Implicit None
+      Type(MQC_LinkedList),Pointer,Intent(InOut)::Current
+      Logical,Intent(Out)::First
+      Logical,Optional,Intent(In)::First_Looks_Back
+      Logical::My_First_Looks_Back
+!
+      If(Present(First_Looks_Back)) then
+        My_First_Looks_Back = First_Looks_Back
+      else
+        My_First_Looks_Back = .True.
+      endIf
+      If(.not.Associated(Current%Previous)) then
+        First = .True.
+      else
+        Current => Current%Previous
+        If(My_First_Looks_Back) then
+          First = .not.Associated(Current%Previous)
+        else
+          First = .False.
+        endIf
+      endIf
+      Return
+      End Subroutine LinkedList_GetPrevious
+!
+!
 !PROCEDURE LinkedList_IsNextAssociated
       Function LinkedList_IsNextAssociated(Current)
 !
@@ -418,6 +462,34 @@
 !      End Subroutine LinkedList_PrintValue
 
 !
+!
+!PROCEDURE LinkedList_Delete_Branch
+      Subroutine LinkedList_Delete_Branch(LL_Cur)
+!
+!     This routine carries out a deletion of a links after current node.
+!
+      Implicit None
+      Type(MQC_LinkedList),Pointer::LL_Cur
+      Type(MQC_LinkedList),Pointer::Cur
+!
+!     Delete a linked list starting after LL_Cur until we reach the end.
+!
+!
+      If(Associated(LL_Cur)) then
+        Cur => LL_Cur
+        Do While(Associated(Cur%Next))
+          Cur => Cur%Next
+        End Do
+        Do While(Cur.ne.LL_Cur)
+          Deallocate(Cur%Val)
+          Nullify(Cur%Next)
+          Cur => Cur%Previous
+        EndDo
+      EndIf
+!
+      Return
+      End Subroutine LinkedList_Delete_Branch
+
 !
 !PROCEDURE LinkedList_Delete
       Subroutine LinkedList_Delete(LL_Head)
