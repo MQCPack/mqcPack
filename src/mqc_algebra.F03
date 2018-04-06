@@ -92,6 +92,7 @@
         Procedure, Public::initialize => MQC_Matrix_Initialize
         Procedure, Public::init => MQC_Matrix_Initialize
         Procedure, Public::identity => MQC_Matrix_Identity
+        Procedure, Public::set => MQC_Matrix_Set
         Procedure, Public::norm => MQC_Matrix_Norm
         Procedure, Public::transpose => MQC_Matrix_Transpose
         Procedure, Public::diag => MQC_Matrix_Diagonalize
@@ -101,6 +102,7 @@
         Procedure, Public::det => mqc_matrix_determinant
         Procedure, Public::trace => mqc_matrix_trace
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
+        Procedure, Public::sqrt => MQC_Matrix_Sqrt
         Procedure, Public::at => MQC_Matrix_Scalar_At
         Procedure, Public::vat => MQC_Matrix_Vector_At
         Procedure, Public::mat => MQC_Matrix_Matrix_At
@@ -3235,7 +3237,7 @@
       end subroutine mqc_vector_push
 !
 !
-!     PROCEDURE MQC_Vector_shift
+!     PROCEDURE MQC_Vector_Unshift
       Subroutine MQC_Vector_Unshift(Vector,Scalar) 
 !
 !     This function adds a value to the beginning of a vector.
@@ -8927,6 +8929,59 @@
       End Subroutine MQC_Matrix_Identity
 !
 !
+!     PROCEDURE MQC_Matrix_Set
+      subroutine MQC_Matrix_Set(matrix,scalar,storage)
+!
+!     This subroutine returns an identity matrix.
+!
+!     L. M. Thompson, 2017.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Matrix),intent(inOut)::matrix
+      class(*),optional::scalar
+      character(len=*),intent(in),optional::storage
+      integer(kind=int64)::rows,columns
+      character(Len=64)::myStorage
+      real(kind=real64)::zero=0.0d0
+!
+      if(Present(Storage)) then
+        myStorage = TRIM(Storage)
+      else
+        myStorage = 'StorFull'
+      endIf
+
+      rows = mqc_matrix_rows(matrix) 
+      columns = mqc_matrix_columns(matrix) 
+      if(present(scalar)) then
+        select type (scalar)
+        type is (integer)
+            call mqc_allocate_matrix(rows,columns,matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = scalar
+        type is (real)
+            Call mqc_allocate_matrix(rows,columns,matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = scalar
+        type is (complex(kind=real64))
+            call mqc_allocate_matrix(rows,columns,matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = scalar
+        class default
+          call mqc_error_i('scalar type not defined in MQC_Matrix_Set', 6)
+        end select
+      else
+        if(Matrix%Data_Type.eq.'Integer') then 
+          matrix%MatI = Zero
+        elseIf(Matrix%Data_Type.eq.'Real') then 
+          matrix%MatR = Zero
+        elseIf(Matrix%Data_Type.eq.'Complex') then 
+          matrix%MatC = Zero
+        endIf
+      endIf
+
+      End Subroutine MQC_Matrix_Set
+!
+!
 !     PROCEDURE MQC_Matrix_Norm
       Function MQC_Matrix_Norm(matrix,methodIn) result(norm)
 !
@@ -9473,6 +9528,33 @@
 !
       Return
       End Subroutine MQC_Matrix_RMS_Max
+!
+!
+!     PROCEDURE MQC_Matrix_Sqrt
+      subroutine mqc_matrix_sqrt(A,eVals,eVecs)
+!
+!     This subroutine returns the square root of INPUT matrix A.
+!
+      Implicit None
+      class(mqc_matrix),intent(inOut)::A
+      type(mqc_matrix),optional,intent(inOut)::eVecs
+      type(mqc_vector),optional,intent(inOut)::eVals
+      type(mqc_matrix)::tmpMat
+      type(mqc_vector)::tmpVec
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call A%diag(tmpVec,tmpMat)
+      if(present(eVals)) eVals = tmpVec 
+      if(present(eVecs)) eVecs = tmpMat 
+      call A%set()
+      do i=1,MQC_Length_Vector(tmpVec)
+        call A%put(sqrt(tmpVec%at(i)),i,i)
+      endDo
+      A = matmul(matmul(tmpMat,A),transpose(tmpMat))
+!
+      end subroutine mqc_matrix_sqrt
 !
 !----------------------------------------------------------------
 !                                                               |
