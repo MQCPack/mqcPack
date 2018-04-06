@@ -3237,7 +3237,7 @@
       end subroutine mqc_vector_push
 !
 !
-!     PROCEDURE MQC_Vector_shift
+!     PROCEDURE MQC_Vector_Unshift
       Subroutine MQC_Vector_Unshift(Vector,Scalar) 
 !
 !     This function adds a value to the beginning of a vector.
