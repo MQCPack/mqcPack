@@ -945,6 +945,18 @@
         allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
         fileinfo%basisFunction2Atom = 0
       endIf
+     
+      if(fileinfo%icgu.eq.111) then
+        iopcl = 0 
+      elseIf(fileinfo%icgu.eq.112) then
+        iopcl = 1
+      elseIf(fileinfo%icgu.eq.121) then
+        iopcl = 2
+      elseIf(fileinfo%icgu.eq.122) then
+        iopcl = 3
+      elseIf(fileinfo%icgu.eq.221) then
+        iopcl = 6
+      endIf
 !
 !     Set the readWriteMode flag in fileinfo to 'W' and then write the
 !     header scalar flags.
@@ -1336,6 +1348,7 @@
       logical::DEBUG=.true.,ok
       Parameter(LenBuf=4000)
 !
+      integer::j
 !
 !     Format statements.
 !
@@ -1510,6 +1523,10 @@
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveComplex(matrixInUse)) then 
+!       There is a bug in Wr_LCBuf in qcmatrix.F of gauopen if you want to write complex.
+!       NR should only be negative in Wr_Labl and positive everywhere else.
+!       Please recomplile MQC after making these changes.
+          Ione = -1
           if(mqc_matrix_test_diagonal(matrixInUse)) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
