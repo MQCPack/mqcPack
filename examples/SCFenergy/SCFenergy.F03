@@ -35,6 +35,9 @@
       integer(kind=int32) J, K, L, IJ, N1, IN, IK, IL
       integer(kind=int32) JN, KN, JK, LN, JL, KL
       integer(kind=int32) IJKL, IKJL, ILJK
+
+integer(kind=int32) LMax
+
       class(mqc_link_list), allocatable:: mqc_input_file_list
       class(mqc_READONLY_list), allocatable:: my_READONLY_list
       class(MQC_ALL_Wavefunction),pointer::current_wavefunction
@@ -350,86 +353,95 @@
                call MQC_Alloc_Real_Ptr( Den2_abRS, NTRI, 'Den2_abRS', IOut)
                call MQC_Alloc_Real_Ptr( Den2_bbRS, NTRI, 'Den2_bbRS', IOut)
 
-            call MQC_Alloc_Real_Ptr( Density_aaRS, NTRI, 'Density_aaRS', IOut)
-            call MQC_Alloc_Real_Ptr( Density_abRS, NTRI, 'Density_abRS', IOut)
-            call MQC_Alloc_Real_Ptr( Density_aaIA, NTRI, 'Density_aaIA', IOut)
-            call MQC_Alloc_Real_Ptr( Density_abRA, NTRI, 'Density_abRA', IOut)
-            call MQC_Alloc_Real_Ptr( Density_bbRS, NTRI, 'Density_bbRS', IOut)
-            call MQC_Alloc_Real_Ptr( Density_abIS, NTRI, 'Density_abIS', IOut)
-            call MQC_Alloc_Real_Ptr( Density_bbIA, NTRI, 'Density_bbIA', IOut)
-            call MQC_Alloc_Real_Ptr( Density_abIA, NTRI, 'Density_abIA', IOut)
+               call MQC_Alloc_Real_Ptr( Density_aaRS, NTRI, 'Density_aaRS', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_abRS, NTRI, 'Density_abRS', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_aaIA, NTRI, 'Density_aaIA', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_abRA, NTRI, 'Density_abRA', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_bbRS, NTRI, 'Density_bbRS', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_abIS, NTRI, 'Density_abIS', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_bbIA, NTRI, 'Density_bbIA', &
+                    IOut)
+               call MQC_Alloc_Real_Ptr( Density_abIA, NTRI, 'Density_abIA', &
+                    IOut)
 !     NDim is the dimension after
 !     NTT of the separated arrays,
-            NDIM = 1
-            NMatI = 1
-            NTT = (NBasis*(NBasis+1))/2
-            ntt2 = (NBasis*(NBasis*2+1))
-            NBasis_32 = NBasis
+               NDIM = 1
+               NMatI = 1
+               NTT = (NBasis*(NBasis+1))/2
+               ntt2 = (NBasis*(NBasis*2+1))
+               NBasis_32 = NBasis
 !
 ! Extract the 8 Density Triangular arrays from the Complex Matrix
 !
-            Call MQC_GHF_Complex_to_LT(DoFock,NDim,NMatI,NBasis_32, &
-                 NTT,NTT2,DenA%ArrC, &
-                 Density_aaRS,Density_abRS,Density_aaIA,Density_abRA, &
-                 Density_bbRS,Density_abIS,Density_bbIA,Density_abIA )
+               Call MQC_GHF_Complex_to_LT(DoFock,NDim,NMatI,NBasis_32, &
+                    NTT,NTT2,DenA%ArrC, &
+                    Density_aaRS,Density_abRS,Density_aaIA,Density_abRA, &
+                    Density_bbRS,Density_abIS,Density_bbIA,Density_abIA )
 !
 ! Create the Density matricies with doubled off diagonal values
 !
-            Call Double_off_Diag( Density_aaRS, Den2_aaRS, NBasis_32 )
-            Call Double_off_Diag( Density_abRS, Den2_abRS, NBasis_32 )
-            Call Double_off_Diag( Density_bbRS, Den2_bbRS, NBasis_32 )
-            call MQC_Alloc_Real_Ptr( AlphaDensity, NTRI, 'Alpha Density', IOut)
+               Call Double_off_Diag( Density_aaRS, Den2_aaRS, NBasis_32 )
+               Call Double_off_Diag( Density_abRS, Den2_abRS, NBasis_32 )
+               Call Double_off_Diag( Density_bbRS, Den2_bbRS, NBasis_32 )
+               call MQC_Alloc_Real_Ptr( AlphaDensity, NTRI, 'Alpha Density', &
+                    IOut)
 ! Sum the alpha and beta densities for use with e-e replusion
-            AlphaDensity = Den2_aaRS + Den2_bbRS
+               AlphaDensity = Den2_aaRS + Den2_bbRS
 !
 ! Allocate the 8 Hamiltonian arrays
 !
-            call MQC_Alloc_Real_Ptr( Ham_aaRS, NTRI, 'Ham_aaRS', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_abRS, NTRI, 'Ham_abRS', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_aaIA, NTRI, 'Ham_aaIA', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_abRA, NTRI, 'Ham_abRA', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_bbRS, NTRI, 'Ham_bbRS', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_abIS, NTRI, 'Ham_abIS', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_bbIA, NTRI, 'Ham_bbIA', IOut)
-            call MQC_Alloc_Real_Ptr( Ham_abIA, NTRI, 'Ham_abIA', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_aaRS, NTRI, 'Ham_aaRS', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_abRS, NTRI, 'Ham_abRS', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_aaIA, NTRI, 'Ham_aaIA', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_abRA, NTRI, 'Ham_abRA', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_bbRS, NTRI, 'Ham_bbRS', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_abIS, NTRI, 'Ham_abIS', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_bbIA, NTRI, 'Ham_bbIA', IOut)
+               call MQC_Alloc_Real_Ptr( Ham_abIA, NTRI, 'Ham_abIA', IOut)
 !
 ! Extract the 8 Hamiltonian Triangular arrays from the Complex Matrix
 !
-            Call MQC_GHF_Complex_to_LT(DoFock,NDim,NMatI,NBasis_32,&
-                 NTT,NTT2,HamA%ArrC, &
-                 Ham_aaRS,Ham_abRS,Ham_aaIA,Ham_abRA, &
-                 Ham_bbRS,Ham_abIS,Ham_bbIA,Ham_abIA )
+               Call MQC_GHF_Complex_to_LT(DoFock,NDim,NMatI,NBasis_32,&
+                    NTT,NTT2,HamA%ArrC, &
+                    Ham_aaRS,Ham_abRS,Ham_aaIA,Ham_abRA, &
+                    Ham_bbRS,Ham_abIS,Ham_bbIA,Ham_abIA )
 !
 ! Calculate the Electron-Nucleus Energy, this just requires 2 
 ! Hamiltonian Matricies
 !
-            EN = dot_product( Ham_aaRS, Den2_aaRS ) + &
-                 dot_product( Ham_bbRS, Den2_bbRS )
+               EN = dot_product( Ham_aaRS, Den2_aaRS ) + &
+                    dot_product( Ham_bbRS, Den2_bbRS )
 !
 ! Deallocate the 8 Hamiltonian arrays
 !
-            call MQC_DeAlloc_Real_Ptr( Ham_aaRS, 'Ham_aaRS', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_abRS, 'Ham_abRS', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_aaIA, 'Ham_aaIA', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_abRA, 'Ham_abRA', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_bbRS, 'Ham_bbRS', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_abIS, 'Ham_abIS', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_bbIA, 'Ham_bbIA', IOut)
-            call MQC_DeAlloc_Real_Ptr( Ham_abIA, 'Ham_abIA', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_aaRS, 'Ham_aaRS', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_abRS, 'Ham_abRS', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_aaIA, 'Ham_aaIA', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_abRA, 'Ham_abRA', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_bbRS, 'Ham_bbRS', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_abIS, 'Ham_abIS', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_bbIA, 'Ham_bbIA', IOut)
+               call MQC_DeAlloc_Real_Ptr( Ham_abIA, 'Ham_abIA', IOut)
 !
 ! Allocate arrays for Coulomb and Exchange
 !
-            call MQC_Alloc_Real_Ptr( Coulomb, NTRI, 'Coulomb', IOut)
-            call MQC_Alloc_Real_Ptr( Ex_aaRS, NTRI, 'Ex_aaRS', IOut)
-            call MQC_Alloc_Real_Ptr( Ex_bbRS, NTRI, 'Ex_bbRS', IOut)
-            call MQC_Alloc_Real_Ptr( Ex_abRS, NTRI, 'Ex_abRS', IOut)
-
-            Coulomb = 0.0D0
-            Ex_aaRS = 0.0D0
-            Ex_bbRS = 0.0D0
-            Ex_abRS = 0.0D0
+               call MQC_Alloc_Real_Ptr( Coulomb, NTRI, 'Coulomb', IOut)
+               call MQC_Alloc_Real_Ptr( Ex_aaRS, NTRI, 'Ex_aaRS', IOut)
+               call MQC_Alloc_Real_Ptr( Ex_bbRS, NTRI, 'Ex_bbRS', IOut)
+               call MQC_Alloc_Real_Ptr( Ex_abRS, NTRI, 'Ex_abRS', IOut)
+! Initialize the Triangular Matricies
+               Coulomb = 0.0D0
+               Ex_aaRS = 0.0D0
+               Ex_bbRS = 0.0D0
+               Ex_abRS = 0.0D0
 !
-! These loops need more work to simplify
+! The exchange loop needs work to simplify.  This works.
 !
             IJ = 0
             IN = 0
@@ -476,29 +488,41 @@
                IN = IN + I
             EndDo
             IJ = 0
+            IJKL = 0
             Do I = 1,NBasis
-               IN = (I*(I-1))/2
                Do J = 1,I
                   IJ = IJ + 1
                   KL = 0
-                  Do K = 1,NBasis
+                  Do K = 1,I-1
                      Do L = 1,K
                         KL = KL + 1
-                        if ( IJ .gt. KL ) Then
-                           IJKL = (IJ*(IJ-1))/2+KL
-                        Else
-                           IJKL = (KL*(KL-1))/2+IJ
-                        Endif
+                        IJKL = IJKL + 1
                         Coulomb(IJ) = Coulomb(IJ) + &
                              Integrals%ArrR(IJKL)*AlphaDensity(KL)
+                        Coulomb(KL) = Coulomb(KL) + &
+                             Integrals%ArrR(IJKL)*AlphaDensity(IJ)
                      EndDo
                   EndDo
+!                 K = I is a special case, because it includes IJ = KL
+                  Do L = 1,J - 1
+                     KL = KL + 1
+                     IJKL = IJKL + 1
+                     Coulomb(IJ) = Coulomb(IJ) + &
+                          Integrals%ArrR(IJKL)*AlphaDensity(KL)
+                     Coulomb(KL) = Coulomb(KL) + &
+                          Integrals%ArrR(IJKL)*AlphaDensity(IJ)
+                  EndDo
+!                 Integral symmemtry leads to 1 integral for IJ = KL
+                  IJKL = IJKL + 1
+                  Coulomb(IJ) = Coulomb(IJ) + &
+                       Integrals%ArrR(IJKL)*AlphaDensity(IJ)
                EndDo
             EndDo
             EE = dot_product(Coulomb,AlphaDensity ) &
                  - dot_product(Ex_aaRS,Den2_aaRS ) &
                  - dot_product(Ex_bbRS,Den2_bbRS ) &
                  - 2.0*dot_product(Ex_abRS,Den2_abRS )
+
 
 #ifdef DEBUG
 !

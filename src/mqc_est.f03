@@ -59,6 +59,7 @@
         Procedure, Public::getLabel => mqc_integral_array_name
         Procedure, Public::addLabel => mqc_integral_add_name
         Procedure, Public::getBlock => mqc_integral_output_block
+        Procedure, Public::diag => mqc_scf_integral_diagonalize
       End Type
 !
 !     MQC_SCF_Eigenvalues
@@ -155,7 +156,10 @@
       Interface Dagger
         Module Procedure MQC_Integral_Conjugate_Transpose
       End Interface
-
+!
+      Interface Contract
+        Module Procedure mqc_scf_integral_contraction
+      End Interface
 !
       Interface MQC_Matrix_UndoSpinBlockGHF
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
@@ -1613,8 +1617,219 @@
 !
       return
       end subroutine mqc_matrix_undoSpinBlockGHF_integral    
-
-
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Contraction
+      function mqc_scf_integral_contraction(integral1,integral2) result(output)
+!
+!     This function returns the contration of two scf integrals, given as input
+!     dummy arguments integral1 and integral2.
+!
+!     L. M. Thompson, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integral1,integral2
+      type(mqc_scalar)::output
+!
+      output = 0.0
+      if(integral1%blockSize('alpha').ne.integral2%blockSize('alpha')) &
+        call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
+        'integral 1 alpha block size:',integral1%blockSize('alpha'), &
+        'integral 2 alpha block size:',integral2%blockSize('alpha'))
+      if(integral1%blockSize('beta').ne.integral2%blockSize('beta')) &
+        call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
+        'integral 1 beta block size:',integral1%blockSize('beta'), &
+        'integral 2 beta block size:',integral2%blockSize('beta'))
+      output = output + contraction(integral1%alpha,integral2%alpha)
+      if(integral1%type().eq.'space') then
+        if(integral2%type().eq.'space') then
+          output = output%rval()*2.0
+        elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
+              output = output + contraction(integral1%alpha,integral2%beta)
+        endIf
+      elseIf(integral1%type().eq.'spin'.or.integral1%type().eq.'general') then
+        if(integral2%type().eq.'space') then
+          output = output + contraction(integral1%beta,integral2%alpha)
+        elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
+          output = output + contraction(integral1%beta,integral2%beta)
+        endIf
+      endIf
+      if(integral1%type().eq.'general'.and.integral2%type().eq.'general') then
+        output = output + contraction(integral1%alphaBeta,integral2%alphaBeta)
+        output = output + contraction(integral1%betaAlpha,integral2%betaAlpha)
+      endIf
+!
+      end function mqc_scf_integral_contraction
+!
+!
+!!     PROCEDURE MQC_ERI_Integral_Contraction
+!      function mqc_eri_integral_contraction(eris,integral,label) result(output)
+!!
+!!     This function returns the contraction of 2ERIs with scf integrals, given as input
+!!     dummy arguments eris and integral.
+!!
+!!     The optional argument label takes the strings 'coulomb' to return the coulomb only
+!!     terms, 'exchange' to return the exchange only terms, and 'doublebar' to return the 
+!!     complete contraction.
+!!     
+!!
+!!     L. M. Thompson, 2018.
+!!
+!!
+!!     Variable Declarations.
+!!
+!      implicit none
+!      type(mqc_twoERIs),intent(in)::eris
+!      type(mqc_scf_integral),intent(in)::integral
+!      type(mqc_scf_integral)::output
+!      type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
+!      integer(kind=int64)::i,j,k,l
+!      character(len=64)::label
+!!
+!      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
+!    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
+!      if(eris%storageType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
+!    &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
+!!
+!      call alpha%init(integral%blockSize('alpha'),integral%blockSize('alpha'))
+!      call beta%init(integral%blockSize('beta'),integral%blockSize('beta'))
+!      call alphaBeta%init(integral%blockSize('alpha'),integral%blockSize('beta'))
+!      call BetaAlpha%init(integral%blockSize('beta'),integral%blockSize('alpha'))
+!      do i = 1,integral%blockSize('alpha')
+!        do j = 1,integral%blockSize('alpha')
+!          do k = 1,integral%blockSize('alpha')
+!            do l = 1,integral%blockSize('alpha')
+!              call alpha%put(alpha%at(i,j) + eris%alpha%at(i,j,k,l)*integral%alpha%at(k,l),i,j)
+!              call alpha%put(alpha%at(i,j) + eris%alpha%at(i,k,j,l)*integral%alpha%at(k,l),i,j)
+!              call beta%put(beta%at(i,j) + eris%alpha%at(i,j,k,l)*integral%beta%at(k,l),i,j)
+!              call beta%put(beta%at(i,j) + eris%alpha%at(i,k,j,l)*integral%beta%at(k,l),i,j)
+!              call alphaBeta%put(alphaBeta%at(i,j) + eris%alpha%at(i,j,k,l)*integral%alphaBeta%at(k,l),i,j)
+!              call alphaBeta%put(alphaBeta%at(i,j) + eris%alpha%at(i,k,j,l)*integral%alphaBeta%at(k,l),i,j)
+!              call betaAlpha%put(betaAlpha%at(i,j) + eris%alpha%at(i,j,k,l)*integral%betaAlpha%at(k,l),i,j)
+!              call betaAlpha%put(beta%atAlpha(i,j) + eris%alpha%at(i,k,j,l)*integral%betaAlpha%at(k,l),i,j)
+!            endDo
+!          endDo
+!        endDo
+!      endDo
+!      if(integral%type().eq.'spin'.or.integral%type().eq.'general') then
+!        call beta%init(integral%blockSize('beta'),integral%blockSize('beta'))
+!        do i = 1,integral%blockSize('beta')
+!          do j = 1,integral%blockSize('beta')
+!            do k = 1,integral%blockSize('beta')
+!              do l = 1,integral%blockSize('beta')
+!                call beta%put(beta%at(i,j) + eris%alpha%at(i,j,k,l)*integral%beta%at(k,l),i,j)
+!                call beta%put(beta%at(i,j) + eris%alpha%at(i,k,j,l)*integral%beta%at(k,l),i,j)
+!              endDo
+!            endDo
+!          endDo
+!        endDo
+!      elseIf(integral%type().eq.'general') then
+!        call mqc_integral_allocate(output,'contraction','space',alpha)
+!      endIf
+!!      call mqc_integral_allocate(output,'contraction','spin',alpha,beta)
+!!      call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
+!!      output = integral
+!!      if(integral1%blockSize('alpha').ne.integral2%blockSize('alpha')) &
+!!        call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
+!!        'integral 1 alpha block size:',integral1%blockSize('alpha'), &
+!!        'integral 2 alpha block size:',integral2%blockSize('alpha'))
+!!      n = min(integral1%blockSize('alpha'),integral2%blockSize('alpha'))
+!!      if(integral1%blockSize('beta').ne.integral2%blockSize('beta')) &
+!!        call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
+!!        'integral 1 beta block size:',integral1%blockSize('beta'), &
+!!        'integral 2 beta block size:',integral2%blockSize('beta'))
+!!      m = min(integral1%blockSize('beta'),integral2%blockSize('beta'))
+!!      output = output + contraction(integral1%alpha,integral2%alpha)
+!!      if(integral1%type().eq.'space') then
+!!        if(integral2%type().eq.'space') then
+!!          output = output%rval()*2.0
+!!        elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
+!!              output = output + contraction(integral1%alpha,integral2%beta)
+!!        endIf
+!!      elseIf(integral1%type().eq.'spin'.or.integral1%type().eq.'general') then
+!!        if(integral2%type().eq.'space') then
+!!          output = output + contraction(integral1%beta,integral2%alpha)
+!!        elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
+!!          output = output + contraction(integral1%beta,integral2%beta)
+!!        endIf
+!!      endIf
+!!      if(integral1%type().eq.'general'.and.integral2%type().eq.'general') then
+!!        output = output + contraction(integral1%alphaBeta,integral2%alphaBeta)
+!!        output = output + contraction(integral1%betaAlpha,integral2%betaAlpha)
+!!      endIf
+!!
+!      end function mqc_eri_integral_contraction
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Diagonalize
+      subroutine mqc_scf_integral_diagonalize(integral,eVals,eVecs)
+!
+!     This function returns the diagonal of an scf integral and optionally returns
+!     either the eigenvaues as a scf_eigenvalue and eigenvectors as a scf_integral
+!
+!     L. M. Thompson, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scf_eigenvalues),optional,intent(inOut)::eVals
+      type(mqc_scf_integral),optional,intent(inOut)::eVecs
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4
+      type(mqc_vector)::tmpVec1,tmpVec2
+!
+      if(integral%type().eq.'space') then
+        tmpMat1 = integral%getblock('alpha')
+        if(present(eVals).and.present(eVecs)) then
+          call tmpMat1%diag(tmpVec1,tmpMat2)
+          call mqc_integral_allocate(eVecs,'eigenvectors','space',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','space',tmpVec1)
+        elseIf(present(eVecs)) then
+          call tmpMat1%diag(EVecs=tmpMat2)
+          call mqc_integral_allocate(eVecs,'eigenvectors','space',tmpMat2)
+        elseIf(present(eVals)) then
+          call tmpMat1%diag(tmpVec1)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','space',tmpVec1)
+        endIf
+      elseIf(integral%type().eq.'spin') then
+        tmpMat1 = integral%getblock('alpha')
+        tmpMat2 = integral%getblock('beta')
+        if(present(eVals).and.present(eVecs)) then
+          call tmpMat1%diag(tmpVec1,tmpMat3)
+          call tmpMat2%diag(tmpVec2,tmpMat4)
+          call mqc_integral_allocate(eVecs,'eigenvectors','spin',tmpMat3,tmpMat4)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2)
+        elseIf(present(eVecs)) then
+          call tmpMat1%diag(EVecs=tmpMat3)
+          call tmpMat2%diag(EVecs=tmpMat4)
+          call mqc_integral_allocate(eVecs,'eigenvectors','spin',tmpMat3,tmpMat4)
+        elseIf(present(eVals)) then
+          call tmpMat1%diag(tmpVec1)
+          call tmpMat2%diag(tmpVec2)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2)
+        endIf
+      elseIf(integral%type().eq.'general') then
+        tmpMat1 = integral%getblock('all')
+        if(present(eVals).and.present(eVecs)) then
+          call tmpMat1%diag(tmpVec1,tmpMat2)
+          call mqc_integral_allocate(eVecs,'eigenvectors','general',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','general',tmpVec1)
+        elseIf(present(eVecs)) then
+          call tmpMat1%diag(EVecs=tmpMat2)
+          call mqc_integral_allocate(eVecs,'eigenvectors','general',tmpMat2)
+        elseIf(present(eVals)) then
+          call tmpMat1%diag(tmpVec1)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','general',tmpVec1)
+        endIf
+      endIf
+!
+      end subroutine mqc_scf_integral_diagonalize
+!
+!
 !=====================================================================
 !
 !     POST-SCF ROUTINES

@@ -819,7 +819,7 @@
 !
 !     Variable Declarations.
       implicit none
-      class(MQC_Variable)::valueMQC
+      type(MQC_Variable)::valueMQC
       class(MQC_Variable)::mqcVariable
       integer(kind=int64)::arrayElement(:)
       integer(kind=int64)::k
@@ -1776,7 +1776,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
-      class(MQC_Variable)::mqcVariableOut
+      type(MQC_Variable)::mqcVariableOut
 !
 !
 !     Do the work...
