@@ -1224,8 +1224,9 @@
             (matrixA%mat([1,nBasisAlpha],[nBasisAlpha+1,nBasisTotal]).dot.integralB%alphaBeta)
           tmpMatrixBeta = (matrixA%mat([nBasisAlpha+1,nBasisTotal],[nBasisAlpha+1,nBasisTotal]).dot.integralB%beta) + &
             (matrixA%mat([nBasisAlpha+1,nBasisTotal],[1,nBasisAlpha]).dot.integralB%betaAlpha)
-          tmpMatrixAlphaBeta = (matrixA%mat([1,nBasisAlpha],[nBasisAlpha+1,nBasisTotal]).dot.integralB%alpha) + &
-            (matrixA%mat([nBasisAlpha+1,nBasisTotal],[nBasisAlpha+1,nBasisTotal]).dot.integralB%alphaBeta)
+          tmpMatrixAlphaBeta = (matrixA%mat([nBasisAlpha+1,nBasisTotal],[1,nBasisAlpha]).dot.&
+            integralB%alpha) + (matrixA%mat([nBasisAlpha+1,nBasisTotal],[nBasisAlpha+1,nBasisTotal]).dot.&
+            integralB%alphaBeta)
           tmpMatrixBetaAlpha = (matrixA%mat([1,nBasisAlpha],[1,nBasisAlpha]).dot.integralB%betaAlpha) + &
             (matrixA%mat([1,nBasisAlpha],[nBasisAlpha+1,nBasisTotal]).dot.integralB%beta) 
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
