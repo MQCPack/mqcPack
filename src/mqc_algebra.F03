@@ -5908,13 +5908,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).gt.Thresh) then
+                  If(abs((Matrix%MatR(I,J) - Matrix%MatR(J,I))).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh .or. &
-                    (Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).gt.Thresh) then
+                  If((abs(Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf
@@ -5943,13 +5943,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) + Matrix%MatR(J,I)).ne.0.0) then
+                  If(abs(Matrix%MatR(I,J) + Matrix%MatR(J,I)).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) + Real(Matrix%MatC(J,I))).ne.0.0 .or. &
-                    (Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).ne.0.0) then
+                  If((abs(Real(Matrix%MatC(I,J)) + Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf
@@ -5983,13 +5983,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).ne.0.0) then
+                  If(abs(Matrix%MatR(I,J) - Matrix%MatR(J,I)).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).ne.0.0 .or. &
-                    (Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).ne.0.0) then
+                  If((abs(Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf
