@@ -616,7 +616,7 @@
           Nullify(Cur%Next%Next)
           Nullify(Cur%Next%Previous)
         EndDo
-        Deallocate(Cur%Val)
+        If(Allocated(Cur%Val)) Deallocate(Cur%Val)
         Nullify(Cur%Next)
         Nullify(Cur%Previous)
         Nullify(Cur)
