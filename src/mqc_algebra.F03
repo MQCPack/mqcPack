@@ -9114,11 +9114,11 @@
       elseIf(a%Data_Type.eq.'Complex') then
         allocate(tempc(nDim1,nDim2))
         tempc = a%matc
-
+        
         allocate(iPiv(min(nDim1,nDim2)),work(min(nDim1,nDim2)))
         iPiv = 0
-        call zgetrf(nDim1,nDim2,temp,nDim1,iPiv,iError)
-        call zgetri(NDim1,temp,NDim1,IPIV,Work,NDim1,IError)
+        call zgetrf(nDim1,nDim2,tempc,nDim1,iPiv,iError)
+        call zgetri(NDim1,tempc,NDim1,IPIV,Work,NDim1,IError)
         a_inv = tempC
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(work)) deallocate(work)
