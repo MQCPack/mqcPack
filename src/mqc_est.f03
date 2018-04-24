@@ -1447,8 +1447,12 @@
 !
 !     If MOs are passed, the input matrix columns ae reordered to 'spin block' the 
 !     orbitals. As the orbitals can no longer be defined as being alpha or beta spin,
-!     we use the definition that if a GHF calculation gives a UHF solution, the input
-!     matrix would be reordered such that the off diagonal blocks are zero. 
+!     we use the definition that if a singlet UHF solution is passed to a GHF calculation, 
+!     the input matrix would be reordered such that the off diagonal blocks are zero. I.e.
+!     the alpha columns contain the 1st, 3rd, 5th ... lowest energy orbitals and the beta
+!     columns contain the 2nd, 4th, 6th ... lowest energy orbitals. The first 0.5*(N_elec)+S 
+!     columns of the alpha block and the first 0.5*(N_elec)+S columns of the beta block are 
+!     occupied.
 !
 !     L. M. Thompson, 2017.
 !
