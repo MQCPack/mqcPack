@@ -945,6 +945,18 @@
         allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
         fileinfo%basisFunction2Atom = 0
       endIf
+     
+      if(fileinfo%icgu.eq.111) then
+        iopcl = 0 
+      elseIf(fileinfo%icgu.eq.112) then
+        iopcl = 1
+      elseIf(fileinfo%icgu.eq.121) then
+        iopcl = 2
+      elseIf(fileinfo%icgu.eq.122) then
+        iopcl = 3
+      elseIf(fileinfo%icgu.eq.221) then
+        iopcl = 6
+      endIf
 !
 !     Set the readWriteMode flag in fileinfo to 'W' and then write the
 !     header scalar flags.
@@ -1281,7 +1293,7 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Write_Array(fileinfo,  &
-       label,matrixIn,vectorIn,r4TensorIn,filename)
+       label,matrixIn,vectorIn,r4TensorIn,filename,storage)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file and
 !     write that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -1313,7 +1325,7 @@
       type(MQC_Matrix),intent(in),OPTIONAL::matrixIn 
       type(MQC_Vector),intent(in),OPTIONAL::vectorIn 
       type(MQC_R4Tensor),intent(in),OPTIONAL::r4TensorIn 
-      character(len=*),intent(in),OPTIONAL::filename
+      character(len=*),intent(in),OPTIONAL::filename,storage
 !
       integer::iout=6
 !
@@ -1327,15 +1339,14 @@
       real,allocatable,dimension(:,:)::realMatrixTmp
       real,pointer,dimension(:)::realMatrixTmpV
       integer,allocatable,dimension(:,:)::intMatrixTmp
-      complex(kind=8),allocatable,dimension(:,:)::compMatrixTmp
+      complex(kind=real64),allocatable,dimension(:,:)::compMatrixTmp
       real,allocatable,dimension(:)::realVectorTmp
       integer,allocatable,dimension(:)::intVectorTmp
-      complex(kind=8),allocatable,dimension(:)::compVectorTmp
+      complex(kind=real64),allocatable,dimension(:)::compVectorTmp
       type(MQC_Matrix)::matrixInUse 
-      character(len=256)::my_filename
-      logical::DEBUG=.false.,ok
+      character(len=256)::my_filename,my_storage
+      logical::DEBUG=.true.,ok
       Parameter(LenBuf=4000)
-!
 !
 !     Format statements.
 !
@@ -1348,7 +1359,12 @@
 !     read the header data. If file is not in write mode, write the header
 !     data and set to write mode
 !
-      Ione = 1
+      if(present(storage)) then
+        call String_Change_Case(storage,'l',my_storage)
+      else
+        my_storage = ''
+      endIf
+
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
@@ -1400,11 +1416,12 @@
 !     Load the MQC variable into a regular array and get the required dimensions
 !     Some routines will change when we upgrade to algebra2
 !
+      Ione = 1
       call String_Change_Case(label,'u',tmpLabel)
       if(present(matrixIn)) then
         matrixInUse = matrixIn
         if(mqc_matrix_haveReal(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1414,34 +1431,42 @@
             else
               allocate(realMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
+            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
 
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(realMatrixTmp,1), &
               0,0,0,0,.False.,realVectorTmp)
 
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(realVectorTmp(size(realMatrixTmp,1)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,realVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(realVectorTmp(size(realMatrixTmp,1)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,realVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(realMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
@@ -1454,7 +1479,7 @@
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveInteger(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1465,32 +1490,40 @@
               allocate(intMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
             intMatrixTmp = matrixInUse
+             allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(intMatrixTmp,1), &
               0,0,0,0,.False.,intVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(intVectorTmp(size(intMatrixTmp,1)))
             intMatrixTmp = matrixInUse
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(intVectorTmp(size(intMatrixTmp,1)))
             intMatrixTmp = matrixInUse
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,intVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(intMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
             intMatrixTmp = matrixInUse
+            allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
@@ -1502,7 +1535,11 @@
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveComplex(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+!       There is a bug in Wr_LCBuf in qcmatrix.F of gauopen if you want to write complex.
+!       NR should only be negative in Wr_Labl and positive everywhere else.
+!       Please recomplile MQC after making these changes.
+          Ione = -1
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1512,32 +1549,41 @@
             else
               allocate(compMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
+            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
               0,0,0,0,.False.,compVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
-            allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(compVectorTmp(size(compMatrixTmp,1)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'hermitian')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
+              .or.(my_storage.eq.'asym')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
-            allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(compVectorTmp(size(compMatrixTmp,1)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
@@ -1980,15 +2026,15 @@
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('alpha'))
+            matrixIn=est_integral%getBlock('alpha'),storage='full')
         elseIf(my_integral_type.eq.'spin') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('alpha'))
+            matrixIn=est_integral%getBlock('alpha'),storage='full')
           call fileInfo%writeArray('BETA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('beta'))
+            matrixIn=est_integral%getBlock('beta'),storage='full')
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
-          call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
+          call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix,storage='full')
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'my_integral_type', my_integral_type )

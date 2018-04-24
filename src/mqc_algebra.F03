@@ -63,6 +63,7 @@
       Contains
         Procedure, Public::print => MQC_Print_Vector_Algebra1
         Procedure, Public::initialize => MQC_Vector_Initialize
+        Procedure, Public::size => MQC_Length_Vector
         Procedure, Public::init => MQC_Vector_Initialize
         Procedure, Public::norm => MQC_Vector_Norm
         Procedure, Public::transpose => MQC_Vector_Transpose
@@ -1389,7 +1390,7 @@
 !
 !
 !     PROCEDURE MQC_Length_Vector
-      Function MQC_Length_Vector(Vector)
+      Function MQC_Length_Vector(Vector) Result(ValueOut)
 !
 !     This subroutine is used to return the length of an MQC vector. If the
 !     vector is NOT allocated, the length is returned as 0.
@@ -1399,10 +1400,10 @@
 !
 !     Variable Declarations.
       Implicit None
-      Integer(kind=int64)::MQC_Length_Vector
-      Type(MQC_Vector),Intent(In)::Vector
+      Class(MQC_Vector)::Vector
+      Integer(kind=int64)::ValueOut
 !
-      MQC_Length_Vector = Vector%Length
+      ValueOut = Vector%Length
 !
       Return
       End Function MQC_Length_Vector
@@ -3266,7 +3267,7 @@
 !
 !
 !     PROCEDURE MQC_Vector_Pop
-      Function MQC_Vector_Pop(Vector,Scalar) result(Output)
+      Function MQC_Vector_Pop(Vector) result(Output)
 !
 !     This function removes a value from the end of a vector and returns it.
 !
@@ -3275,7 +3276,6 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      type(mqc_scalar),intent(in)::scalar
       type(mqc_scalar)::output
       type(mqc_vector)::temp
 !
@@ -3294,16 +3294,15 @@
 !
 !
 !     PROCEDURE MQC_Vector_Shift
-      Function MQC_Vector_Shift(Vector,Scalar) result(Output)
+      Function MQC_Vector_Shift(Vector) result(Output)
 !
-!     This function removes a value from the beginnig of a vector and returns it.
+!     This function removes a value from the beginning of a vector and returns it.
 !
 !     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      type(mqc_scalar),intent(in)::scalar
       type(mqc_scalar)::output
       type(mqc_vector)::temp
 !
@@ -4508,19 +4507,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatI(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatI(Cnt1,Cnt2) = (MatrixIn%MatI(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4548,19 +4542,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatR(Cnt1,Cnt2) = (MatrixIn%MatR(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4588,19 +4577,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = MatrixIn%MatC
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatC(Cnt1,Cnt2) = (MatrixIn%MatC(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4632,19 +4616,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatR(Cnt1,Cnt2) = (MatrixIn%MatI(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4671,19 +4650,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatR(Cnt1,Cnt2) = (MatrixIn%MatR(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4711,19 +4685,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = matrixIn%MatC
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatC(Cnt1,Cnt2) = (MatrixIn%MatC(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4755,19 +4724,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatC(Cnt1,Cnt2) = (MatrixIn%MatI(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4794,19 +4758,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatC(Cnt1,Cnt2) = (MatrixIn%MatR(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -4833,19 +4792,14 @@
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = matrixIn%MatC
             ElseIf(MatrixIn%Storage.eq.'StorSymm') then
-              M = 1
-              N = 1
-              Do Cnt1 = IndI, IndJ
-                Do Cnt2 = IndK, IndL
-                  Mat%MatC(Cnt1,Cnt2) = (MatrixIn%MatC(M*(M-1)/2+N,1))
-                  If(N.eq.LenCol) then
-                    N = 1
-                  Else
-                    N = N + 1
-                  EndIf
-                EndDo
-                M = M + 1
-              EndDo
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -5953,13 +5907,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).gt.Thresh) then
+                  If(abs((Matrix%MatR(I,J) - Matrix%MatR(J,I))).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh .or. &
-                    (Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).gt.Thresh) then
+                  If((abs(Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) - Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf
@@ -5988,13 +5942,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) + Matrix%MatR(J,I)).ne.0.0) then
+                  If(abs(Matrix%MatR(I,J) + Matrix%MatR(J,I)).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) + Real(Matrix%MatC(J,I))).ne.0.0 .or. &
-                    (Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).ne.0.0) then
+                  If((abs(Real(Matrix%MatC(I,J)) + Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf
@@ -6028,13 +5982,13 @@
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Real') then
-                  If((Matrix%MatR(I,J) - Matrix%MatR(J,I)).ne.0.0) then
+                  If(abs(Matrix%MatR(I,J) - Matrix%MatR(J,I)).gt.Thresh) then
                     Symmetric = .False.
                     Return
                   EndIf
                 elseIf(Matrix%Data_Type.eq.'Complex') then
-                  If((Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).ne.0.0 .or. &
-                    (Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).ne.0.0) then
+                  If((abs(Real(Matrix%MatC(I,J)) - Real(Matrix%MatC(J,I))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(I,J)) + Aimag(Matrix%MatC(J,I))).gt.Thresh)) then
                     Symmetric = .False.
                     Return
                   EndIf

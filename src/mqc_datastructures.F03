@@ -71,7 +71,7 @@
       If(Associated(LL_Cur)) then
         If(Allocated(LL_Cur%Val)) then
           If(.not.Allocated(Return_Value)) Allocate(Return_Value)
-          Select Type (Val =>LL_Cur%Val)
+          Select Type (Val => LL_Cur%Val)
           Type is (Integer)
             Return_Value = Val
           Class Default
@@ -125,7 +125,7 @@
 !
       Implicit None
       Type(MQC_LinkedList),Pointer::LL_Cur
-      Character,Allocatable,Intent(InOut)::Return_Value
+      Character(Len=*),Allocatable,Intent(InOut)::Return_Value
 !
 !     Allocate Return_Value, set it to LL_Cur%Val, and return to the
 !     calling procedure.
@@ -616,7 +616,7 @@
           Nullify(Cur%Next%Next)
           Nullify(Cur%Next%Previous)
         EndDo
-        Deallocate(Cur%Val)
+        If(Allocated(Cur%Val)) Deallocate(Cur%Val)
         Nullify(Cur%Next)
         Nullify(Cur%Previous)
         Nullify(Cur)
