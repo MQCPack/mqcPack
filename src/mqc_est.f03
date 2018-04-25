@@ -705,7 +705,7 @@
                  'integral%hasAlpha()', integral%hasAlpha() )
           endIf
         elseIf (integral%type().eq.'spin') then
-          call matrixOut%init(nDimTotal,nDimTotal)
+          call matrixOut%init(nDimTotal,nDimTotal,(0.0,0.0))
           if (integral%hasAlpha()) then
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
           else
@@ -719,7 +719,7 @@
                  'integral%hasBeta()', integral%hasBeta() )
           endIf
         elseIf (integral%type().eq.'general') then
-          call matrixOut%init(nDimTotal,nDimTotal)
+          call matrixOut%init(nDimTotal,nDimTotal,(0.0,0.0))
           if (integral%hasAlpha()) then
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
           else
