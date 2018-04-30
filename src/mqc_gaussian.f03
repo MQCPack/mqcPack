@@ -2281,6 +2281,11 @@
 !
 !     L. M. Thompson, 2017.
 !
+!     GHF routine has been updated to use modified mqc_matrix_spinBlockGHF
+!     subroutine.  nAlpha electrons are passed as optional second dummy argument.
+!     
+!     -A. Mahler, 4/26/18
+!
 !     Variable Declarations.
 !
       implicit none
@@ -2550,6 +2555,7 @@
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
           nBasis = fileInfo%getVal('nBasis')
+          nAlpha = fileInfo%getVal('nAlpha')  !MODIFIED
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2573,7 +2579,7 @@
           call mqc_eigenvalues_allocate(est_wavefunction%mo_energies,'mo energies','general', &
             tmpVectorAlpha,tmpVectorBeta)
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,nAlpha) !MODIFIED
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
