@@ -50,6 +50,7 @@
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
+        Procedure, Public::absval => MQC_Scalar_Get_ABS_Value
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -857,6 +858,35 @@
 !
       Return
       End Function MQC_Scalar_Get_Intrinsic_Complex
+!
+!
+!     PROCEDURE MQC_Scalar_Get_ABS_Value
+      Function MQC_Scalar_Get_ABS_Value(Scalar) Result(Output)
+!
+!     This function returns the abs value of an MQC Scalar as
+!     an intrinsic real
+!
+!     A. Mahler, 2018
+!
+!     Variable Declarations
+      Implicit None
+      Class(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64)::Output
+
+      if(Scalar%Data_Type.eq.'Integer') then
+        output = real(abs(Scalar%ScaI))
+      elseif(Scalar%Data_Type.eq.'Real') then
+        output = abs(Scalar%ScaR)
+      elseif(Scalar%Data_Type.eq.'Complex') then
+        output = abs(Scalar%ScaC)
+      else
+        call mqc_error_A('Data type unrecognized.', 6, &
+          'Scalar%Data_Type', Scalar%Data_Type)
+      endif
+!
+      return
+      END FUNCTION MQC_Scalar_Get_ABS_Value
+
 !
 !
 !     PROCEDURE MQC_ScalarAdd
