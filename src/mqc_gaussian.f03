@@ -2297,7 +2297,7 @@
       character(len=*),intent(in),optional::filename
       character(len=64)::myLabel
       character(len=256)::my_filename
-      integer::nOutputArrays
+      integer::nOutputArrays,nBasis,nElectrons,multiplicity
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
@@ -2361,7 +2361,8 @@
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+            fileInfo%getVal('multiplicity'))
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
@@ -2554,10 +2555,8 @@
           est_wavefunction%multiplicity = fileInfo%getVal('multiplicity')
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
-          nBasis = fileInfo%getVal('nBasis')
-          nElectrons = fileInfo%getVal('nElectrons')  !MODIFIED
-          multiplicity = fileInfo%getVal('multiplicity')  !MODIFIED
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2580,7 +2579,8 @@
           call mqc_eigenvalues_allocate(est_wavefunction%mo_energies,'mo energies','general', &
             tmpVectorAlpha,tmpVectorBeta)
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,nElectrons,multiplicity) !MODIFIED
+          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+            fileInfo%getVal('multiplicity')) !MODIFIED
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])

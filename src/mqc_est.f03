@@ -1456,26 +1456,29 @@
 !
 !     L. M. Thompson, 2017.
 !
-!     4/26/18 - When UHF is passed to GHF, the spins are not interleaved as 1a1b2a2b.
-!     They are passed as energy-ordered MOs, with no respect paid to the previous UHF
-!     spin designations.  As a temporary solution, an optional dummy argument, 'nalpha'
-!     which contains the number of alpha electrons in the wavefunction, is passed.
-!     New code block will check for nalpha, and perform alternative reordering, which
-!     extracts the first 'nalpha' columns as the occupied alpha block, and extracts
-!     'nalpha' columns for the occupied beta block.  Remaining orbitals are split evenly
-!     between alpha and beta blocks
+!     5/1/18 - MO coefficients are not interlaced as ababab when UHF is used in GHF solutions.
+!     MOs are arranged by energy.  To facilitate spin-blocking for UHF->GHF calcuations,
+!     each MO is determined to be alpha-dominant or beta-dominant by comparing the sums
+!     of the squares of the AO coefficients for alpha (upper 1/2) and beta (lower 1/2)
+!     components.  Orbitals are then placed in alpha (left) or beta (right) blocks
+!     from left to right based on dominance.  If more alpha-dominant or beta-dominant 
+!     orbitals are present than is indicated by spin multiplicity, occupied orbitals will be 
+!     filled until either the alpha or beta blocks are filled; remaining occupied orbitals will
+!     be assigned to unfilled block regardless of spin dominance.  This procedure is then
+!     repeated for virtual orbitals.
 !
-!     A. Mahler
+!     A. Mahler, 2018
 !
 !     Variable Declarations.
 !
       implicit none
-      integer::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas
+      integer::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas, &
+        athresh,bthresh
       class(*),intent(inOut)::array
       type(mqc_matrix)::tmpMatrix
       type(mqc_vector)::tmpVector
       type(mqc_scalar)::aBlock,bBlock
-      character(len=1),dimension(:),allocatable::abarray,occ,vir,delaced
+      character(len=1),dimension(:),allocatable::abarray
       integer,optional::nelec,multi
 !
 !     Check that both optional arguments are defined or both
@@ -1513,8 +1516,7 @@
           rows = mqc_matrix_rows(array)
           columns = mqc_matrix_columns(array)
           blockSize = rows/2
-          allocate(abarray(columns),delaced(columns),occ(nelec),vir(columns-nelec))
-          delaced = 'n'
+          allocate(abarray(columns))
           call tmpMatrix%init(rows,columns)
           j = 1
           k = rows/2+1
@@ -1531,11 +1533,10 @@
             endIf
           endDo
 !
-!     Begin new column ordering procedure for columns
+!     Begin new column ordering procedure for columns!
 !
-          print *, 'in test'
-          blockSize = rows/2
 !     Determine if each column is alpha- or beta-dominant
+!
           DO I = 1, COLUMNS
             aBlock = 0.0
             bBlock = 0.0
@@ -1549,45 +1550,72 @@
               abarray(I) = 'b'
             ENDIF
           END DO
-          occ = abarray(1:nelec)
-          vir = abarray(nelec+1:columns)
-          print *, abarray
-          print *, occ
-          print *, vir
 !
 !     Delace columns based on alpha/beta dominance
+!
           acols = 1
           bcols = blocksize + 1
+          athresh = (nelec+(multi-1))/2
+          bthresh = nelec - athresh
           nalphas = 0
           nbetas = 0
 !
 !     Occupied orbitals first
+!
           DO I = 1, NELEC
-            IF(occ(I).eq.'a') THEN
+            !Check if a or b bucket is filled
+            IF ((nalphas.lt.athresh).and.(nbetas.lt.bthresh)) THEN
+              IF(abarray(I).eq.'a') THEN
+                call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+                acols = acols + 1
+                nalphas = nalphas + 1
+              ELSE
+                call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+                bcols = bcols + 1
+                nbetas = nbetas + 1
+              ENDIF
+            !If a or b bucket is filled, check b bucket
+            ELSE IF (nbetas.ge.bthresh) THEN
               call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
-              delaced(acols) = 'a'
               acols = acols + 1
               nalphas = nalphas + 1
+            !Otherwise, a bucket is unfilled
             ELSE
               call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
-              delaced(bcols) = 'b'
               bcols = bcols + 1
               nbetas = nbetas + 1
             ENDIF
           END DO
-
 !
-!     Check if nalphas/nbetas is consistent with multiplicity.
-!     If Multiplicity is different, then determine if there are
-!     too many alphas or too many betas
-          IF(((nalphas-nbetas)+1).gt.multi) THEN
-            print *, 'too many alphas: ', nalphas-nbetas
-          ELSE IF (((nalphas-nbetas)+1).lt.multi) THEN
-            print *, 'too many betas', nalphas-nbetas
-          ELSE
-            print *, 'golden'
-          END IF
-          print *, delaced
+!     Virtual orbitals
+!
+          athresh = blocksize - athresh
+          bthresh = blocksize - bthresh
+          nalphas = 0
+          nbetas = 0
+          DO I = NELEC+1, COLUMNS
+            !Check if a or b bucket is filled
+            IF((nalphas.lt.athresh).and.(nbetas.lt.bthresh)) THEN
+              IF(abarray(I).eq.'a') THEN
+                call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+                acols = acols + 1
+                nalphas = nalphas + 1
+              ELSE
+                call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+                bcols = bcols + 1
+                nbetas = nbetas + 1
+              ENDIF
+            !If a or b bucket is filled, check b bucket
+            ELSE IF(nbetas.ge.bthresh) THEN
+              call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+              acols = acols + 1
+              nalphas = nalphas + 1
+            ELSE
+              call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+              bcols = bcols + 1
+              nbetas = nbetas + 1
+            ENDIF
+          END DO
 
           if(mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
         else
