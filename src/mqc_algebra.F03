@@ -9115,6 +9115,7 @@
       character(len=64)::StorFlag,TypeFlag
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
+      Complex(Kind=real64),dimension(:),allocatable::workc
       integer(kind=int64)::iError,nDim1,nDim2
       integer(kind=int64),dimension(:),allocatable::iPiv,work
 !
@@ -9144,13 +9145,13 @@
         allocate(tempc(nDim1,nDim2))
         tempc = a%matc
         
-        allocate(iPiv(min(nDim1,nDim2)),work(min(nDim1,nDim2)))
+        allocate(iPiv(min(nDim1,nDim2)),workc(min(nDim1,nDim2)))
         iPiv = 0
         call zgetrf(nDim1,nDim2,tempc,nDim1,iPiv,iError)
-        call zgetri(NDim1,tempc,NDim1,IPIV,Work,NDim1,IError)
+        call zgetri(NDim1,tempc,NDim1,IPIV,WorkC,NDim1,IError)
         a_inv = tempC
         if(allocated(iPiv)) deallocate(iPiv)
-        if(allocated(work)) deallocate(work)
+        if(allocated(workc)) deallocate(workc)
         if(allocated(tempC)) deallocate(tempC)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
