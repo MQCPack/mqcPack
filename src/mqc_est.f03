@@ -149,6 +149,8 @@
         Module Procedure MQC_Integral_Matrix_Multiply
         Module Procedure MQC_Matrix_Integral_Multiply
         Module Procedure MQC_Integral_Integral_Multiply
+        Module Procedure MQC_Integral_Eigenvalues_Multiply
+        Module Procedure MQC_Eigenvalues_Integral_Multiply
       End Interface
 !
       Interface Dot_Product
@@ -1354,117 +1356,248 @@
 !
       end function mqc_integral_integral_multiply
 !
-!!
-!!     PROCEDURE MQC_Integral_Eigenvalues_Multiply
-!      function mqc_integral_eigenvalues_multiply(integralIn,eigenvaluesIn,label) result(integralOut)
-!!
-!!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
-!!     are treated as a diagonal matrix.
-!!
-!!     -L. M. Thompson, 2018.
-!!
-!      implicit none
-!      type(mqc_scf_integral),intent(in)::integralIn
-!      type(mqc_scf_eigenvalues),intent(in)::eigenvaluesIn
-!      Character(Len=*),optional,intent(in)::label
-!      type(mqc_scf_integral)::integralOut
-!      type(mqc_matrix)::tmpMatrix1,tmpMatrix2,tmpMatrix2,tmpMatrix4
-!      type(mqc_vector)::tmpVector1,tmpVector2
 !
-!      logical::doOffDiag
-!      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
-!      Character(Len=64)::myLabel
-!!
-!      if(present(label)) then
-!        call string_change_case(label,'l',myLabel)
-!      else
-!        myLabel = ''
-!      endIf
+!     PROCEDURE MQC_Integral_Eigenvalues_Multiply
+      function mqc_integral_eigenvalues_multiply(integralA,eigenvaluesB,label) result(integralOut)
 !
-!      select case (integralIn%array_type)
-!      case('space')
-!        select case (eigenvaluesIn%array_type)
-!        case('space')
-!          tmpVector1 = eigenvaluesIn%alpha
-!          call tmpVector1%diag(tmpMatrix1)
-!          tmpMatrix1 = matmul(integralIn%alpha,tmpMatrix1)
-!          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrix1)
-!        case('spin')
-!          tmpVector1 = eigenvaluesIn%alpha
-!          tmpVector2 = eigenvaluesIn%beta
-!          call tmpVector1%diag(tmpMatrix1)
-!          call tmpVector2%diag(tmpMatrix2)
-!          tmpMatrix1 = matmul(integralIn%alpha,tmpMatrix1)
-!          tmpMatrix2 = matmul(integralIn%alpha,tmpMatrix2)
-!          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-!        case('general')
-!          tmpVector1 = eigenvaluesIn%alpha
-!          tmpVector2 = eigenvaluesIn%beta
-!          call tmpVector1%diag(tmpMatrix1)
-!          call tmpVector2%diag(tmpMatrix2)
-!          tmpMatrix1 = matmul(integralIn%alpha,tmpMatrix1)
-!          tmpMatrix2 = matmul(integralIn%alpha,tmpMatrix2)
-!          call tmpMatrix3%init()
-!          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-!        case default
-!          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
-!               'integralB%array_type', integralB%array_type )
-!        end select
-!      case('spin')
-!        select case (integralB%array_type)
-!        case('space')
-!          tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
-!          tmpMatrixBeta = integralA%beta.dot.integralB%alpha
-!          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
-!        case('spin')
-!          tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
-!          tmpMatrixBeta = integralA%beta.dot.integralB%beta
-!          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
-!        case('general')
-!          tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
-!          tmpMatrixBeta = integralA%beta.dot.integralB%beta
-!          tmpMatrixAlphaBeta = integralA%beta.dot.integralB%alphaBeta
-!          tmpMatrixBetaAlpha = integralA%alpha.dot.integralB%betaAlpha
-!          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
-!            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-!        case default
-!          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
-!               'integralB%array_type', integralB%array_type )
-!        end select
-!      case('general')
-!        select case (integralB%array_type)
-!        case('space')
-!          tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
-!          tmpMatrixBeta = integralA%beta.dot.integralB%alpha
-!          tmpMatrixAlphaBeta = integralA%alphaBeta.dot.integralB%alpha
-!          tmpMatrixBetaAlpha = integralA%betaAlpha.dot.integralB%alpha
-!          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
-!            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-!        case('spin')
-!          tmpMatrixAlpha = integralA%alpha.dot.integralB%alpha
-!          tmpMatrixBeta = integralA%beta.dot.integralB%beta
-!          tmpMatrixAlphaBeta = integralA%alphaBeta.dot.integralB%alpha
-!          tmpMatrixBetaAlpha = integralA%betaAlpha.dot.integralB%beta
-!          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
-!            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-!        case('general')
-!          tmpMatrixAlpha = (integralA%alpha.dot.integralB%alpha) + (integralA%betaAlpha.dot.integralB%alphaBeta)
-!          tmpMatrixBeta = (integralA%alphaBeta.dot.integralB%betaAlpha) + (integralA%beta.dot.integralB%beta)
-!          tmpMatrixAlphaBeta = (integralA%alphaBeta.dot.integralB%alpha) + (integralA%beta.dot.integralB%alphaBeta)
-!          tmpMatrixBetaAlpha = (integralA%alpha.dot.integralB%betaAlpha) + (integralA%betaAlpha.dot.integralB%beta)
-!          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
-!            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-!        case default
-!          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
-!               'integralB%array_type', integralB%array_type )
-!        end select
-!      case default
-!        call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
-!             'integralA%array_type', integralA%array_type )
-!      end select
-!!
-!      end function mqc_integral_integral_multiply
-!!
+!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
+!     are treated as a diagonal matrix.
+!
+!     -L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integralA
+      type(mqc_scf_eigenvalues),intent(in)::eigenvaluesB
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4
+      type(mqc_vector)::tmpVector1,tmpVector2
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      select case (integralA%array_type)
+      case('space')
+        select case (eigenvaluesB%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesB%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrix1)
+        case('spin')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%alpha,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('general')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%alpha,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesB%array_type', eigenvaluesB%array_type )
+        end select
+      case('spin')
+        select case (eigenvaluesB%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesB%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix1)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('spin')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('general')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesB%array_type', eigenvaluesB%array_type )
+        end select
+      case('general')
+        select case (eigenvaluesB%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesB%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix1)
+          tmpMatrix3 = matmul(integralA%alphaBeta,tmpMatrix1)
+          tmpMatrix4 = matmul(integralA%betaAlpha,tmpMatrix1)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case('spin')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix3 = matmul(integralA%alphaBeta,tmpMatrix1)
+          tmpMatrix4 = matmul(integralA%betaAlpha,tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case('general')
+          tmpVector1 = eigenvaluesB%alpha
+          tmpVector2 = eigenvaluesB%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix3 = matmul(integralA%alphaBeta,tmpMatrix1)
+          tmpMatrix4 = matmul(integrala%betaAlpha,tmpMatrix2)
+          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
+          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesB%array_type', eigenvaluesB%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_eigenvalues_multiply', 6, &
+             'integralA%array_type', integralA%array_type )
+      end select
+!
+      end function mqc_integral_eigenvalues_multiply
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Integral_Multiply
+      function mqc_eigenvalues_integral_multiply(eigenvaluesA,integralB,label) result(integralOut)
+!
+!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
+!     are treated as a diagonal matrix.
+!
+!     -L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integralB
+      type(mqc_scf_eigenvalues),intent(in)::eigenvaluesA 
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4
+      type(mqc_vector)::tmpVector1,tmpVector2
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      select case (integralB%array_type)
+      case('space')
+        select case (eigenvaluesA%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesA%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrix1)
+        case('spin')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('general')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesA%array_type', eigenvaluesA%array_type )
+        end select
+      case('spin')
+        select case (eigenvaluesA%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesA%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix2 = matmul(tmpMatrix1,integralB%beta)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('spin')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case('general')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesA%array_type', eigenvaluesA%array_type )
+        end select
+      case('general')
+        select case (eigenvaluesA%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesA%alpha
+          call tmpVector1%diag(tmpMatrix1)
+          tmpMatrix2 = matmul(tmpMatrix1,integralB%beta)
+          tmpMatrix3 = matmul(tmpMatrix1,integralB%alphaBeta)
+          tmpMatrix4 = matmul(tmpMatrix1,integralB%betaAlpha)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case('spin')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix3 = matmul(tmpMatrix1,integralB%alphaBeta)
+          tmpMatrix4 = matmul(tmpMatrix2,integralB%betaAlpha)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case('general')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          call tmpVector1%diag(tmpMatrix1)
+          call tmpVector2%diag(tmpMatrix2)
+          tmpMatrix3 = matmul(tmpMatrix1,integralB%alphaBeta)
+          tmpMatrix4 = matmul(tmpMatrix2,integralB%betaAlpha)
+          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
+          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_integral_eigenvalues_multiply', 6, &
+               'eigenvaluesA%array_type', eigenvaluesA%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_eigenvalues_multiply', 6, &
+             'integralB%array_type', integralB%array_type )
+      end select
+!
+      end function mqc_eigenvalues_integral_multiply
+!
 !
 !     PROCEDURE MQC_Eigenvalue_Eigenvalue_Multiply
       function mqc_eigenvalue_eigenvalue_multiply(eigenvalueA,eigenvalueB) result(scalarOut)
