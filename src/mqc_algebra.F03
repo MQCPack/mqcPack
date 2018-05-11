@@ -68,6 +68,7 @@
         Procedure, Public::init => MQC_Vector_Initialize
         Procedure, Public::norm => MQC_Vector_Norm
         Procedure, Public::transpose => MQC_Vector_Transpose
+        Procedure, Public::dagger => MQC_Vector_Conjugate_Transpose
         Procedure, Public::at => MQC_Vector_Scalar_At
         Procedure, Public::vat => MQC_Vector_Vector_At
         Procedure, Public::put => MQC_Vector_Scalar_Put
@@ -78,6 +79,9 @@
         Procedure, Public::shift => MQC_Vector_Shift
         Procedure, Public::maxval => MQC_Vector_MaxVal
         Procedure, Public::minval => MQC_Vector_MinVal
+        Procedure, Public::sqrt => MQC_Vector_Sqrt
+        Procedure, Public::power => MQC_Vector_Power
+        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
       End Type MQC_Vector
 !
 !     Matrices...
@@ -97,6 +101,7 @@
         Procedure, Public::set => MQC_Matrix_Set
         Procedure, Public::norm => MQC_Matrix_Norm
         Procedure, Public::transpose => MQC_Matrix_Transpose
+        Procedure, Public::dagger => MQC_Matrix_Conjugate_Transpose
         Procedure, Public::diag => MQC_Matrix_Diagonalize
         Procedure, Public::svd => MQC_Matrix_SVD
         Procedure, Public::eigensys => mqc_matrix_generalized_eigensystem
@@ -203,12 +208,17 @@
 !
       Interface MQC_Matrix_DiagMatrix_Put
         Module Procedure MQC_Matrix_DiagMatrix_Put_Integer,MQC_Matrix_DiagMatrix_Put_Real,MQC_Matrix_DiagMatrix_Put_Complex
+        Module Procedure MQC_Matrix_DiagMatrix_Put_Vector
       End Interface
 !
       Interface Matrix_Symm2Sq
         Module Procedure Matrix_Symm2Sq_Integer
         Module Procedure Matrix_Symm2Sq_Real
         Module Procedure Matrix_Symm2Sq_Complex
+      End Interface
+!
+      Interface Dot_Product
+        Module Procedure MQC_VectorVectorDotProduct
       End Interface
 !
 !----------------------------------------------------------------
@@ -245,6 +255,9 @@
       End Interface
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
+      End Interface
+      Interface Operator (**)
+        Module Procedure MQC_ScalarExponent
       End Interface
       Interface Operator (.ne.)
         Module Procedure MQC_ScalarNE
@@ -1126,6 +1139,65 @@
 !
       Return
       End Function MQC_ScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarExponent
+      Function MQC_ScalarExponent(Scalar1,Scalar2)
+!
+!     This subroutine is used to raise MQC_Scalar to a power.
+!
+!     L. M. Thompson, 2016.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_ScalarExponent
+      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+!
+      Call MQC_Deallocate_Scalar(MQC_ScalarExponent)
+      If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Real')
+        MQC_ScalarExponent%ScaR = Scalar1%ScaR ** Scalar2%ScaR
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Real')
+#ifdef PGI
+        MQC_ScalarExponent%ScaR = Scalar1%ScaR ** dFloat(Scalar2%ScaI)
+#else
+        MQC_ScalarExponent%ScaR = Scalar1%ScaR ** Float(Scalar2%ScaI)
+#endif
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Real')
+#ifdef PGI
+        MQC_ScalarExponent%ScaR = dFloat(Scalar1%ScaI) ** Scalar2%ScaR
+#else
+        MQC_ScalarExponent%ScaR = Float(Scalar1%ScaI) ** Scalar2%ScaR
+#endif
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Integer')
+        MQC_ScalarExponent%ScaI = Scalar1%ScaI ** Scalar2%ScaI
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Complex')
+        MQC_ScalarExponent%ScaC = Scalar1%ScaC ** Scalar2%ScaC
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Complex')
+        MQC_ScalarExponent%ScaC = cmplx(Scalar1%ScaR,0.0) ** Scalar2%ScaC
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Complex')
+        MQC_ScalarExponent%ScaC = Scalar1%ScaC ** cmplx(Scalar2%ScaR,0.0)
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Complex')
+        MQC_ScalarExponent%ScaC = cmplx(Scalar1%ScaI,0) ** Scalar2%ScaC
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarExponent,'Complex')
+        MQC_ScalarExponent%ScaC = Scalar1%ScaC ** cmplx(Scalar2%ScaI,0)
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarExponent', 6, &
+             'Scalar1%Data_type', Scalar1%Data_type, &
+             'Scalar2%Data_type', Scalar2%Data_type )
+      EndIf
+!
+      Return
+      End Function MQC_ScalarExponent
 !
 !
 !     PROCEDURE MQC_ScalarNE
@@ -3402,6 +3474,61 @@
       end function mqc_vector_minval
 !
 !
+!     PROCEDURE MQC_Vector_Sqrt
+      subroutine mqc_vector_sqrt(A)
+!
+!     This subroutine returns the square root of INPUT vector A.
+!
+      Implicit None
+      class(mqc_vector),intent(inOut)::A
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      do i=1,MQC_Length_Vector(A)
+        call A%put(sqrt(A%at(i)),i)
+      endDo
+!
+      end subroutine mqc_vector_sqrt
+!
+!
+!     PROCEDURE MQC_Vector_Power
+      subroutine mqc_vector_power(A,P)
+!
+!     This subroutine returns the elements of INPUT vector A raised
+!     to the power P.
+!
+      Implicit None
+      class(mqc_vector),intent(inOut)::A
+      class(*)::P
+      integer(kind=int64)::i
+      character(len=64)::data_type
+      type(mqc_scalar)::scalar
+!
+!     Do the work.
+!
+      data_type = A%data_type
+
+      select type(P)
+      type is (integer)
+        scalar = P
+      type is (real)
+        scalar = P
+      type is (complex)
+        scalar = P
+      type is (mqc_scalar)
+        scalar = P
+      class default
+        call mqc_error_I('P type not defined in MQC_Vector_Power',6)
+      end select
+!
+      do i=1,MQC_Length_Vector(A)
+        call A%put(A%at(i)**scalar,i)
+      endDo
+!
+      end subroutine mqc_vector_power
+!
+!
 !----------------------------------------------------------------
 !                                                               |
 !     MATRIX PROCEDURES                                         |
@@ -4200,6 +4327,40 @@
       EndIf
 
       End Function MQC_Matrix_Matrix_At
+!
+!
+!     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector 
+      Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat)
+!
+!     This subroutine loads a (MQC) diagonal matrix <mat> from an input (mqc vector
+!     type) diagonal vector <diagVectorIn>.
+!
+!     L. M. Thompson, 2018.
+!
+!
+      implicit none
+      class(MQC_Matrix),intent(inOut)::mat
+      class(MQC_Vector),intent(in)::diagVectorIn
+!
+      integer(kind=int64)::n
+      character(len=64)::data_type 
+!
+      n = diagVectorIn%length
+      data_type = diagVectorIn%data_type
+      call MQC_Allocate_Matrix(n,n,mat,data_type,'stordiag')
+      select case (data_type)
+      case ('Integer') 
+        mat%matI(:,1) = diagVectorIn%vecI(:)
+      case ('Real') 
+        mat%matR(:,1) = diagVectorIn%vecR(:)
+      case ('Complex') 
+        mat%matC(:,1) = diagVectorIn%vecC(:)
+      case default
+        call mqc_error_A('diagVectorIn has unrecognised data type:',6,'data_type',data_type)
+      end select
+!
+      return
+      end subroutine MQC_Matrix_DiagMatrix_Put_Vector 
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Integer
@@ -7865,11 +8026,10 @@
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
           MC%matR = MA%matR * MB%matR
-
         ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
-          do i = 1, MA%NRow
-            MC%matR(i,:) = MB%matR(i,1) * MA%matR(i,:)
+          do i = 1, MA%NCol
+            MC%matR(:,i) = MA%matR(:,i) * MB%matR(i,1)
           enddo
         ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorSymm') then
           Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
@@ -8916,7 +9076,7 @@
 !     PROCEDURE MQC_Matrix_Set
       subroutine MQC_Matrix_Set(matrix,scalar,storage)
 !
-!     This subroutine returns an identity matrix.
+!     This subroutine sets a matrix that already exists to a value (default 0).
 !
 !     L. M. Thompson, 2017.
 !
