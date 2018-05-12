@@ -879,7 +879,10 @@
       character(len=*),optional::blockName
       character(len=64)::myBlockName
       type(mqc_vector)::vectorOut
-      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
 !
       if(present(blockName)) then
         call string_change_case(blockName,'l',myBlockName)
@@ -894,26 +897,38 @@
       select case (myBlockName)
       case('full')
         if (eigenvalues%type().eq.'space') then
-          call vectorOut%init(nDimAlpha)
           if (eigenvalues%hasAlpha()) then
+            if(mqc_vector_haveInteger(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroI)
+            elseif(mqc_vector_haveReal(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroR)
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroC)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call vectorOut%vput(eigenvalues%alpha,1) 
           else
             call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
                  'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
           endIf
         elseIf ((eigenvalues%type().eq.'spin').or.(eigenvalues%type().eq.'general')) then
-          call vectorOut%init(nDimTotal)
-          if (eigenvalues%hasAlpha()) then
+          if (eigenvalues%hasAlpha().and.eigenvalues%hasBeta()) then
+            if(mqc_vector_haveInteger(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroI)
+            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroR)
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroC)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call vectorOut%vput(eigenvalues%alpha,1) 
-          else
-            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
-                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
-          endIf
-          if (eigenvalues%hasBeta()) then
             call vectorOut%vput(eigenvalues%beta,nDimAlpha+1)
           else
             call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
-                 'eigenvalues%hasBeta()', eigenvalues%hasBeta() )
+                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha(),'eigenvalues%hasBeta()', & 
+                 eigenvalues%hasBeta())
           endIf
         endIf
       case('alpha')
