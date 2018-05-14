@@ -9294,6 +9294,7 @@
 
         allocate(iPiv(min(nDim1,nDim2)),work(min(nDim1,nDim2)))
         iPiv = 0
+        iError = 0
         call dgetrf(nDim1,nDim2,temp,nDim1,iPiv,iError)
         if (iError.gt.0) then 
           call mqc_error_i('Upper triangular matrix is singular', 6, 'iError', iError)
@@ -9318,6 +9319,7 @@
         
         allocate(iPiv(min(nDim1,nDim2)),workc(min(nDim1,nDim2)))
         iPiv = 0
+        iError = 0
         call zgetrf(nDim1,nDim2,tempc,nDim1,iPiv,iError)
         if (iError.gt.0) then
           call mqc_error_i('Upper triangular matrix is singular', 6, 'iError', iError)
