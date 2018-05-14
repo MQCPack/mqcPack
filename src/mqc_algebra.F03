@@ -9220,7 +9220,7 @@
         iPiv = 0
         iError = 1
         call dgetrf(rows,cols,temp,rows,iPiv,iError)
-        if(iError.ne.0) call mqc_error_i('DGETRF exited with error in mqc_matrix_determinant', 6, &
+        if(iError.lt.0) call mqc_error_i('DGETRF exited with error in mqc_matrix_determinant', 6, &
              'iError', iError )
         det = 1.0
         do i = 1,rows
@@ -9244,7 +9244,7 @@
         iPiv = 0
         iError = 1
         call zgetrf(rows,cols,tempC,rows,iPiv,iError)
-        if(iError.ne.0) call mqc_error_i('ZGETRF exited with error in mqc_matrix_determinant', 6, &
+        if(iError.lt.0) call mqc_error_i('ZGETRF exited with error in mqc_matrix_determinant', 6, &
              'iError', iError )
         det = cmplx(1.0,0.0,kind=real64)
         do i = 1,rows
@@ -9294,8 +9294,20 @@
 
         allocate(iPiv(min(nDim1,nDim2)),work(min(nDim1,nDim2)))
         iPiv = 0
+        iError = 0
         call dgetrf(nDim1,nDim2,temp,nDim1,iPiv,iError)
-        call dgetri(NDim1,temp,NDim1,IPIV,Work,NDim1,IError)
+        if (iError.gt.0) then 
+          call mqc_error_i('Upper triangular matrix is singular', 6, 'iError', iError)
+        else if (iError.lt.0) then
+          call mqc_error_i('Illegal value in dgetrf matrix', 6, 'iError', iError)
+        else
+          call dgetri(NDim1,temp,NDim1,IPIV,Work,NDim1,IError)
+          if(iError.gt.0) then
+            call mqc_error_i('Matrix is not invertable', 6, 'iError', iError)
+          else if (iError.lt.0) then
+            call mqc_error_i('Illegal value in dgetri matrix', 6, 'iError', iError)
+          end if
+        end if
         a_inv = temp
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(work)) deallocate(work)
@@ -9307,8 +9319,20 @@
         
         allocate(iPiv(min(nDim1,nDim2)),workc(min(nDim1,nDim2)))
         iPiv = 0
+        iError = 0
         call zgetrf(nDim1,nDim2,tempc,nDim1,iPiv,iError)
-        call zgetri(NDim1,tempc,NDim1,IPIV,WorkC,NDim1,IError)
+        if (iError.gt.0) then
+          call mqc_error_i('Upper triangular matrix is singular', 6, 'iError', iError)
+        else if (iError.lt.0) then
+          call mqc_error_i('Illegal value in zgetrf matrix', 6, 'iError', iError)
+        else
+          call zgetri(NDim1,tempC,NDim1,IPIV,WorkC,NDim1,IError)
+          if(iError.gt.0) then
+            call mqc_error_i('Matrix is not invertable', 6, 'iError', iError)
+          else if(iError.lt.0) then
+            call mqc_error_i('Illegal value in zgetri matrix', 6, 'iError', iError)
+          end if
+        end if
         a_inv = tempC
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(workc)) deallocate(workc)
