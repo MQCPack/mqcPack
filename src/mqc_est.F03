@@ -2347,7 +2347,7 @@
         endIf
       elseIf(integral%type().eq.'general') then
         nDimAlpha = integral%blockSize('alpha') 
-        tmpMat1 = integral%getblock('all')
+        tmpMat1 = integral%getblock('full')
         if(present(eVals).and.present(eVecs)) then
           call tmpMat1%diag(tmpVec1,tmpMat2)
           tmpMat1 = tmpMat2%mat([1,NDimAlpha],[1,NDimAlpha])
@@ -2405,7 +2405,7 @@
         call mqc_integral_allocate(inverse,'integral inverse','spin',tmpMat1,tmpMat2)
       elseIf(integral%type().eq.'general') then
         nDimAlpha = integral%blockSize('alpha') 
-        tmpMat1 = integral%getblock('all')
+        tmpMat1 = integral%getblock('full')
         tmpMat1 = tmpMat1%inv()
         tmpMat2 = tmpMat1%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
         tmpMat3 = tmpMat1%mat([1,NDimAlpha],[NDimAlpha+1,-1])
