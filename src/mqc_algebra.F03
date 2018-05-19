@@ -6159,7 +6159,14 @@
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
               Symmetric = .True.
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Symmetric = .False.
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(I,J))).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              EndDo
             Else
               Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
                    'Matrix%Data_Type', Matrix%Data_Type )
