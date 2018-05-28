@@ -6070,7 +6070,7 @@
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(len=*),Optional,Intent(In)::Option
       Logical::Symmetric
-      Integer(kind=int64)::I,J
+      Integer(kind=int64)::I,J,K
       Real(kind=real64)::Thresh=1e-11
       Character(len=64)::myOption
 
@@ -6161,7 +6161,8 @@
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Do I = 1, MQC_Matrix_Rows(Matrix)
                 Do J = 1, I-1
-                  If(abs(Aimag(Matrix%MatC(I,J))).gt.Thresh) then
+                  K = symIndexHash(I,J)
+                  If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
                     Symmetric = .False.
                     return
                   EndIf
