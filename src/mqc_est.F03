@@ -1907,7 +1907,6 @@
         array = tmpVector
       type is (mqc_matrix)
         if(present(nelec)) then
-          print *, 'currently in option'
           rows = mqc_matrix_rows(array)
           columns = mqc_matrix_columns(array)
           blockSize = rows/2
