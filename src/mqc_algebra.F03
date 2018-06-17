@@ -9246,7 +9246,7 @@
         if(TypeFlag.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(a)
       elseIf(a%Data_Type.eq.'Complex') then
         allocate(tempC(rows,cols))
-        temp = a%matc
+        tempC = a%matc
 
         allocate(iPiv(minrc))
         iPiv = 0
