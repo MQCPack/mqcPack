@@ -6070,7 +6070,7 @@
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(len=*),Optional,Intent(In)::Option
       Logical::Symmetric
-      Integer(kind=int64)::I,J
+      Integer(kind=int64)::I,J,K
       Real(kind=real64)::Thresh=1e-11
       Character(len=64)::myOption
 
@@ -6159,7 +6159,15 @@
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
               Symmetric = .True.
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Symmetric = .False.
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I-1
+                  K = symIndexHash(I,J)
+                  If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              EndDo
             Else
               Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
                    'Matrix%Data_Type', Matrix%Data_Type )
@@ -9238,7 +9246,7 @@
         if(TypeFlag.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(a)
       elseIf(a%Data_Type.eq.'Complex') then
         allocate(tempC(rows,cols))
-        temp = a%matc
+        tempC = a%matc
 
         allocate(iPiv(minrc))
         iPiv = 0
