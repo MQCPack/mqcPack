@@ -34,6 +34,7 @@
       Use MQC_Algebra
       Use MQC_DataStructures
       Use MQC_Files
+      Use iso_fortran_env
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -47,7 +48,7 @@
       Type MQC_SCF_Integral
         Type(MQC_Matrix),Private::Alpha,Beta,AlphaBeta,BetaAlpha
         Character(Len=64),Private::Array_Name ! See below 
-        Character(Len=64),Private::Array_Type ! Space,Spin,General 
+        Character(Len=64),Private::Array_Type ! Space,Spin,General
       Contains 
         Procedure, Public::print => mqc_print_integral
         Procedure, Private::hasAlpha => mqc_integral_has_alpha
@@ -101,7 +102,7 @@
 !
 !     Parent Type
       Type,Extends(MQC_Wavefunction)::MQC_PSCF_Wavefunction
-        Integer::NCore,NVal,NActive
+        Integer(kind=int64)::NCore,NVal,NActive
         Type(MQC_Matrix)::PSCF_Amplitudes
         Type(MQC_Vector)::PSCF_Energies
       End Type MQC_PSCF_Wavefunction
@@ -151,10 +152,11 @@
         Module Procedure MQC_Integral_Integral_Multiply
         Module Procedure MQC_Integral_Eigenvalues_Multiply
         Module Procedure MQC_Eigenvalues_Integral_Multiply
+        Module Procedure MQC_Eigenvalues_Eigenvalues_Multiply
       End Interface
 !
       Interface Dot_Product
-        Module Procedure MQC_Eigenvalue_Eigenvalue_Multiply
+        Module Procedure MQC_Eigenvalue_Eigenvalue_DotProduct
       End Interface
 !
       Interface Transpose
@@ -203,7 +205,7 @@
 !
       implicit none
       class(mqc_wavefunction)::wavefunction
-      integer,intent(in)::iOut
+      integer(kind=int64),intent(in)::iOut
       character(len=*),optional,intent(in)::label
       character(len=64)::arrayType,myLabel
 !
@@ -276,7 +278,7 @@
 !
       implicit none
       class(mqc_scf_integral)::integral
-      integer,intent(in)::iOut
+      integer(kind=int64),intent(in)::iOut
       character(len=*),intent(in)::header
       character(len=64)::arrayType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
@@ -318,7 +320,7 @@
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
-      integer,intent(in)::iOut
+      integer(kind=int64),intent(in)::iOut
       character(len=*),intent(in)::header
       character(len=64)::integralType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
@@ -355,7 +357,7 @@
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
-      integer,intent(in)::iOut
+      integer(kind=int64),intent(in)::iOut
       character(len=*),intent(in)::header
       character(len=64)::integralType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
@@ -545,7 +547,7 @@
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
-      integer::dimBlock
+      integer(kind=int64)::dimBlock
       Character(Len=*),intent(in)::label
       Character(Len=64)::myLabel
 !
@@ -580,7 +582,7 @@
 !
       implicit none
       class(mqc_scf_eigenvalues),intent(in)::eigenvalues
-      integer::dimBlock
+      integer(kind=int64)::dimBlock
       Character(Len=*),intent(in)::label
       Character(Len=64)::myLabel
 !
@@ -689,7 +691,10 @@
       character(len=*),optional::blockName
       character(len=64)::myBlockName
       type(mqc_matrix)::matrixOut
-      integer::nDimAlpha=0,nDimBeta=0,nDimTotal=0
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
 !
       if(present(blockName)) then
         call string_change_case(blockName,'l',myBlockName)
@@ -704,8 +709,16 @@
       select case (myBlockName)
       case('full')
         if (integral%type().eq.'space') then
-          call matrixOut%init(nDimTotal,nDimTotal)
           if (integral%hasAlpha()) then
+            if(mqc_matrix_haveInteger(integral%alpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroI)
+            elseif(mqc_matrix_haveReal(integral%alpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroR)
+            elseIf(mqc_matrix_haveComplex(integral%alpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroC)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
             call matrixOut%mput(integral%alpha,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
           else
@@ -713,43 +726,45 @@
                  'integral%hasAlpha()', integral%hasAlpha() )
           endIf
         elseIf (integral%type().eq.'spin') then
-          call matrixOut%init(nDimTotal,nDimTotal,(0.0,0.0))
-          if (integral%hasAlpha()) then
+          if (integral%hasAlpha().and.integral%hasBeta()) then
+            if(mqc_matrix_haveComplex(integral%alpha).or.mqc_matrix_haveComplex(integral%beta)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroC)
+            elseIf(mqc_matrix_haveReal(integral%alpha).or.mqc_matrix_haveReal(integral%beta)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroR)
+            elseIf(mqc_matrix_haveInteger(integral%alpha).or.mqc_matrix_haveInteger(integral%beta)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroI)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
-          else
-            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasAlpha()', integral%hasAlpha() )
-          endIf
-          if (integral%hasBeta()) then
             call matrixOut%mput(integral%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
           else
             call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasBeta()', integral%hasBeta() )
+                 'integral%hasAlpha()', integral%hasAlpha(), 'integral%hasBeta()', &
+                 integral%hasBeta())
           endIf
         elseIf (integral%type().eq.'general') then
-          call matrixOut%init(nDimTotal,nDimTotal,(0.0,0.0))
-          if (integral%hasAlpha()) then
+          if (integral%hasAlpha().and.integral%hasBeta().and.integral%hasAlphaBeta().and.integral%hasBetaAlpha()) then
+            if(mqc_matrix_haveComplex(integral%alpha).or.mqc_matrix_haveComplex(integral%beta).or. &
+              mqc_matrix_haveComplex(integral%alphaBeta).or.mqc_matrix_haveComplex(integral%betaAlpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroC)
+            elseIf(mqc_matrix_haveReal(integral%alpha).or.mqc_matrix_haveReal(integral%beta).or. &
+              mqc_matrix_haveReal(integral%alphaBeta).or.mqc_matrix_haveReal(integral%betaAlpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroR)
+            elseIf(mqc_matrix_haveInteger(integral%alpha).or.mqc_matrix_haveInteger(integral%beta).or. &
+              mqc_matrix_haveInteger(integral%alphaBeta).or.mqc_matrix_haveInteger(integral%betaAlpha)) then
+              call matrixOut%init(nDimTotal,nDimTotal,zeroI)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call matrixOut%mput(integral%alpha,[1,nDimAlpha],[1,nDimAlpha]) 
-          else
-            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasAlpha()', integral%hasAlpha() )
-          endIf
-          if (integral%hasBeta()) then
             call matrixOut%mput(integral%beta,[nDimAlpha+1,nDimTotal],[nDimAlpha+1,nDimTotal]) 
-          else
-            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasBeta()', integral%hasBeta() )
-          endIf
-          if (integral%hasAlphaBeta()) then
             call matrixOut%mput(integral%alphaBeta,[nDimAlpha+1,nDimTotal],[1,nDimAlpha]) 
-          else
-            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasAlphaBeta()', integral%hasAlphaBeta() )
-          endIf
-          if (integral%hasBetaAlpha()) then
             call matrixOut%mput(integral%betaAlpha,[1,nDimAlpha],[nDimAlpha+1,nDimTotal]) 
           else
             call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
+                 'integral%hasAlpha()', integral%hasAlpha(), 'integral%hasBeta()', &
+                 integral%hasBeta(), 'integral%hasAlphaBeta()', integral%hasAlphaBeta(), &
                  'integral%hasBetaAlpha()', integral%hasBetaAlpha() )
           endIf
         endIf
@@ -786,9 +801,26 @@
           matrixOut = integral%alphaBeta
         else
           if (integral%type().eq.'space') then
-            call matrixOut%init(NDimAlpha,NDimAlpha)
+            if(mqc_matrix_haveInteger(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroI)
+            elseIf(mqc_matrix_haveReal(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroR)
+            elseIf(mqc_matrix_haveComplex(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroC)
+            else
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroR)
+            endIf
           elseIf (integral%type().eq.'spin') then
             call matrixOut%init(NDimAlpha,NDimBeta)
+            if(mqc_matrix_haveComplex(integral%alpha).or.mqc_matrix_haveComplex(integral%beta)) then
+              call matrixOut%init(NDimAlpha,NDimBeta,zeroC)
+            elseIf(mqc_matrix_haveReal(integral%alpha).or.mqc_matrix_haveReal(integral%beta)) then
+              call matrixOut%init(NDimAlpha,NDimBeta,zeroR)
+            elseIf(mqc_matrix_haveInteger(integral%alpha).or.mqc_matrix_haveReal(integral%beta)) then
+              call matrixOut%init(NDimAlpha,NDimBeta,zeroI)
+            else
+              call matrixOut%init(NDimAlpha,NDimBeta,zeroR)
+            endIf
           endIf
         endIf
       case('beta-alpha')
@@ -796,9 +828,25 @@
           matrixOut = integral%betaAlpha
         else
           if (integral%type().eq.'space') then
-            call matrixOut%init(NDimAlpha,NDimAlpha)
+            if(mqc_matrix_haveInteger(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroI)
+            elseIf(mqc_matrix_haveReal(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroR)
+            elseIf(mqc_matrix_haveComplex(integral%alpha)) then
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroC)
+            else
+              call matrixOut%init(NDimAlpha,NDimAlpha,zeroR)
+            endIf
           elseIf (integral%type().eq.'spin') then
-            call matrixOut%init(NDimBeta,NDimAlpha)
+            if(mqc_matrix_haveComplex(integral%alpha).or.mqc_matrix_haveComplex(integral%beta)) then
+              call matrixOut%init(NDimBeta,NDimAlpha,zeroC)
+            elseIf(mqc_matrix_haveReal(integral%alpha).or.mqc_matrix_haveReal(integral%beta)) then
+              call matrixOut%init(NDimBeta,NDimAlpha,zeroR)
+            elseIf(mqc_matrix_haveInteger(integral%alpha).or.mqc_matrix_haveReal(integral%beta)) then
+              call matrixOut%init(NDimBeta,NDimAlpha,zeroI)
+            else
+              call matrixOut%init(NDimBeta,NDimAlpha,zeroR)
+            endIf
           endIf
         endIf
       case('beta-beta')
@@ -831,7 +879,10 @@
       character(len=*),optional::blockName
       character(len=64)::myBlockName
       type(mqc_vector)::vectorOut
-      integer::nDimAlpha=0,nDimBeta=0,nDimTotal=0
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
 !
       if(present(blockName)) then
         call string_change_case(blockName,'l',myBlockName)
@@ -846,26 +897,38 @@
       select case (myBlockName)
       case('full')
         if (eigenvalues%type().eq.'space') then
-          call vectorOut%init(nDimAlpha)
           if (eigenvalues%hasAlpha()) then
+            if(mqc_vector_haveInteger(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroI)
+            elseif(mqc_vector_haveReal(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroR)
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha)) then
+              call vectorOut%init(nDimAlpha,zeroC)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call vectorOut%vput(eigenvalues%alpha,1) 
           else
             call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
                  'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
           endIf
         elseIf ((eigenvalues%type().eq.'spin').or.(eigenvalues%type().eq.'general')) then
-          call vectorOut%init(nDimTotal)
-          if (eigenvalues%hasAlpha()) then
+          if (eigenvalues%hasAlpha().and.eigenvalues%hasBeta()) then
+            if(mqc_vector_haveInteger(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroI)
+            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroR)
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+              call vectorOut%init(nDimTotal,zeroC)
+            else
+              call mqc_error('unrecognized integral data type in mqc_integral_output_block')
+            endIf
             call vectorOut%vput(eigenvalues%alpha,1) 
-          else
-            call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
-                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
-          endIf
-          if (eigenvalues%hasBeta()) then
             call vectorOut%vput(eigenvalues%beta,nDimAlpha+1)
           else
             call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
-                 'eigenvalues%hasBeta()', eigenvalues%hasBeta() )
+                 'eigenvalues%hasAlpha()', eigenvalues%hasAlpha(),'eigenvalues%hasBeta()', & 
+                 eigenvalues%hasBeta())
           endIf
         endIf
       case('alpha')
@@ -903,7 +966,7 @@
       implicit none
       class(mqc_scf_integral),intent(in)::integralIn
       type(mqc_matrix),intent(inOut)::matrixOut
-      integer::nDimAlpha=0,nDimBeta=0,nDimTotal=0
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0
 !
       nDimAlpha = integralIn%blockSize('Alpha') 
       nDimBeta = integralIn%blockSize('Beta')
@@ -972,7 +1035,7 @@
       implicit none
       class(mqc_scf_eigenvalues),intent(in)::eigenvaluesIn
       type(mqc_vector),intent(inOut)::vectorOut
-      integer::nDimAlpha=0,nDimBeta=0,nDimTotal=0
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nDimTotal=0
 !
       nDimAlpha = eigenvaluesIn%blockSize('Alpha') 
       nDimBeta = eigenvaluesIn%blockSize('Beta')
@@ -1021,7 +1084,7 @@
       type(mqc_matrix),intent(in)::matrixB
       Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
-      integer::rows,nBasisAlpha,nBasisBeta,nBasisTotal
+      integer(kind=int64)::rows,nBasisAlpha,nBasisBeta,nBasisTotal
       logical::doOffDiag
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       Character(Len=64)::myLabel
@@ -1146,7 +1209,7 @@
       type(mqc_matrix),intent(in)::matrixA
       Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
-      integer::columns,nBasisAlpha,nBasisBeta,nBasisTotal
+      integer(kind=int64)::columns,nBasisAlpha,nBasisBeta,nBasisTotal
       logical::doOffDiag
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       Character(Len=64)::myLabel
@@ -1388,15 +1451,7 @@
           call tmpVector1%diag(tmpMatrix1)
           tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
           call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrix1)
-        case('spin')
-          tmpVector1 = eigenvaluesB%alpha
-          tmpVector2 = eigenvaluesB%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
-          tmpMatrix2 = matmul(integralA%alpha,tmpMatrix2)
-          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('general')
+        case('spin','general')
           tmpVector1 = eigenvaluesB%alpha
           tmpVector2 = eigenvaluesB%beta
           call tmpVector1%diag(tmpMatrix1)
@@ -1416,15 +1471,7 @@
           tmpMatrix2 = matmul(integralA%beta,tmpMatrix1)
           tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('spin')
-          tmpVector1 = eigenvaluesB%alpha
-          tmpVector2 = eigenvaluesB%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
-          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
-          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('general')
+        case('spin','general')
           tmpVector1 = eigenvaluesB%alpha
           tmpVector2 = eigenvaluesB%beta
           call tmpVector1%diag(tmpMatrix1)
@@ -1446,23 +1493,13 @@
           tmpMatrix4 = matmul(integralA%betaAlpha,tmpMatrix1)
           tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
-        case('spin')
+        case('spin','general')
           tmpVector1 = eigenvaluesB%alpha
           tmpVector2 = eigenvaluesB%beta
           call tmpVector1%diag(tmpMatrix1)
           call tmpVector2%diag(tmpMatrix2)
           tmpMatrix3 = matmul(integralA%alphaBeta,tmpMatrix1)
           tmpMatrix4 = matmul(integralA%betaAlpha,tmpMatrix2)
-          tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
-          tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
-          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
-        case('general')
-          tmpVector1 = eigenvaluesB%alpha
-          tmpVector2 = eigenvaluesB%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix3 = matmul(integralA%alphaBeta,tmpMatrix1)
-          tmpMatrix4 = matmul(integrala%betaAlpha,tmpMatrix2)
           tmpMatrix1 = matmul(integralA%alpha,tmpMatrix1)
           tmpMatrix2 = matmul(integralA%beta,tmpMatrix2)
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
@@ -1509,15 +1546,7 @@
           call tmpVector1%diag(tmpMatrix1)
           tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
           call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrix1)
-        case('spin')
-          tmpVector1 = eigenvaluesA%alpha
-          tmpVector2 = eigenvaluesA%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
-          tmpMatrix2 = matmul(tmpMatrix2,integralB%alpha)
-          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('general')
+        case('spin','general')
           tmpVector1 = eigenvaluesA%alpha
           tmpVector2 = eigenvaluesA%beta
           call tmpVector1%diag(tmpMatrix1)
@@ -1537,15 +1566,7 @@
           tmpMatrix2 = matmul(tmpMatrix1,integralB%beta)
           tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('spin')
-          tmpVector1 = eigenvaluesA%alpha
-          tmpVector2 = eigenvaluesA%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
-          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
-          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrix1,tmpMatrix2)
-        case('general')
+        case('spin','general')
           tmpVector1 = eigenvaluesA%alpha
           tmpVector2 = eigenvaluesA%beta
           call tmpVector1%diag(tmpMatrix1)
@@ -1567,17 +1588,7 @@
           tmpMatrix4 = matmul(tmpMatrix1,integralB%betaAlpha)
           tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
-        case('spin')
-          tmpVector1 = eigenvaluesA%alpha
-          tmpVector2 = eigenvaluesA%beta
-          call tmpVector1%diag(tmpMatrix1)
-          call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix3 = matmul(tmpMatrix1,integralB%alphaBeta)
-          tmpMatrix4 = matmul(tmpMatrix2,integralB%betaAlpha)
-          tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
-          tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
-          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
-        case('general')
+        case('spin','general')
           tmpVector1 = eigenvaluesA%alpha
           tmpVector2 = eigenvaluesA%beta
           call tmpVector1%diag(tmpMatrix1)
@@ -1599,10 +1610,78 @@
       end function mqc_eigenvalues_integral_multiply
 !
 !
-!     PROCEDURE MQC_Eigenvalue_Eigenvalue_Multiply
-      function mqc_eigenvalue_eigenvalue_multiply(eigenvalueA,eigenvalueB) result(scalarOut)
+!     PROCEDURE MQC_Eigenvalues_Eigenvalues_Multiply
+      function mqc_eigenvalues_eigenvalues_multiply(eigenvaluesA,eigenvaluesB,label) result(eigenvaluesOut)
 !
-!     This function multiplies a mqc eigenvalue type with an mqc eigenvalue type.
+!     This function multiplies an mqc eigenvalues type with an mqc eigenvalues type (diagonal matrix multiplication).
+!
+!     -L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_eigenvalues),intent(in)::eigenvaluesA,eigenvaluesB 
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_eigenvalues)::eigenvaluesOut
+      type(mqc_vector)::tmpVector1,tmpVector2,tmpVector3,tmpVector4
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      select case (eigenvaluesB%array_type)
+      case('space')
+        select case (eigenvaluesA%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesB%alpha
+          tmpVector1 = tmpVector1.ewp.tmpVector2
+          call mqc_eigenvalues_allocate(eigenvaluesOut,myLabel,'space',tmpVector1)
+        case('spin','general')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          tmpVector3 = eigenvaluesB%alpha
+          tmpVector1 = tmpVector1.ewp.tmpVector3
+          tmpVector2 = tmpVector2.ewp.tmpVector3
+          call mqc_eigenvalues_allocate(eigenvaluesOut,myLabel,'spin',tmpVector1,tmpVector2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_eigenvalues_eigenvalues_multiply', 6, &
+               'eigenvaluesA%array_type', eigenvaluesA%array_type )
+        end select
+      case('spin','general')
+        select case (eigenvaluesA%array_type)
+        case('space')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesB%alpha
+          tmpVector3 = eigenvaluesB%beta
+          tmpVector2 = tmpVector1.ewp.tmpVector2
+          tmpVector3 = tmpVector1.ewp.tmpVector3
+          call mqc_eigenvalues_allocate(eigenvaluesOut,myLabel,'spin',tmpVector2,tmpVector3)
+        case('spin','general')
+          tmpVector1 = eigenvaluesA%alpha
+          tmpVector2 = eigenvaluesA%beta
+          tmpVector3 = eigenvaluesB%alpha
+          tmpVector4 = eigenvaluesB%beta
+          tmpVector1 = tmpVector1.ewp.tmpVector3
+          tmpVector2 = tmpVector2.ewp.tmpVector4
+          call mqc_eigenvalues_allocate(eigenvaluesOut,myLabel,'spin',tmpVector1,tmpVector2)
+        case default
+          call mqc_error_A('Unknown eigenvalues type in mqc_eigenvalues_eigenvalues_multiply', 6, &
+               'eigenvaluesA%array_type', eigenvaluesA%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown eigenvalues type in mqc_eigenvalues_eigenvalues_multiply', 6, &
+             'eigenvaluesB%array_type', eigenvaluesB%array_type )
+      end select
+!
+      end function mqc_eigenvalues_eigenvalues_multiply
+!
+!
+!     PROCEDURE MQC_Eigenvalue_Eigenvalue_DotProduct
+      function mqc_eigenvalue_eigenvalue_dotProduct(eigenvalueA,eigenvalueB) result(scalarOut)
+!
+!     This function computes the dot product of an mqc eigenvalue type with an mqc eigenvalue type.
 !
 !     -L. M. Thompson, 2018.
 !
@@ -1624,7 +1703,7 @@
           scalarOut = dot_product(eigenvalueA%alpha,eigenvalueB%alpha) + &
             dot_product(eigenvalueA%alpha,eigenvalueB%beta)
         case default
-          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_dotProduct', 6, &
                'eigenvalueB%array_type', eigenvalueB%array_type )
         end select
       case('spin')
@@ -1639,7 +1718,7 @@
           scalarOut = dot_product(eigenvalueA%alpha,eigenvalueB%alpha) + &
             dot_product(eigenvalueA%beta,eigenvalueB%beta)
         case default
-          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_dotProduct', 6, &
                'eigenvalueB%array_type', eigenvalueB%array_type )
         end select
       case('general')
@@ -1654,15 +1733,15 @@
           scalarOut = dot_product(eigenvalueA%alpha,eigenvalueB%alpha) + &
             dot_product(eigenvalueA%beta,eigenvalueB%beta)
         case default
-          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_eigenvalue_eigenvalue_dotProduct', 6, &
                'eigenvalueB%array_type', eigenvalueB%array_type )
         end select
       case default
-        call mqc_error_A('Unknown eigenvalue type in mqc_eigenvalue_eigenvalue_multiply', 6, &
+        call mqc_error_A('Unknown eigenvalue type in mqc_eigenvalue_eigenvalue_dotProduct', 6, &
              'eigenvalueA%array_type', eigenvalueA%array_type )
       end select
 !
-      end function mqc_eigenvalue_eigenvalue_multiply
+      end function mqc_eigenvalue_eigenvalue_dotProduct
 !
 !
 !     PROCEDURE MQC_Integral_Transpose
@@ -1755,7 +1834,7 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Matrix_SpinBlockGHF
-      subroutine mqc_matrix_spinBlockGHF(array,nelec,multi)
+      subroutine mqc_matrix_spinBlockGHF(array,nelec,multi,elist)
 !
 !     This subroutine takes a GHF spin-interleaved spin array (such as typically 
 !     generated by e.g. Gaussian) and returns it in spin blocked form i.e. the spinor 
@@ -1788,19 +1867,20 @@
 !     Variable Declarations.
 !
       implicit none
-      integer::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas, &
+      integer(kind=int64)::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas, &
         athresh,bthresh
       class(*),intent(inOut)::array
       type(mqc_matrix)::tmpMatrix
       type(mqc_vector)::tmpVector
       type(mqc_scalar)::aBlock,bBlock
       character(len=1),dimension(:),allocatable::abarray
-      integer,optional::nelec,multi
+      integer(kind=int64),optional::nelec,multi
+      integer(kind=int64),dimension(:),allocatable,optional::elist
 !
 !     Check that both optional arguments are defined or both
 !     are absent
       if(present(nelec).neqv.present(multi)) then
-        call mqc_error_I('NElectrons or Multiplicity missing &
+        call mqc_error_I('NElectrons, Multiplicity, or energy list missing &
      &    in mqc_matrix_spinBlockGHF', 6)
       end if
 !
@@ -1828,11 +1908,11 @@
         array = tmpVector
       type is (mqc_matrix)
         if(present(nelec)) then
-          print *, 'currently in option'
           rows = mqc_matrix_rows(array)
           columns = mqc_matrix_columns(array)
           blockSize = rows/2
           allocate(abarray(columns))
+          if(present(elist)) allocate(elist(columns))
           call tmpMatrix%init(rows,columns)
           j = 1
           k = rows/2+1
@@ -1849,7 +1929,9 @@
             endIf
           endDo
 !
-!     Begin new column ordering procedure for columns!
+!     Begin new column ordering procedure for columns
+!     and intialize spin ordering array
+!
 !
 !     Determine if each column is alpha- or beta-dominant
 !
@@ -1883,21 +1965,25 @@
             IF ((nalphas.lt.athresh).and.(nbetas.lt.bthresh)) THEN
               IF(abarray(I).eq.'a') THEN
                 call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+                if(present(elist)) elist(acols) = I
                 acols = acols + 1
                 nalphas = nalphas + 1
               ELSE
                 call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+                if(present(elist)) elist(bcols) = I
                 bcols = bcols + 1
                 nbetas = nbetas + 1
               ENDIF
             !If a or b bucket is filled, check b bucket
             ELSE IF (nbetas.ge.bthresh) THEN
               call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+              if(present(elist)) elist(acols) = I
               acols = acols + 1
               nalphas = nalphas + 1
             !Otherwise, a bucket is unfilled
             ELSE
               call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+              if(present(elist)) elist(bcols) = I
               bcols = bcols + 1
               nbetas = nbetas + 1
             ENDIF
@@ -1914,20 +2000,24 @@
             IF((nalphas.lt.athresh).and.(nbetas.lt.bthresh)) THEN
               IF(abarray(I).eq.'a') THEN
                 call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+                if(present(elist)) elist(acols) = I
                 acols = acols + 1
                 nalphas = nalphas + 1
               ELSE
                 call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+                if(present(elist)) elist(bcols) = I
                 bcols = bcols + 1
                 nbetas = nbetas + 1
               ENDIF
             !If a or b bucket is filled, check b bucket
             ELSE IF(nbetas.ge.bthresh) THEN
               call array%vput(tmpMatrix%vat([0],[I]),[0],[acols])
+              if(present(elist)) elist(acols) = I
               acols = acols + 1
               nalphas = nalphas + 1
             ELSE
               call array%vput(tmpMatrix%vat([0],[I]),[0],[bcols])
+              if(present(elist)) elist(bcols) = I
               bcols = bcols + 1
               nbetas = nbetas + 1
             ENDIF
@@ -1990,7 +2080,7 @@
 !     Variable Declarations.
 !
       implicit none
-      integer::i,j,nAlpha,nBeta,nElectrons
+      integer(kind=int64)::i,j,nAlpha,nBeta,nElectrons
       type(mqc_scf_eigenvalues),intent(in)::eigenvaluesIn
       type(mqc_vector),intent(out)::vectorOut
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
@@ -2022,7 +2112,7 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Integral   
-      subroutine mqc_matrix_undoSpinBlockGHF_integral(integralIn,matrixOut)
+      subroutine mqc_matrix_undoSpinBlockGHF_integral(integralIn,matrixOut,elist)
 !
 !     This subroutine takes a spin-blocked est integral object and 
 !     returns it as a GHF spin-interleaved mqc matrix (such as typically 
@@ -2033,14 +2123,17 @@
 !     Variable Declarations.
 !
       implicit none
-      integer::i,j,k,rows,columns,nAlpha,nBeta,nElectrons
+      integer(kind=int64)::i,j,k,iter,rows,columns,nAlpha,nBeta,nElectrons
       type(mqc_scf_integral),intent(in)::integralIn
       type(mqc_matrix),intent(out)::matrixOut
       type(mqc_matrix)::tmpMatrix
+      type(mqc_vector)::tmpVector
+      integer(kind=int64),dimension(:),allocatable,optional::elist
 !
 !
 !     Do the work...
 !
+      
       nAlpha = integralIn%blockSize('alpha') 
       nBeta = integralIn%blockSize('beta') 
       nElectrons = nAlpha+nBeta
@@ -2057,16 +2150,32 @@
         j = j+2
       endDo
       tmpMatrix = matrixOut
-      j = 1
-      do i = 1,nAlpha
-        call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
-        j = j+2
-      endDo
-      j = 2
-      do i = nAlpha+1,nElectrons 
-        call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
-        j = j+2
-      endDo
+      call tmpMatrix%print(6,'temp matrix')
+
+      if(present(elist)) then
+        columns = size(elist)
+        DO I = 1, columns
+          DO ITER = 1, columns
+            if(elist(iter).eq.I) then
+              print *, iter
+              call matrixOut%vput(tmpMatrix%vat([0],[iter]),[0],[i])
+              exit
+            endif
+          END DO
+        END DO
+      else
+        j = 1
+        do i = 1,nAlpha
+          call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
+          j = j+2
+        endDo
+        j = 2
+        do i = nAlpha+1,nElectrons 
+          call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
+          j = j+2
+        endDo
+      endif
+      print *, elist
 !
       return
       end subroutine mqc_matrix_undoSpinBlockGHF_integral    
@@ -2234,7 +2343,7 @@
       type(mqc_scf_integral),optional,intent(inOut)::eVecs
       type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4
       type(mqc_vector)::tmpVec1,tmpVec2
-      integer::nDimAlpha=0
+      integer(kind=int64)::nDimAlpha=0
 !
       if(integral%type().eq.'space') then
         tmpMat1 = integral%getblock('alpha')
@@ -2268,7 +2377,7 @@
         endIf
       elseIf(integral%type().eq.'general') then
         nDimAlpha = integral%blockSize('alpha') 
-        tmpMat1 = integral%getblock('all')
+        tmpMat1 = integral%getblock('full')
         if(present(eVals).and.present(eVecs)) then
           call tmpMat1%diag(tmpVec1,tmpMat2)
           tmpMat1 = tmpMat2%mat([1,NDimAlpha],[1,NDimAlpha])
@@ -2312,7 +2421,7 @@
       class(mqc_scf_integral),intent(in)::integral
       type(mqc_scf_integral)::inverse
       type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4
-      integer::nDimAlpha=0
+      integer(kind=int64)::nDimAlpha=0
 !
       if(integral%type().eq.'space') then
         tmpMat1 = integral%getblock('alpha')
@@ -2326,7 +2435,7 @@
         call mqc_integral_allocate(inverse,'integral inverse','spin',tmpMat1,tmpMat2)
       elseIf(integral%type().eq.'general') then
         nDimAlpha = integral%blockSize('alpha') 
-        tmpMat1 = integral%getblock('all')
+        tmpMat1 = integral%getblock('full')
         tmpMat1 = tmpMat1%inv()
         tmpMat2 = tmpMat1%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
         tmpMat3 = tmpMat1%mat([1,NDimAlpha],[NDimAlpha+1,-1])
@@ -2376,11 +2485,7 @@
         tmpVec2 = eigenvalues%getblock('beta')
         call tmpVec1%power(scalar)
         call tmpVec2%power(scalar)
-        if(eigenvalues%type().eq.'spin') then
-          call mqc_eigenvalues_allocate(eigenvalues,'eigenvalues exponentiated','spin',tmpVec1,tmpVec2)
-        elseIf(eigenvalues%type().eq.'general') then
-          call mqc_eigenvalues_allocate(eigenvalues,'eigenvalues exponentiated','general',tmpVec1,tmpVec2)
-        endIf
+        call mqc_eigenvalues_allocate(eigenvalues,'eigenvalues exponentiated','spin',tmpVec1,tmpVec2)
       endIf
 !
       end subroutine mqc_scf_eigenvalues_power   
@@ -2423,15 +2528,15 @@
 !
       Implicit None
 
-      Integer::IOut,IPrint,NBasis,NAlpha,NBeta,NAlpha_Str,NBeta_Str,NBit_Ints,IOrb,&
+      Integer(kind=int64)::IOut,IPrint,NBasis,NAlpha,NBeta,NAlpha_Str,NBeta_Str,NBit_Ints,IOrb,&
         NElec,NEMax,NEMin,I
-      Integer,Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
+      Integer(kind=int64),Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
       Type(MQC_Scalar)::NAlphaIn,NBetaIn,NBasisIn
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1=>Null(),String_List_2=>Null(),&
         String_Node_1=>Null(),String_Node_2=>Null()
-      Integer::New_Value
-      Integer,Allocatable::Returned_Value
+      Integer(kind=int64)::New_Value
+      Integer(kind=int64),Allocatable::Returned_Value
       Logical::Last
 !      
  1001 Format(1x,I7,2x,B64)
@@ -2606,18 +2711,18 @@
 !     Variable Declarations...
 !
       Implicit None
-      Integer,Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
+      Integer(kind=int64),Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasisIn
       Type(MQC_SCF_Integral),Intent(In)::Core_Hamiltonian
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_Scalar)::MatEl,Sgn
-      Integer::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
+      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
         II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt
-      Real::ERI1,ERI2,Zero=0.0
-      Integer,Dimension(4)::Orbs,Spin,Det
-      Integer,Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
+      real(kind=real64)::ERI1,ERI2,Zero=0.0
+      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
+      Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
       
  1050 Format( A )
@@ -3990,8 +4095,8 @@
 !     Variable Declarations...
 !
       Implicit None
-      Integer::IOut,IPrint,NBasis,P,Q,R,S,Mu,Nu,Lambda,Sigma,IErr
-      Real::Zero=0.0d0
+      Integer(kind=int64)::IOut,IPrint,NBasis,P,Q,R,S,Mu,Nu,Lambda,Sigma,IErr
+      real(kind=real64)::Zero=0.0d0
       Logical::DoON5,UHF
       Type(MQC_Matrix)::X,Y
       Type(MQC_R4Tensor) tmpR4TensorAlpha,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha, &
@@ -4242,15 +4347,15 @@
 !!     Variable Declarations...
 !!
 !      Implicit None
-!      Integer::IOut,IPrint,NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
+!      Integer(kind=int64)::IOut,IPrint,NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
 !        IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt,NBit_Ints, &
 !        I,J,II,JJ
-!      Real::S2_Mat_Elem,Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
-!      Integer,Dimension(4)::Orbs,Spin,Det
-!      Integer,Dimension(:)::Alpha_String_1,Alpha_String_2,Beta_String_1, &
+!      real(kind=real64)::S2_Mat_Elem,Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
+!      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
+!      Integer(kind=int64),Dimension(:)::Alpha_String_1,Alpha_String_2,Beta_String_1, &
 !        Beta_String_2
-!      Integer,Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
-!      Real,Dimension(:,:),Allocatable::MO_Overlap
+!      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
+!      Real(real=int64),Dimension(:,:),Allocatable::MO_Overlap
 !!
 !!      Write(IOut,*) 'alpha 1:'
 !!      Write(IOut,'(B64)') Alpha_String_1
@@ -4644,14 +4749,14 @@
 !     Variable Declarations...
 !
       Implicit None
-      Integer,Intent(In)::IOut,IPrint
+      Integer(kind=int64),Intent(In)::IOut,IPrint
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasis
       Type(MQC_TwoERIs),Intent(In)::MO_ERIs
       Type(MQC_SCF_Integral),Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
-      Integer::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
+      Integer(kind=int64)::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index
 !
       NAlpha_Str = MQC_Matrix_Rows(Determinants%Strings%Alpha)
