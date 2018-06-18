@@ -49,6 +49,7 @@
         Type(MQC_Matrix),Private::Alpha,Beta,AlphaBeta,BetaAlpha
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General
+        Integer(kind=int64),Dimension(:),Allocatable,Private::Energy_List
       Contains 
         Procedure, Public::print => mqc_print_integral
         Procedure, Private::hasAlpha => mqc_integral_has_alpha
@@ -62,6 +63,9 @@
         Procedure, Public::getBlock => mqc_integral_output_block
         Procedure, Public::diag => mqc_scf_integral_diagonalize
         Procedure, Public::inv => mqc_scf_integral_inverse
+        Procedure, Public::setEList => mqc_integral_set_energy_list
+        Procedure, Public::getEList => mqc_integral_get_energy_list
+        Procedure, Public::deleteEList => mqc_integral_delete_energy_list
       End Type
 !
 !     MQC_SCF_Eigenvalues
@@ -2445,6 +2449,75 @@
       endIf
 !
       end function mqc_scf_integral_inverse
+!
+!
+!     PROCEDURE MQC_Integral_Set_Energy_List
+      subroutine mqc_integral_set_energy_list(integral,elist)
+!
+!     This subroutine sets the private array variable Energy_List
+!     for an mqc_integral object.  Subroutine is descrutive.
+!   
+!     A. Mahler, 2018
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      integer(kind=int64),dimension(:),allocatable::elist
+
+      if(allocated(integral%Energy_List)) deallocate(integral%Energy_List)
+
+      integral%Energy_List = elist
+!
+      end subroutine mqc_integral_set_energy_list
+!
+!
+!     PROCEDURE MQC_Integral_Get_Energy_List
+      function mqc_integral_get_energy_list(integral) result(elist)
+!
+!     This function returns the private variable array Energy_List
+!     of the integral object
+!
+!     A. Mahler, 2018.
+!
+!
+!     Variable Declarations
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      integer(kind=int64),dimension(:),allocatable::elist
+
+      if(.not.allocated(integral%Energy_List)) then
+        call mqc_error('Energy_List is not set in MQC_Integral object')
+      else
+        elist = integral%Energy_List
+      endif
+!
+      end function mqc_integral_get_energy_list
+!
+!
+!     PROCEDURE MQC_Integral_Delete_Energy_List
+      subroutine mqc_integral_delete_energy_list(integral)
+!
+!     This subroutine deletes the current energy listing for the 
+!     mqc_integral object
+!
+!     A. Mahler, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+
+      if(.not.allocated(integral%Energy_List)) then
+        call mqc_error('Energy_List was not set in MQC_Integral object')
+      else
+        deallocate(integral%Energy_List)
+      end if
+!
+      end subroutine mqc_integral_delete_energy_list
 !
 !
 !     PROCEDURE MQC_SCF_Eigenvalues_Power
