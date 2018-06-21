@@ -3313,7 +3313,7 @@
 !
 !
 !     PROCEDURE MQC_Vector_Push
-      Subroutine MQC_Vector_Push(Vector,ScalarIn) 
+      Subroutine MQC_Vector_Push(Vector,Scalar) 
 !
 !     This function adds a value to the end of a vector.
 !
@@ -3322,23 +3322,9 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      class(*),intent(in)::scalarIn
-      type(mqc_scalar)::scalar
+      type(mqc_scalar),intent(in)::scalar
       type(mqc_vector)::temp
 !
-      select type (scalarIn)
-      type is (integer)
-        scalar = scalarIn
-      type is (real)
-        scalar = scalarIn    
-      type is (complex(kind=real64))
-        scalar = scalarIn    
-      type is (mqc_scalar)
-        scalar = scalarIn    
-      class default
-        call mqc_error('underfined scalarIn in MQC_Vector_Push')
-      end select
-
       if(mqc_length_vector(vector).eq.0) then
         call vector%init(1,scalar)
       else
@@ -3355,7 +3341,7 @@
 !
 !
 !     PROCEDURE MQC_Vector_Unshift
-      Subroutine MQC_Vector_Unshift(Vector,ScalarIn) 
+      Subroutine MQC_Vector_Unshift(Vector,Scalar) 
 !
 !     This function adds a value to the beginning of a vector.
 !
@@ -3364,23 +3350,9 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      class(*),intent(in)::scalarIn
-      type(mqc_scalar)::scalar
+      type(mqc_scalar),intent(in)::scalar
       type(mqc_vector)::temp
 !
-      select type (scalarIn)
-      type is (integer)
-        scalar = scalarIn
-      type is (real)
-        scalar = scalarIn    
-      type is (complex(kind=real64))
-        scalar = scalarIn    
-      type is (mqc_scalar)
-        scalar = scalarIn    
-      class default
-        call mqc_error('underfined scalarIn in MQC_Vector_Unshift')
-      end select
-
       if(mqc_length_vector(vector).eq.0) then
         call vector%init(1,scalar)
       else
