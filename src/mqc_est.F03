@@ -2167,8 +2167,19 @@
             endif
           END DO
         END DO
-      else
+      else if(integralIn%type().eq.'mo coefficients') then
         call mqc_error('Energy_List is not set in MQC_Integral object')
+      else
+        j = 1
+        do i = 1,nAlpha
+          call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
+          j = j+2
+        endDo
+        j = 2
+        do i = nAlpha+1,nElectrons
+          call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
+          j = j+2
+        endDo
       endif
 !
       return
