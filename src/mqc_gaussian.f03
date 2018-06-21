@@ -698,7 +698,7 @@
 !     Local temp variables.
       real,dimension(:),allocatable::tempArray
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.false.,ok
 !
 !
 !     Format statements.
@@ -1204,9 +1204,9 @@
                 & file, but NO MATRIX SENT to procedure.', 6, &
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
-              write(*,1060) 'reading matrix'
+ !             write(*,1060) 'reading matrix'
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
-              write(*,1060) 'read matrix'
+ !             write(*,1060) 'read matrix'
               matrixOut = Reshape(complexTmp,[N1,N2])
               deallocate(complexTmp)
             case('COMPLEX-SYMMATRIX')
@@ -2298,6 +2298,7 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
       integer::nOutputArrays,nBasis,nElectrons,multiplicity
+      integer(kind=int64),dimension(:),allocatable::elist
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
@@ -2362,13 +2363,14 @@
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
-            fileInfo%getVal('multiplicity'))
+            fileInfo%getVal('multiplicity'),elist)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          call est_integral%setEList(elist)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2580,7 +2582,7 @@
             tmpVectorAlpha,tmpVectorBeta)
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
-            fileInfo%getVal('multiplicity')) !MODIFIED
+            fileInfo%getVal('multiplicity'),elist) !MODIFIED
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
@@ -2604,7 +2606,7 @@
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
 
-
+          call est_wavefunction%mo_coefficients%setEList(elist)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
           est_wavefunction%nBeta = fileInfo%getVal('nBeta')
@@ -2622,6 +2624,8 @@
         call mqc_error_A('Invalid label sent to %getESTObj.', 6, &
              'mylabel', mylabel )
       end select
+
+      if(allocated(elist)) deallocate(elist)
 !
       return
 
