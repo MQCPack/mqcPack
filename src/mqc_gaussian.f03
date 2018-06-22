@@ -2034,6 +2034,7 @@
             matrixIn=est_integral%getBlock('beta'),storage='full')
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix,storage='full')
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2052,7 +2053,7 @@
             vectorIn=est_eigenvalues%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_eigenvalues,tmpVector)
-          call fileInfo%writeArray('ALPHA ORBITAL COEFFICIENTS',vectorIn=tmpVector)
+          call fileInfo%writeArray('ALPHA ORBITAL ENERGIES',vectorIn=tmpVector)
         else
           call mqc_error_a('Unknown wavefunction type in getESTObj', 6, &
                'my_integral_type', my_integral_type )
@@ -2070,6 +2071,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2088,6 +2090,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2106,6 +2109,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2122,6 +2126,7 @@
             matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2138,6 +2143,7 @@
             matrixIn=est_wavefunction%overlap_matrix%getBlock('alpha'))
         elseIf(mqc_integral_array_type(est_wavefunction%overlap_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%overlap_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2154,6 +2160,7 @@
             matrixIn=est_wavefunction%core_hamiltonian%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%core_hamiltonian).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%core_hamiltonian,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2186,6 +2193,7 @@
             matrixIn=est_wavefunction%mo_coefficients%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%mo_coefficients).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%mo_coefficients,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2202,6 +2210,7 @@
             matrixIn=est_wavefunction%density_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2218,6 +2227,7 @@
             matrixIn=est_wavefunction%fock_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%fock_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &

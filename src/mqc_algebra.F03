@@ -9384,7 +9384,7 @@
       real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
       Complex(Kind=real64),dimension(:,:),allocatable::tempAC,tempBC,rightCvecs,leftCvecs
       Complex(Kind=real64),dimension(:),allocatable::eValsA,eValsB,workC
-      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i
+      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i,npdFlag
       character(len=64)::StorFlagA,StorFlagB,TypeFlagA,TypeFlagB
       type(mqc_vector)::tmp_vec
 !
@@ -9413,8 +9413,12 @@
       if(b%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(b)
       If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
       If(b%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(b)
+      If(a%Data_Type.eq.'Complex'.and.b%Data_Type.ne.'Complex') call mqc_matrix_copy_real2Complex(b)
+      If(a%Data_Type.ne.'Complex'.and.b%Data_Type.eq.'Complex') call mqc_matrix_copy_real2Complex(a)
+      npdFlag = 0
 
-      if(MQC_Matrix_Test_Symmetric(a).and.MQC_Matrix_Test_Symmetric(b).and.a%Data_Type.eq.'Real') then
+      if(MQC_Matrix_Test_Symmetric(a).and.MQC_Matrix_Test_Symmetric(b).and.a%Data_Type.eq.'Real' &
+        .and.b%Data_Type.eq.'Real') then
         allocate(tempA(nDim1A,nDim2A),tempB(nDim1B,nDim2B))
         tempA = a%matR
         tempB = b%matR
@@ -9428,10 +9432,14 @@
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'V','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+          if(iError.lt.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
-          if(present(reigenvecs)) reigenvecs = tempA
-          if(present(leigenvecs)) leigenvecs = tempA
+          if(iError.gt.0) then
+            npdFlag = 1
+          else
+            if(present(reigenvecs)) reigenvecs = tempA
+            if(present(leigenvecs)) leigenvecs = tempA
+          endIf
         else
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
           if(iError.ne.0) call mqc_error_i('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
@@ -9440,16 +9448,20 @@
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+          if(iError.lt.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
+          if(iError.gt.0) npdFlag = 1
         endIf
-        eigenvals = eValsOut
+        if(iError.eq.0) eigenvals = eValsOut
         if(allocated(eValsOut)) deallocate(eValsOut)
         if(allocated(work)) deallocate(work)
         if(allocated(tempA)) deallocate(tempA)
         if(allocated(tempB)) deallocate(tempB)
-      else
-        if(a%Data_Type.eq.'Real') then
+      endIf
+      
+      if(.not.MQC_Matrix_Test_Symmetric(a).or..not.MQC_Matrix_Test_Symmetric(b).or.a%Data_Type.ne.'Real' &
+        .or.b%Data_Type.ne.'Real'.or.npdFlag.eq.1) then
+        if(a%Data_Type.eq.'Real'.and.b%Data_Type.eq.'Real') then
           allocate(tempA(nDim1A,nDim2A),tempB(nDim1B,nDim2B))
           tempA = a%matR
           tempB = b%matR
@@ -9474,14 +9486,18 @@
             do i = 1, NDim2A
               if(eValsImag(i).ne.0.0) then
                 if(eValsImag(i-1).ne.0.0) cycle
-                tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=real64)
-                call reigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=real64)
-                call reigenvecs%vput(tmp_vec,[0],[i+1])
-                tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=real64)
-                call leigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=real64)
-                call leigenvecs%vput(tmp_vec,[0],[i+1])
+                if(present(reigenvecs)) then
+                  tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=real64)
+                  call reigenvecs%vput(tmp_vec,[0],[i])
+                  tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=real64)
+                  call reigenvecs%vput(tmp_vec,[0],[i+1])
+                endIf
+                if(present(leigenvecs)) then
+                  tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=real64)
+                  call leigenvecs%vput(tmp_vec,[0],[i])
+                  tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=real64)
+                  call leigenvecs%vput(tmp_vec,[0],[i+1])
+                endIf
               endIf
             endDo
           else
@@ -9507,7 +9523,7 @@
           if(allocated(work)) deallocate(work)
           if(allocated(tempA)) deallocate(tempA)
           if(allocated(tempB)) deallocate(tempB)
-        elseIf(a%Data_Type.eq.'Complex') then
+        elseIf(a%Data_Type.eq.'Complex'.and.b%Data_Type.eq.'Complex') then
           allocate(tempAC(nDim1A,nDim2A),tempBC(nDim1B,nDim2B))
           tempAC = a%matC
           tempBC = b%matC
@@ -9551,11 +9567,16 @@
           if(allocated(work)) deallocate(work)
           if(allocated(tempAC)) deallocate(tempAC)
           if(allocated(tempBC)) deallocate(tempBC)
+        else
+          call mqc_error_A('Incompatible data types in mqc_matrix_generalized_eigensystem',6,'a%Data_Type',a%Data_Type, &
+            'b%Data_Type',b%Data_Type)
         endIf
       endIf
 
       if(typeFlagA.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(a)
       if(typeFlagB.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(b)
+      if(typeFlagA.eq.'Real'.and.a%Data_Type.eq.'Complex') Call MQC_Matrix_Copy_Complex2Real(a)
+      if(typeFlagB.eq.'Real'.and.b%Data_Type.eq.'Complex') Call MQC_Matrix_Copy_Complex2Real(b)
       if(storFlagA.eq.'StorDiag') Call MQC_Matrix_full2Diag(a)
       if(storFlagB.eq.'StorDiag') Call MQC_Matrix_full2Diag(b)
       if(storFlagA.eq.'StorSymm') Call MQC_Matrix_full2Symm(a)
