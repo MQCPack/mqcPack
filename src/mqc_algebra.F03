@@ -7907,11 +7907,13 @@
       case('StorFull')
         select case(Tmp2%storage)
         case('StorSymm')
-          Call MQC_Matrix_Symm2Full(Tmp2)
+          call MQC_Matrix_Symm2Full(Tmp2)
         case('StorDiag')
-          Call MQC_Matrix_Diag2Full(Tmp2)
+          call MQC_Matrix_Diag2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
         case default
-          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSum.', 6, &
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
         end select
       case('StorSymm')
@@ -7920,8 +7922,10 @@
           Call MQC_Matrix_Symm2Full(Tmp1)
         case('StorDiag')
           Call MQC_Matrix_Diag2Symm(Tmp2)
+        case('StorSymm')
+          !-Empty Case-!
         case default
-          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSum.', 6, &
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
         end select
       case('StorDiag')
@@ -7930,8 +7934,10 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
         case('StorSymm')
           Call MQC_Matrix_Diag2Symm(Tmp1)
+        case('StorDiag')
+          !-Empty Case-!
         case default
-          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSum.', 6, &
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
         end select
       case default
@@ -8004,36 +8010,103 @@
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
-      type(MQC_Matrix)::MC
-      type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
-      character(len=64)::matrixType
-!
-!     For now, addition of two MQC matrices is only allowed for same-type and
-!     same-storage pairs. Start by ensuring this limitation is honored.
-!
-      if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error_A('MQC_MatrixMatrixSubtract: Data types do NOT match.', 6, &
-        'TRIM(MA%data_type)', TRIM(MA%data_type), &
-        'TRIM(MB%data_type)', TRIM(MB%data_type) )
-      if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error_A('MQC_MatrixMatrixSubtract: Storage forms do NOT match.', 6, &
-        'TRIM(MA%storage)', TRIM(MA%storage), &
-        'TRIM(MB%storage)', TRIM(MB%storage) )
-      MC = MA
-!
+      type(MQC_Matrix)::MC,Tmp1,Tmp2
+
+      Tmp1 = MA
+      Tmp2 = MB
+      select case(Tmp1%storage)
+      case('StorFull')
+        select case(Tmp2%storage)
+        case('StorSymm')
+          call MQC_Matrix_Symm2Full(Tmp2)
+        case('StorDiag')
+          call MQC_Matrix_Diag2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case('StorSymm')
+        select case(Tmp2%storage)
+        case('StorFull')
+          call MQC_Matrix_Symm2Full(Tmp1)
+        case('StorDiag')
+          call MQC_Matrix_Diag2Symm(Tmp2)
+        case('StorSymm')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case('StorDiag')
+        select case(Tmp2%storage)
+        case('StorFull')
+          call MQC_Matrix_Diag2Full(Tmp1)
+        case('StorSymm')
+          call MQC_Matrix_Diag2Symm(Tmp1)
+        case('StorDiag')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case default
+        call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+             'Tmp1%storage', Tmp1%storage)
+      end select
+!     
 !     Do the work.
 !
-      call String_Change_Case(MC%Data_Type,'u',matrixType)
-      select case(TRIM(matrixType))
-      case('REAL')
-        MC%MatR = MC%MatR - MB%MatR
-      case('INTEGER')
-        MC%MatI = MC%MatI - MB%MatI
-      case('COMPLEX')
-        MC%MatC = MC%MatC - MB%MatC
+      select case(Tmp1%data_type)
+      case('Real')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatR - Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatR = Tmp1%MatR - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatR - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
+      case('Integer')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatI - Tmp2%MatR
+        case('Integer')
+          MC = Tmp2
+          MC%MatI = Tmp1%MatI - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatI - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
+      case('Complex')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC - Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatC - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
       case default
-        call mqc_error_a('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
-             'TRIM(matrixType)', TRIM(matrixType))
+        call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+             'Tmp1%data_type', Tmp1%data_type)
       end select
 !
       return
