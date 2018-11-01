@@ -61,6 +61,7 @@
         Procedure, Public::getLabel => mqc_integral_array_name
         Procedure, Public::addLabel => mqc_integral_add_name
         Procedure, Public::getBlock => mqc_integral_output_block
+        Procedure, Public::init => mqc_integral_initialize 
         Procedure, Public::diag => mqc_scf_integral_diagonalize
         Procedure, Public::inv => mqc_scf_integral_inverse
         Procedure, Public::setEList => mqc_integral_set_energy_list
@@ -199,6 +200,10 @@
 !
       Interface Operator (+)
         Module Procedure MQC_Integral_Sum
+      End Interface
+!
+      Interface Operator (-)
+        Module Procedure MQC_Integral_Difference
       End Interface
 !
 !
@@ -692,6 +697,33 @@
       endIf
 !
       end subroutine mqc_eigenvalues_allocate  
+!
+!
+!     PROCEDURE MQC_Integral_Initialize
+      subroutine mqc_integral_initialize(integral,nAlpha,nBeta,label) 
+!
+      implicit none
+      class(mqc_scf_integral),intent(inOut)::integral
+      integer,intent(in)::nAlpha,nBeta
+      character(Len=*),optional,intent(in)::label
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+!
+      call tmpMatrixAlpha%identity(nAlpha,nAlpha)
+      if (nAlpha.eq.nBeta) then
+        call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
+      else 
+        call tmpMatrixBeta%identity(nBeta,nBeta)
+        call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      endIf
+!
+      end subroutine mqc_integral_initialize
 !
 !
 !     PROCEDURE MQC_Integral_Output_Block
@@ -1440,6 +1472,96 @@
       end select
 
       end function mqc_integral_sum
+!
+!
+!     PROCEDURE MQC_Integral_Difference
+      function mqc_integral_difference(integralA,integralB) result(integralOut)
+!
+!     This function subtracts two mqc integrals.
+!
+!     -L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integralA,integralB
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+!
+      select case(integralA%array_type)
+      case('space')
+        select case (integralB%array_type)
+        case('space')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          call mqc_integral_allocate(integralOut,'','space',tmpMatrixAlpha)
+        case('spin')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%alpha-integralB%beta
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('general')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%alpha-integralB%beta
+          tmpMatrixAlphaBeta = integralB%alphaBeta
+          tmpMatrixBetaAlpha = integralB%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case('spin')
+        select case (integralB%array_type)
+        case('space')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%alpha
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('spin')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%beta
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('general')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%beta
+          tmpMatrixAlphaBeta = integralB%alphaBeta
+          tmpMatrixBetaAlpha = integralB%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case('general')
+        select case (integralB%array_type)
+        case('space')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%alpha
+          tmpMatrixAlphaBeta = integralA%alphaBeta
+          tmpMatrixBetaAlpha = integralA%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('spin')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%beta
+          tmpMatrixAlphaBeta = integralA%alphaBeta
+          tmpMatrixBetaAlpha = integralA%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('general')
+          tmpMatrixAlpha = integralA%alpha-integralB%alpha
+          tmpMatrixBeta = integralA%beta-integralB%beta
+          tmpMatrixAlphaBeta = integralA%alphaBeta-integralB%alphaBeta
+          tmpMatrixBetaAlpha = integralA%betaAlpha-integralB%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+             'integralA%array_type', integralA%array_type )
+      end select
+
+      end function mqc_integral_difference
+!
 !
 !     PROCEDURE MQC_Integral_Integral_Multiply
       function mqc_integral_integral_multiply(integralA,integralB,label) result(integralOut)
