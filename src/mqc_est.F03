@@ -64,10 +64,11 @@
         Procedure, Public::init => mqc_integral_initialize 
         Procedure, Public::diag => mqc_scf_integral_diagonalize
         Procedure, Public::inv => mqc_scf_integral_inverse
+        Procedure, Public::norm => mqc_integral_norm
+        Procedure, Private::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
-        Procedure, Private::at => mqc_integral_at
       End Type
 !
 !     MQC_SCF_Eigenvalues
@@ -85,6 +86,7 @@
         Procedure, Public::addLabel => mqc_eigenvalues_add_name
         Procedure, Public::getBlock => mqc_eigenvalues_output_block
         Procedure, Public::power => mqc_scf_eigenvalues_power
+        Procedure, Public::at => mqc_eigenvalues_at
       End Type
 !
 !     MQC_Wavefunction
@@ -2005,7 +2007,7 @@
       else
         myLabel = ''
       endIf
-
+     
       select case (integral%array_type)
       case('space')
           tmpMatrixAlpha = transpose(integral%alpha)
@@ -2071,6 +2073,57 @@
       end select
 !
       end function mqc_integral_conjugate_transpose
+!
+!
+!     PROCEDURE MQC_Integral_Norm
+      function mqc_integral_norm(integral,methodIn) result(norm)
+!
+!     This function computes the matrix norm of an mqc integral object
+!     Different norms can be computed with optional argument methodIn.
+!     'M' - max(abs(A(i,j)))
+!     '1' - one norm
+!     'I' - infinty norm
+!     'F' - Frobenius norm (default)
+!
+!     -L. M. Thompson, 2018.
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      character(len=1),optional,intent(in)::methodIn
+      character(len=1)::method
+      type(mqc_scalar)::norm
+      type(mqc_matrix)::ret_block
+!
+      if(Present(methodIn)) then
+        method = methodIn
+      else
+        method = 'F'
+      endIf
+      
+      select case (integral%array_type)
+      case('space')
+        ret_block = integral%getBlock('alpha')
+        norm = mqc_matrix_norm(ret_block,method)
+      case('spin')
+        ret_block = integral%getBlock('alpha')
+        norm = mqc_matrix_norm(ret_block,method)
+        ret_block = integral%getBlock('beta')
+        norm = norm + mqc_matrix_norm(ret_block,method)
+      case('general')
+        ret_block = integral%getBlock('alpha')
+        norm = mqc_matrix_norm(ret_block,method)
+        ret_block = integral%getBlock('beta')
+        norm = norm + mqc_matrix_norm(ret_block,method)
+        ret_block = integral%getBlock('alpha-beta')
+        norm = mqc_matrix_norm(ret_block,method)
+        ret_block = integral%getBlock('beta-alpha')
+        norm = norm + mqc_matrix_norm(ret_block,method)
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_norm', 6, &
+             'integral%array_type', integral%array_type )
+      end select
+!
+      end function mqc_integral_norm
 !
 !=====================================================================
 !
@@ -2417,7 +2470,7 @@
           call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
           j = j+2
         endDo
-      endif
+      endIf
 !
       return
       end subroutine mqc_matrix_undoSpinBlockGHF_integral    
@@ -2925,6 +2978,85 @@
       endIf
 
       end function mqc_integral_at
+!
+!
+!     PROCEDURE MQC_Eigenvalues_At
+      function mqc_eigenvalues_at(eigenvalues,i,spinBlock) result(element)
+!
+!     This function returns the MQC_Scalar element at i, j.
+!
+      implicit none
+      class(mqc_scf_eigenvalues)::eigenvalues
+      integer(kind=int64)::i
+      type(mqc_scalar)::element
+      character(len=64),optional::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      if(present(spinBlock)) then
+        call string_change_case(spinBlock,'L')
+        if(eigenvalues%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha') then
+            element = eigenvalues%alpha%at(i)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
+          if(spinBlock.eq.'alpha') then
+            element = eigenvalues%alpha%at(i)
+          elseif(spinblock.eq.'beta') then
+            element = eigenvalues%beta%at(i)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      else 
+        if(eigenvalues%array_type.eq.'space') then
+          if(i.gt.eigenvalues%blockSize('alpha')) i = i - eigenvalues%blockSize('alpha')
+          element = eigenvalues%alpha%at(i)
+        elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
+          if(i.gt.eigenvalues%blockSize('full')) i = i - eigenvalues%blockSize('full')
+          element = eigenvalues%alpha%at(i)
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      endIf
+
+      end function mqc_eigenvalues_at
+!
+!
+!     PROCEDURE MQC_SCF_Transformation_Matrix
+      subroutine mqc_scf_transformation_matrix(overlap,transform_matrix,nBasUse)
+!
+!     This function returns the tranformation matrix and number of linearly independent basis functions.
+!
+!     L. M. Thompson, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::overlap
+      type(mqc_scf_integral),intent(out)::transform_matrix
+      integer(kind=int64),optional,intent(out)::nBasUse
+      type(mqc_matrix)::transform_matrix_tmp,SVecs
+      type(mqc_vector)::SVals
+      integer(kind=int64)::i
+      real(kind=real64)::thresh=1.0d-4
+!
+      nBasUse = 0
+      transform_matrix_tmp = overlap%getBlock('alpha')
+      call transform_matrix_tmp%diag(SVals,SVecs)
+      do i = 1, SVals%size()
+        if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
+      endDo
+      call SVals%power(-0.5)
+      call SVals%diag(transform_matrix_tmp)
+      transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
+      call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
+!
+      end subroutine mqc_scf_transformation_matrix
 !
 !
 !=====================================================================
