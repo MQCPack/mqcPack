@@ -151,6 +151,10 @@
         Module Procedure MQC_Matrix_Matrix_Contraction
       End Interface
 
+      interface conjg
+        module procedure MQC_Scalar_Complex_Conjugate
+      end interface
+
       interface mqc_have_real
         Module procedure mqc_vector_havereal
         module procedure mqc_matrix_havereal
@@ -1424,6 +1428,30 @@
 !
       Return
       End Function MQC_ScalarGE
+!
+!
+!     PROCEDURE MQC_Scalar_Complex_Conjugate
+      Function MQC_Scalar_Complex_Conjugate(ScalarIn) Result(ScalarOut)
+!
+!     This function returns the complex conjugate of an mqc scalar. 
+!
+!     L. M. Thompson, 2018.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::ScalarOut
+      Character(Len=64)::datatype
+!
+      If(ScalarIn%Data_Type.eq.'Complex') then
+        ScalarOut = conjg(ScalarIn%ScaC)
+      Else
+        ScalarOut = ScalarIn
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Complex_Conjugate
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -3724,7 +3752,7 @@
                  'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
-        If (IndI>IndJ) then
+        If (IndI.ge.IndJ) then
           If (Mat%Data_Type.eq.'Integer') then
             Element = (Mat%MatI(IndI*(IndI-1)/2+IndJ,1))
           ElseIf (Mat%Data_Type.eq.'Real') then
@@ -7366,20 +7394,37 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Symm2Full
-      Subroutine MQC_Matrix_Symm2Full(Matrix)
+      Subroutine MQC_Matrix_Symm2Full(Matrix,Option)
 !
 !     This subroutine is used to convert a matrix from lower-triangular
 !     to full packing.
 !
-!     L. M. Thompson, 2016.
+!     Options for this subroutine are:
+!       'symmetric'      Test if matrix is symmetric
+!       'antisymmetric'  Test if matrix is antisymmetric
+!       'hermitian'      Test if matrix is hermitian
+!       'antihermitian'  Test if matrix is antihermitian
+!
+!     L. M. Thompson, 2016, 2018.
 !
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
+      Character(len=*),Optional,Intent(In)::Option
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,J,II,N,NTT
+      Character(len=64)::myOption
+!
+      If(Present(Option)) then
+        call string_change_case(Option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+      If(myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and.myOption.ne.'hermitian'.and. &
+        myOption.ne.'antihermitian') Call MQC_Error_A('MQC_Matrix_Full2Symm has unrecognised &
+     &  transformation option',6,'myOption',myOption)
 !
       If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
      &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
@@ -7394,8 +7439,12 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
+            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+              Matrix%MatR(J,I) = -Temp(II+J,1)
+            Else
+              Matrix%MatR(J,I) = Temp(II+J,1)
+            EndIf
             Matrix%MatR(I,J) = Temp(II+J,1)
-            Matrix%MatR(J,I) = Temp(II+J,1)
           EndDo
         EndDo
         Deallocate(Temp)
@@ -7407,8 +7456,12 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
+            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+              Matrix%MatI(J,I) = -Temp(II+J,1)
+            Else
+              Matrix%MatI(J,I) = Temp(II+J,1)
+            EndIf
             Matrix%MatI(I,J) = Temp(II+J,1)
-            Matrix%MatI(J,I) = Temp(II+J,1)
           EndDo
         EndDo
         Deallocate(Temp)
@@ -7420,8 +7473,16 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
+            If(myOption.eq.'antisymmetric') then
+              Matrix%MatC(J,I) = -TempC(II+J,1)
+            ElseIf(myOption.eq.'antihermitian') then
+              Matrix%MatC(J,I) = -conjg(TempC(II+J,1))
+            ElseIf(myOption.eq.'hermitian') then
+              Matrix%MatC(J,I) = conjg(TempC(II+J,1))
+            Else
+              Matrix%MatC(J,I) = TempC(II+J,1)
+            EndIf
             Matrix%MatC(I,J) = TempC(II+J,1)
-            Matrix%MatC(J,I) = TempC(II+J,1)
           EndDo
         EndDo
         Deallocate(TempC)
@@ -7832,42 +7893,107 @@
 !     This function returns the sum of two MQC_Matrix matrices.
 !
 !     H. P. Hratchian, 2017.
+!     L. M. Thompson, 2018.
 !
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
-      type(MQC_Matrix)::MC
-      type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
-      character(len=64)::matrixType
+      type(MQC_Matrix)::MC,Tmp1,Tmp2
 !
-!     For now, addition of two MQC matrices is only allowed for same-type and
-!     same-storage pairs. Start by ensuring this limitation is honored.
 !
-!      write(*,*) 'Sam: Type of varible 1=', TRIM(MA%data_type)  
-!      write(*,*) 'Sam: Type of varible 2=', TRIM(MB%data_type)  
-      if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error_a('MQC_MatrixMatrixSum: Sam Data types do NOT match.', 6, &
-        'TRIM(MA%data_type)', TRIM(MA%data_type), &
-        'TRIM(MB%data_type)', TRIM(MB%data_type) )
-      if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error_a('MQC_MatrixMatrixSum: Storage forms do NOT match.', 6, &
-        'TRIM(MA%storage)', TRIM(MA%storage), &
-        'TRIM(MB%storage', TRIM(MB%storage) )
-      MC = MA
+      Tmp1 = MA
+      Tmp2 = MB
+      select case(Tmp1%storage)
+      case('StorFull')
+        select case(Tmp2%storage)
+        case('StorSymm')
+          call MQC_Matrix_Symm2Full(Tmp2)
+        case('StorDiag')
+          call MQC_Matrix_Diag2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%storage', Tmp2%storage) 
+        end select
+      case('StorSymm')
+        select case(Tmp2%storage)
+        case('StorFull')
+          Call MQC_Matrix_Symm2Full(Tmp1)
+        case('StorDiag')
+          Call MQC_Matrix_Diag2Symm(Tmp2)
+        case('StorSymm')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%storage', Tmp2%storage) 
+        end select
+      case('StorDiag')
+        select case(Tmp2%storage)
+        case('StorFull')
+          Call MQC_Matrix_Diag2Full(Tmp1)
+        case('StorSymm')
+          Call MQC_Matrix_Diag2Symm(Tmp1)
+        case('StorDiag')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%storage', Tmp2%storage) 
+        end select
+      case default
+        call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSum.', 6, &
+             'Tmp1%storage', Tmp1%storage) 
+      end select
 !
-!     Do the work.
-!
-      call String_Change_Case(MC%Data_Type,'u',matrixType)
-      select case(TRIM(matrixType))
-      case('REAL')
-        MC%MatR = MC%MatR + MB%MatR
-      case('INTEGER')
-        MC%MatI = MC%MatI + MB%MatI
-      case('COMPLEX')
-        MC%MatC = MC%MatC + MB%MatC
+      select case(Tmp1%data_type)
+      case('Real')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatR + Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatR = Tmp1%MatR + Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatR + Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Integer')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatI + Tmp2%MatR
+        case('Integer')
+          MC = Tmp2
+          MC%MatI = Tmp1%MatI + Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatI + Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Complex')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC + Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC + Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatC + Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
       case default
         call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
-             'TRIM(matrixType)', TRIM(matrixType) )
+             'Tmp1%data_type', Tmp1%data_type) 
       end select
 !
       return
@@ -7884,36 +8010,103 @@
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
-      type(MQC_Matrix)::MC
-      type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
-      character(len=64)::matrixType
-!
-!     For now, addition of two MQC matrices is only allowed for same-type and
-!     same-storage pairs. Start by ensuring this limitation is honored.
-!
-      if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error_A('MQC_MatrixMatrixSubtract: Data types do NOT match.', 6, &
-        'TRIM(MA%data_type)', TRIM(MA%data_type), &
-        'TRIM(MB%data_type)', TRIM(MB%data_type) )
-      if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error_A('MQC_MatrixMatrixSubtract: Storage forms do NOT match.', 6, &
-        'TRIM(MA%storage)', TRIM(MA%storage), &
-        'TRIM(MB%storage)', TRIM(MB%storage) )
-      MC = MA
-!
+      type(MQC_Matrix)::MC,Tmp1,Tmp2
+
+      Tmp1 = MA
+      Tmp2 = MB
+      select case(Tmp1%storage)
+      case('StorFull')
+        select case(Tmp2%storage)
+        case('StorSymm')
+          call MQC_Matrix_Symm2Full(Tmp2)
+        case('StorDiag')
+          call MQC_Matrix_Diag2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case('StorSymm')
+        select case(Tmp2%storage)
+        case('StorFull')
+          call MQC_Matrix_Symm2Full(Tmp1)
+        case('StorDiag')
+          call MQC_Matrix_Diag2Symm(Tmp2)
+        case('StorSymm')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case('StorDiag')
+        select case(Tmp2%storage)
+        case('StorFull')
+          call MQC_Matrix_Diag2Full(Tmp1)
+        case('StorSymm')
+          call MQC_Matrix_Diag2Symm(Tmp1)
+        case('StorDiag')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%storage', Tmp2%storage)
+        end select
+      case default
+        call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
+             'Tmp1%storage', Tmp1%storage)
+      end select
+!     
 !     Do the work.
 !
-      call String_Change_Case(MC%Data_Type,'u',matrixType)
-      select case(TRIM(matrixType))
-      case('REAL')
-        MC%MatR = MC%MatR - MB%MatR
-      case('INTEGER')
-        MC%MatI = MC%MatI - MB%MatI
-      case('COMPLEX')
-        MC%MatC = MC%MatC - MB%MatC
+      select case(Tmp1%data_type)
+      case('Real')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatR - Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatR = Tmp1%MatR - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatR - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
+      case('Integer')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp2
+          MC%MatR = Tmp1%MatI - Tmp2%MatR
+        case('Integer')
+          MC = Tmp2
+          MC%MatI = Tmp1%MatI - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatI - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
+      case('Complex')
+        select case(Tmp2%data_type)
+        case('Real')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC - Tmp2%MatR
+        case('Integer')
+          MC = Tmp1
+          MC%MatC = Tmp1%MatC - Tmp2%MatI
+        case('Complex')
+          MC = Tmp2
+          MC%MatC = Tmp1%MatC - Tmp2%MatC
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+               'Tmp2%data_type', Tmp2%data_type)
+        end select
       case default
-        call mqc_error_a('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
-             'TRIM(matrixType)', TRIM(matrixType))
+        call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
+             'Tmp1%data_type', Tmp1%data_type)
       end select
 !
       return
@@ -9384,7 +9577,7 @@
       real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
       Complex(Kind=real64),dimension(:,:),allocatable::tempAC,tempBC,rightCvecs,leftCvecs
       Complex(Kind=real64),dimension(:),allocatable::eValsA,eValsB,workC
-      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i
+      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i,npdFlag
       character(len=64)::StorFlagA,StorFlagB,TypeFlagA,TypeFlagB
       type(mqc_vector)::tmp_vec
 !
@@ -9413,8 +9606,12 @@
       if(b%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(b)
       If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
       If(b%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(b)
+      If(a%Data_Type.eq.'Complex'.and.b%Data_Type.ne.'Complex') call mqc_matrix_copy_real2Complex(b)
+      If(a%Data_Type.ne.'Complex'.and.b%Data_Type.eq.'Complex') call mqc_matrix_copy_real2Complex(a)
+      npdFlag = 0
 
-      if(MQC_Matrix_Test_Symmetric(a).and.MQC_Matrix_Test_Symmetric(b).and.a%Data_Type.eq.'Real') then
+      if(MQC_Matrix_Test_Symmetric(a).and.MQC_Matrix_Test_Symmetric(b).and.a%Data_Type.eq.'Real' &
+        .and.b%Data_Type.eq.'Real') then
         allocate(tempA(nDim1A,nDim2A),tempB(nDim1B,nDim2B))
         tempA = a%matR
         tempB = b%matR
@@ -9428,10 +9625,14 @@
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'V','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+          if(iError.lt.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
-          if(present(reigenvecs)) reigenvecs = tempA
-          if(present(leigenvecs)) leigenvecs = tempA
+          if(iError.gt.0) then
+            npdFlag = 1
+          else
+            if(present(reigenvecs)) reigenvecs = tempA
+            if(present(leigenvecs)) leigenvecs = tempA
+          endIf
         else
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
           if(iError.ne.0) call mqc_error_i('Failure in SSYGV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
@@ -9440,16 +9641,20 @@
           deallocate(work)
           allocate(work(lWork))
           call dsygv(1,'N','L',nDim2A,tempA,nDim1A,tempB,nDim1B,eValsOut,work,lWork,iError)
-          if(iError.ne.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
+          if(iError.lt.0) call mqc_error_i('Failure in SSYGV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
+          if(iError.gt.0) npdFlag = 1
         endIf
-        eigenvals = eValsOut
+        if(iError.eq.0) eigenvals = eValsOut
         if(allocated(eValsOut)) deallocate(eValsOut)
         if(allocated(work)) deallocate(work)
         if(allocated(tempA)) deallocate(tempA)
         if(allocated(tempB)) deallocate(tempB)
-      else
-        if(a%Data_Type.eq.'Real') then
+      endIf
+      
+      if(.not.MQC_Matrix_Test_Symmetric(a).or..not.MQC_Matrix_Test_Symmetric(b).or.a%Data_Type.ne.'Real' &
+        .or.b%Data_Type.ne.'Real'.or.npdFlag.eq.1) then
+        if(a%Data_Type.eq.'Real'.and.b%Data_Type.eq.'Real') then
           allocate(tempA(nDim1A,nDim2A),tempB(nDim1B,nDim2B))
           tempA = a%matR
           tempB = b%matR
@@ -9474,14 +9679,18 @@
             do i = 1, NDim2A
               if(eValsImag(i).ne.0.0) then
                 if(eValsImag(i-1).ne.0.0) cycle
-                tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=real64)
-                call reigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=real64)
-                call reigenvecs%vput(tmp_vec,[0],[i+1])
-                tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=real64)
-                call leigenvecs%vput(tmp_vec,[0],[i])
-                tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=real64)
-                call leigenvecs%vput(tmp_vec,[0],[i+1])
+                if(present(reigenvecs)) then
+                  tmp_vec = cmplx(rightvecs(:,i),rightvecs(:,i+1),kind=real64)
+                  call reigenvecs%vput(tmp_vec,[0],[i])
+                  tmp_vec = cmplx(rightvecs(:,i),-rightvecs(:,i+1),kind=real64)
+                  call reigenvecs%vput(tmp_vec,[0],[i+1])
+                endIf
+                if(present(leigenvecs)) then
+                  tmp_vec = cmplx(leftvecs(:,i),leftvecs(:,i+1),kind=real64)
+                  call leigenvecs%vput(tmp_vec,[0],[i])
+                  tmp_vec = cmplx(leftvecs(:,i),-leftvecs(:,i+1),kind=real64)
+                  call leigenvecs%vput(tmp_vec,[0],[i+1])
+                endIf
               endIf
             endDo
           else
@@ -9507,7 +9716,7 @@
           if(allocated(work)) deallocate(work)
           if(allocated(tempA)) deallocate(tempA)
           if(allocated(tempB)) deallocate(tempB)
-        elseIf(a%Data_Type.eq.'Complex') then
+        elseIf(a%Data_Type.eq.'Complex'.and.b%Data_Type.eq.'Complex') then
           allocate(tempAC(nDim1A,nDim2A),tempBC(nDim1B,nDim2B))
           tempAC = a%matC
           tempBC = b%matC
@@ -9551,11 +9760,16 @@
           if(allocated(work)) deallocate(work)
           if(allocated(tempAC)) deallocate(tempAC)
           if(allocated(tempBC)) deallocate(tempBC)
+        else
+          call mqc_error_A('Incompatible data types in mqc_matrix_generalized_eigensystem',6,'a%Data_Type',a%Data_Type, &
+            'b%Data_Type',b%Data_Type)
         endIf
       endIf
 
       if(typeFlagA.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(a)
       if(typeFlagB.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(b)
+      if(typeFlagA.eq.'Real'.and.a%Data_Type.eq.'Complex') Call MQC_Matrix_Copy_Complex2Real(a)
+      if(typeFlagB.eq.'Real'.and.b%Data_Type.eq.'Complex') Call MQC_Matrix_Copy_Complex2Real(b)
       if(storFlagA.eq.'StorDiag') Call MQC_Matrix_full2Diag(a)
       if(storFlagB.eq.'StorDiag') Call MQC_Matrix_full2Diag(b)
       if(storFlagA.eq.'StorSymm') Call MQC_Matrix_full2Symm(a)

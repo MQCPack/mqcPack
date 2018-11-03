@@ -698,7 +698,7 @@
 !     Local temp variables.
       real,dimension(:),allocatable::tempArray
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.false.,ok
 !
 !
 !     Format statements.
@@ -1039,7 +1039,7 @@
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.false.,ok,found
+      logical::DEBUG=.true.,ok,found
 !
 !
 !     Format statements.
@@ -1204,9 +1204,9 @@
                 & file, but NO MATRIX SENT to procedure.', 6, &
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
-              write(*,1060) 'reading matrix'
+ !             write(*,1060) 'reading matrix'
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
-              write(*,1060) 'read matrix'
+ !             write(*,1060) 'read matrix'
               matrixOut = Reshape(complexTmp,[N1,N2])
               deallocate(complexTmp)
             case('COMPLEX-SYMMATRIX')
@@ -2034,6 +2034,7 @@
             matrixIn=est_integral%getBlock('beta'),storage='full')
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix,storage='full')
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2052,7 +2053,7 @@
             vectorIn=est_eigenvalues%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_eigenvalues,tmpVector)
-          call fileInfo%writeArray('ALPHA ORBITAL COEFFICIENTS',vectorIn=tmpVector)
+          call fileInfo%writeArray('ALPHA ORBITAL ENERGIES',vectorIn=tmpVector)
         else
           call mqc_error_a('Unknown wavefunction type in getESTObj', 6, &
                'my_integral_type', my_integral_type )
@@ -2070,6 +2071,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2088,6 +2090,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2106,6 +2109,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2122,6 +2126,7 @@
             matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2138,6 +2143,7 @@
             matrixIn=est_wavefunction%overlap_matrix%getBlock('alpha'))
         elseIf(mqc_integral_array_type(est_wavefunction%overlap_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%overlap_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2154,6 +2160,7 @@
             matrixIn=est_wavefunction%core_hamiltonian%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%core_hamiltonian).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%core_hamiltonian,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2186,6 +2193,7 @@
             matrixIn=est_wavefunction%mo_coefficients%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%mo_coefficients).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%mo_coefficients,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2202,6 +2210,7 @@
             matrixIn=est_wavefunction%density_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2218,6 +2227,7 @@
             matrixIn=est_wavefunction%fock_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%fock_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2298,6 +2308,7 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
       integer::nOutputArrays,nBasis,nElectrons,multiplicity
+      integer(kind=int64),dimension(:),allocatable::elist
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
@@ -2362,13 +2373,14 @@
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
-            fileInfo%getVal('multiplicity'))
+            fileInfo%getVal('multiplicity'),elist)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          call est_integral%setEList(elist)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2401,14 +2413,18 @@
       case('core hamiltonian')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_integral,'core hamiltonian','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2426,14 +2442,18 @@
       case('fock')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_integral,'fock','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2451,18 +2471,22 @@
       case('density')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+          tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
@@ -2476,13 +2500,16 @@
       case('overlap')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_integral,'overlap','spin',tmpMatrixAlpha, &
             tmpMatrixAlpha)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2500,9 +2527,11 @@
       case('wavefunction')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha)
@@ -2512,9 +2541,11 @@
           call mqc_integral_allocate(est_wavefunction%mo_coefficients,'mo coefficients','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','space',tmpMatrixAlpha)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
@@ -2525,10 +2556,13 @@
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','spin', &
             tmpMatrixAlpha,tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','spin', &
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha)
@@ -2541,10 +2575,14 @@
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','spin', &
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
@@ -2556,6 +2594,7 @@
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2565,6 +2604,7 @@
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2580,7 +2620,7 @@
             tmpVectorAlpha,tmpVectorBeta)
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
-            fileInfo%getVal('multiplicity')) !MODIFIED
+            fileInfo%getVal('multiplicity'),elist) !MODIFIED
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
@@ -2588,14 +2628,17 @@
           call mqc_integral_allocate(est_wavefunction%mo_coefficients,'mo_coefficients','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+          tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2604,7 +2647,7 @@
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
 
-
+          call est_wavefunction%mo_coefficients%setEList(elist)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
           est_wavefunction%nBeta = fileInfo%getVal('nBeta')
@@ -2622,6 +2665,8 @@
         call mqc_error_A('Invalid label sent to %getESTObj.', 6, &
              'mylabel', mylabel )
       end select
+
+      if(allocated(elist)) deallocate(elist)
 !
       return
 
