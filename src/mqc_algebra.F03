@@ -6099,7 +6099,7 @@
       Character(len=*),Optional,Intent(In)::Option
       Logical::Symmetric
       Integer(kind=int64)::I,J,K
-      Real(kind=real64)::Thresh=1e-11
+      Real(kind=real64)::Thresh=1e-10
       Character(len=64)::myOption
 
       If(Present(Option)) then
