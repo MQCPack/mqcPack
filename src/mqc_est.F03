@@ -46,6 +46,13 @@
 !
 !     MQC_SCF_Integral
       Type MQC_SCF_Integral
+!
+!       Blocks are constructed in the order:
+!
+!              |' aa | ba '|
+!              |-----|-----|
+!              |. ab | bb .|
+!
         Type(MQC_Matrix),Private::Alpha,Beta,AlphaBeta,BetaAlpha
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General
