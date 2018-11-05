@@ -46,6 +46,13 @@
 !
 !     MQC_SCF_Integral
       Type MQC_SCF_Integral
+!
+!       Blocks are constructed in the order:
+!
+!              |' aa | ba '|
+!              |-----|-----|
+!              |. ab | bb .|
+!
         Type(MQC_Matrix),Private::Alpha,Beta,AlphaBeta,BetaAlpha
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General
@@ -986,8 +993,8 @@
         tmpMatrixBetaAlpha = integral%getBlock('beta-alpha')
         call outMatrixAlpha%init(nDimAlpha,nDimAlpha)
         call outMatrixBeta%init(nDimBeta,nDimBeta)
-        call outMatrixBetaAlpha%init(nDimBeta,nDimAlpha)
-        call outMatrixAlphaBeta%init(nDimAlpha,nDimBeta)
+        call outMatrixBetaAlpha%init(nDimAlpha,nDimBeta)
+        call outMatrixAlphaBeta%init(nDimBeta,nDimAlpha)
         do i = 1,size(alphaOrbs)
           if(alphaOrbs(i).ge.0) then
             call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[alphaOrbs(i)]),[0],[i])
@@ -1936,8 +1943,8 @@
           tmpVector2 = eigenvaluesA%beta
           call tmpVector1%diag(tmpMatrix1)
           call tmpVector2%diag(tmpMatrix2)
-          tmpMatrix3 = matmul(tmpMatrix1,integralB%alphaBeta)
-          tmpMatrix4 = matmul(tmpMatrix2,integralB%betaAlpha)
+          tmpMatrix3 = matmul(tmpMatrix2,integralB%alphaBeta)
+          tmpMatrix4 = matmul(tmpMatrix1,integralB%betaAlpha)
           tmpMatrix1 = matmul(tmpMatrix1,integralB%alpha)
           tmpMatrix2 = matmul(tmpMatrix2,integralB%beta)
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrix1,tmpMatrix2,tmpMatrix3,tmpMatrix4)
@@ -2692,11 +2699,11 @@
               !AB Block
               if(integral%array_type.eq.'general') then
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaBeta%put(alphaBeta%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                  call alphaBeta%put(alphaBeta%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                 endIf
               !BA Block
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaAlpha%put(betaAlpha%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                  call betaAlpha%put(betaAlpha%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                 endIf
               endIf
             end do
@@ -2766,8 +2773,8 @@
         if(present(eVals).and.present(eVecs)) then
           call tmpMat1%diag(tmpVec1,tmpMat2)
           tmpMat1 = tmpMat2%mat([1,NDimAlpha],[1,NDimAlpha])
-          tmpMat3 = tmpMat2%mat([1,NDimAlpha],[NDimAlpha+1,-1])
-          tmpMat4 = tmpMat2%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat3 = tmpMat2%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha],[NDimAlpha+1,-1])
           tmpMat2 = tmpMat2%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
           tmpVec2 = tmpVec1%vat(NDimAlpha+1,-1)
           tmpVec1 = tmpVec1%vat(1,NDimAlpha)
@@ -2776,8 +2783,8 @@
         elseIf(present(eVecs)) then
           call tmpMat1%diag(EVecs=tmpMat2)
           tmpMat1 = tmpMat2%mat([1,NDimAlpha],[1,NDimAlpha])
-          tmpMat3 = tmpMat2%mat([1,NDimAlpha],[NDimAlpha+1,-1])
-          tmpMat4 = tmpMat2%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat3 = tmpMat2%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha],[NDimAlpha+1,-1])
           tmpMat2 = tmpMat2%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
           call mqc_integral_allocate(eVecs,'eigenvectors','general',tmpMat1,tmpMat2,tmpMat3,tmpMat4)
         elseIf(present(eVals)) then
@@ -2823,8 +2830,8 @@
         tmpMat1 = integral%getblock('full')
         tmpMat1 = tmpMat1%inv()
         tmpMat2 = tmpMat1%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
-        tmpMat3 = tmpMat1%mat([1,NDimAlpha],[NDimAlpha+1,-1])
-        tmpMat4 = tmpMat1%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+        tmpMat3 = tmpMat1%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+        tmpMat4 = tmpMat1%mat([1,NDimAlpha],[NDimAlpha+1,-1])
         tmpMat1 = tmpMat1%mat([1,NDimAlpha],[1,NDimAlpha])
         call mqc_integral_allocate(inverse,'integral inverse','general',tmpMat1,tmpMat2,tmpMat3,tmpMat4)
       endIf
@@ -3065,10 +3072,10 @@
             element = integral%beta%at(i,j)
           elseIf(i.gt.integral%blockSize('alpha').and.j.le.integral%blockSize('alpha')) then
             i = i - integral%blockSize('alpha')
-            element = integral%betaAlpha%at(i,j)
+            element = integral%alphaBeta%at(i,j)
           elseIf(i.le.integral%blockSize('alpha').and.j.gt.integral%blockSize('alpha')) then
             j = j - integral%blockSize('alpha')
-            element = integral%alphaBeta%at(i,j)
+            element = integral%betaAlpha%at(i,j)
           else
             element = integral%alpha%at(i,j)
           endIf
