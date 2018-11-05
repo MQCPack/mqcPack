@@ -2699,11 +2699,11 @@
               !AB Block
               if(integral%array_type.eq.'general') then
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaBeta%put(alphaBeta%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                  call alphaBeta%put(alphaBeta%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                 endIf
               !BA Block
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaAlpha%put(betaAlpha%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                  call betaAlpha%put(betaAlpha%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                 endIf
               endIf
             end do
