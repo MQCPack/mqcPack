@@ -69,6 +69,7 @@
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+        Procedure, Public::orbitals => mqc_integral_output_orbitals 
       End Type
 !
 !     MQC_SCF_Eigenvalues
@@ -914,6 +915,105 @@
       end select
 !
       end function mqc_integral_output_block  
+!
+!
+!     PROCEDURE MQC_Integral_Output_Orbitals
+      function mqc_integral_output_orbitals(integral,alphaOrbs,betaOrbs) result(integralOut)
+!
+!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
+!     can be input) and orders columns as specified in alphaOrbs and betaOrbs. If number of
+!     orbitals specified is less than nBasis, the blocks are padded with columns of zeros.     
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      integer(kind=int64),dimension(:),intent(in)::alphaOrbs,betaOrbs
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_matrix)::outMatrixAlpha,outMatrixBeta,outMatrixAlphaBeta,outMatrixBetaAlpha
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,i
+
+      nDimAlpha = integral%blockSize('Alpha') 
+      nDimBeta = integral%blockSize('Beta')
+
+      select case (integral%type())
+      case('space')
+        if(all(alphaOrbs.eq.betaOrbs)) then
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          call outMatrixAlpha%init(nDimAlpha,nDimAlpha)
+          do i = 1,size(alphaOrbs)
+            call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+          endDo
+          call mqc_integral_allocate(integralOut,'mo coefficients','space',outMatrixAlpha)
+        else
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = integral%getBlock('beta')
+          call outMatrixAlpha%init(nDimAlpha,nDimAlpha)
+          call outMatrixBeta%init(nDimBeta,nDimBeta)
+          do i = 1,size(alphaOrbs)
+            call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+          endDo
+          do i = 1,size(betaOrbs)
+            call outMatrixBeta%vput(tmpMatrixBeta%vat([0],[abs(betaOrbs(i))]),[0],[i])
+          endDo
+          call mqc_integral_allocate(integralOut,'mo coefficients','spin',outMatrixAlpha, &
+            outMatrixBeta)
+        endIf
+      case('spin')
+        tmpMatrixAlpha = integral%getBlock('alpha')
+        tmpMatrixBeta = integral%getBlock('beta')
+        call outMatrixAlpha%init(nDimAlpha,nDimAlpha)
+        call outMatrixBeta%init(nDimBeta,nDimBeta)
+        do i = 1,size(alphaOrbs)
+          if(alphaOrbs(i).ge.0) then
+            call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[alphaOrbs(i)]),[0],[i])
+          else
+            call outMatrixAlpha%vput(tmpMatrixBeta%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+          endIf
+        endDo
+        do i = 1,size(betaOrbs)
+          if(betaOrbs(i).ge.0) then
+            call outMatrixBeta%vput(tmpMatrixBeta%vat([0],[betaOrbs(i)]),[0],[i])
+          else
+            call outMatrixBeta%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+          endIf
+        endDo
+        call mqc_integral_allocate(integralOut,'mo coefficients','spin',outMatrixAlpha, &
+          outMatrixBeta)
+      case('general')
+        tmpMatrixAlpha = integral%getBlock('alpha')
+        tmpMatrixBeta = integral%getBlock('beta')
+        tmpMatrixAlphaBeta = integral%getBlock('alpha-beta')
+        tmpMatrixBetaAlpha = integral%getBlock('beta-alpha')
+        call outMatrixAlpha%init(nDimAlpha,nDimAlpha)
+        call outMatrixBeta%init(nDimBeta,nDimBeta)
+        call outMatrixBetaAlpha%init(nDimBeta,nDimAlpha)
+        call outMatrixAlphaBeta%init(nDimAlpha,nDimBeta)
+        do i = 1,size(alphaOrbs)
+          if(alphaOrbs(i).ge.0) then
+            call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[alphaOrbs(i)]),[0],[i])
+            call outMatrixAlphaBeta%vput(tmpMatrixAlphaBeta%vat([0],[alphaOrbs(i)]),[0],[i])
+          else
+            call outMatrixAlphaBeta%vput(tmpMatrixBeta%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+            call outMatrixAlpha%vput(tmpMatrixBetaAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
+          endIf
+        endDo
+        do i = 1,size(betaOrbs)
+          if(betaOrbs(i).ge.0) then
+            call outMatrixBeta%vput(tmpMatrixBeta%vat([0],[betaOrbs(i)]),[0],[i])
+            call outMatrixBetaAlpha%vput(tmpMatrixBetaAlpha%vat([0],[betaOrbs(i)]),[0],[i])
+          else
+            call outMatrixBetaAlpha%vput(tmpMatrixAlpha%vat([0],[abs(betaOrbs(i))]),[0],[i])
+            call outMatrixBeta%vput(tmpMatrixAlphaBeta%vat([0],[abs(betaOrbs(i))]),[0],[i])
+          endIf
+        endDo
+        call mqc_integral_allocate(integralOut,'mo coefficients','general',outMatrixAlpha, &
+          outMatrixBeta,outMatrixAlphaBeta,outMatrixBetaAlpha)
+      case default
+        call mqc_error_A('Unrecognised mqc scf integral type in mqc_integral_output_orbitals',6, &
+          'integral%type()',integral%type())
+      end select
+!
+      end function mqc_integral_output_orbitals
 !
 !
 !     PROCEDURE MQC_eigenvalues_Output_Block
@@ -2457,7 +2557,7 @@
             endif
           END DO
         END DO
-      else if(integralIn%type().eq.'mo coefficients') then
+      else if(integralIn%getLabel().eq.'mo coefficients') then
         call mqc_error('Energy_List is not set in MQC_Integral object')
       else
         j = 1
