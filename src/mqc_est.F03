@@ -71,6 +71,7 @@
         Procedure, Public::init => mqc_integral_initialize 
         Procedure, Public::diag => mqc_scf_integral_diagonalize
         Procedure, Public::inv => mqc_scf_integral_inverse
+        Procedure, Public::det => mqc_scf_integral_determinant
         Procedure, Public::norm => mqc_integral_norm
         Procedure, Private::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
@@ -2801,8 +2802,8 @@
 !     PROCEDURE MQC_SCF_Integral_Inverse    
       function mqc_scf_integral_inverse(integral) result(inverse)
 !
-!     This function returns the diagonal of an scf integral and optionally returns
-!     either the eigenvaues as a scf_eigenvalue and eigenvectors as a scf_integral
+!     This function returns the inverse of integral as a mqc_scf_integral
+!     object
 !
 !     L. M. Thompson, 2018.
 !
@@ -2837,6 +2838,30 @@
       endIf
 !
       end function mqc_scf_integral_inverse
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Determinant
+      function mqc_scf_integral_determinant(integral) result(determinant)
+!
+!
+!     This function returns the determinant of integral as an mqc_scalar
+!     object
+!
+!     A. Mahler, 2018
+!
+!
+!     Variable Declariations.
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scalar)::determinant
+      type(mqc_matrix)::tmpMat1
+      integer(kind=int64)::nDimAlpha=0
+!
+      tmpMat1 = integral%getBlock('full')
+      determinant = tmpMat1%det()
+!
+      end function mqc_scf_integral_determinant
 !
 !
 !     PROCEDURE MQC_Integral_Set_Energy_List
