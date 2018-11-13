@@ -185,7 +185,7 @@
         Module Procedure MQC_Integral_Conjugate_Transpose
       End Interface
 !
-      Interface Contract
+      Interface Contraction
         Module Procedure mqc_scf_integral_contraction
         Module Procedure mqc_eri_integral_contraction
       End Interface
@@ -2248,7 +2248,7 @@
 !     the input matrix would be reordered such that the off diagonal blocks are zero. I.e.
 !     the alpha columns contain the 1st, 3rd, 5th ... lowest energy orbitals and the beta
 !     columns contain the 2nd, 4th, 6th ... lowest energy orbitals. The first 0.5*(N_elec)+S 
-!     columns of the alpha block and the first 0.5*(N_elec)+S columns of the beta block are 
+!     columns of the alpha block and the first 0.5*(N_elec)-S columns of the beta block are 
 !     occupied.
 !
 !     L. M. Thompson, 2017.
@@ -2713,7 +2713,7 @@
       end do
 !
       if(integral%array_type.eq.'space') call mqc_integral_allocate(output,'contraction','space',alpha)
-      if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contraction','spin',alpha,beta)
+      if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contractin','spin',alpha,beta)
       if(integral%array_type.eq.'general') call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
 !
       end function mqc_eri_integral_contraction
