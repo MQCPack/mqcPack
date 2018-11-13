@@ -3632,7 +3632,7 @@
             do i = 1,A%NRow
               do j = 1,i
                 k = k+1
-                AC_Symm(k) = A%matC(i,j)
+                AC_Symm(k) = A%matC(j,i)
               endDo
             endDo
             call ZHPEV('V','U',A%NRow,AC_Symm,A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
@@ -7400,10 +7400,10 @@
 !     to full packing.
 !
 !     Options for this subroutine are:
-!       'symmetric'      Test if matrix is symmetric
-!       'antisymmetric'  Test if matrix is antisymmetric
-!       'hermitian'      Test if matrix is hermitian
-!       'antihermitian'  Test if matrix is antihermitian
+!       'symmetric'      Unpack as if matrix is symmetric
+!       'antisymmetric'  Unpack as if matrix is antisymmetric
+!       'hermitian'      Unpack as if matrix is hermitian
+!       'antihermitian'  Unpack as if matrix is antihermitian
 !
 !     L. M. Thompson, 2016, 2018.
 !
@@ -9348,8 +9348,8 @@
       character(len=1)::method
       character(len=64)::StorFlag,TypeFlag
       real(kind=real64),dimension(:),allocatable::work
-      real(kind=real64)::dlange
-      Complex(Kind=real64)::zlange
+      real(kind=real64)::dlange,zlange
+!      Complex(Kind=real64)::zlange
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
