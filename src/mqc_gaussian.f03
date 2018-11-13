@@ -2725,7 +2725,6 @@
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
-          call tmpMatrixAlpha%print(6,'LMT tmpMatrixAlpha')
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
