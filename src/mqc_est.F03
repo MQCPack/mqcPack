@@ -2223,7 +2223,7 @@
         ret_block = integral%getBlock('beta')
         norm = norm + mqc_matrix_norm(ret_block,method)
         ret_block = integral%getBlock('alpha-beta')
-        norm = mqc_matrix_norm(ret_block,method)
+        norm = norm + mqc_matrix_norm(ret_block,method)
         ret_block = integral%getBlock('beta-alpha')
         norm = norm + mqc_matrix_norm(ret_block,method)
       case default
