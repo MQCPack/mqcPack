@@ -3286,8 +3286,7 @@
       character(len=1)::method
       character(len=64)::TypeFlag
       real(kind=real64),dimension(:),allocatable::work
-      real(kind=real64)::dlange
-      Complex(Kind=real64)::zlange
+      real(kind=real64)::dlange,zlange
       real(kind=real64),dimension(:),allocatable::temp
       Complex(Kind=real64),dimension(:),allocatable::tempc
       Type(MQC_Scalar)::norm
@@ -9349,7 +9348,6 @@
       character(len=64)::StorFlag,TypeFlag
       real(kind=real64),dimension(:),allocatable::work
       real(kind=real64)::dlange,zlange
-!      Complex(Kind=real64)::zlange
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
