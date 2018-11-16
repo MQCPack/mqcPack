@@ -68,6 +68,21 @@ module MQC_FullWavefunction
      procedure :: next => mqc_array_link_list_next
   end type mqc_array_link_list
 
+! MQC_SCF_Integral substitute
+  Type MQC_Matrix_ptr
+     Integer(kind=int64),Private::NCol=0,NRow=0
+     Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+     Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+     Real(Kind=real64),contiguous,Pointer::MatR(:) =>null()
+     Integer(kind=int64),contiguous,Pointer::MatI(:) =>null()
+     Complex(Kind=real64),contiguous,Pointer::MatC(:) =>null()
+  end type MQC_Matrix_ptr
+  Type MQC_SCF_Integral_ptr
+     Type(MQC_Matrix_ptr),Private::Alpha,Beta,AlphaBeta,BetaAlpha
+     Character(Len=64),Private::Array_Name ! See below
+     Character(Len=64),Private::Array_Type ! Space,Spin,General
+  end Type MQC_SCF_Integral_ptr
+
   Type MQC_ALL_Wavefunction
      Character(Len=256)::FileName,Basis,Symmetry,WF_Type
      Character(Len=64)::LabFil
@@ -94,7 +109,6 @@ module MQC_FullWavefunction
 
      Type(mqc_wavefunction)::est_wavefunction
      Type(mqc_array_link_list)::Array_Data
-
   End Type MQC_ALL_Wavefunction
 
    ! Linked list node data type
@@ -132,11 +146,12 @@ module MQC_FullWavefunction
 
 CONTAINS
       subroutine mqc_read_all_wavefunction( current_wavefunction, &
-           my_READONLY_list, Print_Options, iout)
+           my_READONLY_list, Print_Options, Storage_Options, iout)
       implicit none
       class(MQC_ALL_Wavefunction),intent(inout)::current_wavefunction
       class(mqc_READONLY_list),intent(inout):: my_READONLY_list
       integer(kind=int64),intent(in)::Print_Options
+      integer(kind=int64),intent(in)::Storage_Options
       integer(kind=int64),intent(in)::iOut
       Integer(kind=int64):: NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,NRI,LR
       logical ASym
@@ -188,13 +203,10 @@ CONTAINS
          current_wavefunction%Empty = .True.
          return
       EndIF
-      If ( Print_Options .eq. 1 .or. Print_Options .eq. 2 ) then
+
+      If (Storage_Options.eq. 0 ) then
          write( IOut, 1005 ) trim(current_wavefunction%FileName)
-         If ( Print_Options .eq. 1 ) then
-            current_wavefunction%Empty = .True.
-         Else
-            current_wavefunction%Empty = .False.
-         EndIF
+         current_wavefunction%Empty = .True.
       Else
          current_wavefunction%Empty = .False.
       EndIF
@@ -204,7 +216,8 @@ CONTAINS
       natoms = current_wavefunction%natoms
       NBasis = current_wavefunction%NBasis
       call MQC_Read_MatFile_9_Records( current_wavefunction, &
-           my_READONLY_list, Print_Options, Natoms, NBASIS, IOut)
+           my_READONLY_list, Print_Options, Storage_Options, Natoms, &
+           NBASIS, IOut)
 
       EOF = .false.
       IERROR = 0
@@ -218,44 +231,56 @@ CONTAINS
               N1,N2,N3,N4,N5,ASym,LR
 #endif
          call String_Change_Case(cBuf,'u')
-         if ( Print_Options == 1 ) then
-            if('END'.eq.trim(cBuf)) then
-               Call Close_MatF(current_wavefunction%unitNumber)
-               write( IOut, 3000 ) trim(current_wavefunction%FileName)
-               return
-            else
+         If('END'.eq.trim(cBuf)) then
+            If (Storage_Options.eq. 0 ) then
+               call MQC_DeAlloc_Int_Ptr( Current_Wavefunction%atomicNumbers, &
+                    'ATOMIC NUMBERS', IOut)
+               call MQC_DeAlloc_Int_Ptr( Current_Wavefunction%atomTypes, &
+                    'ATOM TYPES', IOut)
+               call MQC_DeAlloc_Real_Ptr( Current_Wavefunction%atomicCharges, &
+                    'ATOM CHARGES', IOut)
+               call MQC_DeAlloc_Real_Ptr( Current_Wavefunction%cartesians, &
+                    'CARTESIAN NUCLEAR COORDINATES(BOHR)', IOut)
+               call MQC_DeAlloc_Int_Ptr( Current_Wavefunction%basisFunction2Atom,&
+                    'MAP FROM BASIS FUNCTIONS TO ATOMS', IOut)
+               call MQC_DeAlloc_Int_Ptr( Current_Wavefunction%IBasisFunctionType,&
+                    'TYPE FLAG FOR EACH BASIS FUNCTION', IOut)
+               call MQC_DeAlloc_Real_Ptr( Current_Wavefunction%atomicWeights, &
+                    'ATOM WEIGHTS', IOut)
+            Else
+               Call mqc_ALL_wavefunction_to_est_wavefunction( &
+                    Current_Wavefunction, IOut)
+            EndIf
+            Call Close_MatF(current_wavefunction%unitNumber)
+            write( IOut, 3000 ) trim(current_wavefunction%FileName)
+            return
+            If (IERROR .ne. 0 ) then
+               call mqc_error_I('mqc_read_all_wavefunction: Found errors reading Matrix Element File', IOut)
+            EndIf
+         Else
+            If ( Print_Options == 1 ) Then
                call MQC_PRINT_DATA_TYPE(Iout,cBuf, &
                  NI,NR,N1,N2,N3,N4,N5,NRI,NTot,LR, &
                  DataType,Shape,Formula)
                flush(IOut)
-               Call Rd_Skip(current_wavefunction%UnitNumber,NTot,LenBuf)
-            endif
-         else 
-            if(trim(cBuf).eq.'END') then
-               Call Close_MatF(current_wavefunction%unitNumber)
-               write( IOut, 3000 ) trim(current_wavefunction%FileName)
-               if (IERROR .ne. 0 ) then
-                  call mqc_error_I('mqc_read_all_wavefunction: Found errors reading Matrix Element File', IOut)
-               endif
-               return
-            endif
-
+            EndIf
             call MQC_Unformatted_Read_Array(current_wavefunction, &
                  my_READONLY_list, cBuf, &
-                 NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Asym,DataType,Shape, &
-                 Formula,IOut,IERROR,Print_Options)
-!
-         endif
-      enddo
+                 NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Asym,DataType, &
+                 Shape, Formula,IOut,IERROR,Print_Options,Storage_Options)
+         EndIf
+      EndDo
       return
       end subroutine mqc_read_all_wavefunction
 !
 !     PROCEDURE MQC_Read_MatFile_9_Records
       Subroutine MQC_Read_MatFile_9_Records( wavefunction, &
-           my_READONLY_list, Print_Options, Natoms, NBASIS, IOut)
+           my_READONLY_list, Print_Options, Storage_Options, &
+           Natoms, NBASIS, IOut)
       class(MQC_ALL_Wavefunction),intent(inout)::wavefunction
       class(mqc_READONLY_list),intent(inout):: my_READONLY_list
       integer(kind=int64),intent(in)::Print_Options
+      integer(kind=int64),intent(in)::Storage_Options
       integer(kind=int64),intent(in)::NAtoms,NBasis
       integer(kind=int64),intent(in)::iOut
       INTEGER(kind=int64)::NR,NI,NRI,N1,N2,N3,N4,N5,LR,LenBuf
@@ -263,7 +288,6 @@ CONTAINS
 
       Character(Len=2048)::Data_Type,Shape,Formula
       Integer(kind=int32)::I,J,K
-      Integer(kind=int32)::AllocateStatus
 !
 !     Format statements.
 !
@@ -276,46 +300,20 @@ CONTAINS
 ! Allocate all the arrays required by rd_head.  Need these not to read.
 ! May need them later to write the Matrix Element File
 !
-      allocate(wavefunction%atomicNumbers(natoms), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'ATOMIC NUMBERS')
-
-      allocate(wavefunction%atomTypes(NAtoms), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'ATOM TYPES')
-      allocate(wavefunction%atomicCharges(natoms), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'ATOM CHARGES')
-
-      allocate(wavefunction%cartesians(3*natoms), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'CARTESIAN NUCLEAR COORDINATES(BOHR)')
-
-      allocate(wavefunction%basisFunction2Atom(NBasis), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'MAP FROM BASIS FUNCTIONS TO ATOMS')
-
-      allocate(wavefunction%IBasisFunctionType(NBasis), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'TYPE FLAG FOR EACH BASIS FUNCTION')
-
-      allocate(wavefunction%atomicWeights(NAtoms), &
-           STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) call MQC_Error_A( & 
-           'Not Enough Memory to allocate data structure', Iout, &
-           'DataName', 'ATOM WEIGHTS')
+      call MQC_Alloc_Int_Ptr( wavefunction%atomicNumbers, NAtoms, &
+           'ATOMIC NUMBERS', IOut)
+      call MQC_Alloc_Int_Ptr( wavefunction%atomTypes, NAtoms, &
+           'ATOM TYPES', IOut)
+      call MQC_Alloc_Real_Ptr( wavefunction%atomicCharges, NAtoms, &
+           'ATOM CHARGES', IOut)
+      call MQC_Alloc_Real_Ptr( wavefunction%cartesians, 3*NAtoms, &
+           'CARTESIAN NUCLEAR COORDINATES(BOHR)', IOut)
+      call MQC_Alloc_Int_Ptr( wavefunction%basisFunction2Atom, NBasis, &
+           'MAP FROM BASIS FUNCTIONS TO ATOMS', IOut)
+      call MQC_Alloc_Int_Ptr( wavefunction%IBasisFunctionType, NBasis, &
+           'TYPE FLAG FOR EACH BASIS FUNCTION', IOut)
+      call MQC_Alloc_Real_Ptr( wavefunction%atomicWeights, NAtoms, &
+           'ATOM WEIGHTS', IOut)
 
       call Rd_Head(wavefunction%unitNumber, wavefunction%NLab, &
            natoms, nbasis, wavefunction%atomicNumbers, wavefunction%atomTypes, &
@@ -332,10 +330,10 @@ CONTAINS
               trim(wavefunction%GVers), trim(wavefunction%Title)
          call MQC_PRINT_SCALAR_SUMMARY( iOut, wavefunction )
          call MQC_PRINT_DEFAULT_VECTOR_SUMMARY( iOut, wavefunction)
-      else
-         if ( Print_Options == 2 ) then
-            call MQC_PRINT_SCALAR_HEAD( iOut, wavefunction )
-         endif
+      Else If ( Print_Options == 2 ) then
+         call MQC_PRINT_SCALAR_HEAD( iOut, wavefunction )
+      EndIf
+      if ( Storage_Options .NE. 0 .OR. Print_Options .EQ. 2 ) then
          NRI=1
          N1=NAtoms
          N2=1
@@ -557,9 +555,12 @@ CONTAINS
          If ( wavefunction%Array_Data%last%Data_Name .NE. "ATOMIC NUMBERS" .AND. &
             wavefunction%Array_Data%last%Data_Name .NE. "ATOM TYPES" .AND. &
             wavefunction%Array_Data%last%Data_Name .NE. "ATOM CHARGES" .AND. &
-            wavefunction%Array_Data%last%Data_Name .NE. "CARTESIAN NUCLEAR COORDINATES(BOHR)" .AND. &
-            wavefunction%Array_Data%last%Data_Name .NE. "MAP FROM BASIS FUNCTIONS TO ATOMS" .AND. &
-            wavefunction%Array_Data%last%Data_Name .NE. "TYPE FLAG FOR EACH BASIS FUNCTION" .AND. &
+            wavefunction%Array_Data%last%Data_Name &
+            .NE. "CARTESIAN NUCLEAR COORDINATES(BOHR)" .AND. &
+            wavefunction%Array_Data%last%Data_Name &
+            .NE. "MAP FROM BASIS FUNCTIONS TO ATOMS" .AND. &
+            wavefunction%Array_Data%last%Data_Name &
+            .NE. "TYPE FLAG FOR EACH BASIS FUNCTION" .AND. &
             wavefunction%Array_Data%last%Data_Name .NE. "ATOM WEIGHTS" ) then
             call mqc_WRITE_Last_Array_In_wavefunction(wavefunction, IOut)
          EndIf
@@ -1627,11 +1628,11 @@ CONTAINS
 
         if (.not.associated(wavefunction%Array_Data%first)) then
            allocate(wavefunction%Array_Data%first, STAT = AllocateStatus)
-           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', Iout, 'DataName', DataName)
+           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', IOut, 'DataName', DataName)
            wavefunction%Array_Data%last => wavefunction%Array_Data%first
         else
            allocate(wavefunction%Array_Data%last%next, STAT = AllocateStatus)
-           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', Iout, 'DataName', DataName)
+           IF (AllocateStatus /= 0) call MQC_Error_A('Not Enough Memory to allocate data structure', IOut, 'DataName', DataName)
            wavefunction%Array_Data%last => wavefunction%Array_Data%last%next
         endif
         wavefunction%Array_Data%last%Data_Name=trim(DataName)
@@ -1674,12 +1675,13 @@ CONTAINS
 ! Functions for mqc_link_list class structures
 !
 !=====================================================================
-      subroutine mqc_link_list_add(self,Print_Options, &
+      subroutine mqc_link_list_add(self,Print_Options,Storage_Options, &
               my_READONLY_list,FileName,iout)
         class(mqc_link_list),intent(inout) :: self
         integer(kind=int64),intent(in)::Print_Options
+        integer(kind=int64),intent(in)::Storage_Options
         class(mqc_READONLY_list),intent(inout):: my_READONLY_list
-        character(len=256),intent(in) :: FileName
+        character(len=*),intent(in) :: FileName
         integer(kind=int64),intent(in)::iOut
 
         if (.not.associated(self%last)) then
@@ -1693,7 +1695,7 @@ CONTAINS
         self%last%current_wavefunction%FileName=trim(FileName)
 
         call mqc_read_all_wavefunction( self%last%current_wavefunction, &
-             my_READONLY_list, Print_Options,iout)
+             my_READONLY_list, Print_Options,Storage_Options,iout)
 
         self%length = self%length + 1
       end subroutine mqc_link_list_add
@@ -1797,8 +1799,8 @@ CONTAINS
 !PROCEDURE MQC_Unformatted_Read_Array
       subroutine MQC_Unformatted_Read_Array(wavefunction, &
            my_READONLY_list,Data_Name, &
-           NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Asym,Data_Type,Shape,Formula, &
-           IOut,IERROR,Print_Options)
+           NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf,Asym,Data_Type, &
+           Shape,Formula,IOut,IERROR,Print_Options,Storage_Options)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -1834,11 +1836,11 @@ CONTAINS
       integer(kind=int64),intent(in)::IOut
       integer(kind=int64),intent(inout)::IERROR
       integer(kind=int64),intent(in)::Print_Options
+      integer(kind=int64),intent(in)::Storage_Options
 !
 !     Temporary local variables used when calling the gauopen routines.
 !     Local temp variables.
       character(len=256)::errorMsg
-      Integer(kind=int32)::AllocateStatus
 !
 !     Format statements.
 !
@@ -1846,18 +1848,28 @@ CONTAINS
           '  NTot =',I9,/, '  LenBuf =',I9,/, '  N1 =',I9,/, '  N2 =',I9,/ &
           '  N3 =',I9,/, '  N4 =',I9,/, '  N5 =',I9,/, '  LR =',I9, &
           '  Calculated Type: ',A )
- 1100 Format( "Error Allocating Memory for ",A)
  2000 format("MQC_Unformatted_Read_Array: Unknown Shape: ",A,/,A,/, &
            "N1-N5:",5I8)
 !
-!     Begin by seeing if a new file or filename has been sent by the calling
-!     program unit. If so, then get the file declared before reading the
-!     header information.
+! Set the Spin Type, if the information will be stored
 !
-!     Look for the label sent by the calling program unit. If the label is
-!     found, then load <matrixOut> with the data on the file.
-!
-      If ( .not.mqc_read_this_MatrixFile_Element(my_READONLY_list,Data_Name )) then
+      If ( Storage_Options .NE. 0 ) Then
+         select case(TRIM(Data_Type))
+         case('REAL')
+            If(trim(Data_Name).eq.'BETA MO COEFFICIENTS') then
+               wavefunction%SpinType='spin'
+            Else If(trim(Data_Name).eq.'ALPHA MO COEFFICIENTS') then
+               wavefunction%SpinType='space'
+            EndIf
+         case('COMPLEX')
+            If(trim(Data_Name).eq.'ALPHA MO COEFFICIENTS') then
+               wavefunction%SpinType='general'
+            EndIf
+         end select
+      EndIf
+
+      If ( (Print_Options .NE. 2 .AND. Storage_Options .EQ. 0 ) .OR. &
+           .not.mqc_read_this_MatrixFile_Element(my_READONLY_list,Data_Name )) then
          Call Rd_Skip(wavefunction%UnitNumber,NTot,LenBuf)
          return
       EndIf
@@ -1873,24 +1885,30 @@ CONTAINS
             If( Shape.eq."UNKNOWN") then
                write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
             EndIf
-            allocate(wavefunction%Array_Data%last%ArrI(LR), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, LR, &
+                 Data_Name, IOut)
          Else If ( Shape.eq."MATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrI(N1*N2), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, N1*N2, &
+                 Data_Name, IOut)
          Else If ( Shape.eq."MULTISYMMATRICES") then
-            allocate(wavefunction%Array_Data%last%ArrI((N2+1)*N2*N3*N4/2), &
-                 STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
          Else If ( Shape.eq."3DMATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrI(N1*N2*N3), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 N1*N2*N3, Data_Name, IOut)
          Else
             call MQC_Error_A("Do not know how to allocate array", Iout, &
                  "Shape",Shape)
          Endif
-         IF (AllocateStatus /= 0) then
-            write( errorMsg, 1100 ) trim(Data_Name)
-            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-         EndIf
          call Rd_IBuf(wavefunction%unitNumber,NTot,LenBuf, &
               wavefunction%Array_Data%last%ArrI)
+         if ( Print_Options .EQ. 2 ) then
+            call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
+            If (Storage_Options .EQ. 0 ) Then
+               call MQC_DeAlloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                    wavefunction%Array_Data%last%Data_Name, IOut)
+            Endif
+         endif
       case('REAL')
          If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
               Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
@@ -1898,29 +1916,30 @@ CONTAINS
             If( Shape.eq."UNKNOWN") then
                write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
             EndIf
-            allocate(wavefunction%Array_Data%last%ArrR(LR), STAT = AllocateStatus)
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 LR, Data_Name, IOut)
          Else If ( Shape.eq."MATRIX") then
-            If(trim(Data_Name).eq.'BETA MO COEFFICIENTS') then
-               wavefunction%SpinType='spin'
-            Else If(trim(Data_Name).eq.'ALPHA MO COEFFICIENTS') then
-               wavefunction%SpinType='space'
-            EndIf
-            allocate(wavefunction%Array_Data%last%ArrR(N1*N2), STAT = AllocateStatus)
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 N1*N2, Data_Name, IOut)
          Else If ( Shape.eq."MULTISYMMATRICES") then
-            allocate(wavefunction%Array_Data%last%ArrR((N2+1)*N2*N3*N4/2), &
-                 STAT = AllocateStatus)
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
          Else If ( Shape.eq."3DMATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrR(N1*N2*N3), STAT = AllocateStatus)
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 N1*N2*N3, Data_Name, IOut)
          Else
             call MQC_Error_A("Do not know how to allocate array", Iout, &
                  "Shape",Shape)
          Endif
-         IF (AllocateStatus /= 0) then
-            write( errorMsg, 1100 ) trim(Data_Name)
-            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-         EndIf
          call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
               wavefunction%Array_Data%last%ArrR)
+         if ( Print_Options .EQ. 2 ) then
+            call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
+            If (Storage_Options .EQ. 0 ) Then
+               call MQC_DeAlloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    wavefunction%Array_Data%last%Data_Name, IOut)
+            Endif
+         endif
       case('COMPLEX')
          If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
               Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
@@ -1928,27 +1947,30 @@ CONTAINS
             If( Shape.eq."UNKNOWN") then
                write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
             EndIf
-            allocate(wavefunction%Array_Data%last%ArrC(LR), STAT = AllocateStatus)
+            call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                 LR, Data_Name, IOut)
          Else If ( Shape.eq."MATRIX") then
-            If(trim(Data_Name).eq.'ALPHA MO COEFFICIENTS') then
-               wavefunction%SpinType='general'
-            EndIf
-            allocate(wavefunction%Array_Data%last%ArrC(N1*N2), STAT = AllocateStatus)
+            call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                 N1*N2, Data_Name, IOut)
          Else If ( Shape.eq."MULTISYMMATRICES") then
-            allocate(wavefunction%Array_Data%last%ArrC((N2+1)*N2*N3*N4/2), &
-                 STAT = AllocateStatus)
+            call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                 ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
          Else If ( Shape.eq."3DMATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrC(N1*N2*N3), STAT = AllocateStatus)
+            call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                 N1*N2*N3, Data_Name, IOut)
          Else
             call MQC_Error_A("Do not know how to allocate array", Iout, &
                  "Shape",Shape)
          Endif
-         IF (AllocateStatus /= 0) then
-            write( errorMsg, 1100 ) trim(Data_Name)
-            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-         EndIf
          call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
               wavefunction%Array_Data%last%ArrC)
+         if ( Print_Options .EQ. 2 ) then
+            call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
+            If (Storage_Options .EQ. 0 ) Then
+               call MQC_DeAlloc_Complex_Ptr(wavefunction%Array_Data%last%ArrC,&
+                    wavefunction%Array_Data%last%Data_Name, IOut)
+            Endif
+         endif
       case('MIXED')
          If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
               Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
@@ -1956,46 +1978,43 @@ CONTAINS
             If( Shape.eq."UNKNOWN") then
                write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
             EndIf
-            allocate(wavefunction%Array_Data%last%ArrI(LR), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 LR, Data_Name, IOut)
          Else If ( Shape.eq."MATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrI(N1*N2), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 N1*N2, Data_Name, IOut)
          Else If ( Shape.eq."MULTISYMMATRICES") then
-            allocate(wavefunction%Array_Data%last%ArrI((N2+1)*N2*N3*N4/2), &
-                 STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
          Else If ( Shape.eq."3DMATRIX") then
-            allocate(wavefunction%Array_Data%last%ArrI(N1*N2*N3), STAT = AllocateStatus)
+            call MQC_Alloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                 N1*N2*N3, Data_Name, IOut)
          Else
             call MQC_Error_A("Do not know how to allocate array", Iout, &
                  "Shape",Shape)
          Endif
-         IF (AllocateStatus /= 0) then
-            write( errorMsg, 1100 ) trim(Data_Name)
-            call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-         EndIf
          if ( NR .ge. 0 ) then
             If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
                  Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
                  Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
-            If( Shape.eq."UNKNOWN") then
-               write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
-            EndIf
-               allocate(wavefunction%Array_Data%last%ArrR(LR), STAT = AllocateStatus)
+               If( Shape.eq."UNKNOWN") then
+                  write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
+               EndIf
+               call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    LR, Data_Name, IOut)
             Else If ( Shape.eq."MATRIX") then
-               allocate(wavefunction%Array_Data%last%ArrR(N1*N2), STAT = AllocateStatus)
+               call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    N1*N2, Data_Name, IOut)
             Else If ( Shape.eq."MULTISYMMATRICES") then
-               allocate(wavefunction%Array_Data%last%ArrR((N2+1)*N2*N3*N4/2), &
-                    STAT = AllocateStatus)
+               call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
             Else If ( Shape.eq."3DMATRIX") then
-               allocate(wavefunction%Array_Data%last%ArrR(N1*N2*N3), &
-                    STAT = AllocateStatus)
+               call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    N1*N2*N3, Data_Name, IOut)
             Else
                call MQC_Error_A("Do not know how to allocate array", Iout, &
                     "Shape",Shape)
             Endif
-            IF (AllocateStatus /= 0) then
-               write( errorMsg, 1100 ) trim(Data_Name)
-               call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-            EndIf
             call Rd_RMixed(wavefunction%unitNumber,NTot,LenBuf, &
                  wavefunction%Array_Data%last%ArrI, &
                  wavefunction%Array_Data%last%ArrR)
@@ -2003,78 +2022,87 @@ CONTAINS
             If ( Shape.eq."SCALAR".or.Shape.eq."VECTOR".OR. &
                  Shape.eq."SYMMATRIX".or.Shape.eq."SYMSYM".OR. &
                  Shape.eq."TRISYMMATRICES".or.Shape.eq."UNKNOWN") then
-            If( Shape.eq."UNKNOWN") then
-               write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
-            EndIf
-               allocate(wavefunction%Array_Data%last%ArrC(LR), STAT = AllocateStatus)
+               If( Shape.eq."UNKNOWN") then
+                  write(Iout,2000) TRIM(Data_Name),TRIM(Formula),N1,N2,N3,N4,N5
+               EndIf
+               call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                    LR, Data_Name, IOut)
             Else If ( Shape.eq."MATRIX") then
-               allocate(wavefunction%Array_Data%last%ArrC(N1*N2), &
-                    STAT = AllocateStatus)
+               call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                    N1*N2, Data_Name, IOut)
             Else If ( Shape.eq."MULTISYMMATRICES") then
-               allocate(wavefunction%Array_Data%last%ArrC((N2+1)*N2*N3*N4/2), &
-                    STAT = AllocateStatus)
+               call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                    ((N2+1)*N2*N3*N4)/2, Data_Name, IOut)
             Else If ( Shape.eq."3DMATRIX") then
-               allocate(wavefunction%Array_Data%last%ArrC(N1*N2*N3), &
-                    STAT = AllocateStatus)
+               call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                    N1*N2*N3, Data_Name, IOut)
             Else
                call MQC_Error_A("Do not know how to allocate array", Iout, &
                     "Shape",Shape)
             Endif
-            IF (AllocateStatus /= 0) then
-               write( errorMsg, 1100 ) trim(Data_Name)
-               call MQC_Error_I(errorMsg, Iout, 'LR', LR)
-            EndIf
             call Rd_CMixed(wavefunction%unitNumber,NTot,LenBuf, &
                  wavefunction%Array_Data%last%ArrI, &
                  wavefunction%Array_Data%last%ArrC)
          endif
+         If ( Print_Options .EQ. 2 ) then
+            call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
+            If (Storage_Options .EQ. 0 ) Then
+               call MQC_DeAlloc_Int_Ptr( wavefunction%Array_Data%last%ArrI, &
+                    wavefunction%Array_Data%last%Data_Name, IOut)
+               If ( NR .ge. 0 ) then
+                  call MQC_DeAlloc_Real_Ptr(wavefunction%Array_Data%last%ArrR,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               Else
+                  call MQC_DeAlloc_Complex_Ptr(wavefunction%Array_Data%last%ArrC,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               EndIf
+            EndIf
+         EndIf
       case('TENSOR')
          if(NRI.eq.1) then
-            allocate(wavefunction%Array_Data%last%ArrR(LR*NR), &
-                 STAT=AllocateStatus)
-            IF (AllocateStatus /= 0) then
-               write( errorMsg, 1100 ) trim(Data_Name)
-               call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
-            EndIf
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 LR*NR, Data_Name, IOut)
             call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR,NTot,LenBuf, &
                  wavefunction%Array_Data%last%ArrR)
-!            call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,arrayTmp)
-!            deallocate(arrayTmp)
-         elseIf(NRI.eq.2) then
-            allocate(wavefunction%Array_Data%last%ArrR(LR*NR), &
-                 STAT = AllocateStatus)
-            IF (AllocateStatus /= 0) then
-               write( errorMsg, 1100 ) trim(Data_Name)
-               call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
-            EndIf
+         Else If(NRI.eq.2) then
+            call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                 LR*NR, Data_Name, IOut)
             call Rd_2EN(wavefunction%unitNumber,NR,LR,NR*LR, &
                  2*NTot,2*LenBuf,wavefunction%Array_Data%last%ArrR)
 !!                call Rd_2EN(fileinfo%unitNumber,NR,NTot,NR*NTot,2*NTot,2*LenBuf,complexTmp)
 !            complexTmp = reshape(arrayTmp, shape(complexTmp))
 !            call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut,complexTmp)
-!            !                deallocate(complexTmp)
-!            deallocate(arrayTmp)
          else
             if ( NR .ge. 0 ) then
-               allocate(wavefunction%Array_Data%last%ArrR(LR), &
-                    STAT = AllocateStatus)
-               IF (AllocateStatus /= 0) then
-                  write( errorMsg, 1100 ) trim(Data_Name)
-                  call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
-               EndIf
+               call MQC_Alloc_Real_Ptr( wavefunction%Array_Data%last%ArrR, &
+                    LR, Data_Name, IOut)
                call Rd_RBuf(wavefunction%unitNumber,NTot,LenBuf, &
                     wavefunction%Array_Data%last%ArrR)
             else
-               allocate(wavefunction%Array_Data%last%ArrC(LR), &
-                    STAT = AllocateStatus)
-               IF (AllocateStatus /= 0) then
-                  write( errorMsg, 1100 ) trim(Data_Name)
-                  call MQC_Error_I(errorMsg, Iout, 'LR', LR, 'NR', NR)
-               EndIf
+               call MQC_Alloc_Complex_Ptr( wavefunction%Array_Data%last%ArrC, &
+                    LR, Data_Name, IOut)
                call Rd_CBuf(wavefunction%unitNumber,NTot,LenBuf, &
                     wavefunction%Array_Data%last%ArrC)
             endif
          endIf
+         if ( Print_Options .EQ. 2 ) then
+            call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
+            If (Storage_Options .EQ. 0 ) Then
+               if(NRI.eq.1) then
+                  call MQC_DeAlloc_Real_Ptr(wavefunction%Array_Data%last%ArrR,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               Else If(NRI.eq.2) then
+                  call MQC_DeAlloc_Complex_Ptr(wavefunction%Array_Data%last%ArrC,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               Else If ( NR .ge. 0 ) then
+                  call MQC_DeAlloc_Real_Ptr(wavefunction%Array_Data%last%ArrR,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               Else
+                  call MQC_DeAlloc_Complex_Ptr(wavefunction%Array_Data%last%ArrC,&
+                       wavefunction%Array_Data%last%Data_Name, IOut)
+               EndIf
+            EndIf
+         endif
       case default
 !
 ! UNKNOWN was treated as a vector, so should never reach here
@@ -2085,9 +2113,6 @@ CONTAINS
          IERROR = IERROR + 1
       end select
 !
-      if ( Print_Options .EQ. 2 ) then
-         call mqc_print_Last_Array_In_wavefunction( wavefunction, IOut)
-      endif
       return
     end subroutine MQC_Unformatted_Read_Array
 
@@ -2136,10 +2161,6 @@ CONTAINS
  1040 Format( A,"  - Total elements: ",a )
  1070 format('NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
- 1100 Format('Error: Bad shape for',a,': Calculated size: ',i9,' Actual size:' &
-          ,i9,/,'  NI =',I9,/,'  NR =',I9,/,'  NRI =',I9,/,&
-          '  LenBuf =',I9,/, '  N1 =',I9,/, '  N2 =',I9,/ &
-          '  N3 =',I9,/, '  N4 =',I9,/, '  N5 =',I9 )
  2010 Format( i15 )
 !
 !     Do the work...
@@ -2365,11 +2386,12 @@ CONTAINS
       return
     end subroutine MQC_PRINT_SCALAR_HEAD
 
-    Subroutine MQC_Create_Wavefunctions( Print_Options, my_READONLY_list, &
-         mqc_input_file_list, Iout)
+    Subroutine MQC_Create_Wavefunctions( Print_Options, Storage_Options, &
+         my_READONLY_list, mqc_input_file_list, Iout)
       implicit none
 
       integer(kind=int64),intent(in):: Print_Options
+      integer(kind=int64),intent(in):: Storage_Options
       class(mqc_READONLY_list),intent(inout):: my_READONLY_list
       class(mqc_link_list),intent(inout) :: mqc_input_file_list
       integer(kind=int64),intent(in)::iOut
@@ -2448,7 +2470,7 @@ CONTAINS
 ! Read the MatrixFile and put data into a wavefunction structure
 !
          call mqc_link_list_add(mqc_input_file_list,Print_Options, &
-              my_READONLY_list,FileName,iout)
+              Storage_Options, my_READONLY_list,FileName,iout)
 !
 ! Get the next MatrixFile Name
 !
@@ -2529,8 +2551,8 @@ CONTAINS
       Return
     end Function mqc_read_this_MatrixFile_Element
 
-      subroutine mqc_ALL_wavefunction_to_est_wavefunction( current_wavefunction, &
-           iout)
+      subroutine mqc_ALL_wavefunction_to_est_wavefunction( &
+           current_wavefunction, IOut)
       implicit none
       class(MQC_ALL_Wavefunction),intent(inout)::current_wavefunction
       integer(kind=int64),intent(in)::iOut
@@ -2592,18 +2614,19 @@ CONTAINS
            "OVERLAP", "There is no BETA", &
            'overlap', &
            current_wavefunction%est_wavefunction%overlap_Matrix, IOut )
+!
+!      Call mqc_Array_to_Eigenvalues( current_wavefunction, &
+!           'ALPHA ORBITAL ENERGIES', 'BETA ORBITAL ENERGIES', &
+!           'mo energies', &
+!           current_wavefunction%est_wavefunction%mo_energies, IOut )
+!
 
-      Call mqc_Array_to_Eigenvalues( current_wavefunction, &
-           'ALPHA ORBITAL ENERGIES', 'BETA ORBITAL ENERGIES', &
-           'mo energies', &
-           current_wavefunction%est_wavefunction%mo_energies, IOut )
 
 !          call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
 
 
       return
       end subroutine mqc_ALL_wavefunction_to_est_wavefunction
-
 
       subroutine mqc_Array_to_Integral( current_wavefunction, &
            Alpha_String, Beta_String, Integral_Type, Integral_Result, &
@@ -2628,56 +2651,39 @@ CONTAINS
               Beta_String, Beta_Array, iout)
       Found_Alpha=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
               Alpha_String, Alpha_Array, iout)
-
+! If the data has not been saved, return
+      if ( Found_Alpha .eq. 0 ) return
       N1 = current_wavefunction%Array_Data%last%N1
       N2 = current_wavefunction%Array_Data%last%N2
-      If ( Found_Alpha .ne. 0 ) then
-         If ( Found_Beta .eq. 0 ) then
-            If ( Found_Alpha .eq. 2 ) then
-               If ( N1 .GT. 0 .AND. N2 .GT. 0 ) Then
-                  Call MQC_Matrix_Initialize(Alpha_Matrix, N1, N2,'StorFull')
-               Else If ( N1.LT.0 .AND. N2.GT.0 .AND. -N1.EQ.N2 ) Then
-                  Call MQC_Matrix_Initialize(Alpha_Matrix, N2, N2,'StorSymm')
-               EndIf
-               Call MQC_Copy_Array_To_Matrix(Alpha_Array, N1, N2, &
-                    Alpha_Matrix, IOut)
-               call mqc_integral_allocate(Integral_Result, &
-                    Integral_Type,current_wavefunction%SpinType,Alpha_Matrix)
-            Else
-               If ( N1 .GT. 0 .AND. N2 .GT. 0 ) Then
-                  Call MQC_Matrix_Initialize(Alpha_Matrix, N1, N2,'StorFull')
-               Else If ( N1.LT.0 .AND. N2.GT.0 .AND. -N1.EQ.N2 ) Then
-                  Call MQC_Matrix_Initialize(Alpha_Matrix, N2, N2,'StorSymm')
-               EndIf
-               Call MQC_Copy_Array_To_Matrix(Alpha_Array, N1, N2, &
-                    Alpha_Matrix, IOut)
-               nBasis = current_wavefunction%nBasis
-               call mqc_matrix_spinBlockGHF(Alpha_Matrix)
-               Beta_Matrix = Alpha_Matrix%mat([nBasis+1,-1],[nBasis+1,-1])
-               BetaAlpha_Matrix = Alpha_Matrix%mat([1,nBasis],[nBasis+1,-1])
-               AlphaBeta_Matrix = Alpha_Matrix%mat([nBasis+1,-1],[1,nBasis])
-               Alpha_Matrix = Alpha_Matrix%mat([1,nBasis],[1,nBasis])
-               call mqc_integral_allocate(Integral_Result, &
-                    Integral_Type,current_wavefunction%SpinType, &
-                    Alpha_Matrix,Beta_Matrix, &
-                    AlphaBeta_Matrix,BetaAlpha_Matrix)
-            EndIf
+      If ( Found_Beta .eq. 0 ) then
+         If ( Found_Alpha .eq. 2 ) then
+            Call MQC_Copy_Array_To_Matrix(Alpha_Array, N1, N2, &
+                 Alpha_Matrix, IOut)
+            call mqc_integral_allocate(Integral_Result, &
+                 Integral_Type,current_wavefunction%SpinType,Alpha_Matrix)
          Else
-            If ( N1 .GT. 0 .AND. N2 .GT. 0 ) Then
-               Call MQC_Matrix_Initialize(alpha_Matrix, N1, N2, 'StorFull')
-               Call MQC_Matrix_Initialize(beta_Matrix, N1, N2, 'StorFull')
-            Else If ( N1.LT.0 .AND. N2.GT.0 .AND. -N1.EQ.N2 ) Then
-               Call MQC_Matrix_Initialize(alpha_Matrix, N2, N2, 'StorSymm')
-               Call MQC_Matrix_Initialize(beta_Matrix, N2, N2,'StorSymm')
-            Endif
-            Call MQC_Copy_Array_To_Matrix( Alpha_Array, N1, N2, Alpha_Matrix, &
-                 IOut)
-            Call MQC_Copy_Array_To_Matrix( Beta_Array, N1, N2, Beta_Matrix, &
-                 IOut)
+            Call MQC_Copy_Array_To_Matrix(Alpha_Array, N1, N2, &
+                 Alpha_Matrix, IOut)
+            nBasis = current_wavefunction%nBasis
+            call mqc_matrix_spinBlockGHF(Alpha_Matrix)
+! %mat takes you to MQC_Matrix_Matrix_At
+            Beta_Matrix = Alpha_Matrix%mat([nBasis+1,-1],[nBasis+1,-1])
+            BetaAlpha_Matrix = Alpha_Matrix%mat([1,nBasis],[nBasis+1,-1])
+            AlphaBeta_Matrix = Alpha_Matrix%mat([nBasis+1,-1],[1,nBasis])
+            Alpha_Matrix = Alpha_Matrix%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(Integral_Result, &
                  Integral_Type,current_wavefunction%SpinType, &
-                 Alpha_Matrix,Beta_Matrix)
-         Endif
+                 Alpha_Matrix,Beta_Matrix, &
+                 AlphaBeta_Matrix,BetaAlpha_Matrix)
+         EndIf
+      Else
+         Call MQC_Copy_Array_To_Matrix( Alpha_Array, N1, N2, Alpha_Matrix, &
+              IOut)
+         Call MQC_Copy_Array_To_Matrix( Beta_Array, N1, N2, Beta_Matrix, &
+              IOut)
+         call mqc_integral_allocate(Integral_Result, &
+              Integral_Type,current_wavefunction%SpinType, &
+              Alpha_Matrix,Beta_Matrix)
       Endif
       return
       end subroutine mqc_Array_to_Integral
@@ -2702,28 +2708,34 @@ CONTAINS
               Beta_String, Beta_Array, iout)
       Found_Alpha=MQC_Find_mqc_array_link_list_node(current_wavefunction,&
               Alpha_String, Alpha_Array, iout)
-
+! If the data has not been saved, return
+      if ( Found_Alpha .eq. 0 ) return
+#ifdef DEBUG 
+      write(6,3457) trim(Alpha_Array%Data_Name),N1
+3457  format( "Create E Vector ",A,2I5)
+#endif
       N1 = current_wavefunction%Array_Data%last%N1
-      If ( Found_Alpha .NE. 0 ) Then
-         If ( trim(current_wavefunction%SpinType).eq.'space' ) then
-            Call MQC_Copy_Array_To_Vector(Alpha_Array, N1, Alpha_Vector, IOut)
-            call mqc_eigenvalues_allocate(Eigenvalue_Result, &
-                 Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector)
-         Else If ( trim(current_wavefunction%SpinType).eq.'spin' ) then
-            Call MQC_Copy_Array_To_Vector(Alpha_Array, N1, Alpha_Vector, IOut)
-            Call MQC_Copy_Array_To_Vector(Beta_Array, N1, Beta_Vector, IOut)
-            call mqc_eigenvalues_allocate(Eigenvalue_Result, &
-                 Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector, &
-                 Beta_Vector)
-         Else If ( trim(current_wavefunction%SpinType).eq.'general' ) then
-            nBasis = current_wavefunction%nBasis
-            Call mqc_matrix_spinBlockGHF(Alpha_Vector)
-            Beta_Vector = Alpha_Vector%vat(nBasis+1,-1)
-            Alpha_Vector = Alpha_Vector%vat(1,nBasis)
-            Call mqc_eigenvalues_allocate(Eigenvalue_Result, &
-                 Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector, &
-                 Beta_Vector)
-         Endif
+      If ( trim(current_wavefunction%SpinType).eq.'space' ) then
+         Call MQC_Copy_Array_To_Vector(Alpha_Array, N1, Alpha_Vector, IOut)
+         call mqc_eigenvalues_allocate(Eigenvalue_Result, &
+              Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector)
+      Else If ( trim(current_wavefunction%SpinType).eq.'spin' ) then
+         Call MQC_Copy_Array_To_Vector(Alpha_Array, N1, Alpha_Vector, IOut)
+         Call MQC_Copy_Array_To_Vector(Beta_Array, N1, Beta_Vector, IOut)
+         call mqc_eigenvalues_allocate(Eigenvalue_Result, &
+              Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector, &
+              Beta_Vector)
+      Else If ( trim(current_wavefunction%SpinType).eq.'general' ) then
+         nBasis = current_wavefunction%nBasis
+         Call mqc_matrix_spinBlockGHF(Alpha_Vector)
+         Beta_Vector = Alpha_Vector%vat(nBasis+1,-1)
+         Alpha_Vector = Alpha_Vector%vat(1,nBasis)
+         Call mqc_eigenvalues_allocate(Eigenvalue_Result, &
+              Eigenvalue_Type,current_wavefunction%SpinType,Alpha_Vector, &
+              Beta_Vector)
+      Else
+         call MQC_Error_A( 'Unknown Spin type ', IOut, &
+              'current_wavefunction%SpinType', current_wavefunction%SpinType )
       Endif
       return
       end subroutine mqc_Array_to_Eigenvalues
@@ -2734,34 +2746,22 @@ CONTAINS
       Integer(kind=int64),intent(in):: N1
       Type(MQC_Vector),intent(inout)::Alpha_Vector
       integer(kind=int64),intent(in)::IOut
-      Integer(kind=int32)::AllocateStatus
+      Integer(kind=int64)::ABSN1
       Integer(kind=int32)::I
 
-      Alpha_Vector%Length = N1
       If (associated(Alpha_Array%ArrC)) then
-         Alpha_Vector%Data_Type = "COMPLEX"
-         allocate(Alpha_Vector%VecC(N1), STAT = AllocateStatus)
-         IF (AllocateStatus /= 0) call MQC_Error_I( & 
-              'Not Enough Memory to allocate Alpha_Vector%VecC(N1)', &
-              Iout, 'N1', N1 )
-         Do I=1,N1
+         ABSN1 = Abs(N1)
+         Call MQC_Allocate_Vector(ABSN1,Alpha_Vector,'Complex')
+         Do I=1,ABSN1
             Alpha_Vector%VecC(I) = Alpha_Array%ArrC(I)
          EndDo
       Else If (associated(Alpha_Array%ArrR)) then
-         Alpha_Vector%Data_Type = "REAL"
-         allocate(Alpha_Vector%VecR(N1), STAT = AllocateStatus)
-         IF (AllocateStatus /= 0) call MQC_Error_I( & 
-              'Not Enough Memory to allocate Alpha_Vector%VecR(N1)', &
-              Iout, 'N1', N1 )
+         Call MQC_Allocate_Vector(N1,Alpha_Vector,'Real')
          Do I=1,N1
             Alpha_Vector%VecR(I) = Alpha_Array%ArrR(I)
          EndDo
       Else If (associated(Alpha_Array%ArrI)) then
-         Alpha_Vector%Data_Type = "INTEGER"
-         allocate(Alpha_Vector%VecI(N1), STAT = AllocateStatus)
-         IF (AllocateStatus /= 0) call MQC_Error_I( & 
-              'Not Enough Memory to allocate Alpha_Vector%VecI(N1)', &
-              Iout, 'N1', N1 )
+         Call MQC_Allocate_Vector(N1,Alpha_Vector,'Integer')
          Do I=1,N1
             Alpha_Vector%VecI(I) = Alpha_Array%ArrI(I)
          EndDo
@@ -2778,17 +2778,12 @@ CONTAINS
       integer(kind=int64),intent(in)::IOut
       Real(Kind=real64),contiguous,Pointer::R2D(:,:) =>null()
       Complex(Kind=real64),contiguous,Pointer::C2D(:,:) =>null()
-      Integer(kind=int32)::AllocateStatus
-      Integer(kind=int32)::I, J
+      Integer(kind=int32)::I, J, IJ
 
       If ( N1.GT.0 .AND. N2.GT.0 ) Then
          If (associated(Alpha_Array%ArrC)) then
             C2D(1:N1,1:N2)=>Alpha_Array%ArrC
-            allocate(Alpha_Matrix%MatC(N1,N2), STAT = AllocateStatus)
-            IF (AllocateStatus /= 0) call MQC_Error_I( & 
-                 'Not Enough Memory to allocate Alpha_Matrix%MatC(N1,N2)', &
-                 Iout, 'N1', N1, 'N2', N2 )
-
+            Call MQC_Allocate_Matrix(N1,N2,Alpha_Matrix,'Complex','StorFull')
             Do J=1,N2
                Do I=1,N1
                   Alpha_Matrix%MatC(I,J) = C2D(I,J)
@@ -2796,10 +2791,7 @@ CONTAINS
             EndDo
          Else
             R2D(1:N1,1:N2)=>Alpha_Array%ArrR
-            allocate(Alpha_Matrix%MatR(N1,N2), STAT = AllocateStatus)
-            IF (AllocateStatus /= 0) call MQC_Error_I( & 
-                 'Not Enough Memory to allocate Alpha_Matrix%MatR(N1,N2)', &
-                 Iout, 'N1', N1, 'N2', N2 )
+            Call MQC_Allocate_Matrix(N1,N2,Alpha_Matrix,'Real','StorFull')
             Do J=1,N2
                Do I=1,N1
                   Alpha_Matrix%MatR(I,J) = R2D(I,J)
@@ -2808,21 +2800,23 @@ CONTAINS
          EndIf
       Else If ( N1.LT.0 .AND. N2.GT.0 .AND. -N1.EQ.N2 ) Then
          If (associated(Alpha_Array%ArrC)) then
-            C2D(1:(N2+1)*N2/2,1:1)=>Alpha_Array%ArrC
-            allocate(Alpha_Matrix%MatC((N2+1)*N2/2,1), STAT = AllocateStatus)
-            IF (AllocateStatus /= 0) call MQC_Error_I( & 
-                 'Not Enough Memory to allocate Alpha_Matrix%MatC((N2+1)*N2/2,1)', &
-                 Iout, 'N1', N1, 'N2', N2 )
-            J=1
-            Do I=1,(N2+1)*N2/2
-               Alpha_Matrix%MatC(I,J) = C2D(I,J)
+            C2D(1:((N2+1)*N2)/2,1:1)=>Alpha_Array%ArrC
+            Call MQC_Allocate_Matrix(N2,N2,Alpha_Matrix,'Complex','StorFull')
+            IJ=0
+            Do J=1,N2
+               Do I=1,J
+                  IJ=IJ+1
+#ifdef DEBUG 
+      write(6,2345) trim(Alpha_Array%Data_Name),I,J,IJ,C2D(IJ,1)
+ 2345 format( a, 3I5,2E20.10,"i" )
+#endif
+                  Alpha_Matrix%MatC(I,J) = C2D(IJ,1)
+                  Alpha_Matrix%MatC(J,I) = C2D(IJ,1)
+               EndDo
             EndDo
          Else
-            R2D(1:(N2+1)*N2/2,1:1)=>Alpha_Array%ArrR
-            allocate(Alpha_Matrix%MatR((N2+1)*N2/2,1), STAT = AllocateStatus)
-            IF (AllocateStatus /= 0) call MQC_Error_I( & 
-                 'Not Enough Memory to allocate Alpha_Matrix%MatR((N2+1)*N2/2,1)', &
-                 Iout, 'N1', N1, 'N2', N2 )
+            R2D(1:((N2+1)*N2)/2,1:1)=>Alpha_Array%ArrR
+            Call MQC_Allocate_Matrix(N2,N2,Alpha_Matrix,'Real','StorSymm')
             J=1
             Do I=1,(N2+1)*N2/2
                Alpha_Matrix%MatR(I,J) = R2D(I,J)
@@ -2832,4 +2826,157 @@ CONTAINS
 
       Return
       end Subroutine MQC_Copy_Array_To_Matrix
+
+      Subroutine MQC_Alloc_Int_Ptr( IntArray, Size, Data_Name, IOut)
+        Integer(kind=Int64),contiguous,Pointer,intent(Out)::IntArray(:)
+        Integer(kind=Int64),intent(In)::Size
+        character(len=*),intent(In) ::Data_Name
+        integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1010   format( "Allocation of Size ", I12 )
+!
+!     Do the work...
+!
+        Allocate(IntArray(Size), STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           write( IOut, 1010 ) Size
+           call MQC_Error_A( 'MQC_Alloc_Int_Ptr: Not Enough Memory to allocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        Return
+      End Subroutine MQC_Alloc_Int_Ptr
+      Subroutine MQC_Alloc_Real_Ptr( DRealArray, Size, Data_Name, IOut)
+        Real(kind=Real64),contiguous,Pointer,intent(Out)::DRealArray(:)
+        Integer(kind=Int64),intent(In)::Size
+        character(len=*),intent(In) ::Data_Name
+        integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1010   format( "Allocation of Size ", I12 )
+!
+!     Do the work...
+!
+        Allocate(DRealArray(Size), STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           write( IOut, 1010 ) Size
+           call MQC_Error_A( 'MQC_Alloc_Real_Ptr: Not Enough Memory to allocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        Return
+      End Subroutine MQC_Alloc_Real_Ptr
+      Subroutine MQC_Alloc_Complex_Ptr( CompArray, Size, Data_Name, IOut)
+        Complex(kind=Real64),contiguous,Pointer,intent(Out)::CompArray(:)
+        Integer(kind=Int64),intent(In)::Size
+        character(len=*),intent(In) ::Data_Name
+        integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1010   format( "Complex Allocation of ",a," Size:", I12 )
+!
+!     Do the work...
+!
+#ifdef DEBUG 
+           write( IOut, 1010 ) trim(Data_Name),Size
+#endif
+
+        Allocate(CompArray(Size), STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           write( IOut, 1010 ) Size
+           call MQC_Error_A( 'MQC_Alloc_Complex_Ptr: Not Enough Memory to allocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        Return
+      End Subroutine MQC_Alloc_Complex_Ptr
+
+      Subroutine MQC_DeAlloc_Int_Ptr( IntArray, Data_Name, IOut)
+        Integer(kind=Int64),contiguous,Pointer,intent(Out)::IntArray(:)
+        character(len=*),intent(In) ::Data_Name
+        integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1900   Format( "MQC_DeAlloc_Int_Ptr: Deallocate ",A )
+!
+!     Do the work...
+!
+#ifdef DEBUG 
+        write( IOut, 1900) Data_Name
+        flush(IOut)
+#endif
+        If ( .not. Associated(IntArray) ) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Int_Ptr: Tried to deallocate an array that is not there', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        DeAllocate(IntArray, STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Int_Ptr: Failure to deallocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        IntArray=>null()
+        Return
+      End Subroutine MQC_DeAlloc_Int_Ptr
+      Subroutine MQC_DeAlloc_Real_Ptr( DRealArray, Data_Name, IOut)
+        Real(kind=Real64),contiguous,Pointer,intent(Out)::DRealArray(:)
+        character(len=*),intent(In) ::Data_Name
+        integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1900   Format( "MQC_DeAlloc_Real_Ptr: Deallocate ",A )
+!
+!     Do the work...
+!
+#ifdef DEBUG 
+        write( IOut, 1900) Data_Name
+        flush(IOut)
+#endif
+        If ( .not. Associated(DRealArray) ) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Real_Ptr: Tried to deallocate an array that is not there', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        DeAllocate(DRealArray, STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Real_Ptr: Failed to deallocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        DRealArray=>null()
+        Return
+      End Subroutine MQC_DeAlloc_Real_Ptr
+      Subroutine MQC_DeAlloc_Complex_Ptr( CompArray, Data_Name, IOut)
+        Complex(kind=Real64),contiguous,Pointer,intent(Out)::CompArray(:)
+        Character(len=*),intent(In) ::Data_Name
+        Integer(kind=Int64),intent(in)::iOut
+        Integer(kind=Int32)::AllocateStatus
+!
+!     Format statements.
+!
+ 1900   Format( "MQC_DeAlloc_Complex_Ptr: Deallocate ",A )
+!
+!     Do the work...
+!
+#ifdef DEBUG 
+        write( IOut, 1900) Data_Name
+        flush(IOut)
+#endif
+        If ( .not. Associated(CompArray) ) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Complex_Ptr: Tried to deallocate an array that is not there', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        DeAllocate(CompArray, STAT = AllocateStatus)
+        IF (AllocateStatus /= 0) Then
+           call MQC_Error_A( 'MQC_DeAlloc_Complex_Ptr: Failure to deallocate data structure', &
+                IOut, 'DataName', Data_Name )
+        EndIf
+        CompArray=>null()
+        Return
+      End Subroutine MQC_DeAlloc_Complex_Ptr
     End module MQC_FullWavefunction

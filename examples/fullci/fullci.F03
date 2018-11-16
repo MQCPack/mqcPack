@@ -26,7 +26,7 @@
       Write(IOut,*)
       Write(IOut,*) 'Full Configuration Interaction Energy Calculator'
       Write(IOut,*)
-      Write(IOut,*) 'L. M. Thompson 2017'
+      Write(IOut,*) 'L. M. Thompson 2016'
       Write(IOut,*)
 !
 !     Get the user-defined filename from the command line and then call the

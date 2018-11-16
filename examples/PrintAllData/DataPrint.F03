@@ -21,6 +21,7 @@
 !
       integer(kind=int64) iout, i, status
       integer(kind=int64) Print_Options
+      integer(kind=int64) Storage_Options
       class(mqc_link_list), allocatable:: mqc_input_file_list
       class(mqc_READONLY_list), allocatable:: my_READONLY_list
 
@@ -31,10 +32,11 @@
       allocate(mqc_input_file_list)
       allocate(my_READONLY_list)
       Print_Options=2
+      Storage_Options=0
 
-      Call MQC_Create_Wavefunctions( Print_Options, my_READONLY_list, &
-           mqc_input_file_list, Iout)
-
+      Call MQC_Create_Wavefunctions( Print_Options, Storage_Options, &
+           my_READONLY_list, mqc_input_file_list, Iout)
+! The rest is stubs for use with FCHK files and can be ignored.  
       call  mqc_get_FormChk_Name_F2C(FileName, iout)
       if ( trim(FileName).ne.'Done with FormChk' ) then
          write(iout,1010) 'FormChk Files:'
@@ -50,4 +52,3 @@
       EndDo
 
     end program DataPrint
-

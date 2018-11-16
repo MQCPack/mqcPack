@@ -698,7 +698,7 @@
 !     Local temp variables.
       real,dimension(:),allocatable::tempArray
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.false.,ok
 !
 !
 !     Format statements.
@@ -945,6 +945,18 @@
         allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
         fileinfo%basisFunction2Atom = 0
       endIf
+     
+      if(fileinfo%icgu.eq.111) then
+        iopcl = 0 
+      elseIf(fileinfo%icgu.eq.112) then
+        iopcl = 1
+      elseIf(fileinfo%icgu.eq.121) then
+        iopcl = 2
+      elseIf(fileinfo%icgu.eq.122) then
+        iopcl = 3
+      elseIf(fileinfo%icgu.eq.221) then
+        iopcl = 6
+      endIf
 !
 !     Set the readWriteMode flag in fileinfo to 'W' and then write the
 !     header scalar flags.
@@ -1027,7 +1039,7 @@
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.false.,ok,found
+      logical::DEBUG=.true.,ok,found
 !
 !
 !     Format statements.
@@ -1192,9 +1204,9 @@
                 & file, but NO MATRIX SENT to procedure.', 6, &
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
-              write(*,1060) 'reading matrix'
+ !             write(*,1060) 'reading matrix'
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
-              write(*,1060) 'read matrix'
+ !             write(*,1060) 'read matrix'
               matrixOut = Reshape(complexTmp,[N1,N2])
               deallocate(complexTmp)
             case('COMPLEX-SYMMATRIX')
@@ -1277,7 +1289,7 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Write_Array(fileinfo,  &
-       label,matrixIn,vectorIn,r4TensorIn,filename)
+       label,matrixIn,vectorIn,r4TensorIn,filename,storage)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file and
 !     write that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -1309,7 +1321,7 @@
       type(MQC_Matrix),intent(in),OPTIONAL::matrixIn 
       type(MQC_Vector),intent(in),OPTIONAL::vectorIn 
       type(MQC_R4Tensor),intent(in),OPTIONAL::r4TensorIn 
-      character(len=*),intent(in),OPTIONAL::filename
+      character(len=*),intent(in),OPTIONAL::filename,storage
 !
       integer::iout=6
 !
@@ -1323,15 +1335,14 @@
       real,allocatable,dimension(:,:)::realMatrixTmp
       real,pointer,dimension(:)::realMatrixTmpV
       integer,allocatable,dimension(:,:)::intMatrixTmp
-      complex(kind=8),allocatable,dimension(:,:)::compMatrixTmp
+      complex(kind=real64),allocatable,dimension(:,:)::compMatrixTmp
       real,allocatable,dimension(:)::realVectorTmp
       integer,allocatable,dimension(:)::intVectorTmp
-      complex(kind=8),allocatable,dimension(:)::compVectorTmp
+      complex(kind=real64),allocatable,dimension(:)::compVectorTmp
       type(MQC_Matrix)::matrixInUse 
-      character(len=256)::my_filename
-      logical::DEBUG=.false.,ok
+      character(len=256)::my_filename,my_storage
+      logical::DEBUG=.true.,ok
       Parameter(LenBuf=4000)
-!
 !
 !     Format statements.
 !
@@ -1344,7 +1355,12 @@
 !     read the header data. If file is not in write mode, write the header
 !     data and set to write mode
 !
-      Ione = 1
+      if(present(storage)) then
+        call String_Change_Case(storage,'l',my_storage)
+      else
+        my_storage = ''
+      endIf
+
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
@@ -1396,11 +1412,12 @@
 !     Load the MQC variable into a regular array and get the required dimensions
 !     Some routines will change when we upgrade to algebra2
 !
+      Ione = 1
       call String_Change_Case(label,'u',tmpLabel)
       if(present(matrixIn)) then
         matrixInUse = matrixIn
         if(mqc_matrix_haveReal(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1410,34 +1427,42 @@
             else
               allocate(realMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
+            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
 
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(realMatrixTmp,1), &
               0,0,0,0,.False.,realVectorTmp)
 
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(realVectorTmp(size(realMatrixTmp,1)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,realVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(realVectorTmp(size(realMatrixTmp,1)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,realVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(realMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
@@ -1450,7 +1475,7 @@
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveInteger(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1461,32 +1486,40 @@
               allocate(intMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
             intMatrixTmp = matrixInUse
+             allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(intMatrixTmp,1), &
               0,0,0,0,.False.,intVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(intVectorTmp(size(intMatrixTmp,1)))
             intMatrixTmp = matrixInUse
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(intVectorTmp(size(intMatrixTmp,1)))
             intMatrixTmp = matrixInUse
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,intVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(intMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
             intMatrixTmp = matrixInUse
+            allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
@@ -1498,7 +1531,11 @@
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
           endIf
         elseIf(mqc_matrix_haveComplex(matrixInUse)) then 
-          if(mqc_matrix_test_diagonal(matrixInUse)) then
+!       There is a bug in Wr_LCBuf in qcmatrix.F of gauopen if you want to write complex.
+!       NR should only be negative in Wr_Labl and positive everywhere else.
+!       Please recomplile MQC after making these changes.
+          Ione = -1
+          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
             if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
               if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
@@ -1508,32 +1545,41 @@
             else
               allocate(compMatrixTmp(mqc_matrix_columns(matrixInUse),1))
             endIf
+            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
               0,0,0,0,.False.,compVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse)) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
-            allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(compVectorTmp(size(compMatrixTmp,1)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
-          elseIf(mqc_matrix_test_symmetric(matrixInUse,'hermitian')) then
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
+              .or.(my_storage.eq.'asym')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
-            allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(compVectorTmp(size(compMatrixTmp,1)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
-          elseIf(mqc_matrix_haveFull(matrixInUse)) then
+          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+            endIf
             allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
             compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
@@ -1976,15 +2022,16 @@
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('alpha'))
+            matrixIn=est_integral%getBlock('alpha'),storage='full')
         elseIf(my_integral_type.eq.'spin') then
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('alpha'))
+            matrixIn=est_integral%getBlock('alpha'),storage='full')
           call fileInfo%writeArray('BETA MO COEFFICIENTS', &
-            matrixIn=est_integral%getBlock('beta'))
+            matrixIn=est_integral%getBlock('beta'),storage='full')
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
-          call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+          call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix,storage='full')
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'my_integral_type', my_integral_type )
@@ -2002,7 +2049,7 @@
             vectorIn=est_eigenvalues%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_eigenvalues,tmpVector)
-          call fileInfo%writeArray('ALPHA ORBITAL COEFFICIENTS',vectorIn=tmpVector)
+          call fileInfo%writeArray('ALPHA ORBITAL ENERGIES',vectorIn=tmpVector)
         else
           call mqc_error_a('Unknown wavefunction type in getESTObj', 6, &
                'my_integral_type', my_integral_type )
@@ -2020,6 +2067,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2038,6 +2086,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2056,6 +2105,7 @@
             matrixIn=est_integral%getBlock('beta'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2072,6 +2122,7 @@
             matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2088,6 +2139,7 @@
             matrixIn=est_wavefunction%overlap_matrix%getBlock('alpha'))
         elseIf(mqc_integral_array_type(est_wavefunction%overlap_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%overlap_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('OVERLAP',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2104,6 +2156,7 @@
             matrixIn=est_wavefunction%core_hamiltonian%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%core_hamiltonian).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%core_hamiltonian,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('CORE HAMILTONIAN ALPHA',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2136,6 +2189,7 @@
             matrixIn=est_wavefunction%mo_coefficients%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%mo_coefficients).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%mo_coefficients,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA MO COEFFICIENTS',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2152,6 +2206,7 @@
             matrixIn=est_wavefunction%density_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2168,6 +2223,7 @@
             matrixIn=est_wavefunction%fock_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%fock_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
           call fileInfo%writeArray('ALPHA FOCK MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
@@ -2231,6 +2287,11 @@
 !
 !     L. M. Thompson, 2017.
 !
+!     GHF routine has been updated to use modified mqc_matrix_spinBlockGHF
+!     subroutine.  nAlpha electrons are passed as optional second dummy argument.
+!     
+!     -A. Mahler, 4/26/18
+!
 !     Variable Declarations.
 !
       implicit none
@@ -2242,7 +2303,8 @@
       character(len=*),intent(in),optional::filename
       character(len=64)::myLabel
       character(len=256)::my_filename
-      integer::nOutputArrays,nBasis,nAlpha,nBeta
+      integer::nOutputArrays,nBasis,nElectrons,multiplicity
+      integer(kind=int64),dimension(:),allocatable::elist
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
@@ -2306,13 +2368,15 @@
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
           nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+            fileInfo%getVal('multiplicity'),elist)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          call est_integral%setEList(elist)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2345,14 +2409,30 @@
       case('core hamiltonian')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_integral,'core hamiltonian','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2370,14 +2450,30 @@
       case('fock')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_integral,'fock','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2395,18 +2491,34 @@
       case('density')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+          tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
@@ -2420,13 +2532,25 @@
       case('overlap')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_integral,'overlap','spin',tmpMatrixAlpha, &
             tmpMatrixAlpha)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2444,9 +2568,17 @@
       case('wavefunction')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha)
@@ -2456,9 +2588,17 @@
           call mqc_integral_allocate(est_wavefunction%mo_coefficients,'mo coefficients','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','space', &
             tmpMatrixAlpha)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','space',tmpMatrixAlpha)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
@@ -2469,10 +2609,22 @@
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','spin', &
             tmpMatrixAlpha,tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','spin', &
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha)
@@ -2485,10 +2637,26 @@
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','spin', &
             tmpMatrixAlpha,tmpMatrixBeta)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
           call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+            tmpMatrixBeta = transpose(tmpMatrixBeta)
+          endIf
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
@@ -2499,8 +2667,12 @@
           est_wavefunction%multiplicity = fileInfo%getVal('multiplicity')
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
-          nBasis = fileInfo%getVal('nBasis')
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
+          nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2509,6 +2681,10 @@
           call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2523,7 +2699,8 @@
           call mqc_eigenvalues_allocate(est_wavefunction%mo_energies,'mo energies','general', &
             tmpVectorAlpha,tmpVectorBeta)
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha)
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+            fileInfo%getVal('multiplicity'),elist) !MODIFIED
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
@@ -2531,14 +2708,23 @@
           call mqc_integral_allocate(est_wavefunction%mo_coefficients,'mo_coefficients','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+          tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
           tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
           tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
           call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha)
+          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+          endIf
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
           tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
           tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -2547,7 +2733,7 @@
           call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','general', &
             tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
 
-
+          call est_wavefunction%mo_coefficients%setEList(elist)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
           est_wavefunction%nBeta = fileInfo%getVal('nBeta')
@@ -2565,6 +2751,8 @@
         call mqc_error_A('Invalid label sent to %getESTObj.', 6, &
              'mylabel', mylabel )
       end select
+
+      if(allocated(elist)) deallocate(elist)
 !
       return
 
