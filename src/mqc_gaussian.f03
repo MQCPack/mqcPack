@@ -1269,14 +1269,10 @@
             N1,N2,N3,N4,N5,ASym,LR
         endDo
         if(i==1) then
-          write(*,*)' Inside re-open block.'
           my_filename = TRIM(fileinfo%filename)
-          write(*,*)' my_filename = ',TRIM(my_filename)
           call fileinfo%CLOSEFILE()
-          write(*,*)' Just closed the file.'
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             my_filename)
-          write(*,*)' Just re-opened the file.'
         endIf
       endDo outerLoop
       if(.not.found) then
