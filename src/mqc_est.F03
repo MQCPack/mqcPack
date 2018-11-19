@@ -926,7 +926,7 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Orbitals
-      function mqc_integral_output_orbitals(integral,alphaOrbs,betaOrbs) result(integralOut)
+      function mqc_integral_output_orbitals(integral,orbString,alphaOrbsIn,betaOrbsIn) result(integralOut)
 !
 !     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
 !     can be input) and orders columns as specified in alphaOrbs and betaOrbs. If number of
@@ -934,14 +934,60 @@
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
-      integer(kind=int64),dimension(:),intent(in)::alphaOrbs,betaOrbs
+      character(len=*),optional::orbString
+      character(len=64)::myOrbString
+      integer(kind=int64),dimension(:),optional::alphaOrbsIn,betaOrbsIn
+      integer(kind=int64),dimension(:),allocatable::alphaOrbs,betaOrbs
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_matrix)::outMatrixAlpha,outMatrixBeta,outMatrixAlphaBeta,outMatrixBetaAlpha
-      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,i
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nAlpha=0,nBeta=0,i
+
+      if(present(orbString)) then
+        if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared with &
+     &    number of alpha and/or beta electrons in string input',6,'present(orbString)', &
+          present(orbString),'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)', &
+          present(betaOrbsIn))
+        if(size(alphaOrbsIn).ne.1) call mqc_error_i('OrbString variable must be declared with &
+     &    number of alpha and/or beta electrons in string input',6,'size(alphaOrbsIn)', &
+          size(alphaOrbsIn))
+        if(present(betaOrbsIn).and.size(betaOrbsIn).ne.1) call mqc_error_i('OrbString variable &
+     &    must be declared with number of alpha and/or beta electrons in string input',6, &
+          'size(betaOrbsIn)',size(betaOrbsIn))
+        nAlpha = alphaOrbsIn(1)
+        if(present(betaOrbsIn)) then 
+          nBeta = betaOrbsIn(1) 
+        else
+          nBeta = nAlpha
+        endIf
+        call string_change_case(orbString,'l',myOrbString)
+      else
+        if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared &
+     &    if no alpha string',6,'present(orbString)',present(orbString),'present(alphaOrbsIn)', &
+          present(alphaOrbsIn))
+        if(.not.present(betaOrbsIn)) betaOrbs = alphaOrbs
+        alphaOrbs = alphaOrbsIn
+        betaOrbs = betaOrbsIn
+        myOrbString = 'useStrings'
+      endIf
 
       nDimAlpha = integral%blockSize('Alpha') 
       nDimBeta = integral%blockSize('Beta')
+
+      select case (myOrbString)
+      case ('occupied')
+        allocate(alphaOrbs(nAlpha),betaOrbs(nBeta))
+        alphaOrbs = [(i,i=1,nAlpha)]
+        betaOrbs = [(i,i=1,nBeta)]
+      case ('virtual')
+        allocate(alphaOrbs(nDimAlpha-nAlpha),betaOrbs(nDimBeta-nBeta))
+        alphaOrbs = [(i,i=nAlpha,nDimAlpha)]
+        betaOrbs = [(i,i=nBeta,nDimBeta)]
+      case ('useStrings')
+      case default
+        call mqc_error_a('Unrecognized orbital string definition in MQC_Integral_Output_Orbitals',&
+          6,'myOrbString',myOrbString)
+      end select
 
       select case (integral%type())
       case('space')
@@ -2713,7 +2759,7 @@
       end do
 !
       if(integral%array_type.eq.'space') call mqc_integral_allocate(output,'contraction','space',alpha)
-      if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contractin','spin',alpha,beta)
+      if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contraction','spin',alpha,beta)
       if(integral%array_type.eq.'general') call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
 !
       end function mqc_eri_integral_contraction
