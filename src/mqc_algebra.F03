@@ -9564,12 +9564,13 @@
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
-      subroutine mqc_matrix_generalized_eigensystem(a,b,eigenvals,reigenvecs,leigenvecs)
+      subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs)
 !
       implicit none
       class(mqc_matrix),intent(inOut)::a
-      type(mqc_matrix),intent(inOut)::b
-      type(mqc_vector),intent(out)::eigenvals
+      type(mqc_matrix),intent(inOut),optional::bIn
+      type(mqc_matrix)::b
+      type(mqc_vector),intent(out),optional::eigenvals
       type(mqc_matrix),intent(out),optional::reigenvecs,leigenvecs
       real(kind=real64),dimension(:,:),allocatable::tempA,tempB,rightvecs,leftvecs
       real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
@@ -9583,6 +9584,11 @@
 !
       nDim1A = mqc_matrix_rows(a)
       nDim2A = mqc_matrix_columns(a)
+      if(present(bIn)) then
+        b = bIn
+      else
+        call b%identity(nDim1A,nDim2A)
+      endIf
       nDim1B = mqc_matrix_rows(b)
       nDim2B = mqc_matrix_columns(b)
       if(nDim1A.ne.nDim1B) call mqc_error_I('Order of matrices A and B is different in mqc_matrix_generalized_eigensystem', 6, &
@@ -9643,7 +9649,7 @@
                  'iError', iError)
           if(iError.gt.0) npdFlag = 1
         endIf
-        if(iError.eq.0) eigenvals = eValsOut
+        if(iError.eq.0.and.present(eigenvals)) eigenvals = eValsOut
         if(allocated(eValsOut)) deallocate(eValsOut)
         if(allocated(work)) deallocate(work)
         if(allocated(tempA)) deallocate(tempA)
@@ -9705,7 +9711,7 @@
             if(iError.ne.0) call mqc_error_i('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
           endIf
-          eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=real64)
+          if(present(eigenvals)) eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=real64)
           if(allocated(eValsReal)) deallocate(eValsReal)
           if(allocated(eValsImag)) deallocate(eValsImag)
           if(allocated(rightvecs)) deallocate(rightvecs)
@@ -9749,7 +9755,7 @@
             if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
           endIf
-          eigenvals = eValsA/eValsB
+          if(present(eigenvals)) eigenvals = eValsA/eValsB
           if(allocated(eValsA)) deallocate(eValsA)
           if(allocated(eValsB)) deallocate(eValsB)
           if(allocated(rightCvecs)) deallocate(rightCvecs)

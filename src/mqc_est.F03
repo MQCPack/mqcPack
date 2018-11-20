@@ -70,6 +70,7 @@
         Procedure, Public::getBlock => mqc_integral_output_block
         Procedure, Public::init => mqc_integral_initialize 
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+        Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
         Procedure, Public::inv => mqc_scf_integral_inverse
         Procedure, Public::det => mqc_scf_integral_determinant
         Procedure, Public::norm => mqc_integral_norm
@@ -2763,6 +2764,175 @@
       if(integral%array_type.eq.'general') call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
 !
       end function mqc_eri_integral_contraction
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Generalized_Eigensystem
+      subroutine mqc_scf_integral_generalized_eigensystem(integralA,integralB,eVals,rEVecs,lEVecs)
+!
+!     This function solves the generalized eigensystem equation of scf_integrals
+!
+!     L. M. Thompson, 2018.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integralA
+      type(mqc_scf_integral),optional::integralB
+      type(mqc_scf_eigenvalues),optional,intent(inOut)::eVals
+      type(mqc_scf_integral),optional,intent(inOut)::rEVecs,lEVecs
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4,tmpMat5,tmpMat6,tmpMat7,tmpMat8
+      type(mqc_vector)::tmpVec1,tmpVec2
+      integer(kind=int64)::nDimAlpha=0
+!
+      if(integralA%type().eq.'space') then
+        if(present(integralB)) then
+          if(integralB%type().eq.'space') then
+            tmpMat1 = integralA%getblock('alpha')
+            tmpMat2 = integralB%getblock('alpha')
+            call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat3,tmpMat4)
+            If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','space',tmpVec1) 
+            If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','space',tmpMat3) 
+            If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','space',tmpMat4)
+          elseIf(integralB%type().eq.'spin') then
+            tmpMat1 = integralA%getblock('alpha')
+            tmpMat2 = integralB%getblock('alpha')
+            tmpMat3 = integralB%getblock('beta')
+            call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat4,tmpMat5)
+            call tmpMat1%eigensys(tmpMat3,tmpVec2,tmpMat6,tmpMat7)
+            If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
+            If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat4,tmpMat6) 
+            If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat7)
+          elseIf(integralB%type().eq.'general') then
+            nDimAlpha = integralA%blockSize('alpha') 
+            if (integralA%blockSize('alpha').ne.integralB%blockSize('alpha')) call mqc_error('Alpha block sizes &
+      &       must match in mqc_scf_integral_generalized_eigensystem') 
+            if (integralB%blockSize('beta').ne.integralB%blockSize('beta')) call mqc_error('Beta block sizes &
+      &       must match in mqc_scf_integral_generalized_eigensystem') 
+            tmpMat1 = integralA%getblock('full')
+            tmpMat2 = integralB%getblock('full')
+            call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat3,tmpMat4)
+            if(present(rEVecs)) then
+              tmpMat5 = tmpMat3%mat([1,NDimAlpha],[1,NDimAlpha])
+              tmpMat6 = tmpMat3%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+              tmpMat7 = tmpMat3%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+              tmpMat8 = tmpMat3%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+              call mqc_integral_allocate(rEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+            endIf
+            if(present(lEVecs)) then
+              tmpMat5 = tmpMat4%mat([1,NDimAlpha],[1,NDimAlpha])
+              tmpMat6 = tmpMat4%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+              tmpMat7 = tmpMat4%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+              tmpMat8 = tmpMat4%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+              call mqc_integral_allocate(lEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+            endIf
+            if(present(eVals)) then
+              tmpVec2 = tmpVec1%vat(NDimAlpha+1,-1)
+              tmpVec1 = tmpVec1%vat(1,NDimAlpha)
+              call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2)
+            endIf
+          endIf
+        else
+          tmpMat1 = integralA%getblock('alpha')
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
+          If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','space',tmpVec1) 
+          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','space',tmpMat3) 
+          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','space',tmpMat4)
+        endIf
+      elseIf(integralA%type().eq.'spin') then
+        if(present(integralB)) then
+          if(integralB%type().eq.'space') then
+            tmpMat1 = integralA%getblock('alpha')
+            tmpMat2 = integralA%getblock('beta')
+            tmpMat3 = integralB%getblock('alpha')
+            call tmpMat1%eigensys(tmpMat3,tmpVec1,tmpMat4,tmpMat5)
+            call tmpMat2%eigensys(tmpMat3,tmpVec2,tmpMat6,tmpMat7)
+            If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
+            If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat4,tmpMat6) 
+            If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat7)
+          elseIf(integralB%type().eq.'spin') then
+            tmpMat1 = integralA%getblock('alpha')
+            tmpMat2 = integralB%getblock('alpha')
+            tmpMat3 = integralA%getblock('beta')
+            tmpMat4 = integralB%getblock('beta')
+            call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat5,tmpMat6)
+            call tmpMat3%eigensys(tmpMat4,tmpVec2,tmpMat7,tmpMat8)
+            If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
+            If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat5,tmpMat7) 
+            If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat6,tmpMat8)
+          elseIf(integralB%type().eq.'general') then
+            nDimAlpha = integralA%blockSize('alpha') 
+            if (integralA%blockSize('alpha').ne.integralB%blockSize('alpha')) call mqc_error('Alpha block sizes &
+      &       must match in mqc_scf_integral_generalized_eigensystem') 
+            if (integralB%blockSize('beta').ne.integralB%blockSize('beta')) call mqc_error('Beta block sizes &
+      &       must match in mqc_scf_integral_generalized_eigensystem') 
+            tmpMat1 = integralA%getblock('full')
+            tmpMat2 = integralB%getblock('full')
+            call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat3,tmpMat4)
+            if(present(rEVecs)) then
+              tmpMat5 = tmpMat3%mat([1,NDimAlpha],[1,NDimAlpha])
+              tmpMat6 = tmpMat3%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+              tmpMat7 = tmpMat3%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+              tmpMat8 = tmpMat3%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+              call mqc_integral_allocate(rEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+            endIf
+            if(present(lEVecs)) then
+              tmpMat5 = tmpMat4%mat([1,NDimAlpha],[1,NDimAlpha])
+              tmpMat6 = tmpMat4%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+              tmpMat7 = tmpMat4%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+              tmpMat8 = tmpMat4%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+              call mqc_integral_allocate(lEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+            endIf
+            if(present(eVals)) then
+              tmpVec2 = tmpVec1%vat(NDimAlpha+1,-1)
+              tmpVec1 = tmpVec1%vat(1,NDimAlpha)
+              call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2)
+            endIf
+          endIf
+        else
+          tmpMat1 = integralA%getblock('alpha')
+          tmpMat2 = integralA%getblock('beta')
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
+          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat5,leigenvecs=tmpMat6)
+          If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
+          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','space',tmpMat3,tmpMat4) 
+          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','space',tmpMat5,tmpMat6)
+        endIf
+      elseIf(integralA%type().eq.'general') then
+        nDimAlpha = integralA%blockSize('alpha') 
+        tmpMat1 = integralA%getblock('full')
+        if(present(integralB)) then
+          if (integralA%blockSize('alpha').ne.integralB%blockSize('alpha')) call mqc_error('Alpha block sizes &
+     &      must match in mqc_scf_integral_generalized_eigensystem') 
+          if (integralB%blockSize('beta').ne.integralB%blockSize('beta')) call mqc_error('Beta block sizes &
+     &      must match in mqc_scf_integral_generalized_eigensystem') 
+          tmpMat2 = integralB%getblock('full')
+          call tmpMat1%eigensys(tmpMat2,tmpVec1,tmpMat3,tmpMat4)
+        else
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
+        endIf
+        if(present(rEVecs)) then
+          tmpMat5 = tmpMat3%mat([1,NDimAlpha],[1,NDimAlpha])
+          tmpMat6 = tmpMat3%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+          tmpMat7 = tmpMat3%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat8 = tmpMat3%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+          call mqc_integral_allocate(rEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+        endIf
+        if(present(lEVecs)) then
+          tmpMat5 = tmpMat4%mat([1,NDimAlpha],[1,NDimAlpha])
+          tmpMat6 = tmpMat4%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+          tmpMat7 = tmpMat4%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+          tmpMat8 = tmpMat4%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+          call mqc_integral_allocate(lEVecs,'eigenvectors','general',tmpMat5,tmpMat6,tmpMat7,tmpMat8)
+        endIf
+        if(present(eVals)) then
+          tmpVec2 = tmpVec1%vat(NDimAlpha+1,-1)
+          tmpVec1 = tmpVec1%vat(1,NDimAlpha)
+          call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2)
+        endIf
+      endIf
+!
+      end subroutine mqc_scf_integral_generalized_eigensystem
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Diagonalize
