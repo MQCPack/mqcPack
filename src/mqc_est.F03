@@ -745,12 +745,13 @@
 !
 !
 !     PROCEDURE MQC_Integral_Initialize
-      subroutine mqc_integral_initialize(integral,nAlpha,nBeta,label) 
+      subroutine mqc_integral_initialize(integral,nAlpha,nBeta,scalar,label) 
 !
       implicit none
       class(mqc_scf_integral),intent(inOut)::integral
       integer,intent(in)::nAlpha,nBeta
       character(Len=*),optional,intent(in)::label
+      class(*),optional,intent(in)::Scalar
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta
       Character(Len=64)::myLabel
 !
@@ -760,11 +761,11 @@
         myLabel = ''
       endIf
 !
-      call tmpMatrixAlpha%init(nAlpha,nAlpha)
+      call tmpMatrixAlpha%init(nAlpha,nAlpha,scalar)
       if (nAlpha.eq.nBeta) then
         call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
       else 
-        call tmpMatrixBeta%init(nBeta,nBeta)
+        call tmpMatrixBeta%init(nBeta,nBeta,scalar)
         call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
       endIf
 !
