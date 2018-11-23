@@ -68,10 +68,12 @@
         Procedure, Public::getLabel => mqc_integral_array_name
         Procedure, Public::addLabel => mqc_integral_add_name
         Procedure, Public::getBlock => mqc_integral_output_block
+        Procedure, Public::identity => mqc_integral_identity 
         Procedure, Public::init => mqc_integral_initialize 
         Procedure, Public::diag => mqc_scf_integral_diagonalize
         Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
         Procedure, Public::inv => mqc_scf_integral_inverse
+        Procedure, Public::trace => mqc_scf_integral_trace
         Procedure, Public::det => mqc_scf_integral_determinant
         Procedure, Public::norm => mqc_integral_norm
         Procedure, Private::at => mqc_integral_at
@@ -216,6 +218,10 @@
 !
       Interface Operator (-)
         Module Procedure MQC_Integral_Difference
+      End Interface
+!
+      Interface Operator (*)
+        Module Procedure MQC_Scalar_Integral_Multiply
       End Interface
 !
 !
@@ -711,8 +717,8 @@
       end subroutine mqc_eigenvalues_allocate  
 !
 !
-!     PROCEDURE MQC_Integral_Initialize
-      subroutine mqc_integral_initialize(integral,nAlpha,nBeta,label) 
+!     PROCEDURE MQC_Integral_Identity
+      subroutine mqc_integral_identity(integral,nAlpha,nBeta,label) 
 !
       implicit none
       class(mqc_scf_integral),intent(inOut)::integral
@@ -732,6 +738,33 @@
         call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
       else 
         call tmpMatrixBeta%identity(nBeta,nBeta)
+        call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      endIf
+!
+      end subroutine mqc_integral_identity  
+!
+!
+!     PROCEDURE MQC_Integral_Initialize
+      subroutine mqc_integral_initialize(integral,nAlpha,nBeta,label) 
+!
+      implicit none
+      class(mqc_scf_integral),intent(inOut)::integral
+      integer,intent(in)::nAlpha,nBeta
+      character(Len=*),optional,intent(in)::label
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+!
+      call tmpMatrixAlpha%init(nAlpha,nAlpha)
+      if (nAlpha.eq.nBeta) then
+        call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
+      else 
+        call tmpMatrixBeta%init(nBeta,nBeta)
         call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
       endIf
 !
@@ -1816,6 +1849,50 @@
       end select
 !
       end function mqc_integral_integral_multiply
+!
+!
+!     PROCEDURE MQC_Scalar_Integral_Multiply
+      function mqc_scalar_integral_multiply(scalar,integral) result(integralOut)
+!
+!     This function multiplies a mqc scalar type with an mqc integral.
+!
+!     L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integral
+      type(mqc_scalar),intent(in)::scalar
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      Character(Len=64)::myLabel
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+
+      select case (integral%array_type)
+      case('space')
+          tmpMatrixAlpha = scalar*integral%alpha
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+      case('spin')
+          tmpMatrixAlpha = scalar*integral%alpha
+          tmpMatrixBeta = scalar*integral%beta
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      case('general')
+          tmpMatrixAlpha = scalar*integral%alpha
+          tmpMatrixBeta = scalar*integral%beta
+          tmpMatrixAlphaBeta = scalar*integral%alphaBeta
+          tmpMatrixBetaAlpha = scalar*integral%betaAlpha
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+      case default
+        call mqc_error_A('Unknown integral type in mqc_scalar_integral_multiply', 6, &
+             'integralA%array_type', integral%array_type )
+      end select
+!
+      end function mqc_scalar_integral_multiply
 !
 !
 !     PROCEDURE MQC_Integral_Eigenvalues_Multiply
@@ -3054,6 +3131,36 @@
       endIf
 !
       end function mqc_scf_integral_inverse
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Trace
+      function mqc_scf_integral_trace(integral) result(trace)
+!
+!
+!     This function returns the trace of integral as an mqc_scalar
+!     object
+!
+!     L. M. Thompson, 2018
+!
+!
+!     Variable Declariations.
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scalar)::trace,two
+      type(mqc_matrix)::tmpMat1,tmpMat2
+!
+      two = 2.0
+      if(integral%type().eq.'space') then
+        tmpMat1 = integral%getblock('alpha')
+        trace = two*tmpMat1%trace()
+      elseIf(integral%type().eq.'spin'.or.integral%type().eq.'general') then
+        tmpMat1 = integral%getblock('alpha')
+        tmpMat2 = integral%getblock('beta')
+        trace = tmpMat1%trace() + tmpMat2%trace()
+      endIf
+!
+      end function mqc_scf_integral_trace
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Determinant
