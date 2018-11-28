@@ -222,6 +222,7 @@
 !
       Interface Operator (*)
         Module Procedure MQC_Scalar_Integral_Multiply
+        Module Procedure MQC_Integral_Scalar_Multiply
       End Interface
 !
 !
@@ -1894,6 +1895,50 @@
       end select
 !
       end function mqc_scalar_integral_multiply
+!
+!
+!     PROCEDURE MQC_Integral_Scalar_Multiply
+      function mqc_integral_scalar_multiply(integral,scalar) result(integralOut)
+!
+!     This function multiplies an mqc integral type with an mqc scalar.
+!
+!     L. M. Thompson, 2018.
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integral
+      type(mqc_scalar),intent(in)::scalar
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      Character(Len=64)::myLabel
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+
+      select case (integral%array_type)
+      case('space')
+          tmpMatrixAlpha = scalar*integral%alpha
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+      case('spin')
+          tmpMatrixAlpha = scalar*integral%alpha
+          tmpMatrixBeta = scalar*integral%beta
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      case('general')
+          tmpMatrixAlpha = scalar*integral%alpha
+          tmpMatrixBeta = scalar*integral%beta
+          tmpMatrixAlphaBeta = scalar*integral%alphaBeta
+          tmpMatrixBetaAlpha = scalar*integral%betaAlpha
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_scalar_multiply', 6, &
+             'integralA%array_type', integral%array_type )
+      end select
+!
+      end function mqc_integral_scalar_multiply
 !
 !
 !     PROCEDURE MQC_Integral_Eigenvalues_Multiply
