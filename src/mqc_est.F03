@@ -295,12 +295,18 @@
         write(iOut,1050)'Wavefunction Type = ',Wavefunction%wF_type
         write(iOut,1060)'Complex   = ',Wavefunction%wF_complex
 
-        call wavefunction%overlap_matrix%print(iOut,'Overlap matrix',.true.,.false.)
-        call wavefunction%core_hamiltonian%print(iOut,'Core Hamiltonian matrix',.true.,.false.)
-        call wavefunction%mo_energies%print(iOut,'Orbital Energies',.true.,.false.)
-        call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.false.)
-        call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
-        call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
+        if(mqc_integral_isAllocated(wavefunction%overlap_matrix)) &
+          call wavefunction%overlap_matrix%print(iOut,'Overlap matrix',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%core_hamiltonian)) &
+          call wavefunction%core_hamiltonian%print(iOut,'Core Hamiltonian matrix',.true.,.false.)
+        if(mqc_eigenvalues_isAllocated(wavefunction%mo_energies)) &
+          call wavefunction%mo_energies%print(iOut,'Orbital Energies',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%mo_coefficients)) &
+          call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%density_matrix)) &
+          call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%fock_matrix)) &
+          call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
       case default
         call mqc_error_A('Invalid label sent to wavefunction print', 6, &
              'myLabel', myLabel )
@@ -427,6 +433,48 @@
       endif
 !
       end subroutine mqc_print_twoERIs 
+!
+!
+!     PROCEDURE MQC_Integral_isAllocated
+      Function MQC_Integral_isAllocated(Integral) Result(isAllocated)
+!
+!     This function returns if an mqc scf integral is allocated or not.
+!
+!     L. M. Thompson, 2017.
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_SCF_Integral),Intent(InOut)::Integral
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(MQC_Matrix_isAllocated(Integral%Alpha)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%Beta)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%AlphaBeta)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%BetaAlpha)) isAllocated = .True.
+!
+      Return
+      End Function MQC_Integral_isAllocated
+!
+!
+!     PROCEDURE MQC_Eigenvalues_isAllocated
+      Function MQC_Eigenvalues_isAllocated(Eigenvalues) Result(isAllocated)
+!
+!     This function returns if an mqc scf eigenvalue is allocated or not.
+!
+!     L. M. Thompson, 2017.
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_SCF_Eigenvalues),Intent(InOut)::Eigenvalues
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(MQC_Vector_isAllocated(Eigenvalues%Alpha)) isAllocated = .True.
+      If(MQC_Vector_isAllocated(Eigenvalues%Beta)) isAllocated = .True.
+!
+      Return
+      End Function MQC_Eigenvalues_isAllocated
 !
 !
 !     PROCEDURE MQC_Integral_Has_Alpha
