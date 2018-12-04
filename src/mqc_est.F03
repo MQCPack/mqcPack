@@ -81,6 +81,7 @@
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
         Procedure, Public::orbitals => mqc_integral_output_orbitals 
+        Procedure, Public::swap => mqc_integral_swap_orbitals
       End Type
 !
 !     MQC_SCF_Eigenvalues
@@ -122,7 +123,7 @@
 !
 !     Parent Type
       Type,Extends(MQC_Wavefunction)::MQC_PSCF_Wavefunction
-        Integer(kind=int64)::NCore,NVal,NActive
+        Integer(kind=int64)::NCore,NVal,NActive,NFrz
         Type(MQC_Matrix)::PSCF_Amplitudes
         Type(MQC_Vector)::PSCF_Energies
       End Type MQC_PSCF_Wavefunction
@@ -139,6 +140,7 @@
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order
+        Integer(kind=int64)::NDets,NAlpStr,NBetStr
       End Type MQC_Determinant
 !
 !    
@@ -293,12 +295,18 @@
         write(iOut,1050)'Wavefunction Type = ',Wavefunction%wF_type
         write(iOut,1060)'Complex   = ',Wavefunction%wF_complex
 
-        call wavefunction%overlap_matrix%print(iOut,'Overlap matrix',.true.,.false.)
-        call wavefunction%core_hamiltonian%print(iOut,'Core Hamiltonian matrix',.true.,.false.)
-        call wavefunction%mo_energies%print(iOut,'Orbital Energies',.true.,.false.)
-        call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.false.)
-        call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
-        call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
+        if(mqc_integral_isAllocated(wavefunction%overlap_matrix)) &
+          call wavefunction%overlap_matrix%print(iOut,'Overlap matrix',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%core_hamiltonian)) &
+          call wavefunction%core_hamiltonian%print(iOut,'Core Hamiltonian matrix',.true.,.false.)
+        if(mqc_eigenvalues_isAllocated(wavefunction%mo_energies)) &
+          call wavefunction%mo_energies%print(iOut,'Orbital Energies',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%mo_coefficients)) &
+          call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%density_matrix)) &
+          call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%fock_matrix)) &
+          call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
       case default
         call mqc_error_A('Invalid label sent to wavefunction print', 6, &
              'myLabel', myLabel )
@@ -425,6 +433,48 @@
       endif
 !
       end subroutine mqc_print_twoERIs 
+!
+!
+!     PROCEDURE MQC_Integral_isAllocated
+      Function MQC_Integral_isAllocated(Integral) Result(isAllocated)
+!
+!     This function returns if an mqc scf integral is allocated or not.
+!
+!     L. M. Thompson, 2017.
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_SCF_Integral),Intent(InOut)::Integral
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(MQC_Matrix_isAllocated(Integral%Alpha)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%Beta)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%AlphaBeta)) isAllocated = .True.
+      If(MQC_Matrix_isAllocated(Integral%BetaAlpha)) isAllocated = .True.
+!
+      Return
+      End Function MQC_Integral_isAllocated
+!
+!
+!     PROCEDURE MQC_Eigenvalues_isAllocated
+      Function MQC_Eigenvalues_isAllocated(Eigenvalues) Result(isAllocated)
+!
+!     This function returns if an mqc scf eigenvalue is allocated or not.
+!
+!     L. M. Thompson, 2017.
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_SCF_Eigenvalues),Intent(InOut)::Eigenvalues
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(MQC_Vector_isAllocated(Eigenvalues%Alpha)) isAllocated = .True.
+      If(MQC_Vector_isAllocated(Eigenvalues%Beta)) isAllocated = .True.
+!
+      Return
+      End Function MQC_Eigenvalues_isAllocated
 !
 !
 !     PROCEDURE MQC_Integral_Has_Alpha
@@ -1001,9 +1051,12 @@
         if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared &
      &    if no alpha string',6,'present(orbString)',present(orbString),'present(alphaOrbsIn)', &
           present(alphaOrbsIn))
-        if(.not.present(betaOrbsIn)) betaOrbs = alphaOrbs
         alphaOrbs = alphaOrbsIn
-        betaOrbs = betaOrbsIn
+        if(.not.present(betaOrbsIn)) then
+          betaOrbs = alphaOrbsIn
+        else
+          betaOrbs = betaOrbsIn
+        endIf
         myOrbString = 'useStrings'
       endIf
 
@@ -1104,6 +1157,87 @@
       end select
 !
       end function mqc_integral_output_orbitals
+!
+!
+!     PROCEDURE MQC_Integral_Swap_Orbitals
+      function mqc_integral_swap_orbitals(integral,alphaOrbsIn,betaOrbsIn) result(integralOut)
+!
+!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
+!     can be input) and swaps columns as specified in alphaOrbs and betaOrbs. 
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      integer(kind=int64),dimension(2),optional::alphaOrbsIn,betaOrbsIn
+      integer(kind=int64),dimension(:),allocatable::alphaOrbs,betaOrbs
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_matrix)::outMatrixAlpha,outMatrixBeta,outMatrixAlphaBeta,outMatrixBetaAlpha
+      integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nAlpha=0,nBeta=0,i
+
+      nDimAlpha = integral%blockSize('Alpha') 
+      nDimBeta = integral%blockSize('Beta')
+
+      select case (integral%type())
+      case('space')
+        if(.not.present(alphaOrbsIn)) call mqc_error_l('AlphaOrbsIn variable must be &
+     &    declared in mqc_integral_swap_orbitals',6,'present(alphaOrbsIn)',present(alphaOrbsIn))
+        alphaOrbs = alphaOrbsIn
+        if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
+        if(.not.present(betaOrbsIn)) then
+          betaOrbs = alphaOrbsIn
+        else
+          betaOrbs = betaOrbsIn
+        endIf
+        if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
+
+        if(all(alphaOrbs.eq.betaOrbs)) then
+          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
+            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
+            (i,i=alphaOrbs(2)+1,NDimAlpha)])
+        else
+          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
+            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
+            (i,i=alphaOrbs(2)+1,NDimAlpha)], betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
+            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
+            (i,i=betaOrbs(2)+1,NDimBeta)])
+        endIf
+
+      case('spin','general')
+        if(.not.present(alphaOrbsIn).and..not.present(betaOrbsIn)) then
+          call mqc_error_l('Orbital variable must be declared in mqc_integral_swap_orbitals',&
+            6,'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)',present(betaOrbsIn))
+        elseIf(.not.present(alphaOrbsIn)) then
+          betaOrbs = betaOrbsIn
+          if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
+          integralOut = integral%orbitals(betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
+            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
+            (i,i=betaOrbs(2)+1,NDimBeta)])
+          
+        elseIf(.not.present(alphaOrbsIn)) then
+          alphaOrbs = alphaOrbsIn
+          if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
+          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
+            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
+            (i,i=alphaOrbs(2)+1,NDimAlpha)])
+
+        else
+          alphaOrbs = alphaOrbsIn
+          betaOrbs = betaOrbsIn
+          if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
+          if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
+          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
+            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
+            (i,i=alphaOrbs(2)+1,NDimAlpha)], betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
+            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
+            (i,i=betaOrbs(2)+1,NDimBeta)])
+        endIf
+
+      case default
+        call mqc_error_A('Unrecognised mqc scf integral type in mqc_integral_swap_orbitals',6, &
+          'integral%type()',integral%type())
+      end select
+!
+      end function mqc_integral_swap_orbitals
 !
 !
 !     PROCEDURE MQC_eigenvalues_Output_Block
@@ -3546,12 +3680,14 @@
       integer(kind=int64)::i
       real(kind=real64)::thresh=1.0d-4
 !
-      nBasUse = 0
       transform_matrix_tmp = overlap%getBlock('alpha')
       call transform_matrix_tmp%diag(SVals,SVecs)
-      do i = 1, SVals%size()
-        if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
-      endDo
+      if(present(nBasUse)) then
+        nBasUse = 0
+        do i = 1, SVals%size()
+          if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
+        endDo
+      endIf
       call SVals%power(-0.5)
       call SVals%diag(transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
@@ -3569,7 +3705,7 @@
 !     PROCEDURE GEN_DET_STR 
 ! 
       Subroutine Gen_Det_Str(IOut,IPrint,NBasisIn,NAlphaIn,NBetaIn, &
-          Determinants)
+          Determinants,NCoreIn)
 !
 !     This subroutine generates a list of alpha and beta strings in binary  
 !     notation. 
@@ -3591,6 +3727,9 @@
 !     While the routine is set up to deal with arbitrary number of orbitals, the 
 !     maximum number of orbitals is currently limited to the machine word size.
 !
+!     Optional argument NCore allows inclusion of set of always occupied orbitals
+!     in determinant string.
+!
 !     Lee Thompson, 2016.
 !
 !     Variable Declarations...
@@ -3598,9 +3737,11 @@
       Implicit None
 
       Integer(kind=int64)::IOut,IPrint,NBasis,NAlpha,NBeta,NAlpha_Str,NBeta_Str,NBit_Ints,IOrb,&
-        NElec,NEMax,NEMin,I
+        NElec,NEMax,NEMin,I,J,K,NCore,Pos
       Integer(kind=int64),Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
+      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Core,Beta_Core,Temp_String
       Type(MQC_Scalar)::NAlphaIn,NBetaIn,NBasisIn
+      Type(MQC_Scalar),optional::NCoreIn
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1=>Null(),String_List_2=>Null(),&
         String_Node_1=>Null(),String_Node_2=>Null()
@@ -3608,7 +3749,7 @@
       Integer(kind=int64),Allocatable::Returned_Value
       Logical::Last
 !      
- 1001 Format(1x,I7,2x,B64)
+ 1001 Format(1x,I7,2x,*(B64))
  1050 Format( A )
 !
 !     Initialize Arrays
@@ -3619,10 +3760,15 @@
       NAlpha_Str = Bin_Coeff(NBasis,NAlpha)
       NBeta_Str = Bin_Coeff(NBasis,NBeta)
       If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
-        NBit_Ints = (NBasis/(Bit_Size(0)-1))+1
-        If(NBit_Ints.gt.1) then
+        if(present(NCoreIn)) then
+          NCore = NCoreIn
+          NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
+        else
+          NBit_Ints = (NBasis/(Bit_Size(0)-1))+1
+        endIf
+        If(((NBasis/(Bit_Size(0)-1))+1).gt.1) then
           Call MQC_Error_I('Determinant generator limited to 1 integer', 6, &
-               'NBit_Ints', NBit_Ints )
+               '(NBasis/(Bit_Size(0)-1))+1', (NBasis/(Bit_Size(0)-1))+1 )
         EndIf
         Allocate(Alpha_Strings(NAlpha_Str,NBit_Ints),Beta_Strings(NBeta_Str,NBit_Ints))
       EndIf
@@ -3745,20 +3891,65 @@
         EndDo
       EndIf
 !
+!     Add core strings if NCore present
+!
+      if(present(NCoreIn)) then
+!        NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
+        Allocate(Alpha_Core(NBit_Ints),Beta_Core(NBit_Ints),Temp_String(NBit_Ints))
+        Alpha_Core = 0
+        K = NBit_Ints + 1
+        Do I = 0, NCore-1
+          If(Mod(I,Bit_Size(0)).eq.0) K = K-1
+          Alpha_Core(K) = IBSet(Alpha_Core(K),I)
+        EndDo
+        Do I = 1, NAlpha_Str
+          Temp_String = 0
+          Do J = 1, NBasis
+            K = NBit_Ints - (NCore+J)/Bit_Size(0)
+            Pos = Mod(NCore+J,Bit_Size(0)) - 1
+            Call MvBits(Alpha_Strings(I,1),J-1,1,Temp_String(K),Pos)
+          EndDo
+          Do K = 1, NBit_Ints
+            Alpha_Strings(I,K) = IOr(Temp_String(K),Alpha_Core(K))
+          EndDo
+        EndDo
+
+        Beta_Core = 0
+        K = NBit_Ints + 1
+        Do I = 0, NCore-1
+          If(Mod(I,Bit_Size(0)).eq.0) K = K-1
+          Beta_Core(K) = IBSet(Beta_Core(K),I)
+        EndDo
+        Do I = 1, NBeta_Str
+          Temp_String = 0
+          Do J = 1, NBasis
+            K = NBit_Ints - (NCore+J)/Bit_Size(0)
+            Pos = Mod(NCore+J,Bit_Size(0)) - 1
+            Call MvBits(Beta_Strings(I,1),J-1,1,Temp_String(K),Pos)
+          EndDo
+          Do K = 1, NBit_Ints
+            Beta_Strings(I,K) = IOr(Temp_String(K),Beta_Core(K))
+          EndDo
+        EndDo
+      endIf
+!
       If(IPrint.ge.2) then
         Write(IOut,1050) "Alpha Strings"
         Do I = 1,NAlpha_Str
-          Write(IOut,1001) I,Alpha_Strings(I,1)
+          Write(IOut,1001) I,(Alpha_Strings(I,J),J=1,NBit_Ints)
         EndDo
         Write(IOut,1050) "Beta Strings"
         Do I = 1,NBeta_Str
-          Write(IOut,1001) I,Beta_Strings(I,1)
+          Write(IOut,1001) I,(Beta_Strings(I,J),J=1,NBit_Ints)
         EndDo
       EndIf
 
       Determinants%Strings%Alpha = Alpha_Strings
       Determinants%Strings%Beta = Beta_Strings
       Determinants%Order = 'Lexical'
+      Determinants%NDets = NAlpha_Str*NBeta_Str 
+      Determinants%NAlpStr = NAlpha_Str
+      Determinants%NBetStr = NBeta_Str 
 
       Deallocate(Alpha_Strings,Beta_Strings)
 
