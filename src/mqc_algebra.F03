@@ -309,6 +309,9 @@
       Interface Operator (.x.)
         Module Procedure MQC_CrossProduct
       End Interface
+      Interface Operator (.outer.)
+        Module Procedure MQC_Outer
+      End Interface
 !
 !     Matrix operators...
       Interface Assignment (=)
@@ -2632,10 +2635,10 @@
      'VB%column', VB%column )
       endif
       if (mqc_have_int(VA) .and. mqc_have_int(VB)) then
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Integer','StorFull')
+        call M%init(VA%length,VB%length,0)
         call dger(VA%length,VB%length,1.0,VA%veci,1,VB%veci,1,M%mati,VA%length)
       elseif((mqc_have_int(VA).or.mqc_have_real(VA)).and.(mqc_have_int(VB).or.mqc_have_real(VB))) then
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Real','StorFull')
+        call M%init(VA%length,VB%length)
         if (mqc_have_int(VA)) then
           VC = mqc_cast_real(VA)
           call dger(VA%length,VB%length,1.0,VC%vecr,1,VB%vecr,1,M%matr,VA%length)
@@ -2646,7 +2649,7 @@
           call dger(VA%length,VB%length,1.0,VA%vecr,1,VB%vecr,1,M%matr,VA%length)
         endif
       else
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Complex','StorFull')
+        call M%init(VA%length,VB%length,(0.0,0.0))
         if (mqc_have_int(VA)) then
           VC = mqc_cast_complex(VA)
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
