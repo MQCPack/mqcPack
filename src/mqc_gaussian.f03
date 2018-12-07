@@ -2363,18 +2363,18 @@
       case('mo coefficients')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
           call mqc_integral_allocate(est_integral,'mo coefficients','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
           call fileInfo%getArray('BETA MO COEFFICIENTS',tmpMatrixBeta,foundOut=found)
-          call mqc_error_l('BETA MO COEFFICIENTS not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('BETA MO COEFFICIENTS not present on file - aborting',6,'found',found)
           call mqc_integral_allocate(est_integral,'mo coefficients','spin',tmpMatrixAlpha, &
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA MO COEFFICIENTS not present on file - aborting',6,'found',found)
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
             fileInfo%getVal('multiplicity'),elist)
@@ -2394,18 +2394,18 @@
       case('mo energies')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
-          call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
           call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','space',tmpVectorAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
-          call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
           call fileInfo%getArray('BETA ORBITAL ENERGIES',vectorOut=tmpVectorBeta,foundOut=found)
-          call mqc_error_l('BETA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('BETA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
           call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','spin',tmpVectorAlpha, &
             tmpVectorBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
-          call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA ORBITAL ENERGIES not present on file - aborting',6,'found',found)
           nBasis = fileInfo%getVal('nBasis')
           call mqc_matrix_spinBlockGHF(tmpVectorAlpha)
           tmpVectorBeta = tmpVectorAlpha%vat(nBasis+1,-1)
@@ -2421,7 +2421,7 @@
       case('core hamiltonian')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2429,9 +2429,9 @@
           call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
           call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta,foundOut=found)
-          call mqc_error_l('CORE HAMILTONIAN BETA not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('CORE HAMILTONIAN BETA not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2444,7 +2444,7 @@
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('CORE HAMILTONIAN ALPHA not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2466,7 +2466,7 @@
       case('fock')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2474,9 +2474,9 @@
           call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
           call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta,foundOut=found)
-          call mqc_error_l('BETA FOCK MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('BETA FOCK MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2489,7 +2489,7 @@
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA FOCK MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2511,7 +2511,7 @@
       case('density')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2519,9 +2519,9 @@
           call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
           call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
-          call mqc_error_l('BETA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('BETA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2534,7 +2534,7 @@
             tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2556,7 +2556,7 @@
       case('overlap')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2564,7 +2564,7 @@
           call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
@@ -2573,7 +2573,7 @@
             tmpMatrixAlpha)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
-          call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
+          if(.not.found) call mqc_error_l('OVERLAP not present on file - aborting',6,'found',found)
           if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
             call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
             tmpMatrixAlpha = transpose(tmpMatrixAlpha)
