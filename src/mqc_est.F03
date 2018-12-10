@@ -6043,4 +6043,167 @@
 
       End Subroutine MQC_Build_CI_Hamiltonian
 !
+!
+!=====================================================================
+!     
+!     PROCEDURE Get_One_Gamma_Matrix
+      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,nState,determinants,ci_amplitudes,nCoreIn,nOrbsIn) Result(onePDM)
+!
+!     This function returns the CI one-particle density matrix 
+!
+!     Variable Declarations...
+!
+      Implicit None
+      integer(kind=int64),intent(in)::iOut,iPrint,nState
+      Type(MQC_Scalar),Intent(In)::NBasisIn
+      Type(MQC_Determinant),Intent(In)::Determinants
+      type(mqc_matrix),intent(in)::ci_amplitudes
+      integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
+      type(mqc_matrix)::onePDM
+      integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
+      Type(MQC_Scalar)::Sgn,two
+      Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
+        Alpha_Diff_Cnt,Beta_Diff_Cnt
+      integer(kind=int64),dimension(2)::orb
+      Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
+        Beta_String_2,Alpha_Diff,Beta_Diff
+
+      nBasis = nBasisIn
+      two = 2.0
+      if(present(nCoreIn)) then
+        nCore = nCoreIn
+      else
+        nCore = 0
+      endIf
+      if(present(nOrbsIn)) then
+        nOrbs = nOrbsIn
+      else
+        nOrbs = nBasis
+      endIf
+      nBit_Ints = (nBasis/(Bit_Size(0)-1))+1
+      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
+      Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
+      call onePDM%init(nOrbs,nOrbs)
+      if(iPrint.ge.2) call onePDM%print(iOut,'Initial one particle density matrix')
+      Do L_A_String = 1, determinants%NAlpStr
+        Do L_B_String = 1, determinants%NBetStr
+          Do R_A_String = 1, determinants%NAlpStr
+            Do R_B_String = 1, determinants%NBetStr
+              ldet = 1+(L_B_String-1)*determinants%NAlpStr+(L_A_String-1)
+              rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
+              Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
+              Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
+              Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
+              Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
+              Det_Diff = 0
+              Alpha_Diff_Cnt = 0
+              Beta_Diff_Cnt = 0
+              Do m = 1,NBit_Ints
+                Alpha_Diff(m) = IEOR(Alpha_String_1(m),Alpha_String_2(m))
+                Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(m))
+                Beta_Diff(m) = IEOR(Beta_String_1(m),Beta_String_2(m))
+                Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(m))
+              endDo
+              Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
+
+              select case (det_diff)
+              case(0)
+                Do IPos = nCore, nCore+nOrbs-1
+                  m = NBit_Ints - IPos/Bit_Size(0)
+                  n = Mod(IPos,Bit_Size(0))
+                  If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
+                    call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+two* &
+                      ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
+                      iPos+1-nCore,iPos+1-nCore)
+                  elseIf(BTest(Alpha_String_1(m),n).or.BTest(Beta_String_1(m),n)) then
+                    call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+ &
+                      ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
+                      iPos+1-nCore,iPos+1-nCore)
+                  endIf
+                endDo
+              case(1)
+                Do IPos = nCore, nCore+nOrbs-1
+                  m = NBit_Ints - IPos/Bit_Size(0)
+                  n = Mod(IPos,Bit_Size(0))
+                  If(Alpha_Diff_Cnt.eq.0) then
+                    If(BTest(Beta_Diff(m),n)) then
+                      If(BTest(Beta_String_1(m),n)) then
+                        orb(1) = IPos+1-nCore
+                      endif
+                      If(BTest(Beta_String_2(m),n)) then
+                        orb(2) = IPos+1-nCore
+                      endif
+                    endIf
+                  elseIf(Beta_Diff_Cnt.eq.0) then
+                    If(BTest(Alpha_Diff(m),n)) then
+                      If(BTest(Alpha_String_1(m),n)) then
+                        orb(1) = IPos+1-nCore
+                      endif
+                      If(BTest(Alpha_String_2(m),n)) then
+                        orb(2) = IPos+1-nCore
+                      endif
+                    endIf
+                  endIf
+                endDo
+                ISgn = 0
+                If(Orb(2)-Orb(1)-1.gt.0) then
+                  m  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
+                  n  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
+                  Do o = m, n, -1
+                    If(m.ne.o) then
+                      mm = 1
+                    Else
+                      mm = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
+                    EndIf
+                    If(n.ne.o) then
+                      nn = Bit_Size(0)
+                    Else
+                      nn = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
+                    EndIf
+                    If(Beta_Diff_Cnt.eq.0) then
+                      ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
+                    elseIf(Alpha_Diff_Cnt.eq.0) then
+                      ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
+                    endIf
+                  EndDo
+                elseIf(Orb(1)-Orb(2)-1.gt.0) then
+                  m  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
+                  n  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
+                  Do o = m, n, -1
+                    If(m.ne.o) then
+                      mm = 1
+                    Else
+                      mm = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
+                    EndIf
+                    If(n.ne.o) then
+                      nn = Bit_Size(0)
+                    Else
+                      nn = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
+                    EndIf
+                    If(Beta_Diff_Cnt.eq.0) then
+                      ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
+                    elseIf(Alpha_Diff_Cnt.eq.0) then
+                      ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
+                    endIf
+                  EndDo
+                EndIf
+                Sgn = ((-1)**ISgn)*2
+
+                call onePDM%put(onePDM%at(orb(1),orb(2))+sgn*&
+                  ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
+                  orb(1),orb(2))
+
+              case(2:)
+                cycle
+              case default
+                call mqc_error_i('Confused about string differences',iOut,'det_diff',det_diff)
+              end select
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      if(iPrint.ge.2) call onePDM%print(iOut,'Final one particle density matrix')
+
+      end function get_one_gamma_matrix
+!
       End Module MQC_EST  
