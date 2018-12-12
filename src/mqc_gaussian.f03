@@ -2381,8 +2381,9 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            call mqc_integral_allocate(est_integral,'mo coefficients','space',tmpMatrixAlpha)
           endIf
-          call mqc_integral_allocate(est_integral,'mo coefficients','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2393,19 +2394,21 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
-          endIf
-          call fileInfo%getArray('BETA MO COEFFICIENTS',tmpMatrixBeta,foundOut=found)
-          if(present(foundObj)) foundObj = found
-          if(.not.found) then
-            errorMsg = 'BETA MO COEFFICIENTS not present on file'
-            if(present(foundObj)) then
-              write(6,'(A)') errorMsg
+          else
+            call fileInfo%getArray('BETA MO COEFFICIENTS',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA MO COEFFICIENTS not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_integral_allocate(est_integral,'mo coefficients','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
             endIf
           endIf
-          call mqc_integral_allocate(est_integral,'mo coefficients','spin',tmpMatrixAlpha, &
-            tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2416,17 +2419,18 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+              fileInfo%getVal('multiplicity'),elist)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+            call est_integral%setEList(elist)
           endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
-            fileInfo%getVal('multiplicity'),elist)
-          tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-          tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
-          tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-          call mqc_integral_allocate(est_integral,'mo coefficients','general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-          call est_integral%setEList(elist)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2444,8 +2448,9 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','space',tmpVectorAlpha)
           endIf
-          call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','space',tmpVectorAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2456,19 +2461,21 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
-          endIf
-          call fileInfo%getArray('BETA ORBITAL ENERGIES',vectorOut=tmpVectorBeta,foundOut=found)
-          if(present(foundObj)) foundObj = found
-          if(.not.found) then
-            errorMsg = 'BETA ORBITAL ENERGIES not present on file'
-            if(present(foundObj)) then
-              write(6,'(A)') errorMsg
+          else
+            call fileInfo%getArray('BETA ORBITAL ENERGIES',vectorOut=tmpVectorBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA ORBITAL ENERGIES not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','spin',tmpVectorAlpha, &
+                tmpVectorBeta)
             endIf
           endIf
-          call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','spin',tmpVectorAlpha, &
-            tmpVectorBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2479,13 +2486,14 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpVectorAlpha)
+            tmpVectorBeta = tmpVectorAlpha%vat(nBasis+1,-1)
+            tmpVectorAlpha = tmpVectorAlpha%vat(1,nBasis)
+            call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','general',tmpVectorAlpha, &
+              tmpVectorBeta)
           endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpVectorAlpha)
-          tmpVectorBeta = tmpVectorAlpha%vat(nBasis+1,-1)
-          tmpVectorAlpha = tmpVectorAlpha%vat(1,nBasis)
-          call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','general',tmpVectorAlpha, &
-            tmpVectorBeta)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2503,12 +2511,13 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2519,27 +2528,29 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
-          endIf
-          call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta,foundOut=found)
-          if(present(foundObj)) foundObj = found
-          if(.not.found) then
-            errorMsg = 'CORE HAMILTONIAN BETA not present on file'
-            if(present(foundObj)) then
-              write(6,'(A)') errorMsg
+          else
+            call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'CORE HAMILTONIAN BETA not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+              endIf
+              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+                tmpMatrixBeta = transpose(tmpMatrixBeta)
+              endIf
+              call mqc_integral_allocate(est_integral,'core hamiltonian','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
             endIf
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-            tmpMatrixBeta = transpose(tmpMatrixBeta)
-          endIf
-          call mqc_integral_allocate(est_integral,'core hamiltonian','spin',tmpMatrixAlpha, &
-            tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2550,19 +2561,20 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'core hamiltonian','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
-          tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-          tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
-          tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-          call mqc_integral_allocate(est_integral,'core hamiltonian','general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2580,12 +2592,13 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2596,27 +2609,29 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
-          endIf
-          call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta,foundOut=found)
-          if(present(foundObj)) foundObj = found
-          if(.not.found) then
-            errorMsg = 'BETA FOCK MATRIX not present on file'
-            if(present(foundObj)) then
-              write(6,'(A)') errorMsg
+          else
+            call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA FOCK MATRIX not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+              endIf
+              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+                tmpMatrixBeta = transpose(tmpMatrixBeta)
+              endIf
+              call mqc_integral_allocate(est_integral,'fock','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
             endIf
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-            tmpMatrixBeta = transpose(tmpMatrixBeta)
-          endIf
-          call mqc_integral_allocate(est_integral,'fock','spin',tmpMatrixAlpha, &
-            tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2627,19 +2642,20 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'fock','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
-          tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-          tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
-          tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-          call mqc_integral_allocate(est_integral,'fock','general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2657,13 +2673,13 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
           endIf
-          if(.not.found) call mqc_error_l('ALPHA SCF DENSITY MATRIX not present on file - aborting',6,'found',found)
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2674,27 +2690,29 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
-          endIf
-          call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
-          if(present(foundObj)) foundObj = found
-          if(.not.found) then
-            errorMsg = 'BETA SCF DENSITY MATRIX not present on file'
-            if(present(foundObj)) then
-              write(6,'(A)') errorMsg
+          else
+            call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA SCF DENSITY MATRIX not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+              endIf
+              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+                tmpMatrixBeta = transpose(tmpMatrixBeta)
+              endIf
+              call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
             endIf
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-            call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-            tmpMatrixBeta = transpose(tmpMatrixBeta)
-          endIf
-          call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
-            tmpMatrixBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2705,19 +2723,20 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
-          tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
-          tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
-          tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-          call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
@@ -2735,12 +2754,13 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2751,13 +2771,14 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            call mqc_integral_allocate(est_integral,'overlap','spin',tmpMatrixAlpha, &
+              tmpMatrixAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          call mqc_integral_allocate(est_integral,'overlap','spin',tmpMatrixAlpha, &
-            tmpMatrixAlpha)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
@@ -2768,19 +2789,20 @@
             else
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
+          else
+            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'overlap','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           endIf
-          if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-            call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-            tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-          endIf
-          nBasis = fileInfo%getVal('nBasis')
-          call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
-          tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-          tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-          tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
-          tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-          call mqc_integral_allocate(est_integral,'overlap','general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &
