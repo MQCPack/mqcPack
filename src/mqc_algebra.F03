@@ -130,6 +130,7 @@
         Procedure, Public::at => MQC_R4Tensor_At
         Procedure, Public::put => MQC_R4Tensor_Put
         Procedure, Public::initialize => MQC_R4Tensor_Initialize
+        Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
 !
 !
