@@ -2648,7 +2648,7 @@
               aBlock = aBlock + (tmpMatrix%at(J,I) * tmpMatrix%at(J,I))
               bBlock = bBlock + (tmpMatrix%at(blockSize+J,I) * tmpMatrix%at(blockSize+J,I))
             END DO
-            IF (aBlock%absval().ge.bBlock%absval()) THEN
+            IF (aBlock%abs().ge.bBlock%abs()) THEN
               abarray(I) = 'a'
             ELSE
               abarray(I) = 'b'
