@@ -86,10 +86,13 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
+!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
         Real(kind=real64),Dimension(:,:),Allocatable::MatR
         Integer(kind=int64),Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
