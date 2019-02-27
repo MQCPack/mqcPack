@@ -3968,6 +3968,7 @@
       If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
         if(present(NCoreIn)) then
           NCore = NCoreIn
+          Write(iOut,'(A,I4,A)') 'Adding ',NCore,' core orbitals to string'
           NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
         else
           NBit_Ints = (NBasis/(Bit_Size(0)-1))+1
@@ -6290,7 +6291,6 @@
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
       call onePDM%init(nOrbs,nOrbs)
-      if(iPrint.ge.2) call onePDM%print(iOut,'Initial one particle density matrix')
       Do L_A_String = 1, determinants%NAlpStr
         Do L_B_String = 1, determinants%NBetStr
           Do R_A_String = 1, determinants%NAlpStr
@@ -6408,7 +6408,7 @@
           EndDo
         EndDo
       EndDo
-      if(iPrint.ge.2) call onePDM%print(iOut,'Final one particle density matrix')
+      if(iPrint.ge.2) call onePDM%print(iOut,'One particle density matrix')
 
       end function get_one_gamma_matrix
 !
