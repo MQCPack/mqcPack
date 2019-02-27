@@ -50,7 +50,7 @@
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
-        Procedure, Public::absval => MQC_Scalar_Get_ABS_Value
+        Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -895,7 +895,7 @@
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Real(kind=real64)::Output
+      Type(MQC_Scalar)::Output
 
       if(Scalar%Data_Type.eq.'Integer') then
         output = real(abs(Scalar%ScaI))
