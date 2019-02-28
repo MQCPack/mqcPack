@@ -3149,13 +3149,14 @@
           est_wavefunction%multiplicity = fileInfo%getVal('multiplicity')
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
+          nBasis = fileInfo%getVal('nBasis')
+
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(found) then
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
 !              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
 !              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
 !            endIf
-            nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
