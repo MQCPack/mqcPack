@@ -10383,4 +10383,64 @@
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
 !
 !
+!     PROCEDURE MQC_R4Tensor_HaveInteger
+      Function MQC_R4Tensor_HaveInteger(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated integer r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveInteger
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveInteger = Allocated(R4Tensor%ITen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveInteger
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveReal
+      Function MQC_R4Tensor_HaveReal(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated real r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveReal
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveReal = Allocated(R4Tensor%RTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveReal
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveComplex
+      Function MQC_R4Tensor_HaveComplex(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated complex r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveComplex
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveComplex = Allocated(R4Tensor%CTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveComplex
+!
+!
       End Module MQC_Algebra
