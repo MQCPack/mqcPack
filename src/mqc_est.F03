@@ -110,6 +110,7 @@
         Type(MQC_SCF_Integral)::Core_Hamiltonian
         Type(MQC_SCF_Integral)::Fock_Matrix
         Type(MQC_SCF_Integral)::Density_Matrix
+        Type(MQC_SCF_Integral)::SCF_Density_Matrix
         Type(MQC_SCF_Integral)::Overlap_Matrix
         Type(MQC_Scalar)::NAlpha,NBeta,NElectrons,NBasis,Charge,Multiplicity
         Character(Len=256)::Basis,Symmetry,WF_Type
@@ -267,6 +268,8 @@
         call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.true.)
       case('density')
         call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.true.)
+      case('scf density')
+        call wavefunction%scf_density_matrix%print(iOut,'SCF Density matrix',.true.,.true.)
       case('fock')
         call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
       case('nbasis')
@@ -305,6 +308,8 @@
           call wavefunction%mo_coefficients%print(iOut,'Molecular orbital coefficients',.true.,.false.)
         if(mqc_integral_isAllocated(wavefunction%density_matrix)) &
           call wavefunction%density_matrix%print(iOut,'Density matrix',.true.,.false.)
+        if(mqc_integral_isAllocated(wavefunction%scf_density_matrix)) &
+          call wavefunction%scf_density_matrix%print(iOut,'SCF Density matrix',.true.,.false.)
         if(mqc_integral_isAllocated(wavefunction%fock_matrix)) &
           call wavefunction%fock_matrix%print(iOut,'Fock matrix',.true.,.true.)
       case default
@@ -1907,7 +1912,7 @@
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_integral_sum', 6, &
                'integralB%array_type', integralB%array_type )
         end select
       case('spin')
@@ -1928,7 +1933,7 @@
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_integral_sum', 6, &
                'integralB%array_type', integralB%array_type )
         end select
       case('general')
@@ -1955,11 +1960,11 @@
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
-          call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+          call mqc_error_A('Unknown integral type in mqc_integral_sum', 6, &
                'integralB%array_type', integralB%array_type )
         end select
       case default
-        call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+        call mqc_error_A('Unknown integral type in mqc_integral_sum', 6, &
              'integralA%array_type', integralA%array_type )
       end select
 

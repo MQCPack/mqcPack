@@ -2021,6 +2021,7 @@
 !           'core hamiltonian'   write the core hamiltonian.
 !           'fock'               write the fock matrix.
 !           'density'            write the density matrix.
+!           'scf density'        write the SCF density matrix.
 !           'overlap'            write the overlap matrix.
 !           'wavefunction'       export the wavefunction object.
 !
@@ -2196,6 +2197,25 @@
         if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('alpha'))
+        elseIf(my_integral_type.eq.'spin') then
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('alpha'))
+          call fileInfo%writeArray('BETA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('beta'))
+        elseIf(my_integral_type.eq.'general') then
+          call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX',matrixIn=tmpMatrix)
+        else
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
+        endIf
+      case('scf density')
+        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
+        if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
             matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'spin') then
@@ -2297,21 +2317,38 @@
           mqc_integral_array_type(est_wavefunction%mo_coefficients) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'space') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('alpha'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'spin') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('alpha'))
-          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('BETA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
           if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'mqc_integral_array_type(est_wavefunction%density_matrix)', &
                mqc_integral_array_type(est_wavefunction%density_matrix) )
+        endIf
+        if(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'space') then
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('alpha'))
+        elseIf(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'spin') then
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('alpha'))
+          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('beta'))
+        elseIf(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'general') then
+          call mqc_matrix_undoSpinBlockGHF(est_wavefunction%scf_density_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
+        else
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%scf_density_matrix)', &
+               mqc_integral_array_type(est_wavefunction%scf_density_matrix) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'space') then
           call fileInfo%writeArray('ALPHA FOCK MATRIX', &
@@ -2387,6 +2424,7 @@
 !           'core hamiltonian'   return the core hamiltonian.
 !           'fock'               return the fock matrix.
 !           'density'            return the density matrix.
+!           'scf density'        return the SCF density matrix.
 !           'overlap'            return the overlap matrix.
 !           'wavefunction'       load the wavefunction object.
 !
@@ -2761,6 +2799,87 @@
         endIf
       case('density')
         if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+            call fileInfo%getArray('BETA DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA DENSITY MATRIX not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
+            else
+!              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
+              call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
+            endIf
+          endIf
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          endIf
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case('scf density')
+        if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
           if(.not.found) then
@@ -2828,7 +2947,7 @@
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
@@ -2961,13 +3080,28 @@
             call fileinfo%CLOSEFILE()
             call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
-          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
 !              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
 !              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
 !            endIf
             call mqc_integral_allocate(est_wavefunction%density_matrix,'density','space', &
+              tmpMatrixAlpha)
+          else
+            if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','space', &
               tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
@@ -3083,19 +3217,48 @@
             call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
-          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
-            call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call fileInfo%getArray('BETA DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
             if(found) then
 !              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
 !                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
 !                tmpMatrixBeta = transpose(tmpMatrixBeta)
 !              endIf
               call mqc_integral_allocate(est_wavefunction%density_matrix,'density','spin', &
+                tmpMatrixAlpha,tmpMatrixBeta)
+            else
+              if(present(foundObj)) foundObj = .false.
+              write(6,'(A)') 'BETA DENSITY MATRIX not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+            endIf
+          else
+            if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+
+          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+            if(found) then
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
+              call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','spin', &
                 tmpMatrixAlpha,tmpMatrixBeta)
             else
               if(present(foundObj)) foundObj = .false.
@@ -3227,6 +3390,29 @@
             call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              if(mqc_matrix_test_symmetric(tmpMatrixAlpha,'hermitian')) &
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
+              tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3237,10 +3423,10 @@
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
-            call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
+            call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','general', &
               tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           else
             if(present(foundObj)) foundObj = .false.
