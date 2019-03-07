@@ -2866,7 +2866,7 @@
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
@@ -2947,7 +2947,7 @@
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
