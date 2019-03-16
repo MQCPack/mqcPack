@@ -1645,13 +1645,13 @@
 !           where first index is the row. Therefore, we need to transpose the MQC lower
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
-            compMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
+            compMatrixTmp = transpose(matrixInUse)
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
@@ -1661,13 +1661,13 @@
 !           where first index is the row. Therefore, we need to transpose the MQC lower
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
-            compMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
+            compMatrixTmp = transpose(matrixInUse)
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)

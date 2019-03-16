@@ -3136,10 +3136,10 @@
       implicit none
       type(mqc_twoERIs),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
+      character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::k,l,m,n,nBasis
-      character(len=64),optional,intent(in)::label
       character(len=64)::mylabel
 !
       if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
