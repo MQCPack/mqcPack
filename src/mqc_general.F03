@@ -679,7 +679,7 @@
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2x,A)
- 1020 Format(" ")
+ 1020 Format(' ')
 !
       If(PRESENT(Blank_At_Top)) then
         If(Blank_At_Top) Write(IOut,1020)
@@ -1105,10 +1105,6 @@
       nSymm = SIZE(matrixSymmetric)
       iTmp = mqc_isqrt(1+8*nSymm) - 1
       nDim = iTmp/2
-      write(*,*)
-      write(*,*)' Hrant - nSymm = ',nSymm
-      write(*,*)' Hrant - nDim  = ',nDim
-      write(*,*)
       allocate(matrixFull(nDim,nDim))
       call mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,myUpperLower)
@@ -1151,10 +1147,6 @@
       nSymm = SIZE(matrixSymmetric)
       iTmp = mqc_isqrt(1+8*nSymm) - 1
       nDim = iTmp/2
-      write(*,*)
-      write(*,*)' Hrant - nSymm = ',nSymm
-      write(*,*)' Hrant - nDim  = ',nDim
-      write(*,*)
       allocate(matrixFull(nDim,nDim))
       call mqc_packedSymmetricMatrix2FullMatrix_real(matrixSymmetric,  &
         matrixFull,myUpperLower)
