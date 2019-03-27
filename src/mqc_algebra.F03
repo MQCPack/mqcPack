@@ -50,7 +50,7 @@
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
-        Procedure, Public::absval => MQC_Scalar_Get_ABS_Value
+        Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -86,10 +86,13 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
+!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
         Real(kind=real64),Dimension(:,:),Allocatable::MatR
         Integer(kind=int64),Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
@@ -130,6 +133,7 @@
         Procedure, Public::at => MQC_R4Tensor_At
         Procedure, Public::put => MQC_R4Tensor_Put
         Procedure, Public::initialize => MQC_R4Tensor_Initialize
+        Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
 !
 !
@@ -308,6 +312,9 @@
       End Interface
       Interface Operator (.x.)
         Module Procedure MQC_CrossProduct
+      End Interface
+      Interface Operator (.outer.)
+        Module Procedure MQC_Outer
       End Interface
 !
 !     Matrix operators...
@@ -888,7 +895,7 @@
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Real(kind=real64)::Output
+      Type(MQC_Scalar)::Output
 
       if(Scalar%Data_Type.eq.'Integer') then
         output = real(abs(Scalar%ScaI))
@@ -2632,10 +2639,10 @@
      'VB%column', VB%column )
       endif
       if (mqc_have_int(VA) .and. mqc_have_int(VB)) then
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Integer','StorFull')
+        call M%init(VA%length,VB%length,0)
         call dger(VA%length,VB%length,1.0,VA%veci,1,VB%veci,1,M%mati,VA%length)
       elseif((mqc_have_int(VA).or.mqc_have_real(VA)).and.(mqc_have_int(VB).or.mqc_have_real(VB))) then
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Real','StorFull')
+        call M%init(VA%length,VB%length)
         if (mqc_have_int(VA)) then
           VC = mqc_cast_real(VA)
           call dger(VA%length,VB%length,1.0,VC%vecr,1,VB%vecr,1,M%matr,VA%length)
@@ -2646,7 +2653,7 @@
           call dger(VA%length,VB%length,1.0,VA%vecr,1,VB%vecr,1,M%matr,VA%length)
         endif
       else
-        call mqc_allocate_matrix(VA%length,VB%length,M,'Complex','StorFull')
+        call M%init(VA%length,VB%length,(0.0,0.0))
         if (mqc_have_int(VA)) then
           VC = mqc_cast_complex(VA)
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
@@ -3286,8 +3293,7 @@
       character(len=1)::method
       character(len=64)::TypeFlag
       real(kind=real64),dimension(:),allocatable::work
-      real(kind=real64)::dlange
-      Complex(Kind=real64)::zlange
+      real(kind=real64)::dlange,zlange
       real(kind=real64),dimension(:),allocatable::temp
       Complex(Kind=real64),dimension(:),allocatable::tempc
       Type(MQC_Scalar)::norm
@@ -9349,7 +9355,6 @@
       character(len=64)::StorFlag,TypeFlag
       real(kind=real64),dimension(:),allocatable::work
       real(kind=real64)::dlange,zlange
-!      Complex(Kind=real64)::zlange
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
@@ -9566,12 +9571,13 @@
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
-      subroutine mqc_matrix_generalized_eigensystem(a,b,eigenvals,reigenvecs,leigenvecs)
+      subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs)
 !
       implicit none
       class(mqc_matrix),intent(inOut)::a
-      type(mqc_matrix),intent(inOut)::b
-      type(mqc_vector),intent(out)::eigenvals
+      type(mqc_matrix),intent(inOut),optional::bIn
+      type(mqc_matrix)::b
+      type(mqc_vector),intent(out),optional::eigenvals
       type(mqc_matrix),intent(out),optional::reigenvecs,leigenvecs
       real(kind=real64),dimension(:,:),allocatable::tempA,tempB,rightvecs,leftvecs
       real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
@@ -9585,6 +9591,11 @@
 !
       nDim1A = mqc_matrix_rows(a)
       nDim2A = mqc_matrix_columns(a)
+      if(present(bIn)) then
+        b = bIn
+      else
+        call b%identity(nDim1A,nDim2A)
+      endIf
       nDim1B = mqc_matrix_rows(b)
       nDim2B = mqc_matrix_columns(b)
       if(nDim1A.ne.nDim1B) call mqc_error_I('Order of matrices A and B is different in mqc_matrix_generalized_eigensystem', 6, &
@@ -9645,7 +9656,7 @@
                  'iError', iError)
           if(iError.gt.0) npdFlag = 1
         endIf
-        if(iError.eq.0) eigenvals = eValsOut
+        if(iError.eq.0.and.present(eigenvals)) eigenvals = eValsOut
         if(allocated(eValsOut)) deallocate(eValsOut)
         if(allocated(work)) deallocate(work)
         if(allocated(tempA)) deallocate(tempA)
@@ -9707,7 +9718,7 @@
             if(iError.ne.0) call mqc_error_i('Failure in DGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
           endIf
-          eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=real64)
+          if(present(eigenvals)) eigenvals = cmplx(eValsReal/eValsOut,eValsImag/eValsOut,kind=real64)
           if(allocated(eValsReal)) deallocate(eValsReal)
           if(allocated(eValsImag)) deallocate(eValsImag)
           if(allocated(rightvecs)) deallocate(rightvecs)
@@ -9751,7 +9762,7 @@
             if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
           endIf
-          eigenvals = eValsA/eValsB
+          if(present(eigenvals)) eigenvals = eValsA/eValsB
           if(allocated(eValsA)) deallocate(eValsA)
           if(allocated(eValsB)) deallocate(eValsB)
           if(allocated(rightCvecs)) deallocate(rightCvecs)
@@ -10370,6 +10381,66 @@
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveInteger
+      Function MQC_R4Tensor_HaveInteger(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated integer r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveInteger
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveInteger = Allocated(R4Tensor%ITen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveInteger
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveReal
+      Function MQC_R4Tensor_HaveReal(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated real r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveReal
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveReal = Allocated(R4Tensor%RTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveReal
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveComplex
+      Function MQC_R4Tensor_HaveComplex(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated complex r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveComplex
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveComplex = Allocated(R4Tensor%CTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveComplex
 !
 !
       End Module MQC_Algebra
