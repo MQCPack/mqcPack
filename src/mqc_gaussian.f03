@@ -2212,25 +2212,6 @@
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'my_integral_type', my_integral_type )
         endIf
-      case('scf density')
-        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
-             'Present(est_integral)', Present(est_integral) )
-        if(my_integral_type.eq.'space') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('alpha'))
-        elseIf(my_integral_type.eq.'spin') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('alpha'))
-          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('beta'))
-        elseIf(my_integral_type.eq.'general') then
-          call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
-          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
-        else
-          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
-               'my_integral_type', my_integral_type )
-        endIf
       case('density')
          if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
               'Present(est_integral)', Present(est_integral) )
