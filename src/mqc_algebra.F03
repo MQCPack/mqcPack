@@ -3326,7 +3326,7 @@
         neg_one = -1.0
 
         if(scalar%abs() .lt. zero) then 
-          call mqc_error_a('Cannot divide by zero')
+          call mqc_error_a('Cannot divide by zero:', 6)
         else
           reciprocal = scalar
           reciprocal = reciprocal ** neg_one
