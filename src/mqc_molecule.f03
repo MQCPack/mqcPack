@@ -216,7 +216,8 @@
       Type(MQC_Scalar)::Vnn
       Type(MQC_Vector)::Temp_3Vector
       Real::Zero=0.0d0
-      Integer::IOut,I,J,NAtoms
+      Integer,Optional::IOut
+      Integer::I,J,NAtoms
 !
       Vnn = Zero 
       NAtoms = Molecule_Info%NAtoms
@@ -231,7 +232,8 @@
         EndDo
       EndDo
 !
-      Call MQC_Print(Vnn,IOut,'Nuclear Repulsion Energy (au)')
+    
+      if(present(IOut)) Call MQC_Print(Vnn,IOut,'Nuclear Repulsion Energy (au)')
 !
       End Function MQC_Get_Nuclear_Repulsion
 !
