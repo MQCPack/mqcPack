@@ -119,6 +119,7 @@
         Procedure, Public::put => MQC_Matrix_Scalar_Put
         Procedure, Public::vput => MQC_Matrix_Vector_Put
         Procedure, Public::mput => MQC_Matrix_Matrix_Put
+        Procedure, Public::s_type => MQC_Matrix_StorageType
       End Type MQC_Matrix
 
       Type MQC_R4Tensor
@@ -3633,6 +3634,26 @@
 !     MATRIX PROCEDURES                                         |
 !                                                               |
 !----------------------------------------------------------------
+!
+!     PROCEDURE MQC_Matrix_StorageType
+      Function MQC_Matrix_StorageType(Matrix) Result(StorageType)
+!
+!     Utility function queries matrix for its storage type
+!     and returns value as 64-character string
+!
+!     A. Mahler, 2019
+!
+!
+!     Variable Declarations
+      implicit none
+      class(mqc_matrix),intent(in)::Matrix
+      Character(Len=64)::StorageType
+
+      StorageType=Matrix%Storage
+
+      Return
+      End Function MQC_Matrix_StorageType
+!
 !
 !     PROCEDURE MQC_Matrix_Diagonalize
       Subroutine MQC_Matrix_Diagonalize(A,EVals,EVecs)
