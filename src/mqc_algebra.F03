@@ -51,6 +51,7 @@
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+        Procedure, Public::random => MQC_Scalar_Get_Random_Value
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -263,6 +264,7 @@
       End Interface
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
+        Module Procedure MQC_ScalarVectorDivide
         Module Procedure MQC_VectorScalarDivide
       End Interface
       Interface Operator (**)
@@ -911,7 +913,25 @@
 !
       return
       END FUNCTION MQC_Scalar_Get_ABS_Value
-
+!
+!
+!     PROCEDURE MQC_Scalar_Get_Random_Value
+      Subroutine MQC_Scalar_Get_Random_Value(Scalar) 
+!
+!     This subroutine returns a random real value in MQC Scalar
+!
+!     X. Dong, 2019
+!
+!     Variable Declarations
+      Implicit None
+      Class(MQC_Scalar)::Scalar
+      real::r
+!
+      call random_number(r)
+      scalar = r
+!
+      return
+      end subroutine MQC_Scalar_Get_Random_Value
 !
 !
 !     PROCEDURE MQC_ScalarAdd
@@ -3231,7 +3251,7 @@
             vector_res%vecc = scalar%scar * vector%vecc
           elseIf(scalar%Data_type.eq.'Complex') then
             call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
+            vector_res%vecc = scalar%scac * vector%vecc
           else
             call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
                  'scalar%Data_type', scalar%Data_type )
@@ -3243,71 +3263,24 @@
 
       end function mqc_ScalarVectorProduct
 !
-!
 !     PROCEDURE MQC_VectorScalarProduct
       function mqc_VectorScalarProduct(vector,scalar) result(vector_res)
 !
-!     This function calculates the product of an mqc_scalar and an mqc_vector
+!     This function calculates the product of an mqc_scalar and an mqc_matrix
 !
 !     X. Sheng 2017.02
 !
-        implicit none
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
+      implicit none
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
 
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Integer')
-            vector_res%veci = scalar%scai * vector%veci
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%veci
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%veci
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Real') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scai * vector%vecr
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%vecr
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Complex') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scai * vector%vecc
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scar * vector%vecc
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
-          else
-            call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        else
-          call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-               'vector%Data_type', vector%Data_type )
-        endif
+      vector_res = mqc_scalarvectorproduct(scalar,vector)
 
       end function mqc_VectorScalarProduct
 !
 !
-!     PROCEDURE MQC_ScalarVectorDivide
+!     PROCEDURE MQC_VectorScalarDivide
       Function MQC_VectorScalarDivide(vector,scalar) Result(vector_res)
 !
 !     This function returns the value of a vector divided by a scalar.
@@ -3335,6 +3308,25 @@
         vector_res = MQC_VectorScalarProduct(vector,reciprocal)
 
       End Function MQC_VectorScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarVectorDivide
+      Function MQC_ScalarVectorDivide(scalar,vector) Result(vector_res)
+!
+!     This function returns the value of a vector divided by a scalar.
+!     Function determines if scalar is zero, then passes reciprocal of
+!     scalar to MQC_ScalarVectorProduct
+!
+!     A. Mahler, 2019
+!
+        implicit none
+        type(mqc_vector),intent(in)::vector
+        type(mqc_scalar),intent(in)::scalar
+        type(mqc_vector)::vector_res
+
+        vector_res = MQC_VectorScalarDivide(vector,scalar)
+
+      End Function MQC_ScalarVectorDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
