@@ -1117,7 +1117,7 @@
 !           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
 !           type (integer, real, etc.) and data structure (scalar, vector,
 !           matrix, etc.).
-            select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
+            select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
@@ -1147,6 +1147,23 @@
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
+              deallocate(integerTmp)
+            case('INTEGER-ASYMMATRIX')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to &
+                & procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
+              allocate(integerTmp(LR))
+              call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
+!             Matrix files have either symmetric/hermitian storage or antisymmetric/
+!             anthermitian storage. MQC currently has a symmetric only storage for both real 
+!             and complex parts so make nonsymmetric matrices square.
+              call mqc_matrix_symm2full(matrixOut,'antisymmetric')
+!             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
+!             file, where first index is the row. Therefore, we need to transpose matrix file
+!             storage to the MQC lower trangular matrix after reading for correct storage. 
+!             This is only an issue for nonsymmetric matrices stored in symmetric form.
+              matrixOut = transpose(matrixOut)
               deallocate(integerTmp)
             case('REAL-VECTOR')
               allocate(arrayTmp(LR))
@@ -1186,6 +1203,28 @@
                   6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
               endIf
               deallocate(arrayTmp)
+            case('REAL-ASYMMATRIX')
+              allocate(arrayTmp(LR))
+              call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+!             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
+!             file, where first index is the row. Therefore, we need to transpose matrix file
+!             storage to the MQC lower trangular matrix after reading for correct storage. 
+!             This is only an issue for nonsymmetric matrices stored in symmetric form.
+              if(Present(matrixOut)) then
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+!               Matrix files have either symmetric/hermitian storage or antisymmetric/
+!               anthermitian storage. MQC currently has a symmetric only storage for both real 
+!               and complex parts so make nonsymmetric matrices square.
+                call mqc_matrix_symm2full(matrixOut,'antisymmetric')
+                matrixOut = transpose(matrixOut)
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
+                mqcVarOut = transpose(mqcVarOut)
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
+              deallocate(arrayTmp)
             case('COMPLEX-VECTOR')
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
@@ -1217,6 +1256,32 @@
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
               call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
+!             Matrix files have either symmetric/hermitian storage or antisymmetric/
+!             anthermitian storage. MQC currently has a symmetric only storage for both real 
+!             and complex parts so make nonsymmetric matrices square.
+              call mqc_matrix_symm2full(matrixOut,'hermitian')
+!             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
+!             file, where first index is the row. Therefore, we need to transpose matrix file
+!             storage to the MQC lower trangular matrix after reading for correct storage. 
+!             This is only an issue for nonsymmetric matrices stored in symmetric form.
+              matrixOut = transpose(matrixOut)
+              deallocate(complexTmp)
+            case('COMPLEX-ASYMMATRIX')
+              if(.not.Present(matrixOut)) call mqc_error_l('Reading matrix from Gaussian matrix &
+                & file, but NO MATRIX SENT to procedure.', 6, &
+                'Present(matrixOut)', Present(matrixOut) )
+              allocate(complexTmp(LR))
+              call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
+!             Matrix files have either symmetric/hermitian storage or antisymmetric/
+!             anthermitian storage. MQC currently has a symmetric only storage for both real 
+!             and complex parts so make nonsymmetric matrices square.
+              call mqc_matrix_symm2full(matrixOut,'antihermitian')
+!             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
+!             file, where first index is the row. Therefore, we need to transpose matrix file
+!             storage to the MQC lower trangular matrix after reading for correct storage. 
+!             This is only an issue for nonsymmetric matrices stored in symmetric form.
+              matrixOut = transpose(matrixOut)
               deallocate(complexTmp)
 
             case('MIXED')
@@ -1229,8 +1294,8 @@
               write(*,1020)
               call mqc_error_a('No general way to load mixed types as of yet &
       &         We are doing it case-by-case at the moment and this does not match.', 6, &
-      'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
-      MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
+      'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
+      MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
             case('2ERIS-SYMSYMR4TENSOR')
               if(.not.Present(r4TensorOut)) call mqc_error_l('Reading r4 tensor from Gaussian matrix file, but NO R4TENSOR SENT to &
                 & procedure.', 6, &
@@ -1258,10 +1323,10 @@
               deallocate(arrayTmp)
 
             case default
-              write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
+              write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
               call mqc_error_A('Found strange matrix type in Gaussian matrix read routine.', 6, &
-                   'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)', &
-                   MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI) )
+                   'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
+                   MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
             end select
             found = .true.
             exit outerLoop
@@ -1457,13 +1522,17 @@
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,realVectorTmp)
           elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
+!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!           where first index is the row. Therefore, we need to transpose the MQC lower
+!           trangular matrix before writing for correct matrix file storage. This is only an
+!           issue for nonsymmetric matrices stored in LT form.
+            realMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(realVectorTmp(size(realMatrixTmp,1)))
-            realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,realVectorTmp)
@@ -1513,13 +1582,17 @@
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
           elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
+!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!           where first index is the row. Therefore, we need to transpose the MQC lower
+!           trangular matrix before writing for correct matrix file storage. This is only an
+!           issue for nonsymmetric matrices stored in LT form.
+            intMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(intVectorTmp(size(intMatrixTmp,1)))
-            intMatrixTmp = matrixInUse
             intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
             call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,intVectorTmp)
@@ -1573,14 +1646,34 @@
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
           elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
-              .or.(my_storage.eq.'asym')) then
+              .or.(my_storage.eq.'symm')) then
+!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!           where first index is the row. Therefore, we need to transpose the MQC lower
+!           trangular matrix before writing for correct matrix file storage. This is only an
+!           issue for nonsymmetric matrices stored in LT form.
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
-            compMatrixTmp = matrixInUse
+            compMatrixTmp = transpose(matrixInUse)
+            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
+            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+              mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antihermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'aher') &
+              .or.(my_storage.eq.'asym')) then
+!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!           where first index is the row. Therefore, we need to transpose the MQC lower
+!           trangular matrix before writing for correct matrix file storage. This is only an
+!           issue for nonsymmetric matrices stored in LT form.
+            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+            endIf
+            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+            allocate(compVectorTmp(size(compMatrixTmp,1)))
+            compMatrixTmp = transpose(matrixInUse)
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
@@ -1934,10 +2027,13 @@
 !           'core hamiltonian'   write the core hamiltonian.
 !           'fock'               write the fock matrix.
 !           'density'            write the density matrix.
+!           'scf density'        write the SCF density matrix.
 !           'overlap'            write the overlap matrix.
 !           'wavefunction'       export the wavefunction object.
 !
 !     * not yet implemented
+!
+!     Symmetric arrays are stored on the matrix file in the order (A(J,I),J=1,I),I=1,N)
 !
 !     L. M. Thompson, 2017.
 !
@@ -2107,6 +2203,25 @@
         if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('alpha'))
+        elseIf(my_integral_type.eq.'spin') then
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('alpha'))
+          call fileInfo%writeArray('BETA DENSITY MATRIX', &
+            matrixIn=est_integral%getBlock('beta'))
+        elseIf(my_integral_type.eq.'general') then
+          call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX',matrixIn=tmpMatrix)
+        else
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'my_integral_type', my_integral_type )
+        endIf
+      case('scf density')
+        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
+             'Present(est_integral)', Present(est_integral) )
+        if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
             matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'spin') then
@@ -2208,21 +2323,38 @@
           mqc_integral_array_type(est_wavefunction%mo_coefficients) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'space') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('alpha'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'spin') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('alpha'))
-          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
+          call fileInfo%writeArray('BETA DENSITY MATRIX', &
             matrixIn=est_wavefunction%density_matrix%getBlock('beta'))
         elseIf(mqc_integral_array_type(est_wavefunction%density_matrix).eq.'general') then
           call mqc_matrix_undoSpinBlockGHF(est_wavefunction%density_matrix,tmpMatrix)
           if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
+          call fileInfo%writeArray('ALPHA DENSITY MATRIX',matrixIn=tmpMatrix)
         else
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'mqc_integral_array_type(est_wavefunction%density_matrix)', &
                mqc_integral_array_type(est_wavefunction%density_matrix) )
+        endIf
+        if(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'space') then
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('alpha'))
+        elseIf(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'spin') then
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('alpha'))
+          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
+            matrixIn=est_wavefunction%scf_density_matrix%getBlock('beta'))
+        elseIf(mqc_integral_array_type(est_wavefunction%scf_density_matrix).eq.'general') then
+          call mqc_matrix_undoSpinBlockGHF(est_wavefunction%scf_density_matrix,tmpMatrix)
+          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
+        else
+          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+               'mqc_integral_array_type(est_wavefunction%scf_density_matrix)', &
+               mqc_integral_array_type(est_wavefunction%scf_density_matrix) )
         endIf
         if(mqc_integral_array_type(est_wavefunction%fock_matrix).eq.'space') then
           call fileInfo%writeArray('ALPHA FOCK MATRIX', &
@@ -2298,10 +2430,13 @@
 !           'core hamiltonian'   return the core hamiltonian.
 !           'fock'               return the fock matrix.
 !           'density'            return the density matrix.
+!           'scf density'        return the SCF density matrix.
 !           'overlap'            return the overlap matrix.
 !           'wavefunction'       load the wavefunction object.
 !
 !     * not yet implemented
+!
+!     Symmetric arrays are stored on the matrix file in the order (A(J,I),J=1,I),I=1,N)
 !
 !     L. M. Thompson, 2017.
 !
@@ -2518,10 +2653,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_integral,'core hamiltonian','space',tmpMatrixAlpha)
           endIf
         elseIf(fileinfo%isUnrestricted()) then
@@ -2545,14 +2680,14 @@
                 call mqc_error_l('errorMsg',6,'found',found)
               endIf
             else
-              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-              endIf
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_integral,'core hamiltonian','spin',tmpMatrixAlpha, &
                 tmpMatrixBeta)
             endIf
@@ -2568,10 +2703,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2599,10 +2734,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_integral,'fock','space',tmpMatrixAlpha)
           endIf
         elseIf(fileinfo%isUnrestricted()) then
@@ -2626,14 +2761,14 @@
                 call mqc_error_l('errorMsg',6,'found',found)
               endIf
             else
-              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-              endIf
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_integral,'fock','spin',tmpMatrixAlpha, &
                 tmpMatrixBeta)
             endIf
@@ -2649,10 +2784,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2670,6 +2805,87 @@
         endIf
       case('density')
         if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+            call fileInfo%getArray('BETA DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'BETA DENSITY MATRIX not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+              else
+                call mqc_error_l('errorMsg',6,'found',found)
+              endIf
+            else
+!              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
+              call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
+                tmpMatrixBeta)
+            endIf
+          endIf
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'ALPHA DENSITY MATRIX not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l('errorMsg',6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          endIf
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case('scf density')
+        if(fileinfo%isRestricted()) then
           call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(present(foundObj)) foundObj = found
           if(.not.found) then
@@ -2680,10 +2896,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_integral,'density','space',tmpMatrixAlpha)
           endIf
         elseIf(fileinfo%isUnrestricted()) then
@@ -2707,14 +2923,14 @@
                 call mqc_error_l('errorMsg',6,'found',found)
               endIf
             else
-              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-              endIf
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!                tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_integral,'density','spin',tmpMatrixAlpha, &
                 tmpMatrixBeta)
             endIf
@@ -2730,14 +2946,14 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
-            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_integral,'density','general',tmpMatrixAlpha, &
@@ -2761,10 +2977,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_integral,'overlap','space',tmpMatrixAlpha)
           endIf
         elseIf(fileinfo%isUnrestricted()) then
@@ -2778,10 +2994,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_integral,'overlap','spin',tmpMatrixAlpha, &
               tmpMatrixAlpha)
           endIf
@@ -2796,10 +3012,10 @@
               call mqc_error_l('errorMsg',6,'found',found)
             endIf
           else
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             nBasis = fileInfo%getVal('nBasis')
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
@@ -2820,27 +3036,33 @@
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','space', &
               tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'OVERLAP not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','space', &
               tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'CORE HAMILTONIAN ALPHA not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
           if(found) then
@@ -2849,6 +3071,9 @@
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA ORBITAL ENERGIES not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
           if(found) then
@@ -2856,30 +3081,54 @@
               tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
-            write(6,'(A)') 'ALPHA SCF DENSITY MATRIX not present on file - skipping'
+            write(6,'(A)') 'ALPHA MO COEFFICIENTS not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
-          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_wavefunction%density_matrix,'density','space', &
               tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','space', &
+              tmpMatrixAlpha)
+          else
+            if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA SCF DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','space',tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA FOCK MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
@@ -2891,37 +3140,46 @@
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_integral_allocate(est_wavefunction%overlap_matrix,'overlap','spin', &
               tmpMatrixAlpha,tmpMatrixAlpha)
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'OVERLAP not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta,foundOut=found)
             if(found) then
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_wavefunction%core_hamiltonian,'core hamiltonian','spin', &
                 tmpMatrixAlpha,tmpMatrixBeta)
             else
               if(present(foundObj)) foundObj = .false.
               write(6,'(A)') 'CORE HAMILTONIAN BETA not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
             endIf
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'CORE HAMILTONIAN ALPHA not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
           if(found) then
@@ -2932,10 +3190,16 @@
             else
               if(present(foundObj)) foundObj = .false.
               write(6,'(A)') 'BETA ORBITAL ENERGIES not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
             endIf
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA ORBITAL ENERGIES not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
@@ -2947,56 +3211,103 @@
             else
               if(present(foundObj)) foundObj = .false.
               write(6,'(A)') 'BETA MO COEFFICIENTS not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
             endIf
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA MO COEFFICIENTS not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
-          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
-            call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call fileInfo%getArray('BETA DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
             if(found) then
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_wavefunction%density_matrix,'density','spin', &
                 tmpMatrixAlpha,tmpMatrixBeta)
             else
               if(present(foundObj)) foundObj = .false.
+              write(6,'(A)') 'BETA DENSITY MATRIX not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+            endIf
+          else
+            if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+
+          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
+            if(found) then
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
+              call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','spin', &
+                tmpMatrixAlpha,tmpMatrixBeta)
+            else
+              if(present(foundObj)) foundObj = .false.
               write(6,'(A)') 'BETA SCF DENSITY MATRIX not present on file - skipping'
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
             endIf
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA SCF DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta,foundOut=found)
             if(found) then
-              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
-                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
-                tmpMatrixBeta = transpose(tmpMatrixBeta)
-              endIf
+!              if(MQC_Matrix_HaveComplex(tmpMatrixBeta)) then
+!                call mqc_matrix_symm2full(tmpMatrixBeta,'hermitian')
+!                tmpMatrixBeta = transpose(tmpMatrixBeta)
+!              endIf
               call mqc_integral_allocate(est_wavefunction%fock_matrix,'fock','spin',tmpMatrixAlpha, &
                 tmpMatrixBeta)
             else
               if(present(foundObj)) foundObj = .false.
               write(6,'(A)') 'BETA FOCK MATRIX not present on file - skipping'
-            endIf
+              my_filename = TRIM(fileinfo%filename)
+              call fileinfo%CLOSEFILE()
+              call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+              endIf
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA FOCK MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
@@ -3007,13 +3318,14 @@
           est_wavefunction%multiplicity = fileInfo%getVal('multiplicity')
           call mqc_gaussian_ICGU(fileInfo%ICGU,est_wavefunction%wf_type,est_wavefunction%wf_complex)
         elseIf(fileinfo%isGeneral()) then
+          nBasis = fileInfo%getVal('nBasis')
+
           call fileInfo%getArray('OVERLAP',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
-            nBasis = fileInfo%getVal('nBasis')
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -3024,14 +3336,17 @@
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'OVERLAP not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('CORE HAMILTONIAN ALPHA',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -3042,6 +3357,9 @@
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'CORE HAMILTONIAN ALPHA not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('ALPHA ORBITAL ENERGIES',vectorOut=tmpVectorAlpha,foundOut=found)
@@ -3054,6 +3372,9 @@
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA ORBITAL ENERGIES not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('ALPHA MO COEFFICIENTS',tmpMatrixAlpha,foundOut=found)
@@ -3066,36 +3387,67 @@
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_wavefunction%mo_coefficients,'mo_coefficients','general', &
               tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+            call est_wavefunction%mo_coefficients%setEList(elist)
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA MO COEFFICIENTS not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
-          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          call fileInfo%getArray('ALPHA DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              if(mqc_matrix_test_symmetric(tmpMatrixAlpha,'hermitian')) &
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
-            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_wavefunction%density_matrix,'density','general', &
               tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           else
             if(present(foundObj)) foundObj = .false.
+            write(6,'(A)') 'ALPHA DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
+          endIf
+
+          call fileInfo%getArray('ALPHA SCF DENSITY MATRIX',tmpMatrixAlpha,foundOut=found)
+          if(found) then
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              if(mqc_matrix_test_symmetric(tmpMatrixAlpha,'hermitian')) &
+!                call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+!            tmpMatrixBetaAlpha = MQC_Matrix_Transpose(tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1]))
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_wavefunction%scf_density_matrix,'density','general', &
+              tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA SCF DENSITY MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
           call fileInfo%getArray('ALPHA FOCK MATRIX',tmpMatrixAlpha,foundOut=found)
           if(found) then
-            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
-              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
-              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
-            endIf
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
             call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
             tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
             tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
@@ -3106,9 +3458,11 @@
           else
             if(present(foundObj)) foundObj = .false.
             write(6,'(A)') 'ALPHA FOCK MATRIX not present on file - skipping'
+            my_filename = TRIM(fileinfo%filename)
+            call fileinfo%CLOSEFILE()
+            call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,my_filename)
           endIf
 
-          call est_wavefunction%mo_coefficients%setEList(elist)
           est_wavefunction%nBasis = fileInfo%getVal('nBasis')
           est_wavefunction%nAlpha = fileInfo%getVal('nAlpha')
           est_wavefunction%nBeta = fileInfo%getVal('nBeta')
@@ -3324,7 +3678,7 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Array_Type
-      Function MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI)
+      Function MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
 !
 !     This function returns a character string indicating the type of array
 !     found in a Gaussian matrix file. This is done using NI, NR, N1, N2, N3,
@@ -3335,19 +3689,22 @@
 !
 !           "VECTOR"          A vector.
 !           "MATRIX"          A matrix that is allocated full (M x N).
-!           "SYMMATRIX"       A symmetric matrix.
+!           "SYMMATRIX"       A symmetric/hermitian matrix.
+!           "ASYMMATRIX"      An antisymmetric/antihermitian matrix.
 !
 !     If the input flags do not uniquely identify a known array type, then this
 !     function returns "UNKNOWN".
 !
 !
 !     H. P. Hratchian, 2017.
+!     L. M. Thompson, 2018.
 !
 !
 !     Variable Declarations.
 !
       implicit none
       integer::NI,NR,N1,N2,N3,N4,N5,NRI
+      logical::Asym
       character(len=64)::MQC_Gaussian_Unformatted_Matrix_Array_Type
 !
 !
@@ -3379,9 +3736,12 @@
       elseIf(N1.gt.1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = &
           TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-MATRIX"
-      elseIf(N1.le.-1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1) then
+      elseIf(N1.le.-1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1.and..not.ASym) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = &
           TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-SYMMATRIX"
+      elseIf(N1.le.-1.and.N2.gt.1.and.N3.eq.1.and.N4.eq.1.and.N5.eq.1.and.ASym) then
+        MQC_Gaussian_Unformatted_Matrix_Array_Type = &
+          TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-ASYMMATRIX"
       elseIf(N1.le.-1.and.N2.le.-1.and.N3.le.-1.and.N4.gt.1.and.N5.eq.1) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = &
           TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-SYMSYMR4TENSOR"

@@ -87,10 +87,13 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
+!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
         Real(kind=real64),Dimension(:,:),Allocatable::MatR
         Integer(kind=int64),Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
@@ -10512,6 +10515,66 @@
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveInteger
+      Function MQC_R4Tensor_HaveInteger(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated integer r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveInteger
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveInteger = Allocated(R4Tensor%ITen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveInteger
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveReal
+      Function MQC_R4Tensor_HaveReal(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated real r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveReal
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveReal = Allocated(R4Tensor%RTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveReal
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveComplex
+      Function MQC_R4Tensor_HaveComplex(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated complex r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveComplex
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveComplex = Allocated(R4Tensor%CTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveComplex
 !
 !
       End Module MQC_Algebra
