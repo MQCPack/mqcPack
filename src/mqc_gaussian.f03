@@ -1034,7 +1034,7 @@
       logical::EOF,ASym
 !
 !     Local temp variables.
-      integer::i,nOutputArrays
+      integer::i,nOutputArrays,LNZ
 !      integer,external::LenArr
       integer,allocatable,dimension(:)::integerTmp
       real,allocatable,dimension(:)::arrayTmp
@@ -1250,6 +1250,12 @@
 !                deallocate(complexTmp)
                 deallocate(arrayTmp)
               endIf
+            case('SCALARS-VECTOR') 
+!             Just read Gaussian scalars into a real vector for now
+              allocate(arrayTmp(LR))
+              call Rd_RInd(fileinfo%unitNumber,NR,LR,NTot,LenBuf,LNZ,arrayTmp)
+              vectorOut = arrayTmp
+              deallocate(arrayTmp)
 
             case default
               write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI))
@@ -3351,7 +3357,9 @@
       if(NR.lt.0.or.NI.lt.0) return
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
-        if((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
+        if(NR.eq.1.and.NR.eq.1) then
+          MQC_Gaussian_Unformatted_Matrix_Array_Type = "SCALARS"
+        elseIf((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "2ERIS"
         else
           return
