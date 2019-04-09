@@ -1040,7 +1040,7 @@
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
-      logical::DEBUG=.true.,ok,found
+      logical::DEBUG=.false.,ok,found
 !
 !
 !     Format statements.
@@ -1417,7 +1417,7 @@
       complex(kind=real64),allocatable,dimension(:)::compVectorTmp
       type(MQC_Matrix)::matrixInUse 
       character(len=256)::my_filename,my_storage
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.false.,ok
       Parameter(LenBuf=4000)
 !
 !     Format statements.
@@ -2027,7 +2027,7 @@
 !           'core hamiltonian'   write the core hamiltonian.
 !           'fock'               write the fock matrix.
 !           'density'            write the density matrix.
-!           'scf density'        write the SCF density matrix.
+!           'scf density'        write the density matrix with the SCF label
 !           'overlap'            write the overlap matrix.
 !           'wavefunction'       export the wavefunction object.
 !
@@ -2199,7 +2199,7 @@
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'my_integral_type', my_integral_type )
         endIf
-      case('density')
+      case('scf density')
         if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
@@ -2218,25 +2218,25 @@
           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
                'my_integral_type', my_integral_type )
         endIf
-      case('scf density')
-        if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
-             'Present(est_integral)', Present(est_integral) )
-        if(my_integral_type.eq.'space') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('alpha'))
-        elseIf(my_integral_type.eq.'spin') then
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('alpha'))
-          call fileInfo%writeArray('BETA SCF DENSITY MATRIX', &
-            matrixIn=est_integral%getBlock('beta'))
-        elseIf(my_integral_type.eq.'general') then
-          call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
-          if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
-          call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX',matrixIn=tmpMatrix)
-        else
-          call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
-               'my_integral_type', my_integral_type )
-        endIf
+      case('density')
+         if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
+              'Present(est_integral)', Present(est_integral) )
+         if(my_integral_type.eq.'space') then
+           call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+             matrixIn=est_integral%getBlock('alpha'))
+         elseIf(my_integral_type.eq.'spin') then
+           call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
+             matrixIn=est_integral%getBlock('alpha'))
+           call fileInfo%writeArray('BETA DENSITY MATRIX', &
+             matrixIn=est_integral%getBlock('beta'))
+         elseIf(my_integral_type.eq.'general') then
+           call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+           if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix)
+           call fileInfo%writeArray('ALPHA DENSITY MATRIX',matrixIn=tmpMatrix)
+         else
+           call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+                'my_integral_type', my_integral_type )
+         endIf
       case('overlap')
         if(.not.(Present(est_integral))) call mqc_error_L('wrong EST type in writeESTOBj', 6, &
              'Present(est_integral)', Present(est_integral) )
