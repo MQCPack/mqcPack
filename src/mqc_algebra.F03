@@ -205,6 +205,18 @@
         Module Procedure MQC_Scalar_Sqrt
       End Interface
 !
+      Interface abs
+        Module Procedure MQC_Scalar_Get_ABS_Value
+      End Interface 
+!
+      Interface real
+        Module Procedure MQC_Scalar_Complex_RealPart
+      End Interface
+!
+      Interface aimag
+        Module Procedure MQC_Scalar_Complex_ImagPart
+      End Interface
+!
       Interface MQC_Set_Array2Vector
         Module Procedure MQC_Set_Array2Vector_Integer
         Module Procedure MQC_Set_Array2Vector_Real
@@ -264,7 +276,6 @@
       End Interface
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
-        Module Procedure MQC_ScalarVectorDivide
         Module Procedure MQC_VectorScalarDivide
       End Interface
       Interface Operator (**)
@@ -1339,16 +1350,36 @@
       Implicit None
       Logical::MQC_ScalarLT
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
+!
+      If(Scalar1%Data_type.eq.'Complex') then
+        If(aimag(Scalar1%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar1%scac))
+      endIf
+      If(Scalar2%Data_type.eq.'Complex') then
+        If(aimag(Scalar2%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar2%scac))
+      endIf
 !
       MQC_ScalarLT = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.lt.Scalar2%scar) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.lt.Scalar2%scai) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.lt.real(Scalar2%scac)) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.lt.Scalar2%scar) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.lt.Scalar2%scai) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.lt.real(Scalar2%scac)) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).lt.Scalar2%scar) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).lt.Scalar2%scai) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).lt.real(Scalar2%scac)) MQC_ScalarLT = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLT', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1372,16 +1403,36 @@
       Implicit None
       Logical::MQC_ScalarGT
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
+!
+      If(Scalar1%Data_type.eq.'Complex') then
+        If(aimag(Scalar1%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar1%scac))
+      endIf
+      If(Scalar2%Data_type.eq.'Complex') then
+        If(aimag(Scalar2%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar2%scac))
+      endIf
 !
       MQC_ScalarGT = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.gt.Scalar2%scar) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.gt.Scalar2%scai) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.gt.real(Scalar2%scac)) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.gt.Scalar2%scar) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.gt.Scalar2%scai) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.gt.real(Scalar2%scac)) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).gt.Scalar2%scar) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).gt.Scalar2%scai) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).gt.real(Scalar2%scac)) MQC_ScalarGT = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGT', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1405,16 +1456,36 @@
       Implicit None
       Logical::MQC_ScalarLE
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
+!
+      If(Scalar1%Data_type.eq.'Complex') then
+        If(aimag(Scalar1%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar1%scac))
+      endIf
+      If(Scalar2%Data_type.eq.'Complex') then
+        If(aimag(Scalar2%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar2%scac))
+      endIf
 !
       MQC_ScalarLE = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.le.Scalar2%scai) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.le.Scalar2%scai) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).le.Scalar2%scar) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).le.Scalar2%scai) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1438,16 +1509,36 @@
       Implicit None
       Logical::MQC_ScalarGE
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
+!
+      If(Scalar1%Data_type.eq.'Complex') then
+        If(aimag(Scalar1%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar1%scac))
+      endIf
+      If(Scalar2%Data_type.eq.'Complex') then
+        If(aimag(Scalar2%scac).ne.zero) call mqc_error_R('Imaginary part of complex number &
+    &     nonzero in MQC_ScalarGT',6,'aimag(Scalar2%scac)',aimag(Scalar2%scac))
+      endIf
 !
       MQC_ScalarGE = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.ge.Scalar2%scai) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.ge.real(Scalar2%scac)) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.ge.Scalar2%scai) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.ge.real(Scalar2%scac)) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).ge.Scalar2%scar) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).ge.Scalar2%scai) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).ge.real(Scalar2%scac)) MQC_ScalarGE = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1470,7 +1561,6 @@
       Implicit None
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Scalar)::ScalarOut
-      Character(Len=64)::datatype
 !
       If(ScalarIn%Data_Type.eq.'Complex') then
         ScalarOut = conjg(ScalarIn%ScaC)
@@ -1480,6 +1570,53 @@
 !
       Return
       End Function MQC_Scalar_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Scalar_Complex_RealPart
+      Function MQC_Scalar_Complex_RealPart(ScalarIn) Result(ScalarOut)
+!
+!     This function returns the real part of an mqc scalar. 
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::ScalarOut
+!
+      If(ScalarIn%Data_Type.eq.'Complex') then
+        ScalarOut = real(ScalarIn%ScaC)
+      Else
+        ScalarOut = ScalarIn
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Complex_RealPart
+!
+!
+!     PROCEDURE MQC_Scalar_Complex_ImagPart
+      Function MQC_Scalar_Complex_ImagPart(ScalarIn) Result(ScalarOut)
+!
+!     This function returns the imaginary part of an mqc scalar. 
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::ScalarOut
+      Real::Zero=0.0d0
+!
+      If(ScalarIn%Data_Type.eq.'Complex') then
+        ScalarOut = aimag(ScalarIn%ScaC)
+      Else
+        ScalarOut = zero
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Complex_ImagPart
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -3308,25 +3445,6 @@
         vector_res = MQC_VectorScalarProduct(vector,reciprocal)
 
       End Function MQC_VectorScalarDivide
-!
-!
-!     PROCEDURE MQC_ScalarVectorDivide
-      Function MQC_ScalarVectorDivide(scalar,vector) Result(vector_res)
-!
-!     This function returns the value of a vector divided by a scalar.
-!     Function determines if scalar is zero, then passes reciprocal of
-!     scalar to MQC_ScalarVectorProduct
-!
-!     A. Mahler, 2019
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector)::vector_res
-
-        vector_res = MQC_VectorScalarDivide(vector,scalar)
-
-      End Function MQC_ScalarVectorDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
