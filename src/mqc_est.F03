@@ -1072,8 +1072,7 @@
       function mqc_integral_output_orbitals(integral,orbString,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
 !
 !     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
-!     can be input) and orders columns as specified in alphaOrbs and betaOrbs. If number of
-!     orbitals specified is less than nBasis, the blocks are padded with columns of zeros.     
+!     can be input) and orders columns as specified in alphaOrbs and betaOrbs. 
 !
 !     Routine assumes basis that is not being reordered is AOs when using virtual flag
 !
@@ -1678,12 +1677,12 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
           'integralA%hasAlpha()', integralA%hasAlpha())
         if(doOffDiag) then
-          tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1],[1,nBasisAlpha2])
-          tmpMatrixBeta = integralA%alpha.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1], &
+          tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2],[1,nBasisAlpha2])
+          tmpMatrixBeta = integralA%alpha.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2], &
             [nBasisAlpha2+1,nBasisTotal2])
-          tmpMatrixAlphaBeta = integralA%alpha.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1], &
+          tmpMatrixAlphaBeta = integralA%alpha.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2], &
             [1,nBasisAlpha2])
-          tmpMatrixBetaAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1], &
+          tmpMatrixBetaAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2], &
             [nBasisAlpha2+1,nBasisTotal2])
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
@@ -1699,12 +1698,12 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
 'integralA%hasBeta()', integralA%hasBeta() )
         if(doOffDiag) then
-          tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1],[1,nBasisAlpha2])
-          tmpMatrixBeta = integralA%beta.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1], &
+          tmpMatrixAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2],[1,nBasisAlpha2])
+          tmpMatrixBeta = integralA%beta.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2], &
             [nBasisAlpha2+1,nBasisTotal2])
-          tmpMatrixAlphaBeta = integralA%beta.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1], &
+          tmpMatrixAlphaBeta = integralA%beta.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2], &
             [1,nBasisAlpha2])
-          tmpMatrixBetaAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1], &
+          tmpMatrixBetaAlpha = integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2], &
             [nBasisAlpha2+1,nBasisTotal2])
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
@@ -1727,14 +1726,14 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
           'integralA%hasBetaAlpha()', integralA%hasBetaAlpha() )
         if(doOffDiag) then
-          tmpMatrixAlpha = (integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1],[1,nBasisAlpha2])) + &
-            (integralA%betaAlpha.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2]))
-          tmpMatrixBeta = (integralA%beta.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2])) + &
-            (integralA%alphaBeta.dot.matrixB%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2]))
-          tmpMatrixAlphaBeta = (integralA%beta.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2])) + &
-            (integralA%alphaBeta.dot.matrixB%mat([1,nBasisAlpha1],[1,nBasisAlpha2]))
-          tmpMatrixBetaAlpha = (integralA%alpha.dot.matrixB%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2])) + &
-            (integralA%betaAlpha.dot.matrixB%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2])) 
+          tmpMatrixAlpha = (integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2],[1,nBasisAlpha2])) + &
+            (integralA%betaAlpha.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2],[1,nBasisAlpha2]))
+          tmpMatrixBeta = (integralA%beta.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2],[nBasisAlpha2+1,nBasisTotal2])) + &
+            (integralA%alphaBeta.dot.matrixB%mat([1,nBasisAlpha2],[nBasisAlpha2+1,nBasisTotal2]))
+          tmpMatrixAlphaBeta = (integralA%beta.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2],[1,nBasisAlpha2])) + &
+            (integralA%alphaBeta.dot.matrixB%mat([1,nBasisAlpha2],[1,nBasisAlpha2]))
+          tmpMatrixBetaAlpha = (integralA%alpha.dot.matrixB%mat([1,nBasisAlpha2],[nBasisAlpha2+1,nBasisTotal2])) + &
+            (integralA%betaAlpha.dot.matrixB%mat([nBasisAlpha2+1,nBasisTotal2],[nBasisAlpha2+1,nBasisTotal2])) 
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
         else
@@ -1806,12 +1805,12 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
           'integralB%hasAlpha()', integralB%hasAlpha() )
         if(doOffDiag) then
-          tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha2]).dot.integralB%alpha
-          tmpMatrixBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2]) &
+          tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha1]).dot.integralB%alpha
+          tmpMatrixBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha1+1,nBasisTotal1]) &
             .dot.integralB%alpha
-          tmpMatrixAlphaBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2]).dot. &
+          tmpMatrixAlphaBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha1]).dot. &
             integralB%alpha
-          tmpMatrixBetaAlpha = matrixA%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2]).dot. &
+          tmpMatrixBetaAlpha = matrixA%mat([1,nBasisAlpha1],[nBasisAlpha1+1,nBasisTotal1]).dot. &
             integralB%alpha
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
@@ -1827,12 +1826,12 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
           'integralB%hasBeta()', integralB%hasBeta() )
         if(doOffDiag) then
-          tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha2]).dot.integralB%alpha
-          tmpMatrixBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2]) &
+          tmpMatrixAlpha = matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha1]).dot.integralB%alpha
+          tmpMatrixBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha1+1,nBasisTotal1]) &
             .dot.integralB%beta
-          tmpMatrixAlphaBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2]).dot. &
+          tmpMatrixAlphaBeta = matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha1]).dot. &
             integralB%alpha
-          tmpMatrixBetaAlpha = matrixA%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2]).dot. &
+          tmpMatrixBetaAlpha = matrixA%mat([1,nBasisAlpha1],[nBasisAlpha1+1,nBasisTotal1]).dot. &
             integralB%beta
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
@@ -1855,15 +1854,15 @@
           & unassigned in MQC_Integral_Matrix_Multiply', 6, &
           'integralB%hasBetaAlpha()', integralB%hasBetaAlpha() )
         if(doOffDiag) then
-          tmpMatrixAlpha = (matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha2]).dot.integralB%alpha) + &
-            (matrixA%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2]).dot.integralB%alphaBeta)
-          tmpMatrixBeta = (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2]).dot.integralB%beta) + &
-            (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2]).dot.integralB%betaAlpha)
-          tmpMatrixAlphaBeta = (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha2]).dot.&
-            integralB%alpha) + (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha2+1,nBasisTotal2]).dot.&
+          tmpMatrixAlpha = (matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha1]).dot.integralB%alpha) + &
+            (matrixA%mat([1,nBasisAlpha1],[nBasisAlpha1+1,nBasisTotal1]).dot.integralB%alphaBeta)
+          tmpMatrixBeta = (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha1+1,nBasisTotal1]).dot.integralB%beta) + &
+            (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha1]).dot.integralB%betaAlpha)
+          tmpMatrixAlphaBeta = (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[1,nBasisAlpha1]).dot.&
+            integralB%alpha) + (matrixA%mat([nBasisAlpha1+1,nBasisTotal1],[nBasisAlpha1+1,nBasisTotal1]).dot.&
             integralB%alphaBeta)
-          tmpMatrixBetaAlpha = (matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha2]).dot.integralB%betaAlpha) + &
-            (matrixA%mat([1,nBasisAlpha1],[nBasisAlpha2+1,nBasisTotal2]).dot.integralB%beta) 
+          tmpMatrixBetaAlpha = (matrixA%mat([1,nBasisAlpha1],[1,nBasisAlpha1]).dot.integralB%betaAlpha) + &
+            (matrixA%mat([1,nBasisAlpha1],[nBasisAlpha1+1,nBasisTotal1]).dot.integralB%beta) 
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
         else
@@ -2682,29 +2681,9 @@
       else
         method = 'F'
       endIf
-      
-      select case (integral%array_type)
-      case('space')
-        ret_block = integral%getBlock('alpha')
-        norm = mqc_matrix_norm(ret_block,method)
-      case('spin')
-        ret_block = integral%getBlock('alpha')
-        norm = mqc_matrix_norm(ret_block,method)
-        ret_block = integral%getBlock('beta')
-        norm = norm + mqc_matrix_norm(ret_block,method)
-      case('general')
-        ret_block = integral%getBlock('alpha')
-        norm = mqc_matrix_norm(ret_block,method)
-        ret_block = integral%getBlock('beta')
-        norm = norm + mqc_matrix_norm(ret_block,method)
-        ret_block = integral%getBlock('alpha-beta')
-        norm = norm + mqc_matrix_norm(ret_block,method)
-        ret_block = integral%getBlock('beta-alpha')
-        norm = norm + mqc_matrix_norm(ret_block,method)
-      case default
-        call mqc_error_A('Unknown integral type in mqc_integral_norm', 6, &
-             'integral%array_type', integral%array_type )
-      end select
+!      
+       ret_block = integral%getBlock('full')
+       norm = mqc_matrix_norm(ret_block,method)
 !
       end function mqc_integral_norm
 !
@@ -3136,10 +3115,10 @@
       implicit none
       type(mqc_twoERIs),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
+      character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::k,l,m,n,nBasis
-      character(len=64),optional,intent(in)::label
       character(len=64)::mylabel
 !
       if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &

@@ -1034,7 +1034,7 @@
       logical::EOF,ASym
 !
 !     Local temp variables.
-      integer::i,nOutputArrays
+      integer::i,nOutputArrays,LNZ
 !      integer,external::LenArr
       integer,allocatable,dimension(:)::integerTmp
       real,allocatable,dimension(:)::arrayTmp
@@ -1315,6 +1315,12 @@
 !                deallocate(complexTmp)
                 deallocate(arrayTmp)
               endIf
+            case('SCALARS-VECTOR') 
+!             Just read Gaussian scalars into a real vector for now
+              allocate(arrayTmp(LR))
+              call Rd_RInd(fileinfo%unitNumber,NR,LR,NTot,LenBuf,LNZ,arrayTmp)
+              vectorOut = arrayTmp
+              deallocate(arrayTmp)
 
             case default
               write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
@@ -1645,13 +1651,13 @@
 !           where first index is the row. Therefore, we need to transpose the MQC lower
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
-            compMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
+            compMatrixTmp = transpose(matrixInUse)
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
@@ -1661,13 +1667,13 @@
 !           where first index is the row. Therefore, we need to transpose the MQC lower
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
-            compMatrixTmp = transpose(matrixInUse)
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
+            compMatrixTmp = transpose(matrixInUse)
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
@@ -3708,7 +3714,9 @@
       if(NR.lt.0.or.NI.lt.0) return
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
-        if((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
+        if(NR.eq.1.and.NR.eq.1) then
+          MQC_Gaussian_Unformatted_Matrix_Array_Type = "SCALARS"
+        elseIf((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "2ERIS"
         else
           return
