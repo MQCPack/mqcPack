@@ -5376,19 +5376,23 @@
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Write(IOut,*) 'ALPHA: UHF False and 1 and 2 same spin, adding:',ISgn*ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1)
+!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
+!                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
                 If(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                  Write(IOut,*) 'ALPHA: UHF False and 1 and 2 both alpha, subtracting:',ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
+!                  Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
+!                    'ALPHA: UHF False and 1 and 2 both alpha, subtracting:')
                   MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
                 EndIf
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                Write(IOut,*) 'ALPHA: UHF True and 1 and 2 both alpha, adding:', &
-!                  ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1) - ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
+!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
+!                  Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)), iOut, &
+!                  'ALPHA: UHF True and 1 and 2 both alpha, adding:')
                 MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
                   Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                Write(IOut,*) 'ALPHA: UHF True and 1 and 2 both beta, adding:', ISgn*ERIs(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1,IPos+1)
+!                Call MQC_Print(Sgn*ERIs%betaAlpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
+!                  'ALPHA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*ERIs%betaAlpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
               EndIf
             EndIf
@@ -5399,19 +5403,22 @@
             J = Mod(IPos,Bit_Size(0))
             If(BTest(Beta_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Write(IOut,*) 'BETA: UHF False and 1 and 2 same spin, adding:',ISgn*ERIs(Orbs(1),Orbs(2),IPos+1,IPos+1)
+!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
+!                  'BETA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
                 If(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                  Write(IOut,*) 'BETA: UHF False and 1 and 2 both beta, subtracting:',ISgn*ERIs(Orbs(1),IPos+1,IPos+1,Orbs(2))
+!                  Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
+!                    'BETA: UHF False and 1 and 2 both beta, subtracting:')
                   MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
                 EndIf
               ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                Write(IOut,*) 'BETA: UHF True and 1 and 2 both alpha, adding:', ISgn*ERIs(Orbs(1),Orbs(2),IPos+1+NBasis,IPos+1+NBasis)
+!                Call MQC_Print(Sgn*ERIs%alphaBeta%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
+!                  'BETA: UHF True and 1 and 2 both alpha, adding:')
                 MatEl = MatEl + Sgn*ERIs%alphaBeta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) 
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                Write(IOut,*) 'BETA: UHF True and 1 and 2 both beta, adding:', &
-!                ISgn*ERIs(Orbs(1)+NBasis,Orbs(2)+NBasis,IPos+1+NBasis,IPos+1+NBasis) - &
-!                  ISgn*ERIs(Orbs(1)+NBasis,IPos+1+NBasis,IPos+1+NBasis,Orbs(2)+NBasis)
+!                Call MQC_Print(Sgn*ERIs%beta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
+!                  Sgn*ERIs%beta%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
+!                  'BETA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*ERIs%beta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
                   Sgn*ERIs%beta%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
               EndIf
@@ -5419,10 +5426,10 @@
           EndDo
 !
           If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-!            Write(IOut,*) '1 and 2 both alpha, adding core:', ISgn*Core_Hamiltonian%Alpha(Orbs(1),Orbs(2))
+!            Call MQC_Print(Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
             MatEl = MatEl + Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)) 
           ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!            Write(IOut,*) '1 and 2 both beta, adding core:', ISgn*Core_Hamiltonian%Beta(Orbs(1),Orbs(2))
+!            Call MQC_Print(Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
             MatEl = MatEl + Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2))
           EndIf
           
@@ -6222,6 +6229,9 @@
             Do R_B_String = 1, NBeta_Str  
               L_Index = 1+(L_B_String-1)*NAlpha_Str+(L_A_String-1) 
               R_Index = 1+(R_B_String-1)*NAlpha_Str+(R_A_String-1) 
+!              write(*,*) '-------------------------------------------'
+!              write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!              write(*,*) '-------------------------------------------'
               Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                 Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
                 MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
