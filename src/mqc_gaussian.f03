@@ -3714,7 +3714,7 @@
       if(NR.lt.0.or.NI.lt.0) return
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
-        if(NR.eq.1.and.NR.eq.1) then
+        if(NR.eq.1.and.NI.eq.1) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "SCALARS"
         elseIf((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "2ERIS"
