@@ -2589,8 +2589,8 @@
       call mqc_Print(6,SUM(junkMat,myDimension))
       write(*,*)' Hrant - Second SUM...SKIPPING THIS'
 !hph      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape(1:2)),myDimension))
-      write(*,*)' Hrant - Third SUM...'
-      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape2),myDimension))
+!hph      write(*,*)' Hrant - Third SUM...'
+!hph      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape2),myDimension))
       call mqc_error('STOP 3')
 
           vectorReal = RESHAPE(SUM(RESHAPE(vectorReal1,myShape),  &
