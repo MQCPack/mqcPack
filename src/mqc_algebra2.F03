@@ -2593,9 +2593,9 @@
 !hph      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape2),myDimension))
       call mqc_error('STOP 3')
 
-          vectorReal = RESHAPE(SUM(RESHAPE(vectorReal1,myShape),  &
-            myDimension),  &
-            [resultLen])
+!hph          vectorReal = RESHAPE(SUM(RESHAPE(vectorReal1,myShape),  &
+!hph            myDimension),  &
+!hph            [resultLen])
 
 
       write(*,*)' FLAG 3'
@@ -2613,10 +2613,10 @@
           DEALLOCATE(vectorReal1)
         case(3)
           ALLOCATE(vectorInteger(resultLen))
-          vectorInteger = RESHAPE(  &
-            SUM(RESHAPE(  &
-            mqcVariableIn%integerArray,[2,3]),  &
-            myDimension),[resultLen])
+!hph          vectorInteger = RESHAPE(  &
+!hph            SUM(RESHAPE(  &
+!hph            mqcVariableIn%integerArray,[2,3]),  &
+!hph            myDimension),[resultLen])
           call MQC_Variable_setVal(mqcVariableOut,  &
             arrayIntegerIn=vectorInteger,  &
             dimensions=resultShape(:resultRank),  &
