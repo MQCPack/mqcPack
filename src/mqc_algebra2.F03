@@ -181,6 +181,8 @@
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
         module procedure MQC_Variable_mqc2intrinsicIntegerScalar
         module procedure MQC_Variable_mqc2intrinsicRealScalar
+        module procedure MQC_Variable_mqc2intrinsicReal1Array
+        module procedure MQC_Variable_mqc2intrinsicReal2Array
       end interface
 !
 !     Whole-array addition (+).
@@ -1821,6 +1823,48 @@
 !
       return
       end subroutine MQC_Variable_mqc2intrinsicReal1Array
+
+
+!
+!PROCEDURE MQC_Variable_mqc2intrinsicReal2Array
+      subroutine MQC_Variable_mqc2intrinsicReal2Array(intrinsicOut,mqcVariable)
+!
+!     This subroutine is used to set an (output) intrinsic real matrix equal to
+!     an (input) MQC Variable vector.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:),allocatable::intrinsicOut
+      type(MQC_Variable),intent(in)::mqcVariable
+!
+!
+!     Do the work...
+!
+      if(Rank(mqcVariable).ne.2)  &
+        call mqc_error_I('Attemp to convert MQC_Variable array to '//  &
+          'intrinsic array with rank != 2 not allowed.',6,'Rank(mqcVariable)',  &
+          Rank(mqcVariable))
+      allocate(intrinsicOut(SIZE(mqcVariable,1),SIZE(mqcVariable,2)))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        intrinsicOut = RESHAPE(mqcVariable%realArray(:),  &
+          mqcVariable%dimensions(1:2))
+      case(3)
+        intrinsicOut = RESHAPE(mqcVariable%integerArray(:),  &
+          mqcVariable%dimensions(1:2))
+      case default
+        call mqc_error_I('MQC_Variable_mqc2intrinsicReal2Array: '// &
+          'Unknown MQC_Variable type found.',6, &
+          'MQC_Variable_getTypeCode(mqcVariable)',  &
+          MQC_Variable_getTypeCode(mqcVariable))
+      end select
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicReal2Array
 
 
 !
