@@ -76,11 +76,13 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 check_PROGRAMS = ../algebra2/algebra_fun$(EXEEXT) \
-	../CreateDataList/CheckInput$(EXEEXT) \
-	../tools/FullWavefunctionRW$(EXEEXT)
+	../fullci/fullci$(EXEEXT) ../DataSummary/DataSummary$(EXEEXT) \
+	../PrintAllData/DataPrint$(EXEEXT) \
+	../SCFenergy/SCFenergy$(EXEEXT) \
+	../WriteTest/ReadWrite$(EXEEXT)
 subdir = examples/Build_Tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/test-driver
+	$(top_srcdir)/test-driver README
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -88,22 +90,37 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am____CreateDataList_CheckInput_OBJECTS = CheckInput.$(OBJEXT)
-___CreateDataList_CheckInput_OBJECTS =  \
-	$(am____CreateDataList_CheckInput_OBJECTS)
-___CreateDataList_CheckInput_LDADD = $(LDADD)
-___CreateDataList_CheckInput_DEPENDENCIES = ../../src/libmqc.a
 am__dirstamp = $(am__leading_dot)dirstamp
-am____algebra2_algebra_fun_OBJECTS = algebra_fun.$(OBJEXT)
+am____DataSummary_DataSummary_OBJECTS =  \
+	../DataSummary/DataSummary.$(OBJEXT)
+___DataSummary_DataSummary_OBJECTS =  \
+	$(am____DataSummary_DataSummary_OBJECTS)
+___DataSummary_DataSummary_LDADD = $(LDADD)
+___DataSummary_DataSummary_DEPENDENCIES = ../../src/libmqc.a
+am____PrintAllData_DataPrint_OBJECTS =  \
+	../PrintAllData/DataPrint.$(OBJEXT)
+___PrintAllData_DataPrint_OBJECTS =  \
+	$(am____PrintAllData_DataPrint_OBJECTS)
+___PrintAllData_DataPrint_LDADD = $(LDADD)
+___PrintAllData_DataPrint_DEPENDENCIES = ../../src/libmqc.a
+am____SCFenergy_SCFenergy_OBJECTS = ../SCFenergy/SCFenergy.$(OBJEXT)
+___SCFenergy_SCFenergy_OBJECTS = $(am____SCFenergy_SCFenergy_OBJECTS)
+___SCFenergy_SCFenergy_LDADD = $(LDADD)
+___SCFenergy_SCFenergy_DEPENDENCIES = ../../src/libmqc.a
+am____WriteTest_ReadWrite_OBJECTS = ../WriteTest/ReadWrite.$(OBJEXT)
+___WriteTest_ReadWrite_OBJECTS = $(am____WriteTest_ReadWrite_OBJECTS)
+___WriteTest_ReadWrite_LDADD = $(LDADD)
+___WriteTest_ReadWrite_DEPENDENCIES = ../../src/libmqc.a
+am____algebra2_algebra_fun_OBJECTS =  \
+	../algebra2/algebra_fun.$(OBJEXT)
 ___algebra2_algebra_fun_OBJECTS =  \
 	$(am____algebra2_algebra_fun_OBJECTS)
 ___algebra2_algebra_fun_LDADD = $(LDADD)
 ___algebra2_algebra_fun_DEPENDENCIES = ../../src/libmqc.a
-am____tools_FullWavefunctionRW_OBJECTS = FullWavefunctionRW.$(OBJEXT)
-___tools_FullWavefunctionRW_OBJECTS =  \
-	$(am____tools_FullWavefunctionRW_OBJECTS)
-___tools_FullWavefunctionRW_LDADD = $(LDADD)
-___tools_FullWavefunctionRW_DEPENDENCIES = ../../src/libmqc.a
+am____fullci_fullci_OBJECTS = ../fullci/fullci.$(OBJEXT)
+___fullci_fullci_OBJECTS = $(am____fullci_fullci_OBJECTS)
+___fullci_fullci_LDADD = $(LDADD)
+___fullci_fullci_DEPENDENCIES = ../../src/libmqc.a
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -117,10 +134,6 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
 AM_V_PPFC = $(am__v_PPFC_@AM_V@)
@@ -134,9 +147,11 @@ AM_V_FCLD = $(am__v_FCLD_@AM_V@)
 am__v_FCLD_ = $(am__v_FCLD_@AM_DEFAULT_V@)
 am__v_FCLD_0 = @echo "  FCLD    " $@;
 am__v_FCLD_1 = 
-DIST_SOURCES = $(___CreateDataList_CheckInput_SOURCES) \
-	$(___algebra2_algebra_fun_SOURCES) \
-	$(___tools_FullWavefunctionRW_SOURCES)
+DIST_SOURCES = $(___DataSummary_DataSummary_SOURCES) \
+	$(___PrintAllData_DataPrint_SOURCES) \
+	$(___SCFenergy_SCFenergy_SOURCES) \
+	$(___WriteTest_ReadWrite_SOURCES) \
+	$(___algebra2_algebra_fun_SOURCES) $(___fullci_fullci_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -459,11 +474,15 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 AM_CPPFLAGS = $(MQC_CPPFLAGS)
-TESTS = ../algebra2/testit.sh ../CreateDataList/testit.sh ../tools/testit.sh
-SOURCES = ../algebra2/algebra_fun.F03 ../CreateDataList/CheckInput.F03 ../tools/FullWavefunctionRW.F03
+AUTOMAKE_OPTIONS = subdir-objects
+TESTS = ../algebra2/testit.sh ../fullci/testit.sh ../DataSummary/testit.sh ../PrintAllData/testit.sh ../SCFenergy/testit.sh ../WriteTest/testit.sh
+SOURCES = ../algebra2/algebra_fun.F03 ../fullci/fullci.F03 ../DataSummary/DataSummary.F03 ../PrintAllData/DataPrint.F03 ../SCFenergy/SCFenergy.F03 ../WriteTest/ReadWrite.F03
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.F03
-___CreateDataList_CheckInput_SOURCES = ../CreateDataList/CheckInput.F03
-___tools_FullWavefunctionRW_SOURCES = ../tools/FullWavefunctionRW.F03
+___fullci_fullci_SOURCES = ../fullci/fullci.F03
+___DataSummary_DataSummary_SOURCES = ../DataSummary/DataSummary.F03
+___PrintAllData_DataPrint_SOURCES = ../PrintAllData/DataPrint.F03
+___SCFenergy_SCFenergy_SOURCES = ../SCFenergy/SCFenergy.F03
+___WriteTest_ReadWrite_SOURCES = ../WriteTest/ReadWrite.F03
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 all: all-am
 
@@ -502,30 +521,87 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-../CreateDataList/$(am__dirstamp):
-	@$(MKDIR_P) ../CreateDataList
-	@: > ../CreateDataList/$(am__dirstamp)
+../DataSummary/$(am__dirstamp):
+	@$(MKDIR_P) ../DataSummary
+	@: > ../DataSummary/$(am__dirstamp)
+../DataSummary/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../DataSummary/$(DEPDIR)
+	@: > ../DataSummary/$(DEPDIR)/$(am__dirstamp)
+../DataSummary/DataSummary.$(OBJEXT): ../DataSummary/$(am__dirstamp) \
+	../DataSummary/$(DEPDIR)/$(am__dirstamp)
 
-../CreateDataList/CheckInput$(EXEEXT): $(___CreateDataList_CheckInput_OBJECTS) $(___CreateDataList_CheckInput_DEPENDENCIES) $(EXTRA____CreateDataList_CheckInput_DEPENDENCIES) ../CreateDataList/$(am__dirstamp)
-	@rm -f ../CreateDataList/CheckInput$(EXEEXT)
-	$(AM_V_FCLD)$(FCLINK) $(___CreateDataList_CheckInput_OBJECTS) $(___CreateDataList_CheckInput_LDADD) $(LIBS)
+../DataSummary/DataSummary$(EXEEXT): $(___DataSummary_DataSummary_OBJECTS) $(___DataSummary_DataSummary_DEPENDENCIES) $(EXTRA____DataSummary_DataSummary_DEPENDENCIES) ../DataSummary/$(am__dirstamp)
+	@rm -f ../DataSummary/DataSummary$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___DataSummary_DataSummary_OBJECTS) $(___DataSummary_DataSummary_LDADD) $(LIBS)
+../PrintAllData/$(am__dirstamp):
+	@$(MKDIR_P) ../PrintAllData
+	@: > ../PrintAllData/$(am__dirstamp)
+../PrintAllData/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../PrintAllData/$(DEPDIR)
+	@: > ../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+../PrintAllData/DataPrint.$(OBJEXT): ../PrintAllData/$(am__dirstamp) \
+	../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+
+../PrintAllData/DataPrint$(EXEEXT): $(___PrintAllData_DataPrint_OBJECTS) $(___PrintAllData_DataPrint_DEPENDENCIES) $(EXTRA____PrintAllData_DataPrint_DEPENDENCIES) ../PrintAllData/$(am__dirstamp)
+	@rm -f ../PrintAllData/DataPrint$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___PrintAllData_DataPrint_OBJECTS) $(___PrintAllData_DataPrint_LDADD) $(LIBS)
+../SCFenergy/$(am__dirstamp):
+	@$(MKDIR_P) ../SCFenergy
+	@: > ../SCFenergy/$(am__dirstamp)
+../SCFenergy/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../SCFenergy/$(DEPDIR)
+	@: > ../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+../SCFenergy/SCFenergy.$(OBJEXT): ../SCFenergy/$(am__dirstamp) \
+	../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+
+../SCFenergy/SCFenergy$(EXEEXT): $(___SCFenergy_SCFenergy_OBJECTS) $(___SCFenergy_SCFenergy_DEPENDENCIES) $(EXTRA____SCFenergy_SCFenergy_DEPENDENCIES) ../SCFenergy/$(am__dirstamp)
+	@rm -f ../SCFenergy/SCFenergy$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___SCFenergy_SCFenergy_OBJECTS) $(___SCFenergy_SCFenergy_LDADD) $(LIBS)
+../WriteTest/$(am__dirstamp):
+	@$(MKDIR_P) ../WriteTest
+	@: > ../WriteTest/$(am__dirstamp)
+../WriteTest/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../WriteTest/$(DEPDIR)
+	@: > ../WriteTest/$(DEPDIR)/$(am__dirstamp)
+../WriteTest/ReadWrite.$(OBJEXT): ../WriteTest/$(am__dirstamp) \
+	../WriteTest/$(DEPDIR)/$(am__dirstamp)
+
+../WriteTest/ReadWrite$(EXEEXT): $(___WriteTest_ReadWrite_OBJECTS) $(___WriteTest_ReadWrite_DEPENDENCIES) $(EXTRA____WriteTest_ReadWrite_DEPENDENCIES) ../WriteTest/$(am__dirstamp)
+	@rm -f ../WriteTest/ReadWrite$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___WriteTest_ReadWrite_OBJECTS) $(___WriteTest_ReadWrite_LDADD) $(LIBS)
 ../algebra2/$(am__dirstamp):
 	@$(MKDIR_P) ../algebra2
 	@: > ../algebra2/$(am__dirstamp)
+../algebra2/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../algebra2/$(DEPDIR)
+	@: > ../algebra2/$(DEPDIR)/$(am__dirstamp)
+../algebra2/algebra_fun.$(OBJEXT): ../algebra2/$(am__dirstamp) \
+	../algebra2/$(DEPDIR)/$(am__dirstamp)
 
 ../algebra2/algebra_fun$(EXEEXT): $(___algebra2_algebra_fun_OBJECTS) $(___algebra2_algebra_fun_DEPENDENCIES) $(EXTRA____algebra2_algebra_fun_DEPENDENCIES) ../algebra2/$(am__dirstamp)
 	@rm -f ../algebra2/algebra_fun$(EXEEXT)
 	$(AM_V_FCLD)$(FCLINK) $(___algebra2_algebra_fun_OBJECTS) $(___algebra2_algebra_fun_LDADD) $(LIBS)
-../tools/$(am__dirstamp):
-	@$(MKDIR_P) ../tools
-	@: > ../tools/$(am__dirstamp)
+../fullci/$(am__dirstamp):
+	@$(MKDIR_P) ../fullci
+	@: > ../fullci/$(am__dirstamp)
+../fullci/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../fullci/$(DEPDIR)
+	@: > ../fullci/$(DEPDIR)/$(am__dirstamp)
+../fullci/fullci.$(OBJEXT): ../fullci/$(am__dirstamp) \
+	../fullci/$(DEPDIR)/$(am__dirstamp)
 
-../tools/FullWavefunctionRW$(EXEEXT): $(___tools_FullWavefunctionRW_OBJECTS) $(___tools_FullWavefunctionRW_DEPENDENCIES) $(EXTRA____tools_FullWavefunctionRW_DEPENDENCIES) ../tools/$(am__dirstamp)
-	@rm -f ../tools/FullWavefunctionRW$(EXEEXT)
-	$(AM_V_FCLD)$(FCLINK) $(___tools_FullWavefunctionRW_OBJECTS) $(___tools_FullWavefunctionRW_LDADD) $(LIBS)
+../fullci/fullci$(EXEEXT): $(___fullci_fullci_OBJECTS) $(___fullci_fullci_DEPENDENCIES) $(EXTRA____fullci_fullci_DEPENDENCIES) ../fullci/$(am__dirstamp)
+	@rm -f ../fullci/fullci$(EXEEXT)
+	$(AM_V_FCLD)$(FCLINK) $(___fullci_fullci_OBJECTS) $(___fullci_fullci_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../DataSummary/*.$(OBJEXT)
+	-rm -f ../PrintAllData/*.$(OBJEXT)
+	-rm -f ../SCFenergy/*.$(OBJEXT)
+	-rm -f ../WriteTest/*.$(OBJEXT)
+	-rm -f ../algebra2/*.$(OBJEXT)
+	-rm -f ../fullci/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -535,24 +611,6 @@ distclean-compile:
 
 .F03.obj:
 	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-CheckInput.o: ../CreateDataList/CheckInput.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o CheckInput.o `test -f '../CreateDataList/CheckInput.F03' || echo '$(srcdir)/'`../CreateDataList/CheckInput.F03
-
-CheckInput.obj: ../CreateDataList/CheckInput.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o CheckInput.obj `if test -f '../CreateDataList/CheckInput.F03'; then $(CYGPATH_W) '../CreateDataList/CheckInput.F03'; else $(CYGPATH_W) '$(srcdir)/../CreateDataList/CheckInput.F03'; fi`
-
-algebra_fun.o: ../algebra2/algebra_fun.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o algebra_fun.o `test -f '../algebra2/algebra_fun.F03' || echo '$(srcdir)/'`../algebra2/algebra_fun.F03
-
-algebra_fun.obj: ../algebra2/algebra_fun.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o algebra_fun.obj `if test -f '../algebra2/algebra_fun.F03'; then $(CYGPATH_W) '../algebra2/algebra_fun.F03'; else $(CYGPATH_W) '$(srcdir)/../algebra2/algebra_fun.F03'; fi`
-
-FullWavefunctionRW.o: ../tools/FullWavefunctionRW.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o FullWavefunctionRW.o `test -f '../tools/FullWavefunctionRW.F03' || echo '$(srcdir)/'`../tools/FullWavefunctionRW.F03
-
-FullWavefunctionRW.obj: ../tools/FullWavefunctionRW.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o FullWavefunctionRW.obj `if test -f '../tools/FullWavefunctionRW.F03'; then $(CYGPATH_W) '../tools/FullWavefunctionRW.F03'; else $(CYGPATH_W) '$(srcdir)/../tools/FullWavefunctionRW.F03'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -754,16 +812,37 @@ recheck: all $(check_PROGRAMS)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../CreateDataList/testit.sh.log: ../CreateDataList/testit.sh
-	@p='../CreateDataList/testit.sh'; \
-	b='../CreateDataList/testit.sh'; \
+../fullci/testit.sh.log: ../fullci/testit.sh
+	@p='../fullci/testit.sh'; \
+	b='../fullci/testit.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../tools/testit.sh.log: ../tools/testit.sh
-	@p='../tools/testit.sh'; \
-	b='../tools/testit.sh'; \
+../DataSummary/testit.sh.log: ../DataSummary/testit.sh
+	@p='../DataSummary/testit.sh'; \
+	b='../DataSummary/testit.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+../PrintAllData/testit.sh.log: ../PrintAllData/testit.sh
+	@p='../PrintAllData/testit.sh'; \
+	b='../PrintAllData/testit.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+../SCFenergy/testit.sh.log: ../SCFenergy/testit.sh
+	@p='../SCFenergy/testit.sh'; \
+	b='../SCFenergy/testit.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+../WriteTest/testit.sh.log: ../WriteTest/testit.sh
+	@p='../WriteTest/testit.sh'; \
+	b='../WriteTest/testit.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -848,9 +927,18 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f ../CreateDataList/$(am__dirstamp)
+	-rm -f ../DataSummary/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../DataSummary/$(am__dirstamp)
+	-rm -f ../PrintAllData/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../PrintAllData/$(am__dirstamp)
+	-rm -f ../SCFenergy/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../SCFenergy/$(am__dirstamp)
+	-rm -f ../WriteTest/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../WriteTest/$(am__dirstamp)
+	-rm -f ../algebra2/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../algebra2/$(am__dirstamp)
-	-rm -f ../tools/$(am__dirstamp)
+	-rm -f ../fullci/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../fullci/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -937,7 +1025,7 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	recheck tags tags-am uninstall uninstall-am
 
-build: ../algebra2/algebra_fun.$(OBJEXT) ../CreateDataList/CheckInput.$(OBJEXT) ../tools/FullWavefunctionRW.$(OBJEXT)
+build: ../algebra2/algebra_fun.$(OBJEXT) ../fullci/fullci.$(OBJEXT) ../DataSummary/DataSummary.$(OBJEXT) ../PrintAllData/DataPrint.$(OBJEXT) ../SCFenergy/SCFenergy.$(OBJEXT) ../WriteTest/ReadWrite.$(OBJEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

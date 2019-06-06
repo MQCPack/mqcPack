@@ -78,7 +78,7 @@ POST_UNINSTALL = :
 check_PROGRAMS = ../algebra2/algebra_fun$(EXEEXT)
 subdir = examples/Build_Tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/test-driver
+	$(top_srcdir)/test-driver README
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -86,12 +86,13 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am____algebra2_algebra_fun_OBJECTS = algebra_fun.$(OBJEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
+am____algebra2_algebra_fun_OBJECTS =  \
+	../algebra2/algebra_fun.$(OBJEXT)
 ___algebra2_algebra_fun_OBJECTS =  \
 	$(am____algebra2_algebra_fun_OBJECTS)
 ___algebra2_algebra_fun_LDADD = $(LDADD)
 ___algebra2_algebra_fun_DEPENDENCIES = ../../src/libmqc.a
-am__dirstamp = $(am__leading_dot)dirstamp
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -105,10 +106,6 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 PPFCCOMPILE = $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS)
 AM_V_PPFC = $(am__v_PPFC_@AM_V@)
@@ -445,6 +442,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_FCFLAGS = $(MQC_SPECIFIC_FCFLAGS)
 AM_CPPFLAGS = $(MQC_CPPFLAGS)
+AUTOMAKE_OPTIONS = subdir-objects
 TESTS = ../algebra2/testit.sh
 SOURCES = ../algebra2/algebra_fun.F03
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.F03
@@ -489,6 +487,11 @@ clean-checkPROGRAMS:
 ../algebra2/$(am__dirstamp):
 	@$(MKDIR_P) ../algebra2
 	@: > ../algebra2/$(am__dirstamp)
+../algebra2/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../algebra2/$(DEPDIR)
+	@: > ../algebra2/$(DEPDIR)/$(am__dirstamp)
+../algebra2/algebra_fun.$(OBJEXT): ../algebra2/$(am__dirstamp) \
+	../algebra2/$(DEPDIR)/$(am__dirstamp)
 
 ../algebra2/algebra_fun$(EXEEXT): $(___algebra2_algebra_fun_OBJECTS) $(___algebra2_algebra_fun_DEPENDENCIES) $(EXTRA____algebra2_algebra_fun_DEPENDENCIES) ../algebra2/$(am__dirstamp)
 	@rm -f ../algebra2/algebra_fun$(EXEEXT)
@@ -496,6 +499,7 @@ clean-checkPROGRAMS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../algebra2/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -505,12 +509,6 @@ distclean-compile:
 
 .F03.obj:
 	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-algebra_fun.o: ../algebra2/algebra_fun.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o algebra_fun.o `test -f '../algebra2/algebra_fun.F03' || echo '$(srcdir)/'`../algebra2/algebra_fun.F03
-
-algebra_fun.obj: ../algebra2/algebra_fun.F03
-	$(AM_V_PPFC)$(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o algebra_fun.obj `if test -f '../algebra2/algebra_fun.F03'; then $(CYGPATH_W) '../algebra2/algebra_fun.F03'; else $(CYGPATH_W) '$(srcdir)/../algebra2/algebra_fun.F03'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -792,6 +790,7 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f ../algebra2/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../algebra2/$(am__dirstamp)
 
 maintainer-clean-generic:
