@@ -271,9 +271,9 @@
       do i = 1,nAtoms
         elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
         write(iOut,1004) elem, &
-          MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
-          MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
-          MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
+          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
+          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
       endDo
 !
       write(iOut,1001)
