@@ -268,12 +268,30 @@
       End Interface
       Interface Operator (+)
         Module Procedure MQC_ScalarAdd
+        Module Procedure MQC_IntegerScalarAdd
+        Module Procedure MQC_ScalarIntegerAdd
+        Module Procedure MQC_RealScalarAdd
+        Module Procedure MQC_ScalarRealAdd
+        Module Procedure MQC_ComplexScalarAdd
+        Module Procedure MQC_ScalarComplexAdd
       End Interface
       Interface Operator (-)
         Module Procedure MQC_ScalarSubtract
+        Module Procedure MQC_IntegerScalarSubtract
+        Module Procedure MQC_ScalarIntegerSubtract
+        Module Procedure MQC_RealScalarSubtract
+        Module Procedure MQC_ScalarRealSubtract
+        Module Procedure MQC_ComplexScalarSubtract
+        Module Procedure MQC_ScalarComplexSubtract
       End Interface
       Interface Operator (*)
         Module Procedure MQC_ScalarMultiply
+        Module Procedure MQC_IntegerScalarMultiply
+        Module Procedure MQC_ScalarIntegerMultiply
+        Module Procedure MQC_RealScalarMultiply
+        Module Procedure MQC_ScalarRealMultiply
+        Module Procedure MQC_ComplexScalarMultiply
+        Module Procedure MQC_ScalarComplexMultiply
         Module Procedure MQC_ScalarVectorProduct
         Module Procedure MQC_VectorScalarProduct
         Module Procedure MQC_ScalarMatrixProduct
@@ -281,6 +299,12 @@
       End Interface
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
+        Module Procedure MQC_IntegerScalarDivide
+        Module Procedure MQC_ScalarIntegerDivide
+        Module Procedure MQC_RealScalarDivide
+        Module Procedure MQC_ScalarRealDivide
+        Module Procedure MQC_ComplexScalarDivide
+        Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
       End Interface
       Interface Operator (**)
@@ -1666,6 +1690,534 @@
 !
       Return
       End Function MQC_Scalar_Complex_ImagPart
+!
+!
+!     PROCEDURE MQC_IntegerScalarMultiply
+      Function MQC_IntegerScalarMultiply(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_IntegerScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarIntegerMultiply
+      Function MQC_ScalarIntegerMultiply(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarIntegerMultiply
+!
+!
+!     PROCEDURE MQC_RealScalarMultiply
+      Function MQC_RealScalarMultiply(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_RealScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarRealMultiply
+      Function MQC_ScalarRealMultiply(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarRealMultiply
+!
+!
+!     PROCEDURE MQC_ComplexScalarMultiply
+      Function MQC_ComplexScalarMultiply(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_ComplexScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarComplexMultiply
+      Function MQC_ScalarComplexMultiply(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarComplexMultiply
+!
+!
+!     PROCEDURE MQC_IntegerScalarDivide  
+      Function MQC_IntegerScalarDivide(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_IntegerScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarIntegerDivide
+      Function MQC_ScalarIntegerDivide(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to Divide an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarIntegerDivide
+!
+!
+!     PROCEDURE MQC_RealScalarDivide
+      Function MQC_RealScalarDivide(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_RealScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarRealDivide
+      Function MQC_ScalarRealDivide(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarRealDivide
+!
+!
+!     PROCEDURE MQC_ComplexScalarDivide
+      Function MQC_ComplexScalarDivide(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_ComplexScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarComplexDivide
+      Function MQC_ScalarComplexDivide(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarComplexDivide
+!
+!
+!     PROCEDURE MQC_IntegerScalarAdd
+      Function MQC_IntegerScalarAdd(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_IntegerScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarIntegerAdd
+      Function MQC_ScalarIntegerAdd(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarIntegerAdd
+!
+!
+!     PROCEDURE MQC_RealScalarAdd
+      Function MQC_RealScalarAdd(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_RealScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarRealAdd
+      Function MQC_ScalarRealAdd(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarRealAdd
+!
+!
+!     PROCEDURE MQC_ComplexScalarAdd
+      Function MQC_ComplexScalarAdd(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_ComplexScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarComplexAdd
+      Function MQC_ScalarComplexAdd(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarComplexAdd
+!
+!
+!     PROCEDURE MQC_IntegerScalarSubtract
+      Function MQC_IntegerScalarSubtract(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_IntegerScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarIntegerSubtract
+      Function MQC_ScalarIntegerSubtract(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarIntegerSubtract
+!
+!
+!     PROCEDURE MQC_RealScalarSubtract
+      Function MQC_RealScalarSubtract(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_RealScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarRealSubtract
+      Function MQC_ScalarRealSubtract(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarRealSubtract
+!
+!
+!     PROCEDURE MQC_ComplexScalarSubtract
+      Function MQC_ComplexScalarSubtract(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_ComplexScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarComplexSubtract
+      Function MQC_ScalarComplexSubtract(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarComplexSubtract
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -10126,7 +10678,7 @@
             allocate(rightCvecs(nDim2A,nDim2A),leftCvecs(nDim2A,nDim2A))
             call zggev('V','V',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,nDim2A, &
               rightCvecs,nDim2A,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
             lWork = workC(1)
             deallocate(workC)
@@ -10141,7 +10693,7 @@
             allocate(rightCvecs(1,1),leftCvecs(1,1))
             call zggev('N','N',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,1, &
               rightCvecs,1,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
             lWork = workC(1)
             deallocate(workC)
