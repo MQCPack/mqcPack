@@ -50,7 +50,8 @@
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
-        Procedure, Public::absval => MQC_Scalar_Get_ABS_Value
+        Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+        Procedure, Public::random => MQC_Scalar_Get_Random_Value
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -78,7 +79,11 @@
         Procedure, Public::pop => MQC_Vector_Pop
         Procedure, Public::shift => MQC_Vector_Shift
         Procedure, Public::maxval => MQC_Vector_MaxVal
-        Procedure, Public::minval => MQC_Vector_MinVal
+        Procedure, Public::minval => MQC_Vector_MinLoc
+        Procedure, Public::maxloc => MQC_Vector_MaxVal
+        Procedure, Public::minloc => MQC_Vector_MinLoc
+        Procedure, Public::argsort => MQC_Vector_argsort
+        Procedure, Public::sort => MQC_Vector_sort
         Procedure, Public::sqrt => MQC_Vector_Sqrt
         Procedure, Public::power => MQC_Vector_Power
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
@@ -86,10 +91,13 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
+!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
         Real(kind=real64),Dimension(:,:),Allocatable::MatR
         Integer(kind=int64),Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
@@ -201,6 +209,18 @@
         Module Procedure MQC_Scalar_Sqrt
       End Interface
 !
+      Interface abs
+        Module Procedure MQC_Scalar_Get_ABS_Value
+      End Interface 
+!
+      Interface real
+        Module Procedure MQC_Scalar_Complex_RealPart
+      End Interface
+!
+      Interface aimag
+        Module Procedure MQC_Scalar_Complex_ImagPart
+      End Interface
+!
       Interface MQC_Set_Array2Vector
         Module Procedure MQC_Set_Array2Vector_Integer
         Module Procedure MQC_Set_Array2Vector_Real
@@ -247,12 +267,30 @@
       End Interface
       Interface Operator (+)
         Module Procedure MQC_ScalarAdd
+        Module Procedure MQC_IntegerScalarAdd
+        Module Procedure MQC_ScalarIntegerAdd
+        Module Procedure MQC_RealScalarAdd
+        Module Procedure MQC_ScalarRealAdd
+        Module Procedure MQC_ComplexScalarAdd
+        Module Procedure MQC_ScalarComplexAdd
       End Interface
       Interface Operator (-)
         Module Procedure MQC_ScalarSubtract
+        Module Procedure MQC_IntegerScalarSubtract
+        Module Procedure MQC_ScalarIntegerSubtract
+        Module Procedure MQC_RealScalarSubtract
+        Module Procedure MQC_ScalarRealSubtract
+        Module Procedure MQC_ComplexScalarSubtract
+        Module Procedure MQC_ScalarComplexSubtract
       End Interface
       Interface Operator (*)
         Module Procedure MQC_ScalarMultiply
+        Module Procedure MQC_IntegerScalarMultiply
+        Module Procedure MQC_ScalarIntegerMultiply
+        Module Procedure MQC_RealScalarMultiply
+        Module Procedure MQC_ScalarRealMultiply
+        Module Procedure MQC_ComplexScalarMultiply
+        Module Procedure MQC_ScalarComplexMultiply
         Module Procedure MQC_ScalarVectorProduct
         Module Procedure MQC_VectorScalarProduct
         Module Procedure MQC_ScalarMatrixProduct
@@ -260,6 +298,13 @@
       End Interface
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
+        Module Procedure MQC_IntegerScalarDivide
+        Module Procedure MQC_ScalarIntegerDivide
+        Module Procedure MQC_RealScalarDivide
+        Module Procedure MQC_ScalarRealDivide
+        Module Procedure MQC_ComplexScalarDivide
+        Module Procedure MQC_ScalarComplexDivide
+        Module Procedure MQC_VectorScalarDivide
       End Interface
       Interface Operator (**)
         Module Procedure MQC_ScalarExponent
@@ -892,7 +937,7 @@
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Real(kind=real64)::Output
+      Type(MQC_Scalar)::Output
 
       if(Scalar%Data_Type.eq.'Integer') then
         output = real(abs(Scalar%ScaI))
@@ -907,7 +952,25 @@
 !
       return
       END FUNCTION MQC_Scalar_Get_ABS_Value
-
+!
+!
+!     PROCEDURE MQC_Scalar_Get_Random_Value
+      Subroutine MQC_Scalar_Get_Random_Value(Scalar) 
+!
+!     This subroutine returns a random real value in MQC Scalar
+!
+!     X. Dong, 2019
+!
+!     Variable Declarations
+      Implicit None
+      Class(MQC_Scalar)::Scalar
+      real::r
+!
+      call random_number(r)
+      scalar = r
+!
+      return
+      end subroutine MQC_Scalar_Get_Random_Value
 !
 !
 !     PROCEDURE MQC_ScalarAdd
@@ -1315,16 +1378,47 @@
       Implicit None
       Logical::MQC_ScalarLT
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
 !
       MQC_ScalarLT = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.lt.Scalar2%scar) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.lt.Scalar2%scai) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+        ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
+          MQC_ScalarLT = .True.
+        EndIf
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.lt.Scalar2%scar) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.lt.Scalar2%scai) MQC_ScalarLT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+        ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
+          MQC_ScalarLT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).eq.Scalar2%scar) then
+          If(aimag(Scalar1%scac).lt.Zero) MQC_ScalarLT = .True.
+        ElseIf(real(Scalar1%scac).lt.Scalar2%scar) then
+          MQC_ScalarLT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).eq.Scalar2%scai) then
+          If(aimag(Scalar1%scac).lt.Zero) MQC_ScalarLT = .True.
+        ElseIf(real(Scalar1%scac).lt.Scalar2%scai) then
+          MQC_ScalarLT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
+          If(aimag(Scalar1%scac).lt.aimag(Scalar2%scac)) MQC_ScalarLT = .True.
+        ElseIf(real(Scalar1%scac).lt.real(Scalar2%scac)) then
+          MQC_ScalarLT = .True.
+        EndIf
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLT', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1348,16 +1442,47 @@
       Implicit None
       Logical::MQC_ScalarGT
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
 !
       MQC_ScalarGT = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.gt.Scalar2%scar) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.gt.Scalar2%scai) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+        ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
+          MQC_ScalarGT = .True.
+        EndIf
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.gt.Scalar2%scar) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.gt.Scalar2%scai) MQC_ScalarGT = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+        ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
+          MQC_ScalarGT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).eq.Scalar2%scar) then
+          If(aimag(Scalar1%scac).gt.Zero) MQC_ScalarGT = .True.
+        ElseIf(real(Scalar1%scac).gt.Scalar2%scar) then
+          MQC_ScalarGT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).eq.Scalar2%scai) then
+          If(aimag(Scalar1%scac).gt.Zero) MQC_ScalarGT = .True.
+        ElseIf(real(Scalar1%scac).gt.Scalar2%scai) then
+          MQC_ScalarGT = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
+          If(aimag(Scalar1%scac).gt.aimag(Scalar2%scac)) MQC_ScalarGT = .True.
+        ElseIf(real(Scalar1%scac).gt.real(Scalar2%scac)) then
+          MQC_ScalarGT = .True.
+        EndIf
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGT', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1381,16 +1506,47 @@
       Implicit None
       Logical::MQC_ScalarLE
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
 !
       MQC_ScalarLE = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.le.Scalar2%scai) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
+        ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
+          MQC_ScalarLE = .True.
+        EndIf
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.le.Scalar2%scai) MQC_ScalarLE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
+        ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
+          MQC_ScalarLE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).eq.Scalar2%scar) then
+          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
+        ElseIf(real(Scalar1%scac).lt.Scalar2%scar) then
+          MQC_ScalarLE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).eq.Scalar2%scai) then
+          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
+        ElseIf(real(Scalar1%scac).lt.Scalar2%scai) then
+          MQC_ScalarLE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
+          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarLE = .True.
+        ElseIf(real(Scalar1%scac).lt.real(Scalar2%scac)) then
+          MQC_ScalarLE = .True.
+        EndIf
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1414,16 +1570,47 @@
       Implicit None
       Logical::MQC_ScalarGE
       Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Real::Zero=0.0d0
 !
       MQC_ScalarGE = .False.
       If(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scar.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.ge.Scalar2%scai) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scar.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
+        ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
+          MQC_ScalarGE = .True.
+        EndIf
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.ge.Scalar2%scai) MQC_ScalarGE = .True.
+      ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
+        If(Scalar1%scai.eq.real(Scalar2%scac)) then
+          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
+        ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
+          MQC_ScalarGE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
+        If(real(Scalar1%scac).eq.Scalar2%scar) then
+          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
+        ElseIf(real(Scalar1%scac).gt.Scalar2%scar) then
+          MQC_ScalarGE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
+        If(real(Scalar1%scac).eq.Scalar2%scai) then
+          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
+        ElseIf(real(Scalar1%scac).gt.Scalar2%scai) then
+          MQC_ScalarGE = .True.
+        EndIf
+      ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
+        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
+          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarGE = .True.
+        ElseIf(real(Scalar1%scac).gt.real(Scalar2%scac)) then
+          MQC_ScalarGE = .True.
+        EndIf
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -1446,7 +1633,6 @@
       Implicit None
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Scalar)::ScalarOut
-      Character(Len=64)::datatype
 !
       If(ScalarIn%Data_Type.eq.'Complex') then
         ScalarOut = conjg(ScalarIn%ScaC)
@@ -1456,6 +1642,581 @@
 !
       Return
       End Function MQC_Scalar_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Scalar_Complex_RealPart
+      Function MQC_Scalar_Complex_RealPart(ScalarIn) Result(ScalarOut)
+!
+!     This function returns the real part of an mqc scalar. 
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::ScalarOut
+!
+      If(ScalarIn%Data_Type.eq.'Complex') then
+        ScalarOut = real(ScalarIn%ScaC)
+      Else
+        ScalarOut = ScalarIn
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Complex_RealPart
+!
+!
+!     PROCEDURE MQC_Scalar_Complex_ImagPart
+      Function MQC_Scalar_Complex_ImagPart(ScalarIn) Result(ScalarOut)
+!
+!     This function returns the imaginary part of an mqc scalar. 
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::ScalarOut
+      Real::Zero=0.0d0
+!
+      If(ScalarIn%Data_Type.eq.'Complex') then
+        ScalarOut = aimag(ScalarIn%ScaC)
+      Else
+        ScalarOut = zero
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Complex_ImagPart
+!
+!
+!     PROCEDURE MQC_IntegerScalarMultiply
+      Function MQC_IntegerScalarMultiply(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_IntegerScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarIntegerMultiply
+      Function MQC_ScalarIntegerMultiply(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarIntegerMultiply
+!
+!
+!     PROCEDURE MQC_RealScalarMultiply
+      Function MQC_RealScalarMultiply(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_RealScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarRealMultiply
+      Function MQC_ScalarRealMultiply(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarRealMultiply
+!
+!
+!     PROCEDURE MQC_ComplexScalarMultiply
+      Function MQC_ComplexScalarMultiply(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp*Scalar
+
+      Return
+      End Function MQC_ComplexScalarMultiply
+!
+!
+!     PROCEDURE MQC_ScalarComplexMultiply
+      Function MQC_ScalarComplexMultiply(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar*Temp
+
+      Return
+      End Function MQC_ScalarComplexMultiply
+!
+!
+!     PROCEDURE MQC_IntegerScalarDivide  
+      Function MQC_IntegerScalarDivide(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_IntegerScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarIntegerDivide
+      Function MQC_ScalarIntegerDivide(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to Divide an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarIntegerDivide
+!
+!
+!     PROCEDURE MQC_RealScalarDivide
+      Function MQC_RealScalarDivide(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_RealScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarRealDivide
+      Function MQC_ScalarRealDivide(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarRealDivide
+!
+!
+!     PROCEDURE MQC_ComplexScalarDivide
+      Function MQC_ComplexScalarDivide(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp/Scalar
+
+      Return
+      End Function MQC_ComplexScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarComplexDivide
+      Function MQC_ScalarComplexDivide(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar/Temp
+
+      Return
+      End Function MQC_ScalarComplexDivide
+!
+!
+!     PROCEDURE MQC_IntegerScalarAdd
+      Function MQC_IntegerScalarAdd(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_IntegerScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarIntegerAdd
+      Function MQC_ScalarIntegerAdd(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarIntegerAdd
+!
+!
+!     PROCEDURE MQC_RealScalarAdd
+      Function MQC_RealScalarAdd(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_RealScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarRealAdd
+      Function MQC_ScalarRealAdd(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarRealAdd
+!
+!
+!     PROCEDURE MQC_ComplexScalarAdd
+      Function MQC_ComplexScalarAdd(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp+Scalar
+
+      Return
+      End Function MQC_ComplexScalarAdd
+!
+!
+!     PROCEDURE MQC_ScalarComplexAdd
+      Function MQC_ScalarComplexAdd(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar+Temp
+
+      Return
+      End Function MQC_ScalarComplexAdd
+!
+!
+!     PROCEDURE MQC_IntegerScalarSubtract
+      Function MQC_IntegerScalarSubtract(IntegerIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_IntegerScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarIntegerSubtract
+      Function MQC_ScalarIntegerSubtract(Scalar,IntegerIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = IntegerIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarIntegerSubtract
+!
+!
+!     PROCEDURE MQC_RealScalarSubtract
+      Function MQC_RealScalarSubtract(RealIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_RealScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarRealSubtract
+      Function MQC_ScalarRealSubtract(Scalar,RealIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = RealIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarRealSubtract
+!
+!
+!     PROCEDURE MQC_ComplexScalarSubtract
+      Function MQC_ComplexScalarSubtract(ComplexIn,Scalar) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Temp-Scalar
+
+      Return
+      End Function MQC_ComplexScalarSubtract
+!
+!
+!     PROCEDURE MQC_ScalarComplexSubtract
+      Function MQC_ScalarComplexSubtract(Scalar,ComplexIn) Result(Output)
+!
+!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Type(MQC_Scalar)::Temp
+
+      Temp = ComplexIn
+      Output = Scalar-Temp
+
+      Return
+      End Function MQC_ScalarComplexSubtract
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -3182,42 +3943,13 @@
 !     This function calculates the product of an mqc_scalar and an mqc_vector
 !
 !      X. Sheng 2017.02
+!      A. Mahler, 2019
 !
         implicit none
         type(mqc_scalar),intent(in)::scalar
         type(mqc_vector),intent(in)::vector
         type(mqc_vector)::vector_res
-
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer' .and. scalar%Data_type.eq.'Integer') then
-          call mqc_allocate_vector(vector%length,vector_res,'Integer')
-          vector_res%veci = scalar%scai * vector%veci
-        else if (vector%Data_type.eq.'Integer' .and. scalar%Data_type.eq.'Real') then
-          call mqc_allocate_vector(vector%length,vector_res,'Real')
-          vector_res%vecr = scalar%scar * vector%veci
-        else if (vector%Data_type.eq.'Real' .and. scalar%Data_type.eq.'Integer') then
-          call mqc_allocate_vector(vector%length,vector_res,'Real')
-          vector_res%vecr = scalar%scai * vector%vecr
-        else
-          call mqc_allocate_vector(vector%length,vector_res,'Real')
-          vector_res%vecr = scalar%scar * vector%vecr
-        endif
-
-      end function mqc_ScalarVectorProduct
-!
-!
-!     PROCEDURE MQC_VectorScalarProduct
-      function mqc_VectorScalarProduct(vector,scalar) result(vector_res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_matrix
-!
-!     X. Sheng 2017.02
-!
-        implicit none
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
-
+        
         call mqc_deallocate_vector(vector_res)
         if (vector%Data_type.eq.'Integer') then
           if(scalar%Data_type.eq.'Integer') then
@@ -3256,7 +3988,7 @@
             vector_res%vecc = scalar%scar * vector%vecc
           elseIf(scalar%Data_type.eq.'Complex') then
             call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
+            vector_res%vecc = scalar%scac * vector%vecc
           else
             call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
                  'scalar%Data_type', scalar%Data_type )
@@ -3266,7 +3998,53 @@
                'vector%Data_type', vector%Data_type )
         endif
 
+      end function mqc_ScalarVectorProduct
+!
+!     PROCEDURE MQC_VectorScalarProduct
+      function mqc_VectorScalarProduct(vector,scalar) result(vector_res)
+!
+!     This function calculates the product of an mqc_scalar and an mqc_matrix
+!
+!     X. Sheng 2017.02
+!
+      implicit none
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+
+      vector_res = mqc_scalarvectorproduct(scalar,vector)
+
       end function mqc_VectorScalarProduct
+!
+!
+!     PROCEDURE MQC_VectorScalarDivide
+      Function MQC_VectorScalarDivide(vector,scalar) Result(vector_res)
+!
+!     This function returns the value of a vector divided by a scalar.
+!     Function determines if scalar is zero, then passes reciprocal of
+!     scalar to MQC_VectorScalarProduct
+!
+!     A. Mahler, 2019
+!
+        implicit none
+        type(mqc_vector),intent(in)::vector
+        type(mqc_scalar),intent(in)::scalar
+        type(mqc_vector)::vector_res
+        type(mqc_scalar)::zero,neg_one,reciprocal
+
+        zero = 0.0
+        neg_one = -1.0
+
+        if(scalar%abs() .lt. zero) then 
+          call mqc_error_a('Cannot divide by zero:', 6)
+        else
+          reciprocal = scalar
+          reciprocal = reciprocal ** neg_one
+        endif
+
+        vector_res = MQC_VectorScalarProduct(vector,reciprocal)
+
+      End Function MQC_VectorScalarDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
@@ -3472,6 +4250,8 @@
           output = maxval(vector%vecr)
         elseIf(mqc_have_int(vector)) then
           output = maxval(vector%veci)
+        elseIf(mqc_have_complex(vector)) then
+          output = maxval(real(vector%vecc))
         endIf
       endIf
 !
@@ -3498,11 +4278,137 @@
           output = minval(vector%vecr)
         elseIf(mqc_have_int(vector)) then
           output = minval(vector%veci)
+        elseIf(mqc_have_complex(vector)) then
+          output = minval(real(vector%vecc))
         endIf
       endIf
 !
       return
       end function mqc_vector_minval
+!
+!
+!     PROCEDURE MQC_Vector_MaxLoc
+      Function MQC_Vector_MaxLoc(Vector) result(Output)
+!
+!     This function returns the index of the largest value in a vector.
+!
+!     L. M. Thompson, 2019.
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(in)::vector
+      integer,dimension(:),allocatable::tmpvec
+      integer::i,output
+!
+      if(mqc_length_vector(vector).eq.0) then
+        return
+      else
+        if(mqc_have_real(vector)) then
+          tmpvec = maxloc(vector%vecr)
+        elseIf(mqc_have_int(vector)) then
+          tmpvec = maxloc(vector%veci)
+        elseIf(mqc_have_complex(vector)) then
+          tmpvec = maxloc(real(vector%vecc))
+        endIf
+      endIf
+      output = tmpvec(1)
+!
+      return
+      end function mqc_vector_maxloc
+!
+!
+!     PROCEDURE MQC_Vector_MinLoc
+      Function MQC_Vector_MinLoc(Vector) result(Output)
+!
+!     This function returns the index of the smallest value in a vector.
+!
+!     L. M. Thompson, 2019.
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(in)::vector
+      integer,dimension(:),allocatable::tmpvec
+      integer::i,output
+!
+      if(mqc_length_vector(vector).eq.0) then
+        return
+      else
+        if(mqc_have_real(vector)) then
+          tmpvec = minloc(vector%vecr)
+        elseIf(mqc_have_int(vector)) then
+          tmpvec = minloc(vector%veci)
+        elseIf(mqc_have_complex(vector)) then
+          tmpvec = minloc(real(vector%vecc))
+        endIf
+      endIf
+      output = tmpvec(1)
+!
+      return
+      end function mqc_vector_minloc
+!
+!
+!     PROCEDURE MQC_Vector_Argsort
+      Function MQC_Vector_ArgSort(Vector) result(Output)
+!
+!     This function returns the indices of the vector sorted from low to high
+!
+!     L. M. Thompson, 2019.
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(in)::vector
+      type(mqc_vector)::output,tmpvec
+      type(mqc_scalar)::one,ilowsca
+      integer::i,ilow
+!
+      one = 1.0
+      if(mqc_length_vector(vector).eq.0) then
+        return
+      else
+        tmpvec = vector
+        call output%init(vector%size(),0)
+        do i = 1, vector%size()
+          ilow = tmpvec%minloc()
+          ilowsca = ilow
+          call output%put(ilowsca,i)
+          call tmpvec%put(vector%maxval()+one,ilow)
+        endDo
+      endIf
+!
+      return
+      end function mqc_vector_argsort
+!
+!
+!     PROCEDURE MQC_Vector_Sort
+      Subroutine MQC_Vector_Sort(Vector,idx)
+!
+!     This function returns the vector sorted from low to high unless
+!     optional argument idx is present which gives the new order of the
+!     vector.
+!
+!     L. M. Thompson, 2019.
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(inOut)::vector
+      type(mqc_vector),intent(in),optional::idx
+      type(mqc_vector)::my_idx,tmpvectr
+      type(mqc_scalar)::iIn
+      integer::i
+!
+      if(present(idx)) then
+        my_idx = idx
+      else
+        my_idx = vector%argsort()
+      endIf
+
+      tmpvectr = vector
+      do i = 1,vector%size()
+        call vector%put(tmpvectr%at(MQC_Scalar_Get_Intrinsic_Integer(my_idx%at(i))),i)
+      endDo
+!
+      return
+      end subroutine mqc_vector_sort
 !
 !
 !     PROCEDURE MQC_Vector_Sqrt
@@ -8134,10 +9040,27 @@
 !     For now, addition of two MQC matrices is only allowed for same-type and
 !     same-storage pairs. Start by ensuring this limitation is honored.
 !
-      if(TRIM(MA%data_type) /= TRIM(MB%data_type))  &
-        call mqc_error_a('MQC_MatrixMatrixProduct: Data types do NOT match.', 6, &
-        'TRIM(MA%data_type)', TRIM(MA%data_type), &
-        'TRIM(MB%data_type)', TRIM(MB%data_type) )
+      if(TRIM(MA%data_type) /= TRIM(MB%data_type)) then 
+        if(MA%data_type.eq.'Integer') then
+          if(MB%data_type.eq.'Real') then
+            Call MQC_Matrix_Copy_Int2Real(MA)
+          elseIf(MB%data_type.eq.'Complex') then
+            Call MQC_Matrix_Copy_Real2Complex(MA)
+          endIf
+        elseIf(MA%data_type.eq.'Real') then
+          if(MB%data_type.eq.'Integer') then
+            Call MQC_Matrix_Copy_Int2Real(MB)
+          elseIf(MB%data_type.eq.'Complex') then
+            Call MQC_Matrix_Copy_Real2Complex(MA)
+          endIf
+        elseIf(MA%data_type.eq.'Complex') then
+          if(MB%data_type.eq.'Integer') then
+            Call MQC_Matrix_Copy_Int2Complex(MB)
+          elseIf(MB%data_type.eq.'Real') then
+            Call MQC_Matrix_Copy_Real2Complex(MB)
+          endIf
+        endIf
+      endIf
       if(TRIM(MA%storage) /= TRIM(MB%storage))  &
         call mqc_error_a('MQC_MatrixMatrixProduct: Storage forms do NOT match.', 6, &
         'TRIM(MA%storage)', TRIM(MA%storage), &
@@ -9734,7 +10657,7 @@
             allocate(rightCvecs(nDim2A,nDim2A),leftCvecs(nDim2A,nDim2A))
             call zggev('V','V',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,nDim2A, &
               rightCvecs,nDim2A,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
             lWork = workC(1)
             deallocate(workC)
@@ -9749,7 +10672,7 @@
             allocate(rightCvecs(1,1),leftCvecs(1,1))
             call zggev('N','N',nDim2A,tempAC,nDim1A,tempBC,NDim1B,eValsA,eValsB,leftCvecs,1, &
               rightCvecs,1,workC,lWork,work,iError)
-            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV routine in mqc_matrix_generalized_eigensystem', 6, &
+            if(iError.ne.0) call mqc_error_i('Failure in ZGGEV memory evaluation in mqc_matrix_generalized_eigensystem', 6, &
                  'iError', iError)
             lWork = workC(1)
             deallocate(workC)
@@ -10378,6 +11301,66 @@
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveInteger
+      Function MQC_R4Tensor_HaveInteger(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated integer r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveInteger
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveInteger = Allocated(R4Tensor%ITen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveInteger
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveReal
+      Function MQC_R4Tensor_HaveReal(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated real r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveReal
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveReal = Allocated(R4Tensor%RTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveReal
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveComplex
+      Function MQC_R4Tensor_HaveComplex(R4Tensor)
+!
+!     This function returns TRUE or FALSE indicating whether R4Tensor has an
+!     allocated complex r4Tensor.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveComplex
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor
+!
+      MQC_R4Tensor_HaveComplex = Allocated(R4Tensor%CTen)
+!
+      Return
+      End Function MQC_R4Tensor_HaveComplex
 !
 !
       End Module MQC_Algebra

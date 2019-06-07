@@ -5,44 +5,11 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
- 
+
  Full Configuration Interaction Energy Calculator
- 
+
  L. M. Thompson 2016
- 
- Label                                SHELL TO ATOM MAP NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                      SHELL TYPES NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                   NUMBER OF PRIMITIVES PER SHELL NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                              PRIMITIVE EXPONENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                         CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                  P(S=P) CONTRACTION COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                        COORDINATES OF EACH SHELL NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     6     1     1     1     1 ASym=F LR=    6
- Label                                 GAUSSIAN SCALARS NI= 1 NR= 1 NRI=1 NTot=      10 LenBuf=    2000 N=  1000     1     1     1     1 ASym=F LR= 1000
- Label                                      INTEGER ISO NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                     INTEGER SPIN NI= 1 NR= 0 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                  REAL ZEFFECTIVE NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                     REAL GFACTOR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                    REAL ZNUCLEAR NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                                 NUCLEAR GRADIENT NI= 0 NR= 1 NRI=1 NTot=       6 LenBuf=    4000 N=     3     2     1     1     1 ASym=F LR=    6
- Label                           ELECTRIC DIPOLE MOMENT NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=     3     1     1     1     1 ASym=F LR=    3
- Label                                          OVERLAP NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                           CORE HAMILTONIAN ALPHA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                            CORE HAMILTONIAN BETA NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                   KINETIC ENERGY NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                 ORTHOGONAL BASIS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                                 DIPOLE INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=F LR=    9
- Label                                DIP VEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- Label                                R X DEL INTEGRALS NI= 0 NR= 1 NRI=1 NTot=       9 LenBuf=    4000 N=    -2     2     3     1     1 ASym=T LR=    9
- Label                           ALPHA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                            BETA ORBITAL ENERGIES NI= 0 NR= 1 NRI=1 NTot=       2 LenBuf=    4000 N=     2     1     1     1     1 ASym=F LR=    2
- Label                            ALPHA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                             BETA MO COEFFICIENTS NI= 0 NR= 1 NRI=1 NTot=       4 LenBuf=    4000 N=     2     2     1     1     1 ASym=F LR=    4
- Label                             ALPHA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                              BETA DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                         ALPHA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                          BETA SCF DENSITY MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                ALPHA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
- Label                                 BETA FOCK MATRIX NI= 0 NR= 1 NRI=1 NTot=       3 LenBuf=    4000 N=    -2     2     1     1     1 ASym=F LR=    3
+
  
  nBasis =              2
  
@@ -107,6 +74,16 @@ Complex   =          F
        1      0.499946
        2      0.499946      0.499946
  
+ SCF Density matrix
+ Alpha Array
+                  1             2
+       1      0.499946
+       2      0.499946      0.499946
+ Beta Array
+                  1             2
+       1      0.499946
+       2      0.499946      0.499946
+ 
  Fock matrix
  Alpha Array
                   1             2
@@ -117,7 +94,6 @@ Complex   =          F
        1     -0.079309
        2     -0.053049     -0.079309
  
- Label                             REGULAR 2E INTEGRALS NI= 4 NR= 1 NRI=1 NTot=       6 LenBuf=     800 N=    -2    -2    -2     2     1 ASym=F LR=    6
  AO 2ERIs
  Regular 2ERIs
  (  1,  1|  1,  1) =      0.77460594

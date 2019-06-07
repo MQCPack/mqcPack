@@ -55,7 +55,8 @@
 !
 !     Compute the nuclear-nuclear repulsion energy.
 !
-      Vnn = mqc_get_nuclear_repulsion(iOut,moleculeInfo)
+      Vnn = mqc_get_nuclear_repulsion(moleculeInfo)
+      call Vnn%print(iOut,'Nuclear Repulsion Energy (au)') 
 !
 !     Generate Slater Determinants       
 !
