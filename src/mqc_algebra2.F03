@@ -1,4 +1,6 @@
       Module MQC_Algebra2
+!MD+
+!#MQCPack: MQC_Algebra2
 !
 !     **********************************************************************
 !     **********************************************************************
@@ -40,7 +42,7 @@
 !           2. MQC_Variable Printing Procedures; and
 !           3. MQC_Variable Value Setting & Basic Manipulation Procedures; and
 !           4. MQC_Variable Mathematics Procedures;
-
+!MD-
 
 !
       Use MQC_General
@@ -2375,26 +2377,39 @@
              'typeCode2', typeCode2 )
       end select
 !
-!     Now, do the addition and set the output function value accordingly.
+!     Now, do the mulitplication and set the output function value accordingly.
 !
       select case(typeCode1*10 + typeCode2)
       case(22)
         productVectorReal = mqcVariable1%realArray * mqcVariable2%realArray
-        mqcVariableOut = productVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=productVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(23)
         productVectorReal = mqcVariable1%realArray * mqcVariable2%integerArray
-        mqcVariableOut = productVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=productVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(32)
         productVectorReal = mqcVariable1%integerArray(:) * mqcVariable2%realArray(:)
-        mqcVariableOut = productVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=productVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(33)
         productVectorInteger = mqcVariable1%integerArray * mqcVariable2%integerArray
-        mqcVariableOut = productVectorInteger
+        call MQC_Variable_setVal(mqcVariableOut,arrayIntegerIn=productVectorInteger,  &
+          dimensions=mqcVariable1%dimensions)
       case default
         call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
              'typeCode1*10', typeCode1*10, &
              'typeCode2', typeCode2 )
       end select
+!hph+
+!!
+!!     Ensure the other settings defining the MQC_Variable object info match the
+!!     input arguments.
+!!
+!      mqcVariableOut%rank = mqcVariable1%rank
+!      mqcVariableOut%dimensions = mqcVariable1%dimensions
+!hph-
+
 !
       return
       end function MQC_Variable_Multiplication
@@ -2459,21 +2474,25 @@
           'typeCode2', typeCode2 )
       end select
 !
-!     Now, do the addition and set the output function value accordingly.
+!     Now, do the division and set the output function value accordingly.
 !
       select case(typeCode1*10 + typeCode2)
       case(22)
         quotientVectorReal = mqcVariable1%realArray / mqcVariable2%realArray
-        mqcVariableOut = quotientVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=quotientVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(23)
         quotientVectorReal = mqcVariable1%realArray / mqcVariable2%integerArray
-        mqcVariableOut = quotientVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=quotientVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(32)
         quotientVectorReal = mqcVariable1%integerArray(:) / mqcVariable2%realArray(:)
-        mqcVariableOut = quotientVectorReal
+        call MQC_Variable_setVal(mqcVariableOut,arrayRealIn=quotientVectorReal,  &
+          dimensions=mqcVariable1%dimensions)
       case(33)
         quotientVectorInteger = mqcVariable1%integerArray / mqcVariable2%integerArray
-        mqcVariableOut = quotientVectorInteger
+        call MQC_Variable_setVal(mqcVariableOut,arrayIntegerIn=quotientVectorInteger,  &
+          dimensions=mqcVariable1%dimensions)
       case default
         call mqc_error_I(  &
           'MQC_Variable_Division: Combination of var1 and var 2 '//  &
@@ -2504,16 +2523,15 @@
 !
 !
 !     Variable Declarations.
+      implicit none
       class(MQC_Variable),intent(in)::mqcVariableIn
       integer(kind=int64),optional::iDimension
       type(MQC_Variable)::mqcVariableOut
       real(kind=real64)::scalarReal
-      real(kind=real64),dimension(:),allocatable::vectorReal,vectorReal1
+      real(kind=real64),dimension(:),allocatable::tempReal1
       integer(kind=int64)::itmp,myDimension,myRank,resultRank,myLen,  &
         resultLen,scalarInteger
-      integer(kind=int64),dimension(6)::myShape,resultShape
-      integer(kind=int64),dimension(2)::myShape2D
-      integer(kind=int64),dimension(:),allocatable::vectorInteger
+      integer(kind=int64),dimension(:),allocatable::tempInteger1
       real(kind=real64),dimension(2,3)::junkMat
 
 !
@@ -2533,7 +2551,7 @@
         6,'myDimension=',myDimension,'RANK=',myRank)
 !
 !     Ensure we are working with full storage array forms. Other storage
-!     options will be coding in the future.
+!     options will be coded in the future.
 !
       if(.not.TRIM(mqcVariableIn%storageFormat).eq.'FULL')  &
         call mqc_error('SUM of MQC Variables is only available for '//  &
@@ -2571,107 +2589,44 @@
             'MQC_Variable_getTypeCode(mqcVariable)',  &
             MQC_Variable_getTypeCode(mqcVariableIn))
         end select
-      case(1:)
-        myShape = 0
-        resultShape = 0
-
-
+      case(1)
         myLen = MQC_Variable_getLength(mqcVariableIn)
-        call MQC_Variable_getShape(mqcVariableIn,myShape)
-        if(myDimension.eq.1) then
-          resultShape(1:SIZE(resultShape)-1) = myShape(2:SIZE(myShape))
-        else if(myDimension.eq.myRank) then
-          resultShape = myShape(:resultRank)
-        else
-          itmp = myDimension-1
-          resultShape(1:itmp) = myShape(1:itmp)
-          itmp = myDimension+1
-          resultShape(myDimension:) = myShape(itmp:)
-        endIf
-        write(*,*)' Hrant - myShape:'
-        call MQC_Print(6,myShape)
-        write(*,*)' Hrant - resultShape:'
-        call MQC_Print(6,resultShape)
-        resultLen = 1
-        do i = 1,resultRank
-          resultLen = resultLen*resultShape(i)
-        endDo
-
-      write(*,*)
-      write(*,*)' myLen     = ',myLen
-      write(*,*)' resultLen = ',resultLen
-      write(*,*)
-      write(*,*)' MQC_Variable_getTypeCode(mqcVariableIn) = ', &
-        MQC_Variable_getTypeCode(mqcVariableIn)
-      write(*,*)
-
+        if(myRank.ne.2)  &
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'Confusion with the rank of input array.')
         select case(MQC_Variable_getTypeCode(mqcVariableIn))
-        case(2)
-          ALLOCATE(vectorReal(resultLen))
-          ALLOCATE(vectorReal1(myLen))
-
-      write(*,*)' FLAG 1'
-
-          vectorReal1 = mqcVariableIn%realArray
-
-      write(*,*)' FLAG 2'
-      write(*,*)
-      write(*,*)' TRYING RESHAPE(vectorReal1,myShape)...'
-
-!hph: I'm not sure if there's a more elegant way to do this...
-      write(*,*)' Hrant - myShape(1:2) = ',myShape(1:2)
-      write(*,*)' Hrant - vectorReal1 =',vectorReal1
-      myShape2D(1) = myShape(1)
-      myShape2D(2) = myShape(2)
-      call mqc_print(6,RESHAPE(vectorReal1,myShape(1:2)))
-
-      junkMat = RESHAPE(vectorReal1,myShape(1:2))
-      call mqc_Print(6,junkMat)
-      write(*,*)' Hrant - myDimension: ',myDimension
-      write(*,*)' Hrant - resultLen = ',resultLen
-      write(*,*)' Hrant - First SUM...'
-      call mqc_Print(6,SUM(junkMat,myDimension))
-      write(*,*)' Hrant - Second SUM...SKIPPING THIS'
-!hph      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape(1:2)),myDimension))
-!hph      write(*,*)' Hrant - Third SUM...'
-!hph      call mqc_Print(6,SUM(RESHAPE(vectorReal1,myShape2),myDimension))
-      call mqc_error('STOP 3')
-
-!hph          vectorReal = RESHAPE(SUM(RESHAPE(vectorReal1,myShape),  &
-!hph            myDimension),  &
-!hph            [resultLen])
-
-
-      write(*,*)' FLAG 3'
-
-!          vectorReal = RESHAPE(  &
-!            SUM(RESHAPE(  &
-!            mqcVariableIn%realArray,  &
-!            myShape),  &
-!            myDimension),[resultLen])
-          call MQC_Variable_setVal(mqcVariableOut,  &
-            arrayRealIn=vectorReal,  &
-            dimensions=resultShape(:resultRank),  &
-            DEBUGPRINT=.False.)
-          DEALLOCATE(vectorReal)
-          DEALLOCATE(vectorReal1)
-        case(3)
-          ALLOCATE(vectorInteger(resultLen))
-!hph          vectorInteger = RESHAPE(  &
-!hph            SUM(RESHAPE(  &
-!hph            mqcVariableIn%integerArray,[2,3]),  &
-!hph            myDimension),[resultLen])
-          call MQC_Variable_setVal(mqcVariableOut,  &
-            arrayIntegerIn=vectorInteger,  &
-            dimensions=resultShape(:resultRank),  &
-            DEBUGPRINT=.False.)
-          DEALLOCATE(vectorInteger)
+        case(2) ! REALS
+          select case(myDimension)
+          case(1)
+            ALLOCATE(tempReal1(Size(mqcVariableIn,2)))
+            tempReal1 = SUM(  &
+              RESHAPE(mqcVariableIn%realArray,  &
+              [Size(mqcVariableIn,1),Size(mqcVariableIn,2)]),1)
+            call MQC_Variable_setVal(mqcVariableOut,  &
+              arrayRealIn=tempReal1,dimensions=[Size(tempReal1)])
+            DEALLOCATE(tempReal1)
+          case(2)
+            ALLOCATE(tempReal1(Size(mqcVariableIn,1)))
+            tempReal1 = SUM(  &
+              RESHAPE(mqcVariableIn%realArray,  &
+              [Size(mqcVariableIn,1),Size(mqcVariableIn,2)]),2)
+            call MQC_Variable_setVal(mqcVariableOut,  &
+              arrayRealIn=tempReal1,dimensions=[Size(tempReal1)])
+            DEALLOCATE(tempReal1)
+          case default
+            call mqc_error('MQC_Variable_Array_Sum: '// &
+              'Attempt to contract a matrix using dimension < 1 or > 2.')
+          end select
+        case(3) ! INTEGERS
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'SUM with integers NYI.')
         case default
-          call mqc_error_I('MQC_Variable_Array_Sum: '// &
-            'Unknown MQC_Variable type found.',6, &
-            'MQC_Variable_getTypeCode(mqcVariable)',  &
-            MQC_Variable_getTypeCode(mqcVariableIn))
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'Unknown array type (Real/Integer/etc.).')
         end select
+      case default
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'SUM with resultant of rank 2 or greater NYI.')
       end select
 !
       return
