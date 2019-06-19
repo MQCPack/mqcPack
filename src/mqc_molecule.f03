@@ -241,10 +241,11 @@
 !
 !
 !     PROCEDURE MQC_PRINT_NUCLEAR_GEOMETRY
-      subroutine mqc_print_nuclear_geometry(molecule_info,iOut) 
+      subroutine mqc_print_nuclear_geometry(molecule_info,iOut,bohr) 
 !
 !     This subroutine prints the nuclear geometry given the 
-!     molecular data object.
+!     molecular data object. Default units are Angstrom unless
+!     optional argument bohr is passed as true.
 !
 !     Lee M. Thompson, 2019.
 !
@@ -252,18 +253,34 @@
       implicit none
       class(mqc_molecule_data),intent(in)::molecule_info
       integer,intent(in)::iOut
+      logical,intent(in),optional::bohr
       integer::i,nAtoms
       character(len=2)::elem
+      logical::myBohr
+      real::sca
 !
  1000 Format(1x,'          NUCLEAR CARTESIAN COORDINATES          ')
  1001 Format(1x,'-------------------------------------------------')
- 1002 Format(2x,'Element                 Coordinates             ')
+ 1002 Format(2x,'Element              Coordinates (Ang)           ')
  1003 Format(17x,'X',13x,'Y',13x,'Z')
  1004 Format(5x,A,3F14.6)
+ 1005 Format(2x,'Element               Coordinates (au)           ')
+
+      if(present(bohr)) then
+        myBohr = bohr
+      else
+        myBohr = .false.
+      endIf
 
       write(iOut,1000)
       write(iOut,1001)
-      write(iOut,1002)
+      if(myBohr) then
+        write(iOut,1005)
+        sca = 1.0d0
+      else
+        sca = angPBohr
+        write(iOut,1002)
+      endIf
       write(iOut,1003)
       write(iOut,1001)
 
@@ -271,9 +288,9 @@
       do i = 1,nAtoms
         elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
         write(iOut,1004) elem, &
-          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
-          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
-          angPBohr*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
       endDo
 !
       write(iOut,1001)
