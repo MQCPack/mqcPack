@@ -85,6 +85,7 @@
         Procedure, Public::argsort => MQC_Vector_argsort
         Procedure, Public::sort => MQC_Vector_sort
         Procedure, Public::sqrt => MQC_Vector_Sqrt
+        Procedure, Public::abs => MQC_Vector_Abs
         Procedure, Public::power => MQC_Vector_Power
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
       End Type MQC_Vector
@@ -205,20 +206,58 @@
         Module Procedure MQC_Matrix_Conjugate_Transpose
       End Interface
 !      
+      Interface Cmplx
+        Module Procedure MQC_Scalar_Cmplx
+        Module Procedure MQC_Vector_Cmplx
+      End Interface
+!
       Interface Sqrt
         Module Procedure MQC_Scalar_Sqrt
       End Interface
 !
       Interface abs
         Module Procedure MQC_Scalar_Get_ABS_Value
+        Module Procedure MQC_Vector_Abs
       End Interface 
 !
       Interface real
         Module Procedure MQC_Scalar_Complex_RealPart
+        Module Procedure MQC_Vector_Complex_RealPart
       End Interface
 !
       Interface aimag
         Module Procedure MQC_Scalar_Complex_ImagPart
+        Module Procedure MQC_Vector_Complex_ImagPart
+      End Interface
+!
+      Interface Sin 
+        Module Procedure MQC_Scalar_Sin 
+      End Interface
+!
+      Interface Cos 
+        Module Procedure MQC_Scalar_Cos 
+      End Interface
+!
+      Interface Tan 
+        Module Procedure MQC_Scalar_Tan 
+      End Interface
+!
+      Interface ASin
+        Module Procedure MQC_Scalar_ASin
+      End Interface
+!
+      Interface ACos
+        Module Procedure MQC_Scalar_ACos
+      End Interface
+!
+!     for some reason gfortran will not overload atan 
+!     overloading as atan3 for the moment until I figure it out
+      Interface ATan
+        Module Procedure MQC_Scalar_ATan
+      End Interface
+!
+      Interface ATan2
+        Module Procedure MQC_Scalar_ATan2
       End Interface
 !
       Interface MQC_Set_Array2Vector
@@ -308,6 +347,9 @@
       End Interface
       Interface Operator (**)
         Module Procedure MQC_ScalarExponent
+        Module Procedure MQC_ScalarIntegerExponent
+        Module Procedure MQC_ScalarRealExponent
+        Module Procedure MQC_ScalarComplexExponent
       End Interface
       Interface Operator (.ne.)
         Module Procedure MQC_ScalarNE
@@ -317,12 +359,20 @@
       End Interface
       Interface Operator (.lt.)
         Module Procedure MQC_ScalarLT
+        Module Procedure MQC_ScalarLTReal
+        Module Procedure MQC_RealLTScalar
       End Interface
       Interface Operator (.gt.)
         Module Procedure MQC_ScalarGT
+        Module Procedure MQC_ScalarGTReal
+        Module Procedure MQC_RealGTScalar
       End Interface
       Interface Operator (.le.)
         Module Procedure MQC_ScalarLE
+        Module Procedure MQC_ScalarLEReal
+        Module Procedure MQC_RealLEScalar
+        Module Procedure MQC_ScalarLEInteger
+        Module Procedure MQC_IntegerLEScalar
       End Interface
       Interface Operator (.ge.)
         Module Procedure MQC_ScalarGE
@@ -336,6 +386,19 @@
       End Interface
       Interface Operator (.dot.)
         Module Procedure MQC_VectorVectorDotProduct
+      End Interface
+      Interface Operator (*)
+        Module Procedure MQC_RealVectorProduct
+        Module Procedure MQC_VectorRealProduct
+        Module Procedure MQC_IntegerVectorProduct
+        Module Procedure MQC_VectorIntegerProduct
+        Module Procedure MQC_ComplexVectorProduct
+        Module Procedure MQC_VectorComplexProduct
+      End Interface
+      Interface Operator (/)
+        Module Procedure MQC_VectorRealDivide
+        Module Procedure MQC_VectorIntegerDivide
+        Module Procedure MQC_VectorComplexDivide
       End Interface
       Interface Operator (+)
         Module Procedure MQC_VectorVectorSum
@@ -746,6 +809,68 @@
       End Subroutine MQC_Print_Scalar_Algebra1
 !
 !
+!     PROCEDURE MQC_Scalar_Cmplx
+      Function MQC_Scalar_Cmplx(Scalar1,Scalar2)
+!
+!     This subroutine is used to set a complex MQC_Scalar type 
+!     variable from two other MQC_scalars.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Cmplx
+      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+!
+      If(Scalar1%Data_type.eq.'Real') then
+        If(Scalar2%Data_type.eq.'Real') then
+          MQC_Scalar_Cmplx = Cmplx(Scalar1%ScaR,Scalar2%ScaR)
+        ElseIf(Scalar2%Data_type.eq.'Integer') then
+#ifdef PGI
+          MQC_Scalar_Cmplx = Cmplx(Scalar1%ScaR,dFloat(Scalar2%ScaI))
+#else
+          MQC_Scalar_Cmplx = Cmplx(Scalar1%ScaR,Float(Scalar2%ScaI))
+#endif
+        ElseIf(Scalar2%Data_Type.eq.'Complex') then
+          Call MQC_Error_A('Complex MQC Scalar type cannot be set as real/imaginary part in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+        Else
+          Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+        EndIf
+      ElseIf(Scalar1%Data_Type.eq.'Integer') then
+        If(Scalar2%Data_type.eq.'Real') then
+#ifdef PGI
+          MQC_Scalar_Cmplx = Cmplx(dFloat(Scalar1%ScaI),Scalar2%ScaR)
+#else
+          MQC_Scalar_Cmplx = Cmplx(Float(Scalar1%ScaI),Scalar2%ScaR)
+#endif
+        ElseIf(Scalar2%Data_type.eq.'Integer') then
+#ifdef PGI
+          MQC_Scalar_Cmplx = Cmplx(dFloat(Scalar1%ScaI),dFloat(Scalar2%ScaI))
+#else
+          MQC_Scalar_Cmplx = Cmplx(Float(Scalar1%ScaI),Float(Scalar2%ScaI))
+#endif
+        ElseIf(Scalar2%Data_Type.eq.'Complex') then
+          Call MQC_Error_A('Complex MQC Scalar type cannot be set as real/imaginary part in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+        Else
+          Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+        EndIf
+      ElseIf(Scalar1%Data_Type.eq.'Complex'.or.Scalar2%Data_Type.eq.'Complex') then
+        Call MQC_Error_A('Complex MQC Scalar type cannot be set as real/imaginary part in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Cmplx', 6, &
+             'Scalar1%Data_Type', Scalar1%Data_Type, 'Scalar2%Data_Type', Scalar2%Data_Type)
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Cmplx
+!
+!
 !     PROCEDURE MQC_Scalar_Sqrt
       Function MQC_Scalar_Sqrt(Scalar)
 !
@@ -761,18 +886,15 @@
       Type(MQC_Scalar),Intent(In)::Scalar
 !
       If(Scalar%Data_type.eq.'Real') then
-        MQC_Scalar_Sqrt%ScaR = Sqrt(Scalar%ScaR)
-        MQC_Scalar_Sqrt%Data_type = 'Real'
+        MQC_Scalar_Sqrt = Sqrt(Scalar%ScaR)
       ElseIf(Scalar%Data_Type.eq.'Integer') then
 #ifdef PGI
-        MQC_Scalar_Sqrt%ScaR = Sqrt(dFloat(Scalar%ScaI))
+        MQC_Scalar_Sqrt = Sqrt(dFloat(Scalar%ScaI))
 #else
-        MQC_Scalar_Sqrt%ScaR = Sqrt(Float(Scalar%ScaI))
+        MQC_Scalar_Sqrt = Sqrt(Float(Scalar%ScaI))
 #endif
-        MQC_Scalar_Sqrt%Data_type = 'Real'
-      ElseIf(Scalar%Data_Type.eq.'Integer') then
-        MQC_Scalar_Sqrt%ScaC = Sqrt(Scalar%ScaC)
-        MQC_Scalar_Sqrt%Data_type = 'Complex'
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Sqrt = Sqrt(Scalar%ScaC)
       Else
         Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Sqrt', 6, &
              'Scalar%Data_Type', Scalar%Data_Type )
@@ -780,6 +902,240 @@
 !
       Return
       End Function MQC_Scalar_Sqrt
+!
+!
+!     PROCEDURE MQC_Scalar_Sin
+      Function MQC_Scalar_Sin(Scalar)
+!
+!     This subroutine is used to obtain the sine of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Sin
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Sin = Sin(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Sin = Sin(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Sin = Sin(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Sin = Sin(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Sin', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Sin
+!
+!
+!     PROCEDURE MQC_Scalar_Cos
+      Function MQC_Scalar_Cos(Scalar)
+!
+!     This subroutine is used to obtain the cosine of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Cos
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      call scalar%print(6,'scalar in cos')
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Cos = Cos(Scalar%ScaR)
+        call mqc_scalar_cos%print(6,'cos output')
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Cos = Cos(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Cos = Cos(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Cos = Cos(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Cos', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Cos
+!
+!
+!     PROCEDURE MQC_Scalar_Tan
+      Function MQC_Scalar_Tan(Scalar)
+!
+!     This subroutine is used to obtain the tangent of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Tan
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Tan = Tan(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Tan = Tan(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Tan = Tan(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Tan = Tan(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Tan', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Tan
+!
+!
+!     PROCEDURE MQC_Scalar_ASin
+      Function MQC_Scalar_ASin(Scalar)
+!
+!     This subroutine is used to obtain the arcsine of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_ASin
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_ASin = ASin(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_ASin = ASin(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_ASin = ASin(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_ASin = ASin(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_ASin', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_ASin
+!
+!
+!     PROCEDURE MQC_Scalar_ACos
+      Function MQC_Scalar_ACos(Scalar)
+!
+!     This subroutine is used to obtain the arccosine of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_ACos
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_ACos = ACos(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_ACos = ACos(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_ACos = ACos(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_ACos = ACos(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_ACos', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_ACos
+!
+!
+!     PROCEDURE MQC_Scalar_ATan
+      Function MQC_Scalar_ATan(Scalar)
+!
+!     This subroutine is used to obtain the arctangent of
+!     an MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_ATan
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_ATan = ATan(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_ATan = ATan(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_ATan = ATan(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_ATan = ATan(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_ATan', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_ATan
+!
+!
+!     PROCEDURE MQC_Scalar_ATan2
+      Function MQC_Scalar_ATan2(Scalar)
+!
+!     This subroutine is used to obtain the arctangent of
+!     an MQC_Scalar type variable accounting for quadrant of 
+!     Argand diagram.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_ATan2
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_ATan2 = ATan2(0.0,Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_ATan2 = ATan2(0.0,dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_ATan2 = ATan2(0.0,Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_ATan2 = ATan2(aimag(Scalar%ScaC),real(Scalar%ScaC))
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_ATan2', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_ATan2
 !
 !
 !     PROCEDURE MQC_Scalar_HaveReal
@@ -1271,6 +1627,113 @@
       End Function MQC_ScalarExponent
 !
 !
+!     PROCEDURE MQC_ScalarIntegerExponent
+      Function MQC_ScalarIntegerExponent(Scalar,IntIn)
+!
+!     This subroutine is used to raise MQC_Scalar to a power.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_ScalarIntegerExponent
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::intIn
+!
+      Call MQC_Deallocate_Scalar(MQC_ScalarIntegerExponent)
+      If(Scalar%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarIntegerExponent,'Real')
+#ifdef PGI
+        MQC_ScalarIntegerExponent%ScaR = Scalar%ScaR ** dFloat(IntIn)
+#else
+        MQC_ScalarIntegerExponent%ScaR = Scalar%ScaR ** Float(IntIn)
+#endif
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarIntegerExponent,'Integer')
+        MQC_ScalarIntegerExponent%ScaI = Scalar%ScaI ** IntIn
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarIntegerExponent,'Complex')
+        MQC_ScalarIntegerExponent%ScaC = Scalar%ScaC ** cmplx(IntIn,0)
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarIntegerExponent', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarIntegerExponent
+!
+!
+!     PROCEDURE MQC_ScalarRealExponent
+      Function MQC_ScalarRealExponent(Scalar,RealIn)
+!
+!     This subroutine is used to raise MQC_Scalar to a power.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_ScalarRealExponent
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+!
+      Call MQC_Deallocate_Scalar(MQC_ScalarRealExponent)
+      If(Scalar%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarRealExponent,'Real')
+        MQC_ScalarRealExponent%ScaR = Scalar%ScaR ** RealIn
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarRealExponent,'Real')
+#ifdef PGI
+        MQC_ScalarRealExponent%ScaR = dFloat(Scalar%ScaI) ** RealIn
+#else
+        MQC_ScalarRealExponent%ScaR = Float(Scalar%ScaI) ** RealIn
+#endif
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarRealExponent,'Complex')
+        MQC_ScalarRealExponent%ScaC = Scalar%ScaC ** cmplx(RealIn,0.0)
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarRealExponent', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarRealExponent
+!
+!
+!     PROCEDURE MQC_ScalarComplexExponent
+      Function MQC_ScalarComplexExponent(Scalar,CompIn)
+!
+!     This subroutine is used to raise MQC_Scalar to a power.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_ScalarComplexExponent
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::CompIn
+!
+      Call MQC_Deallocate_Scalar(MQC_ScalarComplexExponent)
+      If(Scalar%Data_type.eq.'Complex') then
+        Call MQC_Allocate_Scalar(MQC_ScalarComplexExponent,'Complex')
+        MQC_ScalarComplexExponent%ScaC = Scalar%ScaC ** CompIn
+      ElseIf(Scalar%Data_type.eq.'Real') then
+        Call MQC_Allocate_Scalar(MQC_ScalarComplexExponent,'Complex')
+        MQC_ScalarComplexExponent%ScaC = cmplx(Scalar%ScaR,0.0) ** CompIn
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        Call MQC_Allocate_Scalar(MQC_ScalarComplexExponent,'Complex')
+        MQC_ScalarComplexExponent%ScaC = cmplx(Scalar%ScaI,0) ** CompIn
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarComplexExponent', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarComplexExponent
+!
+!
 !     PROCEDURE MQC_ScalarNE
       Function MQC_ScalarNE(Scalar1,Scalar2)
 !
@@ -1429,6 +1892,78 @@
       End Function MQC_ScalarLT
 !
 !
+!     PROCEDURE MQC_RealLTScalar
+      Function MQC_RealLTScalar(RealIn,Scalar)
+!
+!     This subroutine is used to return if the left real variable
+!     is less than the right MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealLTScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealLTScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.lt.Scalar%scar) MQC_RealLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.lt.Scalar%scai) MQC_RealLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.real(Scalar%scac)) then
+          If(Zero.lt.aimag(Scalar%scac)) MQC_RealLTScalar = .True.
+        ElseIf(realIn.lt.real(Scalar%scac)) then
+          MQC_RealLTScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealLTScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealLTScalar
+!
+
+!     PROCEDURE MQC_ScalarLTReal
+      Function MQC_ScalarLTReal(Scalar,RealIn)
+!
+!     This subroutine is used to return if the left MQC_Scalar type variable
+!     is less than the right real variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarLTReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarLTReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.lt.RealIn) MQC_ScalarLTReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.lt.RealIn) MQC_ScalarLTReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.RealIn) then
+          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLTReal = .True.
+        ElseIf(real(Scalar%scac).lt.realIn) then
+          MQC_ScalarLTReal = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLTReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarLTReal
+!
+!
 !     PROCEDURE MQC_ScalarGT
       Function MQC_ScalarGT(Scalar1,Scalar2)
 !
@@ -1493,6 +2028,78 @@
       End Function MQC_ScalarGT
 !
 !
+!     PROCEDURE MQC_RealGTScalar
+      Function MQC_RealGTScalar(RealIn,Scalar)
+!
+!     This subroutine is used to return if the left real variable
+!     is greater than the right MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealGTScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealGTScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.gt.Scalar%scar) MQC_RealGTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.gt.Scalar%scai) MQC_RealGTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.real(Scalar%scac)) then
+          If(Zero.gt.aimag(Scalar%scac)) MQC_RealGTScalar = .True.
+        ElseIf(realIn.gt.real(Scalar%scac)) then
+          MQC_RealGTScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealGTScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealGTScalar
+!
+
+!     PROCEDURE MQC_ScalarGTReal
+      Function MQC_ScalarGTReal(Scalar,RealIn)
+!
+!     This subroutine is used to return if the left MQC_Scalar type variable
+!     is greater than the right real variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGTReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGTReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.gt.RealIn) MQC_ScalarGTReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.gt.RealIn) MQC_ScalarGTReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.RealIn) then
+          If(aimag(Scalar%scac).gt.Zero) MQC_ScalarGTReal = .True.
+        ElseIf(real(Scalar%scac).gt.realIn) then
+          MQC_ScalarGTReal = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGTReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGTReal
+!
+!
 !     PROCEDURE MQC_ScalarLE
       Function MQC_ScalarLE(Scalar1,Scalar2)
 !
@@ -1555,6 +2162,150 @@
 !
       Return
       End Function MQC_ScalarLE
+!
+!
+!     PROCEDURE MQC_RealLEScalar
+      Function MQC_RealLEScalar(RealIn,Scalar)
+!
+!     This subroutine is used to return if the left real variable
+!     is less than or equal to the right MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealLEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealLEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.le.Scalar%scar) MQC_RealLEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.le.Scalar%scai) MQC_RealLEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.real(Scalar%scac)) then
+          If(Zero.eq.aimag(Scalar%scac)) MQC_RealLEScalar = .True.
+        ElseIf(realIn.lt.real(Scalar%scac)) then
+          MQC_RealLEScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealLEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealLEScalar
+!
+!
+!     PROCEDURE MQC_ScalarLEReal
+      Function MQC_ScalarLEReal(Scalar,RealIn)
+!
+!     This subroutine is used to return if the left MQC_Scalar type variable
+!     is less than or equal to the right real variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarLEReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarLEReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.le.RealIn) MQC_ScalarLEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.le.RealIn) MQC_ScalarLEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.RealIn) then
+          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEReal = .True.
+        ElseIf(real(Scalar%scac).lt.realIn) then
+          MQC_ScalarLEReal = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarLEReal
+!
+!
+!     PROCEDURE MQC_IntegerLEScalar
+      Function MQC_IntegerLEScalar(IntIn,Scalar)
+!
+!     This subroutine is used to return if the left real variable
+!     is less than or equal to the right MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerLEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_IntegerLEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.le.Scalar%scar) MQC_IntegerLEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.le.Scalar%scai) MQC_IntegerLEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.eq.real(Scalar%scac)) then
+          If(Zero.eq.aimag(Scalar%scac)) MQC_IntegerLEScalar = .True.
+        ElseIf(IntIn.lt.real(Scalar%scac)) then
+          MQC_IntegerLEScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerLEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerLEScalar
+!
+!
+!     PROCEDURE MQC_ScalarLEInteger
+      Function MQC_ScalarLEInteger(Scalar,IntIn)
+!
+!     This subroutine is used to return if the left MQC_Scalar type variable
+!     is less than or equal to the right real variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarLEInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarLEInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.le.IntIn) MQC_ScalarLEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.le.IntIn) MQC_ScalarLEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.IntIn) then
+          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEInteger = .True.
+        ElseIf(real(Scalar%scac).lt.intIn) then
+          MQC_ScalarLEInteger = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarLEInteger
 !
 !
 !     PROCEDURE MQC_ScalarGE
@@ -1656,7 +2407,9 @@
       Implicit None
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Scalar)::ScalarOut
+      Real::Zero=0.0d0
 !
+      ScalarOut = Zero
       If(ScalarIn%Data_Type.eq.'Complex') then
         ScalarOut = real(ScalarIn%ScaC)
       Else
@@ -1681,11 +2434,8 @@
       Type(MQC_Scalar)::ScalarOut
       Real::Zero=0.0d0
 !
-      If(ScalarIn%Data_Type.eq.'Complex') then
-        ScalarOut = aimag(ScalarIn%ScaC)
-      Else
-        ScalarOut = zero
-      EndIf
+      ScalarOut = zero
+      If(ScalarIn%Data_Type.eq.'Complex') ScalarOut = aimag(ScalarIn%ScaC)
 !
       Return
       End Function MQC_Scalar_Complex_ImagPart
@@ -4035,7 +4785,7 @@
         zero = 0.0
         neg_one = -1.0
 
-        if(scalar%abs() .lt. zero) then 
+        if(scalar%abs() .le. zero) then 
           call mqc_error_a('Cannot divide by zero:', 6)
         else
           reciprocal = scalar
@@ -4045,6 +4795,234 @@
         vector_res = MQC_VectorScalarProduct(vector,reciprocal)
 
       End Function MQC_VectorScalarDivide
+!
+!
+!     PROCEDURE MQC_RealVectorProduct
+      Function MQC_RealVectorProduct(RealIn,Vector) Result(Vector_Res)
+!
+!     This function calculates the product of an mqc_scalar and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+!
+        implicit none
+        real(kind=real64),intent(in)::realIn
+        type(mqc_vector),intent(in)::vector
+        type(mqc_vector)::vector_res
+        
+        call mqc_deallocate_vector(vector_res)
+        if (vector%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = realIn * vector%veci
+        elseIf(vector%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = realIn * vector%vecr
+        elseIf(vector%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = realIn * vector%vecc
+        else
+          call mqc_error_a('unrecognised data type in mqc_realvectorproduct', 6, &
+               'vector%Data_type', vector%Data_type )
+        endif
+
+      end function mqc_RealVectorProduct
+!
+!
+!     PROCEDURE MQC_VectorRealProduct
+      function mqc_VectorRealProduct(vector,realIn) result(vector_res)
+!
+!     This function calculates the product of a real and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+      implicit none
+      real(kind=real64),intent(in)::realIn
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+
+      vector_res = mqc_realvectorproduct(realIn,vector)
+
+      end function mqc_VectorRealProduct
+!
+!
+!     PROCEDURE MQC_VectorRealDivide
+      Function MQC_VectorRealDivide(vector,realIn) Result(vector_res)
+!
+!     This function returns the value of a vector divided by a real.
+!
+!     L. M. Thompson, 2019.
+!
+        implicit none
+        type(mqc_vector),intent(in)::vector
+        real(kind=real64),intent(in)::realIn
+        type(mqc_vector)::vector_res
+        real(kind=real64)::reciprocal
+        type(mqc_scalar)::zero
+
+        zero = 0.0
+
+        if(abs(realIn).le.zero) then 
+          call mqc_error_a('Cannot divide by zero:', 6)
+        else
+          reciprocal = realIn
+          reciprocal = reciprocal ** (-1.0)
+        endif
+
+        vector_res = MQC_VectorRealProduct(vector,reciprocal)
+
+      End Function MQC_VectorRealDivide
+!
+!
+!     PROCEDURE MQC_integerVectorProduct
+      Function MQC_IntegerVectorProduct(intIn,Vector) Result(Vector_Res)
+!
+!     This function calculates the product of an integer and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+!
+        implicit none
+        integer(kind=int64),intent(in)::intIn
+        type(mqc_vector),intent(in)::vector
+        type(mqc_vector)::vector_res
+        
+        call mqc_deallocate_vector(vector_res)
+        if (vector%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Integer')
+          vector_res%veci = intIn * vector%veci
+        elseIf(vector%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = intIn * vector%vecr
+        elseIf(vector%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = intIn * vector%vecc
+        else
+          call mqc_error_a('unrecognised data type in mqc_integervectorproduct', 6, &
+               'vector%Data_type', vector%Data_type )
+        endif
+
+      end function mqc_IntegerVectorProduct
+!
+!
+!     PROCEDURE MQC_VectorIntegerProduct
+      function mqc_VectorIntegerProduct(vector,intIn) result(vector_res)
+!
+!     This function calculates the product of an integer and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+      implicit none
+      integer(kind=int64),intent(in)::intIn
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+
+      vector_res = mqc_integervectorproduct(intIn,vector)
+
+      end function mqc_VectorIntegerProduct
+!
+!
+!     PROCEDURE MQC_VectorIntegerDivide
+      Function MQC_VectorIntegerDivide(vector,intIn) Result(vector_res)
+!
+!     This function returns the value of a vector divided by an integer.
+!
+!     L. M. Thompson, 2019.
+!
+        implicit none
+        type(mqc_vector),intent(in)::vector
+        integer(kind=int64),intent(in)::intIn
+        type(mqc_vector)::vector_res
+        integer(kind=int64)::reciprocal
+        type(mqc_scalar)::zero
+
+        zero = 0.0
+
+        if(abs(intIn).le.zero) then 
+          call mqc_error_a('Cannot divide by zero:', 6)
+        else
+          reciprocal = intIn
+          reciprocal = reciprocal ** (-1)
+        endif
+
+        vector_res = MQC_VectorIntegerProduct(vector,reciprocal)
+
+      End Function MQC_VectorIntegerDivide
+!
+!
+!     PROCEDURE MQC_ComplexVectorProduct
+      Function MQC_ComplexVectorProduct(CompIn,Vector) Result(Vector_Res)
+!
+!     This function calculates the product of a complex variable and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+!
+        implicit none
+        complex(kind=real64),intent(in)::compIn
+        type(mqc_vector),intent(in)::vector
+        type(mqc_vector)::vector_res
+        
+        call mqc_deallocate_vector(vector_res)
+        if (vector%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = compIn * vector%veci
+        elseIf(vector%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = compIn * vector%vecr
+        elseIf(vector%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = compIn * vector%vecc
+        else
+          call mqc_error_a('unrecognised data type in mqc_realvectorproduct', 6, &
+               'vector%Data_type', vector%Data_type )
+        endif
+
+      end function mqc_ComplexVectorProduct
+!
+!
+!     PROCEDURE MQC_VectorComplexProduct
+      function mqc_VectorComplexProduct(vector,compIn) result(vector_res)
+!
+!     This function calculates the product of a complex variable and an mqc_vector
+!
+!     L. M. Thompson, 2019.
+!
+      implicit none
+      complex(kind=real64),intent(in)::compIn
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+
+      vector_res = mqc_complexvectorproduct(compIn,vector)
+
+      end function mqc_VectorComplexProduct
+!
+!
+!     PROCEDURE MQC_VectorComplexDivide
+      Function MQC_VectorComplexDivide(vector,compIn) Result(vector_res)
+!
+!     This function returns the value of a vector divided by a complex.
+!
+!     L. M. Thompson, 2019.
+!
+        implicit none
+        type(mqc_vector),intent(in)::vector
+        complex(kind=real64),intent(in)::compIn
+        type(mqc_vector)::vector_res
+        complex(kind=real64)::reciprocal
+        type(mqc_scalar)::zero
+
+        zero = 0.0
+
+        if(abs(compIn).le.zero) then 
+          call mqc_error_a('Cannot divide by zero:', 6)
+        else
+          reciprocal = compIn
+          reciprocal = reciprocal ** (-1.0)
+        endif
+
+        vector_res = MQC_VectorComplexProduct(vector,reciprocal)
+
+      End Function MQC_VectorComplexDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
@@ -4429,6 +5407,26 @@
       end subroutine mqc_vector_sqrt
 !
 !
+!     PROCEDURE MQC_Vector_Abs
+      function mqc_vector_abs(A) result(output)
+!
+!     This function returns the absolute values of INPUT vector A.
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_vector)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call output%init(MQC_Length_Vector(A))
+      do i=1,MQC_Length_Vector(A)
+        call output%put(abs(A%at(i)),i)
+      endDo
+!
+      end function mqc_vector_abs
+!
+!
 !     PROCEDURE MQC_Vector_Power
       subroutine mqc_vector_power(A,P)
 !
@@ -4464,6 +5462,108 @@
       endDo
 !
       end subroutine mqc_vector_power
+!
+!
+!     PROCEDURE MQC_Vector_Complex_RealPart
+      function mqc_vector_complex_realPart(A) result(output)
+!
+!     This function returns the real part of INPUT vector A.
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_vector)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call output%init(MQC_Length_Vector(A))
+      do i=1,MQC_Length_Vector(A)
+        call output%put(real(A%at(i)),i)
+      endDo
+!
+      end function mqc_vector_complex_realPart
+!
+!
+!     PROCEDURE MQC_Vector_Complex_ImagPart
+      function mqc_vector_complex_imagPart(A) result(output)
+!
+!     This function returns the imaginary part of INPUT vector A.
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_vector)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call output%init(MQC_Length_Vector(A))
+      do i=1,MQC_Length_Vector(A)
+        call output%put(aimag(A%at(i)),i)
+      endDo
+!
+      end function mqc_vector_complex_imagPart
+!
+!
+!     PROCEDURE MQC_Vector_Cmplx
+      Function MQC_Vector_Cmplx(Vector1,Vector2)
+!
+!     This subroutine is used to set a complex MQC_Vector type 
+!     variable from two other MQC_Vectors.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::MQC_Vector_Cmplx
+      Type(MQC_Vector),Intent(In)::Vector1,Vector2
+!
+      If(Vector1%Data_type.eq.'Real') then
+        If(Vector2%Data_type.eq.'Real') then
+          MQC_Vector_Cmplx = Cmplx(Vector1%vecR,Vector2%vecR)
+        ElseIf(Vector2%Data_type.eq.'Integer') then
+#ifdef PGI
+          MQC_Vector_Cmplx = Cmplx(Vector1%vecR,dFloat(Vector2%vecI))
+#else
+          MQC_Vector_Cmplx = Cmplx(Vector1%vecR,Float(Vector2%vecI))
+#endif
+        ElseIf(Vector2%Data_Type.eq.'Complex') then
+          Call MQC_Error_A('Complex MQC Vector type cannot be set as real/imaginary part in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+        Else
+          Call MQC_Error_A('Vector type unspecified in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+        EndIf
+      ElseIf(Vector1%Data_Type.eq.'Integer') then
+        If(Vector2%Data_type.eq.'Real') then
+#ifdef PGI
+          MQC_Vector_Cmplx = Cmplx(dFloat(Vector1%vecI),Vector2%vecR)
+#else
+          MQC_Vector_Cmplx = Cmplx(Float(Vector1%vecI),Vector2%vecR)
+#endif
+        ElseIf(Vector2%Data_type.eq.'Integer') then
+#ifdef PGI
+          MQC_Vector_Cmplx = Cmplx(dFloat(Vector1%vecI),dFloat(Vector2%vecI))
+#else
+          MQC_Vector_Cmplx = Cmplx(Float(Vector1%vecI),Float(Vector2%vecI))
+#endif
+        ElseIf(Vector2%Data_Type.eq.'Complex') then
+          Call MQC_Error_A('Complex MQC Vector type cannot be set as real/imaginary part in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+        Else
+          Call MQC_Error_A('Vector type unspecified in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+        EndIf
+      ElseIf(Vector1%Data_Type.eq.'Complex'.or.Vector2%Data_Type.eq.'Complex') then
+        Call MQC_Error_A('Complex MQC Vector type cannot be set as real/imaginary part in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+      Else
+        Call MQC_Error_A('Vector type unspecified in MQC_Vector_Cmplx', 6, &
+             'Vector1%Data_Type', Vector1%Data_Type, 'Vector2%Data_Type', Vector2%Data_Type)
+      EndIf
+!
+      Return
+      End Function MQC_Vector_Cmplx
 !
 !
 !----------------------------------------------------------------
