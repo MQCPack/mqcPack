@@ -50,8 +50,8 @@ install:
 #    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
 #      brew install cmake boost gcc open-mpi autoconf automake
   - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\nyg16" | ./mqc_install
-  - automake --add-missing
   - autoreconf
+  - automake --add-missing
   - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\nyg16" | ./mqc_install
 
 #    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
