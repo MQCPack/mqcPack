@@ -15,7 +15,7 @@ matrix:
             - g++
             - gfortran
             - cmake
-            - automake
+#            - automake
               # math libraries
             - libblas-dev
             - liblapack-dev
@@ -41,9 +41,7 @@ before_install:
   - wget http://gaussian.com/g16/gauopen_v2.zip
   - unzip gauopen_v2.zip
   - cd ..
-  - ls
-  - aclocal
-  - automake --add-missing
+  - which automake
 
 install: 
 #  - |
