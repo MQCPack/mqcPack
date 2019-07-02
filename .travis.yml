@@ -42,7 +42,8 @@ before_install:
   - unzip gauopen_v2.zip
   - cd ..
   - ls
-  - touch configure.ac aclocal.m4 configure Makefile.am Makefile.in 
+  - aclocal
+  - automake --add-missing
 
 install: 
 #  - |
