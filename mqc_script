@@ -25,6 +25,7 @@ if [ ! -f test-driver ] ||
    [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile ] ||
    [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
    [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
+   [ ! -L ${MQC_HOME}/configure ] ||
    [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
    [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
    [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK ] ||
