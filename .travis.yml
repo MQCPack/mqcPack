@@ -33,11 +33,8 @@ before_install:
         - cd gauopen
         - wget http://gaussian.com/g16/gauopen_v2.zip
         - unzip gauopen_v2.zip
-        - ls
         - cd ..
-        - pwd
-        - ls
-        - echo $TRAVIS_BUILD_DIR
+        - autoreconf -f -i
 
 install: echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
 
