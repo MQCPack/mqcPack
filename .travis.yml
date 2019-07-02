@@ -39,7 +39,7 @@ before_install:
   - unzip gauopen_v2.zip
   - cd ..
   - ls
-  - touch
+  - touch .
 
 install: echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
 
