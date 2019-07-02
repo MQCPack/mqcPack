@@ -30,7 +30,7 @@ matrix:
       addons:
         brew:
           packages:
-            - autotools
+            - autoconf
             - automake
 
 before_install:
@@ -46,7 +46,7 @@ before_install:
 install: 
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      brew install cmake boost gcc open-mpi homebrew/science/openblas autotools
+      brew install cmake boost gcc open-mpi autoconf automake
       echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
     elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       apt install autotools
