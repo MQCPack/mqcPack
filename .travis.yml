@@ -32,6 +32,7 @@ before_install:
         - cd gauopen
         - wget http://gaussian.com/g16/gauopen_v2.zip
         - unzip gauopen_v2.zip
+        - ls
         - cd ..
         - pwd
         - ls
