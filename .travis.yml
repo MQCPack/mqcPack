@@ -26,16 +26,19 @@ matrix:
       osx_image: xcode10.2
       compiler: gcc
       env: SOURCES=homebrew
+      addons:
+        brew:
+          packages:
+            - autotools
 
 before_install:
-        - mkdir gauopen
-        - mkdir mqc-install
-        - cd gauopen
-        - wget http://gaussian.com/g16/gauopen_v2.zip
-        - unzip gauopen_v2.zip
-        - cd ..
-        - ls
-        - autoreconf -f -i
+  - mkdir gauopen
+  - mkdir mqc-install
+  - cd gauopen
+  - wget http://gaussian.com/g16/gauopen_v2.zip
+  - unzip gauopen_v2.zip
+  - cd ..
+  - ls
 
 install: echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
 
