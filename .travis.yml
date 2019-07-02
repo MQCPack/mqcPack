@@ -33,6 +33,8 @@ before_install:
         - wget http://gaussian.com/g16/gauopen_v2.zip
         - unzip gauopen_v2.zip
         - cd ..
+        - pwd
+        - ls
 
-install: ./mqc_install  <<< $'y\nG\n.mqc\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
+install: ./mqc_install  <<< $'y\nG\n./mqc\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
 
