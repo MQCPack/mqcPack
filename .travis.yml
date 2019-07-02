@@ -44,7 +44,6 @@ before_install:
   - which automake
   - autoconf --version
   - automake --version
-  - automake --add-missing
 
 install: 
 #  - |
