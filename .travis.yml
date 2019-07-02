@@ -39,5 +39,5 @@ before_install:
         - ls
         - echo $TRAVIS_BUILD_DIR
 
-install: ./mqc_install  <<< $'y\nG\n./mqc-install\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
+install: ./mqc_install  <<< $"y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n"
 
