@@ -27,8 +27,12 @@ matrix:
       compiler: gcc
       env: SOURCES=homebrew
       
+ env:
+        - PWD=`pwd`
+
 before_install:
         - mkdir gauopen
+        - mkdir mqc-install
         - cd gauopen
         - wget http://gaussian.com/g16/gauopen_v2.zip
         - unzip gauopen_v2.zip
@@ -36,6 +40,7 @@ before_install:
         - cd ..
         - pwd
         - ls
+        - echo "pwd is $PWD"
 
-install: ./mqc_install  <<< $'y\nG\n./mqc\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
+install: ./mqc_install  <<< $'y\nG\n./mqc-install\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
 
