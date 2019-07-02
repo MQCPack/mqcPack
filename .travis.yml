@@ -4,7 +4,7 @@ matrix:
   include:
 
     - os: linux
-      compiler: gcc
+      compiler: gfortran
       env: SOURCES=ubuntu-toolchain-r-test
       addons:
         apt:
@@ -24,7 +24,7 @@ matrix:
 
     - os: osx
       osx_image: xcode10.2
-      compiler: gcc
+      compiler: gfortran
       env: SOURCES=homebrew
       addons:
         brew:
@@ -39,6 +39,7 @@ before_install:
   - unzip gauopen_v2.zip
   - cd ..
   - ls
+  - touch
 
 install: echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
 
