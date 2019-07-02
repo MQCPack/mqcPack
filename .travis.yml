@@ -28,11 +28,11 @@ matrix:
       env: SOURCES=homebrew
       
 before_install:
-        mkdir gauopen
-        cd gauopen
-        wget http://gaussian.com/g16/gauopen_v2.zip
-        unzip gauopen_v2.zip
-        cd ..
+        - mkdir gauopen
+        - cd gauopen
+        - wget http://gaussian.com/g16/gauopen_v2.zip
+        - unzip gauopen_v2.zip
+        - cd ..
 
 install: ./mqc_install  <<< $'y\nG\n.mqc\n-lblas\n-llapack\n./gauopen\ny\ng16\n'
 
