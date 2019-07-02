@@ -41,17 +41,17 @@ before_install:
   - unzip gauopen_v2.zip
   - cd ..
   - ls
-  - touch .
+  - touch configure.ac aclocal.m4 configure Makefile.am Makefile.in 
 
 install: 
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      brew install cmake boost gcc open-mpi autoconf automake
+#  - |
+#    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+#      brew install cmake boost gcc open-mpi autoconf automake
       echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
-    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      apt install autotools
-      echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
-    fi
+#    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+#      apt install autotools
+#      echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
+#    fi
 
 notifications:
   email: false
