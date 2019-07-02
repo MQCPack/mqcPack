@@ -15,6 +15,7 @@ matrix:
             - g++
             - gfortran
             - cmake
+            - automake
               # math libraries
             - libblas-dev
             - liblapack-dev
@@ -30,6 +31,7 @@ matrix:
         brew:
           packages:
             - autotools
+            - automake
 
 before_install:
   - mkdir gauopen
