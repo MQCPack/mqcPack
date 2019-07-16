@@ -1840,7 +1840,7 @@
 !
 !     Variable Declarations.
       implicit none
-      real(kind=real64),dimension(:,:),allocatable,intent(inOut)::intrinsicOut
+      real(kind=real64),dimension(:,:),allocatable,intent(out)::intrinsicOut
       type(MQC_Variable),intent(in)::mqcVariable
 !
 !
