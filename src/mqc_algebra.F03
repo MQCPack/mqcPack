@@ -5760,13 +5760,13 @@
       IndI = I
       IndJ = J
       If (IndI.lt.0) IndI = Mat%NRow + IndI + 1
-      If (IndJ.lt.0) IndJ = Mat%NRow + IndJ + 1
+      If (IndJ.lt.0) IndJ = Mat%NCol + IndJ + 1
       If (IndI.eq.0.or.IndI.gt.Mat%NRow) Call MQC_Error_I('Index I badly specified in mqc_matrix_scalar_at', 6, &
            'IndI', IndI, &
            'Mat%NRow', Mat%NRow )
-      If (IndJ.eq.0.or.IndJ.gt.Mat%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_at', 6, &
+      If (IndJ.eq.0.or.IndJ.gt.Mat%NCol) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_at', 6, &
            'IndJ', IndJ, &
-           'Mat%NRow', Mat%NRow )
+           'Mat%NCol', Mat%NCol )
 
       If (Mat%Storage.eq.'StorFull') then
         If (Mat%Data_Type.eq.'Integer') then
