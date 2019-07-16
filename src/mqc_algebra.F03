@@ -951,10 +951,8 @@
       Type(MQC_Scalar)::MQC_Scalar_Cos
       Type(MQC_Scalar),Intent(In)::Scalar
 !
-      call scalar%print(6,'scalar in cos')
       If(Scalar%Data_type.eq.'Real') then
         MQC_Scalar_Cos = Cos(Scalar%ScaR)
-        call mqc_scalar_cos%print(6,'cos output')
       ElseIf(Scalar%Data_Type.eq.'Integer') then
 #ifdef PGI
         MQC_Scalar_Cos = Cos(dFloat(Scalar%ScaI))
