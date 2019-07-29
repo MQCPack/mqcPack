@@ -365,6 +365,8 @@
       End Interface
       Interface Operator (.gt.)
         Module Procedure MQC_ScalarGT
+        Module Procedure MQC_ScalarGTInteger
+        Module Procedure MQC_IntegerGTScalar
         Module Procedure MQC_ScalarGTReal
         Module Procedure MQC_RealGTScalar
       End Interface
@@ -2027,6 +2029,78 @@
       End Function MQC_ScalarGT
 !
 !
+!     PROCEDURE MQC_IntegerGTScalar
+      Function MQC_IntegerGTScalar(IntIn,Scalar)
+!
+!     This subroutine is used to return if the left integer variable
+!     is greater than the right MQC_Scalar type variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerGTScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_IntegerGTScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.gt.Scalar%scar) MQC_IntegerGTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.gt.Scalar%scai) MQC_IntegerGTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.eq.real(Scalar%scac)) then
+          If(Zero.gt.aimag(Scalar%scac)) MQC_IntegerGTScalar = .True.
+        ElseIf(IntIn.gt.real(Scalar%scac)) then
+          MQC_IntegerGTScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerGTScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerGTScalar
+!
+!
+!     PROCEDURE MQC_ScalarGTInteger
+      Function MQC_ScalarGTInteger(Scalar,IntIn)
+!
+!     This subroutine is used to return if the left MQC_Scalar type variable
+!     is greater than the right integer variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGTInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGTInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.gt.IntIn) MQC_ScalarGTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.gt.IntIn) MQC_ScalarGTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.IntIn) then
+          If(aimag(Scalar%scac).gt.Zero) MQC_ScalarGTInteger = .True.
+        ElseIf(real(Scalar%scac).gt.IntIn) then
+          MQC_ScalarGTInteger = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGTInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGTInteger
+!
+!
 !     PROCEDURE MQC_RealGTScalar
       Function MQC_RealGTScalar(RealIn,Scalar)
 !
@@ -2062,7 +2136,7 @@
       Return
       End Function MQC_RealGTScalar
 !
-
+!
 !     PROCEDURE MQC_ScalarGTReal
       Function MQC_ScalarGTReal(Scalar,RealIn)
 !
