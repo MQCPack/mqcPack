@@ -12556,4 +12556,35 @@
       End Function MQC_R4Tensor_HaveComplex
 !
 !
+!     PROCEDURE MQC_Givens_Matrix
+      Function MQC_Givens_Matrix(m_size,angle,p,q)
+!
+!     This function returns a Givens rotation matrix of m_size x m_size with
+!     rotation angles appropriate to rotate from vector p to vector q. Angle
+!     must be in radians.
+!
+!     A. Mahler, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      integer(kind=int64),intent(in)::m_size,p,q
+      real(kind=real64),intent(in)::angle
+      type(mqc_scalar)::cos_angle,sin_angle,nsin_angle
+      type(mqc_matrix)::mqc_givens_matrix
+!
+      call mqc_givens_matrix%identity(m_size,m_size)
+      cos_angle = cos(angle)
+      sin_angle = sin(angle)
+      nsin_angle = (-1)*sin(angle)
+!
+      call mqc_givens_matrix%put(cos_angle,p,p)
+      call mqc_givens_matrix%put(cos_angle,q,q)
+      call mqc_givens_matrix%put(sin_angle,q,p)
+      call mqc_givens_matrix%put(nsin_angle,p,q)
+!
+      return
+      End Function
+!
+!
       End Module MQC_Algebra
