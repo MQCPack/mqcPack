@@ -40,8 +40,14 @@
         Type(MQC_Scalar)::NAtoms
         Type(MQC_Vector)::Atomic_Numbers,Atomic_Masses,Nuclear_Charges
         Type(MQC_Matrix)::Cartesian_Coordinates
+      Contains 
+        Procedure, Public::print => MQC_Print_Nuclear_Geometry
+        Procedure, Public::getNucRep => MQC_Get_Nuclear_Repulsion
       End Type MQC_Molecule_Data
 !
+      Interface MQC_Print
+        Module Procedure MQC_Print_Nuclear_Geometry
+      End Interface
 
       CONTAINS
 !
@@ -203,7 +209,7 @@
 !
 !
 !     PROCEDURE MQC_GET_NUCLEAR_REPULSION 
-      Function MQC_Get_Nuclear_Repulsion(IOut,Molecule_Info) Result(Vnn)  
+      Function MQC_Get_Nuclear_Repulsion(Molecule_Info) Result(Vnn)  
 !
 !     This function returns the nuclear repulsion energy given the 
 !     molecular data object.
@@ -216,7 +222,6 @@
       Type(MQC_Scalar)::Vnn
       Type(MQC_Vector)::Temp_3Vector
       Real::Zero=0.0d0
-      Integer,Optional::IOut
       Integer::I,J,NAtoms
 !
       Vnn = Zero 
@@ -232,9 +237,317 @@
         EndDo
       EndDo
 !
-    
-      if(present(IOut)) Call MQC_Print(Vnn,IOut,'Nuclear Repulsion Energy (au)')
-!
       End Function MQC_Get_Nuclear_Repulsion
+!
+!
+!     PROCEDURE MQC_PRINT_NUCLEAR_GEOMETRY
+      subroutine mqc_print_nuclear_geometry(molecule_info,iOut,bohr) 
+!
+!     This subroutine prints the nuclear geometry given the 
+!     molecular data object. Default units are Angstrom unless
+!     optional argument bohr is passed as true.
+!
+!     Lee M. Thompson, 2019.
+!
+!
+      implicit none
+      class(mqc_molecule_data),intent(in)::molecule_info
+      integer,intent(in)::iOut
+      logical,intent(in),optional::bohr
+      integer::i,nAtoms
+      character(len=2)::elem
+      logical::myBohr
+      real::sca
+!
+ 1000 Format(1x,'          NUCLEAR CARTESIAN COORDINATES          ')
+ 1001 Format(1x,'-------------------------------------------------')
+ 1002 Format(2x,'Element              Coordinates (Ang)           ')
+ 1003 Format(17x,'X',13x,'Y',13x,'Z')
+ 1004 Format(5x,A,3F14.6)
+ 1005 Format(2x,'Element               Coordinates (au)           ')
+
+      if(present(bohr)) then
+        myBohr = bohr
+      else
+        myBohr = .false.
+      endIf
+
+      write(iOut,1000)
+      write(iOut,1001)
+      if(myBohr) then
+        write(iOut,1005)
+        sca = 1.0d0
+      else
+        sca = angPBohr
+        write(iOut,1002)
+      endIf
+      write(iOut,1003)
+      write(iOut,1001)
+
+      nAtoms = molecule_info%nAtoms
+      do i = 1,nAtoms
+        elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
+        write(iOut,1004) elem, &
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
+          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+      endDo
+!
+      write(iOut,1001)
+!
+      end subroutine mqc_print_nuclear_geometry
+!
+!
+!     PROCEDURE MQC_ELEMENT_SYMBOL
+      function mqc_element_symbol(atomic_number) result(element)  
+!
+!     This function returns the nuclear element string given the 
+!     atomic number.
+!
+!     Lee M. Thompson, 2019.
+!
+!
+      implicit none
+      class(*),intent(in)::atomic_number
+      character(len=2)::element
+      integer::temp
+!
+      select type(atomic_number)
+      type is (integer)
+        temp = atomic_number
+      type is (mqc_scalar)
+        temp = atomic_number
+      class default
+        call mqc_error_i('atomic number type unknown in mqc_element_symbol',6)
+      end select
+!
+      select case (temp)
+      case (1)
+        element = 'H '
+      case (2)
+        element = 'He'
+      case (3)
+        element = 'Li'
+      case (4)
+        element = 'Be'
+      case (5)
+        element = 'B '
+      case (6)
+        element = 'C '
+      case (7)
+        element = 'N '
+      case (8)
+        element = 'O '
+      case (9)
+        element = 'F '
+      case (10)
+        element = 'Ne'
+      case (11)
+        element = 'Na'
+      case (12)
+        element = 'Mg'
+      case (13)
+        element = 'Al'
+      case (14)
+        element = 'Si'
+      case (15)
+        element = 'P '
+      case (16)
+        element = 'S '
+      case (17)
+        element = 'Cl'
+      case (18)
+        element = 'Ar'
+      case (19)
+        element = 'K '
+      case (20)
+        element = 'Ca'
+      case (21)
+        element = 'Sc'
+      case (22)
+        element = 'Ti'
+      case (23)
+        element = 'V '
+      case (24)
+        element = 'Cr'
+      case (25)
+        element = 'Mn'
+      case (26)
+        element = 'Fe'
+      case (27)
+        element = 'Co'
+      case (28)
+        element = 'Ni'
+      case (29)
+        element = 'Cu'
+      case (30)
+        element = 'Zn'
+      case (31)
+        element = 'Ga'
+      case (32)
+        element = 'Ge'
+      case (33)
+        element = 'As'
+      case (34)
+        element = 'Se'
+      case (35)
+        element = 'Br'
+      case (36)
+        element = 'Kr'
+      case (37)
+        element = 'Rb'
+      case (38)
+        element = 'Sr'
+      case (39)
+        element = 'Y '
+      case (40)
+        element = 'Zr'
+      case (41)
+        element = 'Nb'
+      case (42)
+        element = 'Mo'
+      case (43)
+        element = 'Tc'
+      case (44)
+        element = 'Ru'
+      case (45)
+        element = 'Rh'
+      case (46)
+        element = 'Pd'
+      case (47)
+        element = 'Ag'
+      case (48)
+        element = 'Cd'
+      case (49)
+        element = 'In'
+      case (50)
+        element = 'Sn'
+      case (51)
+        element = 'Sb'
+      case (52)
+        element = 'Te'
+      case (53)
+        element = 'I '
+      case (54)
+        element = 'Xe'
+      case (55)
+        element = 'Cs'
+      case (56)
+        element = 'Ba'
+      case (57)
+        element = 'La'
+      case (58)
+        element = 'Ce'
+      case (59)
+        element = 'Pr'
+      case (60)
+        element = 'Nd'
+      case (61)
+        element = 'Pm'
+      case (62)
+        element = 'Sm'
+      case (63)
+        element = 'Eu'
+      case (64)
+        element = 'Gd'
+      case (65)
+        element = 'Tb'
+      case (66)
+        element = 'Dy'
+      case (67)
+        element = 'Ho'
+      case (68)
+        element = 'Er'
+      case (69)
+        element = 'Tm'
+      case (70)
+        element = 'Yb'
+      case (71)
+        element = 'Lu'
+      case (72)
+        element = 'Hf'
+      case (73)
+        element = 'Ta'
+      case (74)
+        element = 'W '
+      case (75)
+        element = 'Re'
+      case (76)
+        element = 'Os'
+      case (77)
+        element = 'Ir'
+      case (78)
+        element = 'Pt'
+      case (79)
+        element = 'Au'
+      case (80)
+        element = 'Hg'
+      case (81)
+        element = 'Tl'
+      case (82)
+        element = 'Pb'
+      case (83)
+        element = 'Bi'
+      case (84)
+        element = 'Po'
+      case (85)
+        element = 'At'
+      case (86)
+        element = 'Rn'
+      case (87)
+        element = 'Fr'
+      case (88)
+        element = 'Ra'
+      case (89)
+        element = 'Ac'
+      case (90)
+        element = 'Th'
+      case (91)
+        element = 'Pa'
+      case (92)
+        element = 'U '
+      case (93)
+        element = 'Np'
+      case (94)
+        element = 'Pu'
+      case (95)
+        element = 'Am'
+      case (96)
+        element = 'Cm'
+      case (97)
+        element = 'Bk'
+      case (98)
+        element = 'Cf'
+      case (99)
+        element = 'Es'
+      case (100)
+        element = 'Fm'
+      case (101)
+        element = 'Md'
+      case (102)
+        element = 'No'
+      case (103)
+        element = 'Lr'
+      case (104)
+        element = 'Rf'
+      case (105)
+        element = 'Db'
+      case (106)
+        element = 'Sg'
+      case (107)
+        element = 'Bh'
+      case (108)
+        element = 'Hs'
+      case (109)
+        element = 'Mt'
+      case (110)
+        element = 'Ds'
+      case (111)
+        element = 'Rg'
+      case default
+        call mqc_error_i('Unknown atomic number in mqc_element_symbol',6,'temp',temp)
+      end select
+!
+      end function mqc_element_symbol
 !
       End Module MQC_Molecule

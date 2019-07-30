@@ -1609,7 +1609,7 @@
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
           else
             call mqc_error_l('type not recognised', 6, &
-                 'Emqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
                  'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
                  "mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')", mqc_matrix_test_symmetric(matrixInUse,'antisymmetric'), &
                  'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
@@ -1652,12 +1652,13 @@
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+              matrixInUse = transpose(matrixInUse)
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
-            compMatrixTmp = transpose(matrixInUse)
+            compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
@@ -1668,12 +1669,13 @@
 !           trangular matrix before writing for correct matrix file storage. This is only an
 !           issue for nonsymmetric matrices stored in LT form.
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+              matrixInUse = transpose(matrixInUse)
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
               if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
             endIf
             allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
             allocate(compVectorTmp(size(compMatrixTmp,1)))
-            compMatrixTmp = transpose(matrixInUse)
+            compMatrixTmp = matrixInUse
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
               mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
@@ -3714,7 +3716,7 @@
       if(NR.lt.0.or.NI.lt.0) return
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
-        if(NR.eq.1.and.NR.eq.1) then
+        if(NR.eq.1.and.NI.eq.1) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "SCALARS"
         elseIf((NR.eq.1.or.NR.eq.2.or.NR.eq.3).and.NI.eq.4) then
           MQC_Gaussian_Unformatted_Matrix_Array_Type = "2ERIS"
