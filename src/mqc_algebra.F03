@@ -11612,7 +11612,9 @@
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
-      subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs)
+      subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs,sortval)
+!
+!     Preliminary sorting code added to subroutine; A. Mahler, 2019
 !
       implicit none
       class(mqc_matrix),intent(inOut)::a
@@ -11624,9 +11626,21 @@
       real(kind=real64),dimension(:),allocatable::eValsOut,work,eValsReal,eValsImag
       Complex(Kind=real64),dimension(:,:),allocatable::tempAC,tempBC,rightCvecs,leftCvecs
       Complex(Kind=real64),dimension(:),allocatable::eValsA,eValsB,workC
-      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i,npdFlag
+      integer(kind=int64)::iError=0,lWork,nDim1A,nDim2A,nDim1B,nDim2B,ilaenv,i,j,npdFlag
       character(len=64)::StorFlagA,StorFlagB,TypeFlagA,TypeFlagB
       type(mqc_vector)::tmp_vec
+      logical,intent(in),optional::sortval
+      logical::sort
+      type(mqc_scalar)::indexVal
+      type(mqc_vector)::sortedIndex
+      type(mqc_vector)::sortedEigenvals
+      type(mqc_matrix)::sortedRVecs,sortedLVecs
+
+      if(.not.present(sortval)) then
+        sort = .false.
+      else
+        sort = sortVal
+      endif
 !
 !     Generalized eigensystem solver.
 !
@@ -11826,6 +11840,24 @@
       if(storFlagB.eq.'StorDiag') Call MQC_Matrix_full2Diag(b)
       if(storFlagA.eq.'StorSymm') Call MQC_Matrix_full2Symm(a)
       if(storFlagB.eq.'StorSymm') Call MQC_Matrix_full2Symm(b)
+
+      if(sort) then
+        sortedIndex = eigenvals%argsort()
+        call sortedIndex%print(6,'Index of eigenvals')
+        call sortedEigenvals%init(sortedIndex%size(),cmplx(0.0,0.0))
+        call sortedRVecs%init(nDim2A,nDim2A)
+        do i = 1, sortedIndex%size()
+          do j = 1, sortedIndex%size()
+            indexVal = j
+            if(sortedIndex%at(i).eq.indexVal) then
+              call sortedEigenvals%put(eigenvals%at(j),i)
+              call sortedRVecs%vput(reigenvecs%vat([1,nDim2A],[j]),[1,nDim2A],[i])
+              exit
+            endif
+          enddo
+        end do
+        
+      endif
 !
       end subroutine mqc_matrix_generalized_eigensystem
 !
