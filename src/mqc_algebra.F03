@@ -3219,11 +3219,13 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
-!
+      Real(kind=real64),Dimension(:),Allocatable::temp
+!     
+      temp = Vector%veci
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Real')
-      Vector%vecr = Vector%veci
-      if(allocated(vector%veci)) deallocate(vector%veci)
+      Vector%vecr = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Int2Real
@@ -3241,11 +3243,13 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
+      Complex(kind=real64),Dimension(:),Allocatable::temp
 !
+      temp = cmplx(Vector%veci,0)
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Complex')
-      Vector%vecc = cmplx(Vector%veci,0)
-      if(allocated(vector%veci)) deallocate(vector%veci)
+      Vector%vecc = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Int2Complex
@@ -3263,11 +3267,13 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
+      Integer(kind=int64),Dimension(:),Allocatable::temp
 !
+      temp = Vector%vecr
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Integer')
-      Vector%veci = Vector%vecr
-      if(allocated(vector%vecr)) deallocate(vector%vecr)
+      Vector%veci = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Real2Int
@@ -3285,18 +3291,21 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
-!
+      Complex(kind=real64),Dimension(:),Allocatable::temp
+
+
+      temp = cmplx(Vector%vecr,0.0)
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Complex')
-      Vector%vecc = cmplx(Vector%vecr,0.0)
-      if(allocated(vector%vecr)) deallocate(vector%vecr)
+      Vector%vecc = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Real2Complex
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Int
-      Subroutine MQC_Vector_Copy_complex2Int(Vector)
+      Subroutine MQC_Vector_Copy_Complex2Int(Vector)
 !
 !     This subroutine copies a complex MQC_Vector into it's integer vector
 !     space.
@@ -3307,11 +3316,13 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
+      Integer(kind=int64),Dimension(:),Allocatable::temp
 !
+      temp = real(Vector%vecc)
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Integer')
-      Vector%veci = real(Vector%vecc)
-      if(allocated(vector%vecc)) deallocate(vector%vecc)
+      Vector%veci = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Complex2Int
@@ -3329,11 +3340,13 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector)::Vector
+      Real(kind=real64),Dimension(:),Allocatable::temp
 !
+      temp = real(Vector%vecc)
       Call MQC_Allocate_Vector(MQC_Length_Vector(Vector),Vector,  &
         'Real')
-      Vector%vecr = real(Vector%vecc)
-      if(allocated(vector%vecc)) deallocate(vector%vecc)
+      Vector%vecr = temp
+      if(allocated(temp)) deallocate(temp)
 !
       Return
       End Subroutine MQC_Vector_Copy_Complex2Real
