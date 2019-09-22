@@ -521,13 +521,46 @@
 !----------------------------------------------------------------
 !
 !     PROCEDURE MQC_Allocate_Scalar
+!
+!>    \brief <b> MQC_Allocate_Scalar is used to allocate a scalar type variable
+!>    of the MQC_Scalar class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_Scalar is a subroutine used to allocate a scalar type variable
+!>    of the MQC_Scalar class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_Scalar variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_Scalar variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_Scalar variable to be of complex type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The name of the MQC_Scalar variable
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_Scalar is real
+!>        = 'Integer': the MQC_Scalar is integer
+!>        = 'Complex': the MQC_Scalar is complex
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Allocate_Scalar(Scalar,Data_type)
-!
-!     This subroutine is used to allocate a scalar type variable
-!     of the MQC_Scalar class.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -600,12 +633,39 @@
 !
 !
 !     PROCEDURE MQC_Input_Integer_Scalar
+!
+!>    \brief <b> MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic scalar to
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic scalar to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Type(MQC_Scalar)
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Integer(kind=int64) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Input_Integer_Scalar(ScalarOut,ScalarIn)
-!
-!     This subroutine is used to set an intrinsic scalar to
-!     an MQC_Scalar.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -6289,13 +6349,54 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_At
+!
+!>    \brief <b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>
+!
+!C!>    \par Purpose:
+!C!     =============
+!C!>    
+!C!>    \verbatim
+!C!>
+!C!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
+!C!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
+!C!>    negative, the (N-I+1)th index value is selected.
+!C!>
+!C!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        Name of the input matrix variable
+!>    \endverbatim
+!>
+!>    \param[in] rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is submatrix of rows A to B
+!>          If (A,B)>0 row count is from first index
+!>          If (A,B)<0 row count is from last index
+!>        If = [0]: submatrix of rows equivalent to [1,-1]
+!>    \endverbatim
+!>
+!>    \param[in] Cols
+!>    \verbatim
+!>        Cols is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is submatrix of columns A to B
+!>          If (A,B)>0 column count is from first index
+!>          If (A,B)<0 column count is from last index
+!>        If = [0]: submatrix of columns equivalent to [1,-1]
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Matrix_At(Mat,Rows,Cols) Result(Matrix)
-!
-!     A function that returns the matrix between rows (I,J) and columns (K,L)
-!     of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is negative,
-!     it selects the (N-I+1)th index value.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
@@ -12084,6 +12185,37 @@
 !
       end subroutine mqc_matrix_sqrt
 !
+!
+!     PROCEDURE MQC_Givens_Matrix
+      Function MQC_Givens_Matrix(m_size,angle,p,q)
+!
+!     This function returns a Givens rotation matrix of m_size x m_size with
+!     rotation angles appropriate to rotate from vector p to vector q. Angle
+!     must be in radians.
+!
+!     A. Mahler, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      integer(kind=int64),intent(in)::m_size,p,q
+      real(kind=real64),intent(in)::angle
+      type(mqc_scalar)::cos_angle,sin_angle,nsin_angle
+      type(mqc_matrix)::mqc_givens_matrix
+!
+      call mqc_givens_matrix%identity(m_size,m_size)
+      cos_angle = cos(angle)
+      sin_angle = sin(angle)
+      nsin_angle = (-1)*sin(angle)
+!
+      call mqc_givens_matrix%put(cos_angle,p,p)
+      call mqc_givens_matrix%put(cos_angle,q,q)
+      call mqc_givens_matrix%put(sin_angle,q,p)
+      call mqc_givens_matrix%put(nsin_angle,p,q)
+!
+      return
+      End Function
+!
 !----------------------------------------------------------------
 !                                                               |
 !     R4TENSOR PROCEDURES                                       |
@@ -12567,37 +12699,6 @@
 !
       Return
       End Function MQC_R4Tensor_HaveComplex
-!
-!
-!     PROCEDURE MQC_Givens_Matrix
-      Function MQC_Givens_Matrix(m_size,angle,p,q)
-!
-!     This function returns a Givens rotation matrix of m_size x m_size with
-!     rotation angles appropriate to rotate from vector p to vector q. Angle
-!     must be in radians.
-!
-!     A. Mahler, 2019.
-!
-!
-!     Variable Declarations.
-      Implicit None
-      integer(kind=int64),intent(in)::m_size,p,q
-      real(kind=real64),intent(in)::angle
-      type(mqc_scalar)::cos_angle,sin_angle,nsin_angle
-      type(mqc_matrix)::mqc_givens_matrix
-!
-      call mqc_givens_matrix%identity(m_size,m_size)
-      cos_angle = cos(angle)
-      sin_angle = sin(angle)
-      nsin_angle = (-1)*sin(angle)
-!
-      call mqc_givens_matrix%put(cos_angle,p,p)
-      call mqc_givens_matrix%put(cos_angle,q,q)
-      call mqc_givens_matrix%put(sin_angle,q,p)
-      call mqc_givens_matrix%put(nsin_angle,p,q)
-!
-      return
-      End Function
 !
 !
       End Module MQC_Algebra

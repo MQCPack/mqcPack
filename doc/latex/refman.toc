@@ -1,0 +1,767 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble }{}
+\contentsline {chapter}{\numberline {1}Modules Index}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}Modules List}{1}{section.1.1}
+\contentsline {chapter}{\numberline {2}Data Type Index}{3}{chapter.2}
+\contentsline {section}{\numberline {2.1}Class Hierarchy}{3}{section.2.1}
+\contentsline {chapter}{\numberline {3}Data Type Index}{5}{chapter.3}
+\contentsline {section}{\numberline {3.1}Data Types List}{5}{section.3.1}
+\contentsline {chapter}{\numberline {4}File Index}{7}{chapter.4}
+\contentsline {section}{\numberline {4.1}File List}{7}{section.4.1}
+\contentsline {chapter}{\numberline {5}Module Documentation}{9}{chapter.5}
+\contentsline {section}{\numberline {5.1}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra Module Reference}{9}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{15}{subsection.5.1.1}
+\contentsline {subsubsection}{\numberline {5.1.1.1}bin\_coeff()}{15}{subsubsection.5.1.1.1}
+\contentsline {subsubsection}{\numberline {5.1.1.2}factorial()}{15}{subsubsection.5.1.1.2}
+\contentsline {subsubsection}{\numberline {5.1.1.3}matrix\_symm2sq\_complex()}{15}{subsubsection.5.1.1.3}
+\contentsline {subsubsection}{\numberline {5.1.1.4}matrix\_symm2sq\_integer()}{16}{subsubsection.5.1.1.4}
+\contentsline {subsubsection}{\numberline {5.1.1.5}matrix\_symm2sq\_real()}{16}{subsubsection.5.1.1.5}
+\contentsline {subsubsection}{\numberline {5.1.1.6}mqc\_allocate\_matrix()}{16}{subsubsection.5.1.1.6}
+\contentsline {subsubsection}{\numberline {5.1.1.7}mqc\_allocate\_r4tensor()}{16}{subsubsection.5.1.1.7}
+\contentsline {subsubsection}{\numberline {5.1.1.8}mqc\_allocate\_scalar()}{17}{subsubsection.5.1.1.8}
+\contentsline {subsubsection}{\numberline {5.1.1.9}mqc\_allocate\_vector()}{17}{subsubsection.5.1.1.9}
+\contentsline {subsubsection}{\numberline {5.1.1.10}mqc\_complexscalaradd()}{18}{subsubsection.5.1.1.10}
+\contentsline {subsubsection}{\numberline {5.1.1.11}mqc\_complexscalardivide()}{18}{subsubsection.5.1.1.11}
+\contentsline {subsubsection}{\numberline {5.1.1.12}mqc\_complexscalarmultiply()}{18}{subsubsection.5.1.1.12}
+\contentsline {subsubsection}{\numberline {5.1.1.13}mqc\_complexscalarsubtract()}{18}{subsubsection.5.1.1.13}
+\contentsline {subsubsection}{\numberline {5.1.1.14}mqc\_complexvectorproduct()}{18}{subsubsection.5.1.1.14}
+\contentsline {subsubsection}{\numberline {5.1.1.15}mqc\_crossproduct()}{18}{subsubsection.5.1.1.15}
+\contentsline {subsubsection}{\numberline {5.1.1.16}mqc\_deallocate\_matrix()}{19}{subsubsection.5.1.1.16}
+\contentsline {subsubsection}{\numberline {5.1.1.17}mqc\_deallocate\_r4tensor()}{19}{subsubsection.5.1.1.17}
+\contentsline {subsubsection}{\numberline {5.1.1.18}mqc\_deallocate\_scalar()}{19}{subsubsection.5.1.1.18}
+\contentsline {subsubsection}{\numberline {5.1.1.19}mqc\_deallocate\_vector()}{19}{subsubsection.5.1.1.19}
+\contentsline {subsubsection}{\numberline {5.1.1.20}mqc\_elementmatrixdivide()}{19}{subsubsection.5.1.1.20}
+\contentsline {subsubsection}{\numberline {5.1.1.21}mqc\_elementmatrixproduct()}{19}{subsubsection.5.1.1.21}
+\contentsline {subsubsection}{\numberline {5.1.1.22}mqc\_elementvectorproduct()}{20}{subsubsection.5.1.1.22}
+\contentsline {subsubsection}{\numberline {5.1.1.23}mqc\_givens\_matrix()}{20}{subsubsection.5.1.1.23}
+\contentsline {subsubsection}{\numberline {5.1.1.24}mqc\_input\_complex\_scalar()}{20}{subsubsection.5.1.1.24}
+\contentsline {subsubsection}{\numberline {5.1.1.25}mqc\_input\_integer\_scalar()}{20}{subsubsection.5.1.1.25}
+\contentsline {subsubsection}{\numberline {5.1.1.26}mqc\_input\_real\_scalar()}{21}{subsubsection.5.1.1.26}
+\contentsline {subsubsection}{\numberline {5.1.1.27}mqc\_integergtscalar()}{21}{subsubsection.5.1.1.27}
+\contentsline {subsubsection}{\numberline {5.1.1.28}mqc\_integerlescalar()}{21}{subsubsection.5.1.1.28}
+\contentsline {subsubsection}{\numberline {5.1.1.29}mqc\_integerscalaradd()}{21}{subsubsection.5.1.1.29}
+\contentsline {subsubsection}{\numberline {5.1.1.30}mqc\_integerscalardivide()}{22}{subsubsection.5.1.1.30}
+\contentsline {subsubsection}{\numberline {5.1.1.31}mqc\_integerscalarmultiply()}{22}{subsubsection.5.1.1.31}
+\contentsline {subsubsection}{\numberline {5.1.1.32}mqc\_integerscalarsubtract()}{22}{subsubsection.5.1.1.32}
+\contentsline {subsubsection}{\numberline {5.1.1.33}mqc\_integervectorproduct()}{22}{subsubsection.5.1.1.33}
+\contentsline {subsubsection}{\numberline {5.1.1.34}mqc\_length\_vector()}{22}{subsubsection.5.1.1.34}
+\contentsline {subsubsection}{\numberline {5.1.1.35}mqc\_matrix\_cast\_complex()}{22}{subsubsection.5.1.1.35}
+\contentsline {subsubsection}{\numberline {5.1.1.36}mqc\_matrix\_cast\_real()}{23}{subsubsection.5.1.1.36}
+\contentsline {subsubsection}{\numberline {5.1.1.37}mqc\_matrix\_columns()}{23}{subsubsection.5.1.1.37}
+\contentsline {subsubsection}{\numberline {5.1.1.38}mqc\_matrix\_conjugate\_transpose()}{23}{subsubsection.5.1.1.38}
+\contentsline {subsubsection}{\numberline {5.1.1.39}mqc\_matrix\_copy\_complex2int()}{23}{subsubsection.5.1.1.39}
+\contentsline {subsubsection}{\numberline {5.1.1.40}mqc\_matrix\_copy\_complex2real()}{23}{subsubsection.5.1.1.40}
+\contentsline {subsubsection}{\numberline {5.1.1.41}mqc\_matrix\_copy\_int2complex()}{23}{subsubsection.5.1.1.41}
+\contentsline {subsubsection}{\numberline {5.1.1.42}mqc\_matrix\_copy\_int2real()}{24}{subsubsection.5.1.1.42}
+\contentsline {subsubsection}{\numberline {5.1.1.43}mqc\_matrix\_copy\_real2complex()}{24}{subsubsection.5.1.1.43}
+\contentsline {subsubsection}{\numberline {5.1.1.44}mqc\_matrix\_copy\_real2int()}{24}{subsubsection.5.1.1.44}
+\contentsline {subsubsection}{\numberline {5.1.1.45}mqc\_matrix\_determinant()}{24}{subsubsection.5.1.1.45}
+\contentsline {subsubsection}{\numberline {5.1.1.46}mqc\_matrix\_diag2full()}{24}{subsubsection.5.1.1.46}
+\contentsline {subsubsection}{\numberline {5.1.1.47}mqc\_matrix\_diag2symm()}{24}{subsubsection.5.1.1.47}
+\contentsline {subsubsection}{\numberline {5.1.1.48}mqc\_matrix\_diagmatrix\_put\_complex()}{25}{subsubsection.5.1.1.48}
+\contentsline {subsubsection}{\numberline {5.1.1.49}mqc\_matrix\_diagmatrix\_put\_integer()}{25}{subsubsection.5.1.1.49}
+\contentsline {subsubsection}{\numberline {5.1.1.50}mqc\_matrix\_diagmatrix\_put\_real()}{25}{subsubsection.5.1.1.50}
+\contentsline {subsubsection}{\numberline {5.1.1.51}mqc\_matrix\_diagmatrix\_put\_vector()}{25}{subsubsection.5.1.1.51}
+\contentsline {subsubsection}{\numberline {5.1.1.52}mqc\_matrix\_diagonalize()}{25}{subsubsection.5.1.1.52}
+\contentsline {subsubsection}{\numberline {5.1.1.53}mqc\_matrix\_full2diag()}{25}{subsubsection.5.1.1.53}
+\contentsline {subsubsection}{\numberline {5.1.1.54}mqc\_matrix\_full2symm()}{26}{subsubsection.5.1.1.54}
+\contentsline {subsubsection}{\numberline {5.1.1.55}mqc\_matrix\_generalized\_eigensystem()}{26}{subsubsection.5.1.1.55}
+\contentsline {subsubsection}{\numberline {5.1.1.56}mqc\_matrix\_havecomplex()}{26}{subsubsection.5.1.1.56}
+\contentsline {subsubsection}{\numberline {5.1.1.57}mqc\_matrix\_havediagonal()}{26}{subsubsection.5.1.1.57}
+\contentsline {subsubsection}{\numberline {5.1.1.58}mqc\_matrix\_havefull()}{26}{subsubsection.5.1.1.58}
+\contentsline {subsubsection}{\numberline {5.1.1.59}mqc\_matrix\_haveinteger()}{26}{subsubsection.5.1.1.59}
+\contentsline {subsubsection}{\numberline {5.1.1.60}mqc\_matrix\_havereal()}{27}{subsubsection.5.1.1.60}
+\contentsline {subsubsection}{\numberline {5.1.1.61}mqc\_matrix\_havesymmetric()}{27}{subsubsection.5.1.1.61}
+\contentsline {subsubsection}{\numberline {5.1.1.62}mqc\_matrix\_identity()}{27}{subsubsection.5.1.1.62}
+\contentsline {subsubsection}{\numberline {5.1.1.63}mqc\_matrix\_initialize()}{27}{subsubsection.5.1.1.63}
+\contentsline {subsubsection}{\numberline {5.1.1.64}mqc\_matrix\_inverse()}{27}{subsubsection.5.1.1.64}
+\contentsline {subsubsection}{\numberline {5.1.1.65}mqc\_matrix\_isallocated()}{27}{subsubsection.5.1.1.65}
+\contentsline {subsubsection}{\numberline {5.1.1.66}mqc\_matrix\_matrix\_at()}{28}{subsubsection.5.1.1.66}
+\contentsline {subsubsection}{\numberline {5.1.1.67}mqc\_matrix\_matrix\_contraction()}{29}{subsubsection.5.1.1.67}
+\contentsline {subsubsection}{\numberline {5.1.1.68}mqc\_matrix\_matrix\_put()}{29}{subsubsection.5.1.1.68}
+\contentsline {subsubsection}{\numberline {5.1.1.69}mqc\_matrix\_norm()}{30}{subsubsection.5.1.1.69}
+\contentsline {subsubsection}{\numberline {5.1.1.70}mqc\_matrix\_rms\_max()}{30}{subsubsection.5.1.1.70}
+\contentsline {subsubsection}{\numberline {5.1.1.71}mqc\_matrix\_rows()}{30}{subsubsection.5.1.1.71}
+\contentsline {subsubsection}{\numberline {5.1.1.72}mqc\_matrix\_scalar\_at()}{30}{subsubsection.5.1.1.72}
+\contentsline {subsubsection}{\numberline {5.1.1.73}mqc\_matrix\_scalar\_put()}{30}{subsubsection.5.1.1.73}
+\contentsline {subsubsection}{\numberline {5.1.1.74}mqc\_matrix\_set()}{31}{subsubsection.5.1.1.74}
+\contentsline {subsubsection}{\numberline {5.1.1.75}mqc\_matrix\_sqrt()}{31}{subsubsection.5.1.1.75}
+\contentsline {subsubsection}{\numberline {5.1.1.76}mqc\_matrix\_storagetype()}{31}{subsubsection.5.1.1.76}
+\contentsline {subsubsection}{\numberline {5.1.1.77}mqc\_matrix\_svd()}{31}{subsubsection.5.1.1.77}
+\contentsline {subsubsection}{\numberline {5.1.1.78}mqc\_matrix\_symm2diag()}{31}{subsubsection.5.1.1.78}
+\contentsline {subsubsection}{\numberline {5.1.1.79}mqc\_matrix\_symm2full()}{32}{subsubsection.5.1.1.79}
+\contentsline {subsubsection}{\numberline {5.1.1.80}mqc\_matrix\_symm2full\_func()}{32}{subsubsection.5.1.1.80}
+\contentsline {subsubsection}{\numberline {5.1.1.81}mqc\_matrix\_symmetrize()}{32}{subsubsection.5.1.1.81}
+\contentsline {subsubsection}{\numberline {5.1.1.82}mqc\_matrix\_symmmatrix\_put\_complex()}{32}{subsubsection.5.1.1.82}
+\contentsline {subsubsection}{\numberline {5.1.1.83}mqc\_matrix\_symmmatrix\_put\_integer()}{32}{subsubsection.5.1.1.83}
+\contentsline {subsubsection}{\numberline {5.1.1.84}mqc\_matrix\_symmmatrix\_put\_real()}{32}{subsubsection.5.1.1.84}
+\contentsline {subsubsection}{\numberline {5.1.1.85}mqc\_matrix\_symmsymmr4tensor\_put\_complex()}{33}{subsubsection.5.1.1.85}
+\contentsline {subsubsection}{\numberline {5.1.1.86}mqc\_matrix\_symmsymmr4tensor\_put\_real()}{33}{subsubsection.5.1.1.86}
+\contentsline {subsubsection}{\numberline {5.1.1.87}mqc\_matrix\_test\_diagonal()}{33}{subsubsection.5.1.1.87}
+\contentsline {subsubsection}{\numberline {5.1.1.88}mqc\_matrix\_test\_symmetric()}{33}{subsubsection.5.1.1.88}
+\contentsline {subsubsection}{\numberline {5.1.1.89}mqc\_matrix\_trace()}{33}{subsubsection.5.1.1.89}
+\contentsline {subsubsection}{\numberline {5.1.1.90}mqc\_matrix\_transpose()}{33}{subsubsection.5.1.1.90}
+\contentsline {subsubsection}{\numberline {5.1.1.91}mqc\_matrix\_vector\_at()}{34}{subsubsection.5.1.1.91}
+\contentsline {subsubsection}{\numberline {5.1.1.92}mqc\_matrix\_vector\_put()}{34}{subsubsection.5.1.1.92}
+\contentsline {subsubsection}{\numberline {5.1.1.93}mqc\_matrixmatrixdotproduct()}{34}{subsubsection.5.1.1.93}
+\contentsline {subsubsection}{\numberline {5.1.1.94}mqc\_matrixmatrixproduct()}{34}{subsubsection.5.1.1.94}
+\contentsline {subsubsection}{\numberline {5.1.1.95}mqc\_matrixmatrixsubtract()}{34}{subsubsection.5.1.1.95}
+\contentsline {subsubsection}{\numberline {5.1.1.96}mqc\_matrixmatrixsum()}{35}{subsubsection.5.1.1.96}
+\contentsline {subsubsection}{\numberline {5.1.1.97}mqc\_matrixscalarproduct()}{35}{subsubsection.5.1.1.97}
+\contentsline {subsubsection}{\numberline {5.1.1.98}mqc\_matrixvectordotproduct()}{35}{subsubsection.5.1.1.98}
+\contentsline {subsubsection}{\numberline {5.1.1.99}mqc\_outer()}{35}{subsubsection.5.1.1.99}
+\contentsline {subsubsection}{\numberline {5.1.1.100}mqc\_output\_complex\_scalar()}{35}{subsubsection.5.1.1.100}
+\contentsline {subsubsection}{\numberline {5.1.1.101}mqc\_output\_integer\_scalar()}{35}{subsubsection.5.1.1.101}
+\contentsline {subsubsection}{\numberline {5.1.1.102}mqc\_output\_mqcscalar\_scalar()}{36}{subsubsection.5.1.1.102}
+\contentsline {subsubsection}{\numberline {5.1.1.103}mqc\_output\_real\_scalar()}{36}{subsubsection.5.1.1.103}
+\contentsline {subsubsection}{\numberline {5.1.1.104}mqc\_print\_matrix\_algebra1()}{36}{subsubsection.5.1.1.104}
+\contentsline {subsubsection}{\numberline {5.1.1.105}mqc\_print\_r4tensor\_algebra1()}{36}{subsubsection.5.1.1.105}
+\contentsline {subsubsection}{\numberline {5.1.1.106}mqc\_print\_scalar\_algebra1()}{36}{subsubsection.5.1.1.106}
+\contentsline {subsubsection}{\numberline {5.1.1.107}mqc\_print\_vector\_algebra1()}{37}{subsubsection.5.1.1.107}
+\contentsline {subsubsection}{\numberline {5.1.1.108}mqc\_r4tensor\_at()}{37}{subsubsection.5.1.1.108}
+\contentsline {subsubsection}{\numberline {5.1.1.109}mqc\_r4tensor\_havecomplex()}{37}{subsubsection.5.1.1.109}
+\contentsline {subsubsection}{\numberline {5.1.1.110}mqc\_r4tensor\_haveinteger()}{37}{subsubsection.5.1.1.110}
+\contentsline {subsubsection}{\numberline {5.1.1.111}mqc\_r4tensor\_havereal()}{37}{subsubsection.5.1.1.111}
+\contentsline {subsubsection}{\numberline {5.1.1.112}mqc\_r4tensor\_initialize()}{38}{subsubsection.5.1.1.112}
+\contentsline {subsubsection}{\numberline {5.1.1.113}mqc\_r4tensor\_put()}{38}{subsubsection.5.1.1.113}
+\contentsline {subsubsection}{\numberline {5.1.1.114}mqc\_realgtscalar()}{38}{subsubsection.5.1.1.114}
+\contentsline {subsubsection}{\numberline {5.1.1.115}mqc\_reallescalar()}{38}{subsubsection.5.1.1.115}
+\contentsline {subsubsection}{\numberline {5.1.1.116}mqc\_realltscalar()}{38}{subsubsection.5.1.1.116}
+\contentsline {subsubsection}{\numberline {5.1.1.117}mqc\_realscalaradd()}{39}{subsubsection.5.1.1.117}
+\contentsline {subsubsection}{\numberline {5.1.1.118}mqc\_realscalardivide()}{39}{subsubsection.5.1.1.118}
+\contentsline {subsubsection}{\numberline {5.1.1.119}mqc\_realscalarmultiply()}{39}{subsubsection.5.1.1.119}
+\contentsline {subsubsection}{\numberline {5.1.1.120}mqc\_realscalarsubtract()}{39}{subsubsection.5.1.1.120}
+\contentsline {subsubsection}{\numberline {5.1.1.121}mqc\_realvectorproduct()}{39}{subsubsection.5.1.1.121}
+\contentsline {subsubsection}{\numberline {5.1.1.122}mqc\_scalar\_acos()}{39}{subsubsection.5.1.1.122}
+\contentsline {subsubsection}{\numberline {5.1.1.123}mqc\_scalar\_asin()}{40}{subsubsection.5.1.1.123}
+\contentsline {subsubsection}{\numberline {5.1.1.124}mqc\_scalar\_atan()}{40}{subsubsection.5.1.1.124}
+\contentsline {subsubsection}{\numberline {5.1.1.125}mqc\_scalar\_atan2()}{40}{subsubsection.5.1.1.125}
+\contentsline {subsubsection}{\numberline {5.1.1.126}mqc\_scalar\_cmplx()}{40}{subsubsection.5.1.1.126}
+\contentsline {subsubsection}{\numberline {5.1.1.127}mqc\_scalar\_complex\_conjugate()}{40}{subsubsection.5.1.1.127}
+\contentsline {subsubsection}{\numberline {5.1.1.128}mqc\_scalar\_complex\_imagpart()}{40}{subsubsection.5.1.1.128}
+\contentsline {subsubsection}{\numberline {5.1.1.129}mqc\_scalar\_complex\_realpart()}{41}{subsubsection.5.1.1.129}
+\contentsline {subsubsection}{\numberline {5.1.1.130}mqc\_scalar\_cos()}{41}{subsubsection.5.1.1.130}
+\contentsline {subsubsection}{\numberline {5.1.1.131}mqc\_scalar\_get\_abs\_value()}{41}{subsubsection.5.1.1.131}
+\contentsline {subsubsection}{\numberline {5.1.1.132}mqc\_scalar\_get\_intrinsic\_complex()}{41}{subsubsection.5.1.1.132}
+\contentsline {subsubsection}{\numberline {5.1.1.133}mqc\_scalar\_get\_intrinsic\_integer()}{41}{subsubsection.5.1.1.133}
+\contentsline {subsubsection}{\numberline {5.1.1.134}mqc\_scalar\_get\_intrinsic\_real()}{41}{subsubsection.5.1.1.134}
+\contentsline {subsubsection}{\numberline {5.1.1.135}mqc\_scalar\_get\_random\_value()}{42}{subsubsection.5.1.1.135}
+\contentsline {subsubsection}{\numberline {5.1.1.136}mqc\_scalar\_havecomplex()}{42}{subsubsection.5.1.1.136}
+\contentsline {subsubsection}{\numberline {5.1.1.137}mqc\_scalar\_haveinteger()}{42}{subsubsection.5.1.1.137}
+\contentsline {subsubsection}{\numberline {5.1.1.138}mqc\_scalar\_havereal()}{42}{subsubsection.5.1.1.138}
+\contentsline {subsubsection}{\numberline {5.1.1.139}mqc\_scalar\_isallocated()}{42}{subsubsection.5.1.1.139}
+\contentsline {subsubsection}{\numberline {5.1.1.140}mqc\_scalar\_sin()}{42}{subsubsection.5.1.1.140}
+\contentsline {subsubsection}{\numberline {5.1.1.141}mqc\_scalar\_sqrt()}{43}{subsubsection.5.1.1.141}
+\contentsline {subsubsection}{\numberline {5.1.1.142}mqc\_scalar\_tan()}{43}{subsubsection.5.1.1.142}
+\contentsline {subsubsection}{\numberline {5.1.1.143}mqc\_scalaradd()}{43}{subsubsection.5.1.1.143}
+\contentsline {subsubsection}{\numberline {5.1.1.144}mqc\_scalarcomplexadd()}{43}{subsubsection.5.1.1.144}
+\contentsline {subsubsection}{\numberline {5.1.1.145}mqc\_scalarcomplexdivide()}{43}{subsubsection.5.1.1.145}
+\contentsline {subsubsection}{\numberline {5.1.1.146}mqc\_scalarcomplexexponent()}{43}{subsubsection.5.1.1.146}
+\contentsline {subsubsection}{\numberline {5.1.1.147}mqc\_scalarcomplexmultiply()}{44}{subsubsection.5.1.1.147}
+\contentsline {subsubsection}{\numberline {5.1.1.148}mqc\_scalarcomplexsubtract()}{44}{subsubsection.5.1.1.148}
+\contentsline {subsubsection}{\numberline {5.1.1.149}mqc\_scalardivide()}{44}{subsubsection.5.1.1.149}
+\contentsline {subsubsection}{\numberline {5.1.1.150}mqc\_scalareq()}{44}{subsubsection.5.1.1.150}
+\contentsline {subsubsection}{\numberline {5.1.1.151}mqc\_scalarexponent()}{44}{subsubsection.5.1.1.151}
+\contentsline {subsubsection}{\numberline {5.1.1.152}mqc\_scalarge()}{44}{subsubsection.5.1.1.152}
+\contentsline {subsubsection}{\numberline {5.1.1.153}mqc\_scalargt()}{45}{subsubsection.5.1.1.153}
+\contentsline {subsubsection}{\numberline {5.1.1.154}mqc\_scalargtinteger()}{45}{subsubsection.5.1.1.154}
+\contentsline {subsubsection}{\numberline {5.1.1.155}mqc\_scalargtreal()}{45}{subsubsection.5.1.1.155}
+\contentsline {subsubsection}{\numberline {5.1.1.156}mqc\_scalarintegeradd()}{45}{subsubsection.5.1.1.156}
+\contentsline {subsubsection}{\numberline {5.1.1.157}mqc\_scalarintegerdivide()}{45}{subsubsection.5.1.1.157}
+\contentsline {subsubsection}{\numberline {5.1.1.158}mqc\_scalarintegerexponent()}{45}{subsubsection.5.1.1.158}
+\contentsline {subsubsection}{\numberline {5.1.1.159}mqc\_scalarintegermultiply()}{46}{subsubsection.5.1.1.159}
+\contentsline {subsubsection}{\numberline {5.1.1.160}mqc\_scalarintegersubtract()}{46}{subsubsection.5.1.1.160}
+\contentsline {subsubsection}{\numberline {5.1.1.161}mqc\_scalarle()}{46}{subsubsection.5.1.1.161}
+\contentsline {subsubsection}{\numberline {5.1.1.162}mqc\_scalarleinteger()}{46}{subsubsection.5.1.1.162}
+\contentsline {subsubsection}{\numberline {5.1.1.163}mqc\_scalarlereal()}{46}{subsubsection.5.1.1.163}
+\contentsline {subsubsection}{\numberline {5.1.1.164}mqc\_scalarlt()}{46}{subsubsection.5.1.1.164}
+\contentsline {subsubsection}{\numberline {5.1.1.165}mqc\_scalarltreal()}{47}{subsubsection.5.1.1.165}
+\contentsline {subsubsection}{\numberline {5.1.1.166}mqc\_scalarmatrixproduct()}{47}{subsubsection.5.1.1.166}
+\contentsline {subsubsection}{\numberline {5.1.1.167}mqc\_scalarmultiply()}{47}{subsubsection.5.1.1.167}
+\contentsline {subsubsection}{\numberline {5.1.1.168}mqc\_scalarne()}{47}{subsubsection.5.1.1.168}
+\contentsline {subsubsection}{\numberline {5.1.1.169}mqc\_scalarrealadd()}{47}{subsubsection.5.1.1.169}
+\contentsline {subsubsection}{\numberline {5.1.1.170}mqc\_scalarrealdivide()}{47}{subsubsection.5.1.1.170}
+\contentsline {subsubsection}{\numberline {5.1.1.171}mqc\_scalarrealexponent()}{48}{subsubsection.5.1.1.171}
+\contentsline {subsubsection}{\numberline {5.1.1.172}mqc\_scalarrealmultiply()}{48}{subsubsection.5.1.1.172}
+\contentsline {subsubsection}{\numberline {5.1.1.173}mqc\_scalarrealsubtract()}{48}{subsubsection.5.1.1.173}
+\contentsline {subsubsection}{\numberline {5.1.1.174}mqc\_scalarsubtract()}{48}{subsubsection.5.1.1.174}
+\contentsline {subsubsection}{\numberline {5.1.1.175}mqc\_scalarvectordifference()}{48}{subsubsection.5.1.1.175}
+\contentsline {subsubsection}{\numberline {5.1.1.176}mqc\_scalarvectorproduct()}{48}{subsubsection.5.1.1.176}
+\contentsline {subsubsection}{\numberline {5.1.1.177}mqc\_scalarvectorsum()}{49}{subsubsection.5.1.1.177}
+\contentsline {subsubsection}{\numberline {5.1.1.178}mqc\_set\_array2tensor()}{49}{subsubsection.5.1.1.178}
+\contentsline {subsubsection}{\numberline {5.1.1.179}mqc\_set\_array2vector\_complex()}{49}{subsubsection.5.1.1.179}
+\contentsline {subsubsection}{\numberline {5.1.1.180}mqc\_set\_array2vector\_integer()}{49}{subsubsection.5.1.1.180}
+\contentsline {subsubsection}{\numberline {5.1.1.181}mqc\_set\_array2vector\_real()}{49}{subsubsection.5.1.1.181}
+\contentsline {subsubsection}{\numberline {5.1.1.182}mqc\_set\_complexarray2matrix()}{49}{subsubsection.5.1.1.182}
+\contentsline {subsubsection}{\numberline {5.1.1.183}mqc\_set\_integerarray2matrix()}{50}{subsubsection.5.1.1.183}
+\contentsline {subsubsection}{\numberline {5.1.1.184}mqc\_set\_matrix2complexarray()}{50}{subsubsection.5.1.1.184}
+\contentsline {subsubsection}{\numberline {5.1.1.185}mqc\_set\_matrix2integerarray()}{50}{subsubsection.5.1.1.185}
+\contentsline {subsubsection}{\numberline {5.1.1.186}mqc\_set\_matrix2matrix()}{50}{subsubsection.5.1.1.186}
+\contentsline {subsubsection}{\numberline {5.1.1.187}mqc\_set\_matrix2realarray()}{50}{subsubsection.5.1.1.187}
+\contentsline {subsubsection}{\numberline {5.1.1.188}mqc\_set\_realarray2matrix()}{50}{subsubsection.5.1.1.188}
+\contentsline {subsubsection}{\numberline {5.1.1.189}mqc\_set\_vector2complexarray()}{51}{subsubsection.5.1.1.189}
+\contentsline {subsubsection}{\numberline {5.1.1.190}mqc\_set\_vector2integerarray()}{51}{subsubsection.5.1.1.190}
+\contentsline {subsubsection}{\numberline {5.1.1.191}mqc\_set\_vector2realarray()}{51}{subsubsection.5.1.1.191}
+\contentsline {subsubsection}{\numberline {5.1.1.192}mqc\_set\_vector2vector()}{51}{subsubsection.5.1.1.192}
+\contentsline {subsubsection}{\numberline {5.1.1.193}mqc\_vector2diagmatrix()}{51}{subsubsection.5.1.1.193}
+\contentsline {subsubsection}{\numberline {5.1.1.194}mqc\_vector\_abs()}{51}{subsubsection.5.1.1.194}
+\contentsline {subsubsection}{\numberline {5.1.1.195}mqc\_vector\_argsort()}{52}{subsubsection.5.1.1.195}
+\contentsline {subsubsection}{\numberline {5.1.1.196}mqc\_vector\_cast\_complex()}{52}{subsubsection.5.1.1.196}
+\contentsline {subsubsection}{\numberline {5.1.1.197}mqc\_vector\_cast\_real()}{52}{subsubsection.5.1.1.197}
+\contentsline {subsubsection}{\numberline {5.1.1.198}mqc\_vector\_cmplx()}{52}{subsubsection.5.1.1.198}
+\contentsline {subsubsection}{\numberline {5.1.1.199}mqc\_vector\_complex\_imagpart()}{52}{subsubsection.5.1.1.199}
+\contentsline {subsubsection}{\numberline {5.1.1.200}mqc\_vector\_complex\_realpart()}{52}{subsubsection.5.1.1.200}
+\contentsline {subsubsection}{\numberline {5.1.1.201}mqc\_vector\_conjugate\_transpose()}{53}{subsubsection.5.1.1.201}
+\contentsline {subsubsection}{\numberline {5.1.1.202}mqc\_vector\_copy\_complex2int()}{53}{subsubsection.5.1.1.202}
+\contentsline {subsubsection}{\numberline {5.1.1.203}mqc\_vector\_copy\_complex2real()}{53}{subsubsection.5.1.1.203}
+\contentsline {subsubsection}{\numberline {5.1.1.204}mqc\_vector\_copy\_int2complex()}{53}{subsubsection.5.1.1.204}
+\contentsline {subsubsection}{\numberline {5.1.1.205}mqc\_vector\_copy\_int2real()}{53}{subsubsection.5.1.1.205}
+\contentsline {subsubsection}{\numberline {5.1.1.206}mqc\_vector\_copy\_real2complex()}{53}{subsubsection.5.1.1.206}
+\contentsline {subsubsection}{\numberline {5.1.1.207}mqc\_vector\_copy\_real2int()}{54}{subsubsection.5.1.1.207}
+\contentsline {subsubsection}{\numberline {5.1.1.208}mqc\_vector\_havecomplex()}{54}{subsubsection.5.1.1.208}
+\contentsline {subsubsection}{\numberline {5.1.1.209}mqc\_vector\_haveinteger()}{54}{subsubsection.5.1.1.209}
+\contentsline {subsubsection}{\numberline {5.1.1.210}mqc\_vector\_havereal()}{54}{subsubsection.5.1.1.210}
+\contentsline {subsubsection}{\numberline {5.1.1.211}mqc\_vector\_initialize()}{54}{subsubsection.5.1.1.211}
+\contentsline {subsubsection}{\numberline {5.1.1.212}mqc\_vector\_isallocated()}{54}{subsubsection.5.1.1.212}
+\contentsline {subsubsection}{\numberline {5.1.1.213}mqc\_vector\_iscolumn()}{55}{subsubsection.5.1.1.213}
+\contentsline {subsubsection}{\numberline {5.1.1.214}mqc\_vector\_maxloc()}{55}{subsubsection.5.1.1.214}
+\contentsline {subsubsection}{\numberline {5.1.1.215}mqc\_vector\_maxval()}{55}{subsubsection.5.1.1.215}
+\contentsline {subsubsection}{\numberline {5.1.1.216}mqc\_vector\_minloc()}{55}{subsubsection.5.1.1.216}
+\contentsline {subsubsection}{\numberline {5.1.1.217}mqc\_vector\_minval()}{55}{subsubsection.5.1.1.217}
+\contentsline {subsubsection}{\numberline {5.1.1.218}mqc\_vector\_norm()}{55}{subsubsection.5.1.1.218}
+\contentsline {subsubsection}{\numberline {5.1.1.219}mqc\_vector\_pop()}{56}{subsubsection.5.1.1.219}
+\contentsline {subsubsection}{\numberline {5.1.1.220}mqc\_vector\_power()}{56}{subsubsection.5.1.1.220}
+\contentsline {subsubsection}{\numberline {5.1.1.221}mqc\_vector\_push()}{56}{subsubsection.5.1.1.221}
+\contentsline {subsubsection}{\numberline {5.1.1.222}mqc\_vector\_scalar\_at()}{56}{subsubsection.5.1.1.222}
+\contentsline {subsubsection}{\numberline {5.1.1.223}mqc\_vector\_scalar\_increment()}{56}{subsubsection.5.1.1.223}
+\contentsline {subsubsection}{\numberline {5.1.1.224}mqc\_vector\_scalar\_put()}{56}{subsubsection.5.1.1.224}
+\contentsline {subsubsection}{\numberline {5.1.1.225}mqc\_vector\_shift()}{57}{subsubsection.5.1.1.225}
+\contentsline {subsubsection}{\numberline {5.1.1.226}mqc\_vector\_sort()}{57}{subsubsection.5.1.1.226}
+\contentsline {subsubsection}{\numberline {5.1.1.227}mqc\_vector\_sqrt()}{57}{subsubsection.5.1.1.227}
+\contentsline {subsubsection}{\numberline {5.1.1.228}mqc\_vector\_transpose()}{57}{subsubsection.5.1.1.228}
+\contentsline {subsubsection}{\numberline {5.1.1.229}mqc\_vector\_unshift()}{57}{subsubsection.5.1.1.229}
+\contentsline {subsubsection}{\numberline {5.1.1.230}mqc\_vector\_vector\_at()}{57}{subsubsection.5.1.1.230}
+\contentsline {subsubsection}{\numberline {5.1.1.231}mqc\_vector\_vector\_put()}{58}{subsubsection.5.1.1.231}
+\contentsline {subsubsection}{\numberline {5.1.1.232}mqc\_vectorcomplexdivide()}{58}{subsubsection.5.1.1.232}
+\contentsline {subsubsection}{\numberline {5.1.1.233}mqc\_vectorcomplexproduct()}{58}{subsubsection.5.1.1.233}
+\contentsline {subsubsection}{\numberline {5.1.1.234}mqc\_vectorintegerdivide()}{58}{subsubsection.5.1.1.234}
+\contentsline {subsubsection}{\numberline {5.1.1.235}mqc\_vectorintegerproduct()}{58}{subsubsection.5.1.1.235}
+\contentsline {subsubsection}{\numberline {5.1.1.236}mqc\_vectormatrixdotproduct()}{58}{subsubsection.5.1.1.236}
+\contentsline {subsubsection}{\numberline {5.1.1.237}mqc\_vectorrealdivide()}{59}{subsubsection.5.1.1.237}
+\contentsline {subsubsection}{\numberline {5.1.1.238}mqc\_vectorrealproduct()}{59}{subsubsection.5.1.1.238}
+\contentsline {subsubsection}{\numberline {5.1.1.239}mqc\_vectorscalardivide()}{59}{subsubsection.5.1.1.239}
+\contentsline {subsubsection}{\numberline {5.1.1.240}mqc\_vectorscalarproduct()}{59}{subsubsection.5.1.1.240}
+\contentsline {subsubsection}{\numberline {5.1.1.241}mqc\_vectorvectordifference()}{59}{subsubsection.5.1.1.241}
+\contentsline {subsubsection}{\numberline {5.1.1.242}mqc\_vectorvectordotproduct()}{59}{subsubsection.5.1.1.242}
+\contentsline {subsubsection}{\numberline {5.1.1.243}mqc\_vectorvectorsum()}{60}{subsubsection.5.1.1.243}
+\contentsline {subsubsection}{\numberline {5.1.1.244}symindexhash()}{60}{subsubsection.5.1.1.244}
+\contentsline {section}{\numberline {5.2}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est Module Reference}{60}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{62}{subsection.5.2.1}
+\contentsline {subsubsection}{\numberline {5.2.1.1}gen\_det\_str()}{62}{subsubsection.5.2.1.1}
+\contentsline {subsubsection}{\numberline {5.2.1.2}get\_one\_gamma\_matrix()}{62}{subsubsection.5.2.1.2}
+\contentsline {subsubsection}{\numberline {5.2.1.3}mqc\_build\_ci\_hamiltonian()}{63}{subsubsection.5.2.1.3}
+\contentsline {subsubsection}{\numberline {5.2.1.4}mqc\_eigenvalue\_eigenvalue\_dotproduct()}{63}{subsubsection.5.2.1.4}
+\contentsline {subsubsection}{\numberline {5.2.1.5}mqc\_eigenvalues\_add\_name()}{63}{subsubsection.5.2.1.5}
+\contentsline {subsubsection}{\numberline {5.2.1.6}mqc\_eigenvalues\_allocate()}{63}{subsubsection.5.2.1.6}
+\contentsline {subsubsection}{\numberline {5.2.1.7}mqc\_eigenvalues\_array\_name()}{63}{subsubsection.5.2.1.7}
+\contentsline {subsubsection}{\numberline {5.2.1.8}mqc\_eigenvalues\_array\_type()}{64}{subsubsection.5.2.1.8}
+\contentsline {subsubsection}{\numberline {5.2.1.9}mqc\_eigenvalues\_at()}{64}{subsubsection.5.2.1.9}
+\contentsline {subsubsection}{\numberline {5.2.1.10}mqc\_eigenvalues\_dimension()}{64}{subsubsection.5.2.1.10}
+\contentsline {subsubsection}{\numberline {5.2.1.11}mqc\_eigenvalues\_eigenvalues\_multiply()}{64}{subsubsection.5.2.1.11}
+\contentsline {subsubsection}{\numberline {5.2.1.12}mqc\_eigenvalues\_has\_alpha()}{64}{subsubsection.5.2.1.12}
+\contentsline {subsubsection}{\numberline {5.2.1.13}mqc\_eigenvalues\_has\_beta()}{64}{subsubsection.5.2.1.13}
+\contentsline {subsubsection}{\numberline {5.2.1.14}mqc\_eigenvalues\_integral\_multiply()}{65}{subsubsection.5.2.1.14}
+\contentsline {subsubsection}{\numberline {5.2.1.15}mqc\_eigenvalues\_isallocated()}{65}{subsubsection.5.2.1.15}
+\contentsline {subsubsection}{\numberline {5.2.1.16}mqc\_eigenvalues\_output\_array()}{65}{subsubsection.5.2.1.16}
+\contentsline {subsubsection}{\numberline {5.2.1.17}mqc\_eigenvalues\_output\_block()}{65}{subsubsection.5.2.1.17}
+\contentsline {subsubsection}{\numberline {5.2.1.18}mqc\_eri\_integral\_contraction()}{65}{subsubsection.5.2.1.18}
+\contentsline {subsubsection}{\numberline {5.2.1.19}mqc\_integral\_add\_name()}{65}{subsubsection.5.2.1.19}
+\contentsline {subsubsection}{\numberline {5.2.1.20}mqc\_integral\_allocate()}{66}{subsubsection.5.2.1.20}
+\contentsline {subsubsection}{\numberline {5.2.1.21}mqc\_integral\_array\_name()}{66}{subsubsection.5.2.1.21}
+\contentsline {subsubsection}{\numberline {5.2.1.22}mqc\_integral\_array\_type()}{66}{subsubsection.5.2.1.22}
+\contentsline {subsubsection}{\numberline {5.2.1.23}mqc\_integral\_at()}{66}{subsubsection.5.2.1.23}
+\contentsline {subsubsection}{\numberline {5.2.1.24}mqc\_integral\_conjugate\_transpose()}{66}{subsubsection.5.2.1.24}
+\contentsline {subsubsection}{\numberline {5.2.1.25}mqc\_integral\_delete\_energy\_list()}{67}{subsubsection.5.2.1.25}
+\contentsline {subsubsection}{\numberline {5.2.1.26}mqc\_integral\_difference()}{67}{subsubsection.5.2.1.26}
+\contentsline {subsubsection}{\numberline {5.2.1.27}mqc\_integral\_dimension()}{67}{subsubsection.5.2.1.27}
+\contentsline {subsubsection}{\numberline {5.2.1.28}mqc\_integral\_eigenvalues\_multiply()}{67}{subsubsection.5.2.1.28}
+\contentsline {subsubsection}{\numberline {5.2.1.29}mqc\_integral\_get\_energy\_list()}{67}{subsubsection.5.2.1.29}
+\contentsline {subsubsection}{\numberline {5.2.1.30}mqc\_integral\_has\_alpha()}{67}{subsubsection.5.2.1.30}
+\contentsline {subsubsection}{\numberline {5.2.1.31}mqc\_integral\_has\_alphabeta()}{68}{subsubsection.5.2.1.31}
+\contentsline {subsubsection}{\numberline {5.2.1.32}mqc\_integral\_has\_beta()}{68}{subsubsection.5.2.1.32}
+\contentsline {subsubsection}{\numberline {5.2.1.33}mqc\_integral\_has\_betaalpha()}{68}{subsubsection.5.2.1.33}
+\contentsline {subsubsection}{\numberline {5.2.1.34}mqc\_integral\_identity()}{68}{subsubsection.5.2.1.34}
+\contentsline {subsubsection}{\numberline {5.2.1.35}mqc\_integral\_initialize()}{68}{subsubsection.5.2.1.35}
+\contentsline {subsubsection}{\numberline {5.2.1.36}mqc\_integral\_integral\_multiply()}{69}{subsubsection.5.2.1.36}
+\contentsline {subsubsection}{\numberline {5.2.1.37}mqc\_integral\_isallocated()}{69}{subsubsection.5.2.1.37}
+\contentsline {subsubsection}{\numberline {5.2.1.38}mqc\_integral\_matrix\_multiply()}{69}{subsubsection.5.2.1.38}
+\contentsline {subsubsection}{\numberline {5.2.1.39}mqc\_integral\_norm()}{69}{subsubsection.5.2.1.39}
+\contentsline {subsubsection}{\numberline {5.2.1.40}mqc\_integral\_output\_array()}{69}{subsubsection.5.2.1.40}
+\contentsline {subsubsection}{\numberline {5.2.1.41}mqc\_integral\_output\_block()}{69}{subsubsection.5.2.1.41}
+\contentsline {subsubsection}{\numberline {5.2.1.42}mqc\_integral\_output\_orbitals()}{70}{subsubsection.5.2.1.42}
+\contentsline {subsubsection}{\numberline {5.2.1.43}mqc\_integral\_scalar\_multiply()}{70}{subsubsection.5.2.1.43}
+\contentsline {subsubsection}{\numberline {5.2.1.44}mqc\_integral\_set\_energy\_list()}{70}{subsubsection.5.2.1.44}
+\contentsline {subsubsection}{\numberline {5.2.1.45}mqc\_integral\_sum()}{70}{subsubsection.5.2.1.45}
+\contentsline {subsubsection}{\numberline {5.2.1.46}mqc\_integral\_swap\_orbitals()}{70}{subsubsection.5.2.1.46}
+\contentsline {subsubsection}{\numberline {5.2.1.47}mqc\_integral\_transpose()}{71}{subsubsection.5.2.1.47}
+\contentsline {subsubsection}{\numberline {5.2.1.48}mqc\_matrix\_integral\_multiply()}{71}{subsubsection.5.2.1.48}
+\contentsline {subsubsection}{\numberline {5.2.1.49}mqc\_matrix\_spinblockghf()}{71}{subsubsection.5.2.1.49}
+\contentsline {subsubsection}{\numberline {5.2.1.50}mqc\_matrix\_undospinblockghf\_eigenvalues()}{71}{subsubsection.5.2.1.50}
+\contentsline {subsubsection}{\numberline {5.2.1.51}mqc\_matrix\_undospinblockghf\_integral()}{71}{subsubsection.5.2.1.51}
+\contentsline {subsubsection}{\numberline {5.2.1.52}mqc\_print\_eigenvalues()}{72}{subsubsection.5.2.1.52}
+\contentsline {subsubsection}{\numberline {5.2.1.53}mqc\_print\_integral()}{72}{subsubsection.5.2.1.53}
+\contentsline {subsubsection}{\numberline {5.2.1.54}mqc\_print\_twoeris()}{72}{subsubsection.5.2.1.54}
+\contentsline {subsubsection}{\numberline {5.2.1.55}mqc\_print\_wavefunction()}{72}{subsubsection.5.2.1.55}
+\contentsline {subsubsection}{\numberline {5.2.1.56}mqc\_scalar\_integral\_multiply()}{72}{subsubsection.5.2.1.56}
+\contentsline {subsubsection}{\numberline {5.2.1.57}mqc\_scf\_eigenvalues\_power()}{73}{subsubsection.5.2.1.57}
+\contentsline {subsubsection}{\numberline {5.2.1.58}mqc\_scf\_integral\_contraction()}{73}{subsubsection.5.2.1.58}
+\contentsline {subsubsection}{\numberline {5.2.1.59}mqc\_scf\_integral\_determinant()}{73}{subsubsection.5.2.1.59}
+\contentsline {subsubsection}{\numberline {5.2.1.60}mqc\_scf\_integral\_diagonalize()}{73}{subsubsection.5.2.1.60}
+\contentsline {subsubsection}{\numberline {5.2.1.61}mqc\_scf\_integral\_generalized\_eigensystem()}{73}{subsubsection.5.2.1.61}
+\contentsline {subsubsection}{\numberline {5.2.1.62}mqc\_scf\_integral\_inverse()}{74}{subsubsection.5.2.1.62}
+\contentsline {subsubsection}{\numberline {5.2.1.63}mqc\_scf\_integral\_trace()}{74}{subsubsection.5.2.1.63}
+\contentsline {subsubsection}{\numberline {5.2.1.64}mqc\_scf\_transformation\_matrix()}{74}{subsubsection.5.2.1.64}
+\contentsline {subsubsection}{\numberline {5.2.1.65}mqc\_twoeris\_allocate()}{74}{subsubsection.5.2.1.65}
+\contentsline {subsubsection}{\numberline {5.2.1.66}mqc\_twoeris\_at()}{74}{subsubsection.5.2.1.66}
+\contentsline {subsubsection}{\numberline {5.2.1.67}slater\_condon()}{75}{subsubsection.5.2.1.67}
+\contentsline {subsubsection}{\numberline {5.2.1.68}twoeri\_trans()}{75}{subsubsection.5.2.1.68}
+\contentsline {chapter}{\numberline {6}Data Type Documentation}{77}{chapter.6}
+\contentsline {section}{\numberline {6.1}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::abs Interface Reference}{77}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{77}{subsection.6.1.1}
+\contentsline {subsubsection}{\numberline {6.1.1.1}mqc\_scalar\_get\_abs\_value()}{77}{subsubsection.6.1.1.1}
+\contentsline {subsubsection}{\numberline {6.1.1.2}mqc\_vector\_abs()}{77}{subsubsection.6.1.1.2}
+\contentsline {section}{\numberline {6.2}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::acos Interface Reference}{78}{section.6.2}
+\contentsline {subsection}{\numberline {6.2.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{78}{subsection.6.2.1}
+\contentsline {subsubsection}{\numberline {6.2.1.1}mqc\_scalar\_acos()}{78}{subsubsection.6.2.1.1}
+\contentsline {section}{\numberline {6.3}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::aimag Interface Reference}{78}{section.6.3}
+\contentsline {subsection}{\numberline {6.3.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{78}{subsection.6.3.1}
+\contentsline {subsubsection}{\numberline {6.3.1.1}mqc\_scalar\_complex\_imagpart()}{78}{subsubsection.6.3.1.1}
+\contentsline {subsubsection}{\numberline {6.3.1.2}mqc\_vector\_complex\_imagpart()}{79}{subsubsection.6.3.1.2}
+\contentsline {section}{\numberline {6.4}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::asin Interface Reference}{79}{section.6.4}
+\contentsline {subsection}{\numberline {6.4.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{79}{subsection.6.4.1}
+\contentsline {subsubsection}{\numberline {6.4.1.1}mqc\_scalar\_asin()}{79}{subsubsection.6.4.1.1}
+\contentsline {section}{\numberline {6.5}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::assignment(=) Interface Reference}{79}{section.6.5}
+\contentsline {subsection}{\numberline {6.5.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{80}{subsection.6.5.1}
+\contentsline {subsubsection}{\numberline {6.5.1.1}mqc\_input\_complex\_scalar()}{80}{subsubsection.6.5.1.1}
+\contentsline {subsubsection}{\numberline {6.5.1.2}mqc\_input\_integer\_scalar()}{80}{subsubsection.6.5.1.2}
+\contentsline {subsubsection}{\numberline {6.5.1.3}mqc\_input\_real\_scalar()}{81}{subsubsection.6.5.1.3}
+\contentsline {subsubsection}{\numberline {6.5.1.4}mqc\_output\_complex\_scalar()}{81}{subsubsection.6.5.1.4}
+\contentsline {subsubsection}{\numberline {6.5.1.5}mqc\_output\_integer\_scalar()}{81}{subsubsection.6.5.1.5}
+\contentsline {subsubsection}{\numberline {6.5.1.6}mqc\_output\_mqcscalar\_scalar()}{81}{subsubsection.6.5.1.6}
+\contentsline {subsubsection}{\numberline {6.5.1.7}mqc\_output\_real\_scalar()}{82}{subsubsection.6.5.1.7}
+\contentsline {subsubsection}{\numberline {6.5.1.8}mqc\_set\_array2tensor()}{82}{subsubsection.6.5.1.8}
+\contentsline {subsubsection}{\numberline {6.5.1.9}mqc\_set\_array2vector\_complex()}{82}{subsubsection.6.5.1.9}
+\contentsline {subsubsection}{\numberline {6.5.1.10}mqc\_set\_array2vector\_integer()}{82}{subsubsection.6.5.1.10}
+\contentsline {subsubsection}{\numberline {6.5.1.11}mqc\_set\_array2vector\_real()}{82}{subsubsection.6.5.1.11}
+\contentsline {subsubsection}{\numberline {6.5.1.12}mqc\_set\_complexarray2matrix()}{82}{subsubsection.6.5.1.12}
+\contentsline {subsubsection}{\numberline {6.5.1.13}mqc\_set\_integerarray2matrix()}{83}{subsubsection.6.5.1.13}
+\contentsline {subsubsection}{\numberline {6.5.1.14}mqc\_set\_matrix2complexarray()}{83}{subsubsection.6.5.1.14}
+\contentsline {subsubsection}{\numberline {6.5.1.15}mqc\_set\_matrix2integerarray()}{83}{subsubsection.6.5.1.15}
+\contentsline {subsubsection}{\numberline {6.5.1.16}mqc\_set\_matrix2matrix()}{83}{subsubsection.6.5.1.16}
+\contentsline {subsubsection}{\numberline {6.5.1.17}mqc\_set\_matrix2realarray()}{83}{subsubsection.6.5.1.17}
+\contentsline {subsubsection}{\numberline {6.5.1.18}mqc\_set\_realarray2matrix()}{83}{subsubsection.6.5.1.18}
+\contentsline {subsubsection}{\numberline {6.5.1.19}mqc\_set\_vector2complexarray()}{84}{subsubsection.6.5.1.19}
+\contentsline {subsubsection}{\numberline {6.5.1.20}mqc\_set\_vector2integerarray()}{84}{subsubsection.6.5.1.20}
+\contentsline {subsubsection}{\numberline {6.5.1.21}mqc\_set\_vector2realarray()}{84}{subsubsection.6.5.1.21}
+\contentsline {subsubsection}{\numberline {6.5.1.22}mqc\_set\_vector2vector()}{84}{subsubsection.6.5.1.22}
+\contentsline {section}{\numberline {6.6}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::assignment(=) Interface Reference}{84}{section.6.6}
+\contentsline {subsection}{\numberline {6.6.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{84}{subsection.6.6.1}
+\contentsline {subsubsection}{\numberline {6.6.1.1}mqc\_eigenvalues\_output\_array()}{85}{subsubsection.6.6.1.1}
+\contentsline {subsubsection}{\numberline {6.6.1.2}mqc\_integral\_output\_array()}{85}{subsubsection.6.6.1.2}
+\contentsline {section}{\numberline {6.7}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::atan Interface Reference}{85}{section.6.7}
+\contentsline {subsection}{\numberline {6.7.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{85}{subsection.6.7.1}
+\contentsline {subsubsection}{\numberline {6.7.1.1}mqc\_scalar\_atan()}{85}{subsubsection.6.7.1.1}
+\contentsline {section}{\numberline {6.8}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::atan2 Interface Reference}{85}{section.6.8}
+\contentsline {subsection}{\numberline {6.8.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{86}{subsection.6.8.1}
+\contentsline {subsubsection}{\numberline {6.8.1.1}mqc\_scalar\_atan2()}{86}{subsubsection.6.8.1.1}
+\contentsline {section}{\numberline {6.9}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::cmplx Interface Reference}{86}{section.6.9}
+\contentsline {subsection}{\numberline {6.9.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{86}{subsection.6.9.1}
+\contentsline {subsubsection}{\numberline {6.9.1.1}mqc\_scalar\_cmplx()}{86}{subsubsection.6.9.1.1}
+\contentsline {subsubsection}{\numberline {6.9.1.2}mqc\_vector\_cmplx()}{86}{subsubsection.6.9.1.2}
+\contentsline {section}{\numberline {6.10}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::conjg Interface Reference}{87}{section.6.10}
+\contentsline {subsection}{\numberline {6.10.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{87}{subsection.6.10.1}
+\contentsline {subsubsection}{\numberline {6.10.1.1}mqc\_scalar\_complex\_conjugate()}{87}{subsubsection.6.10.1.1}
+\contentsline {section}{\numberline {6.11}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::contraction Interface Reference}{87}{section.6.11}
+\contentsline {subsection}{\numberline {6.11.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{87}{subsection.6.11.1}
+\contentsline {subsubsection}{\numberline {6.11.1.1}mqc\_matrix\_matrix\_contraction()}{87}{subsubsection.6.11.1.1}
+\contentsline {section}{\numberline {6.12}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::contraction Interface Reference}{88}{section.6.12}
+\contentsline {subsection}{\numberline {6.12.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{88}{subsection.6.12.1}
+\contentsline {subsubsection}{\numberline {6.12.1.1}mqc\_eri\_integral\_contraction()}{88}{subsubsection.6.12.1.1}
+\contentsline {subsubsection}{\numberline {6.12.1.2}mqc\_scf\_integral\_contraction()}{88}{subsubsection.6.12.1.2}
+\contentsline {section}{\numberline {6.13}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::cos Interface Reference}{88}{section.6.13}
+\contentsline {subsection}{\numberline {6.13.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{88}{subsection.6.13.1}
+\contentsline {subsubsection}{\numberline {6.13.1.1}mqc\_scalar\_cos()}{89}{subsubsection.6.13.1.1}
+\contentsline {section}{\numberline {6.14}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::dagger Interface Reference}{89}{section.6.14}
+\contentsline {subsection}{\numberline {6.14.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{89}{subsection.6.14.1}
+\contentsline {subsubsection}{\numberline {6.14.1.1}mqc\_matrix\_conjugate\_transpose()}{89}{subsubsection.6.14.1.1}
+\contentsline {subsubsection}{\numberline {6.14.1.2}mqc\_vector\_conjugate\_transpose()}{89}{subsubsection.6.14.1.2}
+\contentsline {section}{\numberline {6.15}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::dagger Interface Reference}{89}{section.6.15}
+\contentsline {subsection}{\numberline {6.15.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{90}{subsection.6.15.1}
+\contentsline {subsubsection}{\numberline {6.15.1.1}mqc\_integral\_conjugate\_transpose()}{90}{subsubsection.6.15.1.1}
+\contentsline {section}{\numberline {6.16}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::dot\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}product Interface Reference}{90}{section.6.16}
+\contentsline {subsection}{\numberline {6.16.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{90}{subsection.6.16.1}
+\contentsline {subsubsection}{\numberline {6.16.1.1}mqc\_vectorvectordotproduct()}{90}{subsubsection.6.16.1.1}
+\contentsline {section}{\numberline {6.17}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::dot\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}product Interface Reference}{90}{section.6.17}
+\contentsline {subsection}{\numberline {6.17.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{91}{subsection.6.17.1}
+\contentsline {subsubsection}{\numberline {6.17.1.1}mqc\_eigenvalue\_eigenvalue\_dotproduct()}{91}{subsubsection.6.17.1.1}
+\contentsline {section}{\numberline {6.18}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::matmul Interface Reference}{91}{section.6.18}
+\contentsline {subsection}{\numberline {6.18.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{91}{subsection.6.18.1}
+\contentsline {subsubsection}{\numberline {6.18.1.1}mqc\_matrixmatrixdotproduct()}{91}{subsubsection.6.18.1.1}
+\contentsline {subsubsection}{\numberline {6.18.1.2}mqc\_matrixvectordotproduct()}{91}{subsubsection.6.18.1.2}
+\contentsline {subsubsection}{\numberline {6.18.1.3}mqc\_vectormatrixdotproduct()}{92}{subsubsection.6.18.1.3}
+\contentsline {section}{\numberline {6.19}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::matmul Interface Reference}{92}{section.6.19}
+\contentsline {subsection}{\numberline {6.19.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{92}{subsection.6.19.1}
+\contentsline {subsubsection}{\numberline {6.19.1.1}mqc\_eigenvalues\_eigenvalues\_multiply()}{92}{subsubsection.6.19.1.1}
+\contentsline {subsubsection}{\numberline {6.19.1.2}mqc\_eigenvalues\_integral\_multiply()}{92}{subsubsection.6.19.1.2}
+\contentsline {subsubsection}{\numberline {6.19.1.3}mqc\_integral\_eigenvalues\_multiply()}{93}{subsubsection.6.19.1.3}
+\contentsline {subsubsection}{\numberline {6.19.1.4}mqc\_integral\_integral\_multiply()}{93}{subsubsection.6.19.1.4}
+\contentsline {subsubsection}{\numberline {6.19.1.5}mqc\_integral\_matrix\_multiply()}{93}{subsubsection.6.19.1.5}
+\contentsline {subsubsection}{\numberline {6.19.1.6}mqc\_matrix\_integral\_multiply()}{93}{subsubsection.6.19.1.6}
+\contentsline {section}{\numberline {6.20}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::matrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}symm2sq Interface Reference}{93}{section.6.20}
+\contentsline {subsection}{\numberline {6.20.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{94}{subsection.6.20.1}
+\contentsline {subsubsection}{\numberline {6.20.1.1}matrix\_symm2sq\_complex()}{94}{subsubsection.6.20.1.1}
+\contentsline {subsubsection}{\numberline {6.20.1.2}matrix\_symm2sq\_integer()}{94}{subsubsection.6.20.1.2}
+\contentsline {subsubsection}{\numberline {6.20.1.3}matrix\_symm2sq\_real()}{94}{subsubsection.6.20.1.3}
+\contentsline {section}{\numberline {6.21}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}cast\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}complex Interface Reference}{94}{section.6.21}
+\contentsline {subsection}{\numberline {6.21.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{94}{subsection.6.21.1}
+\contentsline {subsubsection}{\numberline {6.21.1.1}mqc\_matrix\_cast\_complex()}{95}{subsubsection.6.21.1.1}
+\contentsline {subsubsection}{\numberline {6.21.1.2}mqc\_vector\_cast\_complex()}{95}{subsubsection.6.21.1.2}
+\contentsline {section}{\numberline {6.22}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}cast\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}real Interface Reference}{95}{section.6.22}
+\contentsline {subsection}{\numberline {6.22.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{95}{subsection.6.22.1}
+\contentsline {subsubsection}{\numberline {6.22.1.1}mqc\_matrix\_cast\_real()}{95}{subsubsection.6.22.1.1}
+\contentsline {subsubsection}{\numberline {6.22.1.2}mqc\_vector\_cast\_real()}{95}{subsubsection.6.22.1.2}
+\contentsline {section}{\numberline {6.23}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}determinant Type Reference}{96}{section.6.23}
+\contentsline {subsection}{\numberline {6.23.1}Member Data Documentation}{96}{subsection.6.23.1}
+\contentsline {subsubsection}{\numberline {6.23.1.1}nalpstr}{96}{subsubsection.6.23.1.1}
+\contentsline {subsubsection}{\numberline {6.23.1.2}nbetstr}{96}{subsubsection.6.23.1.2}
+\contentsline {subsubsection}{\numberline {6.23.1.3}ndets}{96}{subsubsection.6.23.1.3}
+\contentsline {subsubsection}{\numberline {6.23.1.4}order}{96}{subsubsection.6.23.1.4}
+\contentsline {subsubsection}{\numberline {6.23.1.5}strings}{96}{subsubsection.6.23.1.5}
+\contentsline {section}{\numberline {6.24}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}determinant\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}string Type Reference}{97}{section.6.24}
+\contentsline {subsection}{\numberline {6.24.1}Member Data Documentation}{97}{subsection.6.24.1}
+\contentsline {subsubsection}{\numberline {6.24.1.1}alpha}{97}{subsubsection.6.24.1.1}
+\contentsline {subsubsection}{\numberline {6.24.1.2}beta}{97}{subsubsection.6.24.1.2}
+\contentsline {section}{\numberline {6.25}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}have\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}complex Interface Reference}{97}{section.6.25}
+\contentsline {subsection}{\numberline {6.25.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{97}{subsection.6.25.1}
+\contentsline {subsubsection}{\numberline {6.25.1.1}mqc\_matrix\_havecomplex()}{97}{subsubsection.6.25.1.1}
+\contentsline {subsubsection}{\numberline {6.25.1.2}mqc\_vector\_havecomplex()}{98}{subsubsection.6.25.1.2}
+\contentsline {section}{\numberline {6.26}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}have\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}int Interface Reference}{98}{section.6.26}
+\contentsline {subsection}{\numberline {6.26.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{98}{subsection.6.26.1}
+\contentsline {subsubsection}{\numberline {6.26.1.1}mqc\_matrix\_haveinteger()}{98}{subsubsection.6.26.1.1}
+\contentsline {subsubsection}{\numberline {6.26.1.2}mqc\_vector\_haveinteger()}{98}{subsubsection.6.26.1.2}
+\contentsline {section}{\numberline {6.27}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}have\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}real Interface Reference}{98}{section.6.27}
+\contentsline {subsection}{\numberline {6.27.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{99}{subsection.6.27.1}
+\contentsline {subsubsection}{\numberline {6.27.1.1}mqc\_matrix\_havereal()}{99}{subsubsection.6.27.1.1}
+\contentsline {subsubsection}{\numberline {6.27.1.2}mqc\_vector\_havereal()}{99}{subsubsection.6.27.1.2}
+\contentsline {section}{\numberline {6.28}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}matrix Type Reference}{99}{section.6.28}
+\contentsline {subsection}{\numberline {6.28.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{100}{subsection.6.28.1}
+\contentsline {subsubsection}{\numberline {6.28.1.1}at()}{100}{subsubsection.6.28.1.1}
+\contentsline {subsubsection}{\numberline {6.28.1.2}dagger()}{100}{subsubsection.6.28.1.2}
+\contentsline {subsubsection}{\numberline {6.28.1.3}det()}{100}{subsubsection.6.28.1.3}
+\contentsline {subsubsection}{\numberline {6.28.1.4}diag()}{100}{subsubsection.6.28.1.4}
+\contentsline {subsubsection}{\numberline {6.28.1.5}eigensys()}{100}{subsubsection.6.28.1.5}
+\contentsline {subsubsection}{\numberline {6.28.1.6}identity()}{101}{subsubsection.6.28.1.6}
+\contentsline {subsubsection}{\numberline {6.28.1.7}init()}{101}{subsubsection.6.28.1.7}
+\contentsline {subsubsection}{\numberline {6.28.1.8}initialize()}{101}{subsubsection.6.28.1.8}
+\contentsline {subsubsection}{\numberline {6.28.1.9}inv()}{101}{subsubsection.6.28.1.9}
+\contentsline {subsubsection}{\numberline {6.28.1.10}mat()}{101}{subsubsection.6.28.1.10}
+\contentsline {subsubsection}{\numberline {6.28.1.11}mput()}{101}{subsubsection.6.28.1.11}
+\contentsline {subsubsection}{\numberline {6.28.1.12}norm()}{101}{subsubsection.6.28.1.12}
+\contentsline {subsubsection}{\numberline {6.28.1.13}print()}{102}{subsubsection.6.28.1.13}
+\contentsline {subsubsection}{\numberline {6.28.1.14}put()}{102}{subsubsection.6.28.1.14}
+\contentsline {subsubsection}{\numberline {6.28.1.15}rmsmax()}{102}{subsubsection.6.28.1.15}
+\contentsline {subsubsection}{\numberline {6.28.1.16}s\_type()}{102}{subsubsection.6.28.1.16}
+\contentsline {subsubsection}{\numberline {6.28.1.17}set()}{102}{subsubsection.6.28.1.17}
+\contentsline {subsubsection}{\numberline {6.28.1.18}sqrt()}{102}{subsubsection.6.28.1.18}
+\contentsline {subsubsection}{\numberline {6.28.1.19}svd()}{102}{subsubsection.6.28.1.19}
+\contentsline {subsubsection}{\numberline {6.28.1.20}trace()}{103}{subsubsection.6.28.1.20}
+\contentsline {subsubsection}{\numberline {6.28.1.21}transpose()}{103}{subsubsection.6.28.1.21}
+\contentsline {subsubsection}{\numberline {6.28.1.22}vat()}{103}{subsubsection.6.28.1.22}
+\contentsline {subsubsection}{\numberline {6.28.1.23}vput()}{103}{subsubsection.6.28.1.23}
+\contentsline {subsection}{\numberline {6.28.2}Member Data Documentation}{103}{subsection.6.28.2}
+\contentsline {subsubsection}{\numberline {6.28.2.1}matc}{103}{subsubsection.6.28.2.1}
+\contentsline {subsubsection}{\numberline {6.28.2.2}mati}{103}{subsubsection.6.28.2.2}
+\contentsline {subsubsection}{\numberline {6.28.2.3}matr}{104}{subsubsection.6.28.2.3}
+\contentsline {section}{\numberline {6.29}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}matrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}diagmatrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}put Interface Reference}{104}{section.6.29}
+\contentsline {subsection}{\numberline {6.29.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{104}{subsection.6.29.1}
+\contentsline {subsubsection}{\numberline {6.29.1.1}mqc\_matrix\_diagmatrix\_put\_complex()}{104}{subsubsection.6.29.1.1}
+\contentsline {subsubsection}{\numberline {6.29.1.2}mqc\_matrix\_diagmatrix\_put\_integer()}{104}{subsubsection.6.29.1.2}
+\contentsline {subsubsection}{\numberline {6.29.1.3}mqc\_matrix\_diagmatrix\_put\_real()}{104}{subsubsection.6.29.1.3}
+\contentsline {subsubsection}{\numberline {6.29.1.4}mqc\_matrix\_diagmatrix\_put\_vector()}{105}{subsubsection.6.29.1.4}
+\contentsline {section}{\numberline {6.30}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}matrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}symmmatrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}put Interface Reference}{105}{section.6.30}
+\contentsline {subsection}{\numberline {6.30.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{105}{subsection.6.30.1}
+\contentsline {subsubsection}{\numberline {6.30.1.1}mqc\_matrix\_symmmatrix\_put\_complex()}{105}{subsubsection.6.30.1.1}
+\contentsline {subsubsection}{\numberline {6.30.1.2}mqc\_matrix\_symmmatrix\_put\_integer()}{105}{subsubsection.6.30.1.2}
+\contentsline {subsubsection}{\numberline {6.30.1.3}mqc\_matrix\_symmmatrix\_put\_real()}{105}{subsubsection.6.30.1.3}
+\contentsline {section}{\numberline {6.31}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}matrix\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}undospinblockghf Interface Reference}{106}{section.6.31}
+\contentsline {subsection}{\numberline {6.31.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{106}{subsection.6.31.1}
+\contentsline {subsubsection}{\numberline {6.31.1.1}mqc\_matrix\_undospinblockghf\_eigenvalues()}{106}{subsubsection.6.31.1.1}
+\contentsline {subsubsection}{\numberline {6.31.1.2}mqc\_matrix\_undospinblockghf\_integral()}{106}{subsubsection.6.31.1.2}
+\contentsline {section}{\numberline {6.32}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}print Interface Reference}{106}{section.6.32}
+\contentsline {subsection}{\numberline {6.32.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{106}{subsection.6.32.1}
+\contentsline {subsubsection}{\numberline {6.32.1.1}mqc\_print\_matrix\_algebra1()}{107}{subsubsection.6.32.1.1}
+\contentsline {subsubsection}{\numberline {6.32.1.2}mqc\_print\_r4tensor\_algebra1()}{107}{subsubsection.6.32.1.2}
+\contentsline {subsubsection}{\numberline {6.32.1.3}mqc\_print\_scalar\_algebra1()}{107}{subsubsection.6.32.1.3}
+\contentsline {subsubsection}{\numberline {6.32.1.4}mqc\_print\_vector\_algebra1()}{107}{subsubsection.6.32.1.4}
+\contentsline {section}{\numberline {6.33}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}print Interface Reference}{108}{section.6.33}
+\contentsline {subsection}{\numberline {6.33.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{108}{subsection.6.33.1}
+\contentsline {subsubsection}{\numberline {6.33.1.1}mqc\_print\_eigenvalues()}{108}{subsubsection.6.33.1.1}
+\contentsline {subsubsection}{\numberline {6.33.1.2}mqc\_print\_integral()}{108}{subsubsection.6.33.1.2}
+\contentsline {subsubsection}{\numberline {6.33.1.3}mqc\_print\_twoeris()}{108}{subsubsection.6.33.1.3}
+\contentsline {subsubsection}{\numberline {6.33.1.4}mqc\_print\_wavefunction()}{109}{subsubsection.6.33.1.4}
+\contentsline {section}{\numberline {6.34}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}pscf\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}wavefunction Type Reference}{109}{section.6.34}
+\contentsline {subsection}{\numberline {6.34.1}Member Data Documentation}{109}{subsection.6.34.1}
+\contentsline {subsubsection}{\numberline {6.34.1.1}nactive}{109}{subsubsection.6.34.1.1}
+\contentsline {subsubsection}{\numberline {6.34.1.2}ncore}{110}{subsubsection.6.34.1.2}
+\contentsline {subsubsection}{\numberline {6.34.1.3}nfrz}{110}{subsubsection.6.34.1.3}
+\contentsline {subsubsection}{\numberline {6.34.1.4}nval}{110}{subsubsection.6.34.1.4}
+\contentsline {subsubsection}{\numberline {6.34.1.5}pscf\_amplitudes}{110}{subsubsection.6.34.1.5}
+\contentsline {subsubsection}{\numberline {6.34.1.6}pscf\_energies}{110}{subsubsection.6.34.1.6}
+\contentsline {section}{\numberline {6.35}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}r4tensor Type Reference}{110}{section.6.35}
+\contentsline {subsection}{\numberline {6.35.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{111}{subsection.6.35.1}
+\contentsline {subsubsection}{\numberline {6.35.1.1}at()}{111}{subsubsection.6.35.1.1}
+\contentsline {subsubsection}{\numberline {6.35.1.2}init()}{111}{subsubsection.6.35.1.2}
+\contentsline {subsubsection}{\numberline {6.35.1.3}initialize()}{111}{subsubsection.6.35.1.3}
+\contentsline {subsubsection}{\numberline {6.35.1.4}print()}{111}{subsubsection.6.35.1.4}
+\contentsline {subsubsection}{\numberline {6.35.1.5}put()}{111}{subsubsection.6.35.1.5}
+\contentsline {section}{\numberline {6.36}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}scalar Type Reference}{111}{section.6.36}
+\contentsline {subsection}{\numberline {6.36.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{112}{subsection.6.36.1}
+\contentsline {subsubsection}{\numberline {6.36.1.1}abs()}{112}{subsubsection.6.36.1.1}
+\contentsline {subsubsection}{\numberline {6.36.1.2}cval()}{112}{subsubsection.6.36.1.2}
+\contentsline {subsubsection}{\numberline {6.36.1.3}ival()}{112}{subsubsection.6.36.1.3}
+\contentsline {subsubsection}{\numberline {6.36.1.4}print()}{112}{subsubsection.6.36.1.4}
+\contentsline {subsubsection}{\numberline {6.36.1.5}random()}{112}{subsubsection.6.36.1.5}
+\contentsline {subsubsection}{\numberline {6.36.1.6}rval()}{112}{subsubsection.6.36.1.6}
+\contentsline {section}{\numberline {6.37}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}scf\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}eigenvalues Type Reference}{113}{section.6.37}
+\contentsline {subsection}{\numberline {6.37.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{113}{subsection.6.37.1}
+\contentsline {subsubsection}{\numberline {6.37.1.1}addlabel()}{113}{subsubsection.6.37.1.1}
+\contentsline {subsubsection}{\numberline {6.37.1.2}at()}{113}{subsubsection.6.37.1.2}
+\contentsline {subsubsection}{\numberline {6.37.1.3}getblock()}{113}{subsubsection.6.37.1.3}
+\contentsline {subsubsection}{\numberline {6.37.1.4}getlabel()}{113}{subsubsection.6.37.1.4}
+\contentsline {subsubsection}{\numberline {6.37.1.5}power()}{113}{subsubsection.6.37.1.5}
+\contentsline {subsubsection}{\numberline {6.37.1.6}print()}{114}{subsubsection.6.37.1.6}
+\contentsline {section}{\numberline {6.38}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}scf\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}integral Type Reference}{114}{section.6.38}
+\contentsline {subsection}{\numberline {6.38.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{114}{subsection.6.38.1}
+\contentsline {subsubsection}{\numberline {6.38.1.1}addlabel()}{114}{subsubsection.6.38.1.1}
+\contentsline {subsubsection}{\numberline {6.38.1.2}deleteelist()}{114}{subsubsection.6.38.1.2}
+\contentsline {subsubsection}{\numberline {6.38.1.3}det()}{115}{subsubsection.6.38.1.3}
+\contentsline {subsubsection}{\numberline {6.38.1.4}diag()}{115}{subsubsection.6.38.1.4}
+\contentsline {subsubsection}{\numberline {6.38.1.5}eigensys()}{115}{subsubsection.6.38.1.5}
+\contentsline {subsubsection}{\numberline {6.38.1.6}getblock()}{115}{subsubsection.6.38.1.6}
+\contentsline {subsubsection}{\numberline {6.38.1.7}getelist()}{115}{subsubsection.6.38.1.7}
+\contentsline {subsubsection}{\numberline {6.38.1.8}getlabel()}{115}{subsubsection.6.38.1.8}
+\contentsline {subsubsection}{\numberline {6.38.1.9}identity()}{115}{subsubsection.6.38.1.9}
+\contentsline {subsubsection}{\numberline {6.38.1.10}init()}{116}{subsubsection.6.38.1.10}
+\contentsline {subsubsection}{\numberline {6.38.1.11}inv()}{116}{subsubsection.6.38.1.11}
+\contentsline {subsubsection}{\numberline {6.38.1.12}norm()}{116}{subsubsection.6.38.1.12}
+\contentsline {subsubsection}{\numberline {6.38.1.13}orbitals()}{116}{subsubsection.6.38.1.13}
+\contentsline {subsubsection}{\numberline {6.38.1.14}print()}{116}{subsubsection.6.38.1.14}
+\contentsline {subsubsection}{\numberline {6.38.1.15}setelist()}{116}{subsubsection.6.38.1.15}
+\contentsline {subsubsection}{\numberline {6.38.1.16}swap()}{116}{subsubsection.6.38.1.16}
+\contentsline {subsubsection}{\numberline {6.38.1.17}trace()}{117}{subsubsection.6.38.1.17}
+\contentsline {section}{\numberline {6.39}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}set\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}array2vector Interface Reference}{117}{section.6.39}
+\contentsline {subsection}{\numberline {6.39.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{117}{subsection.6.39.1}
+\contentsline {subsubsection}{\numberline {6.39.1.1}mqc\_set\_array2vector\_complex()}{117}{subsubsection.6.39.1.1}
+\contentsline {subsubsection}{\numberline {6.39.1.2}mqc\_set\_array2vector\_integer()}{117}{subsubsection.6.39.1.2}
+\contentsline {subsubsection}{\numberline {6.39.1.3}mqc\_set\_array2vector\_real()}{117}{subsubsection.6.39.1.3}
+\contentsline {section}{\numberline {6.40}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}twoeris Type Reference}{118}{section.6.40}
+\contentsline {subsection}{\numberline {6.40.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{118}{subsection.6.40.1}
+\contentsline {subsubsection}{\numberline {6.40.1.1}print()}{118}{subsubsection.6.40.1.1}
+\contentsline {section}{\numberline {6.41}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}vector Type Reference}{118}{section.6.41}
+\contentsline {subsection}{\numberline {6.41.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{119}{subsection.6.41.1}
+\contentsline {subsubsection}{\numberline {6.41.1.1}abs()}{119}{subsubsection.6.41.1.1}
+\contentsline {subsubsection}{\numberline {6.41.1.2}argsort()}{119}{subsubsection.6.41.1.2}
+\contentsline {subsubsection}{\numberline {6.41.1.3}at()}{119}{subsubsection.6.41.1.3}
+\contentsline {subsubsection}{\numberline {6.41.1.4}dagger()}{119}{subsubsection.6.41.1.4}
+\contentsline {subsubsection}{\numberline {6.41.1.5}diag()}{119}{subsubsection.6.41.1.5}
+\contentsline {subsubsection}{\numberline {6.41.1.6}init()}{120}{subsubsection.6.41.1.6}
+\contentsline {subsubsection}{\numberline {6.41.1.7}initialize()}{120}{subsubsection.6.41.1.7}
+\contentsline {subsubsection}{\numberline {6.41.1.8}maxloc()}{120}{subsubsection.6.41.1.8}
+\contentsline {subsubsection}{\numberline {6.41.1.9}maxval()}{120}{subsubsection.6.41.1.9}
+\contentsline {subsubsection}{\numberline {6.41.1.10}minloc()}{120}{subsubsection.6.41.1.10}
+\contentsline {subsubsection}{\numberline {6.41.1.11}minval()}{120}{subsubsection.6.41.1.11}
+\contentsline {subsubsection}{\numberline {6.41.1.12}norm()}{120}{subsubsection.6.41.1.12}
+\contentsline {subsubsection}{\numberline {6.41.1.13}pop()}{121}{subsubsection.6.41.1.13}
+\contentsline {subsubsection}{\numberline {6.41.1.14}power()}{121}{subsubsection.6.41.1.14}
+\contentsline {subsubsection}{\numberline {6.41.1.15}print()}{121}{subsubsection.6.41.1.15}
+\contentsline {subsubsection}{\numberline {6.41.1.16}push()}{121}{subsubsection.6.41.1.16}
+\contentsline {subsubsection}{\numberline {6.41.1.17}put()}{121}{subsubsection.6.41.1.17}
+\contentsline {subsubsection}{\numberline {6.41.1.18}shift()}{121}{subsubsection.6.41.1.18}
+\contentsline {subsubsection}{\numberline {6.41.1.19}size()}{121}{subsubsection.6.41.1.19}
+\contentsline {subsubsection}{\numberline {6.41.1.20}sort()}{122}{subsubsection.6.41.1.20}
+\contentsline {subsubsection}{\numberline {6.41.1.21}sqrt()}{122}{subsubsection.6.41.1.21}
+\contentsline {subsubsection}{\numberline {6.41.1.22}transpose()}{122}{subsubsection.6.41.1.22}
+\contentsline {subsubsection}{\numberline {6.41.1.23}unshift()}{122}{subsubsection.6.41.1.23}
+\contentsline {subsubsection}{\numberline {6.41.1.24}vat()}{122}{subsubsection.6.41.1.24}
+\contentsline {subsubsection}{\numberline {6.41.1.25}vput()}{122}{subsubsection.6.41.1.25}
+\contentsline {subsection}{\numberline {6.41.2}Member Data Documentation}{122}{subsection.6.41.2}
+\contentsline {subsubsection}{\numberline {6.41.2.1}data\_type}{122}{subsubsection.6.41.2.1}
+\contentsline {subsubsection}{\numberline {6.41.2.2}length}{123}{subsubsection.6.41.2.2}
+\contentsline {subsubsection}{\numberline {6.41.2.3}vecc}{123}{subsubsection.6.41.2.3}
+\contentsline {subsubsection}{\numberline {6.41.2.4}veci}{123}{subsubsection.6.41.2.4}
+\contentsline {subsubsection}{\numberline {6.41.2.5}vecr}{123}{subsubsection.6.41.2.5}
+\contentsline {section}{\numberline {6.42}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}wavefunction Type Reference}{123}{section.6.42}
+\contentsline {subsection}{\numberline {6.42.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{124}{subsection.6.42.1}
+\contentsline {subsubsection}{\numberline {6.42.1.1}print()}{124}{subsubsection.6.42.1.1}
+\contentsline {subsection}{\numberline {6.42.2}Member Data Documentation}{124}{subsection.6.42.2}
+\contentsline {subsubsection}{\numberline {6.42.2.1}basis}{124}{subsubsection.6.42.2.1}
+\contentsline {subsubsection}{\numberline {6.42.2.2}charge}{124}{subsubsection.6.42.2.2}
+\contentsline {subsubsection}{\numberline {6.42.2.3}core\_hamiltonian}{125}{subsubsection.6.42.2.3}
+\contentsline {subsubsection}{\numberline {6.42.2.4}density\_matrix}{125}{subsubsection.6.42.2.4}
+\contentsline {subsubsection}{\numberline {6.42.2.5}fock\_matrix}{125}{subsubsection.6.42.2.5}
+\contentsline {subsubsection}{\numberline {6.42.2.6}mo\_coefficients}{125}{subsubsection.6.42.2.6}
+\contentsline {subsubsection}{\numberline {6.42.2.7}mo\_energies}{125}{subsubsection.6.42.2.7}
+\contentsline {subsubsection}{\numberline {6.42.2.8}mo\_symmetries}{125}{subsubsection.6.42.2.8}
+\contentsline {subsubsection}{\numberline {6.42.2.9}multiplicity}{125}{subsubsection.6.42.2.9}
+\contentsline {subsubsection}{\numberline {6.42.2.10}nalpha}{126}{subsubsection.6.42.2.10}
+\contentsline {subsubsection}{\numberline {6.42.2.11}nbasis}{126}{subsubsection.6.42.2.11}
+\contentsline {subsubsection}{\numberline {6.42.2.12}nbeta}{126}{subsubsection.6.42.2.12}
+\contentsline {subsubsection}{\numberline {6.42.2.13}nelectrons}{126}{subsubsection.6.42.2.13}
+\contentsline {subsubsection}{\numberline {6.42.2.14}overlap\_matrix}{126}{subsubsection.6.42.2.14}
+\contentsline {subsubsection}{\numberline {6.42.2.15}scf\_density\_matrix}{126}{subsubsection.6.42.2.15}
+\contentsline {subsubsection}{\numberline {6.42.2.16}symmetry}{126}{subsubsection.6.42.2.16}
+\contentsline {subsubsection}{\numberline {6.42.2.17}wf\_complex}{127}{subsubsection.6.42.2.17}
+\contentsline {subsubsection}{\numberline {6.42.2.18}wf\_type}{127}{subsubsection.6.42.2.18}
+\contentsline {section}{\numberline {6.43}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator($\ast $) Interface Reference}{127}{section.6.43}
+\contentsline {subsection}{\numberline {6.43.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{127}{subsection.6.43.1}
+\contentsline {subsubsection}{\numberline {6.43.1.1}mqc\_complexscalarmultiply()}{128}{subsubsection.6.43.1.1}
+\contentsline {subsubsection}{\numberline {6.43.1.2}mqc\_complexvectorproduct()}{128}{subsubsection.6.43.1.2}
+\contentsline {subsubsection}{\numberline {6.43.1.3}mqc\_integerscalarmultiply()}{128}{subsubsection.6.43.1.3}
+\contentsline {subsubsection}{\numberline {6.43.1.4}mqc\_integervectorproduct()}{128}{subsubsection.6.43.1.4}
+\contentsline {subsubsection}{\numberline {6.43.1.5}mqc\_matrixmatrixproduct()}{128}{subsubsection.6.43.1.5}
+\contentsline {subsubsection}{\numberline {6.43.1.6}mqc\_matrixscalarproduct()}{128}{subsubsection.6.43.1.6}
+\contentsline {subsubsection}{\numberline {6.43.1.7}mqc\_realscalarmultiply()}{129}{subsubsection.6.43.1.7}
+\contentsline {subsubsection}{\numberline {6.43.1.8}mqc\_realvectorproduct()}{129}{subsubsection.6.43.1.8}
+\contentsline {subsubsection}{\numberline {6.43.1.9}mqc\_scalarcomplexmultiply()}{129}{subsubsection.6.43.1.9}
+\contentsline {subsubsection}{\numberline {6.43.1.10}mqc\_scalarintegermultiply()}{129}{subsubsection.6.43.1.10}
+\contentsline {subsubsection}{\numberline {6.43.1.11}mqc\_scalarmatrixproduct()}{129}{subsubsection.6.43.1.11}
+\contentsline {subsubsection}{\numberline {6.43.1.12}mqc\_scalarmultiply()}{129}{subsubsection.6.43.1.12}
+\contentsline {subsubsection}{\numberline {6.43.1.13}mqc\_scalarrealmultiply()}{130}{subsubsection.6.43.1.13}
+\contentsline {subsubsection}{\numberline {6.43.1.14}mqc\_scalarvectorproduct()}{130}{subsubsection.6.43.1.14}
+\contentsline {subsubsection}{\numberline {6.43.1.15}mqc\_vectorcomplexproduct()}{130}{subsubsection.6.43.1.15}
+\contentsline {subsubsection}{\numberline {6.43.1.16}mqc\_vectorintegerproduct()}{130}{subsubsection.6.43.1.16}
+\contentsline {subsubsection}{\numberline {6.43.1.17}mqc\_vectorrealproduct()}{130}{subsubsection.6.43.1.17}
+\contentsline {subsubsection}{\numberline {6.43.1.18}mqc\_vectorscalarproduct()}{130}{subsubsection.6.43.1.18}
+\contentsline {section}{\numberline {6.44}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator($\ast $) Interface Reference}{131}{section.6.44}
+\contentsline {subsection}{\numberline {6.44.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{131}{subsection.6.44.1}
+\contentsline {subsubsection}{\numberline {6.44.1.1}mqc\_integral\_scalar\_multiply()}{131}{subsubsection.6.44.1.1}
+\contentsline {subsubsection}{\numberline {6.44.1.2}mqc\_scalar\_integral\_multiply()}{131}{subsubsection.6.44.1.2}
+\contentsline {section}{\numberline {6.45}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator($\ast $$\ast $) Interface Reference}{131}{section.6.45}
+\contentsline {subsection}{\numberline {6.45.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{131}{subsection.6.45.1}
+\contentsline {subsubsection}{\numberline {6.45.1.1}mqc\_scalarcomplexexponent()}{132}{subsubsection.6.45.1.1}
+\contentsline {subsubsection}{\numberline {6.45.1.2}mqc\_scalarexponent()}{132}{subsubsection.6.45.1.2}
+\contentsline {subsubsection}{\numberline {6.45.1.3}mqc\_scalarintegerexponent()}{132}{subsubsection.6.45.1.3}
+\contentsline {subsubsection}{\numberline {6.45.1.4}mqc\_scalarrealexponent()}{132}{subsubsection.6.45.1.4}
+\contentsline {section}{\numberline {6.46}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(+) Interface Reference}{132}{section.6.46}
+\contentsline {subsection}{\numberline {6.46.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{132}{subsection.6.46.1}
+\contentsline {subsubsection}{\numberline {6.46.1.1}mqc\_integral\_sum()}{133}{subsubsection.6.46.1.1}
+\contentsline {section}{\numberline {6.47}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(+) Interface Reference}{133}{section.6.47}
+\contentsline {subsection}{\numberline {6.47.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{133}{subsection.6.47.1}
+\contentsline {subsubsection}{\numberline {6.47.1.1}mqc\_complexscalaradd()}{133}{subsubsection.6.47.1.1}
+\contentsline {subsubsection}{\numberline {6.47.1.2}mqc\_integerscalaradd()}{133}{subsubsection.6.47.1.2}
+\contentsline {subsubsection}{\numberline {6.47.1.3}mqc\_matrixmatrixsum()}{134}{subsubsection.6.47.1.3}
+\contentsline {subsubsection}{\numberline {6.47.1.4}mqc\_realscalaradd()}{134}{subsubsection.6.47.1.4}
+\contentsline {subsubsection}{\numberline {6.47.1.5}mqc\_scalaradd()}{134}{subsubsection.6.47.1.5}
+\contentsline {subsubsection}{\numberline {6.47.1.6}mqc\_scalarcomplexadd()}{134}{subsubsection.6.47.1.6}
+\contentsline {subsubsection}{\numberline {6.47.1.7}mqc\_scalarintegeradd()}{134}{subsubsection.6.47.1.7}
+\contentsline {subsubsection}{\numberline {6.47.1.8}mqc\_scalarrealadd()}{134}{subsubsection.6.47.1.8}
+\contentsline {subsubsection}{\numberline {6.47.1.9}mqc\_scalarvectorsum()}{135}{subsubsection.6.47.1.9}
+\contentsline {subsubsection}{\numberline {6.47.1.10}mqc\_vectorvectorsum()}{135}{subsubsection.6.47.1.10}
+\contentsline {section}{\numberline {6.48}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(-\/) Interface Reference}{135}{section.6.48}
+\contentsline {subsection}{\numberline {6.48.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{135}{subsection.6.48.1}
+\contentsline {subsubsection}{\numberline {6.48.1.1}mqc\_integral\_difference()}{135}{subsubsection.6.48.1.1}
+\contentsline {section}{\numberline {6.49}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(-\/) Interface Reference}{136}{section.6.49}
+\contentsline {subsection}{\numberline {6.49.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{136}{subsection.6.49.1}
+\contentsline {subsubsection}{\numberline {6.49.1.1}mqc\_complexscalarsubtract()}{136}{subsubsection.6.49.1.1}
+\contentsline {subsubsection}{\numberline {6.49.1.2}mqc\_integerscalarsubtract()}{136}{subsubsection.6.49.1.2}
+\contentsline {subsubsection}{\numberline {6.49.1.3}mqc\_matrixmatrixsubtract()}{136}{subsubsection.6.49.1.3}
+\contentsline {subsubsection}{\numberline {6.49.1.4}mqc\_realscalarsubtract()}{137}{subsubsection.6.49.1.4}
+\contentsline {subsubsection}{\numberline {6.49.1.5}mqc\_scalarcomplexsubtract()}{137}{subsubsection.6.49.1.5}
+\contentsline {subsubsection}{\numberline {6.49.1.6}mqc\_scalarintegersubtract()}{137}{subsubsection.6.49.1.6}
+\contentsline {subsubsection}{\numberline {6.49.1.7}mqc\_scalarrealsubtract()}{137}{subsubsection.6.49.1.7}
+\contentsline {subsubsection}{\numberline {6.49.1.8}mqc\_scalarsubtract()}{137}{subsubsection.6.49.1.8}
+\contentsline {subsubsection}{\numberline {6.49.1.9}mqc\_scalarvectordifference()}{137}{subsubsection.6.49.1.9}
+\contentsline {subsubsection}{\numberline {6.49.1.10}mqc\_vectorvectordifference()}{138}{subsubsection.6.49.1.10}
+\contentsline {section}{\numberline {6.50}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.dot.) Interface Reference}{138}{section.6.50}
+\contentsline {subsection}{\numberline {6.50.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{138}{subsection.6.50.1}
+\contentsline {subsubsection}{\numberline {6.50.1.1}mqc\_matrixmatrixdotproduct()}{138}{subsubsection.6.50.1.1}
+\contentsline {subsubsection}{\numberline {6.50.1.2}mqc\_matrixvectordotproduct()}{138}{subsubsection.6.50.1.2}
+\contentsline {subsubsection}{\numberline {6.50.1.3}mqc\_vectormatrixdotproduct()}{138}{subsubsection.6.50.1.3}
+\contentsline {subsubsection}{\numberline {6.50.1.4}mqc\_vectorvectordotproduct()}{139}{subsubsection.6.50.1.4}
+\contentsline {section}{\numberline {6.51}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.eq.) Interface Reference}{139}{section.6.51}
+\contentsline {subsection}{\numberline {6.51.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{139}{subsection.6.51.1}
+\contentsline {subsubsection}{\numberline {6.51.1.1}mqc\_scalareq()}{139}{subsubsection.6.51.1.1}
+\contentsline {section}{\numberline {6.52}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.ewd.) Interface Reference}{139}{section.6.52}
+\contentsline {subsection}{\numberline {6.52.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{139}{subsection.6.52.1}
+\contentsline {subsubsection}{\numberline {6.52.1.1}mqc\_elementmatrixdivide()}{140}{subsubsection.6.52.1.1}
+\contentsline {section}{\numberline {6.53}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.ewp.) Interface Reference}{140}{section.6.53}
+\contentsline {subsection}{\numberline {6.53.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{140}{subsection.6.53.1}
+\contentsline {subsubsection}{\numberline {6.53.1.1}mqc\_elementmatrixproduct()}{140}{subsubsection.6.53.1.1}
+\contentsline {subsubsection}{\numberline {6.53.1.2}mqc\_elementvectorproduct()}{140}{subsubsection.6.53.1.2}
+\contentsline {section}{\numberline {6.54}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.ge.) Interface Reference}{140}{section.6.54}
+\contentsline {subsection}{\numberline {6.54.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{141}{subsection.6.54.1}
+\contentsline {subsubsection}{\numberline {6.54.1.1}mqc\_scalarge()}{141}{subsubsection.6.54.1.1}
+\contentsline {section}{\numberline {6.55}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.gt.) Interface Reference}{141}{section.6.55}
+\contentsline {subsection}{\numberline {6.55.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{141}{subsection.6.55.1}
+\contentsline {subsubsection}{\numberline {6.55.1.1}mqc\_integergtscalar()}{141}{subsubsection.6.55.1.1}
+\contentsline {subsubsection}{\numberline {6.55.1.2}mqc\_realgtscalar()}{141}{subsubsection.6.55.1.2}
+\contentsline {subsubsection}{\numberline {6.55.1.3}mqc\_scalargt()}{142}{subsubsection.6.55.1.3}
+\contentsline {subsubsection}{\numberline {6.55.1.4}mqc\_scalargtinteger()}{142}{subsubsection.6.55.1.4}
+\contentsline {subsubsection}{\numberline {6.55.1.5}mqc\_scalargtreal()}{142}{subsubsection.6.55.1.5}
+\contentsline {section}{\numberline {6.56}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.le.) Interface Reference}{142}{section.6.56}
+\contentsline {subsection}{\numberline {6.56.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{142}{subsection.6.56.1}
+\contentsline {subsubsection}{\numberline {6.56.1.1}mqc\_integerlescalar()}{143}{subsubsection.6.56.1.1}
+\contentsline {subsubsection}{\numberline {6.56.1.2}mqc\_reallescalar()}{143}{subsubsection.6.56.1.2}
+\contentsline {subsubsection}{\numberline {6.56.1.3}mqc\_scalarle()}{143}{subsubsection.6.56.1.3}
+\contentsline {subsubsection}{\numberline {6.56.1.4}mqc\_scalarleinteger()}{143}{subsubsection.6.56.1.4}
+\contentsline {subsubsection}{\numberline {6.56.1.5}mqc\_scalarlereal()}{143}{subsubsection.6.56.1.5}
+\contentsline {section}{\numberline {6.57}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.lt.) Interface Reference}{144}{section.6.57}
+\contentsline {subsection}{\numberline {6.57.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{144}{subsection.6.57.1}
+\contentsline {subsubsection}{\numberline {6.57.1.1}mqc\_realltscalar()}{144}{subsubsection.6.57.1.1}
+\contentsline {subsubsection}{\numberline {6.57.1.2}mqc\_scalarlt()}{144}{subsubsection.6.57.1.2}
+\contentsline {subsubsection}{\numberline {6.57.1.3}mqc\_scalarltreal()}{144}{subsubsection.6.57.1.3}
+\contentsline {section}{\numberline {6.58}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.ne.) Interface Reference}{144}{section.6.58}
+\contentsline {subsection}{\numberline {6.58.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{145}{subsection.6.58.1}
+\contentsline {subsubsection}{\numberline {6.58.1.1}mqc\_scalarne()}{145}{subsubsection.6.58.1.1}
+\contentsline {section}{\numberline {6.59}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.outer.) Interface Reference}{145}{section.6.59}
+\contentsline {subsection}{\numberline {6.59.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{145}{subsection.6.59.1}
+\contentsline {subsubsection}{\numberline {6.59.1.1}mqc\_outer()}{145}{subsubsection.6.59.1.1}
+\contentsline {section}{\numberline {6.60}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(.x.) Interface Reference}{145}{section.6.60}
+\contentsline {subsection}{\numberline {6.60.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{146}{subsection.6.60.1}
+\contentsline {subsubsection}{\numberline {6.60.1.1}mqc\_crossproduct()}{146}{subsubsection.6.60.1.1}
+\contentsline {section}{\numberline {6.61}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::operator(/) Interface Reference}{146}{section.6.61}
+\contentsline {subsection}{\numberline {6.61.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{146}{subsection.6.61.1}
+\contentsline {subsubsection}{\numberline {6.61.1.1}mqc\_complexscalardivide()}{146}{subsubsection.6.61.1.1}
+\contentsline {subsubsection}{\numberline {6.61.1.2}mqc\_integerscalardivide()}{147}{subsubsection.6.61.1.2}
+\contentsline {subsubsection}{\numberline {6.61.1.3}mqc\_realscalardivide()}{147}{subsubsection.6.61.1.3}
+\contentsline {subsubsection}{\numberline {6.61.1.4}mqc\_scalarcomplexdivide()}{147}{subsubsection.6.61.1.4}
+\contentsline {subsubsection}{\numberline {6.61.1.5}mqc\_scalardivide()}{147}{subsubsection.6.61.1.5}
+\contentsline {subsubsection}{\numberline {6.61.1.6}mqc\_scalarintegerdivide()}{147}{subsubsection.6.61.1.6}
+\contentsline {subsubsection}{\numberline {6.61.1.7}mqc\_scalarrealdivide()}{147}{subsubsection.6.61.1.7}
+\contentsline {subsubsection}{\numberline {6.61.1.8}mqc\_vectorcomplexdivide()}{148}{subsubsection.6.61.1.8}
+\contentsline {subsubsection}{\numberline {6.61.1.9}mqc\_vectorintegerdivide()}{148}{subsubsection.6.61.1.9}
+\contentsline {subsubsection}{\numberline {6.61.1.10}mqc\_vectorrealdivide()}{148}{subsubsection.6.61.1.10}
+\contentsline {subsubsection}{\numberline {6.61.1.11}mqc\_vectorscalardivide()}{148}{subsubsection.6.61.1.11}
+\contentsline {section}{\numberline {6.62}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::real Interface Reference}{148}{section.6.62}
+\contentsline {subsection}{\numberline {6.62.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{148}{subsection.6.62.1}
+\contentsline {subsubsection}{\numberline {6.62.1.1}mqc\_scalar\_complex\_realpart()}{149}{subsubsection.6.62.1.1}
+\contentsline {subsubsection}{\numberline {6.62.1.2}mqc\_vector\_complex\_realpart()}{149}{subsubsection.6.62.1.2}
+\contentsline {section}{\numberline {6.63}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::sin Interface Reference}{149}{section.6.63}
+\contentsline {subsection}{\numberline {6.63.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{149}{subsection.6.63.1}
+\contentsline {subsubsection}{\numberline {6.63.1.1}mqc\_scalar\_sin()}{149}{subsubsection.6.63.1.1}
+\contentsline {section}{\numberline {6.64}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::sqrt Interface Reference}{149}{section.6.64}
+\contentsline {subsection}{\numberline {6.64.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{150}{subsection.6.64.1}
+\contentsline {subsubsection}{\numberline {6.64.1.1}mqc\_scalar\_sqrt()}{150}{subsubsection.6.64.1.1}
+\contentsline {section}{\numberline {6.65}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::tan Interface Reference}{150}{section.6.65}
+\contentsline {subsection}{\numberline {6.65.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{150}{subsection.6.65.1}
+\contentsline {subsubsection}{\numberline {6.65.1.1}mqc\_scalar\_tan()}{150}{subsubsection.6.65.1.1}
+\contentsline {section}{\numberline {6.66}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::transpose Interface Reference}{150}{section.6.66}
+\contentsline {subsection}{\numberline {6.66.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{150}{subsection.6.66.1}
+\contentsline {subsubsection}{\numberline {6.66.1.1}mqc\_integral\_transpose()}{151}{subsubsection.6.66.1.1}
+\contentsline {section}{\numberline {6.67}mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}::transpose Interface Reference}{151}{section.6.67}
+\contentsline {subsection}{\numberline {6.67.1}Member Function/\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}Subroutine Documentation}{151}{subsection.6.67.1}
+\contentsline {subsubsection}{\numberline {6.67.1.1}mqc\_matrix\_transpose()}{151}{subsubsection.6.67.1.1}
+\contentsline {subsubsection}{\numberline {6.67.1.2}mqc\_vector\_transpose()}{151}{subsubsection.6.67.1.2}
+\contentsline {chapter}{\numberline {7}File Documentation}{153}{chapter.7}
+\contentsline {section}{\numberline {7.1}src/mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}algebra.F03 File Reference}{153}{section.7.1}
+\contentsline {section}{\numberline {7.2}src/mqc\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}\_\discretionary {\unhbox \voidb@x \hbox {\relax \fontsize {7}{8}\selectfont $\leftarrow \joinrel \rhook $}}{}{}est.F03 File Reference}{159}{section.7.2}
+\contentsline {chapter}{Index}{163}{section*.84}
