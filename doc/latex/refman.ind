@@ -1,1761 +1,1761 @@
 \begin{theindex}
 
   \item {abs}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{143}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
   \item {addlabel}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{114}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{144}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{146}
   \item {alpha}
-    \subitem {mqc\_est::mqc\_determinant\_string}, \hyperpage{97}
+    \subitem {mqc\_est::mqc\_determinant\_string}, \hyperpage{127}
   \item {argsort}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
   \item {at}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{111}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{130}
+    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{142}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{145}
 
   \indexspace
 
   \item {basis}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{124}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{156}
   \item {beta}
-    \subitem {mqc\_est::mqc\_determinant\_string}, \hyperpage{97}
+    \subitem {mqc\_est::mqc\_determinant\_string}, \hyperpage{127}
   \item {bin\_coeff}
-    \subitem {mqc\_algebra}, \hyperpage{15}
+    \subitem {mqc\_algebra}, \hyperpage{16}
 
   \indexspace
 
   \item {charge}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{124}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{156}
   \item {core\_hamiltonian}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{124}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{156}
   \item {cval}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{143}
 
   \indexspace
 
   \item {dagger}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{130}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
   \item {data\_type}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
   \item {deleteelist}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{114}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{146}
   \item {density\_matrix}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
   \item {det}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{114}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{146}
   \item {diag}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{146}
 
   \indexspace
 
   \item {eigensys}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
 
   \indexspace
 
   \item {factorial}
-    \subitem {mqc\_algebra}, \hyperpage{15}
+    \subitem {mqc\_algebra}, \hyperpage{17}
   \item {fock\_matrix}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
 
   \indexspace
 
   \item {gen\_det\_str}
-    \subitem {mqc\_est}, \hyperpage{62}
+    \subitem {mqc\_est}, \hyperpage{86}
   \item {get\_one\_gamma\_matrix}
-    \subitem {mqc\_est}, \hyperpage{62}
+    \subitem {mqc\_est}, \hyperpage{86}
   \item {getblock}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{145}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
   \item {getelist}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
   \item {getlabel}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{145}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
 
   \indexspace
 
   \item {identity}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{100}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
   \item {init}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
-    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{111}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{119}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{115}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{142}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{151}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
   \item {initialize}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
-    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{111}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{142}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {inv}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{131}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{147}
   \item {ival}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{143}
 
   \indexspace
 
   \item {length}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
 
   \indexspace
 
   \item {mat}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
   \item {matc}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{134}
   \item {mati}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{134}
   \item {matr}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{134}
   \item {matrix\_symm2sq\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{15}
-    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{94}
+    \subitem {mqc\_algebra}, \hyperpage{17}
+    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{124}
   \item {matrix\_symm2sq\_integer}
-    \subitem {mqc\_algebra}, \hyperpage{15}
-    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{94}
+    \subitem {mqc\_algebra}, \hyperpage{17}
+    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{124}
   \item {matrix\_symm2sq\_real}
-    \subitem {mqc\_algebra}, \hyperpage{16}
-    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{94}
+    \subitem {mqc\_algebra}, \hyperpage{18}
+    \subitem {mqc\_algebra::matrix\_symm2sq}, \hyperpage{124}
   \item {maxloc}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {maxval}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {minloc}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {minval}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {mo\_coefficients}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
   \item {mo\_energies}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
   \item {mo\_symmetries}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
   \item {mput}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
   \item {mqc\_algebra}, \hyperpage{9}
-    \subitem {bin\_coeff}, \hyperpage{15}
-    \subitem {factorial}, \hyperpage{15}
-    \subitem {matrix\_symm2sq\_complex}, \hyperpage{15}
-    \subitem {matrix\_symm2sq\_integer}, \hyperpage{15}
-    \subitem {matrix\_symm2sq\_real}, \hyperpage{16}
-    \subitem {mqc\_allocate\_matrix}, \hyperpage{16}
-    \subitem {mqc\_allocate\_r4tensor}, \hyperpage{16}
-    \subitem {mqc\_allocate\_scalar}, \hyperpage{16}
-    \subitem {mqc\_allocate\_vector}, \hyperpage{17}
-    \subitem {mqc\_complexscalaradd}, \hyperpage{17}
-    \subitem {mqc\_complexscalardivide}, \hyperpage{18}
-    \subitem {mqc\_complexscalarmultiply}, \hyperpage{18}
-    \subitem {mqc\_complexscalarsubtract}, \hyperpage{18}
-    \subitem {mqc\_complexvectorproduct}, \hyperpage{18}
-    \subitem {mqc\_crossproduct}, \hyperpage{18}
-    \subitem {mqc\_deallocate\_matrix}, \hyperpage{18}
-    \subitem {mqc\_deallocate\_r4tensor}, \hyperpage{19}
-    \subitem {mqc\_deallocate\_scalar}, \hyperpage{19}
-    \subitem {mqc\_deallocate\_vector}, \hyperpage{19}
-    \subitem {mqc\_elementmatrixdivide}, \hyperpage{19}
-    \subitem {mqc\_elementmatrixproduct}, \hyperpage{19}
-    \subitem {mqc\_elementvectorproduct}, \hyperpage{19}
-    \subitem {mqc\_givens\_matrix}, \hyperpage{20}
-    \subitem {mqc\_input\_complex\_scalar}, \hyperpage{20}
-    \subitem {mqc\_input\_integer\_scalar}, \hyperpage{20}
-    \subitem {mqc\_input\_real\_scalar}, \hyperpage{21}
-    \subitem {mqc\_integergtscalar}, \hyperpage{21}
-    \subitem {mqc\_integerlescalar}, \hyperpage{21}
-    \subitem {mqc\_integerscalaradd}, \hyperpage{21}
-    \subitem {mqc\_integerscalardivide}, \hyperpage{21}
-    \subitem {mqc\_integerscalarmultiply}, \hyperpage{22}
-    \subitem {mqc\_integerscalarsubtract}, \hyperpage{22}
-    \subitem {mqc\_integervectorproduct}, \hyperpage{22}
-    \subitem {mqc\_length\_vector}, \hyperpage{22}
-    \subitem {mqc\_matrix\_cast\_complex}, \hyperpage{22}
-    \subitem {mqc\_matrix\_cast\_real}, \hyperpage{22}
-    \subitem {mqc\_matrix\_columns}, \hyperpage{23}
-    \subitem {mqc\_matrix\_conjugate\_transpose}, \hyperpage{23}
-    \subitem {mqc\_matrix\_copy\_complex2int}, \hyperpage{23}
-    \subitem {mqc\_matrix\_copy\_complex2real}, \hyperpage{23}
-    \subitem {mqc\_matrix\_copy\_int2complex}, \hyperpage{23}
-    \subitem {mqc\_matrix\_copy\_int2real}, \hyperpage{23}
-    \subitem {mqc\_matrix\_copy\_real2complex}, \hyperpage{24}
-    \subitem {mqc\_matrix\_copy\_real2int}, \hyperpage{24}
-    \subitem {mqc\_matrix\_determinant}, \hyperpage{24}
-    \subitem {mqc\_matrix\_diag2full}, \hyperpage{24}
-    \subitem {mqc\_matrix\_diag2symm}, \hyperpage{24}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_complex}, \hyperpage{24}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_integer}, \hyperpage{25}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_real}, \hyperpage{25}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_vector}, \hyperpage{25}
-    \subitem {mqc\_matrix\_diagonalize}, \hyperpage{25}
-    \subitem {mqc\_matrix\_full2diag}, \hyperpage{25}
-    \subitem {mqc\_matrix\_full2symm}, \hyperpage{25}
-    \subitem {mqc\_matrix\_generalized\_eigensystem}, \hyperpage{26}
-    \subitem {mqc\_matrix\_havecomplex}, \hyperpage{26}
-    \subitem {mqc\_matrix\_havediagonal}, \hyperpage{26}
-    \subitem {mqc\_matrix\_havefull}, \hyperpage{26}
-    \subitem {mqc\_matrix\_haveinteger}, \hyperpage{26}
-    \subitem {mqc\_matrix\_havereal}, \hyperpage{26}
-    \subitem {mqc\_matrix\_havesymmetric}, \hyperpage{27}
-    \subitem {mqc\_matrix\_identity}, \hyperpage{27}
-    \subitem {mqc\_matrix\_initialize}, \hyperpage{27}
-    \subitem {mqc\_matrix\_inverse}, \hyperpage{27}
-    \subitem {mqc\_matrix\_isallocated}, \hyperpage{27}
-    \subitem {mqc\_matrix\_matrix\_at}, \hyperpage{27}
-    \subitem {mqc\_matrix\_matrix\_contraction}, \hyperpage{29}
-    \subitem {mqc\_matrix\_matrix\_put}, \hyperpage{29}
-    \subitem {mqc\_matrix\_norm}, \hyperpage{29}
-    \subitem {mqc\_matrix\_rms\_max}, \hyperpage{30}
-    \subitem {mqc\_matrix\_rows}, \hyperpage{30}
-    \subitem {mqc\_matrix\_scalar\_at}, \hyperpage{30}
-    \subitem {mqc\_matrix\_scalar\_put}, \hyperpage{30}
-    \subitem {mqc\_matrix\_set}, \hyperpage{30}
-    \subitem {mqc\_matrix\_sqrt}, \hyperpage{31}
-    \subitem {mqc\_matrix\_storagetype}, \hyperpage{31}
-    \subitem {mqc\_matrix\_svd}, \hyperpage{31}
-    \subitem {mqc\_matrix\_symm2diag}, \hyperpage{31}
-    \subitem {mqc\_matrix\_symm2full}, \hyperpage{31}
-    \subitem {mqc\_matrix\_symm2full\_func}, \hyperpage{32}
-    \subitem {mqc\_matrix\_symmetrize}, \hyperpage{32}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_complex}, \hyperpage{32}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_integer}, \hyperpage{32}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_real}, \hyperpage{32}
+    \subitem {bin\_coeff}, \hyperpage{16}
+    \subitem {factorial}, \hyperpage{17}
+    \subitem {matrix\_symm2sq\_complex}, \hyperpage{17}
+    \subitem {matrix\_symm2sq\_integer}, \hyperpage{17}
+    \subitem {matrix\_symm2sq\_real}, \hyperpage{18}
+    \subitem {mqc\_allocate\_matrix}, \hyperpage{18}
+    \subitem {mqc\_allocate\_r4tensor}, \hyperpage{18}
+    \subitem {mqc\_allocate\_scalar}, \hyperpage{18}
+    \subitem {mqc\_allocate\_vector}, \hyperpage{19}
+    \subitem {mqc\_complexscalaradd}, \hyperpage{19}
+    \subitem {mqc\_complexscalardivide}, \hyperpage{20}
+    \subitem {mqc\_complexscalarmultiply}, \hyperpage{20}
+    \subitem {mqc\_complexscalarsubtract}, \hyperpage{20}
+    \subitem {mqc\_complexvectorproduct}, \hyperpage{20}
+    \subitem {mqc\_crossproduct}, \hyperpage{20}
+    \subitem {mqc\_deallocate\_matrix}, \hyperpage{20}
+    \subitem {mqc\_deallocate\_r4tensor}, \hyperpage{21}
+    \subitem {mqc\_deallocate\_scalar}, \hyperpage{21}
+    \subitem {mqc\_deallocate\_vector}, \hyperpage{21}
+    \subitem {mqc\_elementmatrixdivide}, \hyperpage{21}
+    \subitem {mqc\_elementmatrixproduct}, \hyperpage{22}
+    \subitem {mqc\_elementvectorproduct}, \hyperpage{22}
+    \subitem {mqc\_givens\_matrix}, \hyperpage{22}
+    \subitem {mqc\_input\_complex\_scalar}, \hyperpage{22}
+    \subitem {mqc\_input\_integer\_scalar}, \hyperpage{23}
+    \subitem {mqc\_input\_real\_scalar}, \hyperpage{24}
+    \subitem {mqc\_integergtscalar}, \hyperpage{24}
+    \subitem {mqc\_integerlescalar}, \hyperpage{25}
+    \subitem {mqc\_integerscalaradd}, \hyperpage{25}
+    \subitem {mqc\_integerscalardivide}, \hyperpage{25}
+    \subitem {mqc\_integerscalarmultiply}, \hyperpage{26}
+    \subitem {mqc\_integerscalarsubtract}, \hyperpage{26}
+    \subitem {mqc\_integervectorproduct}, \hyperpage{26}
+    \subitem {mqc\_length\_vector}, \hyperpage{26}
+    \subitem {mqc\_matrix\_cast\_complex}, \hyperpage{26}
+    \subitem {mqc\_matrix\_cast\_real}, \hyperpage{26}
+    \subitem {mqc\_matrix\_columns}, \hyperpage{27}
+    \subitem {mqc\_matrix\_conjugate\_transpose}, \hyperpage{27}
+    \subitem {mqc\_matrix\_copy\_complex2int}, \hyperpage{27}
+    \subitem {mqc\_matrix\_copy\_complex2real}, \hyperpage{27}
+    \subitem {mqc\_matrix\_copy\_int2complex}, \hyperpage{27}
+    \subitem {mqc\_matrix\_copy\_int2real}, \hyperpage{27}
+    \subitem {mqc\_matrix\_copy\_real2complex}, \hyperpage{28}
+    \subitem {mqc\_matrix\_copy\_real2int}, \hyperpage{28}
+    \subitem {mqc\_matrix\_determinant}, \hyperpage{28}
+    \subitem {mqc\_matrix\_diag2full}, \hyperpage{28}
+    \subitem {mqc\_matrix\_diag2symm}, \hyperpage{28}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_complex}, \hyperpage{28}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_integer}, \hyperpage{29}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_real}, \hyperpage{29}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_vector}, \hyperpage{29}
+    \subitem {mqc\_matrix\_diagonalize}, \hyperpage{29}
+    \subitem {mqc\_matrix\_full2diag}, \hyperpage{29}
+    \subitem {mqc\_matrix\_full2symm}, \hyperpage{29}
+    \subitem {mqc\_matrix\_generalized\_eigensystem}, \hyperpage{30}
+    \subitem {mqc\_matrix\_havecomplex}, \hyperpage{30}
+    \subitem {mqc\_matrix\_havediagonal}, \hyperpage{30}
+    \subitem {mqc\_matrix\_havefull}, \hyperpage{30}
+    \subitem {mqc\_matrix\_haveinteger}, \hyperpage{30}
+    \subitem {mqc\_matrix\_havereal}, \hyperpage{30}
+    \subitem {mqc\_matrix\_havesymmetric}, \hyperpage{31}
+    \subitem {mqc\_matrix\_identity}, \hyperpage{31}
+    \subitem {mqc\_matrix\_initialize}, \hyperpage{31}
+    \subitem {mqc\_matrix\_inverse}, \hyperpage{31}
+    \subitem {mqc\_matrix\_isallocated}, \hyperpage{31}
+    \subitem {mqc\_matrix\_matrix\_at}, \hyperpage{31}
+    \subitem {mqc\_matrix\_matrix\_contraction}, \hyperpage{33}
+    \subitem {mqc\_matrix\_matrix\_put}, \hyperpage{33}
+    \subitem {mqc\_matrix\_norm}, \hyperpage{33}
+    \subitem {mqc\_matrix\_rms\_max}, \hyperpage{34}
+    \subitem {mqc\_matrix\_rows}, \hyperpage{34}
+    \subitem {mqc\_matrix\_scalar\_at}, \hyperpage{34}
+    \subitem {mqc\_matrix\_scalar\_put}, \hyperpage{34}
+    \subitem {mqc\_matrix\_set}, \hyperpage{34}
+    \subitem {mqc\_matrix\_sqrt}, \hyperpage{35}
+    \subitem {mqc\_matrix\_storagetype}, \hyperpage{35}
+    \subitem {mqc\_matrix\_svd}, \hyperpage{35}
+    \subitem {mqc\_matrix\_symm2diag}, \hyperpage{35}
+    \subitem {mqc\_matrix\_symm2full}, \hyperpage{35}
+    \subitem {mqc\_matrix\_symm2full\_func}, \hyperpage{36}
+    \subitem {mqc\_matrix\_symmetrize}, \hyperpage{36}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_complex}, \hyperpage{36}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_integer}, \hyperpage{36}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_real}, \hyperpage{36}
     \subitem {mqc\_matrix\_symmsymmr4tensor\_put\_complex}, 
-		\hyperpage{32}
-    \subitem {mqc\_matrix\_symmsymmr4tensor\_put\_real}, \hyperpage{33}
-    \subitem {mqc\_matrix\_test\_diagonal}, \hyperpage{33}
-    \subitem {mqc\_matrix\_test\_symmetric}, \hyperpage{33}
-    \subitem {mqc\_matrix\_trace}, \hyperpage{33}
-    \subitem {mqc\_matrix\_transpose}, \hyperpage{33}
-    \subitem {mqc\_matrix\_vector\_at}, \hyperpage{33}
-    \subitem {mqc\_matrix\_vector\_put}, \hyperpage{34}
-    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{34}
-    \subitem {mqc\_matrixmatrixproduct}, \hyperpage{34}
-    \subitem {mqc\_matrixmatrixsubtract}, \hyperpage{34}
-    \subitem {mqc\_matrixmatrixsum}, \hyperpage{34}
-    \subitem {mqc\_matrixscalarproduct}, \hyperpage{35}
-    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{35}
-    \subitem {mqc\_outer}, \hyperpage{35}
-    \subitem {mqc\_output\_complex\_scalar}, \hyperpage{35}
-    \subitem {mqc\_output\_integer\_scalar}, \hyperpage{35}
-    \subitem {mqc\_output\_mqcscalar\_scalar}, \hyperpage{35}
-    \subitem {mqc\_output\_real\_scalar}, \hyperpage{36}
-    \subitem {mqc\_print\_matrix\_algebra1}, \hyperpage{36}
-    \subitem {mqc\_print\_r4tensor\_algebra1}, \hyperpage{36}
-    \subitem {mqc\_print\_scalar\_algebra1}, \hyperpage{36}
-    \subitem {mqc\_print\_vector\_algebra1}, \hyperpage{36}
-    \subitem {mqc\_r4tensor\_at}, \hyperpage{37}
-    \subitem {mqc\_r4tensor\_havecomplex}, \hyperpage{37}
-    \subitem {mqc\_r4tensor\_haveinteger}, \hyperpage{37}
-    \subitem {mqc\_r4tensor\_havereal}, \hyperpage{37}
-    \subitem {mqc\_r4tensor\_initialize}, \hyperpage{37}
-    \subitem {mqc\_r4tensor\_put}, \hyperpage{38}
-    \subitem {mqc\_realgtscalar}, \hyperpage{38}
-    \subitem {mqc\_reallescalar}, \hyperpage{38}
-    \subitem {mqc\_realltscalar}, \hyperpage{38}
-    \subitem {mqc\_realscalaradd}, \hyperpage{38}
-    \subitem {mqc\_realscalardivide}, \hyperpage{39}
-    \subitem {mqc\_realscalarmultiply}, \hyperpage{39}
-    \subitem {mqc\_realscalarsubtract}, \hyperpage{39}
-    \subitem {mqc\_realvectorproduct}, \hyperpage{39}
-    \subitem {mqc\_scalar\_acos}, \hyperpage{39}
-    \subitem {mqc\_scalar\_asin}, \hyperpage{39}
-    \subitem {mqc\_scalar\_atan}, \hyperpage{40}
-    \subitem {mqc\_scalar\_atan2}, \hyperpage{40}
-    \subitem {mqc\_scalar\_cmplx}, \hyperpage{40}
-    \subitem {mqc\_scalar\_complex\_conjugate}, \hyperpage{40}
-    \subitem {mqc\_scalar\_complex\_imagpart}, \hyperpage{40}
-    \subitem {mqc\_scalar\_complex\_realpart}, \hyperpage{40}
-    \subitem {mqc\_scalar\_cos}, \hyperpage{41}
-    \subitem {mqc\_scalar\_get\_abs\_value}, \hyperpage{41}
-    \subitem {mqc\_scalar\_get\_intrinsic\_complex}, \hyperpage{41}
-    \subitem {mqc\_scalar\_get\_intrinsic\_integer}, \hyperpage{41}
-    \subitem {mqc\_scalar\_get\_intrinsic\_real}, \hyperpage{41}
-    \subitem {mqc\_scalar\_get\_random\_value}, \hyperpage{41}
-    \subitem {mqc\_scalar\_havecomplex}, \hyperpage{42}
-    \subitem {mqc\_scalar\_haveinteger}, \hyperpage{42}
-    \subitem {mqc\_scalar\_havereal}, \hyperpage{42}
-    \subitem {mqc\_scalar\_isallocated}, \hyperpage{42}
-    \subitem {mqc\_scalar\_sin}, \hyperpage{42}
-    \subitem {mqc\_scalar\_sqrt}, \hyperpage{42}
-    \subitem {mqc\_scalar\_tan}, \hyperpage{43}
-    \subitem {mqc\_scalaradd}, \hyperpage{43}
-    \subitem {mqc\_scalarcomplexadd}, \hyperpage{43}
-    \subitem {mqc\_scalarcomplexdivide}, \hyperpage{43}
-    \subitem {mqc\_scalarcomplexexponent}, \hyperpage{43}
-    \subitem {mqc\_scalarcomplexmultiply}, \hyperpage{43}
-    \subitem {mqc\_scalarcomplexsubtract}, \hyperpage{44}
-    \subitem {mqc\_scalardivide}, \hyperpage{44}
-    \subitem {mqc\_scalareq}, \hyperpage{44}
-    \subitem {mqc\_scalarexponent}, \hyperpage{44}
-    \subitem {mqc\_scalarge}, \hyperpage{44}
-    \subitem {mqc\_scalargt}, \hyperpage{44}
-    \subitem {mqc\_scalargtinteger}, \hyperpage{45}
-    \subitem {mqc\_scalargtreal}, \hyperpage{45}
-    \subitem {mqc\_scalarintegeradd}, \hyperpage{45}
-    \subitem {mqc\_scalarintegerdivide}, \hyperpage{45}
-    \subitem {mqc\_scalarintegerexponent}, \hyperpage{45}
-    \subitem {mqc\_scalarintegermultiply}, \hyperpage{45}
-    \subitem {mqc\_scalarintegersubtract}, \hyperpage{46}
-    \subitem {mqc\_scalarle}, \hyperpage{46}
-    \subitem {mqc\_scalarleinteger}, \hyperpage{46}
-    \subitem {mqc\_scalarlereal}, \hyperpage{46}
-    \subitem {mqc\_scalarlt}, \hyperpage{46}
-    \subitem {mqc\_scalarltreal}, \hyperpage{46}
-    \subitem {mqc\_scalarmatrixproduct}, \hyperpage{47}
-    \subitem {mqc\_scalarmultiply}, \hyperpage{47}
-    \subitem {mqc\_scalarne}, \hyperpage{47}
-    \subitem {mqc\_scalarrealadd}, \hyperpage{47}
-    \subitem {mqc\_scalarrealdivide}, \hyperpage{47}
-    \subitem {mqc\_scalarrealexponent}, \hyperpage{47}
-    \subitem {mqc\_scalarrealmultiply}, \hyperpage{48}
-    \subitem {mqc\_scalarrealsubtract}, \hyperpage{48}
-    \subitem {mqc\_scalarsubtract}, \hyperpage{48}
-    \subitem {mqc\_scalarvectordifference}, \hyperpage{48}
-    \subitem {mqc\_scalarvectorproduct}, \hyperpage{48}
-    \subitem {mqc\_scalarvectorsum}, \hyperpage{48}
-    \subitem {mqc\_set\_array2tensor}, \hyperpage{49}
-    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{49}
-    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{49}
-    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{49}
-    \subitem {mqc\_set\_complexarray2matrix}, \hyperpage{49}
-    \subitem {mqc\_set\_integerarray2matrix}, \hyperpage{49}
-    \subitem {mqc\_set\_matrix2complexarray}, \hyperpage{50}
-    \subitem {mqc\_set\_matrix2integerarray}, \hyperpage{50}
-    \subitem {mqc\_set\_matrix2matrix}, \hyperpage{50}
-    \subitem {mqc\_set\_matrix2realarray}, \hyperpage{50}
-    \subitem {mqc\_set\_realarray2matrix}, \hyperpage{50}
-    \subitem {mqc\_set\_vector2complexarray}, \hyperpage{50}
-    \subitem {mqc\_set\_vector2integerarray}, \hyperpage{51}
-    \subitem {mqc\_set\_vector2realarray}, \hyperpage{51}
-    \subitem {mqc\_set\_vector2vector}, \hyperpage{51}
-    \subitem {mqc\_vector2diagmatrix}, \hyperpage{51}
-    \subitem {mqc\_vector\_abs}, \hyperpage{51}
-    \subitem {mqc\_vector\_argsort}, \hyperpage{51}
-    \subitem {mqc\_vector\_cast\_complex}, \hyperpage{52}
-    \subitem {mqc\_vector\_cast\_real}, \hyperpage{52}
-    \subitem {mqc\_vector\_cmplx}, \hyperpage{52}
-    \subitem {mqc\_vector\_complex\_imagpart}, \hyperpage{52}
-    \subitem {mqc\_vector\_complex\_realpart}, \hyperpage{52}
-    \subitem {mqc\_vector\_conjugate\_transpose}, \hyperpage{52}
-    \subitem {mqc\_vector\_copy\_complex2int}, \hyperpage{53}
-    \subitem {mqc\_vector\_copy\_complex2real}, \hyperpage{53}
-    \subitem {mqc\_vector\_copy\_int2complex}, \hyperpage{53}
-    \subitem {mqc\_vector\_copy\_int2real}, \hyperpage{53}
-    \subitem {mqc\_vector\_copy\_real2complex}, \hyperpage{53}
-    \subitem {mqc\_vector\_copy\_real2int}, \hyperpage{53}
-    \subitem {mqc\_vector\_havecomplex}, \hyperpage{54}
-    \subitem {mqc\_vector\_haveinteger}, \hyperpage{54}
-    \subitem {mqc\_vector\_havereal}, \hyperpage{54}
-    \subitem {mqc\_vector\_initialize}, \hyperpage{54}
-    \subitem {mqc\_vector\_isallocated}, \hyperpage{54}
-    \subitem {mqc\_vector\_iscolumn}, \hyperpage{54}
-    \subitem {mqc\_vector\_maxloc}, \hyperpage{55}
-    \subitem {mqc\_vector\_maxval}, \hyperpage{55}
-    \subitem {mqc\_vector\_minloc}, \hyperpage{55}
-    \subitem {mqc\_vector\_minval}, \hyperpage{55}
-    \subitem {mqc\_vector\_norm}, \hyperpage{55}
-    \subitem {mqc\_vector\_pop}, \hyperpage{55}
-    \subitem {mqc\_vector\_power}, \hyperpage{56}
-    \subitem {mqc\_vector\_push}, \hyperpage{56}
-    \subitem {mqc\_vector\_scalar\_at}, \hyperpage{56}
-    \subitem {mqc\_vector\_scalar\_increment}, \hyperpage{56}
-    \subitem {mqc\_vector\_scalar\_put}, \hyperpage{56}
-    \subitem {mqc\_vector\_shift}, \hyperpage{56}
-    \subitem {mqc\_vector\_sort}, \hyperpage{57}
-    \subitem {mqc\_vector\_sqrt}, \hyperpage{57}
-    \subitem {mqc\_vector\_transpose}, \hyperpage{57}
-    \subitem {mqc\_vector\_unshift}, \hyperpage{57}
-    \subitem {mqc\_vector\_vector\_at}, \hyperpage{57}
-    \subitem {mqc\_vector\_vector\_put}, \hyperpage{57}
-    \subitem {mqc\_vectorcomplexdivide}, \hyperpage{58}
-    \subitem {mqc\_vectorcomplexproduct}, \hyperpage{58}
-    \subitem {mqc\_vectorintegerdivide}, \hyperpage{58}
-    \subitem {mqc\_vectorintegerproduct}, \hyperpage{58}
-    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{58}
-    \subitem {mqc\_vectorrealdivide}, \hyperpage{58}
-    \subitem {mqc\_vectorrealproduct}, \hyperpage{59}
-    \subitem {mqc\_vectorscalardivide}, \hyperpage{59}
-    \subitem {mqc\_vectorscalarproduct}, \hyperpage{59}
-    \subitem {mqc\_vectorvectordifference}, \hyperpage{59}
-    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{59}
-    \subitem {mqc\_vectorvectorsum}, \hyperpage{59}
-    \subitem {symindexhash}, \hyperpage{60}
-  \item {mqc\_algebra::abs}, \hyperpage{77}
-    \subitem {mqc\_scalar\_get\_abs\_value}, \hyperpage{77}
-    \subitem {mqc\_vector\_abs}, \hyperpage{77}
-  \item {mqc\_algebra::acos}, \hyperpage{78}
-    \subitem {mqc\_scalar\_acos}, \hyperpage{78}
-  \item {mqc\_algebra::aimag}, \hyperpage{78}
-    \subitem {mqc\_scalar\_complex\_imagpart}, \hyperpage{78}
-    \subitem {mqc\_vector\_complex\_imagpart}, \hyperpage{78}
-  \item {mqc\_algebra::asin}, \hyperpage{79}
-    \subitem {mqc\_scalar\_asin}, \hyperpage{79}
-  \item {mqc\_algebra::assignment(=)}, \hyperpage{79}
-    \subitem {mqc\_input\_complex\_scalar}, \hyperpage{80}
-    \subitem {mqc\_input\_integer\_scalar}, \hyperpage{80}
-    \subitem {mqc\_input\_real\_scalar}, \hyperpage{81}
-    \subitem {mqc\_output\_complex\_scalar}, \hyperpage{81}
-    \subitem {mqc\_output\_integer\_scalar}, \hyperpage{81}
-    \subitem {mqc\_output\_mqcscalar\_scalar}, \hyperpage{81}
-    \subitem {mqc\_output\_real\_scalar}, \hyperpage{81}
-    \subitem {mqc\_set\_array2tensor}, \hyperpage{82}
-    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{82}
-    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{82}
-    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{82}
-    \subitem {mqc\_set\_complexarray2matrix}, \hyperpage{82}
-    \subitem {mqc\_set\_integerarray2matrix}, \hyperpage{82}
-    \subitem {mqc\_set\_matrix2complexarray}, \hyperpage{83}
-    \subitem {mqc\_set\_matrix2integerarray}, \hyperpage{83}
-    \subitem {mqc\_set\_matrix2matrix}, \hyperpage{83}
-    \subitem {mqc\_set\_matrix2realarray}, \hyperpage{83}
-    \subitem {mqc\_set\_realarray2matrix}, \hyperpage{83}
-    \subitem {mqc\_set\_vector2complexarray}, \hyperpage{83}
-    \subitem {mqc\_set\_vector2integerarray}, \hyperpage{84}
-    \subitem {mqc\_set\_vector2realarray}, \hyperpage{84}
-    \subitem {mqc\_set\_vector2vector}, \hyperpage{84}
-  \item {mqc\_algebra::atan}, \hyperpage{85}
-    \subitem {mqc\_scalar\_atan}, \hyperpage{85}
-  \item {mqc\_algebra::atan2}, \hyperpage{85}
-    \subitem {mqc\_scalar\_atan2}, \hyperpage{86}
-  \item {mqc\_algebra::cmplx}, \hyperpage{86}
-    \subitem {mqc\_scalar\_cmplx}, \hyperpage{86}
-    \subitem {mqc\_vector\_cmplx}, \hyperpage{86}
-  \item {mqc\_algebra::conjg}, \hyperpage{87}
-    \subitem {mqc\_scalar\_complex\_conjugate}, \hyperpage{87}
-  \item {mqc\_algebra::contraction}, \hyperpage{87}
-    \subitem {mqc\_matrix\_matrix\_contraction}, \hyperpage{87}
-  \item {mqc\_algebra::cos}, \hyperpage{88}
-    \subitem {mqc\_scalar\_cos}, \hyperpage{88}
-  \item {mqc\_algebra::dagger}, \hyperpage{89}
-    \subitem {mqc\_matrix\_conjugate\_transpose}, \hyperpage{89}
-    \subitem {mqc\_vector\_conjugate\_transpose}, \hyperpage{89}
-  \item {mqc\_algebra::dot\_product}, \hyperpage{90}
-    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{90}
-  \item {mqc\_algebra::matmul}, \hyperpage{91}
-    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{91}
-    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{91}
-    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{91}
-  \item {mqc\_algebra::matrix\_symm2sq}, \hyperpage{93}
-    \subitem {matrix\_symm2sq\_complex}, \hyperpage{94}
-    \subitem {matrix\_symm2sq\_integer}, \hyperpage{94}
-    \subitem {matrix\_symm2sq\_real}, \hyperpage{94}
-  \item {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{94}
-    \subitem {mqc\_matrix\_cast\_complex}, \hyperpage{94}
-    \subitem {mqc\_vector\_cast\_complex}, \hyperpage{95}
-  \item {mqc\_algebra::mqc\_cast\_real}, \hyperpage{95}
-    \subitem {mqc\_matrix\_cast\_real}, \hyperpage{95}
-    \subitem {mqc\_vector\_cast\_real}, \hyperpage{95}
-  \item {mqc\_algebra::mqc\_have\_complex}, \hyperpage{97}
-    \subitem {mqc\_matrix\_havecomplex}, \hyperpage{97}
-    \subitem {mqc\_vector\_havecomplex}, \hyperpage{97}
-  \item {mqc\_algebra::mqc\_have\_int}, \hyperpage{98}
-    \subitem {mqc\_matrix\_haveinteger}, \hyperpage{98}
-    \subitem {mqc\_vector\_haveinteger}, \hyperpage{98}
-  \item {mqc\_algebra::mqc\_have\_real}, \hyperpage{98}
-    \subitem {mqc\_matrix\_havereal}, \hyperpage{99}
-    \subitem {mqc\_vector\_havereal}, \hyperpage{99}
-  \item {mqc\_algebra::mqc\_matrix}, \hyperpage{99}
-    \subitem {at}, \hyperpage{100}
-    \subitem {dagger}, \hyperpage{100}
-    \subitem {det}, \hyperpage{100}
-    \subitem {diag}, \hyperpage{100}
-    \subitem {eigensys}, \hyperpage{100}
-    \subitem {identity}, \hyperpage{100}
-    \subitem {init}, \hyperpage{101}
-    \subitem {initialize}, \hyperpage{101}
-    \subitem {inv}, \hyperpage{101}
-    \subitem {mat}, \hyperpage{101}
-    \subitem {matc}, \hyperpage{103}
-    \subitem {mati}, \hyperpage{103}
-    \subitem {matr}, \hyperpage{103}
-    \subitem {mput}, \hyperpage{101}
-    \subitem {norm}, \hyperpage{101}
-    \subitem {print}, \hyperpage{101}
-    \subitem {put}, \hyperpage{102}
-    \subitem {rmsmax}, \hyperpage{102}
-    \subitem {s\_type}, \hyperpage{102}
-    \subitem {set}, \hyperpage{102}
-    \subitem {sqrt}, \hyperpage{102}
-    \subitem {svd}, \hyperpage{102}
-    \subitem {trace}, \hyperpage{102}
-    \subitem {transpose}, \hyperpage{103}
-    \subitem {vat}, \hyperpage{103}
-    \subitem {vput}, \hyperpage{103}
-  \item {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, \hyperpage{104}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_complex}, \hyperpage{104}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_integer}, \hyperpage{104}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_real}, \hyperpage{104}
-    \subitem {mqc\_matrix\_diagmatrix\_put\_vector}, \hyperpage{104}
-  \item {mqc\_algebra::mqc\_matrix\_symmmatrix\_put}, \hyperpage{105}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_complex}, \hyperpage{105}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_integer}, \hyperpage{105}
-    \subitem {mqc\_matrix\_symmmatrix\_put\_real}, \hyperpage{105}
-  \item {mqc\_algebra::mqc\_print}, \hyperpage{106}
-    \subitem {mqc\_print\_matrix\_algebra1}, \hyperpage{106}
-    \subitem {mqc\_print\_r4tensor\_algebra1}, \hyperpage{107}
-    \subitem {mqc\_print\_scalar\_algebra1}, \hyperpage{107}
-    \subitem {mqc\_print\_vector\_algebra1}, \hyperpage{107}
-  \item {mqc\_algebra::mqc\_r4tensor}, \hyperpage{110}
-    \subitem {at}, \hyperpage{111}
-    \subitem {init}, \hyperpage{111}
-    \subitem {initialize}, \hyperpage{111}
-    \subitem {print}, \hyperpage{111}
-    \subitem {put}, \hyperpage{111}
-  \item {mqc\_algebra::mqc\_scalar}, \hyperpage{111}
-    \subitem {abs}, \hyperpage{112}
-    \subitem {cval}, \hyperpage{112}
-    \subitem {ival}, \hyperpage{112}
-    \subitem {print}, \hyperpage{112}
-    \subitem {random}, \hyperpage{112}
-    \subitem {rval}, \hyperpage{112}
-  \item {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{117}
-    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{117}
-    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{117}
-    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{117}
-  \item {mqc\_algebra::mqc\_vector}, \hyperpage{118}
-    \subitem {abs}, \hyperpage{119}
-    \subitem {argsort}, \hyperpage{119}
-    \subitem {at}, \hyperpage{119}
-    \subitem {dagger}, \hyperpage{119}
-    \subitem {data\_type}, \hyperpage{122}
-    \subitem {diag}, \hyperpage{119}
-    \subitem {init}, \hyperpage{119}
-    \subitem {initialize}, \hyperpage{120}
-    \subitem {length}, \hyperpage{122}
-    \subitem {maxloc}, \hyperpage{120}
-    \subitem {maxval}, \hyperpage{120}
-    \subitem {minloc}, \hyperpage{120}
-    \subitem {minval}, \hyperpage{120}
-    \subitem {norm}, \hyperpage{120}
-    \subitem {pop}, \hyperpage{120}
-    \subitem {power}, \hyperpage{121}
-    \subitem {print}, \hyperpage{121}
-    \subitem {push}, \hyperpage{121}
-    \subitem {put}, \hyperpage{121}
-    \subitem {shift}, \hyperpage{121}
-    \subitem {size}, \hyperpage{121}
-    \subitem {sort}, \hyperpage{121}
-    \subitem {sqrt}, \hyperpage{122}
-    \subitem {transpose}, \hyperpage{122}
-    \subitem {unshift}, \hyperpage{122}
-    \subitem {vat}, \hyperpage{122}
-    \subitem {vecc}, \hyperpage{123}
-    \subitem {veci}, \hyperpage{123}
-    \subitem {vecr}, \hyperpage{123}
-    \subitem {vput}, \hyperpage{122}
-  \item {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{131}
-    \subitem {mqc\_scalarcomplexexponent}, \hyperpage{131}
-    \subitem {mqc\_scalarexponent}, \hyperpage{132}
-    \subitem {mqc\_scalarintegerexponent}, \hyperpage{132}
-    \subitem {mqc\_scalarrealexponent}, \hyperpage{132}
-  \item {mqc\_algebra::operator($\ast$)}, \hyperpage{127}
-    \subitem {mqc\_complexscalarmultiply}, \hyperpage{127}
-    \subitem {mqc\_complexvectorproduct}, \hyperpage{128}
-    \subitem {mqc\_integerscalarmultiply}, \hyperpage{128}
-    \subitem {mqc\_integervectorproduct}, \hyperpage{128}
-    \subitem {mqc\_matrixmatrixproduct}, \hyperpage{128}
-    \subitem {mqc\_matrixscalarproduct}, \hyperpage{128}
-    \subitem {mqc\_realscalarmultiply}, \hyperpage{128}
-    \subitem {mqc\_realvectorproduct}, \hyperpage{129}
-    \subitem {mqc\_scalarcomplexmultiply}, \hyperpage{129}
-    \subitem {mqc\_scalarintegermultiply}, \hyperpage{129}
-    \subitem {mqc\_scalarmatrixproduct}, \hyperpage{129}
-    \subitem {mqc\_scalarmultiply}, \hyperpage{129}
-    \subitem {mqc\_scalarrealmultiply}, \hyperpage{129}
-    \subitem {mqc\_scalarvectorproduct}, \hyperpage{130}
-    \subitem {mqc\_vectorcomplexproduct}, \hyperpage{130}
-    \subitem {mqc\_vectorintegerproduct}, \hyperpage{130}
-    \subitem {mqc\_vectorrealproduct}, \hyperpage{130}
-    \subitem {mqc\_vectorscalarproduct}, \hyperpage{130}
-  \item {mqc\_algebra::operator(+)}, \hyperpage{133}
-    \subitem {mqc\_complexscalaradd}, \hyperpage{133}
-    \subitem {mqc\_integerscalaradd}, \hyperpage{133}
-    \subitem {mqc\_matrixmatrixsum}, \hyperpage{133}
-    \subitem {mqc\_realscalaradd}, \hyperpage{134}
-    \subitem {mqc\_scalaradd}, \hyperpage{134}
-    \subitem {mqc\_scalarcomplexadd}, \hyperpage{134}
-    \subitem {mqc\_scalarintegeradd}, \hyperpage{134}
-    \subitem {mqc\_scalarrealadd}, \hyperpage{134}
-    \subitem {mqc\_scalarvectorsum}, \hyperpage{134}
-    \subitem {mqc\_vectorvectorsum}, \hyperpage{135}
-  \item {mqc\_algebra::operator(-\/)}, \hyperpage{136}
-    \subitem {mqc\_complexscalarsubtract}, \hyperpage{136}
-    \subitem {mqc\_integerscalarsubtract}, \hyperpage{136}
-    \subitem {mqc\_matrixmatrixsubtract}, \hyperpage{136}
-    \subitem {mqc\_realscalarsubtract}, \hyperpage{136}
-    \subitem {mqc\_scalarcomplexsubtract}, \hyperpage{137}
-    \subitem {mqc\_scalarintegersubtract}, \hyperpage{137}
-    \subitem {mqc\_scalarrealsubtract}, \hyperpage{137}
-    \subitem {mqc\_scalarsubtract}, \hyperpage{137}
-    \subitem {mqc\_scalarvectordifference}, \hyperpage{137}
-    \subitem {mqc\_vectorvectordifference}, \hyperpage{137}
-  \item {mqc\_algebra::operator(.dot.)}, \hyperpage{138}
-    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{138}
-    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{138}
-    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{138}
-    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{138}
-  \item {mqc\_algebra::operator(.eq.)}, \hyperpage{139}
-    \subitem {mqc\_scalareq}, \hyperpage{139}
-  \item {mqc\_algebra::operator(.ewd.)}, \hyperpage{139}
-    \subitem {mqc\_elementmatrixdivide}, \hyperpage{139}
-  \item {mqc\_algebra::operator(.ewp.)}, \hyperpage{140}
-    \subitem {mqc\_elementmatrixproduct}, \hyperpage{140}
-    \subitem {mqc\_elementvectorproduct}, \hyperpage{140}
-  \item {mqc\_algebra::operator(.ge.)}, \hyperpage{140}
-    \subitem {mqc\_scalarge}, \hyperpage{141}
-  \item {mqc\_algebra::operator(.gt.)}, \hyperpage{141}
-    \subitem {mqc\_integergtscalar}, \hyperpage{141}
-    \subitem {mqc\_realgtscalar}, \hyperpage{141}
-    \subitem {mqc\_scalargt}, \hyperpage{141}
-    \subitem {mqc\_scalargtinteger}, \hyperpage{142}
-    \subitem {mqc\_scalargtreal}, \hyperpage{142}
-  \item {mqc\_algebra::operator(.le.)}, \hyperpage{142}
-    \subitem {mqc\_integerlescalar}, \hyperpage{142}
-    \subitem {mqc\_reallescalar}, \hyperpage{143}
-    \subitem {mqc\_scalarle}, \hyperpage{143}
-    \subitem {mqc\_scalarleinteger}, \hyperpage{143}
-    \subitem {mqc\_scalarlereal}, \hyperpage{143}
-  \item {mqc\_algebra::operator(.lt.)}, \hyperpage{144}
-    \subitem {mqc\_realltscalar}, \hyperpage{144}
-    \subitem {mqc\_scalarlt}, \hyperpage{144}
-    \subitem {mqc\_scalarltreal}, \hyperpage{144}
-  \item {mqc\_algebra::operator(.ne.)}, \hyperpage{144}
-    \subitem {mqc\_scalarne}, \hyperpage{145}
-  \item {mqc\_algebra::operator(.outer.)}, \hyperpage{145}
-    \subitem {mqc\_outer}, \hyperpage{145}
-  \item {mqc\_algebra::operator(.x.)}, \hyperpage{145}
-    \subitem {mqc\_crossproduct}, \hyperpage{146}
-  \item {mqc\_algebra::operator(/)}, \hyperpage{146}
-    \subitem {mqc\_complexscalardivide}, \hyperpage{146}
-    \subitem {mqc\_integerscalardivide}, \hyperpage{146}
-    \subitem {mqc\_realscalardivide}, \hyperpage{147}
-    \subitem {mqc\_scalarcomplexdivide}, \hyperpage{147}
-    \subitem {mqc\_scalardivide}, \hyperpage{147}
-    \subitem {mqc\_scalarintegerdivide}, \hyperpage{147}
-    \subitem {mqc\_scalarrealdivide}, \hyperpage{147}
-    \subitem {mqc\_vectorcomplexdivide}, \hyperpage{147}
-    \subitem {mqc\_vectorintegerdivide}, \hyperpage{148}
-    \subitem {mqc\_vectorrealdivide}, \hyperpage{148}
-    \subitem {mqc\_vectorscalardivide}, \hyperpage{148}
-  \item {mqc\_algebra::real}, \hyperpage{148}
-    \subitem {mqc\_scalar\_complex\_realpart}, \hyperpage{148}
-    \subitem {mqc\_vector\_complex\_realpart}, \hyperpage{149}
-  \item {mqc\_algebra::sin}, \hyperpage{149}
-    \subitem {mqc\_scalar\_sin}, \hyperpage{149}
-  \item {mqc\_algebra::sqrt}, \hyperpage{149}
-    \subitem {mqc\_scalar\_sqrt}, \hyperpage{150}
-  \item {mqc\_algebra::tan}, \hyperpage{150}
-    \subitem {mqc\_scalar\_tan}, \hyperpage{150}
-  \item {mqc\_algebra::transpose}, \hyperpage{151}
-    \subitem {mqc\_matrix\_transpose}, \hyperpage{151}
-    \subitem {mqc\_vector\_transpose}, \hyperpage{151}
+		\hyperpage{36}
+    \subitem {mqc\_matrix\_symmsymmr4tensor\_put\_real}, \hyperpage{37}
+    \subitem {mqc\_matrix\_test\_diagonal}, \hyperpage{37}
+    \subitem {mqc\_matrix\_test\_symmetric}, \hyperpage{37}
+    \subitem {mqc\_matrix\_trace}, \hyperpage{37}
+    \subitem {mqc\_matrix\_transpose}, \hyperpage{37}
+    \subitem {mqc\_matrix\_vector\_at}, \hyperpage{37}
+    \subitem {mqc\_matrix\_vector\_put}, \hyperpage{38}
+    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{38}
+    \subitem {mqc\_matrixmatrixproduct}, \hyperpage{38}
+    \subitem {mqc\_matrixmatrixsubtract}, \hyperpage{38}
+    \subitem {mqc\_matrixmatrixsum}, \hyperpage{38}
+    \subitem {mqc\_matrixscalarproduct}, \hyperpage{39}
+    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{39}
+    \subitem {mqc\_outer}, \hyperpage{39}
+    \subitem {mqc\_output\_complex\_scalar}, \hyperpage{39}
+    \subitem {mqc\_output\_integer\_scalar}, \hyperpage{40}
+    \subitem {mqc\_output\_mqcscalar\_scalar}, \hyperpage{41}
+    \subitem {mqc\_output\_real\_scalar}, \hyperpage{41}
+    \subitem {mqc\_print\_matrix\_algebra1}, \hyperpage{42}
+    \subitem {mqc\_print\_r4tensor\_algebra1}, \hyperpage{42}
+    \subitem {mqc\_print\_scalar\_algebra1}, \hyperpage{42}
+    \subitem {mqc\_print\_vector\_algebra1}, \hyperpage{43}
+    \subitem {mqc\_r4tensor\_at}, \hyperpage{44}
+    \subitem {mqc\_r4tensor\_havecomplex}, \hyperpage{44}
+    \subitem {mqc\_r4tensor\_haveinteger}, \hyperpage{44}
+    \subitem {mqc\_r4tensor\_havereal}, \hyperpage{44}
+    \subitem {mqc\_r4tensor\_initialize}, \hyperpage{44}
+    \subitem {mqc\_r4tensor\_put}, \hyperpage{45}
+    \subitem {mqc\_realgtscalar}, \hyperpage{45}
+    \subitem {mqc\_reallescalar}, \hyperpage{45}
+    \subitem {mqc\_realltscalar}, \hyperpage{45}
+    \subitem {mqc\_realscalaradd}, \hyperpage{46}
+    \subitem {mqc\_realscalardivide}, \hyperpage{46}
+    \subitem {mqc\_realscalarmultiply}, \hyperpage{47}
+    \subitem {mqc\_realscalarsubtract}, \hyperpage{47}
+    \subitem {mqc\_realvectorproduct}, \hyperpage{47}
+    \subitem {mqc\_scalar\_acos}, \hyperpage{47}
+    \subitem {mqc\_scalar\_asin}, \hyperpage{48}
+    \subitem {mqc\_scalar\_atan}, \hyperpage{48}
+    \subitem {mqc\_scalar\_atan2}, \hyperpage{49}
+    \subitem {mqc\_scalar\_cmplx}, \hyperpage{50}
+    \subitem {mqc\_scalar\_complex\_conjugate}, \hyperpage{50}
+    \subitem {mqc\_scalar\_complex\_imagpart}, \hyperpage{50}
+    \subitem {mqc\_scalar\_complex\_realpart}, \hyperpage{51}
+    \subitem {mqc\_scalar\_cos}, \hyperpage{51}
+    \subitem {mqc\_scalar\_get\_abs\_value}, \hyperpage{51}
+    \subitem {mqc\_scalar\_get\_intrinsic\_complex}, \hyperpage{52}
+    \subitem {mqc\_scalar\_get\_intrinsic\_integer}, \hyperpage{53}
+    \subitem {mqc\_scalar\_get\_intrinsic\_real}, \hyperpage{53}
+    \subitem {mqc\_scalar\_get\_random\_value}, \hyperpage{54}
+    \subitem {mqc\_scalar\_havecomplex}, \hyperpage{54}
+    \subitem {mqc\_scalar\_haveinteger}, \hyperpage{55}
+    \subitem {mqc\_scalar\_havereal}, \hyperpage{56}
+    \subitem {mqc\_scalar\_isallocated}, \hyperpage{56}
+    \subitem {mqc\_scalar\_sin}, \hyperpage{57}
+    \subitem {mqc\_scalar\_sqrt}, \hyperpage{58}
+    \subitem {mqc\_scalar\_tan}, \hyperpage{58}
+    \subitem {mqc\_scalaradd}, \hyperpage{59}
+    \subitem {mqc\_scalarcomplexadd}, \hyperpage{59}
+    \subitem {mqc\_scalarcomplexdivide}, \hyperpage{60}
+    \subitem {mqc\_scalarcomplexexponent}, \hyperpage{60}
+    \subitem {mqc\_scalarcomplexmultiply}, \hyperpage{60}
+    \subitem {mqc\_scalarcomplexsubtract}, \hyperpage{61}
+    \subitem {mqc\_scalardivide}, \hyperpage{61}
+    \subitem {mqc\_scalareq}, \hyperpage{61}
+    \subitem {mqc\_scalarexponent}, \hyperpage{62}
+    \subitem {mqc\_scalarge}, \hyperpage{63}
+    \subitem {mqc\_scalargt}, \hyperpage{63}
+    \subitem {mqc\_scalargtinteger}, \hyperpage{64}
+    \subitem {mqc\_scalargtreal}, \hyperpage{65}
+    \subitem {mqc\_scalarintegeradd}, \hyperpage{65}
+    \subitem {mqc\_scalarintegerdivide}, \hyperpage{65}
+    \subitem {mqc\_scalarintegerexponent}, \hyperpage{65}
+    \subitem {mqc\_scalarintegermultiply}, \hyperpage{66}
+    \subitem {mqc\_scalarintegersubtract}, \hyperpage{66}
+    \subitem {mqc\_scalarle}, \hyperpage{66}
+    \subitem {mqc\_scalarleinteger}, \hyperpage{66}
+    \subitem {mqc\_scalarlereal}, \hyperpage{67}
+    \subitem {mqc\_scalarlt}, \hyperpage{67}
+    \subitem {mqc\_scalarltreal}, \hyperpage{68}
+    \subitem {mqc\_scalarmatrixproduct}, \hyperpage{68}
+    \subitem {mqc\_scalarmultiply}, \hyperpage{68}
+    \subitem {mqc\_scalarne}, \hyperpage{69}
+    \subitem {mqc\_scalarrealadd}, \hyperpage{70}
+    \subitem {mqc\_scalarrealdivide}, \hyperpage{70}
+    \subitem {mqc\_scalarrealexponent}, \hyperpage{70}
+    \subitem {mqc\_scalarrealmultiply}, \hyperpage{71}
+    \subitem {mqc\_scalarrealsubtract}, \hyperpage{71}
+    \subitem {mqc\_scalarsubtract}, \hyperpage{71}
+    \subitem {mqc\_scalarvectordifference}, \hyperpage{72}
+    \subitem {mqc\_scalarvectorproduct}, \hyperpage{72}
+    \subitem {mqc\_scalarvectorsum}, \hyperpage{72}
+    \subitem {mqc\_set\_array2tensor}, \hyperpage{72}
+    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{73}
+    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{73}
+    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{73}
+    \subitem {mqc\_set\_complexarray2matrix}, \hyperpage{73}
+    \subitem {mqc\_set\_integerarray2matrix}, \hyperpage{73}
+    \subitem {mqc\_set\_matrix2complexarray}, \hyperpage{73}
+    \subitem {mqc\_set\_matrix2integerarray}, \hyperpage{74}
+    \subitem {mqc\_set\_matrix2matrix}, \hyperpage{74}
+    \subitem {mqc\_set\_matrix2realarray}, \hyperpage{74}
+    \subitem {mqc\_set\_realarray2matrix}, \hyperpage{74}
+    \subitem {mqc\_set\_vector2complexarray}, \hyperpage{74}
+    \subitem {mqc\_set\_vector2integerarray}, \hyperpage{74}
+    \subitem {mqc\_set\_vector2realarray}, \hyperpage{75}
+    \subitem {mqc\_set\_vector2vector}, \hyperpage{75}
+    \subitem {mqc\_vector2diagmatrix}, \hyperpage{75}
+    \subitem {mqc\_vector\_abs}, \hyperpage{75}
+    \subitem {mqc\_vector\_argsort}, \hyperpage{75}
+    \subitem {mqc\_vector\_cast\_complex}, \hyperpage{75}
+    \subitem {mqc\_vector\_cast\_real}, \hyperpage{76}
+    \subitem {mqc\_vector\_cmplx}, \hyperpage{76}
+    \subitem {mqc\_vector\_complex\_imagpart}, \hyperpage{76}
+    \subitem {mqc\_vector\_complex\_realpart}, \hyperpage{76}
+    \subitem {mqc\_vector\_conjugate\_transpose}, \hyperpage{76}
+    \subitem {mqc\_vector\_copy\_complex2int}, \hyperpage{76}
+    \subitem {mqc\_vector\_copy\_complex2real}, \hyperpage{77}
+    \subitem {mqc\_vector\_copy\_int2complex}, \hyperpage{77}
+    \subitem {mqc\_vector\_copy\_int2real}, \hyperpage{77}
+    \subitem {mqc\_vector\_copy\_real2complex}, \hyperpage{77}
+    \subitem {mqc\_vector\_copy\_real2int}, \hyperpage{77}
+    \subitem {mqc\_vector\_havecomplex}, \hyperpage{77}
+    \subitem {mqc\_vector\_haveinteger}, \hyperpage{78}
+    \subitem {mqc\_vector\_havereal}, \hyperpage{78}
+    \subitem {mqc\_vector\_initialize}, \hyperpage{78}
+    \subitem {mqc\_vector\_isallocated}, \hyperpage{78}
+    \subitem {mqc\_vector\_iscolumn}, \hyperpage{78}
+    \subitem {mqc\_vector\_maxloc}, \hyperpage{78}
+    \subitem {mqc\_vector\_maxval}, \hyperpage{79}
+    \subitem {mqc\_vector\_minloc}, \hyperpage{79}
+    \subitem {mqc\_vector\_minval}, \hyperpage{79}
+    \subitem {mqc\_vector\_norm}, \hyperpage{79}
+    \subitem {mqc\_vector\_pop}, \hyperpage{79}
+    \subitem {mqc\_vector\_power}, \hyperpage{79}
+    \subitem {mqc\_vector\_push}, \hyperpage{80}
+    \subitem {mqc\_vector\_scalar\_at}, \hyperpage{80}
+    \subitem {mqc\_vector\_scalar\_increment}, \hyperpage{80}
+    \subitem {mqc\_vector\_scalar\_put}, \hyperpage{80}
+    \subitem {mqc\_vector\_shift}, \hyperpage{80}
+    \subitem {mqc\_vector\_sort}, \hyperpage{80}
+    \subitem {mqc\_vector\_sqrt}, \hyperpage{81}
+    \subitem {mqc\_vector\_transpose}, \hyperpage{81}
+    \subitem {mqc\_vector\_unshift}, \hyperpage{81}
+    \subitem {mqc\_vector\_vector\_at}, \hyperpage{81}
+    \subitem {mqc\_vector\_vector\_put}, \hyperpage{81}
+    \subitem {mqc\_vectorcomplexdivide}, \hyperpage{81}
+    \subitem {mqc\_vectorcomplexproduct}, \hyperpage{82}
+    \subitem {mqc\_vectorintegerdivide}, \hyperpage{82}
+    \subitem {mqc\_vectorintegerproduct}, \hyperpage{82}
+    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{82}
+    \subitem {mqc\_vectorrealdivide}, \hyperpage{82}
+    \subitem {mqc\_vectorrealproduct}, \hyperpage{82}
+    \subitem {mqc\_vectorscalardivide}, \hyperpage{83}
+    \subitem {mqc\_vectorscalarproduct}, \hyperpage{83}
+    \subitem {mqc\_vectorvectordifference}, \hyperpage{83}
+    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{83}
+    \subitem {mqc\_vectorvectorsum}, \hyperpage{83}
+    \subitem {symindexhash}, \hyperpage{83}
+  \item {mqc\_algebra::abs}, \hyperpage{101}
+    \subitem {mqc\_scalar\_get\_abs\_value}, \hyperpage{101}
+    \subitem {mqc\_vector\_abs}, \hyperpage{102}
+  \item {mqc\_algebra::acos}, \hyperpage{102}
+    \subitem {mqc\_scalar\_acos}, \hyperpage{102}
+  \item {mqc\_algebra::aimag}, \hyperpage{103}
+    \subitem {mqc\_scalar\_complex\_imagpart}, \hyperpage{103}
+    \subitem {mqc\_vector\_complex\_imagpart}, \hyperpage{103}
+  \item {mqc\_algebra::asin}, \hyperpage{104}
+    \subitem {mqc\_scalar\_asin}, \hyperpage{104}
+  \item {mqc\_algebra::assignment(=)}, \hyperpage{105}
+    \subitem {mqc\_input\_complex\_scalar}, \hyperpage{105}
+    \subitem {mqc\_input\_integer\_scalar}, \hyperpage{106}
+    \subitem {mqc\_input\_real\_scalar}, \hyperpage{107}
+    \subitem {mqc\_output\_complex\_scalar}, \hyperpage{107}
+    \subitem {mqc\_output\_integer\_scalar}, \hyperpage{108}
+    \subitem {mqc\_output\_mqcscalar\_scalar}, \hyperpage{109}
+    \subitem {mqc\_output\_real\_scalar}, \hyperpage{109}
+    \subitem {mqc\_set\_array2tensor}, \hyperpage{110}
+    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{110}
+    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{110}
+    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{110}
+    \subitem {mqc\_set\_complexarray2matrix}, \hyperpage{111}
+    \subitem {mqc\_set\_integerarray2matrix}, \hyperpage{111}
+    \subitem {mqc\_set\_matrix2complexarray}, \hyperpage{111}
+    \subitem {mqc\_set\_matrix2integerarray}, \hyperpage{111}
+    \subitem {mqc\_set\_matrix2matrix}, \hyperpage{111}
+    \subitem {mqc\_set\_matrix2realarray}, \hyperpage{111}
+    \subitem {mqc\_set\_realarray2matrix}, \hyperpage{112}
+    \subitem {mqc\_set\_vector2complexarray}, \hyperpage{112}
+    \subitem {mqc\_set\_vector2integerarray}, \hyperpage{112}
+    \subitem {mqc\_set\_vector2realarray}, \hyperpage{112}
+    \subitem {mqc\_set\_vector2vector}, \hyperpage{112}
+  \item {mqc\_algebra::atan}, \hyperpage{113}
+    \subitem {mqc\_scalar\_atan}, \hyperpage{113}
+  \item {mqc\_algebra::atan2}, \hyperpage{114}
+    \subitem {mqc\_scalar\_atan2}, \hyperpage{114}
+  \item {mqc\_algebra::cmplx}, \hyperpage{115}
+    \subitem {mqc\_scalar\_cmplx}, \hyperpage{115}
+    \subitem {mqc\_vector\_cmplx}, \hyperpage{116}
+  \item {mqc\_algebra::conjg}, \hyperpage{116}
+    \subitem {mqc\_scalar\_complex\_conjugate}, \hyperpage{116}
+  \item {mqc\_algebra::contraction}, \hyperpage{117}
+    \subitem {mqc\_matrix\_matrix\_contraction}, \hyperpage{117}
+  \item {mqc\_algebra::cos}, \hyperpage{118}
+    \subitem {mqc\_scalar\_cos}, \hyperpage{118}
+  \item {mqc\_algebra::dagger}, \hyperpage{119}
+    \subitem {mqc\_matrix\_conjugate\_transpose}, \hyperpage{119}
+    \subitem {mqc\_vector\_conjugate\_transpose}, \hyperpage{119}
+  \item {mqc\_algebra::dot\_product}, \hyperpage{120}
+    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{120}
+  \item {mqc\_algebra::matmul}, \hyperpage{121}
+    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{121}
+    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{121}
+    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{122}
+  \item {mqc\_algebra::matrix\_symm2sq}, \hyperpage{124}
+    \subitem {matrix\_symm2sq\_complex}, \hyperpage{124}
+    \subitem {matrix\_symm2sq\_integer}, \hyperpage{124}
+    \subitem {matrix\_symm2sq\_real}, \hyperpage{124}
+  \item {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{125}
+    \subitem {mqc\_matrix\_cast\_complex}, \hyperpage{125}
+    \subitem {mqc\_vector\_cast\_complex}, \hyperpage{125}
+  \item {mqc\_algebra::mqc\_cast\_real}, \hyperpage{125}
+    \subitem {mqc\_matrix\_cast\_real}, \hyperpage{125}
+    \subitem {mqc\_vector\_cast\_real}, \hyperpage{126}
+  \item {mqc\_algebra::mqc\_have\_complex}, \hyperpage{128}
+    \subitem {mqc\_matrix\_havecomplex}, \hyperpage{128}
+    \subitem {mqc\_vector\_havecomplex}, \hyperpage{128}
+  \item {mqc\_algebra::mqc\_have\_int}, \hyperpage{128}
+    \subitem {mqc\_matrix\_haveinteger}, \hyperpage{128}
+    \subitem {mqc\_vector\_haveinteger}, \hyperpage{129}
+  \item {mqc\_algebra::mqc\_have\_real}, \hyperpage{129}
+    \subitem {mqc\_matrix\_havereal}, \hyperpage{129}
+    \subitem {mqc\_vector\_havereal}, \hyperpage{129}
+  \item {mqc\_algebra::mqc\_matrix}, \hyperpage{130}
+    \subitem {at}, \hyperpage{130}
+    \subitem {dagger}, \hyperpage{130}
+    \subitem {det}, \hyperpage{131}
+    \subitem {diag}, \hyperpage{131}
+    \subitem {eigensys}, \hyperpage{131}
+    \subitem {identity}, \hyperpage{131}
+    \subitem {init}, \hyperpage{131}
+    \subitem {initialize}, \hyperpage{131}
+    \subitem {inv}, \hyperpage{131}
+    \subitem {mat}, \hyperpage{132}
+    \subitem {matc}, \hyperpage{134}
+    \subitem {mati}, \hyperpage{134}
+    \subitem {matr}, \hyperpage{134}
+    \subitem {mput}, \hyperpage{132}
+    \subitem {norm}, \hyperpage{132}
+    \subitem {print}, \hyperpage{132}
+    \subitem {put}, \hyperpage{132}
+    \subitem {rmsmax}, \hyperpage{132}
+    \subitem {s\_type}, \hyperpage{132}
+    \subitem {set}, \hyperpage{133}
+    \subitem {sqrt}, \hyperpage{133}
+    \subitem {svd}, \hyperpage{133}
+    \subitem {trace}, \hyperpage{133}
+    \subitem {transpose}, \hyperpage{133}
+    \subitem {vat}, \hyperpage{133}
+    \subitem {vput}, \hyperpage{133}
+  \item {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, \hyperpage{134}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_complex}, \hyperpage{134}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_integer}, \hyperpage{135}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_real}, \hyperpage{135}
+    \subitem {mqc\_matrix\_diagmatrix\_put\_vector}, \hyperpage{135}
+  \item {mqc\_algebra::mqc\_matrix\_symmmatrix\_put}, \hyperpage{135}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_complex}, \hyperpage{136}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_integer}, \hyperpage{136}
+    \subitem {mqc\_matrix\_symmmatrix\_put\_real}, \hyperpage{136}
+  \item {mqc\_algebra::mqc\_print}, \hyperpage{137}
+    \subitem {mqc\_print\_matrix\_algebra1}, \hyperpage{137}
+    \subitem {mqc\_print\_r4tensor\_algebra1}, \hyperpage{137}
+    \subitem {mqc\_print\_scalar\_algebra1}, \hyperpage{138}
+    \subitem {mqc\_print\_vector\_algebra1}, \hyperpage{139}
+  \item {mqc\_algebra::mqc\_r4tensor}, \hyperpage{142}
+    \subitem {at}, \hyperpage{142}
+    \subitem {init}, \hyperpage{142}
+    \subitem {initialize}, \hyperpage{142}
+    \subitem {print}, \hyperpage{142}
+    \subitem {put}, \hyperpage{143}
+  \item {mqc\_algebra::mqc\_scalar}, \hyperpage{143}
+    \subitem {abs}, \hyperpage{143}
+    \subitem {cval}, \hyperpage{143}
+    \subitem {ival}, \hyperpage{143}
+    \subitem {print}, \hyperpage{144}
+    \subitem {random}, \hyperpage{144}
+    \subitem {rval}, \hyperpage{144}
+  \item {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{149}
+    \subitem {mqc\_set\_array2vector\_complex}, \hyperpage{149}
+    \subitem {mqc\_set\_array2vector\_integer}, \hyperpage{149}
+    \subitem {mqc\_set\_array2vector\_real}, \hyperpage{149}
+  \item {mqc\_algebra::mqc\_vector}, \hyperpage{150}
+    \subitem {abs}, \hyperpage{151}
+    \subitem {argsort}, \hyperpage{151}
+    \subitem {at}, \hyperpage{151}
+    \subitem {dagger}, \hyperpage{151}
+    \subitem {data\_type}, \hyperpage{154}
+    \subitem {diag}, \hyperpage{151}
+    \subitem {init}, \hyperpage{151}
+    \subitem {initialize}, \hyperpage{152}
+    \subitem {length}, \hyperpage{154}
+    \subitem {maxloc}, \hyperpage{152}
+    \subitem {maxval}, \hyperpage{152}
+    \subitem {minloc}, \hyperpage{152}
+    \subitem {minval}, \hyperpage{152}
+    \subitem {norm}, \hyperpage{152}
+    \subitem {pop}, \hyperpage{152}
+    \subitem {power}, \hyperpage{153}
+    \subitem {print}, \hyperpage{153}
+    \subitem {push}, \hyperpage{153}
+    \subitem {put}, \hyperpage{153}
+    \subitem {shift}, \hyperpage{153}
+    \subitem {size}, \hyperpage{153}
+    \subitem {sort}, \hyperpage{153}
+    \subitem {sqrt}, \hyperpage{154}
+    \subitem {transpose}, \hyperpage{154}
+    \subitem {unshift}, \hyperpage{154}
+    \subitem {vat}, \hyperpage{154}
+    \subitem {vecc}, \hyperpage{155}
+    \subitem {veci}, \hyperpage{155}
+    \subitem {vecr}, \hyperpage{155}
+    \subitem {vput}, \hyperpage{154}
+  \item {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{164}
+    \subitem {mqc\_scalarcomplexexponent}, \hyperpage{164}
+    \subitem {mqc\_scalarexponent}, \hyperpage{165}
+    \subitem {mqc\_scalarintegerexponent}, \hyperpage{166}
+    \subitem {mqc\_scalarrealexponent}, \hyperpage{166}
+  \item {mqc\_algebra::operator($\ast$)}, \hyperpage{159}
+    \subitem {mqc\_complexscalarmultiply}, \hyperpage{159}
+    \subitem {mqc\_complexvectorproduct}, \hyperpage{160}
+    \subitem {mqc\_integerscalarmultiply}, \hyperpage{160}
+    \subitem {mqc\_integervectorproduct}, \hyperpage{160}
+    \subitem {mqc\_matrixmatrixproduct}, \hyperpage{160}
+    \subitem {mqc\_matrixscalarproduct}, \hyperpage{160}
+    \subitem {mqc\_realscalarmultiply}, \hyperpage{160}
+    \subitem {mqc\_realvectorproduct}, \hyperpage{161}
+    \subitem {mqc\_scalarcomplexmultiply}, \hyperpage{161}
+    \subitem {mqc\_scalarintegermultiply}, \hyperpage{161}
+    \subitem {mqc\_scalarmatrixproduct}, \hyperpage{161}
+    \subitem {mqc\_scalarmultiply}, \hyperpage{161}
+    \subitem {mqc\_scalarrealmultiply}, \hyperpage{162}
+    \subitem {mqc\_scalarvectorproduct}, \hyperpage{162}
+    \subitem {mqc\_vectorcomplexproduct}, \hyperpage{162}
+    \subitem {mqc\_vectorintegerproduct}, \hyperpage{162}
+    \subitem {mqc\_vectorrealproduct}, \hyperpage{163}
+    \subitem {mqc\_vectorscalarproduct}, \hyperpage{163}
+  \item {mqc\_algebra::operator(+)}, \hyperpage{168}
+    \subitem {mqc\_complexscalaradd}, \hyperpage{168}
+    \subitem {mqc\_integerscalaradd}, \hyperpage{168}
+    \subitem {mqc\_matrixmatrixsum}, \hyperpage{168}
+    \subitem {mqc\_realscalaradd}, \hyperpage{168}
+    \subitem {mqc\_scalaradd}, \hyperpage{169}
+    \subitem {mqc\_scalarcomplexadd}, \hyperpage{169}
+    \subitem {mqc\_scalarintegeradd}, \hyperpage{169}
+    \subitem {mqc\_scalarrealadd}, \hyperpage{170}
+    \subitem {mqc\_scalarvectorsum}, \hyperpage{170}
+    \subitem {mqc\_vectorvectorsum}, \hyperpage{170}
+  \item {mqc\_algebra::operator(-\/)}, \hyperpage{171}
+    \subitem {mqc\_complexscalarsubtract}, \hyperpage{171}
+    \subitem {mqc\_integerscalarsubtract}, \hyperpage{171}
+    \subitem {mqc\_matrixmatrixsubtract}, \hyperpage{171}
+    \subitem {mqc\_realscalarsubtract}, \hyperpage{172}
+    \subitem {mqc\_scalarcomplexsubtract}, \hyperpage{172}
+    \subitem {mqc\_scalarintegersubtract}, \hyperpage{172}
+    \subitem {mqc\_scalarrealsubtract}, \hyperpage{172}
+    \subitem {mqc\_scalarsubtract}, \hyperpage{172}
+    \subitem {mqc\_scalarvectordifference}, \hyperpage{173}
+    \subitem {mqc\_vectorvectordifference}, \hyperpage{173}
+  \item {mqc\_algebra::operator(.dot.)}, \hyperpage{173}
+    \subitem {mqc\_matrixmatrixdotproduct}, \hyperpage{174}
+    \subitem {mqc\_matrixvectordotproduct}, \hyperpage{174}
+    \subitem {mqc\_vectormatrixdotproduct}, \hyperpage{174}
+    \subitem {mqc\_vectorvectordotproduct}, \hyperpage{174}
+  \item {mqc\_algebra::operator(.eq.)}, \hyperpage{174}
+    \subitem {mqc\_scalareq}, \hyperpage{175}
+  \item {mqc\_algebra::operator(.ewd.)}, \hyperpage{175}
+    \subitem {mqc\_elementmatrixdivide}, \hyperpage{176}
+  \item {mqc\_algebra::operator(.ewp.)}, \hyperpage{176}
+    \subitem {mqc\_elementmatrixproduct}, \hyperpage{176}
+    \subitem {mqc\_elementvectorproduct}, \hyperpage{176}
+  \item {mqc\_algebra::operator(.ge.)}, \hyperpage{177}
+    \subitem {mqc\_scalarge}, \hyperpage{177}
+  \item {mqc\_algebra::operator(.gt.)}, \hyperpage{177}
+    \subitem {mqc\_integergtscalar}, \hyperpage{177}
+    \subitem {mqc\_realgtscalar}, \hyperpage{178}
+    \subitem {mqc\_scalargt}, \hyperpage{178}
+    \subitem {mqc\_scalargtinteger}, \hyperpage{179}
+    \subitem {mqc\_scalargtreal}, \hyperpage{180}
+  \item {mqc\_algebra::operator(.le.)}, \hyperpage{180}
+    \subitem {mqc\_integerlescalar}, \hyperpage{181}
+    \subitem {mqc\_reallescalar}, \hyperpage{181}
+    \subitem {mqc\_scalarle}, \hyperpage{181}
+    \subitem {mqc\_scalarleinteger}, \hyperpage{181}
+    \subitem {mqc\_scalarlereal}, \hyperpage{181}
+  \item {mqc\_algebra::operator(.lt.)}, \hyperpage{182}
+    \subitem {mqc\_realltscalar}, \hyperpage{182}
+    \subitem {mqc\_scalarlt}, \hyperpage{183}
+    \subitem {mqc\_scalarltreal}, \hyperpage{183}
+  \item {mqc\_algebra::operator(.ne.)}, \hyperpage{184}
+    \subitem {mqc\_scalarne}, \hyperpage{185}
+  \item {mqc\_algebra::operator(.outer.)}, \hyperpage{185}
+    \subitem {mqc\_outer}, \hyperpage{186}
+  \item {mqc\_algebra::operator(.x.)}, \hyperpage{186}
+    \subitem {mqc\_crossproduct}, \hyperpage{186}
+  \item {mqc\_algebra::operator(/)}, \hyperpage{186}
+    \subitem {mqc\_complexscalardivide}, \hyperpage{187}
+    \subitem {mqc\_integerscalardivide}, \hyperpage{187}
+    \subitem {mqc\_realscalardivide}, \hyperpage{187}
+    \subitem {mqc\_scalarcomplexdivide}, \hyperpage{187}
+    \subitem {mqc\_scalardivide}, \hyperpage{187}
+    \subitem {mqc\_scalarintegerdivide}, \hyperpage{188}
+    \subitem {mqc\_scalarrealdivide}, \hyperpage{188}
+    \subitem {mqc\_vectorcomplexdivide}, \hyperpage{188}
+    \subitem {mqc\_vectorintegerdivide}, \hyperpage{188}
+    \subitem {mqc\_vectorrealdivide}, \hyperpage{189}
+    \subitem {mqc\_vectorscalardivide}, \hyperpage{189}
+  \item {mqc\_algebra::real}, \hyperpage{189}
+    \subitem {mqc\_scalar\_complex\_realpart}, \hyperpage{189}
+    \subitem {mqc\_vector\_complex\_realpart}, \hyperpage{189}
+  \item {mqc\_algebra::sin}, \hyperpage{190}
+    \subitem {mqc\_scalar\_sin}, \hyperpage{190}
+  \item {mqc\_algebra::sqrt}, \hyperpage{191}
+    \subitem {mqc\_scalar\_sqrt}, \hyperpage{191}
+  \item {mqc\_algebra::tan}, \hyperpage{192}
+    \subitem {mqc\_scalar\_tan}, \hyperpage{192}
+  \item {mqc\_algebra::transpose}, \hyperpage{193}
+    \subitem {mqc\_matrix\_transpose}, \hyperpage{193}
+    \subitem {mqc\_vector\_transpose}, \hyperpage{194}
   \item {mqc\_allocate\_matrix}
-    \subitem {mqc\_algebra}, \hyperpage{16}
+    \subitem {mqc\_algebra}, \hyperpage{18}
   \item {mqc\_allocate\_r4tensor}
-    \subitem {mqc\_algebra}, \hyperpage{16}
+    \subitem {mqc\_algebra}, \hyperpage{18}
   \item {mqc\_allocate\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{16}
+    \subitem {mqc\_algebra}, \hyperpage{18}
   \item {mqc\_allocate\_vector}
-    \subitem {mqc\_algebra}, \hyperpage{17}
+    \subitem {mqc\_algebra}, \hyperpage{19}
   \item {mqc\_build\_ci\_hamiltonian}
-    \subitem {mqc\_est}, \hyperpage{62}
+    \subitem {mqc\_est}, \hyperpage{86}
   \item {mqc\_complexscalaradd}
-    \subitem {mqc\_algebra}, \hyperpage{17}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{133}
+    \subitem {mqc\_algebra}, \hyperpage{19}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{168}
   \item {mqc\_complexscalardivide}
-    \subitem {mqc\_algebra}, \hyperpage{18}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{146}
+    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{187}
   \item {mqc\_complexscalarmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{18}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{127}
+    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{159}
   \item {mqc\_complexscalarsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{18}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{136}
+    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{171}
   \item {mqc\_complexvectorproduct}
-    \subitem {mqc\_algebra}, \hyperpage{18}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_crossproduct}
-    \subitem {mqc\_algebra}, \hyperpage{18}
-    \subitem {mqc\_algebra::operator(.x.)}, \hyperpage{146}
+    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra::operator(.x.)}, \hyperpage{186}
   \item {mqc\_deallocate\_matrix}
-    \subitem {mqc\_algebra}, \hyperpage{18}
+    \subitem {mqc\_algebra}, \hyperpage{20}
   \item {mqc\_deallocate\_r4tensor}
-    \subitem {mqc\_algebra}, \hyperpage{19}
+    \subitem {mqc\_algebra}, \hyperpage{21}
   \item {mqc\_deallocate\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{19}
+    \subitem {mqc\_algebra}, \hyperpage{21}
   \item {mqc\_deallocate\_vector}
-    \subitem {mqc\_algebra}, \hyperpage{19}
+    \subitem {mqc\_algebra}, \hyperpage{21}
   \item {mqc\_eigenvalue\_eigenvalue\_dotproduct}
-    \subitem {mqc\_est}, \hyperpage{63}
-    \subitem {mqc\_est::dot\_product}, \hyperpage{91}
+    \subitem {mqc\_est}, \hyperpage{86}
+    \subitem {mqc\_est::dot\_product}, \hyperpage{121}
   \item {mqc\_eigenvalues\_add\_name}
-    \subitem {mqc\_est}, \hyperpage{63}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_allocate}
-    \subitem {mqc\_est}, \hyperpage{63}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_array\_name}
-    \subitem {mqc\_est}, \hyperpage{63}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_array\_type}
-    \subitem {mqc\_est}, \hyperpage{63}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_at}
-    \subitem {mqc\_est}, \hyperpage{64}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_dimension}
-    \subitem {mqc\_est}, \hyperpage{64}
+    \subitem {mqc\_est}, \hyperpage{87}
   \item {mqc\_eigenvalues\_eigenvalues\_multiply}
-    \subitem {mqc\_est}, \hyperpage{64}
-    \subitem {mqc\_est::matmul}, \hyperpage{92}
+    \subitem {mqc\_est}, \hyperpage{88}
+    \subitem {mqc\_est::matmul}, \hyperpage{122}
   \item {mqc\_eigenvalues\_has\_alpha}
-    \subitem {mqc\_est}, \hyperpage{64}
+    \subitem {mqc\_est}, \hyperpage{88}
   \item {mqc\_eigenvalues\_has\_beta}
-    \subitem {mqc\_est}, \hyperpage{64}
+    \subitem {mqc\_est}, \hyperpage{88}
   \item {mqc\_eigenvalues\_integral\_multiply}
-    \subitem {mqc\_est}, \hyperpage{64}
-    \subitem {mqc\_est::matmul}, \hyperpage{92}
+    \subitem {mqc\_est}, \hyperpage{88}
+    \subitem {mqc\_est::matmul}, \hyperpage{122}
   \item {mqc\_eigenvalues\_isallocated}
-    \subitem {mqc\_est}, \hyperpage{65}
+    \subitem {mqc\_est}, \hyperpage{88}
   \item {mqc\_eigenvalues\_output\_array}
-    \subitem {mqc\_est}, \hyperpage{65}
-    \subitem {mqc\_est::assignment(=)}, \hyperpage{84}
+    \subitem {mqc\_est}, \hyperpage{88}
+    \subitem {mqc\_est::assignment(=)}, \hyperpage{113}
   \item {mqc\_eigenvalues\_output\_block}
-    \subitem {mqc\_est}, \hyperpage{65}
+    \subitem {mqc\_est}, \hyperpage{89}
   \item {mqc\_elementmatrixdivide}
-    \subitem {mqc\_algebra}, \hyperpage{19}
-    \subitem {mqc\_algebra::operator(.ewd.)}, \hyperpage{139}
+    \subitem {mqc\_algebra}, \hyperpage{21}
+    \subitem {mqc\_algebra::operator(.ewd.)}, \hyperpage{176}
   \item {mqc\_elementmatrixproduct}
-    \subitem {mqc\_algebra}, \hyperpage{19}
-    \subitem {mqc\_algebra::operator(.ewp.)}, \hyperpage{140}
+    \subitem {mqc\_algebra}, \hyperpage{22}
+    \subitem {mqc\_algebra::operator(.ewp.)}, \hyperpage{176}
   \item {mqc\_elementvectorproduct}
-    \subitem {mqc\_algebra}, \hyperpage{19}
-    \subitem {mqc\_algebra::operator(.ewp.)}, \hyperpage{140}
+    \subitem {mqc\_algebra}, \hyperpage{22}
+    \subitem {mqc\_algebra::operator(.ewp.)}, \hyperpage{176}
   \item {mqc\_eri\_integral\_contraction}
-    \subitem {mqc\_est}, \hyperpage{65}
-    \subitem {mqc\_est::contraction}, \hyperpage{88}
-  \item {mqc\_est}, \hyperpage{60}
-    \subitem {gen\_det\_str}, \hyperpage{62}
-    \subitem {get\_one\_gamma\_matrix}, \hyperpage{62}
-    \subitem {mqc\_build\_ci\_hamiltonian}, \hyperpage{62}
-    \subitem {mqc\_eigenvalue\_eigenvalue\_dotproduct}, \hyperpage{63}
-    \subitem {mqc\_eigenvalues\_add\_name}, \hyperpage{63}
-    \subitem {mqc\_eigenvalues\_allocate}, \hyperpage{63}
-    \subitem {mqc\_eigenvalues\_array\_name}, \hyperpage{63}
-    \subitem {mqc\_eigenvalues\_array\_type}, \hyperpage{63}
-    \subitem {mqc\_eigenvalues\_at}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_dimension}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_eigenvalues\_multiply}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_has\_alpha}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_has\_beta}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_integral\_multiply}, \hyperpage{64}
-    \subitem {mqc\_eigenvalues\_isallocated}, \hyperpage{65}
-    \subitem {mqc\_eigenvalues\_output\_array}, \hyperpage{65}
-    \subitem {mqc\_eigenvalues\_output\_block}, \hyperpage{65}
-    \subitem {mqc\_eri\_integral\_contraction}, \hyperpage{65}
-    \subitem {mqc\_integral\_add\_name}, \hyperpage{65}
-    \subitem {mqc\_integral\_allocate}, \hyperpage{65}
-    \subitem {mqc\_integral\_array\_name}, \hyperpage{66}
-    \subitem {mqc\_integral\_array\_type}, \hyperpage{66}
-    \subitem {mqc\_integral\_at}, \hyperpage{66}
-    \subitem {mqc\_integral\_conjugate\_transpose}, \hyperpage{66}
-    \subitem {mqc\_integral\_delete\_energy\_list}, \hyperpage{66}
-    \subitem {mqc\_integral\_difference}, \hyperpage{67}
-    \subitem {mqc\_integral\_dimension}, \hyperpage{67}
-    \subitem {mqc\_integral\_eigenvalues\_multiply}, \hyperpage{67}
-    \subitem {mqc\_integral\_get\_energy\_list}, \hyperpage{67}
-    \subitem {mqc\_integral\_has\_alpha}, \hyperpage{67}
-    \subitem {mqc\_integral\_has\_alphabeta}, \hyperpage{67}
-    \subitem {mqc\_integral\_has\_beta}, \hyperpage{68}
-    \subitem {mqc\_integral\_has\_betaalpha}, \hyperpage{68}
-    \subitem {mqc\_integral\_identity}, \hyperpage{68}
-    \subitem {mqc\_integral\_initialize}, \hyperpage{68}
-    \subitem {mqc\_integral\_integral\_multiply}, \hyperpage{68}
-    \subitem {mqc\_integral\_isallocated}, \hyperpage{69}
-    \subitem {mqc\_integral\_matrix\_multiply}, \hyperpage{69}
-    \subitem {mqc\_integral\_norm}, \hyperpage{69}
-    \subitem {mqc\_integral\_output\_array}, \hyperpage{69}
-    \subitem {mqc\_integral\_output\_block}, \hyperpage{69}
-    \subitem {mqc\_integral\_output\_orbitals}, \hyperpage{69}
-    \subitem {mqc\_integral\_scalar\_multiply}, \hyperpage{70}
-    \subitem {mqc\_integral\_set\_energy\_list}, \hyperpage{70}
-    \subitem {mqc\_integral\_sum}, \hyperpage{70}
-    \subitem {mqc\_integral\_swap\_orbitals}, \hyperpage{70}
-    \subitem {mqc\_integral\_transpose}, \hyperpage{70}
-    \subitem {mqc\_matrix\_integral\_multiply}, \hyperpage{71}
-    \subitem {mqc\_matrix\_spinblockghf}, \hyperpage{71}
-    \subitem {mqc\_matrix\_undospinblockghf\_eigenvalues}, 
-		\hyperpage{71}
-    \subitem {mqc\_matrix\_undospinblockghf\_integral}, \hyperpage{71}
-    \subitem {mqc\_print\_eigenvalues}, \hyperpage{71}
-    \subitem {mqc\_print\_integral}, \hyperpage{72}
-    \subitem {mqc\_print\_twoeris}, \hyperpage{72}
-    \subitem {mqc\_print\_wavefunction}, \hyperpage{72}
-    \subitem {mqc\_scalar\_integral\_multiply}, \hyperpage{72}
-    \subitem {mqc\_scf\_eigenvalues\_power}, \hyperpage{72}
-    \subitem {mqc\_scf\_integral\_contraction}, \hyperpage{73}
-    \subitem {mqc\_scf\_integral\_determinant}, \hyperpage{73}
-    \subitem {mqc\_scf\_integral\_diagonalize}, \hyperpage{73}
-    \subitem {mqc\_scf\_integral\_generalized\_eigensystem}, 
-		\hyperpage{73}
-    \subitem {mqc\_scf\_integral\_inverse}, \hyperpage{73}
-    \subitem {mqc\_scf\_integral\_trace}, \hyperpage{74}
-    \subitem {mqc\_scf\_transformation\_matrix}, \hyperpage{74}
-    \subitem {mqc\_twoeris\_allocate}, \hyperpage{74}
-    \subitem {mqc\_twoeris\_at}, \hyperpage{74}
-    \subitem {slater\_condon}, \hyperpage{74}
-    \subitem {twoeri\_trans}, \hyperpage{75}
-  \item {mqc\_est::assignment(=)}, \hyperpage{84}
-    \subitem {mqc\_eigenvalues\_output\_array}, \hyperpage{84}
-    \subitem {mqc\_integral\_output\_array}, \hyperpage{85}
-  \item {mqc\_est::contraction}, \hyperpage{88}
-    \subitem {mqc\_eri\_integral\_contraction}, \hyperpage{88}
-    \subitem {mqc\_scf\_integral\_contraction}, \hyperpage{88}
-  \item {mqc\_est::dagger}, \hyperpage{89}
+    \subitem {mqc\_est}, \hyperpage{89}
+    \subitem {mqc\_est::contraction}, \hyperpage{117}
+  \item {mqc\_est}, \hyperpage{84}
+    \subitem {gen\_det\_str}, \hyperpage{86}
+    \subitem {get\_one\_gamma\_matrix}, \hyperpage{86}
+    \subitem {mqc\_build\_ci\_hamiltonian}, \hyperpage{86}
+    \subitem {mqc\_eigenvalue\_eigenvalue\_dotproduct}, \hyperpage{86}
+    \subitem {mqc\_eigenvalues\_add\_name}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_allocate}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_array\_name}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_array\_type}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_at}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_dimension}, \hyperpage{87}
+    \subitem {mqc\_eigenvalues\_eigenvalues\_multiply}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_has\_alpha}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_has\_beta}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_integral\_multiply}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_isallocated}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_output\_array}, \hyperpage{88}
+    \subitem {mqc\_eigenvalues\_output\_block}, \hyperpage{89}
+    \subitem {mqc\_eri\_integral\_contraction}, \hyperpage{89}
+    \subitem {mqc\_integral\_add\_name}, \hyperpage{89}
+    \subitem {mqc\_integral\_allocate}, \hyperpage{89}
+    \subitem {mqc\_integral\_array\_name}, \hyperpage{89}
+    \subitem {mqc\_integral\_array\_type}, \hyperpage{90}
+    \subitem {mqc\_integral\_at}, \hyperpage{90}
     \subitem {mqc\_integral\_conjugate\_transpose}, \hyperpage{90}
-  \item {mqc\_est::dot\_product}, \hyperpage{90}
-    \subitem {mqc\_eigenvalue\_eigenvalue\_dotproduct}, \hyperpage{91}
-  \item {mqc\_est::matmul}, \hyperpage{92}
-    \subitem {mqc\_eigenvalues\_eigenvalues\_multiply}, \hyperpage{92}
-    \subitem {mqc\_eigenvalues\_integral\_multiply}, \hyperpage{92}
-    \subitem {mqc\_integral\_eigenvalues\_multiply}, \hyperpage{92}
-    \subitem {mqc\_integral\_integral\_multiply}, \hyperpage{93}
-    \subitem {mqc\_integral\_matrix\_multiply}, \hyperpage{93}
-    \subitem {mqc\_matrix\_integral\_multiply}, \hyperpage{93}
-  \item {mqc\_est::mqc\_determinant}, \hyperpage{96}
-    \subitem {nalpstr}, \hyperpage{96}
-    \subitem {nbetstr}, \hyperpage{96}
-    \subitem {ndets}, \hyperpage{96}
-    \subitem {order}, \hyperpage{96}
-    \subitem {strings}, \hyperpage{96}
-  \item {mqc\_est::mqc\_determinant\_string}, \hyperpage{97}
-    \subitem {alpha}, \hyperpage{97}
-    \subitem {beta}, \hyperpage{97}
-  \item {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{106}
+    \subitem {mqc\_integral\_delete\_energy\_list}, \hyperpage{90}
+    \subitem {mqc\_integral\_difference}, \hyperpage{90}
+    \subitem {mqc\_integral\_dimension}, \hyperpage{90}
+    \subitem {mqc\_integral\_eigenvalues\_multiply}, \hyperpage{91}
+    \subitem {mqc\_integral\_get\_energy\_list}, \hyperpage{91}
+    \subitem {mqc\_integral\_has\_alpha}, \hyperpage{91}
+    \subitem {mqc\_integral\_has\_alphabeta}, \hyperpage{91}
+    \subitem {mqc\_integral\_has\_beta}, \hyperpage{91}
+    \subitem {mqc\_integral\_has\_betaalpha}, \hyperpage{91}
+    \subitem {mqc\_integral\_identity}, \hyperpage{92}
+    \subitem {mqc\_integral\_initialize}, \hyperpage{92}
+    \subitem {mqc\_integral\_integral\_multiply}, \hyperpage{92}
+    \subitem {mqc\_integral\_isallocated}, \hyperpage{92}
+    \subitem {mqc\_integral\_matrix\_multiply}, \hyperpage{92}
+    \subitem {mqc\_integral\_norm}, \hyperpage{93}
+    \subitem {mqc\_integral\_output\_array}, \hyperpage{93}
+    \subitem {mqc\_integral\_output\_block}, \hyperpage{93}
+    \subitem {mqc\_integral\_output\_orbitals}, \hyperpage{93}
+    \subitem {mqc\_integral\_scalar\_multiply}, \hyperpage{93}
+    \subitem {mqc\_integral\_set\_energy\_list}, \hyperpage{94}
+    \subitem {mqc\_integral\_sum}, \hyperpage{94}
+    \subitem {mqc\_integral\_swap\_orbitals}, \hyperpage{94}
+    \subitem {mqc\_integral\_transpose}, \hyperpage{94}
+    \subitem {mqc\_matrix\_integral\_multiply}, \hyperpage{94}
+    \subitem {mqc\_matrix\_spinblockghf}, \hyperpage{95}
     \subitem {mqc\_matrix\_undospinblockghf\_eigenvalues}, 
-		\hyperpage{106}
-    \subitem {mqc\_matrix\_undospinblockghf\_integral}, \hyperpage{106}
-  \item {mqc\_est::mqc\_print}, \hyperpage{108}
-    \subitem {mqc\_print\_eigenvalues}, \hyperpage{108}
-    \subitem {mqc\_print\_integral}, \hyperpage{108}
-    \subitem {mqc\_print\_twoeris}, \hyperpage{108}
-    \subitem {mqc\_print\_wavefunction}, \hyperpage{108}
-  \item {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{109}
-    \subitem {nactive}, \hyperpage{109}
-    \subitem {ncore}, \hyperpage{109}
-    \subitem {nfrz}, \hyperpage{110}
-    \subitem {nval}, \hyperpage{110}
-    \subitem {pscf\_amplitudes}, \hyperpage{110}
-    \subitem {pscf\_energies}, \hyperpage{110}
-  \item {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
-    \subitem {addlabel}, \hyperpage{113}
-    \subitem {at}, \hyperpage{113}
-    \subitem {getblock}, \hyperpage{113}
-    \subitem {getlabel}, \hyperpage{113}
-    \subitem {power}, \hyperpage{113}
-    \subitem {print}, \hyperpage{113}
-  \item {mqc\_est::mqc\_scf\_integral}, \hyperpage{114}
-    \subitem {addlabel}, \hyperpage{114}
-    \subitem {deleteelist}, \hyperpage{114}
-    \subitem {det}, \hyperpage{114}
-    \subitem {diag}, \hyperpage{115}
-    \subitem {eigensys}, \hyperpage{115}
-    \subitem {getblock}, \hyperpage{115}
-    \subitem {getelist}, \hyperpage{115}
-    \subitem {getlabel}, \hyperpage{115}
-    \subitem {identity}, \hyperpage{115}
-    \subitem {init}, \hyperpage{115}
-    \subitem {inv}, \hyperpage{116}
-    \subitem {norm}, \hyperpage{116}
-    \subitem {orbitals}, \hyperpage{116}
-    \subitem {print}, \hyperpage{116}
-    \subitem {setelist}, \hyperpage{116}
-    \subitem {swap}, \hyperpage{116}
-    \subitem {trace}, \hyperpage{116}
-  \item {mqc\_est::mqc\_twoeris}, \hyperpage{118}
-    \subitem {print}, \hyperpage{118}
-  \item {mqc\_est::mqc\_wavefunction}, \hyperpage{123}
-    \subitem {basis}, \hyperpage{124}
-    \subitem {charge}, \hyperpage{124}
-    \subitem {core\_hamiltonian}, \hyperpage{124}
-    \subitem {density\_matrix}, \hyperpage{125}
-    \subitem {fock\_matrix}, \hyperpage{125}
-    \subitem {mo\_coefficients}, \hyperpage{125}
-    \subitem {mo\_energies}, \hyperpage{125}
-    \subitem {mo\_symmetries}, \hyperpage{125}
-    \subitem {multiplicity}, \hyperpage{125}
-    \subitem {nalpha}, \hyperpage{125}
-    \subitem {nbasis}, \hyperpage{126}
-    \subitem {nbeta}, \hyperpage{126}
-    \subitem {nelectrons}, \hyperpage{126}
-    \subitem {overlap\_matrix}, \hyperpage{126}
-    \subitem {print}, \hyperpage{124}
-    \subitem {scf\_density\_matrix}, \hyperpage{126}
-    \subitem {symmetry}, \hyperpage{126}
-    \subitem {wf\_complex}, \hyperpage{126}
-    \subitem {wf\_type}, \hyperpage{127}
-  \item {mqc\_est::operator($\ast$)}, \hyperpage{131}
-    \subitem {mqc\_integral\_scalar\_multiply}, \hyperpage{131}
-    \subitem {mqc\_scalar\_integral\_multiply}, \hyperpage{131}
-  \item {mqc\_est::operator(+)}, \hyperpage{132}
-    \subitem {mqc\_integral\_sum}, \hyperpage{132}
-  \item {mqc\_est::operator(-\/)}, \hyperpage{135}
-    \subitem {mqc\_integral\_difference}, \hyperpage{135}
-  \item {mqc\_est::transpose}, \hyperpage{150}
-    \subitem {mqc\_integral\_transpose}, \hyperpage{150}
+		\hyperpage{95}
+    \subitem {mqc\_matrix\_undospinblockghf\_integral}, \hyperpage{95}
+    \subitem {mqc\_print\_eigenvalues}, \hyperpage{95}
+    \subitem {mqc\_print\_integral}, \hyperpage{95}
+    \subitem {mqc\_print\_twoeris}, \hyperpage{96}
+    \subitem {mqc\_print\_wavefunction}, \hyperpage{96}
+    \subitem {mqc\_scalar\_integral\_multiply}, \hyperpage{96}
+    \subitem {mqc\_scf\_eigenvalues\_power}, \hyperpage{96}
+    \subitem {mqc\_scf\_integral\_contraction}, \hyperpage{96}
+    \subitem {mqc\_scf\_integral\_determinant}, \hyperpage{97}
+    \subitem {mqc\_scf\_integral\_diagonalize}, \hyperpage{97}
+    \subitem {mqc\_scf\_integral\_generalized\_eigensystem}, 
+		\hyperpage{97}
+    \subitem {mqc\_scf\_integral\_inverse}, \hyperpage{97}
+    \subitem {mqc\_scf\_integral\_trace}, \hyperpage{97}
+    \subitem {mqc\_scf\_transformation\_matrix}, \hyperpage{97}
+    \subitem {mqc\_twoeris\_allocate}, \hyperpage{98}
+    \subitem {mqc\_twoeris\_at}, \hyperpage{98}
+    \subitem {slater\_condon}, \hyperpage{98}
+    \subitem {twoeri\_trans}, \hyperpage{98}
+  \item {mqc\_est::assignment(=)}, \hyperpage{113}
+    \subitem {mqc\_eigenvalues\_output\_array}, \hyperpage{113}
+    \subitem {mqc\_integral\_output\_array}, \hyperpage{113}
+  \item {mqc\_est::contraction}, \hyperpage{117}
+    \subitem {mqc\_eri\_integral\_contraction}, \hyperpage{117}
+    \subitem {mqc\_scf\_integral\_contraction}, \hyperpage{118}
+  \item {mqc\_est::dagger}, \hyperpage{120}
+    \subitem {mqc\_integral\_conjugate\_transpose}, \hyperpage{120}
+  \item {mqc\_est::dot\_product}, \hyperpage{121}
+    \subitem {mqc\_eigenvalue\_eigenvalue\_dotproduct}, \hyperpage{121}
+  \item {mqc\_est::matmul}, \hyperpage{122}
+    \subitem {mqc\_eigenvalues\_eigenvalues\_multiply}, \hyperpage{122}
+    \subitem {mqc\_eigenvalues\_integral\_multiply}, \hyperpage{122}
+    \subitem {mqc\_integral\_eigenvalues\_multiply}, \hyperpage{123}
+    \subitem {mqc\_integral\_integral\_multiply}, \hyperpage{123}
+    \subitem {mqc\_integral\_matrix\_multiply}, \hyperpage{123}
+    \subitem {mqc\_matrix\_integral\_multiply}, \hyperpage{123}
+  \item {mqc\_est::mqc\_determinant}, \hyperpage{126}
+    \subitem {nalpstr}, \hyperpage{126}
+    \subitem {nbetstr}, \hyperpage{126}
+    \subitem {ndets}, \hyperpage{126}
+    \subitem {order}, \hyperpage{127}
+    \subitem {strings}, \hyperpage{127}
+  \item {mqc\_est::mqc\_determinant\_string}, \hyperpage{127}
+    \subitem {alpha}, \hyperpage{127}
+    \subitem {beta}, \hyperpage{127}
+  \item {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{136}
+    \subitem {mqc\_matrix\_undospinblockghf\_eigenvalues}, 
+		\hyperpage{136}
+    \subitem {mqc\_matrix\_undospinblockghf\_integral}, \hyperpage{137}
+  \item {mqc\_est::mqc\_print}, \hyperpage{139}
+    \subitem {mqc\_print\_eigenvalues}, \hyperpage{139}
+    \subitem {mqc\_print\_integral}, \hyperpage{139}
+    \subitem {mqc\_print\_twoeris}, \hyperpage{140}
+    \subitem {mqc\_print\_wavefunction}, \hyperpage{140}
+  \item {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{140}
+    \subitem {nactive}, \hyperpage{141}
+    \subitem {ncore}, \hyperpage{141}
+    \subitem {nfrz}, \hyperpage{141}
+    \subitem {nval}, \hyperpage{141}
+    \subitem {pscf\_amplitudes}, \hyperpage{141}
+    \subitem {pscf\_energies}, \hyperpage{141}
+  \item {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{144}
+    \subitem {addlabel}, \hyperpage{144}
+    \subitem {at}, \hyperpage{145}
+    \subitem {getblock}, \hyperpage{145}
+    \subitem {getlabel}, \hyperpage{145}
+    \subitem {power}, \hyperpage{145}
+    \subitem {print}, \hyperpage{145}
+  \item {mqc\_est::mqc\_scf\_integral}, \hyperpage{146}
+    \subitem {addlabel}, \hyperpage{146}
+    \subitem {deleteelist}, \hyperpage{146}
+    \subitem {det}, \hyperpage{146}
+    \subitem {diag}, \hyperpage{146}
+    \subitem {eigensys}, \hyperpage{147}
+    \subitem {getblock}, \hyperpage{147}
+    \subitem {getelist}, \hyperpage{147}
+    \subitem {getlabel}, \hyperpage{147}
+    \subitem {identity}, \hyperpage{147}
+    \subitem {init}, \hyperpage{147}
+    \subitem {inv}, \hyperpage{147}
+    \subitem {norm}, \hyperpage{148}
+    \subitem {orbitals}, \hyperpage{148}
+    \subitem {print}, \hyperpage{148}
+    \subitem {setelist}, \hyperpage{148}
+    \subitem {swap}, \hyperpage{148}
+    \subitem {trace}, \hyperpage{148}
+  \item {mqc\_est::mqc\_twoeris}, \hyperpage{149}
+    \subitem {print}, \hyperpage{150}
+  \item {mqc\_est::mqc\_wavefunction}, \hyperpage{155}
+    \subitem {basis}, \hyperpage{156}
+    \subitem {charge}, \hyperpage{156}
+    \subitem {core\_hamiltonian}, \hyperpage{156}
+    \subitem {density\_matrix}, \hyperpage{157}
+    \subitem {fock\_matrix}, \hyperpage{157}
+    \subitem {mo\_coefficients}, \hyperpage{157}
+    \subitem {mo\_energies}, \hyperpage{157}
+    \subitem {mo\_symmetries}, \hyperpage{157}
+    \subitem {multiplicity}, \hyperpage{157}
+    \subitem {nalpha}, \hyperpage{157}
+    \subitem {nbasis}, \hyperpage{158}
+    \subitem {nbeta}, \hyperpage{158}
+    \subitem {nelectrons}, \hyperpage{158}
+    \subitem {overlap\_matrix}, \hyperpage{158}
+    \subitem {print}, \hyperpage{156}
+    \subitem {scf\_density\_matrix}, \hyperpage{158}
+    \subitem {symmetry}, \hyperpage{158}
+    \subitem {wf\_complex}, \hyperpage{158}
+    \subitem {wf\_type}, \hyperpage{159}
+  \item {mqc\_est::operator($\ast$)}, \hyperpage{163}
+    \subitem {mqc\_integral\_scalar\_multiply}, \hyperpage{163}
+    \subitem {mqc\_scalar\_integral\_multiply}, \hyperpage{163}
+  \item {mqc\_est::operator(+)}, \hyperpage{167}
+    \subitem {mqc\_integral\_sum}, \hyperpage{167}
+  \item {mqc\_est::operator(-\/)}, \hyperpage{170}
+    \subitem {mqc\_integral\_difference}, \hyperpage{170}
+  \item {mqc\_est::transpose}, \hyperpage{193}
+    \subitem {mqc\_integral\_transpose}, \hyperpage{193}
   \item {mqc\_givens\_matrix}
-    \subitem {mqc\_algebra}, \hyperpage{20}
+    \subitem {mqc\_algebra}, \hyperpage{22}
   \item {mqc\_input\_complex\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{20}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{80}
+    \subitem {mqc\_algebra}, \hyperpage{22}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{105}
   \item {mqc\_input\_integer\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{20}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{80}
+    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{106}
   \item {mqc\_input\_real\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{21}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{81}
+    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{107}
   \item {mqc\_integergtscalar}
-    \subitem {mqc\_algebra}, \hyperpage{21}
-    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{141}
+    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{177}
   \item {mqc\_integerlescalar}
-    \subitem {mqc\_algebra}, \hyperpage{21}
-    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{142}
+    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{181}
   \item {mqc\_integerscalaradd}
-    \subitem {mqc\_algebra}, \hyperpage{21}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{133}
+    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{168}
   \item {mqc\_integerscalardivide}
-    \subitem {mqc\_algebra}, \hyperpage{21}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{146}
+    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{187}
   \item {mqc\_integerscalarmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{22}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_integerscalarsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{22}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{136}
+    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{171}
   \item {mqc\_integervectorproduct}
-    \subitem {mqc\_algebra}, \hyperpage{22}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_integral\_add\_name}
-    \subitem {mqc\_est}, \hyperpage{65}
+    \subitem {mqc\_est}, \hyperpage{89}
   \item {mqc\_integral\_allocate}
-    \subitem {mqc\_est}, \hyperpage{65}
+    \subitem {mqc\_est}, \hyperpage{89}
   \item {mqc\_integral\_array\_name}
-    \subitem {mqc\_est}, \hyperpage{66}
+    \subitem {mqc\_est}, \hyperpage{89}
   \item {mqc\_integral\_array\_type}
-    \subitem {mqc\_est}, \hyperpage{66}
+    \subitem {mqc\_est}, \hyperpage{90}
   \item {mqc\_integral\_at}
-    \subitem {mqc\_est}, \hyperpage{66}
+    \subitem {mqc\_est}, \hyperpage{90}
   \item {mqc\_integral\_conjugate\_transpose}
-    \subitem {mqc\_est}, \hyperpage{66}
-    \subitem {mqc\_est::dagger}, \hyperpage{90}
+    \subitem {mqc\_est}, \hyperpage{90}
+    \subitem {mqc\_est::dagger}, \hyperpage{120}
   \item {mqc\_integral\_delete\_energy\_list}
-    \subitem {mqc\_est}, \hyperpage{66}
+    \subitem {mqc\_est}, \hyperpage{90}
   \item {mqc\_integral\_difference}
-    \subitem {mqc\_est}, \hyperpage{67}
-    \subitem {mqc\_est::operator(-\/)}, \hyperpage{135}
+    \subitem {mqc\_est}, \hyperpage{90}
+    \subitem {mqc\_est::operator(-\/)}, \hyperpage{170}
   \item {mqc\_integral\_dimension}
-    \subitem {mqc\_est}, \hyperpage{67}
+    \subitem {mqc\_est}, \hyperpage{90}
   \item {mqc\_integral\_eigenvalues\_multiply}
-    \subitem {mqc\_est}, \hyperpage{67}
-    \subitem {mqc\_est::matmul}, \hyperpage{92}
+    \subitem {mqc\_est}, \hyperpage{91}
+    \subitem {mqc\_est::matmul}, \hyperpage{123}
   \item {mqc\_integral\_get\_energy\_list}
-    \subitem {mqc\_est}, \hyperpage{67}
+    \subitem {mqc\_est}, \hyperpage{91}
   \item {mqc\_integral\_has\_alpha}
-    \subitem {mqc\_est}, \hyperpage{67}
+    \subitem {mqc\_est}, \hyperpage{91}
   \item {mqc\_integral\_has\_alphabeta}
-    \subitem {mqc\_est}, \hyperpage{67}
+    \subitem {mqc\_est}, \hyperpage{91}
   \item {mqc\_integral\_has\_beta}
-    \subitem {mqc\_est}, \hyperpage{68}
+    \subitem {mqc\_est}, \hyperpage{91}
   \item {mqc\_integral\_has\_betaalpha}
-    \subitem {mqc\_est}, \hyperpage{68}
+    \subitem {mqc\_est}, \hyperpage{91}
   \item {mqc\_integral\_identity}
-    \subitem {mqc\_est}, \hyperpage{68}
+    \subitem {mqc\_est}, \hyperpage{92}
   \item {mqc\_integral\_initialize}
-    \subitem {mqc\_est}, \hyperpage{68}
+    \subitem {mqc\_est}, \hyperpage{92}
   \item {mqc\_integral\_integral\_multiply}
-    \subitem {mqc\_est}, \hyperpage{68}
-    \subitem {mqc\_est::matmul}, \hyperpage{93}
+    \subitem {mqc\_est}, \hyperpage{92}
+    \subitem {mqc\_est::matmul}, \hyperpage{123}
   \item {mqc\_integral\_isallocated}
-    \subitem {mqc\_est}, \hyperpage{69}
+    \subitem {mqc\_est}, \hyperpage{92}
   \item {mqc\_integral\_matrix\_multiply}
-    \subitem {mqc\_est}, \hyperpage{69}
-    \subitem {mqc\_est::matmul}, \hyperpage{93}
+    \subitem {mqc\_est}, \hyperpage{92}
+    \subitem {mqc\_est::matmul}, \hyperpage{123}
   \item {mqc\_integral\_norm}
-    \subitem {mqc\_est}, \hyperpage{69}
+    \subitem {mqc\_est}, \hyperpage{93}
   \item {mqc\_integral\_output\_array}
-    \subitem {mqc\_est}, \hyperpage{69}
-    \subitem {mqc\_est::assignment(=)}, \hyperpage{85}
+    \subitem {mqc\_est}, \hyperpage{93}
+    \subitem {mqc\_est::assignment(=)}, \hyperpage{113}
   \item {mqc\_integral\_output\_block}
-    \subitem {mqc\_est}, \hyperpage{69}
+    \subitem {mqc\_est}, \hyperpage{93}
   \item {mqc\_integral\_output\_orbitals}
-    \subitem {mqc\_est}, \hyperpage{69}
+    \subitem {mqc\_est}, \hyperpage{93}
   \item {mqc\_integral\_scalar\_multiply}
-    \subitem {mqc\_est}, \hyperpage{70}
-    \subitem {mqc\_est::operator($\ast$)}, \hyperpage{131}
+    \subitem {mqc\_est}, \hyperpage{93}
+    \subitem {mqc\_est::operator($\ast$)}, \hyperpage{163}
   \item {mqc\_integral\_set\_energy\_list}
-    \subitem {mqc\_est}, \hyperpage{70}
+    \subitem {mqc\_est}, \hyperpage{94}
   \item {mqc\_integral\_sum}
-    \subitem {mqc\_est}, \hyperpage{70}
-    \subitem {mqc\_est::operator(+)}, \hyperpage{132}
+    \subitem {mqc\_est}, \hyperpage{94}
+    \subitem {mqc\_est::operator(+)}, \hyperpage{167}
   \item {mqc\_integral\_swap\_orbitals}
-    \subitem {mqc\_est}, \hyperpage{70}
+    \subitem {mqc\_est}, \hyperpage{94}
   \item {mqc\_integral\_transpose}
-    \subitem {mqc\_est}, \hyperpage{70}
-    \subitem {mqc\_est::transpose}, \hyperpage{150}
+    \subitem {mqc\_est}, \hyperpage{94}
+    \subitem {mqc\_est::transpose}, \hyperpage{193}
   \item {mqc\_length\_vector}
-    \subitem {mqc\_algebra}, \hyperpage{22}
+    \subitem {mqc\_algebra}, \hyperpage{26}
   \item {mqc\_matrix\_cast\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{22}
-    \subitem {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{94}
+    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{125}
   \item {mqc\_matrix\_cast\_real}
-    \subitem {mqc\_algebra}, \hyperpage{22}
-    \subitem {mqc\_algebra::mqc\_cast\_real}, \hyperpage{95}
+    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra::mqc\_cast\_real}, \hyperpage{125}
   \item {mqc\_matrix\_columns}
-    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra}, \hyperpage{27}
   \item {mqc\_matrix\_conjugate\_transpose}
-    \subitem {mqc\_algebra}, \hyperpage{23}
-    \subitem {mqc\_algebra::dagger}, \hyperpage{89}
+    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra::dagger}, \hyperpage{119}
   \item {mqc\_matrix\_copy\_complex2int}
-    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra}, \hyperpage{27}
   \item {mqc\_matrix\_copy\_complex2real}
-    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra}, \hyperpage{27}
   \item {mqc\_matrix\_copy\_int2complex}
-    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra}, \hyperpage{27}
   \item {mqc\_matrix\_copy\_int2real}
-    \subitem {mqc\_algebra}, \hyperpage{23}
+    \subitem {mqc\_algebra}, \hyperpage{27}
   \item {mqc\_matrix\_copy\_real2complex}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
   \item {mqc\_matrix\_copy\_real2int}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
   \item {mqc\_matrix\_determinant}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
   \item {mqc\_matrix\_diag2full}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
   \item {mqc\_matrix\_diag2symm}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
   \item {mqc\_matrix\_diagmatrix\_put\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{24}
+    \subitem {mqc\_algebra}, \hyperpage{28}
     \subitem {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, 
-		\hyperpage{104}
+		\hyperpage{134}
   \item {mqc\_matrix\_diagmatrix\_put\_integer}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
     \subitem {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, 
-		\hyperpage{104}
+		\hyperpage{135}
   \item {mqc\_matrix\_diagmatrix\_put\_real}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
     \subitem {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, 
-		\hyperpage{104}
+		\hyperpage{135}
   \item {mqc\_matrix\_diagmatrix\_put\_vector}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
     \subitem {mqc\_algebra::mqc\_matrix\_diagmatrix\_put}, 
-		\hyperpage{104}
+		\hyperpage{135}
   \item {mqc\_matrix\_diagonalize}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
   \item {mqc\_matrix\_full2diag}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
   \item {mqc\_matrix\_full2symm}
-    \subitem {mqc\_algebra}, \hyperpage{25}
+    \subitem {mqc\_algebra}, \hyperpage{29}
   \item {mqc\_matrix\_generalized\_eigensystem}
-    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra}, \hyperpage{30}
   \item {mqc\_matrix\_havecomplex}
-    \subitem {mqc\_algebra}, \hyperpage{26}
-    \subitem {mqc\_algebra::mqc\_have\_complex}, \hyperpage{97}
+    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra::mqc\_have\_complex}, \hyperpage{128}
   \item {mqc\_matrix\_havediagonal}
-    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra}, \hyperpage{30}
   \item {mqc\_matrix\_havefull}
-    \subitem {mqc\_algebra}, \hyperpage{26}
+    \subitem {mqc\_algebra}, \hyperpage{30}
   \item {mqc\_matrix\_haveinteger}
-    \subitem {mqc\_algebra}, \hyperpage{26}
-    \subitem {mqc\_algebra::mqc\_have\_int}, \hyperpage{98}
+    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra::mqc\_have\_int}, \hyperpage{128}
   \item {mqc\_matrix\_havereal}
-    \subitem {mqc\_algebra}, \hyperpage{26}
-    \subitem {mqc\_algebra::mqc\_have\_real}, \hyperpage{99}
+    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra::mqc\_have\_real}, \hyperpage{129}
   \item {mqc\_matrix\_havesymmetric}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_identity}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_initialize}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_integral\_multiply}
-    \subitem {mqc\_est}, \hyperpage{71}
-    \subitem {mqc\_est::matmul}, \hyperpage{93}
+    \subitem {mqc\_est}, \hyperpage{94}
+    \subitem {mqc\_est::matmul}, \hyperpage{123}
   \item {mqc\_matrix\_inverse}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_isallocated}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_matrix\_at}
-    \subitem {mqc\_algebra}, \hyperpage{27}
+    \subitem {mqc\_algebra}, \hyperpage{31}
   \item {mqc\_matrix\_matrix\_contraction}
-    \subitem {mqc\_algebra}, \hyperpage{29}
-    \subitem {mqc\_algebra::contraction}, \hyperpage{87}
+    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra::contraction}, \hyperpage{117}
   \item {mqc\_matrix\_matrix\_put}
-    \subitem {mqc\_algebra}, \hyperpage{29}
+    \subitem {mqc\_algebra}, \hyperpage{33}
   \item {mqc\_matrix\_norm}
-    \subitem {mqc\_algebra}, \hyperpage{29}
+    \subitem {mqc\_algebra}, \hyperpage{33}
   \item {mqc\_matrix\_rms\_max}
-    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra}, \hyperpage{34}
   \item {mqc\_matrix\_rows}
-    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra}, \hyperpage{34}
   \item {mqc\_matrix\_scalar\_at}
-    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra}, \hyperpage{34}
   \item {mqc\_matrix\_scalar\_put}
-    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra}, \hyperpage{34}
   \item {mqc\_matrix\_set}
-    \subitem {mqc\_algebra}, \hyperpage{30}
+    \subitem {mqc\_algebra}, \hyperpage{34}
   \item {mqc\_matrix\_spinblockghf}
-    \subitem {mqc\_est}, \hyperpage{71}
+    \subitem {mqc\_est}, \hyperpage{95}
   \item {mqc\_matrix\_sqrt}
-    \subitem {mqc\_algebra}, \hyperpage{31}
+    \subitem {mqc\_algebra}, \hyperpage{35}
   \item {mqc\_matrix\_storagetype}
-    \subitem {mqc\_algebra}, \hyperpage{31}
+    \subitem {mqc\_algebra}, \hyperpage{35}
   \item {mqc\_matrix\_svd}
-    \subitem {mqc\_algebra}, \hyperpage{31}
+    \subitem {mqc\_algebra}, \hyperpage{35}
   \item {mqc\_matrix\_symm2diag}
-    \subitem {mqc\_algebra}, \hyperpage{31}
+    \subitem {mqc\_algebra}, \hyperpage{35}
   \item {mqc\_matrix\_symm2full}
-    \subitem {mqc\_algebra}, \hyperpage{31}
+    \subitem {mqc\_algebra}, \hyperpage{35}
   \item {mqc\_matrix\_symm2full\_func}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
   \item {mqc\_matrix\_symmetrize}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
   \item {mqc\_matrix\_symmmatrix\_put\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
     \subitem {mqc\_algebra::mqc\_matrix\_symmmatrix\_put}, 
-		\hyperpage{105}
+		\hyperpage{136}
   \item {mqc\_matrix\_symmmatrix\_put\_integer}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
     \subitem {mqc\_algebra::mqc\_matrix\_symmmatrix\_put}, 
-		\hyperpage{105}
+		\hyperpage{136}
   \item {mqc\_matrix\_symmmatrix\_put\_real}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
     \subitem {mqc\_algebra::mqc\_matrix\_symmmatrix\_put}, 
-		\hyperpage{105}
+		\hyperpage{136}
   \item {mqc\_matrix\_symmsymmr4tensor\_put\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{32}
+    \subitem {mqc\_algebra}, \hyperpage{36}
   \item {mqc\_matrix\_symmsymmr4tensor\_put\_real}
-    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra}, \hyperpage{37}
   \item {mqc\_matrix\_test\_diagonal}
-    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra}, \hyperpage{37}
   \item {mqc\_matrix\_test\_symmetric}
-    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra}, \hyperpage{37}
   \item {mqc\_matrix\_trace}
-    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra}, \hyperpage{37}
   \item {mqc\_matrix\_transpose}
-    \subitem {mqc\_algebra}, \hyperpage{33}
-    \subitem {mqc\_algebra::transpose}, \hyperpage{151}
+    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra::transpose}, \hyperpage{193}
   \item {mqc\_matrix\_undospinblockghf\_eigenvalues}
-    \subitem {mqc\_est}, \hyperpage{71}
-    \subitem {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{106}
+    \subitem {mqc\_est}, \hyperpage{95}
+    \subitem {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{136}
   \item {mqc\_matrix\_undospinblockghf\_integral}
-    \subitem {mqc\_est}, \hyperpage{71}
-    \subitem {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{106}
+    \subitem {mqc\_est}, \hyperpage{95}
+    \subitem {mqc\_est::mqc\_matrix\_undospinblockghf}, \hyperpage{137}
   \item {mqc\_matrix\_vector\_at}
-    \subitem {mqc\_algebra}, \hyperpage{33}
+    \subitem {mqc\_algebra}, \hyperpage{37}
   \item {mqc\_matrix\_vector\_put}
-    \subitem {mqc\_algebra}, \hyperpage{34}
+    \subitem {mqc\_algebra}, \hyperpage{38}
   \item {mqc\_matrixmatrixdotproduct}
-    \subitem {mqc\_algebra}, \hyperpage{34}
-    \subitem {mqc\_algebra::matmul}, \hyperpage{91}
-    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{138}
+    \subitem {mqc\_algebra}, \hyperpage{38}
+    \subitem {mqc\_algebra::matmul}, \hyperpage{121}
+    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{174}
   \item {mqc\_matrixmatrixproduct}
-    \subitem {mqc\_algebra}, \hyperpage{34}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{38}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_matrixmatrixsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{34}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{136}
+    \subitem {mqc\_algebra}, \hyperpage{38}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{171}
   \item {mqc\_matrixmatrixsum}
-    \subitem {mqc\_algebra}, \hyperpage{34}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{133}
+    \subitem {mqc\_algebra}, \hyperpage{38}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{168}
   \item {mqc\_matrixscalarproduct}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{39}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_matrixvectordotproduct}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::matmul}, \hyperpage{91}
-    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{138}
+    \subitem {mqc\_algebra}, \hyperpage{39}
+    \subitem {mqc\_algebra::matmul}, \hyperpage{121}
+    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{174}
   \item {mqc\_outer}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::operator(.outer.)}, \hyperpage{145}
+    \subitem {mqc\_algebra}, \hyperpage{39}
+    \subitem {mqc\_algebra::operator(.outer.)}, \hyperpage{186}
   \item {mqc\_output\_complex\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{81}
+    \subitem {mqc\_algebra}, \hyperpage{39}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{107}
   \item {mqc\_output\_integer\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{81}
+    \subitem {mqc\_algebra}, \hyperpage{40}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{108}
   \item {mqc\_output\_mqcscalar\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{35}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{81}
+    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{109}
   \item {mqc\_output\_real\_scalar}
-    \subitem {mqc\_algebra}, \hyperpage{36}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{81}
+    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{109}
   \item {mqc\_print\_eigenvalues}
-    \subitem {mqc\_est}, \hyperpage{71}
-    \subitem {mqc\_est::mqc\_print}, \hyperpage{108}
+    \subitem {mqc\_est}, \hyperpage{95}
+    \subitem {mqc\_est::mqc\_print}, \hyperpage{139}
   \item {mqc\_print\_integral}
-    \subitem {mqc\_est}, \hyperpage{72}
-    \subitem {mqc\_est::mqc\_print}, \hyperpage{108}
+    \subitem {mqc\_est}, \hyperpage{95}
+    \subitem {mqc\_est::mqc\_print}, \hyperpage{139}
   \item {mqc\_print\_matrix\_algebra1}
-    \subitem {mqc\_algebra}, \hyperpage{36}
-    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{106}
+    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{137}
   \item {mqc\_print\_r4tensor\_algebra1}
-    \subitem {mqc\_algebra}, \hyperpage{36}
-    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{107}
+    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{137}
   \item {mqc\_print\_scalar\_algebra1}
-    \subitem {mqc\_algebra}, \hyperpage{36}
-    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{107}
+    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{138}
   \item {mqc\_print\_twoeris}
-    \subitem {mqc\_est}, \hyperpage{72}
-    \subitem {mqc\_est::mqc\_print}, \hyperpage{108}
+    \subitem {mqc\_est}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_print}, \hyperpage{140}
   \item {mqc\_print\_vector\_algebra1}
-    \subitem {mqc\_algebra}, \hyperpage{36}
-    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{107}
+    \subitem {mqc\_algebra}, \hyperpage{43}
+    \subitem {mqc\_algebra::mqc\_print}, \hyperpage{139}
   \item {mqc\_print\_wavefunction}
-    \subitem {mqc\_est}, \hyperpage{72}
-    \subitem {mqc\_est::mqc\_print}, \hyperpage{108}
+    \subitem {mqc\_est}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_print}, \hyperpage{140}
   \item {mqc\_r4tensor\_at}
-    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra}, \hyperpage{44}
   \item {mqc\_r4tensor\_havecomplex}
-    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra}, \hyperpage{44}
   \item {mqc\_r4tensor\_haveinteger}
-    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra}, \hyperpage{44}
   \item {mqc\_r4tensor\_havereal}
-    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra}, \hyperpage{44}
   \item {mqc\_r4tensor\_initialize}
-    \subitem {mqc\_algebra}, \hyperpage{37}
+    \subitem {mqc\_algebra}, \hyperpage{44}
   \item {mqc\_r4tensor\_put}
-    \subitem {mqc\_algebra}, \hyperpage{38}
+    \subitem {mqc\_algebra}, \hyperpage{45}
   \item {mqc\_realgtscalar}
-    \subitem {mqc\_algebra}, \hyperpage{38}
-    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{141}
+    \subitem {mqc\_algebra}, \hyperpage{45}
+    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{178}
   \item {mqc\_reallescalar}
-    \subitem {mqc\_algebra}, \hyperpage{38}
-    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{143}
+    \subitem {mqc\_algebra}, \hyperpage{45}
+    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{181}
   \item {mqc\_realltscalar}
-    \subitem {mqc\_algebra}, \hyperpage{38}
-    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{144}
+    \subitem {mqc\_algebra}, \hyperpage{45}
+    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{182}
   \item {mqc\_realscalaradd}
-    \subitem {mqc\_algebra}, \hyperpage{38}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{46}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{168}
   \item {mqc\_realscalardivide}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{46}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{187}
   \item {mqc\_realscalarmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{128}
+    \subitem {mqc\_algebra}, \hyperpage{47}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{160}
   \item {mqc\_realscalarsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{136}
+    \subitem {mqc\_algebra}, \hyperpage{47}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{172}
   \item {mqc\_realvectorproduct}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{47}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{161}
   \item {mqc\_scalar\_acos}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::acos}, \hyperpage{78}
+    \subitem {mqc\_algebra}, \hyperpage{47}
+    \subitem {mqc\_algebra::acos}, \hyperpage{102}
   \item {mqc\_scalar\_asin}
-    \subitem {mqc\_algebra}, \hyperpage{39}
-    \subitem {mqc\_algebra::asin}, \hyperpage{79}
+    \subitem {mqc\_algebra}, \hyperpage{48}
+    \subitem {mqc\_algebra::asin}, \hyperpage{104}
   \item {mqc\_scalar\_atan}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::atan}, \hyperpage{85}
+    \subitem {mqc\_algebra}, \hyperpage{48}
+    \subitem {mqc\_algebra::atan}, \hyperpage{113}
   \item {mqc\_scalar\_atan2}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::atan2}, \hyperpage{86}
+    \subitem {mqc\_algebra}, \hyperpage{49}
+    \subitem {mqc\_algebra::atan2}, \hyperpage{114}
   \item {mqc\_scalar\_cmplx}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::cmplx}, \hyperpage{86}
+    \subitem {mqc\_algebra}, \hyperpage{50}
+    \subitem {mqc\_algebra::cmplx}, \hyperpage{115}
   \item {mqc\_scalar\_complex\_conjugate}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::conjg}, \hyperpage{87}
+    \subitem {mqc\_algebra}, \hyperpage{50}
+    \subitem {mqc\_algebra::conjg}, \hyperpage{116}
   \item {mqc\_scalar\_complex\_imagpart}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::aimag}, \hyperpage{78}
+    \subitem {mqc\_algebra}, \hyperpage{50}
+    \subitem {mqc\_algebra::aimag}, \hyperpage{103}
   \item {mqc\_scalar\_complex\_realpart}
-    \subitem {mqc\_algebra}, \hyperpage{40}
-    \subitem {mqc\_algebra::real}, \hyperpage{148}
+    \subitem {mqc\_algebra}, \hyperpage{51}
+    \subitem {mqc\_algebra::real}, \hyperpage{189}
   \item {mqc\_scalar\_cos}
-    \subitem {mqc\_algebra}, \hyperpage{41}
-    \subitem {mqc\_algebra::cos}, \hyperpage{88}
+    \subitem {mqc\_algebra}, \hyperpage{51}
+    \subitem {mqc\_algebra::cos}, \hyperpage{118}
   \item {mqc\_scalar\_get\_abs\_value}
-    \subitem {mqc\_algebra}, \hyperpage{41}
-    \subitem {mqc\_algebra::abs}, \hyperpage{77}
+    \subitem {mqc\_algebra}, \hyperpage{51}
+    \subitem {mqc\_algebra::abs}, \hyperpage{101}
   \item {mqc\_scalar\_get\_intrinsic\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra}, \hyperpage{52}
   \item {mqc\_scalar\_get\_intrinsic\_integer}
-    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra}, \hyperpage{53}
   \item {mqc\_scalar\_get\_intrinsic\_real}
-    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra}, \hyperpage{53}
   \item {mqc\_scalar\_get\_random\_value}
-    \subitem {mqc\_algebra}, \hyperpage{41}
+    \subitem {mqc\_algebra}, \hyperpage{54}
   \item {mqc\_scalar\_havecomplex}
-    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra}, \hyperpage{54}
   \item {mqc\_scalar\_haveinteger}
-    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra}, \hyperpage{55}
   \item {mqc\_scalar\_havereal}
-    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra}, \hyperpage{56}
   \item {mqc\_scalar\_integral\_multiply}
-    \subitem {mqc\_est}, \hyperpage{72}
-    \subitem {mqc\_est::operator($\ast$)}, \hyperpage{131}
+    \subitem {mqc\_est}, \hyperpage{96}
+    \subitem {mqc\_est::operator($\ast$)}, \hyperpage{163}
   \item {mqc\_scalar\_isallocated}
-    \subitem {mqc\_algebra}, \hyperpage{42}
+    \subitem {mqc\_algebra}, \hyperpage{56}
   \item {mqc\_scalar\_sin}
-    \subitem {mqc\_algebra}, \hyperpage{42}
-    \subitem {mqc\_algebra::sin}, \hyperpage{149}
+    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra::sin}, \hyperpage{190}
   \item {mqc\_scalar\_sqrt}
-    \subitem {mqc\_algebra}, \hyperpage{42}
-    \subitem {mqc\_algebra::sqrt}, \hyperpage{150}
+    \subitem {mqc\_algebra}, \hyperpage{58}
+    \subitem {mqc\_algebra::sqrt}, \hyperpage{191}
   \item {mqc\_scalar\_tan}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::tan}, \hyperpage{150}
+    \subitem {mqc\_algebra}, \hyperpage{58}
+    \subitem {mqc\_algebra::tan}, \hyperpage{192}
   \item {mqc\_scalaradd}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{59}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{169}
   \item {mqc\_scalarcomplexadd}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{59}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{169}
   \item {mqc\_scalarcomplexdivide}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{60}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{187}
   \item {mqc\_scalarcomplexexponent}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{131}
+    \subitem {mqc\_algebra}, \hyperpage{60}
+    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{164}
   \item {mqc\_scalarcomplexmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{43}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{60}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{161}
   \item {mqc\_scalarcomplexsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{61}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{172}
   \item {mqc\_scalardivide}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{61}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{187}
   \item {mqc\_scalareq}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator(.eq.)}, \hyperpage{139}
+    \subitem {mqc\_algebra}, \hyperpage{61}
+    \subitem {mqc\_algebra::operator(.eq.)}, \hyperpage{175}
   \item {mqc\_scalarexponent}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{132}
+    \subitem {mqc\_algebra}, \hyperpage{62}
+    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{165}
   \item {mqc\_scalarge}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator(.ge.)}, \hyperpage{141}
+    \subitem {mqc\_algebra}, \hyperpage{63}
+    \subitem {mqc\_algebra::operator(.ge.)}, \hyperpage{177}
   \item {mqc\_scalargt}
-    \subitem {mqc\_algebra}, \hyperpage{44}
-    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{141}
+    \subitem {mqc\_algebra}, \hyperpage{63}
+    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{178}
   \item {mqc\_scalargtinteger}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{142}
+    \subitem {mqc\_algebra}, \hyperpage{64}
+    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{179}
   \item {mqc\_scalargtreal}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{142}
+    \subitem {mqc\_algebra}, \hyperpage{65}
+    \subitem {mqc\_algebra::operator(.gt.)}, \hyperpage{180}
   \item {mqc\_scalarintegeradd}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{65}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{169}
   \item {mqc\_scalarintegerdivide}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{65}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{188}
   \item {mqc\_scalarintegerexponent}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{132}
+    \subitem {mqc\_algebra}, \hyperpage{65}
+    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{166}
   \item {mqc\_scalarintegermultiply}
-    \subitem {mqc\_algebra}, \hyperpage{45}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{66}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{161}
   \item {mqc\_scalarintegersubtract}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{66}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{172}
   \item {mqc\_scalarle}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{143}
+    \subitem {mqc\_algebra}, \hyperpage{66}
+    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{181}
   \item {mqc\_scalarleinteger}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{143}
+    \subitem {mqc\_algebra}, \hyperpage{66}
+    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{181}
   \item {mqc\_scalarlereal}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{143}
+    \subitem {mqc\_algebra}, \hyperpage{67}
+    \subitem {mqc\_algebra::operator(.le.)}, \hyperpage{181}
   \item {mqc\_scalarlt}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{144}
+    \subitem {mqc\_algebra}, \hyperpage{67}
+    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{183}
   \item {mqc\_scalarltreal}
-    \subitem {mqc\_algebra}, \hyperpage{46}
-    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{144}
+    \subitem {mqc\_algebra}, \hyperpage{68}
+    \subitem {mqc\_algebra::operator(.lt.)}, \hyperpage{183}
   \item {mqc\_scalarmatrixproduct}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{68}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{161}
   \item {mqc\_scalarmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{68}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{161}
   \item {mqc\_scalarne}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator(.ne.)}, \hyperpage{145}
+    \subitem {mqc\_algebra}, \hyperpage{69}
+    \subitem {mqc\_algebra::operator(.ne.)}, \hyperpage{185}
   \item {mqc\_scalarrealadd}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{70}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{170}
   \item {mqc\_scalarrealdivide}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{70}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{188}
   \item {mqc\_scalarrealexponent}
-    \subitem {mqc\_algebra}, \hyperpage{47}
-    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{132}
+    \subitem {mqc\_algebra}, \hyperpage{70}
+    \subitem {mqc\_algebra::operator($\ast$$\ast$)}, \hyperpage{166}
   \item {mqc\_scalarrealmultiply}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{129}
+    \subitem {mqc\_algebra}, \hyperpage{71}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{162}
   \item {mqc\_scalarrealsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{71}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{172}
   \item {mqc\_scalarsubtract}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{71}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{172}
   \item {mqc\_scalarvectordifference}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{72}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{173}
   \item {mqc\_scalarvectorproduct}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{130}
+    \subitem {mqc\_algebra}, \hyperpage{72}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{162}
   \item {mqc\_scalarvectorsum}
-    \subitem {mqc\_algebra}, \hyperpage{48}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{134}
+    \subitem {mqc\_algebra}, \hyperpage{72}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{170}
   \item {mqc\_scf\_eigenvalues\_power}
-    \subitem {mqc\_est}, \hyperpage{72}
+    \subitem {mqc\_est}, \hyperpage{96}
   \item {mqc\_scf\_integral\_contraction}
-    \subitem {mqc\_est}, \hyperpage{73}
-    \subitem {mqc\_est::contraction}, \hyperpage{88}
+    \subitem {mqc\_est}, \hyperpage{96}
+    \subitem {mqc\_est::contraction}, \hyperpage{118}
   \item {mqc\_scf\_integral\_determinant}
-    \subitem {mqc\_est}, \hyperpage{73}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_scf\_integral\_diagonalize}
-    \subitem {mqc\_est}, \hyperpage{73}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_scf\_integral\_generalized\_eigensystem}
-    \subitem {mqc\_est}, \hyperpage{73}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_scf\_integral\_inverse}
-    \subitem {mqc\_est}, \hyperpage{73}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_scf\_integral\_trace}
-    \subitem {mqc\_est}, \hyperpage{74}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_scf\_transformation\_matrix}
-    \subitem {mqc\_est}, \hyperpage{74}
+    \subitem {mqc\_est}, \hyperpage{97}
   \item {mqc\_set\_array2tensor}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
+    \subitem {mqc\_algebra}, \hyperpage{72}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{110}
   \item {mqc\_set\_array2vector\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
-    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{117}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{110}
+    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{149}
   \item {mqc\_set\_array2vector\_integer}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
-    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{117}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{110}
+    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{149}
   \item {mqc\_set\_array2vector\_real}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
-    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{117}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{110}
+    \subitem {mqc\_algebra::mqc\_set\_array2vector}, \hyperpage{149}
   \item {mqc\_set\_complexarray2matrix}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_integerarray2matrix}
-    \subitem {mqc\_algebra}, \hyperpage{49}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{82}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_matrix2complexarray}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{73}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_matrix2integerarray}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_matrix2matrix}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_matrix2realarray}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{111}
   \item {mqc\_set\_realarray2matrix}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{112}
   \item {mqc\_set\_vector2complexarray}
-    \subitem {mqc\_algebra}, \hyperpage{50}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{83}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{112}
   \item {mqc\_set\_vector2integerarray}
-    \subitem {mqc\_algebra}, \hyperpage{51}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{84}
+    \subitem {mqc\_algebra}, \hyperpage{74}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{112}
   \item {mqc\_set\_vector2realarray}
-    \subitem {mqc\_algebra}, \hyperpage{51}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{84}
+    \subitem {mqc\_algebra}, \hyperpage{75}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{112}
   \item {mqc\_set\_vector2vector}
-    \subitem {mqc\_algebra}, \hyperpage{51}
-    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{84}
+    \subitem {mqc\_algebra}, \hyperpage{75}
+    \subitem {mqc\_algebra::assignment(=)}, \hyperpage{112}
   \item {mqc\_twoeris\_allocate}
-    \subitem {mqc\_est}, \hyperpage{74}
+    \subitem {mqc\_est}, \hyperpage{98}
   \item {mqc\_twoeris\_at}
-    \subitem {mqc\_est}, \hyperpage{74}
+    \subitem {mqc\_est}, \hyperpage{98}
   \item {mqc\_vector2diagmatrix}
-    \subitem {mqc\_algebra}, \hyperpage{51}
+    \subitem {mqc\_algebra}, \hyperpage{75}
   \item {mqc\_vector\_abs}
-    \subitem {mqc\_algebra}, \hyperpage{51}
-    \subitem {mqc\_algebra::abs}, \hyperpage{77}
+    \subitem {mqc\_algebra}, \hyperpage{75}
+    \subitem {mqc\_algebra::abs}, \hyperpage{102}
   \item {mqc\_vector\_argsort}
-    \subitem {mqc\_algebra}, \hyperpage{51}
+    \subitem {mqc\_algebra}, \hyperpage{75}
   \item {mqc\_vector\_cast\_complex}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{95}
+    \subitem {mqc\_algebra}, \hyperpage{75}
+    \subitem {mqc\_algebra::mqc\_cast\_complex}, \hyperpage{125}
   \item {mqc\_vector\_cast\_real}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::mqc\_cast\_real}, \hyperpage{95}
+    \subitem {mqc\_algebra}, \hyperpage{76}
+    \subitem {mqc\_algebra::mqc\_cast\_real}, \hyperpage{126}
   \item {mqc\_vector\_cmplx}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::cmplx}, \hyperpage{86}
+    \subitem {mqc\_algebra}, \hyperpage{76}
+    \subitem {mqc\_algebra::cmplx}, \hyperpage{116}
   \item {mqc\_vector\_complex\_imagpart}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::aimag}, \hyperpage{78}
+    \subitem {mqc\_algebra}, \hyperpage{76}
+    \subitem {mqc\_algebra::aimag}, \hyperpage{103}
   \item {mqc\_vector\_complex\_realpart}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::real}, \hyperpage{149}
+    \subitem {mqc\_algebra}, \hyperpage{76}
+    \subitem {mqc\_algebra::real}, \hyperpage{189}
   \item {mqc\_vector\_conjugate\_transpose}
-    \subitem {mqc\_algebra}, \hyperpage{52}
-    \subitem {mqc\_algebra::dagger}, \hyperpage{89}
+    \subitem {mqc\_algebra}, \hyperpage{76}
+    \subitem {mqc\_algebra::dagger}, \hyperpage{119}
   \item {mqc\_vector\_copy\_complex2int}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{76}
   \item {mqc\_vector\_copy\_complex2real}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{77}
   \item {mqc\_vector\_copy\_int2complex}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{77}
   \item {mqc\_vector\_copy\_int2real}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{77}
   \item {mqc\_vector\_copy\_real2complex}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{77}
   \item {mqc\_vector\_copy\_real2int}
-    \subitem {mqc\_algebra}, \hyperpage{53}
+    \subitem {mqc\_algebra}, \hyperpage{77}
   \item {mqc\_vector\_havecomplex}
-    \subitem {mqc\_algebra}, \hyperpage{54}
-    \subitem {mqc\_algebra::mqc\_have\_complex}, \hyperpage{97}
+    \subitem {mqc\_algebra}, \hyperpage{77}
+    \subitem {mqc\_algebra::mqc\_have\_complex}, \hyperpage{128}
   \item {mqc\_vector\_haveinteger}
-    \subitem {mqc\_algebra}, \hyperpage{54}
-    \subitem {mqc\_algebra::mqc\_have\_int}, \hyperpage{98}
+    \subitem {mqc\_algebra}, \hyperpage{78}
+    \subitem {mqc\_algebra::mqc\_have\_int}, \hyperpage{129}
   \item {mqc\_vector\_havereal}
-    \subitem {mqc\_algebra}, \hyperpage{54}
-    \subitem {mqc\_algebra::mqc\_have\_real}, \hyperpage{99}
+    \subitem {mqc\_algebra}, \hyperpage{78}
+    \subitem {mqc\_algebra::mqc\_have\_real}, \hyperpage{129}
   \item {mqc\_vector\_initialize}
-    \subitem {mqc\_algebra}, \hyperpage{54}
+    \subitem {mqc\_algebra}, \hyperpage{78}
   \item {mqc\_vector\_isallocated}
-    \subitem {mqc\_algebra}, \hyperpage{54}
+    \subitem {mqc\_algebra}, \hyperpage{78}
   \item {mqc\_vector\_iscolumn}
-    \subitem {mqc\_algebra}, \hyperpage{54}
+    \subitem {mqc\_algebra}, \hyperpage{78}
   \item {mqc\_vector\_maxloc}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{78}
   \item {mqc\_vector\_maxval}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_minloc}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_minval}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_norm}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_pop}
-    \subitem {mqc\_algebra}, \hyperpage{55}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_power}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{79}
   \item {mqc\_vector\_push}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_scalar\_at}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_scalar\_increment}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_scalar\_put}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_shift}
-    \subitem {mqc\_algebra}, \hyperpage{56}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_sort}
-    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra}, \hyperpage{80}
   \item {mqc\_vector\_sqrt}
-    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra}, \hyperpage{81}
   \item {mqc\_vector\_transpose}
-    \subitem {mqc\_algebra}, \hyperpage{57}
-    \subitem {mqc\_algebra::transpose}, \hyperpage{151}
+    \subitem {mqc\_algebra}, \hyperpage{81}
+    \subitem {mqc\_algebra::transpose}, \hyperpage{194}
   \item {mqc\_vector\_unshift}
-    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra}, \hyperpage{81}
   \item {mqc\_vector\_vector\_at}
-    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra}, \hyperpage{81}
   \item {mqc\_vector\_vector\_put}
-    \subitem {mqc\_algebra}, \hyperpage{57}
+    \subitem {mqc\_algebra}, \hyperpage{81}
   \item {mqc\_vectorcomplexdivide}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{147}
+    \subitem {mqc\_algebra}, \hyperpage{81}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{188}
   \item {mqc\_vectorcomplexproduct}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{130}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{162}
   \item {mqc\_vectorintegerdivide}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{148}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{188}
   \item {mqc\_vectorintegerproduct}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{130}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{162}
   \item {mqc\_vectormatrixdotproduct}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::matmul}, \hyperpage{91}
-    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{138}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::matmul}, \hyperpage{122}
+    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{174}
   \item {mqc\_vectorrealdivide}
-    \subitem {mqc\_algebra}, \hyperpage{58}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{148}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{189}
   \item {mqc\_vectorrealproduct}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{130}
+    \subitem {mqc\_algebra}, \hyperpage{82}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{163}
   \item {mqc\_vectorscalardivide}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::operator(/)}, \hyperpage{148}
+    \subitem {mqc\_algebra}, \hyperpage{83}
+    \subitem {mqc\_algebra::operator(/)}, \hyperpage{189}
   \item {mqc\_vectorscalarproduct}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{130}
+    \subitem {mqc\_algebra}, \hyperpage{83}
+    \subitem {mqc\_algebra::operator($\ast$)}, \hyperpage{163}
   \item {mqc\_vectorvectordifference}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{137}
+    \subitem {mqc\_algebra}, \hyperpage{83}
+    \subitem {mqc\_algebra::operator(-\/)}, \hyperpage{173}
   \item {mqc\_vectorvectordotproduct}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::dot\_product}, \hyperpage{90}
-    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{138}
+    \subitem {mqc\_algebra}, \hyperpage{83}
+    \subitem {mqc\_algebra::dot\_product}, \hyperpage{120}
+    \subitem {mqc\_algebra::operator(.dot.)}, \hyperpage{174}
   \item {mqc\_vectorvectorsum}
-    \subitem {mqc\_algebra}, \hyperpage{59}
-    \subitem {mqc\_algebra::operator(+)}, \hyperpage{135}
+    \subitem {mqc\_algebra}, \hyperpage{83}
+    \subitem {mqc\_algebra::operator(+)}, \hyperpage{170}
   \item {multiplicity}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
 
   \indexspace
 
   \item {nactive}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{109}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
   \item {nalpha}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{125}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{157}
   \item {nalpstr}
-    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{126}
   \item {nbasis}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
   \item {nbeta}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
   \item {nbetstr}
-    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{126}
   \item {ncore}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{109}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
   \item {ndets}
-    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{126}
   \item {nelectrons}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
   \item {nfrz}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{110}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
   \item {norm}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
   \item {nval}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{110}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
 
   \indexspace
 
   \item {orbitals}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
   \item {order}
-    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{127}
   \item {overlap\_matrix}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
 
   \indexspace
 
   \item {pop}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{120}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{152}
   \item {power}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{145}
   \item {print}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{101}
-    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{111}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
-    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{113}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
-    \subitem {mqc\_est::mqc\_twoeris}, \hyperpage{118}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{124}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
+    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{142}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{144}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
+    \subitem {mqc\_est::mqc\_scf\_eigenvalues}, \hyperpage{145}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
+    \subitem {mqc\_est::mqc\_twoeris}, \hyperpage{150}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{156}
   \item {pscf\_amplitudes}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{110}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
   \item {pscf\_energies}
-    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{110}
+    \subitem {mqc\_est::mqc\_pscf\_wavefunction}, \hyperpage{141}
   \item {push}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
   \item {put}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
-    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{111}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
+    \subitem {mqc\_algebra::mqc\_r4tensor}, \hyperpage{143}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
 
   \indexspace
 
   \item {random}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{144}
   \item {rmsmax}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
   \item {rval}
-    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{112}
+    \subitem {mqc\_algebra::mqc\_scalar}, \hyperpage{144}
 
   \indexspace
 
   \item {s\_type}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{132}
   \item {scf\_density\_matrix}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
   \item {set}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
   \item {setelist}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
   \item {shift}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
   \item {size}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
   \item {slater\_condon}
-    \subitem {mqc\_est}, \hyperpage{74}
+    \subitem {mqc\_est}, \hyperpage{98}
   \item {sort}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{121}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{153}
   \item {sqrt}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
-  \item {src/mqc\_algebra.F03}, \hyperpage{153}
-  \item {src/mqc\_est.F03}, \hyperpage{159}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
+  \item {src/mqc\_algebra.F03}, \hyperpage{195}
+  \item {src/mqc\_est.F03}, \hyperpage{202}
   \item {strings}
-    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{96}
+    \subitem {mqc\_est::mqc\_determinant}, \hyperpage{127}
   \item {svd}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
   \item {swap}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
   \item {symindexhash}
-    \subitem {mqc\_algebra}, \hyperpage{60}
+    \subitem {mqc\_algebra}, \hyperpage{83}
   \item {symmetry}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
 
   \indexspace
 
   \item {trace}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{102}
-    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{116}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
+    \subitem {mqc\_est::mqc\_scf\_integral}, \hyperpage{148}
   \item {transpose}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
   \item {twoeri\_trans}
-    \subitem {mqc\_est}, \hyperpage{75}
+    \subitem {mqc\_est}, \hyperpage{98}
 
   \indexspace
 
   \item {unshift}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
 
   \indexspace
 
   \item {vat}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
   \item {vecc}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{123}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{155}
   \item {veci}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{123}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{155}
   \item {vecr}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{123}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{155}
   \item {vput}
-    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{103}
-    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{122}
+    \subitem {mqc\_algebra::mqc\_matrix}, \hyperpage{133}
+    \subitem {mqc\_algebra::mqc\_vector}, \hyperpage{154}
 
   \indexspace
 
   \item {wf\_complex}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{126}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{158}
   \item {wf\_type}
-    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{127}
+    \subitem {mqc\_est::mqc\_wavefunction}, \hyperpage{159}
 
 \end{theindex}

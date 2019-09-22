@@ -4,11 +4,11 @@
 \begin{DoxyCompactItemize}
 \item 
 logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8lt_8_08_aa74997459b593806f0c6c8b86140ce26}{mqc\+\_\+scalarlt}} (Scalar1, Scalar2)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+LT is a function that returns T\+R\+UE if the left M\+Q\+C\+\_\+\+Scalar is less than the right M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8lt_8_08_a684534dabd9d655b7323970279f1f7cb}{mqc\+\_\+scalarltreal}} (Scalar, Real\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+T\+Real is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than an intrinsic real}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8lt_8_08_ad9e1df2b1fa8916e807c81c1574ad5c3}{mqc\+\_\+realltscalar}} (Real\+In, Scalar)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Real\+L\+T\+Scalar is a function that returns T\+R\+UE if an intrinsic real is less than a M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Member Function/\+Subroutine Documentation}
@@ -18,18 +18,115 @@ logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8lt_8_08_
 \doxysubsubsection{\texorpdfstring{mqc\_realltscalar()}{mqc\_realltscalar()}}
 {\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.lt.)\+::mqc\+\_\+realltscalar (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{interfacemqc__algebra_1_1real}{real}}(kind=real64), intent(in)}]{Real\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Real\+L\+T\+Scalar is a function that returns T\+R\+UE if an intrinsic real is less than a M\+Q\+C\+\_\+\+Scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_RealLTScalar is a function that returns TRUE if an intrinsic real is less than
+    a MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the intrinsic real 
+    is less than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
+    greater than the real part of the MQC_Scalar. If the intrinsic real is equal to the
+    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+    MQC_Scalar is greater than zero and FALSE otherwise. Note that this is the same 
+    procedure used in python.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=real64)
+        The intrinsic real that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8lt_8_08_aa74997459b593806f0c6c8b86140ce26}\label{interfacemqc__algebra_1_1operator_07_8lt_8_08_aa74997459b593806f0c6c8b86140ce26}} 
 \index{mqc\_algebra::operator(.lt.)@{mqc\_algebra::operator(.lt.)}!mqc\_scalarlt@{mqc\_scalarlt}}
 \index{mqc\_scalarlt@{mqc\_scalarlt}!mqc\_algebra::operator(.lt.)@{mqc\_algebra::operator(.lt.)}}
 \doxysubsubsection{\texorpdfstring{mqc\_scalarlt()}{mqc\_scalarlt()}}
 {\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.lt.)\+::mqc\+\_\+scalarlt (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar1,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar2 }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+LT is a function that returns T\+R\+UE if the left M\+Q\+C\+\_\+\+Scalar is less than the right M\+Q\+C\+\_\+\+Scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar is less than
+    the right MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the left real part 
+    is less than the right real part and FALSE if the left real part is greater than 
+    the right real part. If the left real part is equal to the right real part, the 
+    function returns TRUE if the left imaginary part is less than the right imaginary 
+    part and FALSE otherwise. Note that this is the same procedure used in python.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar1} & \begin{DoxyVerb}        Scalar1 is Type(MQC_Scalar)
+        The first MQC_Scalar that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar2} & \begin{DoxyVerb}        Scalar2 is Type(MQC_Scalar)
+        The second MQC_Scalar that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8lt_8_08_a684534dabd9d655b7323970279f1f7cb}\label{interfacemqc__algebra_1_1operator_07_8lt_8_08_a684534dabd9d655b7323970279f1f7cb}} 
 \index{mqc\_algebra::operator(.lt.)@{mqc\_algebra::operator(.lt.)}!mqc\_scalarltreal@{mqc\_scalarltreal}}
 \index{mqc\_scalarltreal@{mqc\_scalarltreal}!mqc\_algebra::operator(.lt.)@{mqc\_algebra::operator(.lt.)}}
 \doxysubsubsection{\texorpdfstring{mqc\_scalarltreal()}{mqc\_scalarltreal()}}
 {\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.lt.)\+::mqc\+\_\+scalarltreal (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar,  }\item[{\mbox{\hyperlink{interfacemqc__algebra_1_1real}{real}}(kind=real64), intent(in)}]{Real\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+T\+Real is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than an intrinsic real}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less than an 
+    intrinsic real.
+
+    When dealing with complex numbers, the function returns TRUE if the real part of the 
+    MQC_Scalar is less than the intrinsic real and FALSE if the real part of the MQC_Scalar
+    is greater than the intrinsic real. If the real part of the MQC_Scalar is equal to the
+    intrinsic real, the function returns TRUE if the imaginary part of MQC_Scalar is less 
+    than zero and FALSE otherwise. Note that this is the same procedure used in python.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=real64)
+        The intrinsic real that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}
