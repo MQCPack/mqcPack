@@ -2853,7 +2853,7 @@
 !>    is less than the right real part and FALSE if the left real part is greater than 
 !>    the right real part. If the left real part is equal to the right real part, the 
 !>    function returns TRUE if the left imaginary part is less than the right imaginary 
-!>    part and FALSE otherwise. Note that this is the same procedure used in python.
+!>    part and FALSE otherwise. 
 !>
 !>    \endverbatim
 !
@@ -2891,7 +2891,7 @@
         If(Scalar1%scar.lt.Scalar2%scai) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+          If(Zero.lt.aimag(Scalar2%scac)) MQC_ScalarLT = .True.
         ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
           MQC_ScalarLT = .True.
         EndIf
@@ -2901,7 +2901,7 @@
         If(Scalar1%scai.lt.Scalar2%scai) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+          If(Zero.lt.aimag(Scalar2%scac)) MQC_ScalarLT = .True.
         ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
           MQC_ScalarLT = .True.
         EndIf
@@ -2950,8 +2950,7 @@
 !>    is less than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
 !>    greater than the real part of the MQC_Scalar. If the intrinsic real is equal to the
 !>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
-!>    MQC_Scalar is greater than zero and FALSE otherwise. Note that this is the same 
-!>    procedure used in python.
+!>    MQC_Scalar is greater than zero and FALSE otherwise.
 !>
 !>    \endverbatim
 !
@@ -3020,7 +3019,7 @@
 !>    MQC_Scalar is less than the intrinsic real and FALSE if the real part of the MQC_Scalar
 !>    is greater than the intrinsic real. If the real part of the MQC_Scalar is equal to the
 !>    intrinsic real, the function returns TRUE if the imaginary part of MQC_Scalar is less 
-!>    than zero and FALSE otherwise. Note that this is the same procedure used in python.
+!>    than zero and FALSE otherwise. 
 !>
 !>    \endverbatim
 !
@@ -3089,7 +3088,7 @@
 !>    is greater than the right real part and FALSE if the left real part is less than 
 !>    the right real part. If the left real part is equal to the right real part, the 
 !>    function returns TRUE if the left imaginary part is greater than the right imaginary 
-!>    part and FALSE otherwise. Note that this is the same procedure used in python.
+!>    part and FALSE otherwise.
 !>
 !>    \endverbatim
 !
@@ -3127,7 +3126,7 @@
         If(Scalar1%scar.gt.Scalar2%scai) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+          If(Zero.gt.aimag(Scalar2%scac)) MQC_ScalarGT = .True.
         ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
           MQC_ScalarGT = .True.
         EndIf
@@ -3137,7 +3136,7 @@
         If(Scalar1%scai.gt.Scalar2%scai) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+          If(Zero.gt.aimag(Scalar2%scac)) MQC_ScalarGT = .True.
         ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
           MQC_ScalarGT = .True.
         EndIf
@@ -3186,8 +3185,7 @@
 !>    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic integer is 
 !>    less than the real part of the MQC_Scalar. If the intrinsic integer is equal to the
 !>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
-!>    MQC_Scalar is less than zero and FALSE otherwise. Note that this is the same 
-!>    procedure used in python.
+!>    MQC_Scalar is less than zero and FALSE otherwise. 
 !>
 !>    \endverbatim
 !
@@ -3256,8 +3254,7 @@
 !>    MQC_Scalar is greater than the intrinsic integer and FALSE if the real part of the 
 !>    MQC_Scalar is less than the intrinsic integer. If the real part of the MQC_Scalar is 
 !>    equal to the intrinsic integer, the function returns TRUE if the imaginary part of 
-!>    MQC_Scalar is greater than zero and FALSE otherwise. Note that this is the same procedure 
-!>    used in python.
+!>    MQC_Scalar is greater than zero and FALSE otherwise.
 !>
 !>    \endverbatim
 !
@@ -3310,13 +3307,46 @@
 !
 !
 !     PROCEDURE MQC_RealGTScalar
+!
+!>    \brief <b> MQC_RealGTScalar is a function that returns TRUE if an intrinsic real
+!>    is greater than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealGTScalar is a function that returns TRUE if an intrinsic real is greater 
+!>    than a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
+!>    less than the real part of the MQC_Scalar. If the intrinsic real is equal to the
+!>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is less than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealGTScalar(RealIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is greater than the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3346,13 +3376,46 @@
 !
 !
 !     PROCEDURE MQC_ScalarGTReal
+!
+!>    \brief <b> MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater
+!>    than an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater than an 
+!>    intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is greater than the intrinsic real and FALSE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic real. If the real part of the MQC_Scalar is 
+!>    equal to the intrinsic real, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is greater than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarGTReal(Scalar,RealIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is greater than the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3382,13 +3445,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLE
+!
+!>    \brief <b> MQC_ScalarLE is a function that returns TRUE if the left MQC_Scalar
+!>    is less than or equal the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLE is a function that returns TRUE if the left MQC_Scalar is less than or
+!>    equal to the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part 
+!>    is less than or equal to the right real part and FALSE if the left real part is greater 
+!>    than the right real part.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarLE(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is less than or equal to the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3402,39 +3496,19 @@
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(Scalar1%scar.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(Scalar1%scai.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
-        If(real(Scalar1%scac).eq.Scalar2%scar) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.Scalar2%scar) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
-        If(real(Scalar1%scac).eq.Scalar2%scai) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.Scalar2%scai) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
-        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
-          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -3446,13 +3520,44 @@
 !
 !
 !     PROCEDURE MQC_RealLEScalar
+!
+!>    \brief <b> MQC_RealLEScalar is a function that returns TRUE if an intrinsic real
+!>    is less than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealLEScalar is a function that returns TRUE if an intrinsic real is less than or  
+!>    equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    real is greater than the real part of the MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealLEScalar(RealIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is less than or equal to the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3467,11 +3572,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(RealIn.le.Scalar%scai) MQC_RealLEScalar = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(RealIn.eq.real(Scalar%scac)) then
-          If(Zero.eq.aimag(Scalar%scac)) MQC_RealLEScalar = .True.
-        ElseIf(realIn.lt.real(Scalar%scac)) then
-          MQC_RealLEScalar = .True.
-        EndIf
+        If(RealIn.le.real(Scalar%scac)) MQC_RealLEScalar = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_RealLEScalar', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -3482,13 +3583,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLEReal
+!
+!>    \brief <b> MQC_ScalarLEReal is a function that returns TRUE if a MQC_Scalar is less
+!>    than or equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLEReal is a function that returns TRUE if a MQC_Scalar is less than or equal to
+!>    an intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than or equal to the intrinsic real and FALSE if the real part of the 
+!>    MQC_Scalar is greater than the intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarLEReal(Scalar,RealIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is less than or equal to the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3503,11 +3635,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(Scalar%scai.le.RealIn) MQC_ScalarLEReal = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(real(Scalar%scac).eq.RealIn) then
-          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEReal = .True.
-        ElseIf(real(Scalar%scac).lt.realIn) then
-          MQC_ScalarLEReal = .True.
-        EndIf
+        If(real(Scalar%scac).le.RealIn) MQC_ScalarLEReal = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEReal', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -3518,13 +3646,44 @@
 !
 !
 !     PROCEDURE MQC_IntegerLEScalar
+!
+!>    \brief <b> MQC_IntegerLEScalar is a function that returns TRUE if an intrinsic integer
+!>    is less than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerLEScalar is a function that returns TRUE if an intrinsic integer is less 
+!>    than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic integer 
+!>    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    integer is greater than the real part of the MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerLEScalar(IntIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is less than or equal to the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3539,11 +3698,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(IntIn.le.Scalar%scai) MQC_IntegerLEScalar = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(IntIn.eq.real(Scalar%scac)) then
-          If(Zero.eq.aimag(Scalar%scac)) MQC_IntegerLEScalar = .True.
-        ElseIf(IntIn.lt.real(Scalar%scac)) then
-          MQC_IntegerLEScalar = .True.
-        EndIf
+        If(IntIn.le.real(Scalar%scac)) MQC_IntegerLEScalar = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_IntegerLEScalar', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -3554,13 +3709,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLEInteger
+!
+!>    \brief <b> MQC_ScalarLEInteger is a function that returns TRUE if a MQC_Scalar is less
+!>    than or equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLEInteger is a function that returns TRUE if a MQC_Scalar is less than or 
+!>    equal to an intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than or equal to the intrinsic integer and FALSE if the real part 
+!>    of the MQC_Scalar is greater than the intrinsic integer. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarLEInteger(Scalar,IntIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is less than or equal to the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3575,11 +3761,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(Scalar%scai.le.IntIn) MQC_ScalarLEInteger = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(real(Scalar%scac).eq.IntIn) then
-          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEInteger = .True.
-        ElseIf(real(Scalar%scac).lt.intIn) then
-          MQC_ScalarLEInteger = .True.
-        EndIf
+        If(real(Scalar%scac).le.IntIn) MQC_ScalarLEInteger = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEInteger', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -3590,13 +3772,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarGE
+!
+!>    \brief <b> MQC_ScalarGE is a function that returns TRUE if the left MQC_Scalar
+!>    is greater than or equal the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGE is a function that returns TRUE if the left MQC_Scalar is greater than or
+!>    equal to the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part is
+!>    is greater than or equal to the right real part and FALSE if the left real part is less
+!>    than the right real part.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarGE(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is greater than or equal to the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3610,39 +3823,19 @@
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(Scalar1%scar.ge.real(Scalar2%scac)) MQC_ScalarGE = .True. 
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(Scalar1%scai.ge.real(Scalar2%scac)) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
-        If(real(Scalar1%scac).eq.Scalar2%scar) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.Scalar2%scar) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
-        If(real(Scalar1%scac).eq.Scalar2%scai) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.Scalar2%scai) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
-        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
-          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.real(Scalar2%scac)) MQC_ScalarGE = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
