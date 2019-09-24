@@ -2053,15 +2053,33 @@
 !>    \author X. Dong     
 !>    \date 2019
 !
-      Subroutine MQC_Scalar_Get_Random_Value(Scalar) 
+      Subroutine MQC_Scalar_Get_Random_Value(Scalar,Distribution) 
 !
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar)::Scalar
+      character(len=*),intent(in),optional::distribution
+      character(len=64)::my_distribution
       real::r
 !
+      if(present(axis)) then
+        call string_change_case(distribution,'l',my_distribution)
+      else
+        my_axis = 'uniform'
+      endIf
+!
+!      call random_seed()
       call random_number(r)
-      scalar = r
+      select case (my_distribution)
+      case('uniform')
+        scalar = r
+!      case('gaussian')
+      case('exp')
+        scalar = -log(r)
+      case default
+        call mqc_error_A('Unrecognised distribution flag in MQC_Scalar_Get_Random_Value', 6,  &
+          'my_distribution',my_distribution)
+      end select 
 !
       return
       end subroutine MQC_Scalar_Get_Random_Value
