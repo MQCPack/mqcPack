@@ -98,14 +98,19 @@ $(document).ready(function(){initNavTree('interfacemqc__algebra_1_1operator_07_8
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:af48ef8e084bb0e1d2030651fe031042f"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#af48ef8e084bb0e1d2030651fe031042f">mqc_scalargt</a> (Scalar1, Scalar2)</td></tr>
+<tr class="memdesc:af48ef8e084bb0e1d2030651fe031042f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarGT is a function that returns TRUE if the left MQC_Scalar is greater than the right MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#af48ef8e084bb0e1d2030651fe031042f">More...</a><br /></td></tr>
 <tr class="separator:af48ef8e084bb0e1d2030651fe031042f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a765cb158d30ff5e9b14eea090500060e"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a765cb158d30ff5e9b14eea090500060e">mqc_scalargtinteger</a> (Scalar, IntIn)</td></tr>
+<tr class="memdesc:a765cb158d30ff5e9b14eea090500060e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarGTInteger is a function that returns TRUE if a MQC_Scalar is greater than an intrinsic integer</b>  <a href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a765cb158d30ff5e9b14eea090500060e">More...</a><br /></td></tr>
 <tr class="separator:a765cb158d30ff5e9b14eea090500060e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9a4bc40ad825ebc336b56be90ee0b44"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#ac9a4bc40ad825ebc336b56be90ee0b44">mqc_integergtscalar</a> (IntIn, Scalar)</td></tr>
+<tr class="memdesc:ac9a4bc40ad825ebc336b56be90ee0b44"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_IntegerGTScalar is a function that returns TRUE if an intrinsic integer is greater than a MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#ac9a4bc40ad825ebc336b56be90ee0b44">More...</a><br /></td></tr>
 <tr class="separator:ac9a4bc40ad825ebc336b56be90ee0b44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66245befc0b070894ecc18e30f966d3e"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a66245befc0b070894ecc18e30f966d3e">mqc_scalargtreal</a> (Scalar, RealIn)</td></tr>
+<tr class="memdesc:a66245befc0b070894ecc18e30f966d3e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater than an intrinsic real</b>  <a href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a66245befc0b070894ecc18e30f966d3e">More...</a><br /></td></tr>
 <tr class="separator:a66245befc0b070894ecc18e30f966d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f99161cc7fd53d18fb7b30db7f3abc2"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a2f99161cc7fd53d18fb7b30db7f3abc2">mqc_realgtscalar</a> (RealIn, Scalar)</td></tr>
+<tr class="memdesc:a2f99161cc7fd53d18fb7b30db7f3abc2"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_RealGTScalar is a function that returns TRUE if an intrinsic real is greater than a MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html#a2f99161cc7fd53d18fb7b30db7f3abc2">More...</a><br /></td></tr>
 <tr class="separator:a2f99161cc7fd53d18fb7b30db7f3abc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function/Subroutine Documentation</h2>
@@ -135,6 +140,27 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_IntegerGTScalar is a function that returns TRUE if an intrinsic integer is greater than a MQC_Scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_IntegerGTScalar is a function that returns TRUE if an intrinsic integer is greater 
+    than a MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the intrinsic integer 
+    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic integer is 
+    less than the real part of the MQC_Scalar. If the intrinsic integer is equal to the
+    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+    MQC_Scalar is less than zero and FALSE otherwise. </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">IntIn</td><td><pre class="fragment">        IntIn is Integer(kind=int64)
+        The intrinsic integer that will be tested.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <a id="a2f99161cc7fd53d18fb7b30db7f3abc2"></a>
@@ -162,6 +188,27 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_RealGTScalar is a function that returns TRUE if an intrinsic real is greater than a MQC_Scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_RealGTScalar is a function that returns TRUE if an intrinsic real is greater 
+    than a MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
+    less than the real part of the MQC_Scalar. If the intrinsic real is equal to the
+    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+    MQC_Scalar is less than zero and FALSE otherwise.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">RealIn</td><td><pre class="fragment">        RealIn is Real(kind=real64)
+        The intrinsic real that will be tested.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
 
 </div>
 </div>
@@ -191,6 +238,27 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_ScalarGT is a function that returns TRUE if the left MQC_Scalar is greater than the right MQC_Scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ScalarGT is a function that returns TRUE if the left MQC_Scalar is greater than
+    the right MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the left real part 
+    is greater than the right real part and FALSE if the left real part is less than 
+    the right real part. If the left real part is equal to the right real part, the 
+    function returns TRUE if the left imaginary part is greater than the right imaginary 
+    part and FALSE otherwise.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar1</td><td><pre class="fragment">        Scalar1 is Type(MQC_Scalar)
+        The first MQC_Scalar that will be tested.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar2</td><td><pre class="fragment">        Scalar2 is Type(MQC_Scalar)
+        The second MQC_Scalar that will be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a765cb158d30ff5e9b14eea090500060e"></a>
@@ -218,6 +286,27 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_ScalarGTInteger is a function that returns TRUE if a MQC_Scalar is greater than an intrinsic integer</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ScalarGTInteger is a function that returns TRUE if a MQC_Scalar is greater than an 
+    intrinsic integer.
+
+    When dealing with complex numbers, the function returns TRUE if the real part of the 
+    MQC_Scalar is greater than the intrinsic integer and FALSE if the real part of the 
+    MQC_Scalar is less than the intrinsic integer. If the real part of the MQC_Scalar is 
+    equal to the intrinsic integer, the function returns TRUE if the imaginary part of 
+    MQC_Scalar is greater than zero and FALSE otherwise.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">IntIn</td><td><pre class="fragment">        IntIn is Integer(kind=int64)
+        The intrinsic integer that will be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
 
 </div>
 </div>
@@ -247,6 +336,27 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater than an intrinsic real</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater than an 
+    intrinsic real.
+
+    When dealing with complex numbers, the function returns TRUE if the real part of the 
+    MQC_Scalar is greater than the intrinsic real and FALSE if the real part of the 
+    MQC_Scalar is less than the intrinsic real. If the real part of the MQC_Scalar is 
+    equal to the intrinsic real, the function returns TRUE if the imaginary part of 
+    MQC_Scalar is greater than zero and FALSE otherwise. </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">IntIn</td><td><pre class="fragment">        RealIn is Real(kind=int64)
+        The intrinsic real that will be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -258,7 +368,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1operator_07_8gt_8_08.html">operator(.gt.)</a></li>
-    <li class="footer">Generated on Sat Sep 21 2019 14:36:45 for MQCPack by
+    <li class="footer">Generated on Mon Sep 23 2019 16:22:07 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>
