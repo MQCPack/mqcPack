@@ -466,13 +466,35 @@
       CONTAINS
 !
 !
-!     PROCEDURE factorial
+!     PROCEDURE Factorial
+!
+!>    \brief <b> Factorial returns the factorial of an integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    Factorial is a function that returns the factorial of an integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The argument of the factorial function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function factorial(n)
 !
-!     This function computes the factorial of a number
-!
 !     Variable Declarations...
-!
       Implicit None
       Integer(kind=int64),Intent(In)::N
       Integer(kind=int64)::I,Ans,Factorial
@@ -488,12 +510,41 @@
 !
 !
 !     PROCEDURE Bin_Coeff
+!
+!>    \brief <b> Bin_Coeff returns the binomial coefficient of (n,k)</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    Bin_Coeff is a function that returns the binomial coefficient given input
+!>    integer N and input integer K corresponding to N choose K.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The number of objects
+!>    \endverbatim
+!>
+!>    \param[in] K
+!>    \verbatim
+!>        K is Integer(kind=int64) 
+!>        The number of permutations
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function Bin_Coeff(N,K)
 !
-!     This function computes the binomial coefficient
-!
 !     Variable Declarations...
-!
       Implicit None
       Integer(kind=int64),Intent(In)::N,K
       Integer(kind=int64)::I,J,Ans,Bin_Coeff
@@ -587,13 +638,34 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_Scalar
+!
+!>    \brief <b> MQC_Deallocate_Scalar is used to deallocate a scalar type variable
+!>    of the MQC_Scalar class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_Scalar is a subroutine used to deallocate a scalar type variable
+!>    of the MQC_Scalar class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The name of the MQC_Scalar variable to deallocate
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_Scalar(Scalar)
-!
-!     This subroutine is used to deallocate a scalar type variable
-!     of the MQC_Scalar class.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -611,12 +683,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_IsAllocated
+!
+!>    \brief <b> MQC_Scalar_IsAllocated is used to determine the allocation status
+!>    of an MQC_Scalar</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Scalar_IsAllocated is a subroutine used to determine the allocation status
+!>    of an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The name of the MQC_Scalar variable to check allocation status
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_IsAllocated(Scalar)
-!
-!     This function is used to determine if an MQC_Scalar is Allocated.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -634,7 +728,7 @@
 !
 !     PROCEDURE MQC_Input_Integer_Scalar
 !
-!>    \brief <b> MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic scalar to
+!>    \brief <b> MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic integer to
 !>    an MQC_Scalar</b>
 !
 !>    \par Purpose:
@@ -642,7 +736,7 @@
 !>
 !>    \verbatim
 !>       
-!>    MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic scalar to an MQC_Scalar.
+!>    MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic integer to an MQC_Scalar.
 !>
 !>    \endverbatim
 !
@@ -680,12 +774,39 @@
 !
 !
 !     PROCEDURE MQC_Input_Real_Scalar
+!
+!>    \brief <b> MQC_Input_Real_Scalar is a subroutine is used to set an intrinsic real to
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Input_Integer_Scalar is a subroutine is used to set an intrinsic real to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Type(MQC_Scalar)
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Real(kind=real64) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Input_Real_Scalar(ScalarOut,ScalarIn)
-!
-!     This subroutine is used to set an intrinsic scalar to
-!     an MQC_Scalar.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -700,12 +821,39 @@
 !
 !
 !     PROCEDURE MQC_Input_Complex_Scalar
+!
+!>    \brief <b> MQC_Input_Complex_Scalar is a subroutine is used to set an intrinsic complex to
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Input_Complex_Scalar is a subroutine is used to set an intrinsic complex to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Type(MQC_Scalar)
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Complex(kind=real64) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Input_Complex_Scalar(ScalarOut,ScalarIn)
-!
-!     This subroutine is used to set an intrinsic scalar to
-!     an MQC_Scalar.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -720,11 +868,39 @@
 !
 !
 !     PROCEDURE MQC_Output_MQCScalar_Scalar
+!
+!>    \brief <b> MQC_Output MQCScalar_Scalar is a subroutine used to output an MQC_scalar equal to 
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Output_MQCScalar_Scalar is a subroutine used to output an MQC_scalar equal to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Type(MQC_Scalar)
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Output_MQCScalar_Scalar(ScalarOut,ScalarIn)
-!
-!     This routine is used to output a scalar equal to an MQC scalar type.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -754,11 +930,39 @@
 !
 !
 !     PROCEDURE MQC_Output_Integer_Scalar
+!
+!>    \brief <b> MQC_Output_Integer_Scalar is a subroutine used to output an intrinsic integer equal to 
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Output_Integer_Scalar is a subroutine used to output an intrinsic integer equal to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Integer(kind=int64) 
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Output_Integer_Scalar(ScalarOut,ScalarIn)
-!
-!     This routine is used to output a scalar equal to an MQC scalar type.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -769,6 +973,8 @@
         ScalarOut = ScalarIn%scai
       ElseIf(ScalarIn%Data_type.eq.'Real') then
         ScalarOut = Int(ScalarIn%scar)
+      ElseIf(ScalarIn%Data_type.eq.'Complex') then
+        ScalarOut = Int(ScalarIn%scac)
       Else
         Call MQC_Error_A('ScalarIn type unspecified in MQC_Output_Scalar', 6, &
              'ScalarIn%Data_type', ScalarIn%Data_type )
@@ -779,11 +985,39 @@
 !
 !
 !     PROCEDURE MQC_Output_Real_Scalar
+!
+!>    \brief <b> MQC_Output_Real_Scalar is a subroutine used to output an intrinsic real equal to 
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Output_Complex_Scalar is a subroutine used to output an intrinsic real equal to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Real(kind=real64) 
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Output_Real_Scalar(ScalarOut,ScalarIn)
-!
-!     This routine is used to output a scalar equal to an MQC scalar type.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -794,6 +1028,8 @@
         ScalarOut = ScalarIn%scar
       ElseIf(ScalarIn%Data_type.eq.'Integer') then
         ScalarOut = Dble(ScalarIn%scai)
+      ElseIf(ScalarIn%Data_type.eq.'Complex') then
+        ScalarOut = Real(ScalarIn%scac)
       Else
         Call MQC_Error_A('ScalarIn type unspecified in MQC_Output_Scalar', 6, &
              'ScalarIn%Data_type', ScalarIn%Data_type )
@@ -804,11 +1040,39 @@
 !
 !
 !     PROCEDURE MQC_Output_Complex_Scalar
+!
+!>    \brief <b> MQC_Output_Complex_Scalar is a subroutine used to output an intrinsic complex equal to 
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Output_Complex_Scalar is a subroutine used to output an intrinsic complex equal to an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ScalarOut
+!>    \verbatim
+!>        ScalarOut is Complex(kind=real64) 
+!>        The name of the output variable
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar) 
+!>        The value of the input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Output_Complex_Scalar(ScalarOut,ScalarIn)
-!
-!     This routine is used to output a scalar equal to an MQC scalar type.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -831,13 +1095,62 @@
 !
 !
 !     PROCEDURE MQC_Print_Scalar_Algebra1
+!
+!>    \brief <b> MQC_Print_Scalar_Algebra1 is a subroutine used to print
+!>    an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Scalar_Algebra1 is a subroutine used to print an MQC_Scalar. Blank_At_Top
+!>    and Blank_At_Bottom are optional logical arguments to print blank lines before or
+!>    after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The variable to be printed
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Scalar
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Print_Scalar_Algebra1(Scalar,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
-!
-!     This subroutine is used to print a MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -873,13 +1186,40 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Cmplx
+!
+!>    \brief <b> MQC_Scalar_Cmplx is a function used to set a complex MQC_Scalar type
+!>    variable from two other MQC_scalars</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Cmplx is a function used to set a complex MQC_Scalar type variable 
+!>    from two other MQC_Scalar variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The real part of MQC_Scalar_Cmplx
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The imaginary part of MQC_Scalar_Cmplx
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Cmplx(Scalar1,Scalar2)
-!
-!     This subroutine is used to set a complex MQC_Scalar type 
-!     variable from two other MQC_scalars.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -935,13 +1275,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Sqrt
+!
+!>    \brief <b> MQC_Scalar_Sqrt is a function used to return the square root of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Sqrt is a function used to return the square root of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Scalar_Sqrt(Scalar)
-!
-!     This subroutine is used to obtain the square-root of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -968,13 +1328,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Sin
+!
+!>    \brief <b> MQC_Scalar_Sin is a function used to return the sine of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Sin is a function used to return the sine of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Sin(Scalar)
-!
-!     This subroutine is used to obtain the sine of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1001,13 +1381,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Cos
+!
+!>    \brief <b> MQC_Scalar_Cos is a function used to return the cosine of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Cos is a function used to return the cosine of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Cos(Scalar)
-!
-!     This subroutine is used to obtain the cosine of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1034,13 +1434,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Tan
+!
+!>    \brief <b> MQC_Scalar_Tan is a function used to return the tangent of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Tan is a function used to return the tangent of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Tan(Scalar)
-!
-!     This subroutine is used to obtain the tangent of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1067,13 +1487,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_ASin
+!
+!>    \brief <b> MQC_Scalar_ASin is a function used to return the arcsin of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_ASin is a function used to return the arcsin of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_ASin(Scalar)
-!
-!     This subroutine is used to obtain the arcsine of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1100,13 +1540,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_ACos
+!
+!>    \brief <b> MQC_Scalar_ACos is a function used to return the arccosine of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_ACos is a function used to return the arccosine of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_ACos(Scalar)
-!
-!     This subroutine is used to obtain the arccosine of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1133,13 +1593,33 @@
 !
 !
 !     PROCEDURE MQC_Scalar_ATan
+!
+!>    \brief <b> MQC_Scalar_ATan is a function used to return the arctangent of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_ATan is a function used to return the arctangent of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_ATan(Scalar)
-!
-!     This subroutine is used to obtain the arctangent of
-!     an MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1166,14 +1646,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_ATan2
+!
+!>    \brief <b> MQC_Scalar_ATan2 is a function used to return the arctangent of 
+!>    an MQC_scalar accounting for quadrant of Argand diagram</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_ATan2 is a function used to return the arctangent of an MQC_scalar
+!>    accounting for quadrant of Argand diagram.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_ATan2(Scalar)
-!
-!     This subroutine is used to obtain the arctangent of
-!     an MQC_Scalar type variable accounting for quadrant of 
-!     Argand diagram.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1200,13 +1700,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_HaveReal
+!
+!>    \brief <b> MQC_Scalar_HaveReal is a function that returns TRUE or FALSE 
+!>    indicating whether an MQC_scalar is of type real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_HaveReal is a function that returns TRUE or FALSE indicating 
+!>    whether an MQC_scalar is of type real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_HaveReal(Scalar)
-!
-!     This function returns TRUE or FALSE indicating whether Scalar has
-!     a real value.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1220,13 +1741,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_HaveInteger
+!
+!>    \brief <b> MQC_Scalar_HaveInteger is a function that returns TRUE or FALSE 
+!>    indicating whether an MQC_scalar is of type integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_HaveInteger is a function that returns TRUE or FALSE indicating 
+!>    whether an MQC_scalar is of type integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_HaveInteger(Scalar)
-!
-!     This function returns TRUE or FALSE indicating whether Scalar has
-!     a integer value.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1240,13 +1782,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_HaveComplex
+!
+!>    \brief <b> MQC_Scalar_HaveComplex is a function that returns TRUE or FALSE 
+!>    indicating whether an MQC_scalar is of type complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_HaveComplex is a function that returns TRUE or FALSE indicating 
+!>    whether an MQC_scalar is of type complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_HaveComplex(Scalar)
-!
-!     This function returns TRUE or FALSE indicating whether Scalar has
-!     a complex value.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1260,12 +1823,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Get_Intrinsic_Real
+!
+!>    \brief <b> MQC_Scalar_Get_Intrinsic_Real is a function that returns the
+!>    MQC_scalar value as an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Get_Intrinsic_Real is a function that returns the MQC_scalar 
+!>    value as an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_Get_Intrinsic_Real(Scalar) Result(Output)
-!
-!     This function returns the scalar value as a fortran real.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1288,12 +1873,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Get_Intrinsic_Integer
+!
+!>    \brief <b> MQC_Scalar_Get_Intrinsic_Integer is a function that returns the
+!>    MQC_scalar value as an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Get_Intrinsic_Integer is a function that returns the MQC_scalar 
+!>    value as an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_Get_Intrinsic_Integer(Scalar) Result(Output)
-!
-!     This function returns the scalar value as a fortran integer.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1316,12 +1923,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Get_Intrinsic_Complex
+!
+!>    \brief <b> MQC_Scalar_Get_Intrinsic_Complex is a function that returns the
+!>    MQC_scalar value as an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Get_Intrinsic_Complex is a function that returns the MQC_scalar 
+!>    value as an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Scalar_Get_Intrinsic_Complex(Scalar) Result(Output)
-!
-!     This function returns the scalar value as a fortran complex.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1344,12 +1973,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Get_ABS_Value
+!
+!>    \brief <b> MQC_Scalar_Get_ABS_Value is a function that returns the
+!>    absolute value of MQC_scalar variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Get_ABS_Value is a function that returns the absolute value 
+!>    of MQC_scalar variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. Mahler     
+!>    \date 2018
+!
       Function MQC_Scalar_Get_ABS_Value(Scalar) Result(Output)
-!
-!     This function returns the abs value of an MQC Scalar as
-!     an intrinsic real
-!
-!     A. Mahler, 2018
 !
 !     Variable Declarations
       Implicit None
@@ -1372,11 +2023,37 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Get_Random_Value
+!
+!     TODO: change this subroutine to a function with optional argument to 
+!     select distribution.
+!
+!>    \brief <b> MQC_Scalar_Get_Random_Value is a function that returns a
+!>    random real value from a uniform distribution between zero and one</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Get_Random_Value is a function that returns a random real 
+!>    value from a uniform distribution between zero and one.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be filled 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Dong     
+!>    \date 2019
+!
       Subroutine MQC_Scalar_Get_Random_Value(Scalar) 
-!
-!     This subroutine returns a random real value in MQC Scalar
-!
-!     X. Dong, 2019
 !
 !     Variable Declarations
       Implicit None
@@ -1391,12 +2068,38 @@
 !
 !
 !     PROCEDURE MQC_ScalarAdd
+!
+!>    \brief <b> MQC_ScalarAdd is a function that sums two MQC_Scalar objects</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarAdd is a function that sums two MQC_Scalar objects.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar to be summed
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar to be summed
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarAdd(Scalar1,Scalar2)
-!
-!     This subroutine is used to add MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1453,12 +2156,38 @@
 !
 !
 !     PROCEDURE MQC_ScalarSubtract
+!
+!>    \brief <b> MQC_ScalarSubtract is a function that subtracts two MQC_Scalar objects</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarSubtract is a function that subtracts two MQC_Scalar objects.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar from which Scalar2 will be subtracted
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar which will be subtracted from Scalar1
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarSubtract(Scalar1,Scalar2)
-!
-!     This subroutine is used to subtract MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1512,12 +2241,38 @@
 !
 !
 !     PROCEDURE MQC_ScalarMultiply
+!
+!>    \brief <b> MQC_ScalarMultiply is a function that multiplies two MQC_Scalar objects</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarMultiply is a function that multiplies two MQC_Scalar objects.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar to be multiplied
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar to be multiplied
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarMultiply(Scalar1,Scalar2)
-!
-!     This subroutine is used to multiply MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1571,12 +2326,38 @@
 !
 !
 !     PROCEDURE MQC_ScalarDivide
+!
+!>    \brief <b> MQC_ScalarDivide is a function that divides two MQC_Scalar objects</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarDivide is a function that divides MQC_Scalar objects.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The numerator
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarDivide(Scalar1,Scalar2)
-!
-!     This subroutine is used to divide MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1630,12 +2411,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarExponent
+!
+!>    \brief <b> MQC_ScalarExponent is a function that raises one MQC_Scalar to the
+!>    power of another MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarExponent is a function that raises one MQC_Scalar to the power of 
+!>    another MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The base value
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The power value
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarExponent(Scalar1,Scalar2)
-!
-!     This subroutine is used to raise MQC_Scalar to a power.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1689,12 +2498,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarIntegerExponent
+!
+!>    \brief <b> MQC_ScalarIntegerExponent is a function that raises an MQC_Scalar to the
+!>    power of an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarIntegerExponent is a function that raises an MQC_Scalar to the power of an 
+!>    intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The base value
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The power value
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarIntegerExponent(Scalar,IntIn)
-!
-!     This subroutine is used to raise MQC_Scalar to a power.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1726,12 +2563,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarRealExponent
+!
+!>    \brief <b> MQC_ScalarRealExponent is a function that raises an MQC_Scalar to the
+!>    power of an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarRealExponent is a function that raises an MQC_Scalar to the power of an 
+!>    intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The base value
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The power value
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarRealExponent(Scalar,RealIn)
-!
-!     This subroutine is used to raise MQC_Scalar to a power.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1763,12 +2628,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarComplexExponent
+!
+!>    \brief <b> MQC_ScalarComplexExponent is a function that raises an MQC_Scalar to the
+!>    power of an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarComplexExponent is a function that raises an MQC_Scalar to the power of an 
+!>    intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The base value
+!>    \endverbatim
+!>
+!>    \param[in] CompIn
+!>    \verbatim
+!>        CompIn is Complex(kind=real64)
+!>        The power value
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarComplexExponent(Scalar,CompIn)
-!
-!     This subroutine is used to raise MQC_Scalar to a power.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1796,13 +2689,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarNE
+!
+!>    \brief <b> MQC_ScalarNE is a function that returns TRUE if two MQC_Scalar
+!>    variables are not equal</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNE is a function that returns TRUE if two MQC_Scalar variables 
+!>    are not equal.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarNE(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if two MQC_Scalar type variables
-!     are not equal.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1847,13 +2767,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarEQ
+!
+!>    \brief <b> MQC_ScalarEQ is a function that returns TRUE if two MQC_Scalar
+!>    variables are equal</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQ is a function that returns TRUE if two MQC_Scalar variables 
+!>    are equal.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarEQ(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if two MQC_Scalar type variables
-!     are equal.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1890,13 +2837,46 @@
 !
 !
 !     PROCEDURE MQC_ScalarLT
+!
+!>    \brief <b> MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar
+!>    is less than the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar is less than
+!>    the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part 
+!>    is less than the right real part and FALSE if the left real part is greater than 
+!>    the right real part. If the left real part is equal to the right real part, the 
+!>    function returns TRUE if the left imaginary part is less than the right imaginary 
+!>    part and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarLT(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is less than the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1911,7 +2891,7 @@
         If(Scalar1%scar.lt.Scalar2%scai) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+          If(Zero.lt.aimag(Scalar2%scac)) MQC_ScalarLT = .True.
         ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
           MQC_ScalarLT = .True.
         EndIf
@@ -1921,7 +2901,7 @@
         If(Scalar1%scai.lt.Scalar2%scai) MQC_ScalarLT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).lt.Zero) MQC_ScalarLT = .True.
+          If(Zero.lt.aimag(Scalar2%scac)) MQC_ScalarLT = .True.
         ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
           MQC_ScalarLT = .True.
         EndIf
@@ -1954,13 +2934,46 @@
 !
 !
 !     PROCEDURE MQC_RealLTScalar
+!
+!>    \brief <b> MQC_RealLTScalar is a function that returns TRUE if an intrinsic real
+!>    is less than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealLTScalar is a function that returns TRUE if an intrinsic real is less than
+!>    a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real 
+!>    is less than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
+!>    greater than the real part of the MQC_Scalar. If the intrinsic real is equal to the
+!>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is greater than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealLTScalar(RealIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is less than the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -1990,13 +3003,46 @@
 !
 
 !     PROCEDURE MQC_ScalarLTReal
+!
+!>    \brief <b> MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less
+!>     than an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less than an 
+!>    intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic real and FALSE if the real part of the MQC_Scalar
+!>    is greater than the intrinsic real. If the real part of the MQC_Scalar is equal to the
+!>    intrinsic real, the function returns TRUE if the imaginary part of MQC_Scalar is less 
+!>    than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarLTReal(Scalar,RealIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is less than the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2026,13 +3072,46 @@
 !
 !
 !     PROCEDURE MQC_ScalarGT
+!
+!>    \brief <b> MQC_ScalarGT is a function that returns TRUE if the left MQC_Scalar
+!>    is greater than the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGT is a function that returns TRUE if the left MQC_Scalar is greater than
+!>    the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part 
+!>    is greater than the right real part and FALSE if the left real part is less than 
+!>    the right real part. If the left real part is equal to the right real part, the 
+!>    function returns TRUE if the left imaginary part is greater than the right imaginary 
+!>    part and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarGT(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is greater than the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2047,7 +3126,7 @@
         If(Scalar1%scar.gt.Scalar2%scai) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+          If(Zero.gt.aimag(Scalar2%scac)) MQC_ScalarGT = .True.
         ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
           MQC_ScalarGT = .True.
         EndIf
@@ -2057,7 +3136,7 @@
         If(Scalar1%scai.gt.Scalar2%scai) MQC_ScalarGT = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
         If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).gt.Zero) MQC_ScalarGT = .True.
+          If(Zero.gt.aimag(Scalar2%scac)) MQC_ScalarGT = .True.
         ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
           MQC_ScalarGT = .True.
         EndIf
@@ -2090,13 +3169,46 @@
 !
 !
 !     PROCEDURE MQC_IntegerGTScalar
+!
+!>    \brief <b> MQC_IntegerGTScalar is a function that returns TRUE if an intrinsic integer
+!>    is greater than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerGTScalar is a function that returns TRUE if an intrinsic integer is greater 
+!>    than a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic integer 
+!>    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic integer is 
+!>    less than the real part of the MQC_Scalar. If the intrinsic integer is equal to the
+!>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is less than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerGTScalar(IntIn,Scalar)
-!
-!     This subroutine is used to return if the left integer variable
-!     is greater than the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2126,13 +3238,46 @@
 !
 !
 !     PROCEDURE MQC_ScalarGTInteger
+!
+!>    \brief <b> MQC_ScalarGTInteger is a function that returns TRUE if a MQC_Scalar is greater
+!>    than an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGTInteger is a function that returns TRUE if a MQC_Scalar is greater than an 
+!>    intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is greater than the intrinsic integer and FALSE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic integer. If the real part of the MQC_Scalar is 
+!>    equal to the intrinsic integer, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is greater than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarGTInteger(Scalar,IntIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is greater than the right integer variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2162,13 +3307,46 @@
 !
 !
 !     PROCEDURE MQC_RealGTScalar
+!
+!>    \brief <b> MQC_RealGTScalar is a function that returns TRUE if an intrinsic real
+!>    is greater than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealGTScalar is a function that returns TRUE if an intrinsic real is greater 
+!>    than a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is greater than the real part of the MQC_Scalar and FALSE if the intrinsic real is 
+!>    less than the real part of the MQC_Scalar. If the intrinsic real is equal to the
+!>    real part of the MQC_Scalar, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is less than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealGTScalar(RealIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is greater than the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2198,13 +3376,46 @@
 !
 !
 !     PROCEDURE MQC_ScalarGTReal
+!
+!>    \brief <b> MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater
+!>    than an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGTReal is a function that returns TRUE if a MQC_Scalar is greater than an 
+!>    intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is greater than the intrinsic real and FALSE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic real. If the real part of the MQC_Scalar is 
+!>    equal to the intrinsic real, the function returns TRUE if the imaginary part of 
+!>    MQC_Scalar is greater than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarGTReal(Scalar,RealIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is greater than the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2234,13 +3445,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLE
+!
+!>    \brief <b> MQC_ScalarLE is a function that returns TRUE if the left MQC_Scalar
+!>    is less than or equal the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLE is a function that returns TRUE if the left MQC_Scalar is less than or
+!>    equal to the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part 
+!>    is less than or equal to the right real part and FALSE if the left real part is greater 
+!>    than the right real part.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarLE(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is less than or equal to the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2254,39 +3496,19 @@
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(Scalar1%scar.lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(Scalar1%scar.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(Scalar1%scai.lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(Scalar1%scai.le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
-        If(real(Scalar1%scac).eq.Scalar2%scar) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.Scalar2%scar) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.Scalar2%scar) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
-        If(real(Scalar1%scac).eq.Scalar2%scai) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.Scalar2%scai) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.Scalar2%scai) MQC_ScalarLE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
-        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
-          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarLE = .True.
-        ElseIf(real(Scalar1%scac).lt.real(Scalar2%scac)) then
-          MQC_ScalarLE = .True.
-        EndIf
+        If(real(Scalar1%scac).le.real(Scalar2%scac)) MQC_ScalarLE = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -2298,13 +3520,44 @@
 !
 !
 !     PROCEDURE MQC_RealLEScalar
+!
+!>    \brief <b> MQC_RealLEScalar is a function that returns TRUE if an intrinsic real
+!>    is less than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealLEScalar is a function that returns TRUE if an intrinsic real is less than or  
+!>    equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    real is greater than the real part of the MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealLEScalar(RealIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is less than or equal to the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2319,11 +3572,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(RealIn.le.Scalar%scai) MQC_RealLEScalar = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(RealIn.eq.real(Scalar%scac)) then
-          If(Zero.eq.aimag(Scalar%scac)) MQC_RealLEScalar = .True.
-        ElseIf(realIn.lt.real(Scalar%scac)) then
-          MQC_RealLEScalar = .True.
-        EndIf
+        If(RealIn.le.real(Scalar%scac)) MQC_RealLEScalar = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_RealLEScalar', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -2334,13 +3583,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLEReal
+!
+!>    \brief <b> MQC_ScalarLEReal is a function that returns TRUE if a MQC_Scalar is less
+!>    than or equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLEReal is a function that returns TRUE if a MQC_Scalar is less than or equal to
+!>    an intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than or equal to the intrinsic real and FALSE if the real part of the 
+!>    MQC_Scalar is greater than the intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarLEReal(Scalar,RealIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is less than or equal to the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2355,11 +3635,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(Scalar%scai.le.RealIn) MQC_ScalarLEReal = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(real(Scalar%scac).eq.RealIn) then
-          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEReal = .True.
-        ElseIf(real(Scalar%scac).lt.realIn) then
-          MQC_ScalarLEReal = .True.
-        EndIf
+        If(real(Scalar%scac).le.RealIn) MQC_ScalarLEReal = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEReal', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -2370,13 +3646,44 @@
 !
 !
 !     PROCEDURE MQC_IntegerLEScalar
+!
+!>    \brief <b> MQC_IntegerLEScalar is a function that returns TRUE if an intrinsic integer
+!>    is less than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerLEScalar is a function that returns TRUE if an intrinsic integer is less 
+!>    than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic integer 
+!>    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    integer is greater than the real part of the MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerLEScalar(IntIn,Scalar)
-!
-!     This subroutine is used to return if the left real variable
-!     is less than or equal to the right MQC_Scalar type variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2391,11 +3698,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(IntIn.le.Scalar%scai) MQC_IntegerLEScalar = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(IntIn.eq.real(Scalar%scac)) then
-          If(Zero.eq.aimag(Scalar%scac)) MQC_IntegerLEScalar = .True.
-        ElseIf(IntIn.lt.real(Scalar%scac)) then
-          MQC_IntegerLEScalar = .True.
-        EndIf
+        If(IntIn.le.real(Scalar%scac)) MQC_IntegerLEScalar = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_IntegerLEScalar', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -2406,13 +3709,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarLEInteger
+!
+!>    \brief <b> MQC_ScalarLEInteger is a function that returns TRUE if a MQC_Scalar is less
+!>    than or equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLEInteger is a function that returns TRUE if a MQC_Scalar is less than or 
+!>    equal to an intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than or equal to the intrinsic integer and FALSE if the real part 
+!>    of the MQC_Scalar is greater than the intrinsic integer. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarLEInteger(Scalar,IntIn)
-!
-!     This subroutine is used to return if the left MQC_Scalar type variable
-!     is less than or equal to the right real variable.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2427,11 +3761,7 @@
       ElseIf(Scalar%Data_type.eq.'Integer') then
         If(Scalar%scai.le.IntIn) MQC_ScalarLEInteger = .True.
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        If(real(Scalar%scac).eq.IntIn) then
-          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLEInteger = .True.
-        ElseIf(real(Scalar%scac).lt.intIn) then
-          MQC_ScalarLEInteger = .True.
-        EndIf
+        If(real(Scalar%scac).le.IntIn) MQC_ScalarLEInteger = .True.
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLEInteger', 6, &
              'Scalar%Data_type', Scalar%Data_type)
@@ -2442,13 +3772,44 @@
 !
 !
 !     PROCEDURE MQC_ScalarGE
+!
+!>    \brief <b> MQC_ScalarGE is a function that returns TRUE if the left MQC_Scalar
+!>    is greater than or equal the right MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGE is a function that returns TRUE if the left MQC_Scalar is greater than or
+!>    equal to the right MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the left real part is
+!>    is greater than or equal to the right real part and FALSE if the left real part is less
+!>    than the right real part.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The first MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The second MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_ScalarGE(Scalar1,Scalar2)
-!
-!     This subroutine is used to return if the left  MQC_Scalar type variable
-!     is greater than or equal to the right MQC_Scalar variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2462,39 +3823,19 @@
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scar.ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Real'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scar.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(Scalar1%scar.gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(Scalar1%scar.ge.real(Scalar2%scac)) MQC_ScalarGE = .True. 
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Real') then
         If(Scalar1%scai.ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Integer') then
         If(Scalar1%scai.ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Integer'.and.Scalar2%Data_type.eq.'Complex') then
-        If(Scalar1%scai.eq.real(Scalar2%scac)) then
-          If(aimag(Scalar2%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(Scalar1%scai.gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(Scalar1%scai.ge.real(Scalar2%scac)) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Real') then
-        If(real(Scalar1%scac).eq.Scalar2%scar) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.Scalar2%scar) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.Scalar2%scar) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Integer') then
-        If(real(Scalar1%scac).eq.Scalar2%scai) then
-          If(aimag(Scalar1%scac).eq.Zero) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.Scalar2%scai) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.Scalar2%scai) MQC_ScalarGE = .True.
       ElseIf(Scalar1%Data_type.eq.'Complex'.and.Scalar2%Data_type.eq.'Complex') then
-        If(real(Scalar1%scac).eq.real(Scalar2%scac)) then 
-          If(aimag(Scalar1%scac).eq.aimag(Scalar2%scac)) MQC_ScalarGE = .True.
-        ElseIf(real(Scalar1%scac).gt.real(Scalar2%scac)) then
-          MQC_ScalarGE = .True.
-        EndIf
+        If(real(Scalar1%scac).ge.real(Scalar2%scac)) MQC_ScalarGE = .True. 
       Else
         Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGE', 6, &
              'Scalar1%Data_type', Scalar1%Data_type, &
@@ -2506,12 +3847,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Complex_Conjugate
+!
+!>    \brief <b> MQC_Scalar_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC_Scalar input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       Function MQC_Scalar_Complex_Conjugate(ScalarIn) Result(ScalarOut)
-!
-!     This function returns the complex conjugate of an mqc scalar. 
-!
-!     L. M. Thompson, 2018.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2529,12 +3892,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Complex_RealPart
+!
+!>    \brief <b> MQC_Scalar_Complex_RealPart is a function that returns the real part
+!>    of an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Complex_RealPart is a function that returns the real part of an
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC_Scalar input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Complex_RealPart(ScalarIn) Result(ScalarOut)
-!
-!     This function returns the real part of an mqc scalar. 
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2554,12 +3939,34 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Complex_ImagPart
+!
+!>    \brief <b> MQC_Scalar_Complex_ImagPart is a function that returns the inaginary part
+!>    of an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Complex_RealPart is a function that returns the imaginary part of an
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC_Scalar input variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Scalar_Complex_ImagPart(ScalarIn) Result(ScalarOut)
-!
-!     This function returns the imaginary part of an mqc scalar. 
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2575,12 +3982,40 @@
 !
 !
 !     PROCEDURE MQC_IntegerScalarMultiply
+!
+!>    \brief <b> MQC_IntegerScalarMultiply is a function that is used to multiply an intrinsic
+!>    integer by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerScalarMultiply is a function that is used to multiply an intrinsic integer by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerScalarMultiply(IntegerIn,Scalar) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2597,12 +4032,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarIntegerMultiply
+!
+!>    \brief <b> MQC_ScalarIntegerMultiply is a function that is used to multiply an intrinsic
+!>    integer by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarIntegerMultiply is a function that is used to multiply an intrinsic integer by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar varibale to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarIntegerMultiply(Scalar,IntegerIn) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2619,12 +4082,40 @@
 !
 !
 !     PROCEDURE MQC_RealScalarMultiply
+!
+!>    \brief <b> MQC_RealScalarMultiply is a function that is used to multiply an intrinsic
+!>    real by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealScalarMultiply is a function that is used to multiply an intrinsic real by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] realIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealScalarMultiply(RealIn,Scalar) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2641,12 +4132,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarRealMultiply
+!
+!>    \brief <b> MQC_ScalarRealMultiply is a function that is used to multiply an intrinsic
+!>    real by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarRealMultiply is a function that is used to multiply an intrinsic real by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] realIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarRealMultiply(Scalar,RealIn) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2663,12 +4182,40 @@
 !
 !
 !     PROCEDURE MQC_ComplexScalarMultiply
+!
+!>    \brief <b> MQC_ComplexScalarMultiply is a function that is used to multiply an intrinsic
+!>    complex by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexScalarMultiply is a function that is used to multiply an intrinsic complex by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        Complex is Complex(kind=real64)
+!>        The intrinsic complex variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variabel to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexScalarMultiply(ComplexIn,Scalar) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2685,12 +4232,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarComplexMultiply
+!
+!>    \brief <b> MQC_ScalarComplexMultiply is a function that is used to multiply an intrinsic
+!>    complex by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarComplexMultiply is a function that is used to multiply an intrinsic complex by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        Complex is Complex(kind=real64)
+!>        The intrinsic complex variable to multiply
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variabel to multiply
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarComplexMultiply(Scalar,ComplexIn) Result(Output)
-!
-!     This subroutine is used to multiply an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2707,12 +4282,40 @@
 !
 !
 !     PROCEDURE MQC_IntegerScalarDivide  
+!
+!>    \brief <b> MQC_IntegerScalarDivide is a function that is used to divide an intrinsic
+!>    integer by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerScalarDivide is a function that is used to divide an intrinsic integer by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerScalarDivide(IntegerIn,Scalar) Result(Output)
-!
-!     This subroutine is used to divide an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2729,12 +4332,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarIntegerDivide
+!
+!>    \brief <b> MQC_ScalarIntegerDivide is a function that is used to divide an MQC_Scalar by
+!>    an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarIntegerDivide is a function that is used to divide an MQC_Scalar by an 
+!>    intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarIntegerDivide(Scalar,IntegerIn) Result(Output)
-!
-!     This subroutine is used to Divide an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2751,12 +4382,40 @@
 !
 !
 !     PROCEDURE MQC_RealScalarDivide
+!
+!>    \brief <b> MQC_RealScalarDivide is a function that is used to divide an intrinsic
+!>    real by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealScalarDivide is a function that is used to divide an intrinsic real by an
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealScalarDivide(RealIn,Scalar) Result(Output)
-!
-!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2773,12 +4432,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarRealDivide
+!
+!>    \brief <b> MQC_ScalarRealDivide is a function that is used to divide an MQC_Scalar by
+!>    an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarRealDivide is a function that is used to divide an MQC_Scalar by an 
+!>    intrinsic real. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarRealDivide(Scalar,RealIn) Result(Output)
-!
-!     This subroutine is used to divide an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2795,12 +4482,40 @@
 !
 !
 !     PROCEDURE MQC_ComplexScalarDivide
+!
+!>    \brief <b> MQC_ComplexScalarDivide is a function that is used to divide an intrinsic
+!>    complex by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexScalarDivide is a function that is used to divide an intrinsic complex by an
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexScalarDivide(ComplexIn,Scalar) Result(Output)
-!
-!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2817,12 +4532,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarComplexDivide
+!
+!>    \brief <b> MQC_ScalarComplexDivide is a function that is used to divide an MQC_Scalar by
+!>    an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarComplexDivide is a function that is used to divide an MQC_Scalar by an 
+!>    intrinsic complex. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable numerator
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex variable denominator
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarComplexDivide(Scalar,ComplexIn) Result(Output)
-!
-!     This subroutine is used to divide an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2839,12 +4582,40 @@
 !
 !
 !     PROCEDURE MQC_IntegerScalarAdd
+!
+!>    \brief <b> MQC_IntegerScalarAdd is a function that is used to multiply an intrinsic
+!>    integer by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerScalarAdd is a function that is used to sum an intrinsic integer by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerScalarAdd(IntegerIn,Scalar) Result(Output)
-!
-!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2861,12 +4632,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarIntegerAdd
+!
+!>    \brief <b> MQC_ScalarIntegerAdd is a function that is used to sum an intrinsic
+!>    integer by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarIntegerSum is a function that is used to sum an intrinsic integer by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar varibale to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarIntegerAdd(Scalar,IntegerIn) Result(Output)
-!
-!     This subroutine is used to add an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2883,12 +4682,40 @@
 !
 !
 !     PROCEDURE MQC_RealScalarAdd
+!
+!>    \brief <b> MQC_RealScalarAdd is a function that is used to sum an intrinsic
+!>    real by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealScalarAdd is a function that is used to sum an intrinsic real by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] realIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealScalarAdd(RealIn,Scalar) Result(Output)
-!
-!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2905,12 +4732,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarRealAdd
+!
+!>    \brief <b> MQC_ScalarRealAdd is a function that is used to sum an intrinsic
+!>    real by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarRealSum is a function that is used to sum an intrinsic real by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] realIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarRealAdd(Scalar,RealIn) Result(Output)
-!
-!     This subroutine is used to add an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2927,12 +4782,40 @@
 !
 !
 !     PROCEDURE MQC_ComplexScalarAdd
+!
+!>    \brief <b> MQC_ComplexScalarAdd is a function that is used to sum an intrinsic
+!>    complex by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexScalarAdd is a function that is used to sum an intrinsic complex by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        Complex is Complex(kind=real64)
+!>        The intrinsic complex variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variabel to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexScalarAdd(ComplexIn,Scalar) Result(Output)
-!
-!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2949,12 +4832,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarComplexAdd
+!
+!>    \brief <b> MQC_ScalarComplexAdd is a function that is used to sum an intrinsic
+!>    complex by an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarComplexAdd is a function that is used to sum an intrinsic complex by
+!>    an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        Complex is Complex(kind=real64)
+!>        The intrinsic complex variable to sum
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variabel to sum
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarComplexAdd(Scalar,ComplexIn) Result(Output)
-!
-!     This subroutine is used to add an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2971,12 +4882,40 @@
 !
 !
 !     PROCEDURE MQC_IntegerScalarSubtract
+!
+!>    \brief <b> MQC_IntegerScalarSubtract is a function that is used to subtract an MQC_Scalar
+!>    from an intrinisic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerScalarSubtract is a function that is used to subtract an MQC_Scalar from an
+!>    intrinisic integer. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerScalarSubtract(IntegerIn,Scalar) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -2993,12 +4932,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarIntegerSubtract
+!
+!>    \brief <b> MQC_ScalarIntegerSubtract is a function that is used to subtract an intrinsic
+!>    integer from an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarIntegerSubtract is a function that is used to subtract an intrinsic integer
+!>    from an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarIntegerSubtract(Scalar,IntegerIn) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic integer by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3015,12 +4982,40 @@
 !
 !
 !     PROCEDURE MQC_RealScalarSubtract
+!
+!>    \brief <b> MQC_RealScalarSubtract is a function that is used to subtract an MQC_Scalar
+!>    from an intrinisic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealScalarSubtract is a function that is used to subtract an MQC_Scalar from an
+!>    intrinisic real. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealScalarSubtract(RealIn,Scalar) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3037,12 +5032,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarRealSubtract
+!
+!>    \brief <b> MQC_ScalarRealSubtract is a function that is used to subtract an intrinsic
+!>    real from an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarRealSubtract is a function that is used to subtract an intrinsic real from an
+!>    MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarRealSubtract(Scalar,RealIn) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic real by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3059,12 +5082,40 @@
 !
 !
 !     PROCEDURE MQC_ComplexScalarSubtract
+!
+!>    \brief <b> MQC_ComplexScalarSubtract is a function that is used to subtract an MQC_Scalar
+!>    from an intrinisic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexScalarSubtract is a function that is used to subtract an MQC_Scalar from an
+!>    intrinisic complex. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexScalarSubtract(ComplexIn,Scalar) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -3081,12 +5132,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarComplexSubtract
+!
+!>    \brief <b> MQC_ScalarComplexSubtract is a function that is used to subtract an intrinsic
+!>    complex from an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarComplexSubtract is a function that is used to subtract an intrinsic complex
+!>    from an MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim 
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar variable to subtract from
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex to subtract
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ScalarComplexSubtract(Scalar,ComplexIn) Result(Output)
-!
-!     This subroutine is used to subtract an intrinsic complex by an MQC_Scalar type variables.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
