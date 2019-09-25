@@ -135,7 +135,6 @@ var mqc__algebra_8_f03 =
     [ "mqc_matrix_scalar_put", "mqc__algebra_8_f03.html#a7a0a2b8295316e1ff182faea150106fc", null ],
     [ "mqc_matrix_set", "mqc__algebra_8_f03.html#a8f816bab517aac5d63f5d9b8ed02dd18", null ],
     [ "mqc_matrix_sqrt", "mqc__algebra_8_f03.html#ae20713aedbc2621c6649a8ab0d26c411", null ],
-    [ "mqc_matrix_storagetype", "mqc__algebra_8_f03.html#a2fe9d7086bb4477ce31b680f4ab2a741", null ],
     [ "mqc_matrix_svd", "mqc__algebra_8_f03.html#a6bf0a09beb557ab60485c31b884790ff", null ],
     [ "mqc_matrix_symm2diag", "mqc__algebra_8_f03.html#adb8fe92d1f31abbeb4c23127776581c3", null ],
     [ "mqc_matrix_symm2full", "mqc__algebra_8_f03.html#a3b5ef28f290e4f9f1ce51fe154d91533", null ],
