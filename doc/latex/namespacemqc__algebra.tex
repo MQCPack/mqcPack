@@ -162,8 +162,8 @@ complex(kind=real64) function \mbox{\hyperlink{namespacemqc__algebra_af2f017191f
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Intrinsic\+\_\+\+Complex is a function that returns the M\+Q\+C\+\_\+scalar value as an intrinsic complex}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a3dde75fe02e3744f5f6da074ac4c0f39}{mqc\+\_\+scalar\+\_\+get\+\_\+abs\+\_\+value}} (Scalar)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+A\+B\+S\+\_\+\+Value is a function that returns the absolute value of M\+Q\+C\+\_\+scalar variable}} \end{DoxyCompactList}\item 
-subroutine \mbox{\hyperlink{namespacemqc__algebra_a3546f2749b3ae2fdca8cca652cf1a2de}{mqc\+\_\+scalar\+\_\+get\+\_\+random\+\_\+value}} (Scalar)
-\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a uniform distribution between zero and one}} \end{DoxyCompactList}\item 
+subroutine \mbox{\hyperlink{namespacemqc__algebra_a7a974cc8a6293e353f55b61b8e3f80e0}{mqc\+\_\+scalar\+\_\+get\+\_\+random\+\_\+value}} (Scalar, Seed, Distribution)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution between zero and one}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a7e549ede414a6f0b7d4533b532602eac}{mqc\+\_\+scalaradd}} (Scalar1, Scalar2)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Add is a function that sums two M\+Q\+C\+\_\+\+Scalar objects}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_ab142473388c5cc3a397b64224eb3befa}{mqc\+\_\+scalarsubtract}} (Scalar1, Scalar2)
@@ -2502,30 +2502,59 @@ L. M. Thompson
 \begin{DoxyDate}{Date}
 2017 
 \end{DoxyDate}
-\mbox{\Hypertarget{namespacemqc__algebra_a3546f2749b3ae2fdca8cca652cf1a2de}\label{namespacemqc__algebra_a3546f2749b3ae2fdca8cca652cf1a2de}} 
+\mbox{\Hypertarget{namespacemqc__algebra_a7a974cc8a6293e353f55b61b8e3f80e0}\label{namespacemqc__algebra_a7a974cc8a6293e353f55b61b8e3f80e0}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_scalar\_get\_random\_value@{mqc\_scalar\_get\_random\_value}}
 \index{mqc\_scalar\_get\_random\_value@{mqc\_scalar\_get\_random\_value}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_scalar\_get\_random\_value()}{mqc\_scalar\_get\_random\_value()}}
-{\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+scalar\+\_\+get\+\_\+random\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}})}]{Scalar }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+scalar\+\_\+get\+\_\+random\+\_\+value (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}})}]{Scalar,  }\item[{integer, dimension(\+:), optional}]{Seed,  }\item[{character(len=$\ast$), intent(in), optional}]{Distribution }\end{DoxyParamCaption})}
 
 
 
-{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a uniform distribution between zero and one}} 
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution between zero and one}} 
 
 \begin{DoxyParagraph}{Purpose\+:}
 \begin{DoxyVerb}    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-    value from a uniform distribution between zero and one.\end{DoxyVerb}
+    value from an optionally specified distribution between zero and one. In
+    addition, a seed can be specified for consistent greneration of the same
+    number. Default options are uniform distribution with random seed. The 
+    following options are available:
+    
+    1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
+    2. Distribution = 'gaussian' uses a normal distribution between 0 and 1. 
+    3. Distribution = 'exp' uses an exponentiall distribution returning 
+                      positive integers.. 
+    4. Distribution = 'exp01' uses an exponential distribution that gives 
+                      values in the range 0 and 1. \end{DoxyVerb}
  
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in,out}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Class(MQC_Scalar)
         The MQC_Scalar to be filled \end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Seed} & \begin{DoxyVerb}        Seed is integer,dimension(:),optional 
+        Integer array containing seed. Note in gfortran
+        only the first two elements affect the value of
+        the random number.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Distribution} & \begin{DoxyVerb}        Distribution is character(len=*),intent(in),optional 
+        Distribution of the function from which random number
+        is selected.
+        = 'uniform':  uniform between 0 and 1
+        = 'gaussian': not yet implemented
+        = 'exp':      exponential decay y=\exp(-x)
+        = 'exp01':    exponential decay between 0 and 1 obtained
+                      using mod(y,1.0) of y=\exp(-8x).\end{DoxyVerb}
  \\
 \hline
 \end{DoxyParams}
 \begin{DoxyAuthor}{Author}
 X. Dong ~\newline
+ 
+
+L. M. Thompson ~\newline
  
 \end{DoxyAuthor}
 \begin{DoxyDate}{Date}

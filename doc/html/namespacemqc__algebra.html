@@ -285,9 +285,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a3dde75fe02e3744f5f6da074ac4c0f39"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__scalar.html">mqc_scalar</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a3dde75fe02e3744f5f6da074ac4c0f39">mqc_scalar_get_abs_value</a> (Scalar)</td></tr>
 <tr class="memdesc:a3dde75fe02e3744f5f6da074ac4c0f39"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Scalar_Get_ABS_Value is a function that returns the absolute value of MQC_scalar variable</b>  <a href="namespacemqc__algebra.html#a3dde75fe02e3744f5f6da074ac4c0f39">More...</a><br /></td></tr>
 <tr class="separator:a3dde75fe02e3744f5f6da074ac4c0f39"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3546f2749b3ae2fdca8cca652cf1a2de"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a3546f2749b3ae2fdca8cca652cf1a2de">mqc_scalar_get_random_value</a> (Scalar)</td></tr>
-<tr class="memdesc:a3546f2749b3ae2fdca8cca652cf1a2de"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Scalar_Get_Random_Value is a function that returns a random real value from a uniform distribution between zero and one</b>  <a href="namespacemqc__algebra.html#a3546f2749b3ae2fdca8cca652cf1a2de">More...</a><br /></td></tr>
-<tr class="separator:a3546f2749b3ae2fdca8cca652cf1a2de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a974cc8a6293e353f55b61b8e3f80e0"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a7a974cc8a6293e353f55b61b8e3f80e0">mqc_scalar_get_random_value</a> (Scalar, Seed, Distribution)</td></tr>
+<tr class="memdesc:a7a974cc8a6293e353f55b61b8e3f80e0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Scalar_Get_Random_Value is a function that returns a random real value from a specified distribution between zero and one</b>  <a href="namespacemqc__algebra.html#a7a974cc8a6293e353f55b61b8e3f80e0">More...</a><br /></td></tr>
+<tr class="separator:a7a974cc8a6293e353f55b61b8e3f80e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e549ede414a6f0b7d4533b532602eac"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__scalar.html">mqc_scalar</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a7e549ede414a6f0b7d4533b532602eac">mqc_scalaradd</a> (Scalar1, Scalar2)</td></tr>
 <tr class="memdesc:a7e549ede414a6f0b7d4533b532602eac"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarAdd is a function that sums two MQC_Scalar objects</b>  <a href="namespacemqc__algebra.html#a7e549ede414a6f0b7d4533b532602eac">More...</a><br /></td></tr>
 <tr class="separator:a7e549ede414a6f0b7d4533b532602eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -5015,8 +5015,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a3546f2749b3ae2fdca8cca652cf1a2de"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3546f2749b3ae2fdca8cca652cf1a2de">&#9670;&nbsp;</a></span>mqc_scalar_get_random_value()</h2>
+<a id="a7a974cc8a6293e353f55b61b8e3f80e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a974cc8a6293e353f55b61b8e3f80e0">&#9670;&nbsp;</a></span>mqc_scalar_get_random_value()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -5025,23 +5025,64 @@ Functions/Subroutines</h2></td></tr>
           <td class="memname">subroutine mqc_algebra::mqc_scalar_get_random_value </td>
           <td>(</td>
           <td class="paramtype">class(<a class="el" href="structmqc__algebra_1_1mqc__scalar.html">mqc_scalar</a>)&#160;</td>
-          <td class="paramname"><em>Scalar</em></td><td>)</td>
+          <td class="paramname"><em>Scalar</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">integer, dimension(:), optional&#160;</td>
+          <td class="paramname"><em>Seed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">character(len=*), intent(in), optional&#160;</td>
+          <td class="paramname"><em>Distribution</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p><b> MQC_Scalar_Get_Random_Value is a function that returns a random real value from a uniform distribution between zero and one</b> </p>
+<p><b> MQC_Scalar_Get_Random_Value is a function that returns a random real value from a specified distribution between zero and one</b> </p>
 <dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-    value from a uniform distribution between zero and one.</pre> </dd></dl>
+    value from an optionally specified distribution between zero and one. In
+    addition, a seed can be specified for consistent greneration of the same
+    number. Default options are uniform distribution with random seed. The 
+    following options are available:
+    
+    1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
+    2. Distribution = 'gaussian' uses a normal distribution between 0 and 1. 
+    3. Distribution = 'exp' uses an exponentiall distribution returning 
+                      positive integers.. 
+    4. Distribution = 'exp01' uses an exponential distribution that gives 
+                      values in the range 0 and 1. </pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Class(MQC_Scalar)
-        The MQC_Scalar to be filled </pre> </td></tr>
+        The MQC_Scalar to be filled </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Seed</td><td><pre class="fragment">        Seed is integer,dimension(:),optional 
+        Integer array containing seed. Note in gfortran
+        only the first two elements affect the value of
+        the random number.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Distribution</td><td><pre class="fragment">        Distribution is character(len=*),intent(in),optional 
+        Distribution of the function from which random number
+        is selected.
+        = 'uniform':  uniform between 0 and 1
+        = 'gaussian': not yet implemented
+        = 'exp':      exponential decay y=\exp(-x)
+        = 'exp01':    exponential decay between 0 and 1 obtained
+                      using mod(y,1.0) of y=\exp(-8x).</pre> </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section author"><dt>Author</dt><dd>X. Dong <br  />
+ </dd>
+<dd>
+L. M. Thompson <br  />
  </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
 
@@ -8402,7 +8443,7 @@ Functions/Subroutines</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li>
-    <li class="footer">Generated on Mon Sep 23 2019 21:52:22 for MQCPack by
+    <li class="footer">Generated on Wed Sep 25 2019 01:24:25 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

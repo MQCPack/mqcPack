@@ -1160,7 +1160,8 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
 !
  1001 Format(1x,A,1x,'=',1x,I14)
- 1002 Format(1x,A,1x,'=',1x,F14.6)
+! 1002 Format(1x,A,1x,'=',1x,F14.6)
+ 1002 Format(1x,A,1x,'=',1x,F16.12)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
@@ -2024,11 +2025,8 @@
 !
 !     PROCEDURE MQC_Scalar_Get_Random_Value
 !
-!     TODO: change this subroutine to a function with optional argument to 
-!     select distribution.
-!
 !>    \brief <b> MQC_Scalar_Get_Random_Value is a function that returns a
-!>    random real value from a uniform distribution between zero and one</b>
+!>    random real value from a specified distribution between zero and one</b>
 !
 !>    \par Purpose:
 !     =============
@@ -2036,7 +2034,17 @@
 !>    \verbatim
 !>       
 !>    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-!>    value from a uniform distribution between zero and one.
+!>    value from an optionally specified distribution between zero and one. In
+!>    addition, a seed can be specified for consistent greneration of the same
+!>    number. Default options are uniform distribution with random seed. The 
+!>    following options are available:
+!>    
+!>    1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
+!>    2. Distribution = 'gaussian' uses a normal distribution between 0 and 1. 
+!>    3. Distribution = 'exp' uses an exponentiall distribution returning 
+!>                      positive integers.. 
+!>    4. Distribution = 'exp01' uses an exponential distribution that gives 
+!>                      values in the range 0 and 1. 
 !>
 !>    \endverbatim
 !
@@ -2047,28 +2055,63 @@
 !>        Scalar is Class(MQC_Scalar)
 !>        The MQC_Scalar to be filled 
 !>    \endverbatim
+!>
+!>    \param[in] Seed
+!>    \verbatim
+!>        Seed is integer,dimension(:),optional 
+!>        Integer array containing seed. Note in gfortran
+!>        only the first two elements affect the value of
+!>        the random number.
+!>    \endverbatim
+!>
+!>    \param[in] Distribution
+!>    \verbatim
+!>        Distribution is character(len=*),intent(in),optional 
+!>        Distribution of the function from which random number
+!>        is selected.
+!>        = 'uniform':  uniform between 0 and 1
+!>        = 'gaussian': not yet implemented
+!>        = 'exp':      exponential decay y=\exp(-x)
+!>        = 'exp01':    exponential decay between 0 and 1 obtained
+!>                      using mod(y,1.0) of y=\exp(-8x).
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author X. Dong     
+!>    \author L. M. Thompson    
 !>    \date 2019
 !
-      Subroutine MQC_Scalar_Get_Random_Value(Scalar,Distribution) 
+      Subroutine MQC_Scalar_Get_Random_Value(Scalar,Seed,Distribution) 
 !
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar)::Scalar
       character(len=*),intent(in),optional::distribution
       character(len=64)::my_distribution
+      integer,dimension(:),optional::seed
+      integer,dimension(:),allocatable::my_seed
+      integer::clock,n,i
       real::r
 !
-      if(present(axis)) then
+      if(present(distribution)) then
         call string_change_case(distribution,'l',my_distribution)
       else
-        my_axis = 'uniform'
+        my_distribution = 'uniform'
       endIf
 !
-!      call random_seed()
+      call random_seed(size=n) 
+      if(present(seed)) then
+        allocate(my_seed(n))
+        my_seed(:) = seed(:)
+      else
+        call random_seed(size=n) 
+        allocate(my_seed(n))
+        call system_clock(count=clock)
+        my_seed = clock + 37 * [(i-1,i = 1, n)]
+      endIf
+!
+      call random_seed(put=my_seed)
       call random_number(r)
       select case (my_distribution)
       case('uniform')
@@ -2076,6 +2119,9 @@
 !      case('gaussian')
       case('exp')
         scalar = -log(r)
+      case('exp01')
+        r = -(1/8.0)*log(r)
+        scalar = mod(r,1.0)
       case default
         call mqc_error_A('Unrecognised distribution flag in MQC_Scalar_Get_Random_Value', 6,  &
           'my_distribution',my_distribution)
