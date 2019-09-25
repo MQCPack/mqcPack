@@ -163,7 +163,7 @@ complex(kind=real64) function \mbox{\hyperlink{namespacemqc__algebra_af2f017191f
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a3dde75fe02e3744f5f6da074ac4c0f39}{mqc\+\_\+scalar\+\_\+get\+\_\+abs\+\_\+value}} (Scalar)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+A\+B\+S\+\_\+\+Value is a function that returns the absolute value of M\+Q\+C\+\_\+scalar variable}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a7a974cc8a6293e353f55b61b8e3f80e0}{mqc\+\_\+scalar\+\_\+get\+\_\+random\+\_\+value}} (Scalar, Seed, Distribution)
-\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution between zero and one}} \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a7e549ede414a6f0b7d4533b532602eac}{mqc\+\_\+scalaradd}} (Scalar1, Scalar2)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Add is a function that sums two M\+Q\+C\+\_\+\+Scalar objects}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_ab142473388c5cc3a397b64224eb3befa}{mqc\+\_\+scalarsubtract}} (Scalar1, Scalar2)
@@ -2510,21 +2510,22 @@ L. M. Thompson
 
 
 
-{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution between zero and one}} 
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Get\+\_\+\+Random\+\_\+\+Value is a function that returns a random real value from a specified distribution}} 
 
 \begin{DoxyParagraph}{Purpose\+:}
 \begin{DoxyVerb}    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-    value from an optionally specified distribution between zero and one. In
-    addition, a seed can be specified for consistent greneration of the same
-    number. Default options are uniform distribution with random seed. The 
-    following options are available:
+    value from an optionally specified distribution. Note that the range of
+    values varies by distribution. In addition, a seed can be specified for 
+    consistent greneration of the same number. Default options are uniform 
+    distribution with random seed. The following options are available:
     
     1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
-    2. Distribution = 'gaussian' uses a normal distribution between 0 and 1. 
-    3. Distribution = 'exp' uses an exponentiall distribution returning 
-                      positive integers.. 
-    4. Distribution = 'exp01' uses an exponential distribution that gives 
-                      values in the range 0 and 1. \end{DoxyVerb}
+    2. Distribution = 'gaussian' uses a normal distribution with zero mean and
+                      unit variance obtained using the Box-Muller transformation
+    3. Distribution = 'exp' uses an exponential distribution (lambda=1.0) 
+                      returning positive integers. 
+    4. Distribution = 'exp01' uses an exponential distribution (lambda=8.0)that 
+                      gives values in the range 0 and 1. \end{DoxyVerb}
  
 \end{DoxyParagraph}
 
@@ -2543,7 +2544,8 @@ L. M. Thompson
         Distribution of the function from which random number
         is selected.
         = 'uniform':  uniform between 0 and 1
-        = 'gaussian': not yet implemented
+        = 'gaussian': normal deviation with zero mean and unit 
+                      variance
         = 'exp':      exponential decay y=\exp(-x)
         = 'exp01':    exponential decay between 0 and 1 obtained
                       using mod(y,1.0) of y=\exp(-8x).\end{DoxyVerb}
@@ -3178,7 +3180,7 @@ L. M. Thompson
         The MQC_Scalar that will be tested.\end{DoxyVerb}
 \\
 \hline
-\mbox{\texttt{ in}}  & {\em Int\+In} & \begin{DoxyVerb}        RealIn is Real(kind=int64)
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=int64)
         The intrinsic real that will be tested.\end{DoxyVerb}
  \\
 \hline
@@ -3446,7 +3448,7 @@ L. M. Thompson
         The MQC_Scalar that will be tested.\end{DoxyVerb}
 \\
 \hline
-\mbox{\texttt{ in}}  & {\em Int\+In} & \begin{DoxyVerb}        RealIn is Real(kind=int64)
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=int64)
         The intrinsic real that will be tested.\end{DoxyVerb}
  \\
 \hline

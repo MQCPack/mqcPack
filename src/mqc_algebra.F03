@@ -2026,7 +2026,7 @@
 !     PROCEDURE MQC_Scalar_Get_Random_Value
 !
 !>    \brief <b> MQC_Scalar_Get_Random_Value is a function that returns a
-!>    random real value from a specified distribution between zero and one</b>
+!>    random real value from a specified distribution</b>
 !
 !>    \par Purpose:
 !     =============
@@ -2034,17 +2034,18 @@
 !>    \verbatim
 !>       
 !>    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-!>    value from an optionally specified distribution between zero and one. In
-!>    addition, a seed can be specified for consistent greneration of the same
-!>    number. Default options are uniform distribution with random seed. The 
-!>    following options are available:
+!>    value from an optionally specified distribution. Note that the range of
+!>    values varies by distribution. In addition, a seed can be specified for 
+!>    consistent greneration of the same number. Default options are uniform 
+!>    distribution with random seed. The following options are available:
 !>    
 !>    1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
-!>    2. Distribution = 'gaussian' uses a normal distribution between 0 and 1. 
-!>    3. Distribution = 'exp' uses an exponentiall distribution returning 
-!>                      positive integers.. 
-!>    4. Distribution = 'exp01' uses an exponential distribution that gives 
-!>                      values in the range 0 and 1. 
+!>    2. Distribution = 'gaussian' uses a normal distribution with zero mean and
+!>                      unit variance obtained using the Box-Muller transformation
+!>    3. Distribution = 'exp' uses an exponential distribution (lambda=1.0) 
+!>                      returning positive integers. 
+!>    4. Distribution = 'exp01' uses an exponential distribution (lambda=8.0)that 
+!>                      gives values in the range 0 and 1. 
 !>
 !>    \endverbatim
 !
@@ -2070,7 +2071,8 @@
 !>        Distribution of the function from which random number
 !>        is selected.
 !>        = 'uniform':  uniform between 0 and 1
-!>        = 'gaussian': not yet implemented
+!>        = 'gaussian': normal deviation with zero mean and unit 
+!>                      variance
 !>        = 'exp':      exponential decay y=\exp(-x)
 !>        = 'exp01':    exponential decay between 0 and 1 obtained
 !>                      using mod(y,1.0) of y=\exp(-8x).
@@ -2092,7 +2094,7 @@
       integer,dimension(:),optional::seed
       integer,dimension(:),allocatable::my_seed
       integer::clock,n,i
-      real::r
+      real::r,r2
 !
       if(present(distribution)) then
         call string_change_case(distribution,'l',my_distribution)
@@ -2110,16 +2112,26 @@
         call system_clock(count=clock)
         my_seed = clock + 37 * [(i-1,i = 1, n)]
       endIf
-!
       call random_seed(put=my_seed)
-      call random_number(r)
+!
       select case (my_distribution)
       case('uniform')
+        call random_number(r)
         scalar = r
-!      case('gaussian')
+      case('gaussian')
+        do while(.true.)
+          call random_number(r)
+          call random_number(r2)
+          r = 2*r-1
+          r2 = 2*r2-1
+          if(r**2+r2**2.ne.0.and.r**2+r2**2.lt.1) exit
+        endDo
+        scalar = r*sqrt(-2*log(r**2+r2**2)/(r**2+r2**2))
       case('exp')
+        call random_number(r)
         scalar = -log(r)
       case('exp01')
+        call random_number(r)
         r = -(1/8.0)*log(r)
         scalar = mod(r,1.0)
       case default
@@ -3468,7 +3480,7 @@
 !>        The MQC_Scalar that will be tested.
 !>    \endverbatim
 !>
-!>    \param[in] IntIn
+!>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=int64)
 !>        The intrinsic real that will be tested.
@@ -3673,7 +3685,7 @@
 !>        The MQC_Scalar that will be tested.
 !>    \endverbatim
 !>
-!>    \param[in] IntIn
+!>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=int64)
 !>        The intrinsic real that will be tested.
