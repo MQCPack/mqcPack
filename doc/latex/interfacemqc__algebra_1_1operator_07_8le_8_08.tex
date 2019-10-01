@@ -1,0 +1,211 @@
+\hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08}{}\doxysection{mqc\+\_\+algebra\+::operator(.le.) Interface Reference}
+\label{interfacemqc__algebra_1_1operator_07_8le_8_08}\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+
+
+{\bfseries{ Determines if a variable is less than or equal to another}}  
+
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8le_8_08_a717b511a4d4086dd7e5da7381d5d0549}{mqc\+\_\+scalarle}} (Scalar1, Scalar2)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+LE is a function that returns T\+R\+UE if the left M\+Q\+C\+\_\+\+Scalar is less than or equal the right M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
+logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8le_8_08_ab3640f7d299044fec7bb4e51b22cac10}{mqc\+\_\+scalarlereal}} (Scalar, Real\+In)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+E\+Real is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than or equal to an intrinsic real}} \end{DoxyCompactList}\item 
+logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8le_8_08_a2f1c8c3d3d5f7a7899c6893275b08fae}{mqc\+\_\+reallescalar}} (Real\+In, Scalar)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Real\+L\+E\+Scalar is a function that returns T\+R\+UE if an intrinsic real is less than or equal to a M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
+logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8le_8_08_a4dca0afe093d490e5d192d7d83beaed7}{mqc\+\_\+scalarleinteger}} (Scalar, Int\+In)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+E\+Integer is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than or equal to an intrinsic integer}} \end{DoxyCompactList}\item 
+logical function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8le_8_08_ad5caedf956c3719cc5796bb71de52bfb}{mqc\+\_\+integerlescalar}} (Int\+In, Scalar)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Integer\+L\+E\+Scalar is a function that returns T\+R\+UE if an intrinsic integer is less than or equal to a M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+{\bfseries{ Determines if a variable is less than or equal to another}} 
+
+\doxysubsection{Member Function/\+Subroutine Documentation}
+\mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08_ad5caedf956c3719cc5796bb71de52bfb}\label{interfacemqc__algebra_1_1operator_07_8le_8_08_ad5caedf956c3719cc5796bb71de52bfb}} 
+\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}!mqc\_integerlescalar@{mqc\_integerlescalar}}
+\index{mqc\_integerlescalar@{mqc\_integerlescalar}!mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+\doxysubsubsection{\texorpdfstring{mqc\_integerlescalar()}{mqc\_integerlescalar()}}
+{\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.le.)\+::mqc\+\_\+integerlescalar (\begin{DoxyParamCaption}\item[{integer(kind=int64), intent(in)}]{Int\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar }\end{DoxyParamCaption})}
+
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Integer\+L\+E\+Scalar is a function that returns T\+R\+UE if an intrinsic integer is less than or equal to a M\+Q\+C\+\_\+\+Scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_IntegerLEScalar is a function that returns TRUE if an intrinsic integer is less 
+    than or equal to a MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the intrinsic integer 
+    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+    integer is greater than the real part of the MQC_Scalar.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Int\+In} & \begin{DoxyVerb}        IntIn is Integer(kind=int64)
+        The intrinsic integer that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
+\mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08_a2f1c8c3d3d5f7a7899c6893275b08fae}\label{interfacemqc__algebra_1_1operator_07_8le_8_08_a2f1c8c3d3d5f7a7899c6893275b08fae}} 
+\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}!mqc\_reallescalar@{mqc\_reallescalar}}
+\index{mqc\_reallescalar@{mqc\_reallescalar}!mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+\doxysubsubsection{\texorpdfstring{mqc\_reallescalar()}{mqc\_reallescalar()}}
+{\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.le.)\+::mqc\+\_\+reallescalar (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{interfacemqc__algebra_1_1real}{real}}(kind=real64), intent(in)}]{Real\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar }\end{DoxyParamCaption})}
+
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Real\+L\+E\+Scalar is a function that returns T\+R\+UE if an intrinsic real is less than or equal to a M\+Q\+C\+\_\+\+Scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_RealLEScalar is a function that returns TRUE if an intrinsic real is less than or  
+    equal to a MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+    is less than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+    real is greater than the real part of the MQC_Scalar. \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=real64)
+        The intrinsic real that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
+\mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08_a717b511a4d4086dd7e5da7381d5d0549}\label{interfacemqc__algebra_1_1operator_07_8le_8_08_a717b511a4d4086dd7e5da7381d5d0549}} 
+\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}!mqc\_scalarle@{mqc\_scalarle}}
+\index{mqc\_scalarle@{mqc\_scalarle}!mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+\doxysubsubsection{\texorpdfstring{mqc\_scalarle()}{mqc\_scalarle()}}
+{\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.le.)\+::mqc\+\_\+scalarle (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar1,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar2 }\end{DoxyParamCaption})}
+
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+LE is a function that returns T\+R\+UE if the left M\+Q\+C\+\_\+\+Scalar is less than or equal the right M\+Q\+C\+\_\+\+Scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarLE is a function that returns TRUE if the left MQC_Scalar is less than or
+    equal to the right MQC_Scalar. 
+
+    When dealing with complex numbers, the function returns TRUE if the left real part 
+    is less than or equal to the right real part and FALSE if the left real part is greater 
+    than the right real part.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar1} & \begin{DoxyVerb}        Scalar1 is Type(MQC_Scalar)
+        The first MQC_Scalar that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar2} & \begin{DoxyVerb}        Scalar2 is Type(MQC_Scalar)
+        The second MQC_Scalar that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
+\mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08_a4dca0afe093d490e5d192d7d83beaed7}\label{interfacemqc__algebra_1_1operator_07_8le_8_08_a4dca0afe093d490e5d192d7d83beaed7}} 
+\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}!mqc\_scalarleinteger@{mqc\_scalarleinteger}}
+\index{mqc\_scalarleinteger@{mqc\_scalarleinteger}!mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+\doxysubsubsection{\texorpdfstring{mqc\_scalarleinteger()}{mqc\_scalarleinteger()}}
+{\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.le.)\+::mqc\+\_\+scalarleinteger (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar,  }\item[{integer(kind=int64), intent(in)}]{Int\+In }\end{DoxyParamCaption})}
+
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+E\+Integer is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than or equal to an intrinsic integer}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarLEInteger is a function that returns TRUE if a MQC_Scalar is less than or 
+    equal to an intrinsic integer.
+
+    When dealing with complex numbers, the function returns TRUE if the real part of the 
+    MQC_Scalar is less than or equal to the intrinsic integer and FALSE if the real part 
+    of the MQC_Scalar is greater than the intrinsic integer. \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Int\+In} & \begin{DoxyVerb}        IntIn is Integer(kind=int64)
+        The intrinsic integer that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
+\mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8le_8_08_ab3640f7d299044fec7bb4e51b22cac10}\label{interfacemqc__algebra_1_1operator_07_8le_8_08_ab3640f7d299044fec7bb4e51b22cac10}} 
+\index{mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}!mqc\_scalarlereal@{mqc\_scalarlereal}}
+\index{mqc\_scalarlereal@{mqc\_scalarlereal}!mqc\_algebra::operator(.le.)@{mqc\_algebra::operator(.le.)}}
+\doxysubsubsection{\texorpdfstring{mqc\_scalarlereal()}{mqc\_scalarlereal()}}
+{\footnotesize\ttfamily logical function mqc\+\_\+algebra\+::operator(.le.)\+::mqc\+\_\+scalarlereal (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar,  }\item[{\mbox{\hyperlink{interfacemqc__algebra_1_1real}{real}}(kind=real64), intent(in)}]{Real\+In }\end{DoxyParamCaption})}
+
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+L\+E\+Real is a function that returns T\+R\+UE if a M\+Q\+C\+\_\+\+Scalar is less than or equal to an intrinsic real}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarLEReal is a function that returns TRUE if a MQC_Scalar is less than or equal to
+    an intrinsic real.
+
+    When dealing with complex numbers, the function returns TRUE if the real part of the 
+    MQC_Scalar is less than or equal to the intrinsic real and FALSE if the real part of the 
+    MQC_Scalar is greater than the intrinsic real.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar that will be tested.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Real\+In} & \begin{DoxyVerb}        RealIn is Real(kind=int64)
+        The intrinsic real that will be tested.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
+
+
+The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{mqc__algebra_8_f03}{mqc\+\_\+algebra.\+F03}}\end{DoxyCompactItemize}
