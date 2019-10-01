@@ -1,3 +1,34 @@
+!>    \brief <b> MQC Algebra contains mathematical objects that are designed to
+!>    simplify and automate variable use in Fortran </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC Algebra contains mathematical objects that are designed to simplify
+!>    and automate variable use in Fortran. Arrays can be packed for efficient 
+!>    memory use and used for operations completely transparently to the user. 
+!>    Furthermore, there is no need to type arrays, as this can be manipulated 
+!>    on the fly. Arrays carry their own procedures, and use underlying lapack 
+!>    routines for efficiency. The MQC derivd types defined in this package 
+!>    are:
+!>
+!>    1. MQC_Scalar:   Rank 0 array variable
+!>    2. MQC_Vector:   Rank 1 array variable
+!>    3. MQC_Matrix:   Rank 2 array variable
+!>    4. MQC_R4Tensor: Rank 3 array variable
+!>
+!>    This module is level 1 in the MQC hierarchy and so depends on level 0
+!>    modules. 
+!>
+!>    Note that MQC_Algebra2 provides similar functionality with MQC_Array 
+!>    objects that can dynamically adjust rank. However, the vast majority of 
+!>    work can be performed using MQC_Algebra derived types which have been 
+!>    more developed than MQC_Algebra2 derived types.
+!>
+!>    \endverbatim
+!
       Module MQC_Algebra
 !
 !     **********************************************************************
@@ -40,21 +71,31 @@
 !----------------------------------------------------------------
 !
 !     Scalars...
+!
+!>    \brief <b> Rank 0 array variable</b>
       Type MQC_Scalar
         Real(kind=real64),Private,Allocatable::ScaR
         Integer(kind=int64),Private,Allocatable::ScaI
         Complex(Kind=real64),Private,Allocatable::ScaC
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
       Contains
+!>      \brief <b> Print the MQC Scalar</b>
         Procedure, Public::print => MQC_Print_Scalar_Algebra1
+!>      \brief <b> Return the value of MQC Scalar as an intrinsic real</b>
         Procedure, Public::rval => MQC_Scalar_Get_Intrinsic_Real
+!>      \brief <b> Return the value of MQC Scalar as an intrinsic integer</b>
         Procedure, Public::ival => MQC_Scalar_Get_Intrinsic_Integer
+!>      \brief <b> Return the value of MQC Scalar as an intrinsic complex</b>
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
+!>      \brief <b> Take the absolute value of the MQC Scalar</b>
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+!>      \brief <b> Return a random value to the MQC Scalar</b>
         Procedure, Public::random => MQC_Scalar_Get_Random_Value
       End Type MQC_Scalar
 !
 !     Vectors...
+!
+!>    \brief <b> Rank 1 array variable</b>
       Type MQC_Vector
         Integer(kind=int64)::Length=0
         Logical,Private::Column=.True.
@@ -63,30 +104,54 @@
         Integer(kind=int64),Dimension(:),Allocatable::VecI
         Complex(Kind=real64),Dimension(:),Allocatable::VecC
       Contains
+!>      \brief <b> Print the MQC Vector</b>
         Procedure, Public::print => MQC_Print_Vector_Algebra1
-        Procedure, Public::initialize => MQC_Vector_Initialize
+!>      \brief <b> Returns the length of the MQC Vector</b>
         Procedure, Public::size => MQC_Length_Vector
+!>      \brief <b> Initilizes the MQC Vector</b>
         Procedure, Public::init => MQC_Vector_Initialize
+!>      \brief <b> Returns the norm of the MQC Vector</b>
         Procedure, Public::norm => MQC_Vector_Norm
+!>      \brief <b> Returns the transpose of the MQC Vector</b>
         Procedure, Public::transpose => MQC_Vector_Transpose
+!>      \brief <b> Returns the Hermitian conjugate of the MQC Vector</b>
         Procedure, Public::dagger => MQC_Vector_Conjugate_Transpose
+!>      \brief <b> Returns the value at the specified element of the MQC Vector</b>
         Procedure, Public::at => MQC_Vector_Scalar_At
+!>      \brief <b> Returns the subvector between specified element of the MQC Vector</b>
         Procedure, Public::vat => MQC_Vector_Vector_At
+!>      \brief <b> Updates the specified element of the MQC_Vector with the specified value</b>
         Procedure, Public::put => MQC_Vector_Scalar_Put
+!>      \brief <b> Updates the specified subvector of the MQC_Vector with the specified vector</b>
         Procedure, Public::vput => MQC_Vector_Vector_Put
+!>      \brief <b> Appends the specified value to the end of the MQC_Vector</b>
         Procedure, Public::push => MQC_Vector_Push
+!>      \brief <b> Prepends the specified value to the beginning of the MQC_Vector</b>
         Procedure, Public::unshift => MQC_Vector_Unshift
+!>      \brief <b> Removes the last element of the MQC_Vector and returns the value</b>
         Procedure, Public::pop => MQC_Vector_Pop
+!>      \brief <b> Removes the first element of the MQC_Vector and returns the value</b>
         Procedure, Public::shift => MQC_Vector_Shift
+!>      \brief <b> Returns the maximum value in the MQC_Vector</b>
         Procedure, Public::maxval => MQC_Vector_MaxVal
+!>      \brief <b> Returns the minimum value in the MQC_Vector</b>
         Procedure, Public::minval => MQC_Vector_MinLoc
+!>      \brief <b> Returns the location of the maximum value in the MQC_Vector</b>
         Procedure, Public::maxloc => MQC_Vector_MaxVal
+!>      \brief <b> Returns the location of the minimum value in the MQC_Vector</b>
         Procedure, Public::minloc => MQC_Vector_MinLoc
+!>      \brief <b> Returns the indices of the MQC_Vector sorted from low to high</b>
         Procedure, Public::argsort => MQC_Vector_argsort
+!>      \brief <b> Returns the MQC_Vector sorted from low to high unless vector specifying
+!>      index order is provided</b>
         Procedure, Public::sort => MQC_Vector_sort
+!>      \brief <b> Returns the square root of each element in the MQC_Vector</b>
         Procedure, Public::sqrt => MQC_Vector_Sqrt
+!>      \brief <b> Returns the absolute value of each element in the MQC_Vector</b>
         Procedure, Public::abs => MQC_Vector_Abs
+!>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
+!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
       End Type MQC_Vector
 !
@@ -95,6 +160,7 @@
 !     Matrices with StorSymm flag are symmetric for both real and complex parts. 
 !     In future it may be worth having StorHerm, StorASymm and StorAHerm
 !     
+!>    \brief <b> Rank 2 array variable</b>
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
@@ -103,31 +169,58 @@
         Integer(kind=int64),Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
       Contains
+!>      \brief <b> Print the MQC Matrix</b>
         Procedure, Public::print => MQC_Print_Matrix_Algebra1
-        Procedure, Public::initialize => MQC_Matrix_Initialize
+!>      \brief <b> Initialize the MQC Matrix with a specified value</b>
         Procedure, Public::init => MQC_Matrix_Initialize
+!>      \brief <b> Initialize the MQC Matrix as the identity matrix</b>
         Procedure, Public::identity => MQC_Matrix_Identity
+!>      \brief <b> Set all elements in the MQC Matrix to a specified value</b>
         Procedure, Public::set => MQC_Matrix_Set
+!>      \brief <b> Returns the norm of the MQC Matrix</b>
         Procedure, Public::norm => MQC_Matrix_Norm
+!>      \brief <b> Returns the transpose of the MQC Matrix</b>
         Procedure, Public::transpose => MQC_Matrix_Transpose
+!>      \brief <b> Returns the Hemitian transpose of the MQC Matrix</b>
         Procedure, Public::dagger => MQC_Matrix_Conjugate_Transpose
+!>      \brief <b> Returns the eigenvalues and eigenvalues of a symmetric or 
+!>      hermitian MQC Matrix</b>
         Procedure, Public::diag => MQC_Matrix_Diagonalize
+!>      \brief <b> Computes the singular value decomposition of the MQC Matrix</b>
         Procedure, Public::svd => MQC_Matrix_SVD
+!>      \brief <b> Solves the generalized eigenproblem of the MQC Matrix</b>
         Procedure, Public::eigensys => mqc_matrix_generalized_eigensystem
+!>      \brief <b> Returns the inverse of the MQC Matrix</b>
         Procedure, Public::inv => MQC_Matrix_Inverse
+!>      \brief <b> Returns the determinant of the MQC Matrix</b>
         Procedure, Public::det => mqc_matrix_determinant
+!>      \brief <b> Returns the trace of the MQC Matrix</b>
         Procedure, Public::trace => mqc_matrix_trace
+!>      \brief <b> Returns the root mean square deviation and maximum
+!>      deviation of elements of the MQC Matrix</b>
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
+!>      \brief <b> Returns the square root of the MQC Matrix elements</b>
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
+!>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
         Procedure, Public::at => MQC_Matrix_Scalar_At
+!>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
         Procedure, Public::vat => MQC_Matrix_Vector_At
+!>      \brief <b> Returns the matrix of the specified submatrix of the MQC Matrix</b>
         Procedure, Public::mat => MQC_Matrix_Matrix_At
+!>      \brief <b> Updates the specified element of the MQC Matrix to the specified
+!>      value</b>
         Procedure, Public::put => MQC_Matrix_Scalar_Put
+!>      \brief <b> Updates the specified subvector of the MQC Matrix to the specified
+!>      vector</b>
         Procedure, Public::vput => MQC_Matrix_Vector_Put
+!>      \brief <b> Updates the specified submatrix of the MQC Matrix to the specified
+!>      matrix</b>
         Procedure, Public::mput => MQC_Matrix_Matrix_Put
-        Procedure, Public::s_type => MQC_Matrix_StorageType
+!>      \brief <b> Updates the specified element of the MQC Matrix to the specified
+!>      value</b>
       End Type MQC_Matrix
-
+!     
+!>    \brief <b> Rank 4 array variable</b>
       Type MQC_R4Tensor
         Integer(kind=int64),Private::I,J,K,L
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
@@ -136,10 +229,14 @@
         Integer(kind=int64),Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=real64),Allocatable,Private::CTen(:,:,:,:)
       Contains
+!>      \brief <b> Print the MQC R4Tensor</b>
         Procedure, Public::print => MQC_Print_r4tensor_Algebra1
+!>      \brief <b> Return the specified element in the MQC R4Tensor</b>
         Procedure, Public::at => MQC_R4Tensor_At
+!>      \brief <b> Update the specified element in the MQC R4Tensor with the
+!>      specified value</b>
         Procedure, Public::put => MQC_R4Tensor_Put
-        Procedure, Public::initialize => MQC_R4Tensor_Initialize
+!>      \brief <b> Initialize the MQC R4Tensor</b>
         Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
 !
@@ -151,6 +248,7 @@
 !----------------------------------------------------------------
 !
 !
+!>    \brief <b> Prints an object</b>
       Interface MQC_Print
         Module Procedure MQC_Print_Scalar_Algebra1
         Module Procedure MQC_Print_Vector_Algebra1
@@ -158,130 +256,155 @@
         Module Procedure MQC_Print_r4tensor_Algebra1
       End Interface
 !
+!>    \brief <b> Contracts two arrays</b>
       Interface Contraction
         Module Procedure MQC_Matrix_Matrix_Contraction
       End Interface
-
+!
+!>    \brief <b> Returns the complex conjugate</b>
       interface conjg
         module procedure MQC_Scalar_Complex_Conjugate
       end interface
-
+!
+!>    \brief <b> Determines in an array is real type</b>
       interface mqc_have_real
         Module procedure mqc_vector_havereal
         module procedure mqc_matrix_havereal
       end interface
-
+!
+!>    \brief <b> Determines in an array is integer type</b>
       interface mqc_have_int
         module procedure mqc_vector_haveinteger
         module procedure mqc_matrix_haveinteger
       end interface
-
+!
+!>    \brief <b> Determines in an array is complex type</b>
       interface mqc_have_complex
         module procedure mqc_vector_havecomplex
         module procedure mqc_matrix_havecomplex
       end interface
-
+!
+!>    \brief <b> Sets an array to real type</b>
       interface mqc_cast_real
         module procedure mqc_vector_cast_real
         module procedure mqc_matrix_cast_real
       end interface
-
+!
+!>    \brief <b> Sets an array to complex type</b>
       interface mqc_cast_complex
         module procedure mqc_vector_cast_complex
         module procedure mqc_matrix_cast_complex
       end interface
 !
+!>    \brief <b> Multiplies two arrays</b>
       Interface Matmul
         Module Procedure MQC_MatrixMatrixDotProduct
         Module Procedure MQC_MatrixVectorDotProduct
         Module Procedure MQC_VectorMatrixDotProduct
       End Interface
 !
+!>    \brief <b> Returns the transpose</b>
       Interface Transpose
         Module Procedure MQC_Vector_Transpose
         Module Procedure MQC_Matrix_Transpose
       End Interface
 !
+!>    \brief <b> Returns the Hermitian conjugate</b>
       Interface Dagger
         Module Procedure MQC_Vector_Conjugate_Transpose
         Module Procedure MQC_Matrix_Conjugate_Transpose
       End Interface
 !      
+!>    \brief <b> Defines a complex number</b>
       Interface Cmplx
         Module Procedure MQC_Scalar_Cmplx
         Module Procedure MQC_Vector_Cmplx
       End Interface
 !
+!>    \brief <b> Returns the square root</b>
       Interface Sqrt
         Module Procedure MQC_Scalar_Sqrt
       End Interface
 !
+!>    \brief <b> Takes the absolute value</b>
       Interface abs
         Module Procedure MQC_Scalar_Get_ABS_Value
         Module Procedure MQC_Vector_Abs
       End Interface 
 !
+!>    \brief <b> Returns the real part</b>
       Interface real
         Module Procedure MQC_Scalar_Complex_RealPart
         Module Procedure MQC_Vector_Complex_RealPart
       End Interface
 !
+!>    \brief <b> Returns the imaginary part</b>
       Interface aimag
         Module Procedure MQC_Scalar_Complex_ImagPart
         Module Procedure MQC_Vector_Complex_ImagPart
       End Interface
 !
+!>    \brief <b> Returns the sine</b>
       Interface Sin 
         Module Procedure MQC_Scalar_Sin 
       End Interface
 !
+!>    \brief <b> Returns the cosine</b>
       Interface Cos 
         Module Procedure MQC_Scalar_Cos 
       End Interface
 !
+!>    \brief <b> Returns the tangent</b>
       Interface Tan 
         Module Procedure MQC_Scalar_Tan 
       End Interface
 !
+!>    \brief <b> Returns the arcsine</b>
       Interface ASin
         Module Procedure MQC_Scalar_ASin
       End Interface
 !
+!>    \brief <b> Returns the arccosine</b>
       Interface ACos
         Module Procedure MQC_Scalar_ACos
       End Interface
 !
-!     for some reason gfortran will not overload atan 
-!     overloading as atan3 for the moment until I figure it out
+!>    \brief <b> Returns the arctangent</b>
       Interface ATan
         Module Procedure MQC_Scalar_ATan
       End Interface
 !
+!>    \brief <b> Returns the arctangent accounting for circle quadrant</b>
       Interface ATan2
         Module Procedure MQC_Scalar_ATan2
       End Interface
 !
+!>    \brief <b> Sets an intrinsic array as an MQC Algebra object</b>
       Interface MQC_Set_Array2Vector
         Module Procedure MQC_Set_Array2Vector_Integer
         Module Procedure MQC_Set_Array2Vector_Real
         Module Procedure MQC_Set_Array2Vector_Complex
       End Interface
 !
+!>    \brief <b> Sets a symmetric packed intrinsic array as an MQC Matrix object</b>
       Interface MQC_Matrix_SymmMatrix_Put
         Module Procedure MQC_Matrix_SymmMatrix_Put_Integer,MQC_Matrix_SymmMatrix_Put_Real, MQC_Matrix_SymmMatrix_Put_Complex
       End Interface
 !
+!>    \brief <b> Sets a diagonal packed intinsic array as an MQC Matrix object</b>
       Interface MQC_Matrix_DiagMatrix_Put
         Module Procedure MQC_Matrix_DiagMatrix_Put_Integer,MQC_Matrix_DiagMatrix_Put_Real,MQC_Matrix_DiagMatrix_Put_Complex
         Module Procedure MQC_Matrix_DiagMatrix_Put_Vector
       End Interface
 !
+!>    \brief <b> Sets a symmetric packed intrinsic array as a square packed intrinsic array</b>
       Interface Matrix_Symm2Sq
         Module Procedure Matrix_Symm2Sq_Integer
         Module Procedure Matrix_Symm2Sq_Real
         Module Procedure Matrix_Symm2Sq_Complex
       End Interface
 !
+!>    \brief <b> Returns the dot product</b>
       Interface Dot_Product
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
@@ -296,6 +419,8 @@
 !     Define Operators.
 !
 !     Scalar operators...
+!
+!>    \brief <b> Assigns a variable to the value of another</b>
       Interface Assignment (=)
         Module Procedure MQC_Input_Integer_Scalar
         Module Procedure MQC_Input_Real_Scalar
@@ -305,6 +430,8 @@
         Module Procedure MQC_Output_Real_Scalar
         Module Procedure MQC_Output_Complex_Scalar
       End Interface
+!
+!>    \brief <b> Sums two variables</b>
       Interface Operator (+)
         Module Procedure MQC_ScalarAdd
         Module Procedure MQC_IntegerScalarAdd
@@ -314,6 +441,8 @@
         Module Procedure MQC_ComplexScalarAdd
         Module Procedure MQC_ScalarComplexAdd
       End Interface
+!
+!>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
         Module Procedure MQC_ScalarSubtract
         Module Procedure MQC_IntegerScalarSubtract
@@ -323,6 +452,8 @@
         Module Procedure MQC_ComplexScalarSubtract
         Module Procedure MQC_ScalarComplexSubtract
       End Interface
+!
+!>    \brief <b> Multiplies two variables</b>
       Interface Operator (*)
         Module Procedure MQC_ScalarMultiply
         Module Procedure MQC_IntegerScalarMultiply
@@ -336,6 +467,8 @@
         Module Procedure MQC_ScalarMatrixProduct
         Module Procedure MQC_MatrixScalarProduct
       End Interface
+!
+!>    \brief <b> Divides two variables</b>
       Interface Operator (/)
         Module Procedure MQC_ScalarDivide
         Module Procedure MQC_IntegerScalarDivide
@@ -346,23 +479,33 @@
         Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
       End Interface
+!
+!>    \brief <b> Exponentials a variable to the power of another</b>
       Interface Operator (**)
         Module Procedure MQC_ScalarExponent
         Module Procedure MQC_ScalarIntegerExponent
         Module Procedure MQC_ScalarRealExponent
         Module Procedure MQC_ScalarComplexExponent
       End Interface
+!
+!>    \brief <b> Determines if two variables are not equal</b>
       Interface Operator (.ne.)
         Module Procedure MQC_ScalarNE
       End Interface
+!
+!>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
       End Interface
+!
+!>    \brief <b> Determines if a variable is less than another</b>
       Interface Operator (.lt.)
         Module Procedure MQC_ScalarLT
         Module Procedure MQC_ScalarLTReal
         Module Procedure MQC_RealLTScalar
       End Interface
+!
+!>    \brief <b> Determines if a variable is greater than another</b>
       Interface Operator (.gt.)
         Module Procedure MQC_ScalarGT
         Module Procedure MQC_ScalarGTInteger
@@ -370,6 +513,8 @@
         Module Procedure MQC_ScalarGTReal
         Module Procedure MQC_RealGTScalar
       End Interface
+!
+!>    \brief <b> Determines if a variable is less than or equal to another</b>
       Interface Operator (.le.)
         Module Procedure MQC_ScalarLE
         Module Procedure MQC_ScalarLEReal
@@ -377,19 +522,27 @@
         Module Procedure MQC_ScalarLEInteger
         Module Procedure MQC_IntegerLEScalar
       End Interface
+!
+!>    \brief <b> Determines if a variable is greater than or equal to another</b>
       Interface Operator (.ge.)
         Module Procedure MQC_ScalarGE
       End Interface
 !
 !     Vector operators...
+!
+!     Documentation in scalar operator section
       Interface Assignment (=)
         Module Procedure MQC_Set_Vector2Vector
         Module Procedure MQC_Set_Vector2IntegerArray, MQC_Set_Vector2RealArray, MQC_Set_Vector2ComplexArray
         Module Procedure MQC_Set_Array2Vector_Integer, MQC_Set_Array2Vector_Real, MQC_Set_Array2Vector_Complex 
       End Interface
+!
+!>    \brief <b> Computes the inner product of two arrays</b>
       Interface Operator (.dot.)
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (*)
         Module Procedure MQC_RealVectorProduct
         Module Procedure MQC_VectorRealProduct
@@ -398,34 +551,50 @@
         Module Procedure MQC_ComplexVectorProduct
         Module Procedure MQC_VectorComplexProduct
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (/)
         Module Procedure MQC_VectorRealDivide
         Module Procedure MQC_VectorIntegerDivide
         Module Procedure MQC_VectorComplexDivide
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (+)
         Module Procedure MQC_VectorVectorSum
         Module Procedure MQC_ScalarVectorSum
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (-)
         Module Procedure MQC_VectorVectorDifference
         Module Procedure MQC_ScalarVectorDifference
       End Interface
+!
+!>    \brief <b> Computes the element-wise product of two arrays</b>
       Interface Operator (.ewp.)
         Module Procedure MQC_ElementVectorProduct
         Module Procedure MQC_ElementMatrixProduct
       End Interface
+!
+!>    \brief <b> Computes the element-wise quotient of two arrays</b>
       Interface Operator (.ewd.)
         Module Procedure MQC_ElementMatrixDivide
       End Interface
+!
+!>    \brief <b> Computes the cross product of two vectors</b>
       Interface Operator (.x.)
         Module Procedure MQC_CrossProduct
       End Interface
+!
+!>    \brief <b> Computes the outer product of two vectors</b>
       Interface Operator (.outer.)
         Module Procedure MQC_Outer
       End Interface
 !
 !     Matrix operators...
+!
+!     Documentation in scalar operator section
       Interface Assignment (=)
         Module Procedure MQC_Set_Matrix2Matrix
         Module Procedure MQC_Set_Matrix2IntegerArray
@@ -435,22 +604,32 @@
         Module Procedure MQC_Set_RealArray2Matrix
         Module Procedure MQC_Set_ComplexArray2Matrix
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (+)
         Module Procedure MQC_MatrixMatrixSum
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (-)
         Module Procedure MQC_MatrixMatrixSubtract
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (*)
         Module Procedure MQC_MatrixMatrixProduct
       End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (.dot.)
         Module Procedure MQC_VectorMatrixDotProduct
         Module Procedure MQC_MatrixVectorDotProduct
         Module Procedure MQC_MatrixMatrixDotProduct
       End Interface
-
+!
 !     Rank 4 tensor operators...
+!
+!     Documentation in scalar operator section
       Interface Assignment (=)
         Module Procedure MQC_Set_Array2tensor
       End Interface
@@ -1160,7 +1339,8 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
 !
  1001 Format(1x,A,1x,'=',1x,I14)
- 1002 Format(1x,A,1x,'=',1x,F14.6)
+! 1002 Format(1x,A,1x,'=',1x,F14.6)
+ 1002 Format(1x,A,1x,'=',1x,F16.12)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
@@ -2024,11 +2204,8 @@
 !
 !     PROCEDURE MQC_Scalar_Get_Random_Value
 !
-!     TODO: change this subroutine to a function with optional argument to 
-!     select distribution.
-!
 !>    \brief <b> MQC_Scalar_Get_Random_Value is a function that returns a
-!>    random real value from a uniform distribution between zero and one</b>
+!>    random real value from a specified distribution</b>
 !
 !>    \par Purpose:
 !     =============
@@ -2036,7 +2213,18 @@
 !>    \verbatim
 !>       
 !>    MQC_Scalar_Get_Random_Value is a function that returns a random real 
-!>    value from a uniform distribution between zero and one.
+!>    value from an optionally specified distribution. Note that the range of
+!>    values varies by distribution. In addition, a seed can be specified for 
+!>    consistent greneration of the same number. Default options are uniform 
+!>    distribution with random seed. The following options are available:
+!>    
+!>    1. Distribution = 'uniform' uses a uniform distribution between 0 and 1. 
+!>    2. Distribution = 'gaussian' uses a normal distribution with zero mean and
+!>                      unit variance obtained using the Box-Muller transformation
+!>    3. Distribution = 'exp' uses an exponential distribution (lambda=1.0) 
+!>                      returning positive integers. 
+!>    4. Distribution = 'exp01' uses an exponential distribution (lambda=8.0)that 
+!>                      gives values in the range 0 and 1. 
 !>
 !>    \endverbatim
 !
@@ -2047,21 +2235,88 @@
 !>        Scalar is Class(MQC_Scalar)
 !>        The MQC_Scalar to be filled 
 !>    \endverbatim
+!>
+!>    \param[in] Seed
+!>    \verbatim
+!>        Seed is integer,dimension(:),optional 
+!>        Integer array containing seed. Note in gfortran
+!>        only the first two elements affect the value of
+!>        the random number.
+!>    \endverbatim
+!>
+!>    \param[in] Distribution
+!>    \verbatim
+!>        Distribution is character(len=*),intent(in),optional 
+!>        Distribution of the function from which random number
+!>        is selected.
+!>        = 'uniform':  uniform between 0 and 1
+!>        = 'gaussian': normal deviation with zero mean and unit 
+!>                      variance
+!>        = 'exp':      exponential decay y=\exp(-x)
+!>        = 'exp01':    exponential decay between 0 and 1 obtained
+!>                      using mod(y,1.0) of y=\exp(-8x).
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author X. Dong     
+!>    \author L. M. Thompson    
 !>    \date 2019
 !
-      Subroutine MQC_Scalar_Get_Random_Value(Scalar) 
+      Subroutine MQC_Scalar_Get_Random_Value(Scalar,Seed,Distribution) 
 !
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar)::Scalar
-      real::r
+      character(len=*),intent(in),optional::distribution
+      character(len=64)::my_distribution
+      integer,dimension(:),optional::seed
+      integer,dimension(:),allocatable::my_seed
+      integer::clock,n,i
+      real::r,r2
 !
-      call random_number(r)
-      scalar = r
+      if(present(distribution)) then
+        call string_change_case(distribution,'l',my_distribution)
+      else
+        my_distribution = 'uniform'
+      endIf
+!
+      call random_seed(size=n) 
+      if(present(seed)) then
+        allocate(my_seed(n))
+        my_seed(:) = seed(:)
+      else
+        call random_seed(size=n) 
+        allocate(my_seed(n))
+        call system_clock(count=clock)
+        my_seed = clock + 37 * [(i-1,i = 1, n)]
+      endIf
+      call random_seed(put=my_seed)
+!
+      select case (my_distribution)
+      case('uniform')
+        call random_number(r)
+        scalar = r
+      case('gaussian')
+        do while(.true.)
+          call random_number(r)
+          call random_number(r2)
+          r = 2*r-1
+          r2 = 2*r2-1
+          if(r**2+r2**2.ne.0.and.r**2+r2**2.lt.1) exit
+        endDo
+        scalar = r*sqrt(-2*log(r**2+r2**2)/(r**2+r2**2))
+      case('exp')
+        call random_number(r)
+        scalar = -log(r)
+      case('exp01')
+        call random_number(r)
+        r = -(1/8.0)*log(r)
+        scalar = mod(r,1.0)
+      case default
+        call mqc_error_A('Unrecognised distribution flag in MQC_Scalar_Get_Random_Value', 6,  &
+          'my_distribution',my_distribution)
+      end select 
 !
       return
       end subroutine MQC_Scalar_Get_Random_Value
@@ -3404,7 +3659,7 @@
 !>        The MQC_Scalar that will be tested.
 !>    \endverbatim
 !>
-!>    \param[in] IntIn
+!>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=int64)
 !>        The intrinsic real that will be tested.
@@ -3609,7 +3864,7 @@
 !>        The MQC_Scalar that will be tested.
 !>    \endverbatim
 !>
-!>    \param[in] IntIn
+!>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=int64)
 !>        The intrinsic real that will be tested.
@@ -7797,26 +8052,6 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-!     PROCEDURE MQC_Matrix_StorageType
-      Function MQC_Matrix_StorageType(Matrix) Result(StorageType)
-!
-!     Utility function queries matrix for its storage type
-!     and returns value as 64-character string
-!
-!     A. Mahler, 2019
-!
-!
-!     Variable Declarations
-      implicit none
-      class(mqc_matrix),intent(in)::Matrix
-      Character(Len=64)::StorageType
-
-      StorageType=Matrix%Storage
-
-      Return
-      End Function MQC_Matrix_StorageType
-!
-!
 !     PROCEDURE MQC_Matrix_Diagonalize
       Subroutine MQC_Matrix_Diagonalize(A,EVals,EVecs)
 !     This subroutine uses lapack routines to diagonalize a symmetric (Hermitian) MQC matrix, 
@@ -8221,11 +8456,11 @@
         EndDo
       ElseIf (Mat%Storage.eq.'StorDiag') then
         If (Mat%Data_Type.eq.'Integer') then
-          Call Vector%initialize(Length,0)
+          Call Vector%init(Length,0)
         ElseIf (Mat%Data_Type.eq.'Real') then
-          Call Vector%initialize(Length,0.0)
+          Call Vector%init(Length,0.0)
         ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call Vector%initialize(Length,cmplx(0.0,0.0))
+          Call Vector%init(Length,cmplx(0.0,0.0))
         Else
           Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
                'Mat%Data_Type', Mat%Data_Type )
@@ -8431,16 +8666,16 @@
 !
 !>    \brief <b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>
 !
-!C!>    \par Purpose:
-!C!     =============
-!C!>    
-!C!>    \verbatim
-!C!>
-!C!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
-!C!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
-!C!>    negative, the (N-I+1)th index value is selected.
-!C!>
-!C!>    \endverbatim
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
+!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
+!>    negative, the (N-I+1)th index value is selected.
+!>
+!>    \endverbatim
 !
 !     Arguments:
 !     ==========
@@ -8620,11 +8855,11 @@
         If(MQC_Matrix_Test_Symmetric(Matrix)) Call MQC_Matrix_Full2Symm(Matrix)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         If (Mat%Data_Type.eq.'Integer') then
-          Call Matrix%initialize(LenRow,LenCol,0)
+          Call Matrix%init(LenRow,LenCol,0)
         ElseIf (Mat%Data_Type.eq.'Real') then
-          Call Matrix%initialize(LenRow,LenCol,0.0)
+          Call Matrix%init(LenRow,LenCol,0.0)
         ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call Matrix%initialize(LenRow,LenCol,cmplx(0.0,0.0))
+          Call Matrix%init(LenRow,LenCol,cmplx(0.0,0.0))
         EndIf
         M = 1
         N = 1
@@ -11873,7 +12108,7 @@
         Allocate(Temp(N,1))
         Temp = Matrix%MatR
         Call MQC_Deallocate_Matrix(Matrix)
-        Call Matrix%initialize(Columns,Rows)
+        Call Matrix%init(Columns,Rows)
         Do I = 1, N
           Matrix%MatR(I,I) = Temp(I,1)
         EndDo
@@ -11882,7 +12117,7 @@
         Allocate(Temp(N,1))
         Temp = Matrix%MatI
         Call MQC_Deallocate_Matrix(Matrix)
-        Call Matrix%initialize(Columns,Rows,0)
+        Call Matrix%init(Columns,Rows,0)
         Do I = 1, N
           Matrix%MatI(I,I) = Temp(I,1)
         EndDo
@@ -11891,7 +12126,7 @@
         Allocate(TempC(N,1))
         TempC = Matrix%MatC
         Call MQC_Deallocate_Matrix(Matrix)
-        Call Matrix%initialize(Columns,Rows,cmplx(0,0))
+        Call Matrix%init(Columns,Rows,cmplx(0,0))
         Do I = 1, N
           Matrix%MatC(I,I) = TempC(I,1)
         EndDo
@@ -13578,7 +13813,7 @@
       type(MQC_Scalar)::one
 
       one = 1.0
-      call matrix%initialize(n,m)
+      call matrix%init(n,m)
       Do i = 1,min(n,m)
         call matrix%put(one,i,i)
       EndDo

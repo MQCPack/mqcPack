@@ -6,7 +6,6 @@ var structmqc__algebra_1_1mqc__vector =
     [ "dagger", "structmqc__algebra_1_1mqc__vector.html#a130367633c4af0e0650b89fcfc658929", null ],
     [ "diag", "structmqc__algebra_1_1mqc__vector.html#a3e0fb883f5b73ac80d61095e30d19e29", null ],
     [ "init", "structmqc__algebra_1_1mqc__vector.html#a28094259d8e22d43bc9f2a8499d892d2", null ],
-    [ "initialize", "structmqc__algebra_1_1mqc__vector.html#ad0734f0632c31acd35af2b0debcc4674", null ],
     [ "maxloc", "structmqc__algebra_1_1mqc__vector.html#a7f934487c4fcbe72caeabc79dd66a339", null ],
     [ "maxval", "structmqc__algebra_1_1mqc__vector.html#a426480c17650154501732850552841e2", null ],
     [ "minloc", "structmqc__algebra_1_1mqc__vector.html#aaf241624c2259344564e1963913d1b37", null ],
