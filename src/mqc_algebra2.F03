@@ -63,7 +63,6 @@
         integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
       Contains
-        procedure,public::initialize    => MQC_Variable_initialize
         procedure,public::init          => MQC_Variable_initialize
         procedure,private::MQC_Variable_clear_mqc
         procedure,private::MQC_Variable_clear_integer

@@ -71,10 +71,10 @@
         Call MQC_Molecule_Data_DeAllocate(MQC_Molecule_Data_Object)
         MQC_Molecule_Data_Object%NAtoms = NAtomsIn
         NAtoms = NAtomsIn
-        Call MQC_Molecule_Data_Object%Atomic_Numbers%initialize(NAtoms,0)
-        Call MQC_Molecule_Data_Object%Atomic_Masses%initialize(NAtoms,0)
-        Call MQC_Molecule_Data_Object%Nuclear_Charges%initialize(Natoms,0)
-        Call MQC_Molecule_Data_Object%Cartesian_Coordinates%initialize(3,NAtoms,0)
+        Call MQC_Molecule_Data_Object%Atomic_Numbers%init(NAtoms,0)
+        Call MQC_Molecule_Data_Object%Atomic_Masses%init(NAtoms,0)
+        Call MQC_Molecule_Data_Object%Nuclear_Charges%init(Natoms,0)
+        Call MQC_Molecule_Data_Object%Cartesian_Coordinates%init(3,NAtoms,0)
       EndIf
 !
       End Subroutine MQC_Molecule_Data_Allocate
