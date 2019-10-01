@@ -3575,11 +3575,15 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Vector),Intent(InOut)::VectorOut
+      Integer(kind=int64),Dimension(:),Allocatable::temp
       Integer(kind=int64),Dimension(:),Intent(In)::ArrayIn
 !
+      allocate(temp(size(ArrayIn)))
+      temp = ArrayIn
       Call MQC_Deallocate_Vector(VectorOut)
       Call MQC_Allocate_Vector(Size(ArrayIn),VectorOut,'Integer')
-      VectorOut%veci = ArrayIn
+      VectorOut%veci = temp
+      deallocate(temp)
 !
       Return
       End Subroutine MQC_Set_Array2Vector_Integer
@@ -4479,10 +4483,11 @@
 !
       implicit none
       type(mqc_vector),intent(in)::VA
-      type(mqc_vector)::VB
+      type(mqc_vector)::VB,temp
 
+      temp = VA%veci
       call mqc_allocate_vector(VA%length,VB,'Real')
-      VB%vecr = VA%veci
+      VB%vecr = temp
 
       end function MQC_vector_cast_real
 !
@@ -11007,8 +11012,6 @@
              'MB%NRow', MB%NRow )
       EndIf
 
-      If (.not. MQC_Matrix_HaveReal(MB)) MBreal = MQC_Cast_Real(MB)
-      If (.not. MQC_Vector_HaveReal(VA)) VAreal = MQC_Cast_Real(VA)
       If (MQC_Matrix_HaveReal(MB) .and. MQC_Vector_HaveReal(VA)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Real')
         VC = MQC_Vector_Transpose(VC)
