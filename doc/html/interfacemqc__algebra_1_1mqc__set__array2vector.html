@@ -101,10 +101,13 @@ $(document).ready(function(){initNavTree('interfacemqc__algebra_1_1mqc__set__arr
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:acace2ac837cb1e1ca166aec2b5c79273"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__set__array2vector.html#acace2ac837cb1e1ca166aec2b5c79273">mqc_set_array2vector_integer</a> (VectorOut, ArrayIn)</td></tr>
+<tr class="memdesc:acace2ac837cb1e1ca166aec2b5c79273"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 intrinsic integer array equal to a MQC vector</b>  <a href="interfacemqc__algebra_1_1mqc__set__array2vector.html#acace2ac837cb1e1ca166aec2b5c79273">More...</a><br /></td></tr>
 <tr class="separator:acace2ac837cb1e1ca166aec2b5c79273"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a555fc8a5fb64d63ab2d54d92c22e053d"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__set__array2vector.html#a555fc8a5fb64d63ab2d54d92c22e053d">mqc_set_array2vector_real</a> (VectorOut, ArrayIn)</td></tr>
+<tr class="memdesc:a555fc8a5fb64d63ab2d54d92c22e053d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector intrinsic real array equal to a MQC vector</b>  <a href="interfacemqc__algebra_1_1mqc__set__array2vector.html#a555fc8a5fb64d63ab2d54d92c22e053d">More...</a><br /></td></tr>
 <tr class="separator:a555fc8a5fb64d63ab2d54d92c22e053d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ef077faa8aed89b84e321c40bf1e562"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__set__array2vector.html#a5ef077faa8aed89b84e321c40bf1e562">mqc_set_array2vector_complex</a> (VectorOut, ArrayIn)</td></tr>
+<tr class="memdesc:a5ef077faa8aed89b84e321c40bf1e562"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 vector intrinsic complex array equal to a MQC vector</b>  <a href="interfacemqc__algebra_1_1mqc__set__array2vector.html#a5ef077faa8aed89b84e321c40bf1e562">More...</a><br /></td></tr>
 <tr class="separator:a5ef077faa8aed89b84e321c40bf1e562"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -136,6 +139,23 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 vector intrinsic complex array equal to a MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 vector intrinsic
+    complex array equal to a MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">VectorOut</td><td><pre class="fragment">        VectorOut is Type(MQC_Vector)
+        The MQC vector that will be set equal to the rank 1 
+        intrinsic array </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayOut is Complex(kind=real64),Dimension(:)
+        The rank 1 intrinsic array whose data will be input 
+        into the MQC vector.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="acace2ac837cb1e1ca166aec2b5c79273"></a>
@@ -163,6 +183,23 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 intrinsic integer array equal to a MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 intrinsic 
+    integer array equal to a MQC vector</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">VectorOut</td><td><pre class="fragment">        VectorOut is Type(MQC_Vector)
+        The MQC vector that will be set equal to the rank 1 
+        intrinsic array </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayOut is Integer(kind=int64),Dimension(:)
+        The rank 1 intrinsic array whose data will be input 
+        into the MQC vector.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -192,6 +229,23 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector intrinsic real array equal to a MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector intrinsic
+    real array equal to a MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">VectorOut</td><td><pre class="fragment">        VectorOut is Type(MQC_Vector)
+        The MQC vector that will be set equal to the rank 1 
+        intrinsic array </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayOut is Real(kind=real64),Dimension(:)
+        The rank 1 intrinsic array whose data will be input 
+        into the MQC vector.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -203,7 +257,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1mqc__set__array2vector.html">mqc_set_array2vector</a></li>
-    <li class="footer">Generated on Wed Sep 25 2019 16:36:18 for MQCPack by
+    <li class="footer">Generated on Fri Oct 4 2019 13:05:42 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

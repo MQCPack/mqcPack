@@ -663,7 +663,7 @@
 !>    \param[in] N
 !>    \verbatim
 !>        N is Integer(kind=int64)
-!>        The argument of the factorial function
+!>        The argument of the factorial function.
 !>    \endverbatim
 !
 !     Authors:
@@ -707,13 +707,13 @@
 !>    \param[in] N
 !>    \verbatim
 !>        N is Integer(kind=int64)
-!>        The number of objects
+!>        The number of objects.
 !>    \endverbatim
 !>
 !>    \param[in] K
 !>    \verbatim
 !>        K is Integer(kind=int64) 
-!>        The number of permutations
+!>        The number of permutations.
 !>    \endverbatim
 !
 !     Authors:
@@ -774,7 +774,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable
+!>        The name of the MQC_Scalar variable.
 !>    \endverbatim
 !>
 !>    \param[in] Data_Type
@@ -782,7 +782,7 @@
 !>        Data_Type is Character(Len=*)
 !>        = 'Real':    the MQC_Scalar is real
 !>        = 'Integer': the MQC_Scalar is integer
-!>        = 'Complex': the MQC_Scalar is complex
+!>        = 'Complex': the MQC_Scalar is complex.
 !>    \endverbatim
 !
 !     Authors:
@@ -836,7 +836,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable to deallocate
+!>        The name of the MQC_Scalar variable to deallocate.
 !>    \endverbatim
 !
 !     Authors:
@@ -881,7 +881,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable to check allocation status
+!>        The name of the MQC_Scalar variable to check allocation status.
 !>    \endverbatim
 !
 !     Authors:
@@ -924,13 +924,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Integer(kind=int64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -971,13 +971,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Real(kind=real64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1018,13 +1018,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Complex(kind=real64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1065,13 +1065,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1127,13 +1127,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Integer(kind=int64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1182,13 +1182,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Real(kind=real64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1237,13 +1237,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Complex(kind=real64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1294,33 +1294,33 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The variable to be printed
+!>        The variable to be printed.
 !>    \endverbatim
 !>
 !>    \param[in] IOut
 !>    \verbatim
 !>        IOut is Integer(kind=int64) 
-!>        The Fortran file number to print to 
+!>        The Fortran file number to print to. 
 !>    \endverbatim
 !>
 !>    \param[in] Header
 !>    \verbatim
 !>        Header is Character(Len=*)
-!>        The title to print along with Scalar
+!>        The title to print along with Scalar.
 !>    \endverbatim
 !>
 !>    \param[in] Blank_At_Top
 !>    \verbatim
 !>        Blank_At_Top is Logical,Optional
 !>        = .True.:  print blank line above output
-!>        = .False.: do not print blank line above output
+!>        = .False.: do not print blank line above output.
 !>    \endverbatim
 !>
 !>    \param[in] Blank_At_Bottom
 !>    \verbatim
 !>        Blank_At_Bottom is Logical,Optional
 !>        = .True.:  print blank line below output
-!>        = .False.: do not print blank line below output
+!>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !
 !     Authors:
@@ -1385,13 +1385,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The real part of MQC_Scalar_Cmplx
+!>        The real part of MQC_Scalar_Cmplx.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The imaginary part of MQC_Scalar_Cmplx
+!>        The imaginary part of MQC_Scalar_Cmplx.
 !>    \endverbatim
 !
 !     Authors:
@@ -1473,7 +1473,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1526,7 +1526,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1579,7 +1579,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1632,7 +1632,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1685,7 +1685,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1738,7 +1738,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1791,7 +1791,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1845,7 +1845,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1899,7 +1899,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -1940,7 +1940,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -1981,7 +1981,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2022,7 +2022,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2072,7 +2072,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2122,7 +2122,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2172,7 +2172,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2233,7 +2233,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be filled 
+!>        The MQC_Scalar to be filled. 
 !>    \endverbatim
 !>
 !>    \param[in] Seed
@@ -2340,13 +2340,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar to be summed
+!>        The first MQC_Scalar to be summed.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar to be summed
+!>        The second MQC_Scalar to be summed.
 !>    \endverbatim
 !
 !     Authors:
@@ -2428,13 +2428,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar from which Scalar2 will be subtracted
+!>        The first MQC_Scalar from which Scalar2 will be subtracted.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar which will be subtracted from Scalar1
+!>        The second MQC_Scalar which will be subtracted from Scalar1.
 !>    \endverbatim
 !
 !     Authors:
@@ -2513,13 +2513,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar to be multiplied
+!>        The first MQC_Scalar to be multiplied.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar to be multiplied
+!>        The second MQC_Scalar to be multiplied.
 !>    \endverbatim
 !
 !     Authors:
@@ -2598,13 +2598,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The numerator
+!>        The numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The denominator
+!>        The denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -2685,13 +2685,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2772,13 +2772,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] IntIn
 !>    \verbatim
 !>        IntIn is Integer(kind=int64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2837,13 +2837,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2902,13 +2902,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] CompIn
 !>    \verbatim
 !>        CompIn is Complex(kind=real64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -4121,7 +4121,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4166,7 +4166,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4213,7 +4213,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4256,13 +4256,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to multiply
+!>        The intrinsic integer variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4306,13 +4306,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to multiply
+!>        The intrinsic integer variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar varibale to multiply
+!>        The MQC_Scalar varibale to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4356,13 +4356,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to multiply
+!>        The intrinsic real variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4406,13 +4406,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to multiply
+!>        The intrinsic real variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4456,13 +4456,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to multiply
+!>        The intrinsic complex variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to multiply
+!>        The MQC_Scalar variabel to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4506,13 +4506,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to multiply
+!>        The intrinsic complex variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to multiply
+!>        The MQC_Scalar variabel to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4556,13 +4556,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable numerator
+!>        The intrinsic integer variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4606,13 +4606,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable denominator
+!>        The intrinsic integer variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4656,13 +4656,13 @@
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable numerator
+!>        The intrinsic real variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4706,13 +4706,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable denominator
+!>        The intrinsic real variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4756,13 +4756,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex variable numerator
+!>        The intrinsic complex variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4806,13 +4806,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex variable denominator
+!>        The intrinsic complex variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4856,13 +4856,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to sum
+!>        The intrinsic integer variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -4906,13 +4906,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to sum
+!>        The intrinsic integer variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar varibale to sum
+!>        The MQC_Scalar varibale to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -4956,13 +4956,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to sum
+!>        The intrinsic real variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5006,13 +5006,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to sum
+!>        The intrinsic real variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5056,13 +5056,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to sum
+!>        The intrinsic complex variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to sum
+!>        The MQC_Scalar variabel to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5106,13 +5106,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to sum
+!>        The intrinsic complex variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to sum
+!>        The MQC_Scalar variabel to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5156,13 +5156,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer to subtract from
+!>        The intrinsic integer to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5206,13 +5206,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer to subtract
+!>        The intrinsic integer to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5256,13 +5256,13 @@
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real to subtract from
+!>        The intrinsic real to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5306,13 +5306,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real to subtract
+!>        The intrinsic real to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5356,13 +5356,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex to subtract from
+!>        The intrinsic complex to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5406,13 +5406,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex to subtract
+!>        The intrinsic complex to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5442,13 +5442,52 @@
 !----------------------------------------------------------------
 !
 !     PROCEDURE MQC_Allocate_Vector
+!
+!>    \brief <b> MQC_Allocate_Vector is used to allocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_Vector is a subroutine used to allocate a vector type variable
+!>    of the MQC_Scalar class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_Vector variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_Vector variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_Vector variable to be of complex type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The length of the vector.
+!>    \endverbatim
+!>
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Scalar is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_Scalar is real
+!>        = 'Integer': the MQC_Scalar is integer
+!>        = 'Complex': the MQC_Scalar is complex.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Allocate_Vector(N,Vector,Data_Type)
-!
-!     This subroutine is used to allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5478,13 +5517,34 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_Vector
+!
+!>    \brief <b> MQC_Deallocate_Vector is used to deallocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_Vector is a subroutine used to deallocate a vector type variable
+!>    of the MQC_Vector class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable to deallocate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_Vector(Vector)
-!
-!     This subroutine is used to de-allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5502,13 +5562,33 @@
 !
 !
 !     PROCEDURE MQC_Length_Vector
+!
+!>    \brief <b> MQC_Length_Vector is used to return the length of an MQC vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Length_Vector is used to return the length of an MQC vector. If the vector
+!>    vector is NOT allocated, the length is returned as 0. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable whose length will be returned. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Length_Vector(Vector) Result(ValueOut)
-!
-!     This subroutine is used to return the length of an MQC vector. If the
-!     vector is NOT allocated, the length is returned as 0.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5522,13 +5602,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveReal
+!
+!>    \brief <b> MQC_Vector_HaveReal is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveReal is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveReal(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated real vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5542,13 +5643,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveInteger
+!
+!>    \brief <b> MQC_Vector_HaveInteger is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveInteger is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveInteger(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated integer vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5562,13 +5684,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveComplex
+!
+!>    \brief <b> MQC_Vector_HaveComplex is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveComplex is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Function MQC_Vector_HaveComplex(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated complex vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5582,13 +5725,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_IsColumn
+!
+!>    \brief <b> MQC_Vector_IsColumn is a function that returns TRUE if the MQC 
+!>    vector is a column vector and FALSE if the MQC vector is a row vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_IsColumn is a function that returns TRUE if the MQC vector is a
+!>    column vector and FALSE if the MQC vector is a row vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_Vector_IsColumn(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether the vector is
-!     a column or row respectively.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5602,13 +5766,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Real is a subroutine that copies an integer 
+!>    MQC_Vector into its real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Int2Real is a subroutine that copies an integer MQC_Vector 
+!>    into its real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Int2Real(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's real vector
-!     space.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5626,13 +5811,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Complex is a subroutine that copies an integer 
+!>    MQC_Vector into its complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Int2Complex is a subroutine that copies an integer MQC_Vector 
+!>    into its complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Int2Complex(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5650,13 +5856,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Int is a subroutine that copies a real 
+!>    MQC_Vector into its integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Real2Int is a subroutine that copies a real MQC_Vector into its
+!>    integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Real2Int(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5674,13 +5901,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Complex is a subroutine that copies a 
+!>    real MQC_Vector into its complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Real2Complex is a subroutine that copies a real MQC_Vector
+!>    into its complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Real2Complex(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5699,13 +5947,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Int is a subroutine that copies a 
+!>    complex MQC_Vector into its integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Complex2Int is a subroutine that copies a complex MQC_Vector
+!>    into its integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Int(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5723,13 +5992,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Real is a subroutine that copies a 
+!>    complex MQC_Vector into its real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Complex2Real is a subroutine that copies a complex MQC_Vector
+!>    into its real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Real(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's real vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5747,11 +6037,42 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_At
+!
+!>    \brief <b> MQC_Vector_Scalar_At is a function that returns the ith element of
+!>    a MQC vector as an MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_At is a function that returns the ith element of a MQC vector 
+!>    as an MQC scalar. If the location of the element is negative the it is counted
+!>    from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vec to return. If I is 
+!>        negative it is counted from the last element of Vec.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng 
+!>    \date 2017
+!
       Function MQC_Vector_Scalar_At(Vec,I) Result(Element)
-!
-!     A function that returns the element at (i) of a mqc_vector type as a mqc_scalar type.
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5779,12 +6100,48 @@
 !
 !
 !     PROCEDURE MQC_Vector_Vector_At
+!
+!>    \brief <b> MQC_Vector_Vector_At is a function that returns the subvector of a
+!>    MQC vector between (inclusive) two elements as a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_At is a function that returns the subvector of a MQC vector 
+!>    between (inclusive) two elements as a MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector from which the subvector will be extracted.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the first subvector element in Vec. If I 
+!>        is negative it is counted from the last element of Vec.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The location of the last subvector element in Vec. If J 
+!>        is negative it is counted from the last element of Vec.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Vector_At(Vec,I,J) Result(Vector)
-!
-!     A function that returns MQC_Vector Vector between I and J of an
-!     MQC_Vector Vec. Negative I and J count from end of index.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5842,12 +6199,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2IntegerArray
+!
+!>    \brief <b> MQC_Set_Vector2IntegerArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic integer array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2IntegerArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic integer array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsc
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2IntegerArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5881,12 +6268,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2RealArray
+!
+!>    \brief <b> MQC_Set_Vector2RealArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic real array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2RealArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic real array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsic
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2RealArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5920,12 +6337,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2ComplexArray
+!
+!>    \brief <b> MQC_Set_Vector2ComplexArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic complex array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2ComplexArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic complex array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsic
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Set_Vector2ComplexArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5959,12 +6406,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Integer
+!
+!>    \brief <b> MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 
+!>    intrinsic integer array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 intrinsic 
+!>    integer array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Array2Vector_Integer(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5980,12 +6457,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Real
+!
+!>    \brief <b> MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector
+!>    intrinsic real array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector intrinsic
+!>    real array equal to a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn 
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Array2Vector_Real(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6001,12 +6508,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Complex
+!
+!>    \brief <b> MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 
+!>    vector intrinsic complex array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 vector intrinsic
+!>    complex array equal to a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn 
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Set_Array2Vector_Complex(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6022,13 +6559,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2Vector
+!
+!>    \brief <b> MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal 
+!>    to another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal to another 
+!>    MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to VectorIn.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector whose contents will be copied to 
+!>        VectorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2Vector(VectorOut,VectorIn)
-!
-!     This routine is used to set an MQC vector equal to another MQC
-!     vector.
-!
-!     H. P. Hratchian, 2016.
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
