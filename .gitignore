@@ -75,3 +75,4 @@ examples/PrintAllData/testit.sh
 examples/SCFenergy/testit.sh
 examples/WriteTest/testit.sh
 examples/hartreefock/Makefile.am
+examples/DataSummary/test/
