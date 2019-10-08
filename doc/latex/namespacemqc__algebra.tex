@@ -300,7 +300,7 @@ subroutine \mbox{\hyperlink{namespacemqc__algebra_a0c3a91a9b2e51be275947da30967b
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_ac096d0ab43b725951c3c8e88c54ae87b}{mqc\+\_\+vector\+\_\+scalar\+\_\+at}} (Vec, I)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Scalar\+\_\+\+At is a function that returns the ith element of a M\+QC vector as an M\+QC scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_accbfce3ed0b451faac3b15c6fbee1732}{mqc\+\_\+vector\+\_\+vector\+\_\+at}} (Vec, I, J)
-\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Vector\+\_\+\+At is a function that returns the subvector of a M\+QC vector between (inclusive) two elements as a M\+QC vector}} \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Vector\+\_\+\+At is a function that returns the vector at the specified subvector of M\+Q\+C\+\_\+\+Vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_aba54eb450ce211317b02ef6f33ac2e4b}{mqc\+\_\+set\+\_\+vector2integerarray}} (Array\+Out, Vector\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Vector2\+Integer\+Array is a subroutine that outputs an M\+QC vector to a rank 1 intrinsic integer array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a2c87333d1d226be9235bd76ed6dc8e14}{mqc\+\_\+set\+\_\+vector2realarray}} (Array\+Out, Vector\+In)
@@ -765,7 +765,7 @@ L. M. Thompson
 
 \begin{DoxyParagraph}{Purpose\+:}
 \begin{DoxyVerb}    MQC_Allocate_Vector is a subroutine used to allocate a vector type variable
-    of the MQC_Scalar class. The following options are available:
+    of the MQC_Vector class. The following options are available:
 
     1. Data_Type = 'Real' declares the MQC_Vector variable to be of real type. 
     2. Data_Type = 'Integer' declares the MQC_Vector variable to be of integer type.
@@ -775,17 +775,17 @@ L. M. Thompson
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em N} & \begin{DoxyVerb}        N is Integer(kind=int64)
-        The length of the vector.\end{DoxyVerb}
+        The length of the MQC_Vector variable\end{DoxyVerb}
 \\
 \hline
-\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Scalar is Type(MQC_Vector)
-        The name of the MQC_Vector variable.\end{DoxyVerb}
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+        The name of the MQC_Vector variable\end{DoxyVerb}
 \\
 \hline
 \mbox{\texttt{ in}}  & {\em Data\+\_\+\+Type} & \begin{DoxyVerb}        Data_Type is Character(Len=*)
-        = 'Real':    the MQC_Scalar is real
-        = 'Integer': the MQC_Scalar is integer
-        = 'Complex': the MQC_Scalar is complex.\end{DoxyVerb}
+        = 'Real':    the MQC_Vector is real
+        = 'Integer': the MQC_Vector is integer
+        = 'Complex': the MQC_Vector is complex\end{DoxyVerb}
  \\
 \hline
 \end{DoxyParams}
@@ -4282,7 +4282,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4310,7 +4310,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4338,7 +4338,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4366,7 +4366,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4394,7 +4394,7 @@ H. P. Hratchian
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4422,7 +4422,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4450,7 +4450,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4478,7 +4478,7 @@ L. M. Thompson
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4546,7 +4546,7 @@ H. P. Hratchian
 \end{DoxyParagraph}
 
 \begin{DoxyParams}[1]{Parameters}
-\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.\end{DoxyVerb}
  \\
 \hline
@@ -4689,11 +4689,12 @@ X. Sheng
 
 
 
-{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Vector\+\_\+\+At is a function that returns the subvector of a M\+QC vector between (inclusive) two elements as a M\+QC vector}} 
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Vector\+\_\+\+At is a function that returns the vector at the specified subvector of M\+Q\+C\+\_\+\+Vector}} 
 
 \begin{DoxyParagraph}{Purpose\+:}
-\begin{DoxyVerb}    MQC_Vector_Scalar_At is a function that returns the subvector of a MQC vector 
-    between (inclusive) two elements as a MQC vector. \end{DoxyVerb}
+\begin{DoxyVerb}    MQC_Vector_Vector_At is a function that returns the vector at the specified 
+    subvector of MQC_Vector. Negative values of I or J indicate that counting 
+    proceeds from the last element rather than the first as with positive numbers.\end{DoxyVerb}
  
 \end{DoxyParagraph}
 

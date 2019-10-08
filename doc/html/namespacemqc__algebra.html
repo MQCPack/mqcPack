@@ -536,7 +536,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:ac096d0ab43b725951c3c8e88c54ae87b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Vector_Scalar_At is a function that returns the ith element of a MQC vector as an MQC scalar</b>  <a href="namespacemqc__algebra.html#ac096d0ab43b725951c3c8e88c54ae87b">More...</a><br /></td></tr>
 <tr class="separator:ac096d0ab43b725951c3c8e88c54ae87b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accbfce3ed0b451faac3b15c6fbee1732"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#accbfce3ed0b451faac3b15c6fbee1732">mqc_vector_vector_at</a> (Vec, I, J)</td></tr>
-<tr class="memdesc:accbfce3ed0b451faac3b15c6fbee1732"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Vector_Vector_At is a function that returns the subvector of a MQC vector between (inclusive) two elements as a MQC vector</b>  <a href="namespacemqc__algebra.html#accbfce3ed0b451faac3b15c6fbee1732">More...</a><br /></td></tr>
+<tr class="memdesc:accbfce3ed0b451faac3b15c6fbee1732"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Vector_Vector_At is a function that returns the vector at the specified subvector of MQC_Vector</b>  <a href="namespacemqc__algebra.html#accbfce3ed0b451faac3b15c6fbee1732">More...</a><br /></td></tr>
 <tr class="separator:accbfce3ed0b451faac3b15c6fbee1732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba54eb450ce211317b02ef6f33ac2e4b"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aba54eb450ce211317b02ef6f33ac2e4b">mqc_set_vector2integerarray</a> (ArrayOut, VectorIn)</td></tr>
 <tr class="memdesc:aba54eb450ce211317b02ef6f33ac2e4b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Vector2IntegerArray is a subroutine that outputs an MQC vector to a rank 1 intrinsic integer array</b>  <a href="namespacemqc__algebra.html#aba54eb450ce211317b02ef6f33ac2e4b">More...</a><br /></td></tr>
@@ -1226,7 +1226,7 @@ Functions/Subroutines</h2></td></tr>
 
 <p><b> MQC_Allocate_Vector is used to allocate a vector type variable of the MQC_Vector class</b> </p>
 <dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Allocate_Vector is a subroutine used to allocate a vector type variable
-    of the MQC_Scalar class. The following options are available:
+    of the MQC_Vector class. The following options are available:
 
     1. Data_Type = 'Real' declares the MQC_Vector variable to be of real type. 
     2. Data_Type = 'Integer' declares the MQC_Vector variable to be of integer type.
@@ -1234,13 +1234,13 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">N</td><td><pre class="fragment">        N is Integer(kind=int64)
-        The length of the vector.</pre></td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Scalar is Type(MQC_Vector)
-        The name of the MQC_Vector variable.</pre></td></tr>
+        The length of the MQC_Vector variable</pre></td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+        The name of the MQC_Vector variable</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Data_Type</td><td><pre class="fragment">        Data_Type is Character(Len=*)
-        = 'Real':    the MQC_Scalar is real
-        = 'Integer': the MQC_Scalar is integer
-        = 'Complex': the MQC_Scalar is complex.</pre> </td></tr>
+        = 'Real':    the MQC_Vector is real
+        = 'Integer': the MQC_Vector is integer
+        = 'Complex': the MQC_Vector is complex</pre> </td></tr>
   </table>
   </dd>
 </dl>
@@ -7652,7 +7652,7 @@ L. M. Thompson </dd></dl>
     into its integer vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7683,7 +7683,7 @@ L. M. Thompson </dd></dl>
     into its real vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7714,7 +7714,7 @@ L. M. Thompson </dd></dl>
     into its complex vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7745,7 +7745,7 @@ L. M. Thompson </dd></dl>
     into its real vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7776,7 +7776,7 @@ L. M. Thompson </dd></dl>
     into its complex vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7807,7 +7807,7 @@ L. M. Thompson </dd></dl>
     integer vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7838,7 +7838,7 @@ L. M. Thompson </dd></dl>
     whether the MQC vector has an allocated complex vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7869,7 +7869,7 @@ L. M. Thompson </dd></dl>
     whether the MQC vector has an allocated integer vector.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -7983,7 +7983,7 @@ L. M. Thompson </dd></dl>
     column vector and FALSE if the MQC vector is a row vector. </pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
         The MQC_Vector to be tested.</pre> </td></tr>
   </table>
   </dd>
@@ -8422,9 +8422,10 @@ L. M. Thompson </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p><b> MQC_Vector_Vector_At is a function that returns the subvector of a MQC vector between (inclusive) two elements as a MQC vector</b> </p>
-<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Vector_Scalar_At is a function that returns the subvector of a MQC vector 
-    between (inclusive) two elements as a MQC vector. </pre> </dd></dl>
+<p><b> MQC_Vector_Vector_At is a function that returns the vector at the specified subvector of MQC_Vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Vector_Vector_At is a function that returns the vector at the specified 
+    subvector of MQC_Vector. Negative values of I or J indicate that counting 
+    proceeds from the last element rather than the first as with positive numbers.</pre> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">Vec</td><td><pre class="fragment">        Vec is Class(MQC_Vector)
@@ -8859,7 +8860,7 @@ L. M. Thompson </dd></dl>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li>
-    <li class="footer">Generated on Fri Oct 4 2019 13:05:42 for MQCPack by
+    <li class="footer">Generated on Mon Oct 7 2019 23:18:39 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

@@ -18,3 +18,9 @@ fort.7
 lapack/librefblas.a
 lapack/make.inc
 examples/biorthog/biorthog
+.other_libs/build_fcns/Makefile.in*
+.other_libs/build_fcns/configure*
+depcomp
+install-sh
+missing
+test-driver
