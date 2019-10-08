@@ -122,8 +122,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a151a0c624e5b710f09359c9a9d1ba7b0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarComplexAdd is a function that is used to sum an intrinsic complex by an MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_09_08.html#a151a0c624e5b710f09359c9a9d1ba7b0">More...</a><br /></td></tr>
 <tr class="separator:a151a0c624e5b710f09359c9a9d1ba7b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01b5a370a3e3138866d18efd0dfa24dc"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_09_08.html#a01b5a370a3e3138866d18efd0dfa24dc">mqc_vectorvectorsum</a> (Vector1In, Vector2In)</td></tr>
+<tr class="memdesc:a01b5a370a3e3138866d18efd0dfa24dc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in another MQC vector</b>  <a href="interfacemqc__algebra_1_1operator_07_09_08.html#a01b5a370a3e3138866d18efd0dfa24dc">More...</a><br /></td></tr>
 <tr class="separator:a01b5a370a3e3138866d18efd0dfa24dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4caf8f4e679cc35eca6aa48d92f67f6d"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_09_08.html#a4caf8f4e679cc35eca6aa48d92f67f6d">mqc_scalarvectorsum</a> (ScalarIn, VectorIn)</td></tr>
+<tr class="memdesc:a4caf8f4e679cc35eca6aa48d92f67f6d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarVectorSum is a function that adds an MQC scalar to all elements of an MQC vector</b>  <a href="interfacemqc__algebra_1_1operator_07_09_08.html#a4caf8f4e679cc35eca6aa48d92f67f6d">More...</a><br /></td></tr>
 <tr class="separator:a4caf8f4e679cc35eca6aa48d92f67f6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ff646cb597df78da8147c845aeb00d8"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_09_08.html#a8ff646cb597df78da8147c845aeb00d8">mqc_matrixmatrixsum</a> (MA, MB)</td></tr>
 <tr class="separator:a8ff646cb597df78da8147c845aeb00d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -485,6 +487,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_ScalarVectorSum is a function that adds an MQC scalar to all elements of an MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorVectorSum is a function that adds an MQC scalar to all elements of 
+    an MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ScalarIn</td><td><pre class="fragment">        ScalarIn is Type(MQC_Scalar)
+        The MQC scalar to add to the MQC vector.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">VectorIn</td><td><pre class="fragment">        VectorIn is Type(MQC_Vector)
+        The MQC vector with elements to sum with ScalarIn.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a01b5a370a3e3138866d18efd0dfa24dc"></a>
@@ -513,6 +530,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in another MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in
+    another MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector1In</td><td><pre class="fragment">        Vector1In is Type(MQC_Vector)
+        The first MQC vector that will be summed.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector2In</td><td><pre class="fragment">        Vector2In is Type(MQC_Vector)
+        The second MQC vector that will be summed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -524,7 +556,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1operator_07_09_08.html">operator(+)</a></li>
-    <li class="footer">Generated on Mon Oct 7 2019 23:18:39 for MQCPack by
+    <li class="footer">Generated on Tue Oct 8 2019 18:40:34 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

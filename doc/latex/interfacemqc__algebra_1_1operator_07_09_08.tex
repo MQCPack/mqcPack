@@ -23,9 +23,9 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) func
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a151a0c624e5b710f09359c9a9d1ba7b0}{mqc\+\_\+scalarcomplexadd}} (Scalar, Complex\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Complex\+Add is a function that is used to sum an intrinsic complex by an M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a01b5a370a3e3138866d18efd0dfa24dc}{mqc\+\_\+vectorvectorsum}} (Vector1\+In, Vector2\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Sum is a function that adds two M\+QC vectors and stores them in another M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a4caf8f4e679cc35eca6aa48d92f67f6d}{mqc\+\_\+scalarvectorsum}} (Scalar\+In, Vector\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Sum is a function that adds an M\+QC scalar to all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a8ff646cb597df78da8147c845aeb00d8}{mqc\+\_\+matrixmatrixsum}} (MA, MB)
 \end{DoxyCompactItemize}
 
@@ -269,12 +269,64 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_scalarvectorsum()}{mqc\_scalarvectorsum()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::operator(+)\+::mqc\+\_\+scalarvectorsum (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Sum is a function that adds an M\+QC scalar to all elements of an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_VectorVectorSum is a function that adds an MQC scalar to all elements of 
+    an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar\+In} & \begin{DoxyVerb}        ScalarIn is Type(MQC_Scalar)
+        The MQC scalar to add to the MQC vector.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector\+In} & \begin{DoxyVerb}        VectorIn is Type(MQC_Vector)
+        The MQC vector with elements to sum with ScalarIn.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_09_08_a01b5a370a3e3138866d18efd0dfa24dc}\label{interfacemqc__algebra_1_1operator_07_09_08_a01b5a370a3e3138866d18efd0dfa24dc}} 
 \index{mqc\_algebra::operator(+)@{mqc\_algebra::operator(+)}!mqc\_vectorvectorsum@{mqc\_vectorvectorsum}}
 \index{mqc\_vectorvectorsum@{mqc\_vectorvectorsum}!mqc\_algebra::operator(+)@{mqc\_algebra::operator(+)}}
 \doxysubsubsection{\texorpdfstring{mqc\_vectorvectorsum()}{mqc\_vectorvectorsum()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::operator(+)\+::mqc\+\_\+vectorvectorsum (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector1\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector2\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Sum is a function that adds two M\+QC vectors and stores them in another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in
+    another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector1\+In} & \begin{DoxyVerb}        Vector1In is Type(MQC_Vector)
+        The first MQC vector that will be summed.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector2\+In} & \begin{DoxyVerb}        Vector2In is Type(MQC_Vector)
+        The second MQC vector that will be summed.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

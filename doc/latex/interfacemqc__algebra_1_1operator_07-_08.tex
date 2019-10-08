@@ -23,9 +23,9 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) func
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_afc9043efe1c97603d5c09a5e59428886}{mqc\+\_\+scalarcomplexsubtract}} (Scalar, Complex\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Complex\+Subtract is a function that is used to subtract an intrinsic complex from an M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_af9372a0b09c4396193f485eadebe5528}{mqc\+\_\+vectorvectordifference}} (Vector1\+In, Vector2\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Difference is a function that subtracts two M\+QC vectors and stores them in another M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_ac821bdfd0dbaeb23ee152c06d9d13f0a}{mqc\+\_\+scalarvectordifference}} (Scalar\+In, Vector\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Difference is a function that subtracts an M\+QC scalar from all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_aedc77c713fc742f4594f2d34787c12ce}{mqc\+\_\+matrixmatrixsubtract}} (MA, MB)
 \end{DoxyCompactItemize}
 
@@ -269,12 +269,68 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_scalarvectordifference()}{mqc\_scalarvectordifference()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::operator(-\/)\+::mqc\+\_\+scalarvectordifference (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Difference is a function that subtracts an M\+QC scalar from all elements of an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from 
+    all elements of an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar\+In} & \begin{DoxyVerb}        ScalarIn is Type(MQC_Scalar)
+        The MQC scalar to be subtracted from elements of the
+        the MQC vector.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector\+In} & \begin{DoxyVerb}        VectorIn is Type(MQC_Vector)
+        The MQC vector with elements from which ScalarIn will
+        be subtracted.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07-_08_af9372a0b09c4396193f485eadebe5528}\label{interfacemqc__algebra_1_1operator_07-_08_af9372a0b09c4396193f485eadebe5528}} 
 \index{mqc\_algebra::operator(-\/)@{mqc\_algebra::operator(-\/)}!mqc\_vectorvectordifference@{mqc\_vectorvectordifference}}
 \index{mqc\_vectorvectordifference@{mqc\_vectorvectordifference}!mqc\_algebra::operator(-\/)@{mqc\_algebra::operator(-\/)}}
 \doxysubsubsection{\texorpdfstring{mqc\_vectorvectordifference()}{mqc\_vectorvectordifference()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::operator(-\/)\+::mqc\+\_\+vectorvectordifference (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector1\+In,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector2\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Difference is a function that subtracts two M\+QC vectors and stores them in another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_VectorVectorDifference is a function that subtracts two MQC vectors and 
+    stores them in another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector1\+In} & \begin{DoxyVerb}        Vector1In is Type(MQC_Vector)
+        The first MQC vector from which the second will be 
+        subtracted.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector2\+In} & \begin{DoxyVerb}        Vector2In is Type(MQC_Vector)
+        The second MQC vector that will be subtracted from the
+        first.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

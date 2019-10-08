@@ -6629,12 +6629,40 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorSum
+!
+!>    \brief <b> MQC_VectorVectorSum is a function that adds two MQC vectors and
+!>    stores them in another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in
+!>    another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector that will be summed.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector that will be summed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_VectorVectorSum(Vector1In,Vector2In)
-!
-!     This routine is used to add two MQC vectors and store them into
-!     another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorSum
@@ -6717,12 +6745,42 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorDifference
+!
+!>    \brief <b> MQC_VectorVectorDifference is a function that subtracts two MQC 
+!>    vectors and stores them in another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorDifference is a function that subtracts two MQC vectors and 
+!>    stores them in another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector from which the second will be 
+!>        subtracted.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector that will be subtracted from the
+!>        first.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_VectorVectorDifference(Vector1In,Vector2In)
-!
-!     This routine is used to subtract two MQC vectors and store them into
-!     another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorDifference
@@ -6805,12 +6863,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorSum
+!
+!>    \brief <b> MQC_ScalarVectorSum is a function that adds an MQC scalar to all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorSum is a function that adds an MQC scalar to all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to add to the MQC vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements to sum with ScalarIn.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ScalarVectorSum(ScalarIn,VectorIn)
-!
-!     This routine is used to add an MQC scalar to all elements in a MQC vector and
-!     store it into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ScalarVectorSum
@@ -6881,12 +6967,42 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorDifference
+!
+!>    \brief <b> MQC_ScalarVectorDifference is a function that subtracts an MQC 
+!>    scalar from all elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from 
+!>    all elements of an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to be subtracted from elements of the
+!>        the MQC vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements from which ScalarIn will
+!>        be subtracted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ScalarVectorDifference(ScalarIn,VectorIn)
-!
-!     This routine is used to subtract an MQC scalar to all elements in a MQC vector and
-!     store it into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ScalarVectorDifference
@@ -6960,12 +7076,40 @@
 !
 !
 !     PROCEDURE MQC_ElementVectorProduct
+!
+!>    \brief <b> MQC_ElementVectorProduct is a function that multiplies two MQC 
+!>    vectors elementwise and stores them into another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ElementVectorProduct is a function that multiplies two MQC vectors 
+!>    elementwise and stores them into another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The frist MQC vector to multiply elementwise.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector to multiply elementwise.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ElementVectorProduct(Vector1In,Vector2In)
-!
-!     This routine is used to multiply two MQC vectors elementwise and store them
-!     into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ElementVectorProduct
@@ -7048,12 +7192,33 @@
 !
 !
 !     PROCEDURE MQC_Vector_Transpose
+!
+!>    \brief <b> MQC_Vector_Transpose is a function that returns the transpose of an
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Transpose is a function that returns the transpose of an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC vector to transpose.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_Transpose(Vector)
-!
-!     This function returns the transpose of an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -7069,12 +7234,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Conjugate_Transpose
+!
+!>    \brief <b> MQC_Vector_Conjugate_Transpose is a function that returns the 
+!>    conjugate transpose of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Conjugate_Transpose is a function that returns the conjugate 
+!>    transpose of an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC vector to conjugate transpose.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Conjugate_Transpose(Vector)
-!
-!     This function returns the conjugate transpose of an MQC vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -7092,13 +7279,42 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorDotProduct
+!
+!>    \brief <b> MQC_VectorVectorDotProduct is a function that returns the 
+!>    dot product of two MQC vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorDotProduct is a function that returns the dot product of two 
+!>    MQC vectors. The first vector should be a row vector, while the second vector
+!>    should be a column vector. The vectors should be of the same length.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1
+!>    \verbatim
+!>        Vector1 is Type(MQC_Vector)
+!>        The MQC row vector. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector2
+!>    \verbatim
+!>        Vector2 is Type(MQC_Vector)
+!>        The MQC column vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_VectorVectorDotProduct(Vector1,Vector2)
-!
-!     This function is used to compute the dot-product of two MQC vectors.
-!
-!     H. P. Hratchian, 2016.
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -7168,14 +7384,44 @@
       EndIf
 !
       Return
-    End Function MQC_VectorVectorDotProduct
+      End Function MQC_VectorVectorDotProduct
 
-!   Procedure mqc_outer
-    Function mqc_outer(VA,VB) result(M)
+!     PROCEDURE MQC_Outer
 !
-!   This function calculates the outer product of mqc_vector VA and VB,
-!   returns a mqc_matrix M.
-!   X. Sheng 2017.02
+!>    \brief <b> MQC_Outer is a function that returns the outer product of two MQC 
+!>    vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Outer is a function that returns the outer product of two MQC vectors. The
+!>    first vector should be a column vector, while the second vector should be a row 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Type(MQC_Vector)
+!>        The MQC column vector. 
+!>    \endverbatim
+!>
+!>    \param[in] VB
+!>    \verbatim
+!>        VB is Type(MQC_Vector)
+!>        The MQC row vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+    Function mqc_outer(VA,VB) result(M)
 !
       implicit none
       type(mqc_vector),intent(in)::VA,VB
@@ -7231,12 +7477,40 @@
 !
 !
 !     PROCEDURE MQC_CrossProduct
+!
+!>    \brief <b> MQC_CrossProduct is a function that returns the cross product of 
+!>    two MQC vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_CrossProduct is a function that returns the cross product of two MQC 
+!>    vectors. The vectors should both be of length 3.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_CrossProduct(Vector1In,Vector2In)
-!
-!     This function is used to compute the cross-product of two 3D MQC vectors.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -7370,13 +7644,68 @@
 !
 !
 !     PROCEDURE MQC_Print_Vector_Algebra1
+!
+!>    \brief <b> MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC
+!>    vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Scalar.
+!>    \endverbatim
+!>
+!>    \param[in] Verbose
+!>    \verbatim
+!>        Verbose is Logical,Optional
+!>        Adds extra printing to output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
         Blank_At_Bottom)
-!
-!     This subroutine is used to print a MQC_Vector type variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -7432,27 +7761,78 @@
 !
 !
 !     PROCEDURE MQC_vector_cast_real
-      function MQC_vector_cast_real(VA) result(VB)
-!     This function converts a mqc_vector to real. Only integer vector is allowed
-!     because it would lose accuracy otherwise.
 !
-!     X. Sheng, 2017.02
+!>    \brief <b> MQC_vector_cast_real is a function that converts an MQC vector to
+!>    its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_vector_cast_real is a function that converts an MQC vector to its real 
+!>    space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Class(MQC_Vector)
+!>        The MQC vector to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+      function MQC_vector_cast_real(VA) result(VB)
 !
       implicit none
       type(mqc_vector),intent(in)::VA
       type(mqc_vector)::VB
 
       call mqc_allocate_vector(VA%length,VB,'Real')
-      VB%vecr = VA%veci
+      if(mqc_have_int(VA)) then
+        VB%vecr = VA%veci
+      elseif(mqc_have_complex(VA)) then
+        VB%vecr = VA%vecc
+      endif
 
       end function MQC_vector_cast_real
 !
 !
 !     PROCEDURE MQC_vector_cast_complex
-      function MQC_vector_cast_complex(VA) result(VB)
-!     This function converts a mqc_vector to complex. 
 !
-!     X. Sheng, 2017.02
+!>    \brief <b> MQC_vector_cast_complex is a function that converts an MQC vector to
+!>    its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_vector_cast_complex is a function that converts an MQC vector to its 
+!>    complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Class(MQC_Vector)
+!>        The MQC vector to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+      function MQC_vector_cast_complex(VA) result(VB)
 !
       implicit none
       type(mqc_vector),intent(in)::VA
@@ -7469,13 +7849,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_Put
+!
+!>    \brief <b> MQC_Vector_Scalar_Put is a subroutine that updates the value of the
+!>    ith element of a MQC vector with the value of a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_Put is a subroutine that updates the value of the ith element
+!>    of a MQC vector with the value of a MQC scalar. If the location of the element 
+!>    is negative then it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to update Vector at element I.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vector to update. If I
+!>        is negative it is counted from the last element of 
+!>        Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Scalar_Put(Vector,Scalar,I)
-!
-!     This subroutine updates the value of MQC_Vector Vector with the value
-!     in MQC_Scalar Scalar at element I.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -7536,11 +7952,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_Increment
+!
+!>    \brief <b> MQC_Vector_Scalar_Increment is a subroutine that increments the 
+!>    value of the ith element of a MQC vector by the value of a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_Increment is a subroutine that increments the value of the 
+!>    ith element of a MQC vector by the value of a MQC scalar. If the location of 
+!>    the element is negative then it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to update the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vector to update. If I
+!>        is negative it is counted from the last element of 
+!>        Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Scalar_Increment(Vector,Scalar,I)
-!
-!     This subroutine increments the value of MQC_Vector <Vector> by <scalar> at
-!     element <I>.
-!
 !
 !     Variable Declarations.
 !
@@ -7601,13 +8055,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Vector_Put
+!
+!>    \brief <b> MQC_Vector_Vector_Put is a subroutine that updates the values of a 
+!>    subvector of a MQC vector with the values of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Vector_Put is a subroutine that updates the values of a subvector 
+!>    of a MQC vector starting at element I with the values of a MQC vector. Negative 
+!>    I counts from the end of vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update starting at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Class(MQC_Vector)
+!>        The subvector with values to insert into Vector. 
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the first subvector element in Vector 
+!>        to update. If I is negative it is counted from the last
+!>        element of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Vector_Put(Vector,VectorIn,I)
-!
-!     This subroutine updates the value of MQC_Vector Vector with the value
-!     in MQC_Vector VectorIn elements between I and J. Negative I and J count
-!     from end of vector.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Vector),Intent(InOut)::Vector
@@ -7628,19 +8118,19 @@
       Length = IndJ-IndI+1
       If (Length.le.0.or.Length.gt.Vector%Length.or.Length.ne.VectorIn%Length) Call MQC_Error_I('Vector length badly &
     &  defined in MQC_Vector_Vector_Put', 6, &
-    'Length', Length, &
-    'Vector%Length', Vector%Length, &
-    'VectorIn%Length', VectorIn%Length )
+       'Length', Length, &
+       'Vector%Length', Vector%Length, &
+       'VectorIn%Length', VectorIn%Length )
       If (IndI.le.0.or.IndI.gt.(Vector%Length-Length+1)) Call MQC_Error_I('Index I out of bounds &
     &   in MQC_Vector_Vector_Put', 6, &
-    'IndI', IndI, &
-    'Vector%Length', Vector%Length, &
-    'Length', Length )
+        'IndI', IndI, &
+        'Vector%Length', Vector%Length, &
+        'Length', Length )
       If (IndJ.lt.Length.or.IndJ.gt.Vector%Length) Call MQC_Error_I('Index J out of bounds &
     &   in MQC_Vector_Vector_Put', 6, &
-    'IndJ', IndJ, &
-    'Length', Length, &
-    'Vector%Length', Vector%Length )
+        'IndJ', IndJ, &
+        'Length', Length, &
+        'Vector%Length', Vector%Length )
       If (Vector%Data_Type.eq.'Integer') then
         If (VectorIn%Data_Type.eq.'Integer') then
           Vector%VecI(IndI:IndJ) = VectorIn%VecI
