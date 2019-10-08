@@ -19,7 +19,7 @@ lapack/librefblas.a
 lapack/make.inc
 examples/biorthog/biorthog
 .other_libs/build_fcns/Makefile.in*
-.other_libs/build_fcns/configure*
+.other_libs/build_fcns/configure_*
 depcomp
 install-sh
 missing
