@@ -1,4 +1,5 @@
-                                                      
+[![Build Status](https://travis-ci.com/leethomo86/mqcPack.svg?branch=master)](https://travis-ci.com/leethomo86/mqcPack)
+<pre>
    **************************************************************************
    **************************************************************************
    **                                                                      **
@@ -20,21 +21,22 @@
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
-   **    Lee M. Thompson, Xianghai Sheng, Dave Mullally and Hrant P.       **
-   **    Hratchian                                                         **
+   **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave Mullally  **
+   **    and Hrant P. Hratchian                                            **
    **                                                                      **
-   **                          Version 1.0.0 Completed                     **
-   **                               May 1, 2017                            **
+   **                          Version 1.1.0 Completed                     **
+   **                               Oct 7, 2019                            **
    **                                                                      **
    **************************************************************************
    **************************************************************************
-                                                                      
+</pre>                                                                      
 
 The MQC package is a library containing objects and procedures to streamline develoments 
 of quantum chemical methodologies. MQC is built using object-orientated Fortran and has 
 three key features.  
 
-i) Algebra. 
+1. Algebra
+
 MQC has a number of mathematical objects that are designed to hide away and automate 
 manipulation of arrays. Arrays can be packed for efficient memory use and used for 
 operations completely transparently to the user. Furthermore, there is no need to type 
@@ -49,7 +51,8 @@ the eigenvalues and the right eigenvectors (you can return the left eigenvectors
 if you wish, or just the left eigenvectors, or neither set of eigenvectors). MQC can 
 deal with integer, real and complex arrays. 
 
-ii) Quantum chemistry. 
+2. Quantum chemistry 
+
 MQC has objects that built over algebra objects designed specifically for quantum 
 chemistry calculations. The most developed set of objects are the EST objects. This can 
 work out whether you have a restricted, unrestricted or general spin framework and store 
@@ -57,31 +60,32 @@ the spin blocks as makes sense, it can automatically determine how to multiply d
 objects or carry out manipulations. Procedure interfaces allow you to use these objects 
 just like normal matrices or take advantage of their higher-level organization.  
 
-iii) Interfacing with QM codes. 
+3. Interfacing with QM codes
+
 A key feature of MQC is that it makes interacting with a range of computational 
 chemistry codes entirely seamless. By having interfaces with different code APIs, MQC is 
 able to fill the quantum chemistry objects and pass them back out in a manner that is 
 completely transparent to the user. Thus, regardless regardles of what your favorite 
 software is, your program will work without any modifications. 
  
-Getting Started
+# Getting Started
 
-Prerequisites
-  Required Software:
+## Prerequisites
+  + Required Software:
 	 - autotools (only for developers)
 	 - BLAS
 	 - LAPACK library
-  Optional Software:
+  + Optional Software:
 	 - gauopen
 	 - Gaussian 16 or higher
 
-Installing
+## Installing
 
   To build:
-   chmod 755 mqc_install
-   ./mqc_install
-   {Answer questions}
+   1. chmod 755 mqc_install
+   1. ./mqc_install
+   1. {Answer questions}
 
-Licence
+# Licence
   This project is licensed under the Apache License - see the LICENSE file for details
 
