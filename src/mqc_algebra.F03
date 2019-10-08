@@ -5876,6 +5876,7 @@
 !>    \verbatim
 !>        Vector is Type(MQC_Vector)
 !>        The MQC_Vector to be tested.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
