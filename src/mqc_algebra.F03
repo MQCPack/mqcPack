@@ -5442,13 +5442,52 @@
 !----------------------------------------------------------------
 !
 !     PROCEDURE MQC_Allocate_Vector
+!
+!>    \brief <b> MQC_Allocate_Vector is used to allocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_Vector is a subroutine used to allocate a vector type variable
+!>    of the MQC_Vector class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_Vector variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_Vector variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_Vector variable to be of complex type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The length of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_Vector is real
+!>        = 'Integer': the MQC_Vector is integer
+!>        = 'Complex': the MQC_Vector is complex
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Allocate_Vector(N,Vector,Data_Type)
-!
-!     This subroutine is used to allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5478,13 +5517,34 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_Vector
+!
+!>    \brief <b> MQC_Deallocate_Vector is used to deallocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_Vector is a subroutine used to deallocate a vector type variable
+!>    of the MQC_Vector class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_Vector(Vector)
-!
-!     This subroutine is used to de-allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5502,13 +5562,33 @@
 !
 !
 !     PROCEDURE MQC_Length_Vector
+!
+!>    \brief <b> MQC_Length_Vector is used to return the length of an MQC_Vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Length_Vector is used to return the length of an MQC_Vector. If the vector 
+!>    is NOT allocated, the length is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Length_Vector(Vector) Result(ValueOut)
-!
-!     This subroutine is used to return the length of an MQC vector. If the
-!     vector is NOT allocated, the length is returned as 0.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5522,13 +5602,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveReal
+!
+!>    \brief <b> MQC_Vector_HaveReal is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC Vector has an allocated real vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_HaveReal is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC Vector has an allocated real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveReal(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated real vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5542,13 +5643,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveInteger
+!
+!>    \brief <b> MQC_Vector_HaveInteger is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC Vector has an allocated integer vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_HaveInteger is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC Vector has an allocated integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveInteger(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated integer vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5562,13 +5684,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveComplex
+!
+!>    \brief <b> MQC_Vector_HaveComplex is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC Vector has an allocated complex vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_HaveComplex is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC Vector has an allocated complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Function MQC_Vector_HaveComplex(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated complex vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5582,13 +5725,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_IsColumn
+!
+!>    \brief <b> MQC_Vector_IsColumn is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC Vector is a column or row respectively</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_IsColumn is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC Vector is a column or row respectively.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_Vector_IsColumn(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether the vector is
-!     a column or row respectively.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5602,13 +5766,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Real is a subroutine that copies an
+!>    integer MQC_Vector to a real MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Int2Real is a subroutine that copies an integer 
+!>    MQC_Vector to a real MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Int2Real(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's real vector
-!     space.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5626,13 +5811,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Complex is a subroutine that copies an
+!>    integer MQC_Vector to a complex MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Int2Complex is a subroutine that copies an integer 
+!>    MQC_Vector to a complex MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Int2Complex(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5650,13 +5856,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Int is a subroutine that copies a
+!>    real MQC_Vector to an integer MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Real2Int is a subroutine that copies a real 
+!>    MQC_Vector to an integer MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Real2Int(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5674,13 +5901,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Complex is a subroutine that copies a
+!>    real MQC_Vector to an complex MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Real2Complex is a subroutine that copies a real 
+!>    MQC_Vector to a complex MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Real2Complex(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5699,13 +5947,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Int is a subroutine that copies a
+!>    complex MQC_Vector to an integer MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Complex2Int is a subroutine that copies a complex
+!>    MQC_Vector to an integer MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Int(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5723,13 +5992,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Real is a subroutine that copies a
+!>    complex MQC_Vector to a real MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Copy_Complex2Real is a subroutine that copies a complex
+!>    MQC_Vector to a real MQC_Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Real(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's real vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5747,11 +6037,40 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_At
+!
+!>    \brief <b> MQC_Vector_Scalar_At is a function that returns the element at
+!>    the specified element of MQC_Vector as an MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Scalar_At is a function that returns the element at the specified 
+!>    element of MQC_Vector as an MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vec 
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in,out] I 
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The element to return
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_Vector_Scalar_At(Vec,I) Result(Element)
-!
-!     A function that returns the element at (i) of a mqc_vector type as a mqc_scalar type.
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5779,12 +6098,47 @@
 !
 !
 !     PROCEDURE MQC_Vector_Vector_At
+!
+!>    \brief <b> MQC_Vector_Vector_At is a function that returns the vector at
+!>    the specified subvector of MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Vector_At is a function that returns the vector at the specified 
+!>    subvector of MQC_Vector. Negative values of I or J indicate that counting 
+!>    proceeds from the last element rather than the first as with positive numbers.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vec 
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in,out] I 
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first element of the subvector
+!>    \endverbatim
+!>
+!>    \param[in,out] J 
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The last element of the subvector
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Vector_At(Vec,I,J) Result(Vector)
-!
-!     A function that returns MQC_Vector Vector between I and J of an
-!     MQC_Vector Vec. Negative I and J count from end of index.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5842,12 +6196,40 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2IntegerArray
+!
+!>    \brief <b> MQC_Set_Vector2IntegerArray is a subroutine that is used to set an
+!>    intrinsic integer array equal to an MQC Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Vector2IntegerArray is a subroutine that is used to set an intrinsic
+!>    integer array equal to an MQC Vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Allocatable
+!>        The intrinsic integer array to fill
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn 
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The vector with data to output
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian 
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2IntegerArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
