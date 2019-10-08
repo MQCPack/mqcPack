@@ -2747,23 +2747,30 @@ CONTAINS
       Type(MQC_Vector),intent(inout)::Alpha_Vector
       integer(kind=int64),intent(in)::IOut
       Integer(kind=int64)::ABSN1
-      Integer(kind=int32)::I
+      Integer(kind=int64)::I
+      Type(MQC_Scalar)::Temp
 
       If (associated(Alpha_Array%ArrC)) then
          ABSN1 = Abs(N1)
          Call MQC_Allocate_Vector(ABSN1,Alpha_Vector,'Complex')
          Do I=1,ABSN1
-            Alpha_Vector%VecC(I) = Alpha_Array%ArrC(I)
+!            Alpha_Vector%VecC(I) = Alpha_Array%ArrC(I)
+            Temp = Alpha_Array%ArrC(I)
+            Call Alpha_Vector%put(Temp,I)
          EndDo
       Else If (associated(Alpha_Array%ArrR)) then
          Call MQC_Allocate_Vector(N1,Alpha_Vector,'Real')
          Do I=1,N1
-            Alpha_Vector%VecR(I) = Alpha_Array%ArrR(I)
+!            Alpha_Vector%VecR(I) = Alpha_Array%ArrR(I)
+            Temp = Alpha_Array%ArrR(I)
+            Call Alpha_Vector%put(Temp,I)
          EndDo
       Else If (associated(Alpha_Array%ArrI)) then
          Call MQC_Allocate_Vector(N1,Alpha_Vector,'Integer')
          Do I=1,N1
-            Alpha_Vector%VecI(I) = Alpha_Array%ArrI(I)
+!            Alpha_Vector%VecI(I) = Alpha_Array%ArrI(I)
+            Temp = Alpha_Array%ArrI(I)
+            Call Alpha_Vector%put(Temp,I)
          EndDo
       EndIf
 

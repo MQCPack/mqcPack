@@ -97,12 +97,12 @@
 !
 !>    \brief <b> Rank 1 array variable</b>
       Type MQC_Vector
-        Integer(kind=int64)::Length=0
+        Integer(kind=int64),Private::Length=0
         Logical,Private::Column=.True.
-        Character(Len=64)::Data_Type ! Real,Integer,Complex
-        Real(kind=real64),Dimension(:),Allocatable::VecR
-        Integer(kind=int64),Dimension(:),Allocatable::VecI
-        Complex(Kind=real64),Dimension(:),Allocatable::VecC
+        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+        Real(kind=real64),Private,Dimension(:),Allocatable::VecR
+        Integer(kind=int64),Private,Dimension(:),Allocatable::VecI
+        Complex(Kind=real64),Private,Dimension(:),Allocatable::VecC
       Contains
 !>      \brief <b> Print the MQC Vector</b>
         Procedure, Public::print => MQC_Print_Vector_Algebra1
