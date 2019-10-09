@@ -165,9 +165,9 @@
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
-        Real(kind=real64),Dimension(:,:),Allocatable::MatR
-        Integer(kind=int64),Dimension(:,:),Allocatable::MatI
-        Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
+        Real(kind=real64),Private,Dimension(:,:),Allocatable::MatR
+        Integer(kind=int64),Private,Dimension(:,:),Allocatable::MatI
+        Complex(Kind=real64),Private,Dimension(:,:),Allocatable::MatC
       Contains
 !>      \brief <b> Print the MQC Matrix</b>
         Procedure, Public::print => MQC_Print_Matrix_Algebra1

@@ -2785,7 +2785,8 @@ CONTAINS
       integer(kind=int64),intent(in)::IOut
       Real(Kind=real64),contiguous,Pointer::R2D(:,:) =>null()
       Complex(Kind=real64),contiguous,Pointer::C2D(:,:) =>null()
-      Integer(kind=int32)::I, J, IJ
+      Integer(kind=int64)::I, J, IJ
+      Type(MQC_Scalar)::Temp
 
       If ( N1.GT.0 .AND. N2.GT.0 ) Then
          If (associated(Alpha_Array%ArrC)) then
@@ -2793,7 +2794,9 @@ CONTAINS
             Call MQC_Allocate_Matrix(N1,N2,Alpha_Matrix,'Complex','StorFull')
             Do J=1,N2
                Do I=1,N1
-                  Alpha_Matrix%MatC(I,J) = C2D(I,J)
+!                  Alpha_Matrix%MatC(I,J) = C2D(I,J)
+                  Temp = C2D(I,J)
+                  call Alpha_Matrix%put(Temp,I,J)
                EndDo
             EndDo
          Else
@@ -2801,7 +2804,9 @@ CONTAINS
             Call MQC_Allocate_Matrix(N1,N2,Alpha_Matrix,'Real','StorFull')
             Do J=1,N2
                Do I=1,N1
-                  Alpha_Matrix%MatR(I,J) = R2D(I,J)
+!                  Alpha_Matrix%MatR(I,J) = R2D(I,J)
+                  Temp = R2D(I,J)
+                  call Alpha_Matrix%put(temp,I,J) 
                EndDo
             EndDo
          EndIf
@@ -2817,8 +2822,11 @@ CONTAINS
       write(6,2345) trim(Alpha_Array%Data_Name),I,J,IJ,C2D(IJ,1)
  2345 format( a, 3I5,2E20.10,"i" )
 #endif
-                  Alpha_Matrix%MatC(I,J) = C2D(IJ,1)
-                  Alpha_Matrix%MatC(J,I) = C2D(IJ,1)
+!                  Alpha_Matrix%MatC(I,J) = C2D(IJ,1)
+!                  Alpha_Matrix%MatC(J,I) = C2D(IJ,1)
+                   Temp = C2D(IJ,1)
+                   call Alpha_Matrix%put(temp,I,J)
+                   call Alpha_Matrix%put(temp,J,I)
                EndDo
             EndDo
          Else
@@ -2826,7 +2834,9 @@ CONTAINS
             Call MQC_Allocate_Matrix(N2,N2,Alpha_Matrix,'Real','StorSymm')
             J=1
             Do I=1,(N2+1)*N2/2
-               Alpha_Matrix%MatR(I,J) = R2D(I,J)
+!               Alpha_Matrix%MatR(I,J) = R2D(I,J)
+               temp = R2D(I,J)
+               call Alpha_Matrix%put(temp,I,J)
             EndDo
          EndIf
       EndIf
