@@ -122,8 +122,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:afc9043efe1c97603d5c09a5e59428886"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarComplexSubtract is a function that is used to subtract an intrinsic complex from an MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1operator_07-_08.html#afc9043efe1c97603d5c09a5e59428886">More...</a><br /></td></tr>
 <tr class="separator:afc9043efe1c97603d5c09a5e59428886"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9372a0b09c4396193f485eadebe5528"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07-_08.html#af9372a0b09c4396193f485eadebe5528">mqc_vectorvectordifference</a> (Vector1In, Vector2In)</td></tr>
+<tr class="memdesc:af9372a0b09c4396193f485eadebe5528"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorVectorDifference is a function that subtracts two MQC vectors and stores them in another MQC vector</b>  <a href="interfacemqc__algebra_1_1operator_07-_08.html#af9372a0b09c4396193f485eadebe5528">More...</a><br /></td></tr>
 <tr class="separator:af9372a0b09c4396193f485eadebe5528"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac821bdfd0dbaeb23ee152c06d9d13f0a"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07-_08.html#ac821bdfd0dbaeb23ee152c06d9d13f0a">mqc_scalarvectordifference</a> (ScalarIn, VectorIn)</td></tr>
+<tr class="memdesc:ac821bdfd0dbaeb23ee152c06d9d13f0a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from all elements of an MQC vector</b>  <a href="interfacemqc__algebra_1_1operator_07-_08.html#ac821bdfd0dbaeb23ee152c06d9d13f0a">More...</a><br /></td></tr>
 <tr class="separator:ac821bdfd0dbaeb23ee152c06d9d13f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedc77c713fc742f4594f2d34787c12ce"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07-_08.html#aedc77c713fc742f4594f2d34787c12ce">mqc_matrixmatrixsubtract</a> (MA, MB)</td></tr>
 <tr class="separator:aedc77c713fc742f4594f2d34787c12ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -485,6 +487,23 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from all elements of an MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from 
+    all elements of an MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ScalarIn</td><td><pre class="fragment">        ScalarIn is Type(MQC_Scalar)
+        The MQC scalar to be subtracted from elements of the
+        the MQC vector.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">VectorIn</td><td><pre class="fragment">        VectorIn is Type(MQC_Vector)
+        The MQC vector with elements from which ScalarIn will
+        be subtracted.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="af9372a0b09c4396193f485eadebe5528"></a>
@@ -513,6 +532,23 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorVectorDifference is a function that subtracts two MQC vectors and stores them in another MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorVectorDifference is a function that subtracts two MQC vectors and 
+    stores them in another MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector1In</td><td><pre class="fragment">        Vector1In is Type(MQC_Vector)
+        The first MQC vector from which the second will be 
+        subtracted.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector2In</td><td><pre class="fragment">        Vector2In is Type(MQC_Vector)
+        The second MQC vector that will be subtracted from the
+        first.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -524,7 +560,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1operator_07-_08.html">operator(-)</a></li>
-    <li class="footer">Generated on Fri Oct 4 2019 13:05:42 for MQCPack by
+    <li class="footer">Generated on Tue Oct 8 2019 18:56:49 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

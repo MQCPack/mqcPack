@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"interfacemqc__est_1_1dot__product.html#ad2f10ea7055ba0d3d2191d935e0ec00e":[1,0,1,3,0],
 "interfacemqc__est_1_1matmul.html":[1,0,1,4],
 "interfacemqc__est_1_1matmul.html#a625eaba83617dcd6846000adcfe0bd6e":[1,0,1,4,3],
 "interfacemqc__est_1_1matmul.html#a741b4cb6b7e8a09632fffbe2ce19ac6b":[1,0,1,4,1],
@@ -249,5 +248,6 @@ var NAVTREEINDEX1 =
 "mqc__algebra_8_f03.html#ae64f8cd347b0d00129d7fce3ea323c46":[2,0,0,0,165],
 "mqc__algebra_8_f03.html#ae7a5d645191f50e053bf5c79f2d8b14c":[2,0,0,0,161],
 "mqc__algebra_8_f03.html#ae88b633e98529241ac0027699711cff4":[2,0,0,0,86],
-"mqc__algebra_8_f03.html#ae9a5a36d7be18f1b190240fd8a7ab81e":[2,0,0,0,240]
+"mqc__algebra_8_f03.html#ae9a5a36d7be18f1b190240fd8a7ab81e":[2,0,0,0,240],
+"mqc__algebra_8_f03.html#aedf13b444bd513d0fec9ec1842dd11ca":[2,0,0,0,155]
 };

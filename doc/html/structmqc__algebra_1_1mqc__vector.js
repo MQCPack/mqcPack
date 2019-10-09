@@ -23,10 +23,5 @@ var structmqc__algebra_1_1mqc__vector =
     [ "transpose", "structmqc__algebra_1_1mqc__vector.html#a2367ecc0a1083010b4a0ba3f742cfb95", null ],
     [ "unshift", "structmqc__algebra_1_1mqc__vector.html#af3d9f3466906933f7a242efa4e0a3eba", null ],
     [ "vat", "structmqc__algebra_1_1mqc__vector.html#ae5da8b46d5a7f9af220d1f3274e068f0", null ],
-    [ "vput", "structmqc__algebra_1_1mqc__vector.html#adeaaa060aaf7425458a08ad93180fa6c", null ],
-    [ "data_type", "structmqc__algebra_1_1mqc__vector.html#a89e7b5d693c50e0906c8612b144600b0", null ],
-    [ "length", "structmqc__algebra_1_1mqc__vector.html#a6b919c7edd3670d1cf62359cee52572e", null ],
-    [ "vecc", "structmqc__algebra_1_1mqc__vector.html#a76965c73ecdb7a243c8825c3748baa2e", null ],
-    [ "veci", "structmqc__algebra_1_1mqc__vector.html#a7a6646168749c8859be8b2c2a616aa63", null ],
-    [ "vecr", "structmqc__algebra_1_1mqc__vector.html#a83c68a0dddd1e432eed1f1a1f8698e1a", null ]
+    [ "vput", "structmqc__algebra_1_1mqc__vector.html#adeaaa060aaf7425458a08ad93180fa6c", null ]
 ];
