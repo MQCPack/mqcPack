@@ -20,8 +20,5 @@ var structmqc__algebra_1_1mqc__matrix =
     [ "trace", "structmqc__algebra_1_1mqc__matrix.html#a82e4d3bd80b828fe49557223257161a1", null ],
     [ "transpose", "structmqc__algebra_1_1mqc__matrix.html#afd4f37e574bad5e5a8e23dc380220b4b", null ],
     [ "vat", "structmqc__algebra_1_1mqc__matrix.html#a2c9a867719b3c27c3bf8bdfaea1bca22", null ],
-    [ "vput", "structmqc__algebra_1_1mqc__matrix.html#ad60947a502bab9cbbb833e58ee369d10", null ],
-    [ "matc", "structmqc__algebra_1_1mqc__matrix.html#a098f1808ab7f893eb3ca55b5fb5531f9", null ],
-    [ "mati", "structmqc__algebra_1_1mqc__matrix.html#a8a8013e1fa075a65153be486f10c7256", null ],
-    [ "matr", "structmqc__algebra_1_1mqc__matrix.html#aec72e31c33a903979061b6f3d1991e9c", null ]
+    [ "vput", "structmqc__algebra_1_1mqc__matrix.html#ad60947a502bab9cbbb833e58ee369d10", null ]
 ];

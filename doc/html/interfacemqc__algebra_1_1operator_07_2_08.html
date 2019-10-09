@@ -122,12 +122,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:afa4b322e11d7059b8f97d5723d0940a9"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarComplexDivide is a function that is used to divide an MQC_Scalar by an intrinsic complex</b>  <a href="interfacemqc__algebra_1_1operator_07_2_08.html#afa4b322e11d7059b8f97d5723d0940a9">More...</a><br /></td></tr>
 <tr class="separator:afa4b322e11d7059b8f97d5723d0940a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37953e146129720a966d8cfc664326ec"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_2_08.html#a37953e146129720a966d8cfc664326ec">mqc_vectorscalardivide</a> (vector, scalar)</td></tr>
+<tr class="memdesc:a37953e146129720a966d8cfc664326ec"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorScalarDivide is a function that returns a MQC vector divided by a MQC scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_2_08.html#a37953e146129720a966d8cfc664326ec">More...</a><br /></td></tr>
 <tr class="separator:a37953e146129720a966d8cfc664326ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e892235fecdbbf81985875eb3a80e6f"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_2_08.html#a8e892235fecdbbf81985875eb3a80e6f">mqc_vectorrealdivide</a> (vector, realIn)</td></tr>
+<tr class="memdesc:a8e892235fecdbbf81985875eb3a80e6f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorRealDivide is a function that returns a MQC vector divided by an intrinsic real integer</b>  <a href="interfacemqc__algebra_1_1operator_07_2_08.html#a8e892235fecdbbf81985875eb3a80e6f">More...</a><br /></td></tr>
 <tr class="separator:a8e892235fecdbbf81985875eb3a80e6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5b3064b8ee3e42d64644199847551b8"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_2_08.html#ae5b3064b8ee3e42d64644199847551b8">mqc_vectorintegerdivide</a> (vector, intIn)</td></tr>
+<tr class="memdesc:ae5b3064b8ee3e42d64644199847551b8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorIntegerDivide is a function that returns a MQC vector divided by an intrinsic integer scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_2_08.html#ae5b3064b8ee3e42d64644199847551b8">More...</a><br /></td></tr>
 <tr class="separator:ae5b3064b8ee3e42d64644199847551b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d84e050fa477a2db668e940f4e4b557"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_2_08.html#a5d84e050fa477a2db668e940f4e4b557">mqc_vectorcomplexdivide</a> (vector, compIn)</td></tr>
+<tr class="memdesc:a5d84e050fa477a2db668e940f4e4b557"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorComplexDivide is a function that returns a MQC vector divided by an intrinsic complex scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_2_08.html#a5d84e050fa477a2db668e940f4e4b557">More...</a><br /></td></tr>
 <tr class="separator:a5d84e050fa477a2db668e940f4e4b557"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -459,6 +463,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorComplexDivide is a function that returns a MQC vector divided by an intrinsic complex scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorComplexDivide is a function that returns a MQC vector divided by an 
+    intrinsic complex scalar.  </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+        The MQC_Vector to divide.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">CompIn</td><td><pre class="fragment">        CompIn is Complex(kind=comp64)
+        The intrinsic complex scalar to divide by.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <a id="ae5b3064b8ee3e42d64644199847551b8"></a>
@@ -486,6 +505,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_VectorIntegerDivide is a function that returns a MQC vector divided by an intrinsic integer scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorIntegerDivide is a function that returns a MQC vector divided by an 
+    intrinsic integer scalar.  </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+        The MQC_Vector to divide.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">IntIn</td><td><pre class="fragment">        IntIn is Integer(kind=int64)
+        The intrinsic integer scalar to divide by.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
 
 </div>
 </div>
@@ -515,6 +549,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorRealDivide is a function that returns a MQC vector divided by an intrinsic real integer</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorRealDivide is a function that returns a MQC vector divided by an 
+    intrinsic real scalar.  </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+        The MQC_Vector to divide.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">RealIn</td><td><pre class="fragment">        RealIn is Real(kind=real64)
+        The intrinsic real scalar to divide by.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <a id="a37953e146129720a966d8cfc664326ec"></a>
@@ -543,6 +592,22 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorScalarDivide is a function that returns a MQC vector divided by a MQC scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorScalarDivide is a function that returns a MQC vector divided by a 
+    MQC scalar.  </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Type(MQC_Vector)
+        The MQC_Vector to divide.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC_Scalar to divide by.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>A. D. Mahler <br  />
+ </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -554,7 +619,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1operator_07_2_08.html">operator(/)</a></li>
-    <li class="footer">Generated on Tue Oct 8 2019 18:56:49 for MQCPack by
+    <li class="footer">Generated on Wed Oct 9 2019 19:08:20 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

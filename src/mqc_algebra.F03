@@ -8176,13 +8176,48 @@
 !
 !
 !     PROCEDURE MQC_Vector_Initialize
+!
+!>    \brief <b> MQC_Vector_Initialize is a subroutine that initializes a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Initialize is a subroutine that initializes a MQC vector. Default
+!>    element values are 0.0, or otherwise vector can be initialized with optional
+!>    argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to intialize.
+!>    \endverbatim
+!>
+!>    \param[in] Length
+!>    \verbatim
+!>        Length is Integer(kind=int64)
+!>        The length to initialize vector
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        Value to set each element of Vector. If not present,
+!>        the value is set to 0.0. Can be of type integer, real,
+!>        complex or MQC_Scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Initialize(Vector,Length,Scalar)
-!
-!     This subroutine initializes an MQC_Vector Vector of dimension
-!     Length with the value Scalar in all elements.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -8226,73 +8261,132 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorProduct
+!
+!>    \brief <b> MQC_ScalarVectorProduct is a function that returns the product of a
+!>    MQC scalar with a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarVectorProduct is a function that returns the product of a MQC scalar 
+!>    with a MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to multiply. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng      
+!>    \author A. D. Mahler  
+!>    \date 2017, 2019
+!
       Function MQC_ScalarVectorProduct(Scalar,Vector) Result(Vector_Res)
-!     This function calculates the product of an mqc_scalar and an mqc_vector
 !
-!      X. Sheng 2017.02
-!      A. Mahler, 2019
-!
-        implicit none
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
-        
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Integer')
-            vector_res%veci = scalar%scai * vector%veci
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%veci
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%veci
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Real') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scai * vector%vecr
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%vecr
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Complex') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scai * vector%vecc
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scar * vector%vecc
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecc
-          else
-            call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
+      implicit none
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+      
+      call mqc_deallocate_vector(vector_res)
+      if (vector%Data_type.eq.'Integer') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Integer')
+          vector_res%veci = scalar%scai * vector%veci
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scar * vector%veci
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%veci
         else
           call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-               'vector%Data_type', vector%Data_type )
-        endif
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      elseIf(vector%Data_type.eq.'Real') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scai * vector%vecr
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scar * vector%vecr
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%vecr
+        else
+          call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      elseIf(vector%Data_type.eq.'Complex') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scai * vector%vecc
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scar * vector%vecc
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%vecc
+        else
+          call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      else
+        call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+             'vector%Data_type', vector%Data_type )
+      endif
 
       end function mqc_ScalarVectorProduct
 !
 !     PROCEDURE MQC_VectorScalarProduct
+!
+!>    \brief <b> MQC_VectorScalarProduct is a function that returns the product of a
+!>    MQC vector with a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarProduct is a function that returns the product of a MQC vector 
+!>    with a MQC scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply. 
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng      
+!>    \date 2017
+!
       function mqc_VectorScalarProduct(vector,scalar) result(vector_res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_matrix
-!
-!     X. Sheng 2017.02
 !
       implicit none
       type(mqc_scalar),intent(in)::scalar
@@ -8305,42 +8399,97 @@
 !
 !
 !     PROCEDURE MQC_VectorScalarDivide
+!
+!>    \brief <b> MQC_VectorScalarDivide is a function that returns a MQC vector
+!>    divided by a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarDivide is a function that returns a MQC vector divided by a 
+!>    MQC scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler  
+!>    \date 2019
+!
       Function MQC_VectorScalarDivide(vector,scalar) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a scalar.
-!     Function determines if scalar is zero, then passes reciprocal of
-!     scalar to MQC_VectorScalarProduct
-!
-!     A. Mahler, 2019
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector)::vector_res
-        type(mqc_scalar)::zero,neg_one,reciprocal
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector)::vector_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
 
-        zero = 0.0
-        neg_one = -1.0
+      zero = 0.0
+      neg_one = -1.0
 
-        if(scalar%abs() .le. zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = scalar
-          reciprocal = reciprocal ** neg_one
-        endif
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
 
-        vector_res = MQC_VectorScalarProduct(vector,reciprocal)
+      vector_res = MQC_VectorScalarProduct(vector,reciprocal)
 
       End Function MQC_VectorScalarDivide
 !
 !
 !     PROCEDURE MQC_RealVectorProduct
+!
+!>    \brief <b> MQC_RealVectorProduct is a function that returns the product of an  
+!>    intrinsic real scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealVectorProduct is a function that returns the product of an intrinsic 
+!>    real scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The real intrinsic to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealVectorProduct(RealIn,Vector) Result(Vector_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
 !
         implicit none
         real(kind=real64),intent(in)::realIn
@@ -8366,11 +8515,40 @@
 !
 !
 !     PROCEDURE MQC_VectorRealProduct
+!
+!>    \brief <b> MQC_VectorRealProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic real scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorRealProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic real scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The real intrinsic to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorRealProduct(vector,realIn) result(vector_res)
-!
-!     This function calculates the product of a real and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       real(kind=real64),intent(in)::realIn
@@ -8383,70 +8561,156 @@
 !
 !
 !     PROCEDURE MQC_VectorRealDivide
+!
+!>    \brief <b> MQC_VectorRealDivide is a function that returns a MQC vector
+!>    divided by an intrinsic real integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorRealDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic real scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorRealDivide(vector,realIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a real.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        real(kind=real64),intent(in)::realIn
-        type(mqc_vector)::vector_res
-        real(kind=real64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      real(kind=real64),intent(in)::realIn
+      type(mqc_vector)::vector_res
+      real(kind=real64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(realIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = realIn
-          reciprocal = reciprocal ** (-1.0)
-        endif
+      if(abs(realIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = realIn
+        reciprocal = reciprocal ** (-1.0)
+      endif
 
-        vector_res = MQC_VectorRealProduct(vector,reciprocal)
+      vector_res = MQC_VectorRealProduct(vector,reciprocal)
 
       End Function MQC_VectorRealDivide
 !
 !
-!     PROCEDURE MQC_integerVectorProduct
+!     PROCEDURE MQC_IntegerVectorProduct
+!
+!>    \brief <b> MQC_IntegerVectorProduct is a function that returns the product of 
+!>    an intrinsic integer scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerVectorProduct is a function that returns the product of an intrinsic 
+!>    integer scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerVectorProduct(intIn,Vector) Result(Vector_Res)
 !
-!     This function calculates the product of an integer and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
-!
-        implicit none
-        integer(kind=int64),intent(in)::intIn
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
-        
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer') then
-          call mqc_allocate_vector(vector%length,vector_res,'Integer')
-          vector_res%veci = intIn * vector%veci
-        elseIf(vector%Data_type.eq.'Real') then
-          call mqc_allocate_vector(vector%length,vector_res,'Real')
-          vector_res%vecr = intIn * vector%vecr
-        elseIf(vector%Data_type.eq.'Complex') then
-          call mqc_allocate_vector(vector%length,vector_res,'Complex')
-          vector_res%vecc = intIn * vector%vecc
-        else
-          call mqc_error_a('unrecognised data type in mqc_integervectorproduct', 6, &
-               'vector%Data_type', vector%Data_type )
-        endif
+      implicit none
+      integer(kind=int64),intent(in)::intIn
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+      
+      call mqc_deallocate_vector(vector_res)
+      if (vector%Data_type.eq.'Integer') then
+        call mqc_allocate_vector(vector%length,vector_res,'Integer')
+        vector_res%veci = intIn * vector%veci
+      elseIf(vector%Data_type.eq.'Real') then
+        call mqc_allocate_vector(vector%length,vector_res,'Real')
+        vector_res%vecr = intIn * vector%vecr
+      elseIf(vector%Data_type.eq.'Complex') then
+        call mqc_allocate_vector(vector%length,vector_res,'Complex')
+        vector_res%vecc = intIn * vector%vecc
+      else
+        call mqc_error_a('unrecognised data type in mqc_integervectorproduct', 6, &
+             'vector%Data_type', vector%Data_type )
+      endif
 
       end function mqc_IntegerVectorProduct
 !
 !
 !     PROCEDURE MQC_VectorIntegerProduct
+!
+!>    \brief <b> MQC_VectorIntegerProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic integer scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorIntegerProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic integer scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The integer intrinsic to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorIntegerProduct(vector,intIn) result(vector_res)
-!
-!     This function calculates the product of an integer and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       integer(kind=int64),intent(in)::intIn
@@ -8459,40 +8723,97 @@
 !
 !
 !     PROCEDURE MQC_VectorIntegerDivide
+!
+!>    \brief <b> MQC_VectorIntegerDivide is a function that returns a MQC vector
+!>    divided by an intrinsic integer scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorIntegerDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic integer scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn 
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorIntegerDivide(vector,intIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by an integer.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        integer(kind=int64),intent(in)::intIn
-        type(mqc_vector)::vector_res
-        integer(kind=int64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      integer(kind=int64),intent(in)::intIn
+      type(mqc_vector)::vector_res
+      integer(kind=int64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(intIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = intIn
-          reciprocal = reciprocal ** (-1)
-        endif
+      if(abs(intIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = intIn
+        reciprocal = reciprocal ** (-1)
+      endif
 
-        vector_res = MQC_VectorIntegerProduct(vector,reciprocal)
+      vector_res = MQC_VectorIntegerProduct(vector,reciprocal)
 
       End Function MQC_VectorIntegerDivide
 !
 !
 !     PROCEDURE MQC_ComplexVectorProduct
+!
+!>    \brief <b> MQC_ComplexVectorProduct is a function that returns the product of 
+!>    an intrinsic complex scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexVectorProduct is a function that returns the product of an intrinsic 
+!>    integer scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] CompIn
+!>    \verbatim
+!>        CompIn is Complex(kind=real64)
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexVectorProduct(CompIn,Vector) Result(Vector_Res)
-!
-!     This function calculates the product of a complex variable and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
 !
         implicit none
         complex(kind=real64),intent(in)::compIn
@@ -8518,11 +8839,40 @@
 !
 !
 !     PROCEDURE MQC_VectorComplexProduct
+!
+!>    \brief <b> MQC_VectorComplexProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic complex scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorComplexProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic complex scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] CompIn
+!>    \verbatim
+!>        CompIn is Complex(kind=real64)
+!>        The integer complex to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorComplexProduct(vector,compIn) result(vector_res)
-!
-!     This function calculates the product of a complex variable and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       complex(kind=real64),intent(in)::compIn
@@ -8535,45 +8885,104 @@
 !
 !
 !     PROCEDURE MQC_VectorComplexDivide
+!
+!>    \brief <b> MQC_VectorComplexDivide is a function that returns a MQC vector
+!>    divided by an intrinsic complex scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorComplexDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic complex scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] CompIn 
+!>    \verbatim
+!>        CompIn is Complex(kind=comp64)
+!>        The intrinsic complex scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorComplexDivide(vector,compIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a complex.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        complex(kind=real64),intent(in)::compIn
-        type(mqc_vector)::vector_res
-        complex(kind=real64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      complex(kind=real64),intent(in)::compIn
+      type(mqc_vector)::vector_res
+      complex(kind=real64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(compIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = compIn
-          reciprocal = reciprocal ** (-1.0)
-        endif
+      if(abs(compIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = compIn
+        reciprocal = reciprocal ** (-1.0)
+      endif
 
-        vector_res = MQC_VectorComplexProduct(vector,reciprocal)
+      vector_res = MQC_VectorComplexProduct(vector,reciprocal)
 
       End Function MQC_VectorComplexDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
+!
+!>    \brief <b> MQC_Vector_Norm is a function that returns the norm of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Norm is a function that returns the norm of an MQC vector. The 
+!>    following options are available:
+!>
+!>    1. methodIn = 'M' uses the maximum absolute value max(abs(A(i))).
+!>    2. methodIn = '1' uses the one norm.
+!>    3. methodIn = 'I' uses the infinity norm.
+!>    4. methodIn = 'F' uses the Frobenius norm (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] MethodIn
+!>    \verbatim
+!>        MethodIn is Character(len=1)
+!>        = 'M': max(abs(A(i)))
+!>        = '1': one norm
+!>        = 'I': infinity norm
+!>        = 'F': Frobenius norm.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Norm(vector,methodIn) result(norm)
-!
-!     This function returns the norm of an mqc vector.
-!     Different norms can be computed with optional argument methodIn.
-!     'M' - max(abs(A(i,j)))
-!     '1' - one norm
-!     'I' - infinty norm
-!     'F' - Frobenius norm (default)
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -8616,11 +9025,34 @@
       End Function MQC_Vector_Norm
 !
 !     PROCEDURE MQC_Vector_isAllocated
+!
+!>    \brief <b> MQC_Vector_isAllocated is a function that returns TRUE is an MQC
+!>    vector is allocated and FALSE if it is not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_isAllocated is a function that returns TRUE is an MQC vector is 
+!>    allocated and FALSE if it is not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_isAllocated(Vector) Result(isAllocated)
-!
-!     This function returns if an mqc vector is allocated or not.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -8637,11 +9069,39 @@
 !
 !
 !     PROCEDURE MQC_Vector_Push
+!
+!>    \brief <b> MQC_Vector_Push is a function that adds a value to the end of a 
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Push is a function that adds a value to the end of a MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar) 
+!>        The value that will be added to the end of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Push(Vector,Scalar) 
-!
-!     This function adds a value to the end of a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -8665,11 +9125,40 @@
 !
 !
 !     PROCEDURE MQC_Vector_Unshift
+!
+!>    \brief <b> MQC_Vector_Unshift is a function that adds a value to the beginning
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Unshift is a function that adds a value to the beginning of a MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar) 
+!>        The value that will be added to the beginning of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Unshift(Vector,Scalar) 
-!
-!     This function adds a value to the beginning of a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
