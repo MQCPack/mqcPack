@@ -104,6 +104,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:af3462a0e8ca3290319e080d942ece87d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Print_Scalar_Algebra1 is a subroutine used to print an MQC_Scalar</b>  <a href="interfacemqc__algebra_1_1mqc__print.html#af3462a0e8ca3290319e080d942ece87d">More...</a><br /></td></tr>
 <tr class="separator:af3462a0e8ca3290319e080d942ece87d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7088ab70494e011bd89e7c8e01153b2e"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__print.html#a7088ab70494e011bd89e7c8e01153b2e">mqc_print_vector_algebra1</a> (Vector, IOut, Header, Verbose, Blank_At_Top, Blank_At_Bottom)</td></tr>
+<tr class="memdesc:a7088ab70494e011bd89e7c8e01153b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector</b>  <a href="interfacemqc__algebra_1_1mqc__print.html#a7088ab70494e011bd89e7c8e01153b2e">More...</a><br /></td></tr>
 <tr class="separator:a7088ab70494e011bd89e7c8e01153b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e78fc7d53b538e8f55b72b8e95ed977"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__print.html#a4e78fc7d53b538e8f55b72b8e95ed977">mqc_print_matrix_algebra1</a> (Matrix, IOut, Header, Blank_At_Top, Blank_At_Bottom)</td></tr>
 <tr class="separator:a4e78fc7d53b538e8f55b72b8e95ed977"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -256,17 +257,17 @@ Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Class(MQC_Scalar)
-        The variable to be printed</pre></td></tr>
+        The variable to be printed.</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">IOut</td><td><pre class="fragment">        IOut is Integer(kind=int64) 
-        The Fortran file number to print to </pre></td></tr>
+        The Fortran file number to print to. </pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Header</td><td><pre class="fragment">        Header is Character(Len=*)
-        The title to print along with Scalar</pre></td></tr>
+        The title to print along with Scalar.</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Top</td><td><pre class="fragment">        Blank_At_Top is Logical,Optional
         = .True.:  print blank line above output
-        = .False.: do not print blank line above output</pre></td></tr>
+        = .False.: do not print blank line above output.</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Bottom</td><td><pre class="fragment">        Blank_At_Bottom is Logical,Optional
         = .True.:  print blank line below output
-        = .False.: do not print blank line below output</pre> </td></tr>
+        = .False.: do not print blank line below output.</pre> </td></tr>
   </table>
   </dd>
 </dl>
@@ -325,6 +326,32 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector. 
+    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+    lines before or after output.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Class(MQC_Vector)
+        The variable to be printed.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">IOut</td><td><pre class="fragment">        IOut is Integer(kind=int64) 
+        The Fortran file number to print to. </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Header</td><td><pre class="fragment">        Header is Character(Len=*)
+        The title to print along with Scalar.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Verbose</td><td><pre class="fragment">        Verbose is Logical,Optional
+        Adds extra printing to output.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Top</td><td><pre class="fragment">        Blank_At_Top is Logical,Optional
+        = .True.:  print blank line above output
+        = .False.: do not print blank line above output.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Bottom</td><td><pre class="fragment">        Blank_At_Bottom is Logical,Optional
+        = .True.:  print blank line below output
+        = .False.: do not print blank line below output.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -336,7 +363,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1mqc__print.html">mqc_print</a></li>
-    <li class="footer">Generated on Wed Sep 25 2019 16:36:18 for MQCPack by
+    <li class="footer">Generated on Tue Oct 8 2019 18:56:49 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

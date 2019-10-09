@@ -11,7 +11,7 @@
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__print_af3462a0e8ca3290319e080d942ece87d}{mqc\+\_\+print\+\_\+scalar\+\_\+algebra1}} (Scalar, I\+Out, Header, Blank\+\_\+\+At\+\_\+\+Top, Blank\+\_\+\+At\+\_\+\+Bottom)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Print\+\_\+\+Scalar\+\_\+\+Algebra1 is a subroutine used to print an M\+Q\+C\+\_\+\+Scalar}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__print_a7088ab70494e011bd89e7c8e01153b2e}{mqc\+\_\+print\+\_\+vector\+\_\+algebra1}} (Vector, I\+Out, Header, Verbose, Blank\+\_\+\+At\+\_\+\+Top, Blank\+\_\+\+At\+\_\+\+Bottom)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Print\+\_\+\+Vector\+\_\+\+Algebra1 is a subroutine used to print an M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__print_a4e78fc7d53b538e8f55b72b8e95ed977}{mqc\+\_\+print\+\_\+matrix\+\_\+algebra1}} (Matrix, I\+Out, Header, Blank\+\_\+\+At\+\_\+\+Top, Blank\+\_\+\+At\+\_\+\+Bottom)
 \item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__print_aeb3d7f858c5fb3591077cee5e1d28279}{mqc\+\_\+print\+\_\+r4tensor\+\_\+algebra1}} (Tensor, I\+Out, Header, blank\+\_\+at\+\_\+top, blank\+\_\+at\+\_\+bottom)
@@ -53,25 +53,25 @@ subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__print_aeb3d7f858c5fb35
 
 \begin{DoxyParams}[1]{Parameters}
 \mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Class(MQC_Scalar)
-        The variable to be printed\end{DoxyVerb}
+        The variable to be printed.\end{DoxyVerb}
 \\
 \hline
 \mbox{\texttt{ in}}  & {\em I\+Out} & \begin{DoxyVerb}        IOut is Integer(kind=int64) 
-        The Fortran file number to print to \end{DoxyVerb}
+        The Fortran file number to print to. \end{DoxyVerb}
 \\
 \hline
 \mbox{\texttt{ in}}  & {\em Header} & \begin{DoxyVerb}        Header is Character(Len=*)
-        The title to print along with Scalar\end{DoxyVerb}
+        The title to print along with Scalar.\end{DoxyVerb}
 \\
 \hline
 \mbox{\texttt{ in}}  & {\em Blank\+\_\+\+At\+\_\+\+Top} & \begin{DoxyVerb}        Blank_At_Top is Logical,Optional
         = .True.:  print blank line above output
-        = .False.: do not print blank line above output\end{DoxyVerb}
+        = .False.: do not print blank line above output.\end{DoxyVerb}
 \\
 \hline
 \mbox{\texttt{ in}}  & {\em Blank\+\_\+\+At\+\_\+\+Bottom} & \begin{DoxyVerb}        Blank_At_Bottom is Logical,Optional
         = .True.:  print blank line below output
-        = .False.: do not print blank line below output\end{DoxyVerb}
+        = .False.: do not print blank line below output.\end{DoxyVerb}
  \\
 \hline
 \end{DoxyParams}
@@ -87,6 +87,51 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_print\_vector\_algebra1()}{mqc\_print\_vector\_algebra1()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+print\+::mqc\+\_\+print\+\_\+vector\+\_\+algebra1 (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector,  }\item[{integer(kind=int64), intent(in)}]{I\+Out,  }\item[{character(len=$\ast$), intent(in)}]{Header,  }\item[{logical, intent(in), optional}]{Verbose,  }\item[{logical, intent(in), optional}]{Blank\+\_\+\+At\+\_\+\+Top,  }\item[{logical, intent(in), optional}]{Blank\+\_\+\+At\+\_\+\+Bottom }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Print\+\_\+\+Vector\+\_\+\+Algebra1 is a subroutine used to print an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector. 
+    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+    lines before or after output.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The variable to be printed.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em I\+Out} & \begin{DoxyVerb}        IOut is Integer(kind=int64) 
+        The Fortran file number to print to. \end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Header} & \begin{DoxyVerb}        Header is Character(Len=*)
+        The title to print along with Scalar.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Verbose} & \begin{DoxyVerb}        Verbose is Logical,Optional
+        Adds extra printing to output.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Blank\+\_\+\+At\+\_\+\+Top} & \begin{DoxyVerb}        Blank_At_Top is Logical,Optional
+        = .True.:  print blank line above output
+        = .False.: do not print blank line above output.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Blank\+\_\+\+At\+\_\+\+Bottom} & \begin{DoxyVerb}        Blank_At_Bottom is Logical,Optional
+        = .True.:  print blank line below output
+        = .False.: do not print blank line below output.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

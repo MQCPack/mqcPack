@@ -1,10 +1,14 @@
 var searchData=
 [
-  ['matc_880',['matc',['../structmqc__algebra_1_1mqc__matrix.html#a098f1808ab7f893eb3ca55b5fb5531f9',1,'mqc_algebra::mqc_matrix']]],
-  ['mati_881',['mati',['../structmqc__algebra_1_1mqc__matrix.html#a8a8013e1fa075a65153be486f10c7256',1,'mqc_algebra::mqc_matrix']]],
-  ['matr_882',['matr',['../structmqc__algebra_1_1mqc__matrix.html#aec72e31c33a903979061b6f3d1991e9c',1,'mqc_algebra::mqc_matrix']]],
-  ['mo_5fcoefficients_883',['mo_coefficients',['../structmqc__est_1_1mqc__wavefunction.html#a58055a1cceed72d99d71648adea57d73',1,'mqc_est::mqc_wavefunction']]],
-  ['mo_5fenergies_884',['mo_energies',['../structmqc__est_1_1mqc__wavefunction.html#a36e1342d9ee1c0a6b75ee73827b869cf',1,'mqc_est::mqc_wavefunction']]],
-  ['mo_5fsymmetries_885',['mo_symmetries',['../structmqc__est_1_1mqc__wavefunction.html#a76ddd0eeeb10a2af90858cf8b185e6c1',1,'mqc_est::mqc_wavefunction']]],
-  ['multiplicity_886',['multiplicity',['../structmqc__est_1_1mqc__wavefunction.html#a69f4df8f385737d6f3949c89456b3afa',1,'mqc_est::mqc_wavefunction']]]
+  ['nactive_880',['nactive',['../structmqc__est_1_1mqc__pscf__wavefunction.html#a38f14c212bfd1b9af8f0d5b5b8700622',1,'mqc_est::mqc_pscf_wavefunction']]],
+  ['nalpha_881',['nalpha',['../structmqc__est_1_1mqc__wavefunction.html#a4780e1f0b8d220c04e391c5ec74827b4',1,'mqc_est::mqc_wavefunction']]],
+  ['nalpstr_882',['nalpstr',['../structmqc__est_1_1mqc__determinant.html#ae28c789897ce0f815b9c8675d40b2b94',1,'mqc_est::mqc_determinant']]],
+  ['nbasis_883',['nbasis',['../structmqc__est_1_1mqc__wavefunction.html#a96b2c7af02670f9c83cedc0be66231ba',1,'mqc_est::mqc_wavefunction']]],
+  ['nbeta_884',['nbeta',['../structmqc__est_1_1mqc__wavefunction.html#a80652effd986d5f6a24b4b0207e51d49',1,'mqc_est::mqc_wavefunction']]],
+  ['nbetstr_885',['nbetstr',['../structmqc__est_1_1mqc__determinant.html#a22d06e5b1d727063910ee8daa4c617da',1,'mqc_est::mqc_determinant']]],
+  ['ncore_886',['ncore',['../structmqc__est_1_1mqc__pscf__wavefunction.html#ade2e6aad55bf67c51f8227eabce31070',1,'mqc_est::mqc_pscf_wavefunction']]],
+  ['ndets_887',['ndets',['../structmqc__est_1_1mqc__determinant.html#ac4927a2ce64769251e6bb3aa660cae29',1,'mqc_est::mqc_determinant']]],
+  ['nelectrons_888',['nelectrons',['../structmqc__est_1_1mqc__wavefunction.html#aec1686a07434e9534e59e5fd6f86f1d1',1,'mqc_est::mqc_wavefunction']]],
+  ['nfrz_889',['nfrz',['../structmqc__est_1_1mqc__pscf__wavefunction.html#a62cdd25e0f50944f48c1a6161d782d43',1,'mqc_est::mqc_pscf_wavefunction']]],
+  ['nval_890',['nval',['../structmqc__est_1_1mqc__pscf__wavefunction.html#ae5bf925e1f9f71e5eb4e004acd726dbf',1,'mqc_est::mqc_pscf_wavefunction']]]
 ];

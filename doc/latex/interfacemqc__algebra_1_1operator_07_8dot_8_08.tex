@@ -9,7 +9,7 @@
 \begin{DoxyCompactItemize}
 \item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8dot_8_08_af5d4d8cb2fd63450a462d7326aecf2d9}{mqc\+\_\+vectorvectordotproduct}} (Vector1, Vector2)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Dot\+Product is a function that returns the dot product of two M\+QC vectors}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8dot_8_08_a44cc7c83a7146b8713821b6ed87fe332}{mqc\+\_\+vectormatrixdotproduct}} (VA, MB)
 \item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8dot_8_08_a5adf43595c200cf91c80e5c094c05cb1}{mqc\+\_\+matrixvectordotproduct}} (MA, VB)
@@ -46,6 +46,35 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) func
 \doxysubsubsection{\texorpdfstring{mqc\_vectorvectordotproduct()}{mqc\_vectorvectordotproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function mqc\+\_\+algebra\+::operator(.dot.)\+::mqc\+\_\+vectorvectordotproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector1,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector2 }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+Vector\+Dot\+Product is a function that returns the dot product of two M\+QC vectors}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_VectorVectorDotProduct is a function that returns the dot product of two 
+    MQC vectors. The first vector should be a row vector, while the second vector
+    should be a column vector. The vectors should be of the same length.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector1} & \begin{DoxyVerb}        Vector1 is Type(MQC_Vector)
+        The MQC row vector. \end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector2} & \begin{DoxyVerb}        Vector2 is Type(MQC_Vector)
+        The MQC column vector. \end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2016 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}
