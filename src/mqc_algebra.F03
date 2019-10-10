@@ -9182,11 +9182,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Pop
+!
+!>    \brief <b> MQC_Vector_Pop is a function that removes a value from the end of
+!>    a MQC vector and returns it</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Pop is a function that removes a value from the end of a MQC vector 
+!>    and returns it.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Pop(Vector) result(Output)
-!
-!     This function removes a value from the end of a vector and returns it.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -9209,11 +9232,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Shift
+!
+!>    \brief <b> MQC_Vector_Shift is a function that removes a value from the 
+!>    beginning of a MQC vector and returns it</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Pop is a function that removes a value from the beginning of a MQC 
+!>    vector and returns it.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Shift(Vector) result(Output)
-!
-!     This function removes a value from the beginning of a vector and returns it.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -9236,11 +9282,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MaxVal
+!
+!>    \brief <b> MQC_Vector_MaxVal is a function that returns the largest value in  
+!>    an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MaxVal is a function that returns the largest value in an MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_MaxVal(Vector) result(Output)
-!
-!     This function returns the largest value in a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -9264,11 +9333,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MinVal
+!
+!>    \brief <b> MQC_Vector_MinVal is a function that returns the smallest value in  
+!>    an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MinVal is a function that returns the smallest value in an MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_MinVal(Vector) result(Output)
-!
-!     This function returns the smallest value in a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -9292,11 +9384,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MaxLoc
+!
+!>    \brief <b> MQC_Vector_MaxLoc is a function that returns the index of the 
+!>    largest value in an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MaxLoc is a function that returns the index of the largest value in 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_MaxLoc(Vector) result(Output)
-!
-!     This function returns the index of the largest value in a vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -9322,11 +9437,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MinLoc
+!
+!>    \brief <b> MQC_Vector_MinLoc is a function that returns the index of the 
+!>    smallest value in an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MinLoc is a function that returns the index of the smallest value 
+!>    in an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_MinLoc(Vector) result(Output)
-!
-!     This function returns the index of the smallest value in a vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -9352,11 +9490,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Argsort
+!
+!>    \brief <b> MQC_Vector_Argsort is a function that returns the indices of an
+!>    an MQC vector sorted from low to high</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Argsort is a function that returns the indices of an MQC vector
+!>    sorted from low to high..
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_ArgSort(Vector) result(Output)
-!
-!     This function returns the indices of the vector sorted from low to high
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -9384,13 +9545,41 @@
 !
 !
 !     PROCEDURE MQC_Vector_Sort
+!
+!>    \brief <b> MQC_Vector_Sort is a function that returns an MQC vector sorted
+!>    from low to high unless optional index order is present</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sort is a function that returns an MQC vector sorted from low to 
+!>    high unless optional argument idx is present which gives the new order of the 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] idx
+!>    \verbatim
+!>        idx is Type(MQC_Vector),Optional
+!>        The new order of indices after sort. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Subroutine MQC_Vector_Sort(Vector,idx)
-!
-!     This function returns the vector sorted from low to high unless
-!     optional argument idx is present which gives the new order of the
-!     vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none

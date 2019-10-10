@@ -386,21 +386,23 @@ subroutine \mbox{\hyperlink{namespacemqc__algebra_ab4440f8788b00f8527ef996e66361
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae1d92908367908d5f07c2696808668da}{mqc\+\_\+vector\+\_\+unshift}} (Vector, Scalar)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Unshift is a function that adds a value to the beginning of a M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_af293100432345fe20c1a1d501c0657aa}{mqc\+\_\+vector\+\_\+pop}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Pop is a function that removes a value from the end of a M\+QC vector and returns it}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a854a27f3bcffbca9cdfe591a73faa501}{mqc\+\_\+vector\+\_\+shift}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Shift is a function that removes a value from the beginning of a M\+QC vector and returns it}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_a8dc37e00be3bd370224f16b0695f5c07}{mqc\+\_\+vector\+\_\+maxval}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Val is a function that returns the largest value in ~\newline
+ an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{namespacemqc__algebra_aabcb11421e77fd4c0a249b0a2303eb9d}{mqc\+\_\+vector\+\_\+minval}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Val is a function that returns the smallest value in ~\newline
+ an M\+QC vector}} \end{DoxyCompactList}\item 
 integer function \mbox{\hyperlink{namespacemqc__algebra_adf93471010696ea87f0b68274f32eebe}{mqc\+\_\+vector\+\_\+maxloc}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Loc is a function that returns the index of the largest value in an M\+QC vector}} \end{DoxyCompactList}\item 
 integer function \mbox{\hyperlink{namespacemqc__algebra_aa46755babebe52ca491d14456a4e8596}{mqc\+\_\+vector\+\_\+minloc}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Loc is a function that returns the index of the smallest value in an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_a453aaae4a21eac2ab290bcf63fca9137}{mqc\+\_\+vector\+\_\+argsort}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Argsort is a function that returns the indices of an an M\+QC vector sorted from low to high}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac6e6a2d0e61a13ff688617643aafff21}{mqc\+\_\+vector\+\_\+sort}} (Vector, idx)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sort is a function that returns an M\+QC vector sorted from low to high unless optional index order is present}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac5c9d9461701d7c247ed0f4bd48a68ac}{mqc\+\_\+vector\+\_\+sqrt}} (A)
 \item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_a06f8fcdd90b4dfb27df7aea1a5443aa6}{mqc\+\_\+vector\+\_\+abs}} (A)
@@ -4520,6 +4522,28 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_argsort()}{mqc\_vector\_argsort()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+argsort (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Argsort is a function that returns the indices of an an M\+QC vector sorted from low to high}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Argsort is a function that returns the indices of an MQC vector
+    sorted from low to high..\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a1a198620593d0a313eaff6785965b265}\label{namespacemqc__algebra_a1a198620593d0a313eaff6785965b265}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_cast\_complex@{mqc\_vector\_cast\_complex}}
 \index{mqc\_vector\_cast\_complex@{mqc\_vector\_cast\_complex}!mqc\_algebra@{mqc\_algebra}}
@@ -4975,24 +4999,114 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_maxloc()}{mqc\_vector\_maxloc()}}
 {\footnotesize\ttfamily integer function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+maxloc (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Loc is a function that returns the index of the largest value in an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_MaxLoc is a function that returns the index of the largest value in 
+    an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a8dc37e00be3bd370224f16b0695f5c07}\label{namespacemqc__algebra_a8dc37e00be3bd370224f16b0695f5c07}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_maxval@{mqc\_vector\_maxval}}
 \index{mqc\_vector\_maxval@{mqc\_vector\_maxval}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_maxval()}{mqc\_vector\_maxval()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+maxval (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Val is a function that returns the largest value in ~\newline
+ an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_MaxVal is a function that returns the largest value in an MQC 
+    vector. \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_aa46755babebe52ca491d14456a4e8596}\label{namespacemqc__algebra_aa46755babebe52ca491d14456a4e8596}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_minloc@{mqc\_vector\_minloc}}
 \index{mqc\_vector\_minloc@{mqc\_vector\_minloc}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_minloc()}{mqc\_vector\_minloc()}}
 {\footnotesize\ttfamily integer function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+minloc (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Loc is a function that returns the index of the smallest value in an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_MinLoc is a function that returns the index of the smallest value 
+    in an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_aabcb11421e77fd4c0a249b0a2303eb9d}\label{namespacemqc__algebra_aabcb11421e77fd4c0a249b0a2303eb9d}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_minval@{mqc\_vector\_minval}}
 \index{mqc\_vector\_minval@{mqc\_vector\_minval}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_minval()}{mqc\_vector\_minval()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+minval (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Val is a function that returns the smallest value in ~\newline
+ an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_MinVal is a function that returns the smallest value in an MQC 
+    vector. \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_abe28acc2e8c2877cd034cb34218407a5}\label{namespacemqc__algebra_abe28acc2e8c2877cd034cb34218407a5}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_norm@{mqc\_vector\_norm}}
 \index{mqc\_vector\_norm@{mqc\_vector\_norm}!mqc\_algebra@{mqc\_algebra}}
@@ -5039,6 +5153,28 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_pop()}{mqc\_vector\_pop()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+pop (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(inout)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Pop is a function that removes a value from the end of a M\+QC vector and returns it}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Pop is a function that removes a value from the end of a MQC vector 
+    and returns it.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a39efdd4b5c3a15ce5aa22df8e9a6de15}\label{namespacemqc__algebra_a39efdd4b5c3a15ce5aa22df8e9a6de15}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_power@{mqc\_vector\_power}}
 \index{mqc\_vector\_power@{mqc\_vector\_power}!mqc\_algebra@{mqc\_algebra}}
@@ -5194,12 +5330,61 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_shift()}{mqc\_vector\_shift()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+shift (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(inout)}]{Vector }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Shift is a function that removes a value from the beginning of a M\+QC vector and returns it}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Pop is a function that removes a value from the beginning of a MQC 
+    vector and returns it.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_ac6e6a2d0e61a13ff688617643aafff21}\label{namespacemqc__algebra_ac6e6a2d0e61a13ff688617643aafff21}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_sort@{mqc\_vector\_sort}}
 \index{mqc\_vector\_sort@{mqc\_vector\_sort}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_sort()}{mqc\_vector\_sort()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+sort (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(inout)}]{Vector,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in), optional}]{idx }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sort is a function that returns an M\+QC vector sorted from low to high unless optional index order is present}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Sort is a function that returns an MQC vector sorted from low to 
+    high unless optional argument idx is present which gives the new order of the 
+    vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em Vector} & \begin{DoxyVerb}        Vector is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em idx} & \begin{DoxyVerb}        idx is Type(MQC_Vector),Optional
+        The new order of indices after sort. \end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_ac5c9d9461701d7c247ed0f4bd48a68ac}\label{namespacemqc__algebra_ac5c9d9461701d7c247ed0f4bd48a68ac}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_sqrt@{mqc\_vector\_sqrt}}
 \index{mqc\_vector\_sqrt@{mqc\_vector\_sqrt}!mqc\_algebra@{mqc\_algebra}}
