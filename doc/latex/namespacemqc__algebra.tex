@@ -404,17 +404,17 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac6e6a2d0e61a13ff688617643aafff21}{mqc\+\_\+vector\+\_\+sort}} (Vector, idx)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sort is a function that returns an M\+QC vector sorted from low to high unless optional index order is present}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac5c9d9461701d7c247ed0f4bd48a68ac}{mqc\+\_\+vector\+\_\+sqrt}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sqrt is a function that returns the square root of all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_a06f8fcdd90b4dfb27df7aea1a5443aa6}{mqc\+\_\+vector\+\_\+abs}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Abs is a function that returns the absolute value of all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a39efdd4b5c3a15ce5aa22df8e9a6de15}{mqc\+\_\+vector\+\_\+power}} (A, P)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Power is a function that returns the value of all elements of an M\+QC vector raised to a power}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_a455f7d692b63256f00e891310159eff5}{mqc\+\_\+vector\+\_\+complex\+\_\+realpart}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Real\+Part is a function that returns a M\+QC vector with elements containing the real part of elements of another M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_ac0f5b609f9905e81c158cfabc59ba995}{mqc\+\_\+vector\+\_\+complex\+\_\+imagpart}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Imag\+Part is a function that returns a M\+QC vector with elements containing the imaginary part of elements of another M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{namespacemqc__algebra_a8d9392e173bbf919161ae62056ea02bc}{mqc\+\_\+vector\+\_\+cmplx}} (Vector1, Vector2)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Cmplx is a function that takes a M\+QC vector representing the real part and a M\+QC vector representing the imaginary part and combines them into another M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_abf3fb1ad2c32a7547cd2190e94769615}{mqc\+\_\+matrix\+\_\+diagonalize}} (A, E\+Vals, E\+Vecs)
 \item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{namespacemqc__algebra_af02da0d912f9a9741edd52654b908b08}{mqc\+\_\+matrix\+\_\+cast\+\_\+real}} (MA)
@@ -4516,6 +4516,28 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_abs()}{mqc\_vector\_abs()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+abs (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{A }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Abs is a function that returns the absolute value of all elements of an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Sqrt is a function that returns the absolute value of all elements 
+    of an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a453aaae4a21eac2ab290bcf63fca9137}\label{namespacemqc__algebra_a453aaae4a21eac2ab290bcf63fca9137}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_argsort@{mqc\_vector\_argsort}}
 \index{mqc\_vector\_argsort@{mqc\_vector\_argsort}!mqc\_algebra@{mqc\_algebra}}
@@ -4528,7 +4550,7 @@ L. M. Thompson
 
 \begin{DoxyParagraph}{Purpose\+:}
 \begin{DoxyVerb}    MQC_Vector_Argsort is a function that returns the indices of an MQC vector
-    sorted from low to high..\end{DoxyVerb}
+    sorted from low to high.\end{DoxyVerb}
  
 \end{DoxyParagraph}
 
@@ -4606,18 +4628,89 @@ X. Sheng
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_cmplx()}{mqc\_vector\_cmplx()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+cmplx (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector1,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector2 }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Cmplx is a function that takes a M\+QC vector representing the real part and a M\+QC vector representing the imaginary part and combines them into another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Cmplx is a function that takes a MQC vector representing the real 
+    part and a MQC vector representing the imaginary part and combines them into 
+    another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector1} & \begin{DoxyVerb}        Vector1 is Type(MQC_Vector)
+        The MQC vector containing the real part.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector2} & \begin{DoxyVerb}        Vector2 is Type(MQC_Vector)
+        The MQC vector containing the imaginary part.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_ac0f5b609f9905e81c158cfabc59ba995}\label{namespacemqc__algebra_ac0f5b609f9905e81c158cfabc59ba995}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_complex\_imagpart@{mqc\_vector\_complex\_imagpart}}
 \index{mqc\_vector\_complex\_imagpart@{mqc\_vector\_complex\_imagpart}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_complex\_imagpart()}{mqc\_vector\_complex\_imagpart()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+complex\+\_\+imagpart (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{A }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Imag\+Part is a function that returns a M\+QC vector with elements containing the imaginary part of elements of another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Complex_ImagPart is a function that returns a MQC vector with 
+    elements containing the imaginary part of elements of another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a455f7d692b63256f00e891310159eff5}\label{namespacemqc__algebra_a455f7d692b63256f00e891310159eff5}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_complex\_realpart@{mqc\_vector\_complex\_realpart}}
 \index{mqc\_vector\_complex\_realpart@{mqc\_vector\_complex\_realpart}!mqc\_algebra@{mqc\_algebra}}
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_complex\_realpart()}{mqc\_vector\_complex\_realpart()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+complex\+\_\+realpart (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{A }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Real\+Part is a function that returns a M\+QC vector with elements containing the real part of elements of another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Complex_RealPart is a function that returns a MQC vector with 
+    elements containing the real part of elements of another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a5cc43bf9008f4f5892e2a87eab2786d3}\label{namespacemqc__algebra_a5cc43bf9008f4f5892e2a87eab2786d3}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_conjugate\_transpose@{mqc\_vector\_conjugate\_transpose}}
 \index{mqc\_vector\_conjugate\_transpose@{mqc\_vector\_conjugate\_transpose}!mqc\_algebra@{mqc\_algebra}}
@@ -5181,6 +5274,33 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_power()}{mqc\_vector\_power()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+power (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(inout)}]{A,  }\item[{class($\ast$)}]{P }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Power is a function that returns the value of all elements of an M\+QC vector raised to a power}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Power is a function that returns the value of all elements of an 
+    MQC vector raised to a power. The power can be integer, real, complex or an
+    MQC scalar.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em P} & \begin{DoxyVerb}        P is Class(*)
+        The power to raise elements of the MQC vector.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_ab4440f8788b00f8527ef996e66361d45}\label{namespacemqc__algebra_ab4440f8788b00f8527ef996e66361d45}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_push@{mqc\_vector\_push}}
 \index{mqc\_vector\_push@{mqc\_vector\_push}!mqc\_algebra@{mqc\_algebra}}
@@ -5391,6 +5511,28 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_sqrt()}{mqc\_vector\_sqrt()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+sqrt (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(inout)}]{A }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sqrt is a function that returns the square root of all elements of an M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Sqrt is a function that returns the square root of all elements of
+    an MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is Class(MQC_Vector)
+        The name of the MQC_Vector variable.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 \mbox{\Hypertarget{namespacemqc__algebra_a60686c80235aa8e05e96c69b25ee0196}\label{namespacemqc__algebra_a60686c80235aa8e05e96c69b25ee0196}} 
 \index{mqc\_algebra@{mqc\_algebra}!mqc\_vector\_transpose@{mqc\_vector\_transpose}}
 \index{mqc\_vector\_transpose@{mqc\_vector\_transpose}!mqc\_algebra@{mqc\_algebra}}

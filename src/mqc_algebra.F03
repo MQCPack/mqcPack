@@ -9500,7 +9500,7 @@
 !>    \verbatim
 !>
 !>    MQC_Vector_Argsort is a function that returns the indices of an MQC vector
-!>    sorted from low to high..
+!>    sorted from low to high.
 !>
 !>    \endverbatim
 !
@@ -9605,9 +9605,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Sqrt
-      subroutine mqc_vector_sqrt(A)
 !
-!     This subroutine returns the square root of INPUT vector A.
+!>    \brief <b> MQC_Vector_Sqrt is a function that returns the square root of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sqrt is a function that returns the square root of all elements of
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_vector_sqrt(A)
 !
       Implicit None
       class(mqc_vector),intent(inOut)::A
@@ -9623,9 +9648,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Abs
-      function mqc_vector_abs(A) result(output)
 !
-!     This function returns the absolute values of INPUT vector A.
+!>    \brief <b> MQC_Vector_Abs is a function that returns the absolute value of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sqrt is a function that returns the absolute value of all elements 
+!>    of an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_abs(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -9643,10 +9693,41 @@
 !
 !
 !     PROCEDURE MQC_Vector_Power
-      subroutine mqc_vector_power(A,P)
 !
-!     This subroutine returns the elements of INPUT vector A raised
-!     to the power P.
+!>    \brief <b> MQC_Vector_Power is a function that returns the value of all
+!>    elements of an MQC vector raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Power is a function that returns the value of all elements of an 
+!>    MQC vector raised to a power. The power can be integer, real, complex or an
+!>    MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_vector_power(A,P)
 !
       Implicit None
       class(mqc_vector),intent(inOut)::A
@@ -9680,9 +9761,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Complex_RealPart
-      function mqc_vector_complex_realPart(A) result(output)
 !
-!     This function returns the real part of INPUT vector A.
+!>    \brief <b> MQC_Vector_Complex_RealPart is a function that returns a MQC vector
+!>    with elements containing the real part of elements of another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Complex_RealPart is a function that returns a MQC vector with 
+!>    elements containing the real part of elements of another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_complex_realPart(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -9700,9 +9806,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Complex_ImagPart
-      function mqc_vector_complex_imagPart(A) result(output)
 !
-!     This function returns the imaginary part of INPUT vector A.
+!>    \brief <b> MQC_Vector_Complex_ImagPart is a function that returns a MQC vector
+!>    with elements containing the imaginary part of elements of another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Complex_ImagPart is a function that returns a MQC vector with 
+!>    elements containing the imaginary part of elements of another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_complex_imagPart(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -9720,13 +9851,42 @@
 !
 !
 !     PROCEDURE MQC_Vector_Cmplx
+!
+!>    \brief <b> MQC_Vector_Cmplx is a function that takes a MQC vector representing 
+!>    the real part and a MQC vector representing the imaginary part and combines
+!>    them into another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Cmplx is a function that takes a MQC vector representing the real 
+!>    part and a MQC vector representing the imaginary part and combines them into 
+!>    another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1
+!>    \verbatim
+!>        Vector1 is Type(MQC_Vector)
+!>        The MQC vector containing the real part.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2
+!>    \verbatim
+!>        Vector2 is Type(MQC_Vector)
+!>        The MQC vector containing the imaginary part.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_Cmplx(Vector1,Vector2)
-!
-!     This subroutine is used to set a complex MQC_Vector type 
-!     variable from two other MQC_Vectors.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
