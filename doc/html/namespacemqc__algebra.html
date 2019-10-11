@@ -148,6 +148,9 @@ Data Types</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__cast__complex.html">mqc_cast_complex</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Sets an array to complex type</b>  <a href="interfacemqc__algebra_1_1mqc__cast__complex.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__cast__integer.html">mqc_cast_integer</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Sets an array to integer type</b>  <a href="interfacemqc__algebra_1_1mqc__cast__integer.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">interface &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1mqc__cast__real.html">mqc_cast_real</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Sets an array to real type</b>  <a href="interfacemqc__algebra_1_1mqc__cast__real.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -592,6 +595,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ae64f8cd347b0d00129d7fce3ea323c46"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ae64f8cd347b0d00129d7fce3ea323c46">mqc_print_vector_algebra1</a> (Vector, IOut, Header, Verbose, Blank_At_Top, Blank_At_Bottom)</td></tr>
 <tr class="memdesc:ae64f8cd347b0d00129d7fce3ea323c46"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector</b>  <a href="namespacemqc__algebra.html#ae64f8cd347b0d00129d7fce3ea323c46">More...</a><br /></td></tr>
 <tr class="separator:ae64f8cd347b0d00129d7fce3ea323c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61df3eda09029cbe0513af750f9480a3"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a61df3eda09029cbe0513af750f9480a3">mqc_vector_cast_integer</a> (VA)</td></tr>
+<tr class="memdesc:a61df3eda09029cbe0513af750f9480a3"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_vector_cast_integer is a function that converts an MQC vector to its integer space</b>  <a href="namespacemqc__algebra.html#a61df3eda09029cbe0513af750f9480a3">More...</a><br /></td></tr>
+<tr class="separator:a61df3eda09029cbe0513af750f9480a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ba4f662b816b4c95332885c0846548b"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a6ba4f662b816b4c95332885c0846548b">mqc_vector_cast_real</a> (VA)</td></tr>
 <tr class="memdesc:a6ba4f662b816b4c95332885c0846548b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_vector_cast_real is a function that converts an MQC vector to its real space</b>  <a href="namespacemqc__algebra.html#a6ba4f662b816b4c95332885c0846548b">More...</a><br /></td></tr>
 <tr class="separator:a6ba4f662b816b4c95332885c0846548b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -707,129 +713,195 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a8d9392e173bbf919161ae62056ea02bc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Vector_Cmplx is a function that takes a MQC vector representing the real part and a MQC vector representing the imaginary part and combines them into another MQC vector</b>  <a href="namespacemqc__algebra.html#a8d9392e173bbf919161ae62056ea02bc">More...</a><br /></td></tr>
 <tr class="separator:a8d9392e173bbf919161ae62056ea02bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf3fb1ad2c32a7547cd2190e94769615"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#abf3fb1ad2c32a7547cd2190e94769615">mqc_matrix_diagonalize</a> (A, EVals, EVecs)</td></tr>
+<tr class="memdesc:abf3fb1ad2c32a7547cd2190e94769615"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or hermitian MQC matrix and returns eigenvalues and eigenvectors</b>  <a href="namespacemqc__algebra.html#abf3fb1ad2c32a7547cd2190e94769615">More...</a><br /></td></tr>
 <tr class="separator:abf3fb1ad2c32a7547cd2190e94769615"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af02da0d912f9a9741edd52654b908b08"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#af02da0d912f9a9741edd52654b908b08">mqc_matrix_cast_real</a> (MA)</td></tr>
+<tr class="memdesc:af02da0d912f9a9741edd52654b908b08"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Cast_Real is a function that converts an MQC matrix to its real space</b>  <a href="namespacemqc__algebra.html#af02da0d912f9a9741edd52654b908b08">More...</a><br /></td></tr>
 <tr class="separator:af02da0d912f9a9741edd52654b908b08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a261c99eae831fe640b991b32add18035"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a261c99eae831fe640b991b32add18035">mqc_matrix_cast_integer</a> (MA)</td></tr>
+<tr class="memdesc:a261c99eae831fe640b991b32add18035"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Cast_Integer is a function that converts an MQC matrix to its integer space</b>  <a href="namespacemqc__algebra.html#a261c99eae831fe640b991b32add18035">More...</a><br /></td></tr>
+<tr class="separator:a261c99eae831fe640b991b32add18035"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab59071347bd90e24767bccbd385218e2"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ab59071347bd90e24767bccbd385218e2">mqc_matrix_cast_complex</a> (MA)</td></tr>
+<tr class="memdesc:ab59071347bd90e24767bccbd385218e2"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Cast_Complex is a function that converts an MQC matrix to its complex space</b>  <a href="namespacemqc__algebra.html#ab59071347bd90e24767bccbd385218e2">More...</a><br /></td></tr>
 <tr class="separator:ab59071347bd90e24767bccbd385218e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6da4e494a21e7ea9e1fbd2198278e0ce"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__scalar.html">mqc_scalar</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a6da4e494a21e7ea9e1fbd2198278e0ce">mqc_matrix_scalar_at</a> (Mat, I, J)</td></tr>
+<tr class="memdesc:a6da4e494a21e7ea9e1fbd2198278e0ce"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Scalar_At is a function that returns the value of an <br  />
+ element of a MQC matrix</b>  <a href="namespacemqc__algebra.html#a6da4e494a21e7ea9e1fbd2198278e0ce">More...</a><br /></td></tr>
 <tr class="separator:a6da4e494a21e7ea9e1fbd2198278e0ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6928e084da14a1fb181ab7e264fda37c"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a6928e084da14a1fb181ab7e264fda37c">mqc_matrix_vector_at</a> (Mat, Rows, Cols)</td></tr>
+<tr class="memdesc:a6928e084da14a1fb181ab7e264fda37c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Vector_At is a function that returns the subvector of an <br  />
+ MQC matrix</b>  <a href="namespacemqc__algebra.html#a6928e084da14a1fb181ab7e264fda37c">More...</a><br /></td></tr>
 <tr class="separator:a6928e084da14a1fb181ab7e264fda37c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac72ca45faf635b0f22318fdc8ac957b9"><td class="memItemLeft" align="right" valign="top">recursive subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ac72ca45faf635b0f22318fdc8ac957b9">mqc_matrix_vector_put</a> (Mat, VectorIn, Rows, Cols)</td></tr>
+<tr class="memdesc:ac72ca45faf635b0f22318fdc8ac957b9"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Vector_Put is a subroutine that writes a subvector to the specified position of a MQC matrix</b>  <a href="namespacemqc__algebra.html#ac72ca45faf635b0f22318fdc8ac957b9">More...</a><br /></td></tr>
 <tr class="separator:ac72ca45faf635b0f22318fdc8ac957b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3609569bc7a7c48d424c657d141cd5ef"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a3609569bc7a7c48d424c657d141cd5ef">mqc_matrix_matrix_at</a> (Mat, Rows, Cols)</td></tr>
 <tr class="memdesc:a3609569bc7a7c48d424c657d141cd5ef"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>  <a href="namespacemqc__algebra.html#a3609569bc7a7c48d424c657d141cd5ef">More...</a><br /></td></tr>
 <tr class="separator:a3609569bc7a7c48d424c657d141cd5ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5190dd4e0b311022233f28e391bd51bb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a5190dd4e0b311022233f28e391bd51bb">mqc_matrix_diagmatrix_put_vector</a> (diagVectorIn, mat)</td></tr>
+<tr class="memdesc:a5190dd4e0b311022233f28e391bd51bb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a diagonal MQC matrix with elements defined by values in a MQC vector</b>  <a href="namespacemqc__algebra.html#a5190dd4e0b311022233f28e391bd51bb">More...</a><br /></td></tr>
 <tr class="separator:a5190dd4e0b311022233f28e391bd51bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b4a934665cdcc5c99684b62046cf303"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a9b4a934665cdcc5c99684b62046cf303">mqc_matrix_diagmatrix_put_integer</a> (mat, diagMatrixIn)</td></tr>
+<tr class="memdesc:a9b4a934665cdcc5c99684b62046cf303"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic integer vector</b>  <a href="namespacemqc__algebra.html#a9b4a934665cdcc5c99684b62046cf303">More...</a><br /></td></tr>
 <tr class="separator:a9b4a934665cdcc5c99684b62046cf303"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac51dfe98702e34c1aea85c65afd8d2be"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ac51dfe98702e34c1aea85c65afd8d2be">mqc_matrix_diagmatrix_put_real</a> (mat, diagMatrixIn)</td></tr>
+<tr class="memdesc:ac51dfe98702e34c1aea85c65afd8d2be"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic real vector</b>  <a href="namespacemqc__algebra.html#ac51dfe98702e34c1aea85c65afd8d2be">More...</a><br /></td></tr>
 <tr class="separator:ac51dfe98702e34c1aea85c65afd8d2be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0257675a8f879d16d7d730aabfcb6496"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a0257675a8f879d16d7d730aabfcb6496">mqc_matrix_diagmatrix_put_complex</a> (mat, diagMatrixIn)</td></tr>
+<tr class="memdesc:a0257675a8f879d16d7d730aabfcb6496"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic complex vector</b>  <a href="namespacemqc__algebra.html#a0257675a8f879d16d7d730aabfcb6496">More...</a><br /></td></tr>
 <tr class="separator:a0257675a8f879d16d7d730aabfcb6496"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a874218f3a41af94853ebfed27a74f27f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a874218f3a41af94853ebfed27a74f27f">mqc_matrix_symmmatrix_put_integer</a> (mat, symmMatrixIn)</td></tr>
+<tr class="memdesc:a874218f3a41af94853ebfed27a74f27f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic integer vector</b>  <a href="namespacemqc__algebra.html#a874218f3a41af94853ebfed27a74f27f">More...</a><br /></td></tr>
 <tr class="separator:a874218f3a41af94853ebfed27a74f27f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d04d32e23c58f1a14085b5f3fa9e9f5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a7d04d32e23c58f1a14085b5f3fa9e9f5">mqc_matrix_symmmatrix_put_real</a> (mat, symmMatrixIn)</td></tr>
+<tr class="memdesc:a7d04d32e23c58f1a14085b5f3fa9e9f5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic real vector</b>  <a href="namespacemqc__algebra.html#a7d04d32e23c58f1a14085b5f3fa9e9f5">More...</a><br /></td></tr>
 <tr class="separator:a7d04d32e23c58f1a14085b5f3fa9e9f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a540647c8ae1cb6741daad88911807139"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a540647c8ae1cb6741daad88911807139">mqc_matrix_symmmatrix_put_complex</a> (mat, symmMatrixIn)</td></tr>
+<tr class="memdesc:a540647c8ae1cb6741daad88911807139"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic complex vector</b>  <a href="namespacemqc__algebra.html#a540647c8ae1cb6741daad88911807139">More...</a><br /></td></tr>
 <tr class="separator:a540647c8ae1cb6741daad88911807139"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a228aa4094ce52274a2a6e3d2b40c78a3"><td class="memItemLeft" align="right" valign="top">recursive subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a228aa4094ce52274a2a6e3d2b40c78a3">mqc_matrix_matrix_put</a> (Mat, MatrixIn, Rows, Cols)</td></tr>
+<tr class="memdesc:a228aa4094ce52274a2a6e3d2b40c78a3"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the specified position of a MQC matrix</b>  <a href="namespacemqc__algebra.html#a228aa4094ce52274a2a6e3d2b40c78a3">More...</a><br /></td></tr>
 <tr class="separator:a228aa4094ce52274a2a6e3d2b40c78a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af62b00883eb990030317e03cc38e4c44"><td class="memItemLeft" align="right" valign="top">integer(kind=int64) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#af62b00883eb990030317e03cc38e4c44">symindexhash</a> (i, j, k, l)</td></tr>
+<tr class="memdesc:af62b00883eb990030317e03cc38e4c44"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> SymIndexHash is a function that returns the index in a vector of a symmetric-packed matrix or rank-4 tensor</b>  <a href="namespacemqc__algebra.html#af62b00883eb990030317e03cc38e4c44">More...</a><br /></td></tr>
 <tr class="separator:af62b00883eb990030317e03cc38e4c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adee02d698f2778caa5357ac832bacbee"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#adee02d698f2778caa5357ac832bacbee">mqc_elementmatrixproduct</a> (A, B)</td></tr>
+<tr class="memdesc:adee02d698f2778caa5357ac832bacbee"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ElementMatrixProduct is a function that returns the element- wise product of two MQC matrices</b>  <a href="namespacemqc__algebra.html#adee02d698f2778caa5357ac832bacbee">More...</a><br /></td></tr>
 <tr class="separator:adee02d698f2778caa5357ac832bacbee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b737940649403205e5b4c28e6ac74b5"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a6b737940649403205e5b4c28e6ac74b5">mqc_elementmatrixdivide</a> (A, B)</td></tr>
+<tr class="memdesc:a6b737940649403205e5b4c28e6ac74b5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ElementMatrixDivide is a function that returns the element- wise quotient of two MQC matrices</b>  <a href="namespacemqc__algebra.html#a6b737940649403205e5b4c28e6ac74b5">More...</a><br /></td></tr>
 <tr class="separator:a6b737940649403205e5b4c28e6ac74b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefa84c562aa9933eead2de01256e418d"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aefa84c562aa9933eead2de01256e418d">mqc_matrix_test_symmetric</a> (Matrix, Option)</td></tr>
+<tr class="memdesc:aefa84c562aa9933eead2de01256e418d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry</b>  <a href="namespacemqc__algebra.html#aefa84c562aa9933eead2de01256e418d">More...</a><br /></td></tr>
 <tr class="separator:aefa84c562aa9933eead2de01256e418d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ad61cf37cde19aa4f02ffaf341995d0"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a6ad61cf37cde19aa4f02ffaf341995d0">mqc_matrix_test_diagonal</a> (Matrix)</td></tr>
+<tr class="memdesc:a6ad61cf37cde19aa4f02ffaf341995d0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Test_Diagonal is a function that tests a MQC matrix to determine if it is diagonal</b>  <a href="namespacemqc__algebra.html#a6ad61cf37cde19aa4f02ffaf341995d0">More...</a><br /></td></tr>
 <tr class="separator:a6ad61cf37cde19aa4f02ffaf341995d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65657601eed2d5c49b47cd302397ac7d"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a65657601eed2d5c49b47cd302397ac7d">mqc_allocate_matrix</a> (M, N, Matrix, Data_Type, Storage)</td></tr>
+<tr class="memdesc:a65657601eed2d5c49b47cd302397ac7d"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Allocate_Matrix is used to allocate a matrix type variable of the MQC_Matrix class</b>  <a href="namespacemqc__algebra.html#a65657601eed2d5c49b47cd302397ac7d">More...</a><br /></td></tr>
 <tr class="separator:a65657601eed2d5c49b47cd302397ac7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38699b65c769a92dc2cb0b85de9f6705"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a38699b65c769a92dc2cb0b85de9f6705">mqc_deallocate_matrix</a> (Matrix)</td></tr>
+<tr class="memdesc:a38699b65c769a92dc2cb0b85de9f6705"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Deallocate_Matrix is used to deallocate a matrix type variable of the MQC_Matrix class</b>  <a href="namespacemqc__algebra.html#a38699b65c769a92dc2cb0b85de9f6705">More...</a><br /></td></tr>
 <tr class="separator:a38699b65c769a92dc2cb0b85de9f6705"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a840d2395f096fc5c91c22b627f610e2b"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a840d2395f096fc5c91c22b627f610e2b">mqc_matrix_isallocated</a> (Matrix)</td></tr>
+<tr class="memdesc:a840d2395f096fc5c91c22b627f610e2b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_isAllocate is a function that returns the allocation status of a MQC_Matrix variable</b>  <a href="namespacemqc__algebra.html#a840d2395f096fc5c91c22b627f610e2b">More...</a><br /></td></tr>
 <tr class="separator:a840d2395f096fc5c91c22b627f610e2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20d7a2397ab1d86b82d757a197137ab7"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a20d7a2397ab1d86b82d757a197137ab7">mqc_set_integerarray2matrix</a> (MatrixOut, ArrayIn)</td></tr>
+<tr class="memdesc:a20d7a2397ab1d86b82d757a197137ab7"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_IntegerArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic integer rank-2 array</b>  <a href="namespacemqc__algebra.html#a20d7a2397ab1d86b82d757a197137ab7">More...</a><br /></td></tr>
 <tr class="separator:a20d7a2397ab1d86b82d757a197137ab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac220bbbae4694f6402442c9155322869"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ac220bbbae4694f6402442c9155322869">mqc_set_realarray2matrix</a> (MatrixOut, ArrayIn)</td></tr>
+<tr class="memdesc:ac220bbbae4694f6402442c9155322869"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_RealArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic real rank-2 array</b>  <a href="namespacemqc__algebra.html#ac220bbbae4694f6402442c9155322869">More...</a><br /></td></tr>
 <tr class="separator:ac220bbbae4694f6402442c9155322869"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9a5a36d7be18f1b190240fd8a7ab81e"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ae9a5a36d7be18f1b190240fd8a7ab81e">mqc_set_complexarray2matrix</a> (MatrixOut, ArrayIn)</td></tr>
+<tr class="memdesc:ae9a5a36d7be18f1b190240fd8a7ab81e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic complex rank-2 array</b>  <a href="namespacemqc__algebra.html#ae9a5a36d7be18f1b190240fd8a7ab81e">More...</a><br /></td></tr>
 <tr class="separator:ae9a5a36d7be18f1b190240fd8a7ab81e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8204520d32c6bfe3cee8aa2d50b65274"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a8204520d32c6bfe3cee8aa2d50b65274">mqc_set_matrix2integerarray</a> (ArrayOut, MatrixIn)</td></tr>
+<tr class="memdesc:a8204520d32c6bfe3cee8aa2d50b65274"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Matrix2IntegerArray is a subroutine that sets an intrinsic integer rank-2 array equal to an MQC matrix</b>  <a href="namespacemqc__algebra.html#a8204520d32c6bfe3cee8aa2d50b65274">More...</a><br /></td></tr>
 <tr class="separator:a8204520d32c6bfe3cee8aa2d50b65274"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a544f1ff194490228f18d7198a4baeecc"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a544f1ff194490228f18d7198a4baeecc">mqc_set_matrix2realarray</a> (ArrayOut, MatrixIn)</td></tr>
+<tr class="memdesc:a544f1ff194490228f18d7198a4baeecc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Matrix2RealArray is a subroutine that sets an intrinsic real rank-2 array equal to an MQC matrix</b>  <a href="namespacemqc__algebra.html#a544f1ff194490228f18d7198a4baeecc">More...</a><br /></td></tr>
 <tr class="separator:a544f1ff194490228f18d7198a4baeecc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab99c5a9550ff2979949b3f89070f6afb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ab99c5a9550ff2979949b3f89070f6afb">mqc_set_matrix2complexarray</a> (ArrayOut, MatrixIn)</td></tr>
+<tr class="memdesc:ab99c5a9550ff2979949b3f89070f6afb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Matrix2ComplexArray is a subroutine that sets an intrinsic complex rank-2 array equal to an MQC matrix</b>  <a href="namespacemqc__algebra.html#ab99c5a9550ff2979949b3f89070f6afb">More...</a><br /></td></tr>
 <tr class="separator:ab99c5a9550ff2979949b3f89070f6afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15a783566c4891b64f8e83fee736ba20"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a15a783566c4891b64f8e83fee736ba20">mqc_set_matrix2matrix</a> (MatrixOut, MatrixIn)</td></tr>
+<tr class="memdesc:a15a783566c4891b64f8e83fee736ba20"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Matrix2Matrix is a subroutine that sets an MQC matrix equal to another MQC matrix</b>  <a href="namespacemqc__algebra.html#a15a783566c4891b64f8e83fee736ba20">More...</a><br /></td></tr>
 <tr class="separator:a15a783566c4891b64f8e83fee736ba20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18f6e2214dff5439ec0aa9d6202a40ab"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a18f6e2214dff5439ec0aa9d6202a40ab">mqc_print_matrix_algebra1</a> (Matrix, IOut, Header, Blank_At_Top, Blank_At_Bottom)</td></tr>
+<tr class="memdesc:a18f6e2214dff5439ec0aa9d6202a40ab"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Print_Matrix_Algebra1 is a subroutine used to print an MQC matrix</b>  <a href="namespacemqc__algebra.html#a18f6e2214dff5439ec0aa9d6202a40ab">More...</a><br /></td></tr>
 <tr class="separator:a18f6e2214dff5439ec0aa9d6202a40ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e0d58bbdb51cd77e8f62ac4a9afc2ec"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a5e0d58bbdb51cd77e8f62ac4a9afc2ec">mqc_matrix_copy_int2real</a> (Matrix)</td></tr>
+<tr class="memdesc:a5e0d58bbdb51cd77e8f62ac4a9afc2ec"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Int2Real is a subroutine used to copy an integer MQC matrix into its real space</b>  <a href="namespacemqc__algebra.html#a5e0d58bbdb51cd77e8f62ac4a9afc2ec">More...</a><br /></td></tr>
 <tr class="separator:a5e0d58bbdb51cd77e8f62ac4a9afc2ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a625f6cf3e3b057fc28da2edc3b79e2fb"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a625f6cf3e3b057fc28da2edc3b79e2fb">mqc_matrix_copy_int2complex</a> (Matrix)</td></tr>
+<tr class="memdesc:a625f6cf3e3b057fc28da2edc3b79e2fb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Int2Complex is a subroutine used to copy an integer MQC matrix into its complex space</b>  <a href="namespacemqc__algebra.html#a625f6cf3e3b057fc28da2edc3b79e2fb">More...</a><br /></td></tr>
 <tr class="separator:a625f6cf3e3b057fc28da2edc3b79e2fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad968ae4927598763a4772bacc5d0ad7f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ad968ae4927598763a4772bacc5d0ad7f">mqc_matrix_copy_real2int</a> (Matrix)</td></tr>
+<tr class="memdesc:ad968ae4927598763a4772bacc5d0ad7f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Real2Int is a subroutine used to copy a real MQC matrix into its integer space</b>  <a href="namespacemqc__algebra.html#ad968ae4927598763a4772bacc5d0ad7f">More...</a><br /></td></tr>
 <tr class="separator:ad968ae4927598763a4772bacc5d0ad7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacfde0b3b95688c4788930ee3c1077a1"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aacfde0b3b95688c4788930ee3c1077a1">mqc_matrix_copy_real2complex</a> (Matrix)</td></tr>
+<tr class="memdesc:aacfde0b3b95688c4788930ee3c1077a1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Real2Complex is a subroutine used to copy a real MQC matrix into its complex space</b>  <a href="namespacemqc__algebra.html#aacfde0b3b95688c4788930ee3c1077a1">More...</a><br /></td></tr>
 <tr class="separator:aacfde0b3b95688c4788930ee3c1077a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af67d18eea5dd9bab9ebce77a53c09f74"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#af67d18eea5dd9bab9ebce77a53c09f74">mqc_matrix_copy_complex2int</a> (Matrix)</td></tr>
+<tr class="memdesc:af67d18eea5dd9bab9ebce77a53c09f74"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Complex2Int is a subroutine used to copy a complex MQC matrix into its integer space</b>  <a href="namespacemqc__algebra.html#af67d18eea5dd9bab9ebce77a53c09f74">More...</a><br /></td></tr>
 <tr class="separator:af67d18eea5dd9bab9ebce77a53c09f74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0132d9cc98355602a93c17beb7858c5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aa0132d9cc98355602a93c17beb7858c5">mqc_matrix_copy_complex2real</a> (Matrix)</td></tr>
+<tr class="memdesc:aa0132d9cc98355602a93c17beb7858c5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Copy_Complex2Real is a subroutine used to copy a complex MQC matrix into its real space</b>  <a href="namespacemqc__algebra.html#aa0132d9cc98355602a93c17beb7858c5">More...</a><br /></td></tr>
 <tr class="separator:aa0132d9cc98355602a93c17beb7858c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51ba8f0a20ce59677fd7cad2a9e24bf7"><td class="memItemLeft" align="right" valign="top">integer(kind=int64) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a51ba8f0a20ce59677fd7cad2a9e24bf7">mqc_matrix_rows</a> (Matrix)</td></tr>
+<tr class="memdesc:a51ba8f0a20ce59677fd7cad2a9e24bf7"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Rows is a function used to return the number of rows of an MQC matrix</b>  <a href="namespacemqc__algebra.html#a51ba8f0a20ce59677fd7cad2a9e24bf7">More...</a><br /></td></tr>
 <tr class="separator:a51ba8f0a20ce59677fd7cad2a9e24bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f5926a9911e81c54d4fd9c1f15dfa27"><td class="memItemLeft" align="right" valign="top">integer(kind=int64) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a1f5926a9911e81c54d4fd9c1f15dfa27">mqc_matrix_columns</a> (Matrix)</td></tr>
+<tr class="memdesc:a1f5926a9911e81c54d4fd9c1f15dfa27"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Columns is a function used to return the number of columns of an MQC matrix</b>  <a href="namespacemqc__algebra.html#a1f5926a9911e81c54d4fd9c1f15dfa27">More...</a><br /></td></tr>
 <tr class="separator:a1f5926a9911e81c54d4fd9c1f15dfa27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acade87107ad17f989be91301553df8a6"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#acade87107ad17f989be91301553df8a6">mqc_matrix_havereal</a> (Matrix)</td></tr>
+<tr class="memdesc:acade87107ad17f989be91301553df8a6"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveReal is a function used to indicate if an MQC matrix has an allocated real matrix</b>  <a href="namespacemqc__algebra.html#acade87107ad17f989be91301553df8a6">More...</a><br /></td></tr>
 <tr class="separator:acade87107ad17f989be91301553df8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa29bf4c1d5435e97d9763a04291c65d0"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aa29bf4c1d5435e97d9763a04291c65d0">mqc_matrix_haveinteger</a> (Matrix)</td></tr>
+<tr class="memdesc:aa29bf4c1d5435e97d9763a04291c65d0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveInteger is a function used to indicate if an MQC matrix has an allocated integer matrix</b>  <a href="namespacemqc__algebra.html#aa29bf4c1d5435e97d9763a04291c65d0">More...</a><br /></td></tr>
 <tr class="separator:aa29bf4c1d5435e97d9763a04291c65d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b79e988ed88206c28f8d43db5029873"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a9b79e988ed88206c28f8d43db5029873">mqc_matrix_havecomplex</a> (Matrix)</td></tr>
+<tr class="memdesc:a9b79e988ed88206c28f8d43db5029873"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveComplex is a function used to indicate if an MQC matrix has an allocated complex matrix</b>  <a href="namespacemqc__algebra.html#a9b79e988ed88206c28f8d43db5029873">More...</a><br /></td></tr>
 <tr class="separator:a9b79e988ed88206c28f8d43db5029873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2725ea9543a7f168e193039f993ec53"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#af2725ea9543a7f168e193039f993ec53">mqc_matrix_havefull</a> (Matrix)</td></tr>
+<tr class="memdesc:af2725ea9543a7f168e193039f993ec53"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveFull is a function used to indicate if an MQC matrix is stored unpacked</b>  <a href="namespacemqc__algebra.html#af2725ea9543a7f168e193039f993ec53">More...</a><br /></td></tr>
 <tr class="separator:af2725ea9543a7f168e193039f993ec53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c8207ccd518cdc6fb476fb8d178db53"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a7c8207ccd518cdc6fb476fb8d178db53">mqc_matrix_havesymmetric</a> (Matrix)</td></tr>
+<tr class="memdesc:a7c8207ccd518cdc6fb476fb8d178db53"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveSymmetric is a function used to indicate if an MQC matrix is stored symmetric-packed</b>  <a href="namespacemqc__algebra.html#a7c8207ccd518cdc6fb476fb8d178db53">More...</a><br /></td></tr>
 <tr class="separator:a7c8207ccd518cdc6fb476fb8d178db53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d16caed4314c658cf5d2b7ccb28bbb8"><td class="memItemLeft" align="right" valign="top">logical function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a3d16caed4314c658cf5d2b7ccb28bbb8">mqc_matrix_havediagonal</a> (Matrix)</td></tr>
+<tr class="memdesc:a3d16caed4314c658cf5d2b7ccb28bbb8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_HaveDiagonal is a function used to indicate if an MQC matrix is stored diagonal-packed</b>  <a href="namespacemqc__algebra.html#a3d16caed4314c658cf5d2b7ccb28bbb8">More...</a><br /></td></tr>
 <tr class="separator:a3d16caed4314c658cf5d2b7ccb28bbb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60dc9a6d8c03968a055211b3d9b1f105"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a60dc9a6d8c03968a055211b3d9b1f105">mqc_matrix_transpose</a> (Matrix)</td></tr>
+<tr class="memdesc:a60dc9a6d8c03968a055211b3d9b1f105"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Transpose is a function that returns the transpose of a MQC matrix</b>  <a href="namespacemqc__algebra.html#a60dc9a6d8c03968a055211b3d9b1f105">More...</a><br /></td></tr>
 <tr class="separator:a60dc9a6d8c03968a055211b3d9b1f105"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c797b90ca3c4ad265a9d463a6570345"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a4c797b90ca3c4ad265a9d463a6570345">mqc_matrix_conjugate_transpose</a> (Matrix)</td></tr>
+<tr class="memdesc:a4c797b90ca3c4ad265a9d463a6570345"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Conjugate_Transpose is a function that returns the conjugate transpose of a MQC matrix</b>  <a href="namespacemqc__algebra.html#a4c797b90ca3c4ad265a9d463a6570345">More...</a><br /></td></tr>
 <tr class="separator:a4c797b90ca3c4ad265a9d463a6570345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac797640c3e0bb06f8fdf7be857845957"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ac797640c3e0bb06f8fdf7be857845957">mqc_matrix_symmetrize</a> (Matrix)</td></tr>
+<tr class="memdesc:ac797640c3e0bb06f8fdf7be857845957"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix</b>  <a href="namespacemqc__algebra.html#ac797640c3e0bb06f8fdf7be857845957">More...</a><br /></td></tr>
 <tr class="separator:ac797640c3e0bb06f8fdf7be857845957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abef463820abe4650a2faeac78e0f4b4f"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#abef463820abe4650a2faeac78e0f4b4f">mqc_matrix_full2symm</a> (Matrix)</td></tr>
+<tr class="memdesc:abef463820abe4650a2faeac78e0f4b4f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Full2Symm is a subroutine that converts an unpacked MQC matrix to symmetric-packed</b>  <a href="namespacemqc__algebra.html#abef463820abe4650a2faeac78e0f4b4f">More...</a><br /></td></tr>
 <tr class="separator:abef463820abe4650a2faeac78e0f4b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b5ef28f290e4f9f1ce51fe154d91533"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a3b5ef28f290e4f9f1ce51fe154d91533">mqc_matrix_symm2full</a> (Matrix, Option)</td></tr>
+<tr class="memdesc:a3b5ef28f290e4f9f1ce51fe154d91533"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix to unpacked</b>  <a href="namespacemqc__algebra.html#a3b5ef28f290e4f9f1ce51fe154d91533">More...</a><br /></td></tr>
 <tr class="separator:a3b5ef28f290e4f9f1ce51fe154d91533"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92516c8d0a56a9f5b159c5674e5c60f1"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a92516c8d0a56a9f5b159c5674e5c60f1">mqc_matrix_full2diag</a> (Matrix)</td></tr>
+<tr class="memdesc:a92516c8d0a56a9f5b159c5674e5c60f1"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Full2Diag is a subroutine that converts an unpacked MQC matrix to diagonal-packed</b>  <a href="namespacemqc__algebra.html#a92516c8d0a56a9f5b159c5674e5c60f1">More...</a><br /></td></tr>
 <tr class="separator:a92516c8d0a56a9f5b159c5674e5c60f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae17baee9e5f8b7a841edc786ab481a7e"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ae17baee9e5f8b7a841edc786ab481a7e">mqc_matrix_diag2full</a> (Matrix)</td></tr>
+<tr class="memdesc:ae17baee9e5f8b7a841edc786ab481a7e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Diag2Full is a subroutine that converts a diagonal-packed MQC matrix to unpacked</b>  <a href="namespacemqc__algebra.html#ae17baee9e5f8b7a841edc786ab481a7e">More...</a><br /></td></tr>
 <tr class="separator:ae17baee9e5f8b7a841edc786ab481a7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb8fe92d1f31abbeb4c23127776581c3"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#adb8fe92d1f31abbeb4c23127776581c3">mqc_matrix_symm2diag</a> (Matrix)</td></tr>
+<tr class="memdesc:adb8fe92d1f31abbeb4c23127776581c3"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Symm2Diag is a subroutine that converts a symmetry-packed MQC matrix to diagonal-packed</b>  <a href="namespacemqc__algebra.html#adb8fe92d1f31abbeb4c23127776581c3">More...</a><br /></td></tr>
 <tr class="separator:adb8fe92d1f31abbeb4c23127776581c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a8aee67ccafeb86b35959d1ce1e7da4"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a8a8aee67ccafeb86b35959d1ce1e7da4">mqc_matrix_diag2symm</a> (Matrix)</td></tr>
+<tr class="memdesc:a8a8aee67ccafeb86b35959d1ce1e7da4"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix to symmetry-packed</b>  <a href="namespacemqc__algebra.html#a8a8aee67ccafeb86b35959d1ce1e7da4">More...</a><br /></td></tr>
 <tr class="separator:a8a8aee67ccafeb86b35959d1ce1e7da4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf3898fe4dcc387ce87913df99da20cb"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#adf3898fe4dcc387ce87913df99da20cb">mqc_matrix_symm2full_func</a> (Matrix)</td></tr>
+<tr class="memdesc:adf3898fe4dcc387ce87913df99da20cb"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Matrix_Symm2Full_Func is a function that converts a symmetric- packed MQC matrix to unpacked</b>  <a href="namespacemqc__algebra.html#adf3898fe4dcc387ce87913df99da20cb">More...</a><br /></td></tr>
 <tr class="separator:adf3898fe4dcc387ce87913df99da20cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aabe4f3ba2ca89b46415e29454b92f0cd"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aabe4f3ba2ca89b46415e29454b92f0cd">matrix_symm2sq_integer</a> (N, I_Symm, I_Sq)</td></tr>
+<tr class="memdesc:aabe4f3ba2ca89b46415e29454b92f0cd"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric- packed intrinsic integer matrix to a rank-2 intrinsic integer array</b>  <a href="namespacemqc__algebra.html#aabe4f3ba2ca89b46415e29454b92f0cd">More...</a><br /></td></tr>
 <tr class="separator:aabe4f3ba2ca89b46415e29454b92f0cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6f2cca04b517c21d664ad38af52afb0"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ac6f2cca04b517c21d664ad38af52afb0">matrix_symm2sq_real</a> (N, A_Symm, A_Sq)</td></tr>
+<tr class="memdesc:ac6f2cca04b517c21d664ad38af52afb0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Matrix_Symm2Sq_Real is a subroutine that converts a symmetric- packed intrinsic real matrix to a rank-2 intrinsic real array</b>  <a href="namespacemqc__algebra.html#ac6f2cca04b517c21d664ad38af52afb0">More...</a><br /></td></tr>
 <tr class="separator:ac6f2cca04b517c21d664ad38af52afb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aade03ba6fbf76d8c6dafc56f07a187d5"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#aade03ba6fbf76d8c6dafc56f07a187d5">matrix_symm2sq_complex</a> (N, A_Symm, A_Sq)</td></tr>
+<tr class="memdesc:aade03ba6fbf76d8c6dafc56f07a187d5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric- packed intrinsic complex matrix to a rank-2 intrinsic complex array</b>  <a href="namespacemqc__algebra.html#aade03ba6fbf76d8c6dafc56f07a187d5">More...</a><br /></td></tr>
 <tr class="separator:aade03ba6fbf76d8c6dafc56f07a187d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8156b61ed2a139980ac838ddb4bf66a"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ab8156b61ed2a139980ac838ddb4bf66a">mqc_vector2diagmatrix</a> (vector)</td></tr>
+<tr class="memdesc:ab8156b61ed2a139980ac838ddb4bf66a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with elements defined by an MQC vector</b>  <a href="namespacemqc__algebra.html#ab8156b61ed2a139980ac838ddb4bf66a">More...</a><br /></td></tr>
 <tr class="separator:ab8156b61ed2a139980ac838ddb4bf66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80828c415886bec8f4bda38064f7366c"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a80828c415886bec8f4bda38064f7366c">mqc_matrixmatrixsum</a> (MA, MB)</td></tr>
+<tr class="memdesc:a80828c415886bec8f4bda38064f7366c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixMatrixSum is a function that sums two MQC matrices</b>  <a href="namespacemqc__algebra.html#a80828c415886bec8f4bda38064f7366c">More...</a><br /></td></tr>
 <tr class="separator:a80828c415886bec8f4bda38064f7366c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a645e3425761f5a431b864ba730d7a2a7"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a645e3425761f5a431b864ba730d7a2a7">mqc_matrixmatrixsubtract</a> (MA, MB)</td></tr>
+<tr class="memdesc:a645e3425761f5a431b864ba730d7a2a7"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixMatrixSubtract is a function that subtracts two MQC matrices</b>  <a href="namespacemqc__algebra.html#a645e3425761f5a431b864ba730d7a2a7">More...</a><br /></td></tr>
 <tr class="separator:a645e3425761f5a431b864ba730d7a2a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a447b09386b734386f15489c647a89a1b"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#a447b09386b734386f15489c647a89a1b">mqc_matrixmatrixproduct</a> (MA, MB)</td></tr>
+<tr class="memdesc:a447b09386b734386f15489c647a89a1b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixMatrixProduct is a function that computes the element- wise product of two MQC matrices</b>  <a href="namespacemqc__algebra.html#a447b09386b734386f15489c647a89a1b">More...</a><br /></td></tr>
 <tr class="separator:a447b09386b734386f15489c647a89a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3603ce30c98db8c2332c2a41803d9e9"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemqc__algebra.html#ab3603ce30c98db8c2332c2a41803d9e9">mqc_matrixmatrixdotproduct</a> (MA, MB)</td></tr>
 <tr class="separator:ab3603ce30c98db8c2332c2a41803d9e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1022,6 +1094,26 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric- packed intrinsic complex matrix to a rank-2 intrinsic complex array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric-packed 
+    intrinsic complex matrix to a rank-2 complex array.
+    TODO: Move this routine to MQC general</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">N</td><td><pre class="fragment">        N is Integer(kind=int64)
+        The leading dimension of symmetric-packed matrix I_Symm.
+        unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A_Symm</td><td><pre class="fragment">        A_Symm is Complex(kind=real64),Dimension(:)
+        The symmetric-packed intrinsic complex matrix to be 
+        unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">A_Sq</td><td><pre class="fragment">        A_Sq is Complex(kind=real64),Dimension(N,N)
+        The upacked intrinsic complex matrix output.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="aabe4f3ba2ca89b46415e29454b92f0cd"></a>
@@ -1056,6 +1148,25 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric- packed intrinsic integer matrix to a rank-2 intrinsic integer array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric-packed 
+    intrinsic integer matrix to a rank-2 integer array.
+    TODO: Move this routine to MQC general</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">N</td><td><pre class="fragment">        N is Integer(kind=int64)
+        The leading dimension of symmetric-packed matrix I_Symm.
+        unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">I_Symm</td><td><pre class="fragment">        I_Symm is Integer(kind=int64),Dimension(:)
+        The symmetric-packed intrinsic integer matrix to be unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">I_Sq</td><td><pre class="fragment">        I_Sq is Integer(kind=int64),Dimension(N,N)
+        The upacked intrinsic integer matrix output.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="ac6f2cca04b517c21d664ad38af52afb0"></a>
@@ -1089,6 +1200,25 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> Matrix_Symm2Sq_Real is a subroutine that converts a symmetric- packed intrinsic real matrix to a rank-2 intrinsic real array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    Matrix_Symm2Sq_Real is a subroutine that converts a symmetric-packed 
+    intrinsic real matrix to a rank-2 real array.
+    TODO: Move this routine to MQC general</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">N</td><td><pre class="fragment">        N is Integer(kind=int64)
+        The leading dimension of symmetric-packed matrix I_Symm.
+        unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A_Symm</td><td><pre class="fragment">        A_Symm is Real(kind=real64),Dimension(:)
+        The symmetric-packed intrinsic real matrix to be unpacked.</pre></td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">A_Sq</td><td><pre class="fragment">        A_Sq is Real(kind=real64),Dimension(N,N)
+        The upacked intrinsic real matrix output.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -1135,6 +1265,41 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Allocate_Matrix is used to allocate a matrix type variable of the MQC_Matrix class</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Allocate_Matrix is a subroutine used to allocate a matrix type variable
+    of the MQC_Matrix class. The following options are available:
+
+    1. Data_Type = 'Real' declares the MQC_Matrix variable to be of real type. 
+    2. Data_Type = 'Integer' declares the MQC_Matrix variable to be of integer type.
+    3. Data_Type = 'Complex' declares the MQC_Matrix variable to be of complex type.
+    1. Data_Type = 'StorFull' declares the MQC_Matrix variable to be unpacked.
+    2. Data_Type = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
+    3. Data_Type = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">M</td><td><pre class="fragment">        M is Integer(kind=int64)
+        M is the number of rows of Matrix. </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">N</td><td><pre class="fragment">        N is Integer(kind=int64)
+        N is the number of columns of Matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(MQC_Matrix)
+        The MQC matrix to be allocated.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Data_Type</td><td><pre class="fragment">        Data_Type is Character(Len=*)
+        = 'Real':    the MQC_Scalar is real
+        = 'Integer': the MQC_Scalar is integer
+        = 'Complex': the MQC_Scalar is complex.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Storage</td><td><br  />
+ <pre class="fragment">        Storage is Character(Len=*)
+        = 'StorFull': the MQC_Scalar is unpacked
+        = 'StorSymm': the MQC_Scalar is symmetric packed
+        = 'StorDiag': the MQC_Scalar is diagonal packed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd>
+<dd>
+L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -1576,6 +1741,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Deallocate_Matrix is used to deallocate a matrix type variable of the MQC_Matrix class</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Deallocate_Matrix is a subroutine used to deallocate a matrix type variable
+    of the MQC_Matrix class. </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(MQC_Matrix)
+        The MQC matrix to be deallocated.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a6a0fe8ac26fa70fc7257b03a208e3cc4"></a>
@@ -1684,6 +1862,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_ElementMatrixDivide is a function that returns the element- wise quotient of two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ElementMatrixDivide is a function that returns the element-wise quotient 
+    of two MQC matrices.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td><pre class="fragment">        A is type(mqc_matrix)
+        The matrix with elements being the numerator.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td><pre class="fragment">        B is type(mqc_matrix)
+        The matrix with elements being the denominator.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="adee02d698f2778caa5357ac832bacbee"></a>
@@ -1711,6 +1904,21 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_ElementMatrixProduct is a function that returns the element- wise product of two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ElementMatrixProduct is a function that returns the element-wise product 
+    of two MQC matrices.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td><pre class="fragment">        A is type(mqc_matrix)
+        The first matrix to element-wise multiply.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td><pre class="fragment">        B is type(mqc_matrix)
+        The second matrix to element-wise multiply.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2281,6 +2489,50 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Cast_Complex is a function that converts an MQC matrix to its complex space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Cast_Complex is a function that converts an MQC matrix to its 
+    complex space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The MQC matrix to convert.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
+</div>
+</div>
+<a id="a261c99eae831fe640b991b32add18035"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a261c99eae831fe640b991b32add18035">&#9670;&nbsp;</a></span>mqc_matrix_cast_integer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function mqc_algebra::mqc_matrix_cast_integer </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>MA</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><b> MQC_Matrix_Cast_Integer is a function that converts an MQC matrix to its integer space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Cast_Integer is a function that converts an MQC matrix to its 
+    integer space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The MQC matrix to convert.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
+
 </div>
 </div>
 <a id="af02da0d912f9a9741edd52654b908b08"></a>
@@ -2298,6 +2550,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Cast_Real is a function that converts an MQC matrix to its real space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Cast_Real is a function that converts an MQC matrix to its real 
+    space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The MQC matrix to convert.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2317,6 +2582,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Columns is a function used to return the number of columns of an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Columns is a function used to return the number of columns of an MQC 
+    matrix. If the matrix is NOT allocated, the number of columns is returned as 0.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a4c797b90ca3c4ad265a9d463a6570345"></a>
@@ -2334,6 +2612,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Conjugate_Transpose is a function that returns the conjugate transpose of a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Conjugate_Transpose is a function that returns the conjugate 
+    transpose of a MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be conjugate transposed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -2353,6 +2644,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Copy_Complex2Int is a subroutine used to copy a complex MQC matrix into its integer space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Complex2Int is a subroutine used to copy a complex MQC matrix 
+    matrix into its integer space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to integer.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="aa0132d9cc98355602a93c17beb7858c5"></a>
@@ -2370,6 +2674,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Copy_Complex2Real is a subroutine used to copy a complex MQC matrix into its real space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Complex2Real is a subroutine used to copy a complex MQC matrix 
+    matrix into its real space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to real.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2389,6 +2706,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Copy_Int2Complex is a subroutine used to copy an integer MQC matrix into its complex space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Int2Complex is a subroutine used to copy an integer MQC matrix 
+    into its complex space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to complex.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a5e0d58bbdb51cd77e8f62ac4a9afc2ec"></a>
@@ -2406,6 +2736,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Copy_Int2Real is a subroutine used to copy an integer MQC matrix into its real space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Int2Real is a subroutine used to copy an integer MQC matrix 
+    into its real space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to real.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -2425,6 +2768,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Copy_Real2Complex is a subroutine used to copy a real MQC matrix into its complex space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Real2Complex is a subroutine used to copy a real MQC matrix 
+    matrix into its complex space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to complex.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="ad968ae4927598763a4772bacc5d0ad7f"></a>
@@ -2442,6 +2798,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Copy_Real2Int is a subroutine used to copy a real MQC matrix into its integer space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Copy_Real2Int is a subroutine used to copy a real MQC matrix matrix 
+    into its integer space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be converted to integer.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -2479,6 +2848,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Diag2Full is a subroutine that converts a diagonal-packed MQC matrix to unpacked</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Diag2Full is a subroutine that converts a diagonal-packed MQC matrix 
+    to unpacked.
+      TODO: make tests for diagonal structure more efficient.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be unpacked.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a8a8aee67ccafeb86b35959d1ce1e7da4"></a>
@@ -2496,6 +2879,20 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix to symmetry-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix 
+    to symmetry-packed.
+      TODO: make tests for diagonal structure more efficient.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be unpacked.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2525,6 +2922,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic complex vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic complex vector.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">DiagMatrixIn</td><td><pre class="fragment">        DiagMatrixIn is complex(kind=real64),dimension(:)
+        Intrinsic complex vector to write as diagonal matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a9b4a934665cdcc5c99684b62046cf303"></a>
@@ -2552,6 +2964,21 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic integer vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic integer vector.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">DiagMatrixIn</td><td><pre class="fragment">        DiagMatrixIn is integer(kind=int64),dimension(:)
+        Intrinsic integer vector to write as diagonal matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2581,6 +3008,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a diagonal MQC matrix with elements defined by values in an intrinsic real vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic real vector.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">DiagMatrixIn</td><td><pre class="fragment">        DiagMatrixIn is real(kind=real64),dimension(:)
+        Intrinsic real vector to write as diagonal matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a5190dd4e0b311022233f28e391bd51bb"></a>
@@ -2608,6 +3050,21 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a diagonal MQC matrix with elements defined by values in a MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a diagonal MQC 
+    matrix with elements defined by values in a MQC vector.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">DiagVectorIn</td><td><pre class="fragment">        DiagVectorIn is class(MQC_Vector)
+        Name of the MQC vector to write as diagonal matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2018 </dd></dl>
 
 </div>
 </div>
@@ -2643,6 +3100,26 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or hermitian MQC matrix and returns eigenvalues and eigenvectors</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or hermitian MQC 
+    matrix and optionally returns eigenvalues to a MQC vector and/or eigenvectors 
+    to a MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td><pre class="fragment">        A is Class(MQC_Matrix)
+        The MQC matrix to diagonalize. </pre></td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">EVals</td><td><pre class="fragment">        EVals is Type(MQC_Vector),Optional
+        Optional MQC vector containing the eigenvalues.</pre></td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">EVecs</td><td><pre class="fragment">        EVecs is Type(MQC_Vector),Optional
+        Optional MQC matrix containing the eigenvectors.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd>
+<dd>
+L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a92516c8d0a56a9f5b159c5674e5c60f1"></a>
@@ -2661,6 +3138,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Full2Diag is a subroutine that converts an unpacked MQC matrix to diagonal-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Full2Diag is a subroutine that converts an unpacked MQC matrix to 
+    diagonal-packed.
+      TODO: make tests for diagonal structure more efficient.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be diagonal packed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="abef463820abe4650a2faeac78e0f4b4f"></a>
@@ -2678,6 +3169,20 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Full2Symm is a subroutine that converts an unpacked MQC matrix to symmetric-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Full2Symm is a subroutine that converts an unpacked MQC matrix to 
+    symmetric-packed.
+      TODO: make tests for symmetry more efficient.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be symmetric packed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -2743,6 +3248,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_HaveComplex is a function used to indicate if an MQC matrix has an allocated complex matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveComplex is a function that returns TRUE if an MQC matrix has an 
+    allocated complex matrix and FALSE if it does not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a3d16caed4314c658cf5d2b7ccb28bbb8"></a>
@@ -2760,6 +3278,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_HaveDiagonal is a function used to indicate if an MQC matrix is stored diagonal-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveDiagonal is a function that returns TRUE if an MQC matrix is stored 
+    diagonal-packed and FALSE if it is not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2779,6 +3310,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_HaveFull is a function used to indicate if an MQC matrix is stored unpacked</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveFull is a function that returns TRUE if an MQC matrix is stored 
+    unpacked and FALSE if it is not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="aa29bf4c1d5435e97d9763a04291c65d0"></a>
@@ -2796,6 +3340,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_HaveInteger is a function used to indicate if an MQC matrix has an allocated integer matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveInteger is a function that returns TRUE if an MQC matrix has an 
+    allocated integer matrix and FALSE if it does not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -2815,6 +3372,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_HaveReal is a function used to indicate if an MQC matrix has an allocated real matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveReal is a function that returns TRUE if an MQC matrix has an 
+    allocated real matrix and FALSE if it does not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a7c8207ccd518cdc6fb476fb8d178db53"></a>
@@ -2832,6 +3402,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_HaveSymmetric is a function used to indicate if an MQC matrix is stored symmetric-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_HaveSymmetric is a function that returns TRUE if an MQC matrix is stored 
+    symmetric-packed and FALSE if it is not.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -2949,6 +3532,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_isAllocate is a function that returns the allocation status of a MQC_Matrix variable</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_isAllocate is a function that returns the allocation status of a 
+    MQC_Matrix variable. The function returns TRUE if the matrix is allocated 
+    and FALSE if the matrix is not allocated.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a3609569bc7a7c48d424c657d141cd5ef"></a>
@@ -2995,12 +3592,12 @@ Functions/Subroutines</h2></td></tr>
         If = [A,B]: output is submatrix of rows A to B
           If (A,B)&gt;0 row count is from first index
           If (A,B)&lt;0 row count is from last index
-        If = [0]: submatrix of rows equivalent to [1,-1]</pre></td></tr>
+        If = [0]: submatrix of rows equivalent to [1,-1].</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Cols</td><td><pre class="fragment">        Cols is Integer(kind=int64),Dimension(:)
         If = [A,B]: output is submatrix of columns A to B
           If (A,B)&gt;0 column count is from first index
           If (A,B)&lt;0 column count is from last index
-        If = [0]: submatrix of columns equivalent to [1,-1]</pre> </td></tr>
+        If = [0]: submatrix of columns equivalent to [1,-1].</pre> </td></tr>
   </table>
   </dd>
 </dl>
@@ -3074,6 +3671,42 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the specified position of a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the specified
+    position of a MQC matrix. The row and column specification are given as a vector 
+    where each vector must contain either zero or two non-zero integers to specify 
+    the range of elements that will be overwritten by the submatrix. If the value 
+    of an element specification is negative, it counts from the last element back. 
+    If the value of an element specification is zero, the whole row/column is 
+    specified.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Mat</td><td><pre class="fragment">        Mat is Class(MQC_Matrix)
+        The MQC matrix from which to return the subvector.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MatrixIn</td><td><pre class="fragment">        MatrixIn is Type(MQC_Matrix)
+        The submatrix to overwrite at the specified elements 
+        of Mat.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Rows</td><td><pre class="fragment">        Rows is Integer(kind=int64),Dimension(:)
+        The specification of the rows to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of rows A to B
+          If (A,B)&gt;0 row count is from first index
+          If (A,B)&lt;0 row count is from last index
+        If = [0]: subvector of rows equivalent to [1,-1].</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Cols</td><td><br  />
+ <pre class="fragment">        Cols is Integer(kind=int64),Dimension(:)
+        The specification of the columns to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of columns A to B
+          If (A,B)&gt;0 column count is from first index
+          If (A,B)&lt;0 column count is from last index
+        If = [0]: subvector of columns equivalent to [1,-1].</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3155,6 +3788,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Rows is a function used to return the number of rows of an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Rows is a function used to return the number of rows of an MQC 
+    matrix. If the matrix is NOT allocated, the number of rows is returned as 0.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a6da4e494a21e7ea9e1fbd2198278e0ce"></a>
@@ -3188,6 +3834,34 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Scalar_At is a function that returns the value of an <br  />
+ element of a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Scalar_At is a function that returns the value of (I,J)th element of 
+    a MQC matrix as an MQC scalar. If I or J is negative, the (N-I+1)th index is 
+    selected.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mat</td><td><pre class="fragment">        Mat is Class(MQC_Matrix)
+        The MQC matrix to return the value of the (I,J)th 
+        element.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">I</td><td><br  />
+ <pre class="fragment">        I is Integer(kind=int64)
+        The row of the element in MQC matrix. 
+          If I&gt;0 row count is from first index
+          If I&lt;0 row count is from last index.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">J</td><td><br  />
+ <pre class="fragment">        J is Integer(kind=int64)
+        The column of the element in MQC matrix.
+          If J&gt;0 row count is from first index
+          If J&lt;0 row count is from last index.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd>
+<dd>
+L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3355,6 +4029,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Symm2Diag is a subroutine that converts a symmetry-packed MQC matrix to diagonal-packed</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Symm2Diag is a subroutine that converts a symmetry-packed MQC matrix to 
+    diagonal-packed.
+      TODO: make tests for diagonal structure more efficient.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be diagonal packed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a3b5ef28f290e4f9f1ce51fe154d91533"></a>
@@ -3383,6 +4071,31 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix to unpacked</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix 
+    to unpacked. The following options are available:
+      Option = 'symmetric' unpacks as if matrix is symmetric.
+      Option = 'antisymmetric' unpacks as if matrix is antisymmetric.
+      Option = 'hermitian' unpacks as if matrix is hermitian.
+      Option = 'antihermitian' unpacks as if matrix is antihermitian.
+
+      TODO: when different symm storage flags implemented, use these rather than an
+            option</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to unpack.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Option</td><td><pre class="fragment">        Option is Character(len=*),Optional
+        = 'symmetric':      Unpack as if matrix is symmetric
+        = 'antisymmetric':  Unpack as if matrix is antisymmetric
+        = 'hermitian':      Unpack as if matrix is hermitian
+        = 'antihermitian':  Unpack as if matrix is antihermitian</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016, 2018 </dd></dl>
+
 </div>
 </div>
 <a id="adf3898fe4dcc387ce87913df99da20cb"></a>
@@ -3401,6 +4114,19 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Symm2Full_Func is a function that converts a symmetric- packed MQC matrix to unpacked</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Symm2Full_Func is a function that converts a symmetric-packed MQC matrix 
+    to unpacked.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be unpacked.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="ac797640c3e0bb06f8fdf7be857845957"></a>
@@ -3418,6 +4144,19 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix. 
+      TODO: options to antisymmetrize, hermitianize and antihermitianize. </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be symmetrized.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -3447,6 +4186,23 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic complex vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a symmetric 
+    packed MQC matrix with elements defined by values in an intrinsic complex
+    vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output symmetric matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">SymmMatrixIn</td><td><pre class="fragment">        SymmMatrixIn is complex(kind=real64),dimension(:)
+        Intrinsic complex vector to write as symmetric-packed 
+        matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a874218f3a41af94853ebfed27a74f27f"></a>
@@ -3475,6 +4231,23 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic integer vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a symmetric 
+    packed MQC matrix with elements defined by values in an intrinsic integer 
+    vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output symmetric matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">SymmMatrixIn</td><td><pre class="fragment">        SymmMatrixIn is integer(kind=int64),dimension(:)
+        Intrinsic integer vector to write as symmetric-packed 
+        matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a7d04d32e23c58f1a14085b5f3fa9e9f5"></a>
@@ -3502,6 +4275,23 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a symmetric packed MQC matrix with elements defined by values in an intrinsic real vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a symmetric 
+    packed MQC matrix with elements defined by values in an intrinsic real
+    vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">mat</td><td><pre class="fragment">        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output symmetric matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">SymmMatrixIn</td><td><pre class="fragment">        SymmMatrixIn is real(kind=real64),dimension(:)
+        Intrinsic real vector to write as symmetric-packed 
+        matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3577,6 +4367,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Test_Diagonal is a function that tests a MQC matrix to determine if it is diagonal</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Test_Diagonal is a function that tests a MQC matrix to determine 
+    if it is diagonal. The function returns TRUE if the matrix is diagonal and 
+    FALSE if the matrix is not diagonal.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(mqc_matrix)
+        The matrix to be tested.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="aefa84c562aa9933eead2de01256e418d"></a>
@@ -3604,6 +4408,31 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry 
+    specified by optional argument, with the default test being for a symmetric
+    matrix. Note that this function differs from haveSymmetric subroutine which
+    tests how a matrix is packed. The following options are available: 
+
+    1. Option = 'symmetric' tests for a symmetric matrix (default).
+    2. Option = 'antisymmetric' tests for an antisymmetric matrix.
+    3. Option = 'hermitian' tests for a hermitian matrix.
+    4. Option = 'antihermitian' tests for an antihermitian matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(mqc_matrix)
+        The matrix to be tested for symmetry.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Option</td><td><pre class="fragment">        Option is Character(len=*),Optional
+        = 'symmetric':     symmetric matrix test
+        = 'antisymmetric': antisymmetric matrix test
+        = 'hermitian':     hermitian matrix test
+        = 'antihermitian': antihermitian matrix test.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3641,6 +4470,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Matrix_Transpose is a function that returns the transpose of a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Transpose is a function that returns the transpose of a MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to be transposed.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd>
+<dd>
+X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016, 2017 </dd></dl>
+
 </div>
 </div>
 <a id="a6928e084da14a1fb181ab7e264fda37c"></a>
@@ -3674,6 +4517,40 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Vector_At is a function that returns the subvector of an <br  />
+ MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Vector_At is a function that returns the subvector of an MQC matrix.
+    The row and column specification are given as a vector where one vector must 
+    contain a single non-zero integer to specify the row or column of the 
+    subvector, and the other vector must be either zero or two non-zero integers to
+    specify the range of elements that will form the subvector. If the value of an
+    element specification is negative, it counts from the last element back. If the
+    value of an element specification is zero, the whole row/column is specified.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mat</td><td><pre class="fragment">        Mat is Class(MQC_Matrix)
+        The MQC matrix from which to return the subvector.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Rows</td><td><pre class="fragment">        Rows is Integer(kind=int64),Dimension(:)
+        The specification of the rows to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of rows A to B
+          If (A,B)&gt;0 row count is from first index
+          If (A,B)&lt;0 row count is from last index
+        If = [0]: subvector of rows equivalent to [1,-1].</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Cols</td><td><br  />
+ <pre class="fragment">        Cols is Integer(kind=int64),Dimension(:)
+        The specification of the columns to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of columns A to B
+          If (A,B)&gt;0 column count is from first index
+          If (A,B)&lt;0 column count is from last index
+        If = [0]: subvector of columns equivalent to [1,-1].</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3714,6 +4591,43 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Matrix_Vector_Put is a subroutine that writes a subvector to the specified position of a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Matrix_Vector_Put is a subroutine that writes a subvector to the specified
+    position of a MQC matrix. The row and column specification are given as a vector 
+    where one vector must contain a single non-zero integer to specify the row or 
+    column where the subvector will be written, and the other vector must be either 
+    zero or two non-zero integers to specify the range of elements that will be
+    overwritten by the subvector. If the value of an element specification is 
+    negative, it counts from the last element back. If the value of an element 
+    specification is zero, the whole row/column is specified.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Mat</td><td><pre class="fragment">        Mat is Class(MQC_Matrix)
+        The MQC matrix from which to return the subvector.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">VectorIn</td><td><pre class="fragment">        VectorIn is Type(MQC_Vector)
+        The subvector to overwrite at the specified elements 
+        of Mat.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Rows</td><td><pre class="fragment">        Rows is Integer(kind=int64),Dimension(:)
+        The specification of the rows to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of rows A to B
+          If (A,B)&gt;0 row count is from first index
+          If (A,B)&lt;0 row count is from last index
+        If = [0]: subvector of rows equivalent to [1,-1].</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Cols</td><td><br  />
+ <pre class="fragment">        Cols is Integer(kind=int64),Dimension(:)
+        The specification of the columns to include in the 
+        subvector. 
+        If = [A,B]: output is subvector of columns A to B
+          If (A,B)&gt;0 column count is from first index
+          If (A,B)&lt;0 column count is from last index
+        If = [0]: subvector of columns equivalent to [1,-1].</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -3771,6 +4685,21 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_MatrixMatrixProduct is a function that computes the element- wise product of two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixMatrixProduct is a function that computes the element-wise product of 
+    two MQC matrices.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The first MQC matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MB</td><td><pre class="fragment">        MB is Type(MQC_Matrix)
+        The second MQC matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a645e3425761f5a431b864ba730d7a2a7"></a>
@@ -3799,6 +4728,20 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_MatrixMatrixSubtract is a function that subtracts two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixMatrixSubtract is a function that subtracts two MQC matrices.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The matrix that MB will be subtracted from.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MB</td><td><pre class="fragment">        MB is Type(MQC_Matrix)
+        The matrix that will be subtracted from MA.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a80828c415886bec8f4bda38064f7366c"></a>
@@ -3826,6 +4769,22 @@ Functions/Subroutines</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_MatrixMatrixSum is a function that sums two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixMatrixSum is a function that sums two MQC matrices.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        First MQC matrix to sum.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MB</td><td><pre class="fragment">        MB is Type(MQC_Matrix)
+        Second MQC matrix to sum.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>H. P. Hratchian </dd>
+<dd>
+L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017, 2018 </dd></dl>
 
 </div>
 </div>
@@ -4141,6 +5100,30 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Print_Matrix_Algebra1 is a subroutine used to print an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Print_Matrix_Algebra1 is a subroutine used to print an MQC matrix. 
+    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+    lines before or after output.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Class(MQC_Matrix)
+        The variable to be printed.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">IOut</td><td><pre class="fragment">        IOut is Integer(kind=int64) 
+        The Fortran file number to print to. </pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Header</td><td><pre class="fragment">        Header is Character(Len=*)
+        The title to print along with Matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Top</td><td><pre class="fragment">        Blank_At_Top is Logical,Optional
+        = .True.:  print blank line above output
+        = .False.: do not print blank line above output.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Bottom</td><td><pre class="fragment">        Blank_At_Bottom is Logical,Optional
+        = .True.:  print blank line below output
+        = .False.: do not print blank line below output.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="abf5aa22c14da0bd4a866e2370b36d9fc"></a>
@@ -4320,7 +5303,7 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">IOut</td><td><pre class="fragment">        IOut is Integer(kind=int64) 
         The Fortran file number to print to. </pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Header</td><td><pre class="fragment">        Header is Character(Len=*)
-        The title to print along with Scalar.</pre></td></tr>
+        The title to print along with Vector.</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Verbose</td><td><pre class="fragment">        Verbose is Logical,Optional
         Adds extra printing to output.</pre></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">Blank_At_Top</td><td><pre class="fragment">        Blank_At_Top is Logical,Optional
@@ -7330,6 +8313,21 @@ A. D. Mahler <br  />
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic complex rank-2 array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix equal to an
+    intrinsic complex rank-2 array.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">MatrixOut</td><td><pre class="fragment">        MatrixOut is Type(MQC_Matrix)
+        The MQC matrix to be set equal to the complex array.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayIn is Complex(kind=real64),Dimension(:,:)
+        The complex array to be input into MatrixOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a20d7a2397ab1d86b82d757a197137ab7"></a>
@@ -7357,6 +8355,21 @@ A. D. Mahler <br  />
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Set_IntegerArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic integer rank-2 array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_IntegerArray2Matrix is a subroutine that sets an MQC matrix equal to an
+    intrinsic integer rank-2 array.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">MatrixOut</td><td><pre class="fragment">        MatrixOut is Type(MQC_Matrix)
+        The MQC matrix to be set equal to the integer array.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayIn is Integer(kind=int64),Dimension(:,:)
+        The integer array to be input into MatrixOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -7386,6 +8399,21 @@ A. D. Mahler <br  />
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_Matrix2ComplexArray is a subroutine that sets an intrinsic complex rank-2 array equal to an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Matrix2ComplexArray is a subroutine that sets an intrinsic complex 
+    rank-2 array equal to an MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ArrayOut</td><td><pre class="fragment">        ArrayOut is Complex(kind=real64),Dimension(:,:),Allocatable
+        The complex array to be set equal to the MQC matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MatrixIn</td><td><pre class="fragment">        MatrixIn is Type(MQC_Matrix)
+        The MQC matrix to be input into ArrayOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a8204520d32c6bfe3cee8aa2d50b65274"></a>
@@ -7413,6 +8441,21 @@ A. D. Mahler <br  />
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Set_Matrix2IntegerArray is a subroutine that sets an intrinsic integer rank-2 array equal to an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Matrix2IntegerArray is a subroutine that sets an intrinsic integer 
+    rank-2 array equal to an MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ArrayOut</td><td><pre class="fragment">        ArrayOut is Integer(kind=int64),Dimension(:,:),Allocatable
+        The integer array to be set equal to the MQC matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MatrixIn</td><td><pre class="fragment">        MatrixIn is Type(MQC_Matrix)
+        The MQC matrix to be input into ArrayOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -7442,6 +8485,22 @@ A. D. Mahler <br  />
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_Matrix2Matrix is a subroutine that sets an MQC matrix equal to another MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Matrix2Matrix is a subroutine that sets an MQC matrix equal to another 
+    MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">MatrixOut</td><td><pre class="fragment">        MatrixOut is Class(MQC_Matrix)
+        The MQC matrix to be set equal to the incoming MQC 
+        matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MatrixIn</td><td><pre class="fragment">        MatrixIn is Class(MQC_Matrix)
+        The MQC matrix to be input into MatrixOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="a544f1ff194490228f18d7198a4baeecc"></a>
@@ -7470,6 +8529,21 @@ A. D. Mahler <br  />
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_Set_Matrix2RealArray is a subroutine that sets an intrinsic real rank-2 array equal to an MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Matrix2RealArray is a subroutine that sets an intrinsic real rank-2 
+    array equal to an MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ArrayOut</td><td><pre class="fragment">        ArrayOut is Real(kind=real64),Dimension(:,:),Allocatable
+        The real array to be set equal to the MQC matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MatrixIn</td><td><pre class="fragment">        MatrixIn is Type(MQC_Matrix)
+        The MQC matrix to be input into ArrayOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
+
 </div>
 </div>
 <a id="ac220bbbae4694f6402442c9155322869"></a>
@@ -7497,6 +8571,21 @@ A. D. Mahler <br  />
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Set_RealArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic real rank-2 array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_RealArray2Matrix is a subroutine that sets an MQC matrix equal to an
+    intrinsic real rank-2 array.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">MatrixOut</td><td><pre class="fragment">        MatrixOut is Type(MQC_Matrix)
+        The MQC matrix to be set equal to the real array.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayIn is Real(kind=real64),Dimension(:,:)
+        The real array to be input into MatrixOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016 </dd></dl>
 
 </div>
 </div>
@@ -7690,12 +8779,25 @@ L. M. Thompson </dd></dl>
         <tr>
           <td class="memname">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function mqc_algebra::mqc_vector2diagmatrix </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>), intent(in)&#160;</td>
+          <td class="paramtype">class(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>), intent(in)&#160;</td>
           <td class="paramname"><em>vector</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with elements defined by an MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
+    elements defined by an MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vector</td><td><pre class="fragment">        Vector is Class(MQC_Vector)
+        MQC vector defining diagonal elements of output matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -7787,8 +8889,39 @@ L. M. Thompson </dd></dl>
   </table>
   </dd>
 </dl>
-<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
+</div>
+</div>
+<a id="a61df3eda09029cbe0513af750f9480a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61df3eda09029cbe0513af750f9480a3">&#9670;&nbsp;</a></span>mqc_vector_cast_integer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function mqc_algebra::mqc_vector_cast_integer </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>VA</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><b> MQC_vector_cast_integer is a function that converts an MQC vector to its integer space</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_vector_cast_integer is a function that converts an MQC vector to its 
+    integer space.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">VA</td><td><pre class="fragment">        VA is Type(MQC_Vector)
+        The MQC vector to convert.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2019 </dd></dl>
 
 </div>
 </div>
@@ -9638,6 +10771,30 @@ L. M. Thompson </dd></dl>
       </table>
 </div><div class="memdoc">
 
+<p><b> SymIndexHash is a function that returns the index in a vector of a symmetric-packed matrix or rank-4 tensor</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    SymIndexHash is a function that returns the index in a vector of a symmetric-
+    packed matrix or rank-4 tensor. If a matrix is tested, it is assumed lower-
+    triangular row-wise stored.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">I</td><td><pre class="fragment">        I is integer(kind=int64)
+        The first index of the matrix/rank-4 tensor.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">J</td><td><pre class="fragment">        I is integer(kind=int64)
+        The second index of the matrix/rank-4 tensor.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">K</td><td><pre class="fragment">        K is integer(kind=int64),Optional
+        The third index of the rank-4 tensor. This argument is
+        only required when taking hash of a rank-4 tensor.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">L</td><td><pre class="fragment">        L is integer(kind=int64),Optional
+        The fourth index of the rank-4 tensor. This argument is
+        only required when taking hash of a rank-4 tensor.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd>
+<dd>
+L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 </div><!-- contents -->
@@ -9646,7 +10803,7 @@ L. M. Thompson </dd></dl>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li>
-    <li class="footer">Generated on Thu Oct 10 2019 11:02:32 for MQCPack by
+    <li class="footer">Generated on Fri Oct 11 2019 17:35:37 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

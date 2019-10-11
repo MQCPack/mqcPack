@@ -11,7 +11,7 @@
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8ewp_8_08_acb08fe28184949bcbde6dc9bdac40fa4}{mqc\+\_\+elementvectorproduct}} (Vector1\+In, Vector2\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Element\+Vector\+Product is a function that multiplies two M\+QC vectors elementwise and stores them into another M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_8ewp_8_08_af607ba8ff56247ef904da42ee781ebdc}{mqc\+\_\+elementmatrixproduct}} (A, B)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Element\+Matrix\+Product is a function that returns the element-\/ wise product of two M\+QC matrices}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -24,6 +24,32 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) func
 \doxysubsubsection{\texorpdfstring{mqc\_elementmatrixproduct()}{mqc\_elementmatrixproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator(.ewp.)\+::mqc\+\_\+elementmatrixproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{A,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{B }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Element\+Matrix\+Product is a function that returns the element-\/ wise product of two M\+QC matrices}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ElementMatrixProduct is a function that returns the element-wise product 
+    of two MQC matrices.    \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em A} & \begin{DoxyVerb}        A is type(mqc_matrix)
+        The first matrix to element-wise multiply.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em B} & \begin{DoxyVerb}        B is type(mqc_matrix)
+        The second matrix to element-wise multiply.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_8ewp_8_08_acb08fe28184949bcbde6dc9bdac40fa4}\label{interfacemqc__algebra_1_1operator_07_8ewp_8_08_acb08fe28184949bcbde6dc9bdac40fa4}} 
 \index{mqc\_algebra::operator(.ewp.)@{mqc\_algebra::operator(.ewp.)}!mqc\_elementvectorproduct@{mqc\_elementvectorproduct}}
 \index{mqc\_elementvectorproduct@{mqc\_elementvectorproduct}!mqc\_algebra::operator(.ewp.)@{mqc\_algebra::operator(.ewp.)}}

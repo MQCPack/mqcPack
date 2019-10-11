@@ -27,7 +27,7 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a4caf8f4e679cc35eca6aa48d92f67f6d}{mqc\+\_\+scalarvectorsum}} (Scalar\+In, Vector\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Sum is a function that adds an M\+QC scalar to all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_09_08_a8ff646cb597df78da8147c845aeb00d8}{mqc\+\_\+matrixmatrixsum}} (MA, MB)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Sum is a function that sums two M\+QC matrices}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -104,6 +104,33 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_matrixmatrixsum()}{mqc\_matrixmatrixsum()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator(+)\+::mqc\+\_\+matrixmatrixsum (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Sum is a function that sums two M\+QC matrices}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixMatrixSum is a function that sums two MQC matrices.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em MA} & \begin{DoxyVerb}        MA is Type(MQC_Matrix)
+        First MQC matrix to sum.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em MB} & \begin{DoxyVerb}        MB is Type(MQC_Matrix)
+        Second MQC matrix to sum.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017, 2018 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_09_08_a79d3f9058287c5258196dd29789c4340}\label{interfacemqc__algebra_1_1operator_07_09_08_a79d3f9058287c5258196dd29789c4340}} 
 \index{mqc\_algebra::operator(+)@{mqc\_algebra::operator(+)}!mqc\_realscalaradd@{mqc\_realscalaradd}}
 \index{mqc\_realscalaradd@{mqc\_realscalaradd}!mqc\_algebra::operator(+)@{mqc\_algebra::operator(+)}}

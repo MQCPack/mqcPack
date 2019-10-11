@@ -47,7 +47,7 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Complex\+Product is a function that returns the product of a ~\newline
  M\+QC vector and an intrinsic complex scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_5_08_ac872dc3f33e5c77f53ca9e8597c89188}{mqc\+\_\+matrixmatrixproduct}} (MA, MB)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Product is a function that computes the element-\/ wise product of two M\+QC matrices}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -188,6 +188,32 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_matrixmatrixproduct()}{mqc\_matrixmatrixproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator($\ast$)\+::mqc\+\_\+matrixmatrixproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Product is a function that computes the element-\/ wise product of two M\+QC matrices}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixMatrixProduct is a function that computes the element-wise product of 
+    two MQC matrices.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em MA} & \begin{DoxyVerb}        MA is Type(MQC_Matrix)
+        The first MQC matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em MB} & \begin{DoxyVerb}        MB is Type(MQC_Matrix)
+        The second MQC matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_5_08_add2882574db6df6951dcf86177d7519b}\label{interfacemqc__algebra_1_1operator_07_5_08_add2882574db6df6951dcf86177d7519b}} 
 \index{mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}!mqc\_matrixscalarproduct@{mqc\_matrixscalarproduct}}
 \index{mqc\_matrixscalarproduct@{mqc\_matrixscalarproduct}!mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}}

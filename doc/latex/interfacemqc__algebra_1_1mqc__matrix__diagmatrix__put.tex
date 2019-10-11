@@ -9,13 +9,13 @@
 \begin{DoxyCompactItemize}
 \item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_ab3ff0ac0e7a1c0eef9921ca5fc160eb7}{mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+integer}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+integer is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic integer vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a71574768e9c97073b04ee93f27a715a5}{mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+real}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Real is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic real vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a67ececb34a351011ab55472c13a34791}{mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+complex}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Complex is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic complex vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a04d3ec5c7621140292566d2190e276b5}{mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+vector}} (diag\+Vector\+In, mat)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Vector is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in a M\+QC vector}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -28,24 +28,128 @@ subroutine \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__pu
 \doxysubsubsection{\texorpdfstring{mqc\_matrix\_diagmatrix\_put\_complex()}{mqc\_matrix\_diagmatrix\_put\_complex()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+complex (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(inout)}]{mat,  }\item[{complex(kind=real64), dimension(\+:), intent(in)}]{diag\+Matrix\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Complex is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic complex vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic complex vector.    \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em mat} & \begin{DoxyVerb}        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Diag\+Matrix\+In} & \begin{DoxyVerb}        DiagMatrixIn is complex(kind=real64),dimension(:)
+        Intrinsic complex vector to write as diagonal matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_ab3ff0ac0e7a1c0eef9921ca5fc160eb7}\label{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_ab3ff0ac0e7a1c0eef9921ca5fc160eb7}} 
 \index{mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}!mqc\_matrix\_diagmatrix\_put\_integer@{mqc\_matrix\_diagmatrix\_put\_integer}}
 \index{mqc\_matrix\_diagmatrix\_put\_integer@{mqc\_matrix\_diagmatrix\_put\_integer}!mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}}
 \doxysubsubsection{\texorpdfstring{mqc\_matrix\_diagmatrix\_put\_integer()}{mqc\_matrix\_diagmatrix\_put\_integer()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+integer (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(inout)}]{mat,  }\item[{integer(kind=int64), dimension(\+:), intent(in)}]{diag\+Matrix\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+integer is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic integer vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic integer vector.    \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em mat} & \begin{DoxyVerb}        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Diag\+Matrix\+In} & \begin{DoxyVerb}        DiagMatrixIn is integer(kind=int64),dimension(:)
+        Intrinsic integer vector to write as diagonal matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a71574768e9c97073b04ee93f27a715a5}\label{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a71574768e9c97073b04ee93f27a715a5}} 
 \index{mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}!mqc\_matrix\_diagmatrix\_put\_real@{mqc\_matrix\_diagmatrix\_put\_real}}
 \index{mqc\_matrix\_diagmatrix\_put\_real@{mqc\_matrix\_diagmatrix\_put\_real}!mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}}
 \doxysubsubsection{\texorpdfstring{mqc\_matrix\_diagmatrix\_put\_real()}{mqc\_matrix\_diagmatrix\_put\_real()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+real (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(inout)}]{mat,  }\item[{\mbox{\hyperlink{interfacemqc__algebra_1_1real}{real}}(kind=real64), dimension(\+:), intent(in)}]{diag\+Matrix\+In }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Real is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic real vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a diagonal MQC
+    matrix with elements defined by values in an intrinsic real vector.    \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in,out}}  & {\em mat} & \begin{DoxyVerb}        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Diag\+Matrix\+In} & \begin{DoxyVerb}        DiagMatrixIn is real(kind=real64),dimension(:)
+        Intrinsic real vector to write as diagonal matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a04d3ec5c7621140292566d2190e276b5}\label{interfacemqc__algebra_1_1mqc__matrix__diagmatrix__put_a04d3ec5c7621140292566d2190e276b5}} 
 \index{mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}!mqc\_matrix\_diagmatrix\_put\_vector@{mqc\_matrix\_diagmatrix\_put\_vector}}
 \index{mqc\_matrix\_diagmatrix\_put\_vector@{mqc\_matrix\_diagmatrix\_put\_vector}!mqc\_algebra::mqc\_matrix\_diagmatrix\_put@{mqc\_algebra::mqc\_matrix\_diagmatrix\_put}}
 \doxysubsubsection{\texorpdfstring{mqc\_matrix\_diagmatrix\_put\_vector()}{mqc\_matrix\_diagmatrix\_put\_vector()}}
 {\footnotesize\ttfamily subroutine mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+vector (\begin{DoxyParamCaption}\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{diag\+Vector\+In,  }\item[{class(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(inout)}]{mat }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Vector is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in a M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a diagonal MQC 
+    matrix with elements defined by values in a MQC vector.    \end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Diag\+Vector\+In} & \begin{DoxyVerb}        DiagVectorIn is class(MQC_Vector)
+        Name of the MQC vector to write as diagonal matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in,out}}  & {\em mat} & \begin{DoxyVerb}        Mat is class(MQC_Matrix)
+        MQC matrix to overwrite with output diagonal matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2018 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

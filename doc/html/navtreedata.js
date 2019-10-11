@@ -49,8 +49,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"interfacemqc__est_1_1matmul.html",
-"mqc__algebra_8_f03.html#aef893bc571f197a714a55d36dba87036"
+"interfacemqc__est_1_1dagger.html#a1872fe6d8cfc59d5bf3ea2319cddd2e0",
+"mqc__algebra_8_f03.html#ae64f8cd347b0d00129d7fce3ea323c46"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
