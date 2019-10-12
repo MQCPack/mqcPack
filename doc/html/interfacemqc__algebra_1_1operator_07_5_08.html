@@ -128,8 +128,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a318908052a39fb4c13a6b35526f64f40"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorScalarProduct is a function that returns the product of a MQC vector with a MQC scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_5_08.html#a318908052a39fb4c13a6b35526f64f40">More...</a><br /></td></tr>
 <tr class="separator:a318908052a39fb4c13a6b35526f64f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf5b6f61bac58db92713afc329fe6e3f"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_5_08.html#adf5b6f61bac58db92713afc329fe6e3f">mqc_scalarmatrixproduct</a> (Scalar, Matrix)</td></tr>
+<tr class="memdesc:adf5b6f61bac58db92713afc329fe6e3f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix and a MQC scalar</b>  <a href="interfacemqc__algebra_1_1operator_07_5_08.html#adf5b6f61bac58db92713afc329fe6e3f">More...</a><br /></td></tr>
 <tr class="separator:adf5b6f61bac58db92713afc329fe6e3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add2882574db6df6951dcf86177d7519b"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_5_08.html#add2882574db6df6951dcf86177d7519b">mqc_matrixscalarproduct</a> (Matrix, Scalar)</td></tr>
+<tr class="memdesc:add2882574db6df6951dcf86177d7519b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixScalarProduct is a function that computes the product of a MQC scalar and a MQC matrix</b>  <a href="interfacemqc__algebra_1_1operator_07_5_08.html#add2882574db6df6951dcf86177d7519b">More...</a><br /></td></tr>
 <tr class="separator:add2882574db6df6951dcf86177d7519b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a710e98e324564219905617e6d28fe6"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1operator_07_5_08.html#a9a710e98e324564219905617e6d28fe6">mqc_realvectorproduct</a> (RealIn, Vector)</td></tr>
 <tr class="memdesc:a9a710e98e324564219905617e6d28fe6"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_RealVectorProduct is a function that returns the product of an <br  />
@@ -401,6 +403,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_MatrixScalarProduct is a function that computes the product of a MQC scalar and a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixScalarProduct is a function that computes the inner product of a MQC 
+    scalar and a MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to multiply.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC scalar to multiply.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a8d7c50aec1b1295afcd47abbac14b063"></a>
@@ -601,6 +618,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix and a MQC scalar</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix
+    and a MQC scalar.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Scalar</td><td><pre class="fragment">        Scalar is Type(MQC_Scalar)
+        The MQC scalar to multiply.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Matrix</td><td><pre class="fragment">        Matrix is Type(MQC_Matrix)
+        The MQC matrix to multiply.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -921,7 +953,7 @@ A. D. Mahler <br  />
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1operator_07_5_08.html">operator(*)</a></li>
-    <li class="footer">Generated on Fri Oct 11 2019 17:35:37 for MQCPack by
+    <li class="footer">Generated on Sat Oct 12 2019 10:03:17 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

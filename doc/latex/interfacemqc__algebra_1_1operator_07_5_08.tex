@@ -27,9 +27,9 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_5_08_a318908052a39fb4c13a6b35526f64f40}{mqc\+\_\+vectorscalarproduct}} (vector, scalar)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Scalar\+Product is a function that returns the product of a M\+QC vector with a M\+QC scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_5_08_adf5b6f61bac58db92713afc329fe6e3f}{mqc\+\_\+scalarmatrixproduct}} (Scalar, Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Matrix\+Product is a function that computes the product of a M\+QC matrix and a M\+QC scalar}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_5_08_add2882574db6df6951dcf86177d7519b}{mqc\+\_\+matrixscalarproduct}} (Matrix, Scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Scalar\+Product is a function that computes the product of a M\+QC scalar and a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07_5_08_a9a710e98e324564219905617e6d28fe6}{mqc\+\_\+realvectorproduct}} (Real\+In, Vector)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Real\+Vector\+Product is a function that returns the product of an ~\newline
  intrinsic real scalar and a M\+QC vector}} \end{DoxyCompactList}\item 
@@ -220,6 +220,32 @@ H. P. Hratchian
 \doxysubsubsection{\texorpdfstring{mqc\_matrixscalarproduct()}{mqc\_matrixscalarproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator($\ast$)\+::mqc\+\_\+matrixscalarproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{Matrix,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Scalar\+Product is a function that computes the product of a M\+QC scalar and a M\+QC matrix}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixScalarProduct is a function that computes the inner product of a MQC 
+    scalar and a MQC matrix.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Matrix} & \begin{DoxyVerb}        Matrix is Type(MQC_Matrix)
+        The MQC matrix to multiply.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC scalar to multiply.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_5_08_a8d7c50aec1b1295afcd47abbac14b063}\label{interfacemqc__algebra_1_1operator_07_5_08_a8d7c50aec1b1295afcd47abbac14b063}} 
 \index{mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}!mqc\_realscalarmultiply@{mqc\_realscalarmultiply}}
 \index{mqc\_realscalarmultiply@{mqc\_realscalarmultiply}!mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}}
@@ -355,6 +381,32 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_scalarmatrixproduct()}{mqc\_scalarmatrixproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator($\ast$)\+::mqc\+\_\+scalarmatrixproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}), intent(in)}]{Scalar,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{Matrix }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Matrix\+Product is a function that computes the product of a M\+QC matrix and a M\+QC scalar}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix
+    and a MQC scalar.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Scalar} & \begin{DoxyVerb}        Scalar is Type(MQC_Scalar)
+        The MQC scalar to multiply.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Matrix} & \begin{DoxyVerb}        Matrix is Type(MQC_Matrix)
+        The MQC matrix to multiply.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07_5_08_af9e44e187d17212e6a72ce1e9a5b5c1a}\label{interfacemqc__algebra_1_1operator_07_5_08_af9e44e187d17212e6a72ce1e9a5b5c1a}} 
 \index{mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}!mqc\_scalarmultiply@{mqc\_scalarmultiply}}
 \index{mqc\_scalarmultiply@{mqc\_scalarmultiply}!mqc\_algebra::operator($\ast$)@{mqc\_algebra::operator($\ast$)}}

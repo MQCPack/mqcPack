@@ -10035,7 +10035,7 @@
 !>
 !>    \param[in,out] EVecs
 !>    \verbatim
-!>        EVecs is Type(MQC_Vector),Optional
+!>        EVecs is Type(MQC_Matrix),Optional
 !>        Optional MQC matrix containing the eigenvectors.
 !>    \endverbatim
 !
@@ -16430,12 +16430,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixMatrixDotProduct
+!
+!>    \brief <b> MQC_MatrixMatrixDotProduct is a function that computes the inner
+!>    product of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixMatrixDotProduct is a function that computes the inner product of 
+!>    two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The first MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The second MQC matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixMatrixDotProduct(MA,MB) Result(MC)
-!
-!     This subroutine is used to calculate matrix multiplication for all types of MQC_matrix
-!     MC = MA .dot. MB
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA,MB
@@ -16979,14 +17007,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixVectorDotProduct
+!
+!>    \brief <b> MQC_MatrixVectorDotProduct is a function that computes the inner
+!>    product of a MQC matrix and a MQC vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixVectorDotProduct is a function that computes the inner product of 
+!>    a MQC matrix and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The MQC matrix multiply.
+!>    \endverbatim
+!>
+!>    \param[in] VB
+!>    \verbatim
+!>        VB is Type(MQC_Vector)
+!>        The MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixVectorDotProduct(MA,VB) Result(VC)
-!
-!     This subroutine is used to calculate matrix vector multiplication for
-!     all types of MQC_matrix and MQC_vector
-!                         VC = MA .dot. VB
-!     Note that VB%Column has to be .true. and VC%column will be .true.
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA
@@ -17122,14 +17176,40 @@
 !
 !
 !     PROCEDURE MQC_VectorMatrixDotProduct
+!
+!>    \brief <b> MQC_VectorMatrixDotProduct is a function that computes the inner
+!>    product of a MQC vector and a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorMatrixDotProduct is a function that computes the inner product of 
+!>    a MQC vector and a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Type(MQC_Vector)
+!>        The MQC vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_VectormatrixDotProduct(VA,MB) Result(VC)
-!
-!     This subroutine is used to calculate vector matrix multiplication for
-!     all types of MQC_matrix and MQC_vector
-!                         VC = VA .dot. MB
-!     Note that VA%Column has to be .false. and VC%column will be .false.
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MB
@@ -17269,11 +17349,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixScalarProduct
+!
+!>    \brief <b> MQC_MatrixScalarProduct is a function that computes the product of
+!>    a MQC scalar and a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixScalarProduct is a function that computes the inner product of a MQC 
+!>    scalar and a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixScalarProduct(Matrix,Scalar) Result(Matrix_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_vector
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Type(MQC_Scalar),Intent(In)::Scalar
@@ -17319,11 +17428,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarMatrixProduct
+!
+!>    \brief <b> MQC_ScalarMatrixProduct is a function that computes the product of
+!>    a MQC matrix and a MQC scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix
+!>    and a MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_ScalarMatrixProduct(Scalar,Matrix) Result(Matrix_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_matrix
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Type(MQC_Scalar),Intent(In)::Scalar
@@ -17368,13 +17506,40 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Contraction
+!
+!>    \brief <b> MQC_Matrix_Matrix_Contraction is a function that returns the 
+!>    contraction of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Matrix_Contraction is a function that returns the contraction of two 
+!>    MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is Type(MQC_Matrix)
+!>        The first MQC matrix to contract.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is Type(MQC_Matrix)
+!>        The second MQC matrix to contract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Matrix_Contraction(Matrix1,Matrix2) Result(Contraction)
-!
-!     This function returns the contration of two matrices, given as input
-!     dummy arguments Matrix1 and Matrix2.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
 !
@@ -17396,13 +17561,57 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Scalar_Put
+!
+!>    \brief <b> MQC_Matrix_Scalar_Put is a subroutine that updates the value of the 
+!>    (i,j)th element of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
+!>    element of a MQC matrix. If the location of an element is negative then it is 
+!>    counted from the end of the MQC matrix row/column.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to update at the (i,j)th element..
+!>    \endverbatim
+!>
+!>    \param[in] Scalar 
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The value to update the (i,j)th element of Matrix..
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64) 
+!>        The location of the row element in Matrix to update. If 
+!>        I is negative it is counted from the last element of 
+!>        Matrix
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64) 
+!>        The location of the column element in Matrix to update. 
+!>        If J is negative it is counted from the last element of 
+!>        Matrix
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Scalar_Put(Matrix,Scalar,I,J)
-!
-!     This subroutine updates the value of MQC_Matrix Matrix with the value
-!     in MQC_Scalar Scalar at element I,J.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -17470,15 +17679,60 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Initialize
+!
+!>    \brief <b> MQC_Matrix_Initialize is a subroutine that initializes an MQC matrix
+!>    with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Initialize is a subroutine that initializes an MQC matrix with each 
+!>    element equal to a chosen value. Optional argument Scalar determines the value
+!>    of each element, with the default equal to zero. Optional argument Storage 
+!>    determines the initial packing of MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to initialize.
+!>    \endverbatim
+!>
+!>    \param[in] Rows 
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Columns
+!>    \verbatim
+!>        Columns is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(Len=*),Optional
+!>        The initial packing of Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Initialize(Matrix,Rows,Columns,Scalar,Storage)
-!
-!     This subroutine initializes an MQC_Matrix Matrix of dimension Rows x
-!     Columns with the value Scalar in all elements. <Storage> is a character
-!     string that matches the meanings of argument <Storage> in routine
-!     MQC_Allocate_Matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -17520,12 +17774,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Identity
+!
+!>    \brief <b> MQC_Matrix_Identity is a subroutine that initializes an MQC matrix
+!>    as an identity matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Identity is a subroutine that initializes an MQC matrix as an  
+!>    identity matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to initialize as the NxM identity 
+!>        matrix.
+!>    \endverbatim
+!>
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] M
+!>    \verbatim
+!>        M is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Identity(matrix,n,m)
-!
-!     This subroutine returns an identity matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -17544,12 +17833,50 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Set
+!
+!>    \brief <b> MQC_Matrix_Set is a subroutine that sets an MQC matrix to a value
+!>    without resizing its dimensions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Set is a subroutine that sets an MQC matrix to a value without
+!>    resizing its dimensions. Optional argument scalar specifies the value to set
+!>    each element of the matrix, where the default value is 0.0. Optional argument
+!>    storage allows the storage of the matrix to be defined, where the default is
+!>    unpacked. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to set values of elements.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix. The default
+!>        is 0.0.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(len=*),Optional
+!>        The packing of the Matrix. The default is unpacked.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine MQC_Matrix_Set(matrix,scalar,storage)
-!
-!     This subroutine sets a matrix that already exists to a value (default 0).
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -17597,17 +17924,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Norm
+!
+!>    \brief <b> MQC_Matrix_Norm is a function that returns the norm of an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Norm is a function that returns the norm of an MQC matrix. The 
+!>    following options are available:
+!>
+!>    1. methodIn = 'M' uses the maximum absolute value max(abs(A(i,j))).
+!>    2. methodIn = '1' uses the one norm.
+!>    3. methodIn = 'I' uses the infinity norm.
+!>    4. methodIn = 'F' uses the Frobenius norm (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!>
+!>    \param[in] MethodIn
+!>    \verbatim
+!>        MethodIn is Character(len=1)
+!>        = 'M': max(abs(A(i,j)))
+!>        = '1': one norm
+!>        = 'I': infinity norm
+!>        = 'F': Frobenius norm.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Norm(matrix,methodIn) result(norm)
-!
-!     This function returns the norm of an mqc matrix.
-!     Different norms can be computed with optional argument methodIn.
-!     'M' - max(abs(A(i,j)))
-!     '1' - one norm
-!     'I' - infinty norm
-!     'F' - Frobenius norm (default)
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -17656,6 +18013,33 @@
 !
 !
 !     PROCEDURE mqc_matrix_determinant
+!
+!>    \brief <b> MQC_Matrix_Determinant is a function that returns the determinant of 
+!>    an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Determinant is a function that returns the determinant of an MQC 
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_matrix_determinant(a) result(det)
 !
 !     This function returns the determinant of MQC matrix A.
@@ -17736,6 +18120,32 @@
 !
 !
 !     PROCEDURE mqc_matrix_inverse
+!
+!>    \brief <b> MQC_Matrix_Inverse is a function that returns the inverse of an MQC 
+!>    matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Inverse is a function that returns the inverse of an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_matrix_inverse(a) result(a_inv)
 !
       implicit none
@@ -17814,9 +18224,33 @@
 !
 !
 !     PROCEDURE mqc_matrix_trace
-      function mqc_matrix_trace(matrix) result(trace)
 !
-!     This function computes the trace of a matrix
+!>    \brief <b> MQC_Matrix_Trace is a function that returns the trace of an MQC 
+!>    matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Trace is a function that returns the trace of an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      function mqc_matrix_trace(matrix) result(trace)
 !
 !     Variable Declarations...
 !
@@ -17834,6 +18268,58 @@
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
+!
+!>    \brief <b> MQC_Matrix_Generalized_Eigensystem is a subroutine that takes a MQC 
+!>    matrix and a metric and returns eigenvalues and eigenvectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Generalized_Eigensystem is a subroutine that takes a MQC matrix and
+!>    an optional metric (also as an MQC matrix) and optionally returns eigenvalues 
+!>    to a MQC vector and/or left and/or right eigenvectors to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to diagonalize. 
+!>    \endverbatim
+!>
+!>    \param[in] BIn
+!>    \verbatim
+!>        BIn is Type(MQC_Matrix),Optional
+!>        The metric. 
+!>    \endverbatim
+!>
+!>    \param[out] Eigenvals
+!>    \verbatim
+!>        Eigenvals is Type(MQC_Vector),Optional
+!>        Optional MQC vector containing the eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[out] REigenvecs
+!>    \verbatim
+!>        REigenvecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the right eigenvectors.
+!>    \endverbatim
+!>
+!>    \param[out] LEigenvecs
+!>    \verbatim
+!>        LEigenvecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the left eigenvectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs)
 !
       implicit none
@@ -18053,11 +18539,52 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SVD
-      Subroutine MQC_Matrix_SVD(A,EVals,EUVecs,EVVecs)
 !
-!     Do SVD decomposition of matrix A.
-!   
-!     L. M. Thompson, 2017
+!>    \brief <b> MQC_Matrix_SVD is a subroutine that computes the singular value 
+!>    decomposition of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_SVD is a subroutine that computes the singular value decomposition 
+!>    of a MQC matrix.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to decompose.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        Eigenvals is Type(MQC_Vector),Optional
+!>        Optional MQC vector containing the singular values.
+!>    \endverbatim
+!>
+!>    \param[in,out] EUVecs
+!>    \verbatim
+!>        EUVecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the U vectors.
+!>    \endverbatim
+!>
+!>    \param[out] EVVecs
+!>    \verbatim
+!>        EVVecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the V vectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Matrix_SVD(A,EVals,EUVecs,EVVecs)
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::A
@@ -18145,10 +18672,46 @@
 !
 !
 !     PROCEDURE MQC_Matrix_RMS_Max
-      Subroutine MQC_Matrix_RMS_Max(A,rms_A,max_A)
 !
-!     This subroutine returns the RMS and Max Absolute values from the
-!     INPUT matrix A.
+!>    \brief <b> MQC_Matrix_RMS_Max is a subroutine that returns the RMS and maximum 
+!>    values of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_RMS_Max is a subroutine that returns the RMS and maximum values of a 
+!>    MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!>
+!>    \param[out] RMS_A
+!>    \verbatim
+!>        RMS_A is Type(MQC_Scalar)
+!>        Returns the RMS value of matrix A.
+!>    \endverbatim
+!>
+!>    \param[out] Max_A
+!>    \verbatim
+!>        Max_A is Type(MQC_Scalar)
+!>        Returns the maximum value of matrix A.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Matrix_RMS_Max(A,rms_A,max_A)
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::A
@@ -18196,9 +18759,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Sqrt
-      subroutine mqc_matrix_sqrt(A,eVals,eVecs)
 !
-!     This subroutine returns the square root of INPUT matrix A.
+!>    \brief <b> MQC_Matrix_Sqrt is a subroutine that returns the square root of a 
+!>    MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Sqrt is a subroutine that returns the square root of a MQC matrix.
+!>    Note that the matrix has to be symmetric or hermitian. Optionally, eigenvalues 
+!>    and/or eigenvectors are returned.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_Vector),Optional
+!>        The eigenvalues of matrix A.
+!>    \endverbatim
+!>
+!>    \param[out] EVecs
+!>    \verbatim
+!>        EVecs is Type(MQC_Matrix)
+!>        The eigenvectors of matrix A.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      subroutine mqc_matrix_sqrt(A,eVals,eVecs)
 !
       Implicit None
       class(mqc_matrix),intent(inOut)::A
@@ -18223,14 +18824,52 @@
 !
 !
 !     PROCEDURE MQC_Givens_Matrix
+!
+!>    \brief <b> MQC_Givens_Matrix is a function that outputs a Givens rotation matrix 
+!>    of specified angle and vector pair as an MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Givens_Matrix is a function that outputs a Givens rotation matrix of 
+!>    specified angle and vector pair as an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] M_Size
+!>    \verbatim
+!>        M_Size is integer(kind=int64)
+!>        The dimension of the Givens matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Angle
+!>    \verbatim
+!>        Angle is real(kind=real64)
+!>        The angle of rotation in radians.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is integer(kind=int64)
+!>        The first vector to rotate.
+!>    \endverbatim
+!>
+!>    \param[in] Q
+!>    \verbatim
+!>        Q is integer(kind=int64)
+!>        The second vector to rotate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler  
+!>    \date 2019
+!
       Function MQC_Givens_Matrix(m_size,angle,p,q)
-!
-!     This function returns a Givens rotation matrix of m_size x m_size with
-!     rotation angles appropriate to rotate from vector p to vector q. Angle
-!     must be in radians.
-!
-!     A. Mahler, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
