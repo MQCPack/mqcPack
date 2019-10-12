@@ -16,6 +16,7 @@ var namespacemqc__algebra =
     [ "matmul", "interfacemqc__algebra_1_1matmul.html", "interfacemqc__algebra_1_1matmul" ],
     [ "matrix_symm2sq", "interfacemqc__algebra_1_1matrix__symm2sq.html", "interfacemqc__algebra_1_1matrix__symm2sq" ],
     [ "mqc_cast_complex", "interfacemqc__algebra_1_1mqc__cast__complex.html", "interfacemqc__algebra_1_1mqc__cast__complex" ],
+    [ "mqc_cast_integer", "interfacemqc__algebra_1_1mqc__cast__integer.html", "interfacemqc__algebra_1_1mqc__cast__integer" ],
     [ "mqc_cast_real", "interfacemqc__algebra_1_1mqc__cast__real.html", "interfacemqc__algebra_1_1mqc__cast__real" ],
     [ "mqc_have_complex", "interfacemqc__algebra_1_1mqc__have__complex.html", "interfacemqc__algebra_1_1mqc__have__complex" ],
     [ "mqc_have_int", "interfacemqc__algebra_1_1mqc__have__int.html", "interfacemqc__algebra_1_1mqc__have__int" ],

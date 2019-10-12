@@ -27,7 +27,7 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_ac821bdfd0dbaeb23ee152c06d9d13f0a}{mqc\+\_\+scalarvectordifference}} (Scalar\+In, Vector\+In)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Difference is a function that subtracts an M\+QC scalar from all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1operator_07-_08_aedc77c713fc742f4594f2d34787c12ce}{mqc\+\_\+matrixmatrixsubtract}} (MA, MB)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Subtract is a function that subtracts two M\+QC matrices}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -104,6 +104,31 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_matrixmatrixsubtract()}{mqc\_matrixmatrixsubtract()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::operator(-\/)\+::mqc\+\_\+matrixmatrixsubtract (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Subtract is a function that subtracts two M\+QC matrices}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixMatrixSubtract is a function that subtracts two MQC matrices.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em MA} & \begin{DoxyVerb}        MA is Type(MQC_Matrix)
+        The matrix that MB will be subtracted from.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em MB} & \begin{DoxyVerb}        MB is Type(MQC_Matrix)
+        The matrix that will be subtracted from MA.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+H. P. Hratchian 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1operator_07-_08_a049a4f5604246ef3a7527d71b9832d25}\label{interfacemqc__algebra_1_1operator_07-_08_a049a4f5604246ef3a7527d71b9832d25}} 
 \index{mqc\_algebra::operator(-\/)@{mqc\_algebra::operator(-\/)}!mqc\_realscalarsubtract@{mqc\_realscalarsubtract}}
 \index{mqc\_realscalarsubtract@{mqc\_realscalarsubtract}!mqc\_algebra::operator(-\/)@{mqc\_algebra::operator(-\/)}}

@@ -23,6 +23,8 @@ interface \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__have__int}{mqc\+\_\+alg
 \begin{DoxyCompactList}\small\item\em {\bfseries{ Determines in an array is integer type}} \end{DoxyCompactList}\item 
 interface \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__have__complex}{mqc\+\_\+algebra\+::mqc\+\_\+have\+\_\+complex}}
 \begin{DoxyCompactList}\small\item\em {\bfseries{ Determines in an array is complex type}} \end{DoxyCompactList}\item 
+interface \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__cast__integer}{mqc\+\_\+algebra\+::mqc\+\_\+cast\+\_\+integer}}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ Sets an array to integer type}} \end{DoxyCompactList}\item 
 interface \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__cast__real}{mqc\+\_\+algebra\+::mqc\+\_\+cast\+\_\+real}}
 \begin{DoxyCompactList}\small\item\em {\bfseries{ Sets an array to real type}} \end{DoxyCompactList}\item 
 interface \mbox{\hyperlink{interfacemqc__algebra_1_1mqc__cast__complex}{mqc\+\_\+algebra\+::mqc\+\_\+cast\+\_\+complex}}
@@ -359,6 +361,8 @@ type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_af1d8e1c15
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Cross\+Product is a function that returns the cross product of two M\+QC vectors}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae64f8cd347b0d00129d7fce3ea323c46}{mqc\+\_\+algebra\+::mqc\+\_\+print\+\_\+vector\+\_\+algebra1}} (Vector, I\+Out, Header, Verbose, Blank\+\_\+\+At\+\_\+\+Top, Blank\+\_\+\+At\+\_\+\+Bottom)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Print\+\_\+\+Vector\+\_\+\+Algebra1 is a subroutine used to print an M\+QC vector}} \end{DoxyCompactList}\item 
+type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a61df3eda09029cbe0513af750f9480a3}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+cast\+\_\+integer}} (VA)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+vector\+\_\+cast\+\_\+integer is a function that converts an M\+QC vector to its integer space}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a6ba4f662b816b4c95332885c0846548b}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+cast\+\_\+real}} (VA)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+vector\+\_\+cast\+\_\+real is a function that converts an M\+QC vector to its real space}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a1a198620593d0a313eaff6785965b265}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+cast\+\_\+complex}} (VA)
@@ -370,229 +374,239 @@ subroutine \mbox{\hyperlink{namespacemqc__algebra_a5480b04f0bfad9017db7be94bdb33
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a3b9783636b18868a1a9c6b22a0e057fd}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+vector\+\_\+put}} (Vector, Vector\+In, I)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Vector\+\_\+\+Put is a subroutine that updates the values of a subvector of a M\+QC vector with the values of a M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a31fd19e8ff539e406535c3b241049d2f}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+initialize}} (Vector, Length, Scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Initialize is a subroutine that initializes a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a5420193880824d24e30705966cab1a9b}{mqc\+\_\+algebra\+::mqc\+\_\+scalarvectorproduct}} (Scalar, Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Vector\+Product is a function that returns the product of a M\+QC scalar with a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a9b5722ad005cbbf566311c99db1f2dd8}{mqc\+\_\+algebra\+::mqc\+\_\+vectorscalarproduct}} (vector, scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Scalar\+Product is a function that returns the product of a M\+QC vector with a M\+QC scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_aef893bc571f197a714a55d36dba87036}{mqc\+\_\+algebra\+::mqc\+\_\+vectorscalardivide}} (vector, scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Scalar\+Divide is a function that returns a M\+QC vector divided by a M\+QC scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a7b7d6963c3e803f0a8a1487062c5551b}{mqc\+\_\+algebra\+::mqc\+\_\+realvectorproduct}} (Real\+In, Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Real\+Vector\+Product is a function that returns the product of an ~\newline
+ intrinsic real scalar and a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a0aaa76413201cc25b80779248460873e}{mqc\+\_\+algebra\+::mqc\+\_\+vectorrealproduct}} (vector, real\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Real\+Product is a function that returns the product of a ~\newline
+ M\+QC vector and an intrinsic real scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a21d69a7fc334576aed2ba415df7bbc81}{mqc\+\_\+algebra\+::mqc\+\_\+vectorrealdivide}} (vector, real\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Real\+Divide is a function that returns a M\+QC vector divided by an intrinsic real integer}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a65a9749c810a28c0cd1860548694b725}{mqc\+\_\+algebra\+::mqc\+\_\+integervectorproduct}} (int\+In, Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Integer\+Vector\+Product is a function that returns the product of an intrinsic integer scalar and a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_aa43354fe746c522e4a4d5dcd3601d298}{mqc\+\_\+algebra\+::mqc\+\_\+vectorintegerproduct}} (vector, int\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Integer\+Product is a function that returns the product of a ~\newline
+ M\+QC vector and an intrinsic integer scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a6fc6130ee8a14a99d0ee7be3460c5bb2}{mqc\+\_\+algebra\+::mqc\+\_\+vectorintegerdivide}} (vector, int\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Integer\+Divide is a function that returns a M\+QC vector divided by an intrinsic integer scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_aa64aa274969f3fee2700a2f074d12ddb}{mqc\+\_\+algebra\+::mqc\+\_\+complexvectorproduct}} (Comp\+In, Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Complex\+Vector\+Product is a function that returns the product of an intrinsic complex scalar and a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_aa2888851ed72ed54ca69d26140addcc5}{mqc\+\_\+algebra\+::mqc\+\_\+vectorcomplexproduct}} (vector, comp\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Complex\+Product is a function that returns the product of a ~\newline
+ M\+QC vector and an intrinsic complex scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a140f411d3c33c86dbcfe92574e4643f0}{mqc\+\_\+algebra\+::mqc\+\_\+vectorcomplexdivide}} (vector, comp\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Complex\+Divide is a function that returns a M\+QC vector divided by an intrinsic complex scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_abe28acc2e8c2877cd034cb34218407a5}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+norm}} (vector, method\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Norm is a function that returns the norm of an M\+QC vector}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a286a8b64267a598e6dcf03b66d0dbed3}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+isallocated}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+is\+Allocated is a function that returns T\+R\+UE is an M\+QC vector is allocated and F\+A\+L\+SE if it is not}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ab4440f8788b00f8527ef996e66361d45}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+push}} (Vector, Scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Push is a function that adds a value to the end of a M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae1d92908367908d5f07c2696808668da}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+unshift}} (Vector, Scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Unshift is a function that adds a value to the beginning of a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_af293100432345fe20c1a1d501c0657aa}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+pop}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Pop is a function that removes a value from the end of a M\+QC vector and returns it}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_a854a27f3bcffbca9cdfe591a73faa501}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+shift}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Shift is a function that removes a value from the beginning of a M\+QC vector and returns it}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_a8dc37e00be3bd370224f16b0695f5c07}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+maxval}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Val is a function that returns the largest value in ~\newline
+ an M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_aabcb11421e77fd4c0a249b0a2303eb9d}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+minval}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Val is a function that returns the smallest value in ~\newline
+ an M\+QC vector}} \end{DoxyCompactList}\item 
 integer function \mbox{\hyperlink{namespacemqc__algebra_adf93471010696ea87f0b68274f32eebe}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+maxloc}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Max\+Loc is a function that returns the index of the largest value in an M\+QC vector}} \end{DoxyCompactList}\item 
 integer function \mbox{\hyperlink{namespacemqc__algebra_aa46755babebe52ca491d14456a4e8596}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+minloc}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Min\+Loc is a function that returns the index of the smallest value in an M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a453aaae4a21eac2ab290bcf63fca9137}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+argsort}} (Vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Argsort is a function that returns the indices of an an M\+QC vector sorted from low to high}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac6e6a2d0e61a13ff688617643aafff21}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+sort}} (Vector, idx)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sort is a function that returns an M\+QC vector sorted from low to high unless optional index order is present}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac5c9d9461701d7c247ed0f4bd48a68ac}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+sqrt}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Sqrt is a function that returns the square root of all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a06f8fcdd90b4dfb27df7aea1a5443aa6}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+abs}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Abs is a function that returns the absolute value of all elements of an M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a39efdd4b5c3a15ce5aa22df8e9a6de15}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+power}} (A, P)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Power is a function that returns the value of all elements of an M\+QC vector raised to a power}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a455f7d692b63256f00e891310159eff5}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+complex\+\_\+realpart}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Real\+Part is a function that returns a M\+QC vector with elements containing the real part of elements of another M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_ac0f5b609f9905e81c158cfabc59ba995}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+complex\+\_\+imagpart}} (A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Complex\+\_\+\+Imag\+Part is a function that returns a M\+QC vector with elements containing the imaginary part of elements of another M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a8d9392e173bbf919161ae62056ea02bc}{mqc\+\_\+algebra\+::mqc\+\_\+vector\+\_\+cmplx}} (Vector1, Vector2)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Cmplx is a function that takes a M\+QC vector representing the real part and a M\+QC vector representing the imaginary part and combines them into another M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_abf3fb1ad2c32a7547cd2190e94769615}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagonalize}} (A, E\+Vals, E\+Vecs)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diagonalize is a subroutine that takes a symmetric or hermitian M\+QC matrix and returns eigenvalues and eigenvectors}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_af02da0d912f9a9741edd52654b908b08}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+cast\+\_\+real}} (MA)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Cast\+\_\+\+Real is a function that converts an M\+QC matrix to its real space}} \end{DoxyCompactList}\item 
+type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a261c99eae831fe640b991b32add18035}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+cast\+\_\+integer}} (MA)
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Cast\+\_\+\+Integer is a function that converts an M\+QC matrix to its integer space}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_ab59071347bd90e24767bccbd385218e2}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+cast\+\_\+complex}} (MA)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Cast\+\_\+\+Complex is a function that converts an M\+QC matrix to its complex space}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_a6da4e494a21e7ea9e1fbd2198278e0ce}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+scalar\+\_\+at}} (Mat, I, J)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Scalar\+\_\+\+At is a function that returns the value of an ~\newline
+ element of a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a6928e084da14a1fb181ab7e264fda37c}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+vector\+\_\+at}} (Mat, Rows, Cols)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Vector\+\_\+\+At is a function that returns the subvector of an ~\newline
+ M\+QC matrix}} \end{DoxyCompactList}\item 
 recursive subroutine \mbox{\hyperlink{namespacemqc__algebra_ac72ca45faf635b0f22318fdc8ac957b9}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+vector\+\_\+put}} (Mat, Vector\+In, Rows, Cols)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Vector\+\_\+\+Put is a subroutine that writes a subvector to the specified position of a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a3609569bc7a7c48d424c657d141cd5ef}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+matrix\+\_\+at}} (Mat, Rows, Cols)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Matrix\+\_\+\+At is a function that returns a submatrix of the matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a5190dd4e0b311022233f28e391bd51bb}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+vector}} (diag\+Vector\+In, mat)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Vector is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in a M\+QC vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a9b4a934665cdcc5c99684b62046cf303}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+integer}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+integer is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic integer vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac51dfe98702e34c1aea85c65afd8d2be}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+real}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Real is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic real vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a0257675a8f879d16d7d730aabfcb6496}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diagmatrix\+\_\+put\+\_\+complex}} (mat, diag\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag\+Matrix\+\_\+\+Put\+\_\+\+Complex is a subroutine that returns a diagonal M\+QC matrix with elements defined by values in an intrinsic complex vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a874218f3a41af94853ebfed27a74f27f}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symmmatrix\+\_\+put\+\_\+integer}} (mat, symm\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm\+Matrix\+\_\+\+Put\+\_\+\+Integer is a subroutine that returns a symmetric packed M\+QC matrix with elements defined by values in an intrinsic integer vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a7d04d32e23c58f1a14085b5f3fa9e9f5}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symmmatrix\+\_\+put\+\_\+real}} (mat, symm\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm\+Matrix\+\_\+\+Put\+\_\+\+Real is a subroutine that returns a symmetric packed M\+QC matrix with elements defined by values in an intrinsic real vector}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a540647c8ae1cb6741daad88911807139}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symmmatrix\+\_\+put\+\_\+complex}} (mat, symm\+Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm\+Matrix\+\_\+\+Put\+\_\+\+Complex is a subroutine that returns a symmetric packed M\+QC matrix with elements defined by values in an intrinsic complex vector}} \end{DoxyCompactList}\item 
 recursive subroutine \mbox{\hyperlink{namespacemqc__algebra_a228aa4094ce52274a2a6e3d2b40c78a3}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+matrix\+\_\+put}} (Mat, Matrix\+In, Rows, Cols)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Matrix\+\_\+\+Put is a subroutine that writes a submatrix to the specified position of a M\+QC matrix}} \end{DoxyCompactList}\item 
 integer(kind=int64) function \mbox{\hyperlink{namespacemqc__algebra_af62b00883eb990030317e03cc38e4c44}{mqc\+\_\+algebra\+::symindexhash}} (i, j, k, l)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ Sym\+Index\+Hash is a function that returns the index in a vector of a symmetric-\/packed matrix or rank-\/4 tensor}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_adee02d698f2778caa5357ac832bacbee}{mqc\+\_\+algebra\+::mqc\+\_\+elementmatrixproduct}} (A, B)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Element\+Matrix\+Product is a function that returns the element-\/ wise product of two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a6b737940649403205e5b4c28e6ac74b5}{mqc\+\_\+algebra\+::mqc\+\_\+elementmatrixdivide}} (A, B)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Element\+Matrix\+Divide is a function that returns the element-\/ wise quotient of two M\+QC matrices}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_aefa84c562aa9933eead2de01256e418d}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+test\+\_\+symmetric}} (Matrix, Option)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Test\+\_\+\+Symmetric is a function that tests a M\+QC matrix for symmetry}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a6ad61cf37cde19aa4f02ffaf341995d0}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+test\+\_\+diagonal}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Test\+\_\+\+Diagonal is a function that tests a M\+QC matrix to determine if it is diagonal}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a65657601eed2d5c49b47cd302397ac7d}{mqc\+\_\+algebra\+::mqc\+\_\+allocate\+\_\+matrix}} (M, N, Matrix, Data\+\_\+\+Type, Storage)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Allocate\+\_\+\+Matrix is used to allocate a matrix type variable of the M\+Q\+C\+\_\+\+Matrix class}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a38699b65c769a92dc2cb0b85de9f6705}{mqc\+\_\+algebra\+::mqc\+\_\+deallocate\+\_\+matrix}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Deallocate\+\_\+\+Matrix is used to deallocate a matrix type variable of the M\+Q\+C\+\_\+\+Matrix class}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a840d2395f096fc5c91c22b627f610e2b}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+isallocated}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+is\+Allocate is a function that returns the allocation status of a M\+Q\+C\+\_\+\+Matrix variable}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a20d7a2397ab1d86b82d757a197137ab7}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+integerarray2matrix}} (Matrix\+Out, Array\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Integer\+Array2\+Matrix is a subroutine that sets an M\+QC matrix equal to an intrinsic integer rank-\/2 array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac220bbbae4694f6402442c9155322869}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+realarray2matrix}} (Matrix\+Out, Array\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Real\+Array2\+Matrix is a subroutine that sets an M\+QC matrix equal to an intrinsic real rank-\/2 array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae9a5a36d7be18f1b190240fd8a7ab81e}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+complexarray2matrix}} (Matrix\+Out, Array\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Complex\+Array2\+Matrix is a subroutine that sets an M\+QC matrix equal to an intrinsic complex rank-\/2 array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a8204520d32c6bfe3cee8aa2d50b65274}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+matrix2integerarray}} (Array\+Out, Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Matrix2\+Integer\+Array is a subroutine that sets an intrinsic integer rank-\/2 array equal to an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a544f1ff194490228f18d7198a4baeecc}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+matrix2realarray}} (Array\+Out, Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Matrix2\+Real\+Array is a subroutine that sets an intrinsic real rank-\/2 array equal to an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ab99c5a9550ff2979949b3f89070f6afb}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+matrix2complexarray}} (Array\+Out, Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Matrix2\+Complex\+Array is a subroutine that sets an intrinsic complex rank-\/2 array equal to an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a15a783566c4891b64f8e83fee736ba20}{mqc\+\_\+algebra\+::mqc\+\_\+set\+\_\+matrix2matrix}} (Matrix\+Out, Matrix\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Set\+\_\+\+Matrix2\+Matrix is a subroutine that sets an M\+QC matrix equal to another M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a18f6e2214dff5439ec0aa9d6202a40ab}{mqc\+\_\+algebra\+::mqc\+\_\+print\+\_\+matrix\+\_\+algebra1}} (Matrix, I\+Out, Header, Blank\+\_\+\+At\+\_\+\+Top, Blank\+\_\+\+At\+\_\+\+Bottom)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Print\+\_\+\+Matrix\+\_\+\+Algebra1 is a subroutine used to print an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a5e0d58bbdb51cd77e8f62ac4a9afc2ec}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+int2real}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Int2\+Real is a subroutine used to copy an integer M\+QC matrix into its real space}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a625f6cf3e3b057fc28da2edc3b79e2fb}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+int2complex}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Int2\+Complex is a subroutine used to copy an integer M\+QC matrix into its complex space}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ad968ae4927598763a4772bacc5d0ad7f}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+real2int}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Real2\+Int is a subroutine used to copy a real M\+QC matrix into its integer space}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_aacfde0b3b95688c4788930ee3c1077a1}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+real2complex}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Real2\+Complex is a subroutine used to copy a real M\+QC matrix into its complex space}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_af67d18eea5dd9bab9ebce77a53c09f74}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+complex2int}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Complex2\+Int is a subroutine used to copy a complex M\+QC matrix into its integer space}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_aa0132d9cc98355602a93c17beb7858c5}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+copy\+\_\+complex2real}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Copy\+\_\+\+Complex2\+Real is a subroutine used to copy a complex M\+QC matrix into its real space}} \end{DoxyCompactList}\item 
 integer(kind=int64) function \mbox{\hyperlink{namespacemqc__algebra_a51ba8f0a20ce59677fd7cad2a9e24bf7}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+rows}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Rows is a function used to return the number of rows of an M\+QC matrix}} \end{DoxyCompactList}\item 
 integer(kind=int64) function \mbox{\hyperlink{namespacemqc__algebra_a1f5926a9911e81c54d4fd9c1f15dfa27}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+columns}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Columns is a function used to return the number of columns of an M\+QC matrix}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_acade87107ad17f989be91301553df8a6}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+havereal}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Real is a function used to indicate if an M\+QC matrix has an allocated real matrix}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_aa29bf4c1d5435e97d9763a04291c65d0}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+haveinteger}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Integer is a function used to indicate if an M\+QC matrix has an allocated integer matrix}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a9b79e988ed88206c28f8d43db5029873}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+havecomplex}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Complex is a function used to indicate if an M\+QC matrix has an allocated complex matrix}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_af2725ea9543a7f168e193039f993ec53}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+havefull}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Full is a function used to indicate if an M\+QC matrix is stored unpacked}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a7c8207ccd518cdc6fb476fb8d178db53}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+havesymmetric}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Symmetric is a function used to indicate if an M\+QC matrix is stored symmetric-\/packed}} \end{DoxyCompactList}\item 
 logical function \mbox{\hyperlink{namespacemqc__algebra_a3d16caed4314c658cf5d2b7ccb28bbb8}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+havediagonal}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Have\+Diagonal is a function used to indicate if an M\+QC matrix is stored diagonal-\/packed}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a60dc9a6d8c03968a055211b3d9b1f105}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+transpose}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Transpose is a function that returns the transpose of a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a4c797b90ca3c4ad265a9d463a6570345}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+conjugate\+\_\+transpose}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Conjugate\+\_\+\+Transpose is a function that returns the conjugate transpose of a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_ac797640c3e0bb06f8fdf7be857845957}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symmetrize}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symmetrize is a function that symmetrizes a M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_abef463820abe4650a2faeac78e0f4b4f}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+full2symm}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Full2\+Symm is a subroutine that converts an unpacked M\+QC matrix to symmetric-\/packed}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a3b5ef28f290e4f9f1ce51fe154d91533}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symm2full}} (Matrix, Option)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm2\+Full is a subroutine that converts a symmetry-\/packed M\+QC matrix to unpacked}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a92516c8d0a56a9f5b159c5674e5c60f1}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+full2diag}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Full2\+Diag is a subroutine that converts an unpacked M\+QC matrix to diagonal-\/packed}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae17baee9e5f8b7a841edc786ab481a7e}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diag2full}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag2\+Full is a subroutine that converts a diagonal-\/packed M\+QC matrix to unpacked}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_adb8fe92d1f31abbeb4c23127776581c3}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symm2diag}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm2\+Diag is a subroutine that converts a symmetry-\/packed M\+QC matrix to diagonal-\/packed}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a8a8aee67ccafeb86b35959d1ce1e7da4}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+diag2symm}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Diag2\+Symm is a subroutine that converts a diagonal-\/packed M\+QC matrix to symmetry-\/packed}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_adf3898fe4dcc387ce87913df99da20cb}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+symm2full\+\_\+func}} (Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Symm2\+Full\+\_\+\+Func is a function that converts a symmetric-\/ packed M\+QC matrix to unpacked}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_aabe4f3ba2ca89b46415e29454b92f0cd}{mqc\+\_\+algebra\+::matrix\+\_\+symm2sq\+\_\+integer}} (N, I\+\_\+\+Symm, I\+\_\+\+Sq)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ Matrix\+\_\+\+Symm2\+Sq\+\_\+\+Integer is a subroutine that converts a symmetric-\/ packed intrinsic integer matrix to a rank-\/2 intrinsic integer array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ac6f2cca04b517c21d664ad38af52afb0}{mqc\+\_\+algebra\+::matrix\+\_\+symm2sq\+\_\+real}} (N, A\+\_\+\+Symm, A\+\_\+\+Sq)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ Matrix\+\_\+\+Symm2\+Sq\+\_\+\+Real is a subroutine that converts a symmetric-\/ packed intrinsic real matrix to a rank-\/2 intrinsic real array}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_aade03ba6fbf76d8c6dafc56f07a187d5}{mqc\+\_\+algebra\+::matrix\+\_\+symm2sq\+\_\+complex}} (N, A\+\_\+\+Symm, A\+\_\+\+Sq)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ Matrix\+\_\+\+Symm2\+Sq\+\_\+\+Complex is a subroutine that converts a symmetric-\/ packed intrinsic complex matrix to a rank-\/2 intrinsic complex array}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_ab8156b61ed2a139980ac838ddb4bf66a}{mqc\+\_\+algebra\+::mqc\+\_\+vector2diagmatrix}} (vector)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector2\+Diag\+Matrix is a function that outputs a diagonal M\+QC matrix with elements defined by an M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a80828c415886bec8f4bda38064f7366c}{mqc\+\_\+algebra\+::mqc\+\_\+matrixmatrixsum}} (MA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Sum is a function that sums two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a645e3425761f5a431b864ba730d7a2a7}{mqc\+\_\+algebra\+::mqc\+\_\+matrixmatrixsubtract}} (MA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Subtract is a function that subtracts two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a447b09386b734386f15489c647a89a1b}{mqc\+\_\+algebra\+::mqc\+\_\+matrixmatrixproduct}} (MA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Product is a function that computes the element-\/ wise product of two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_ab3603ce30c98db8c2332c2a41803d9e9}{mqc\+\_\+algebra\+::mqc\+\_\+matrixmatrixdotproduct}} (MA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Dot\+Product is a function that computes the inner product of two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a8bf0f266a7c3eff1a58e31758e1da31d}{mqc\+\_\+algebra\+::mqc\+\_\+matrixvectordotproduct}} (MA, VB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Vector\+Dot\+Product is a function that computes the inner product of a M\+QC matrix and a M\+QC vector}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+vector) function \mbox{\hyperlink{namespacemqc__algebra_a7fb0ed524675a362b716b280e5221a40}{mqc\+\_\+algebra\+::mqc\+\_\+vectormatrixdotproduct}} (VA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Matrix\+Dot\+Product is a function that computes the inner product of a M\+QC vector and a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_aedf13b444bd513d0fec9ec1842dd11ca}{mqc\+\_\+algebra\+::mqc\+\_\+matrixscalarproduct}} (Matrix, Scalar)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Scalar\+Product is a function that computes the product of a M\+QC scalar and a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a0f25321d9656a01ab64b54e3b44663f0}{mqc\+\_\+algebra\+::mqc\+\_\+scalarmatrixproduct}} (Scalar, Matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+Matrix\+Product is a function that computes the product of a M\+QC matrix and a M\+QC scalar}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_acc8e01e798119d66ffffb76c632be635}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+matrix\+\_\+contraction}} (Matrix1, Matrix2)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Matrix\+\_\+\+Contraction is a function that returns the contraction of two M\+QC matrices}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a7a0a2b8295316e1ff182faea150106fc}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+scalar\+\_\+put}} (Matrix, Scalar, I, J)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Scalar\+\_\+\+Put is a subroutine that updates the value of the (i,j)th element of a M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ad443d560d370221484c3c57a10aac2b4}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+initialize}} (Matrix, Rows, Columns, Scalar, Storage)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Initialize is a subroutine that initializes an M\+QC matrix with each element equal to a chosen value}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_acec9bcc90cf10ad8fe36cecbc373bb5c}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+identity}} (matrix, n, m)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Identity is a subroutine that initializes an M\+QC matrix as an identity matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a8f816bab517aac5d63f5d9b8ed02dd18}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+set}} (matrix, scalar, storage)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Set is a subroutine that sets an M\+QC matrix to a value without resizing its dimensions}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_a55dde5f99073fe3cf79e23acca3e987d}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+norm}} (matrix, method\+In)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Norm is a function that returns the norm of an M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_a66208198c831733979379bd8f085f6d7}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+determinant}} (a)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Determinant is a function that returns the determinant of an M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a8794d5bfc83a321363fdef81d521af07}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+inverse}} (a)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Inverse is a function that returns the inverse of an M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+scalar) function \mbox{\hyperlink{namespacemqc__algebra_ab79ede23293575f7658fd5fa6cdd47e9}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+trace}} (matrix)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Trace is a function that returns the trace of an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a648e057f051a2d1538eccb5ea846c711}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+generalized\+\_\+eigensystem}} (a, b\+In, eigenvals, reigenvecs, leigenvecs)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Generalized\+\_\+\+Eigensystem is a subroutine that takes a M\+QC matrix and a metric and returns eigenvalues and eigenvectors}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a6bf0a09beb557ab60485c31b884790ff}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+svd}} (A, E\+Vals, E\+U\+Vecs, E\+V\+Vecs)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+S\+VD is a subroutine that computes the singular value decomposition of a M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ad9d3af3c878fdc1247f135ee8bf7cae9}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+rms\+\_\+max}} (A, rms\+\_\+A, max\+\_\+A)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+R\+M\+S\+\_\+\+Max is a subroutine that returns the R\+MS and maximum values of a M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ae20713aedbc2621c6649a8ab0d26c411}{mqc\+\_\+algebra\+::mqc\+\_\+matrix\+\_\+sqrt}} (A, e\+Vals, e\+Vecs)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+\_\+\+Sqrt is a subroutine that returns the square root of a M\+QC matrix}} \end{DoxyCompactList}\item 
 type(mqc\+\_\+matrix) function \mbox{\hyperlink{namespacemqc__algebra_a92156d28df8cfc2b045169751beaa35a}{mqc\+\_\+algebra\+::mqc\+\_\+givens\+\_\+matrix}} (m\+\_\+size, angle, p, q)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Givens\+\_\+\+Matrix is a function that outputs a Givens rotation matrix of specified angle and vector pair as an M\+QC matrix}} \end{DoxyCompactList}\item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_ad2a32a5ad12790b27e6ac97416516ebe}{mqc\+\_\+algebra\+::mqc\+\_\+allocate\+\_\+r4tensor}} (I, J, K, L, Tensor, Data\+\_\+\+Type, Storage)
 \item 
 subroutine \mbox{\hyperlink{namespacemqc__algebra_a6a0fe8ac26fa70fc7257b03a208e3cc4}{mqc\+\_\+algebra\+::mqc\+\_\+deallocate\+\_\+r4tensor}} (Tensor)

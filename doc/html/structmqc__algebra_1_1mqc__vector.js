@@ -4,7 +4,7 @@ var structmqc__algebra_1_1mqc__vector =
     [ "argsort", "structmqc__algebra_1_1mqc__vector.html#aa8e4f4190d6b5509df186a5c6c8a6e46", null ],
     [ "at", "structmqc__algebra_1_1mqc__vector.html#a400a6a0379f9d288fa09c4c590274e66", null ],
     [ "dagger", "structmqc__algebra_1_1mqc__vector.html#a130367633c4af0e0650b89fcfc658929", null ],
-    [ "diag", "structmqc__algebra_1_1mqc__vector.html#a3e0fb883f5b73ac80d61095e30d19e29", null ],
+    [ "diag", "structmqc__algebra_1_1mqc__vector.html#a8fa7af807523d553fc177a39e31a0993", null ],
     [ "init", "structmqc__algebra_1_1mqc__vector.html#a28094259d8e22d43bc9f2a8499d892d2", null ],
     [ "maxloc", "structmqc__algebra_1_1mqc__vector.html#a7f934487c4fcbe72caeabc79dd66a339", null ],
     [ "maxval", "structmqc__algebra_1_1mqc__vector.html#a426480c17650154501732850552841e2", null ],

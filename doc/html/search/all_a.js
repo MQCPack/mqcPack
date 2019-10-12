@@ -2,7 +2,7 @@ var searchData=
 [
   ['operator_28_2a_29_395',['operator(*)',['../interfacemqc__algebra_1_1operator_07_5_08.html',1,'mqc_algebra::operator(*)'],['../interfacemqc__est_1_1operator_07_5_08.html',1,'mqc_est::operator(*)']]],
   ['operator_28_2a_2a_29_396',['operator(**)',['../interfacemqc__algebra_1_1operator_07_5_5_08.html',1,'mqc_algebra']]],
-  ['operator_28_2b_29_397',['operator(+)',['../interfacemqc__est_1_1operator_07_09_08.html',1,'mqc_est::operator(+)'],['../interfacemqc__algebra_1_1operator_07_09_08.html',1,'mqc_algebra::operator(+)']]],
+  ['operator_28_2b_29_397',['operator(+)',['../interfacemqc__algebra_1_1operator_07_09_08.html',1,'mqc_algebra::operator(+)'],['../interfacemqc__est_1_1operator_07_09_08.html',1,'mqc_est::operator(+)']]],
   ['operator_28_2d_29_398',['operator(-)',['../interfacemqc__est_1_1operator_07-_08.html',1,'mqc_est::operator(-)'],['../interfacemqc__algebra_1_1operator_07-_08.html',1,'mqc_algebra::operator(-)']]],
   ['operator_28_2edot_2e_29_399',['operator(.dot.)',['../interfacemqc__algebra_1_1operator_07_8dot_8_08.html',1,'mqc_algebra']]],
   ['operator_28_2eeq_2e_29_400',['operator(.eq.)',['../interfacemqc__algebra_1_1operator_07_8eq_8_08.html',1,'mqc_algebra']]],
