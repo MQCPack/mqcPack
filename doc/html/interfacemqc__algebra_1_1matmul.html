@@ -101,10 +101,13 @@ $(document).ready(function(){initNavTree('interfacemqc__algebra_1_1matmul.html',
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a0af3f6d4dd77f4a4fe63bbb5f60f3033"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__matrix.html">mqc_matrix</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1matmul.html#a0af3f6d4dd77f4a4fe63bbb5f60f3033">mqc_matrixmatrixdotproduct</a> (MA, MB)</td></tr>
+<tr class="memdesc:a0af3f6d4dd77f4a4fe63bbb5f60f3033"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixMatrixDotProduct is a function that computes the inner product of two MQC matrices</b>  <a href="interfacemqc__algebra_1_1matmul.html#a0af3f6d4dd77f4a4fe63bbb5f60f3033">More...</a><br /></td></tr>
 <tr class="separator:a0af3f6d4dd77f4a4fe63bbb5f60f3033"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c9342ce099ed58fa1f1770cc2290ab0"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1matmul.html#a2c9342ce099ed58fa1f1770cc2290ab0">mqc_matrixvectordotproduct</a> (MA, VB)</td></tr>
+<tr class="memdesc:a2c9342ce099ed58fa1f1770cc2290ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_MatrixVectorDotProduct is a function that computes the inner product of a MQC matrix and a MQC vector</b>  <a href="interfacemqc__algebra_1_1matmul.html#a2c9342ce099ed58fa1f1770cc2290ab0">More...</a><br /></td></tr>
 <tr class="separator:a2c9342ce099ed58fa1f1770cc2290ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a732a311ca061f91a4011ea30cc00bb70"><td class="memItemLeft" align="right" valign="top">type(<a class="el" href="structmqc__algebra_1_1mqc__vector.html">mqc_vector</a>) function&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1matmul.html#a732a311ca061f91a4011ea30cc00bb70">mqc_vectormatrixdotproduct</a> (VA, MB)</td></tr>
+<tr class="memdesc:a732a311ca061f91a4011ea30cc00bb70"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_VectorMatrixDotProduct is a function that computes the inner product of a MQC vector and a MQC matrix</b>  <a href="interfacemqc__algebra_1_1matmul.html#a732a311ca061f91a4011ea30cc00bb70">More...</a><br /></td></tr>
 <tr class="separator:a732a311ca061f91a4011ea30cc00bb70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -136,6 +139,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_MatrixMatrixDotProduct is a function that computes the inner product of two MQC matrices</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixMatrixDotProduct is a function that computes the inner product of 
+    two MQC matrices.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The first MQC matrix.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MB</td><td><pre class="fragment">        MB is Type(MQC_Matrix)
+        The second MQC matrix.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <a id="a2c9342ce099ed58fa1f1770cc2290ab0"></a>
@@ -163,6 +181,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_MatrixVectorDotProduct is a function that computes the inner product of a MQC matrix and a MQC vector</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_MatrixVectorDotProduct is a function that computes the inner product of 
+    a MQC matrix and a MQC vector.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">MA</td><td><pre class="fragment">        MA is Type(MQC_Matrix)
+        The MQC matrix multiply.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">VB</td><td><pre class="fragment">        VB is Type(MQC_Vector)
+        The MQC vector.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
 
 </div>
 </div>
@@ -192,6 +225,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p><b> MQC_VectorMatrixDotProduct is a function that computes the inner product of a MQC vector and a MQC matrix</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_VectorMatrixDotProduct is a function that computes the inner product of 
+    a MQC vector and a MQC matrix.</pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">VA</td><td><pre class="fragment">        VA is Type(MQC_Vector)
+        The MQC vector to multiply.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">MB</td><td><pre class="fragment">        MB is Type(MQC_Matrix)
+        The MQC matrix to multiply.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>X. Sheng </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2017 </dd></dl>
+
 </div>
 </div>
 <hr/>The documentation for this interface was generated from the following file:<ul>
@@ -203,7 +251,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1matmul.html">matmul</a></li>
-    <li class="footer">Generated on Tue Oct 8 2019 18:56:49 for MQCPack by
+    <li class="footer">Generated on Sat Oct 12 2019 10:03:17 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>

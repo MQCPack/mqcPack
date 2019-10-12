@@ -11,7 +11,7 @@
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__scalar}{mqc\+\_\+scalar}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1cmplx_a55e9d37bb6871dce62bc16de949df9a2}{mqc\+\_\+scalar\+\_\+cmplx}} (Scalar1, Scalar2)
 \begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Scalar\+\_\+\+Cmplx is a function used to set a complex M\+Q\+C\+\_\+\+Scalar type variable from two other M\+Q\+C\+\_\+scalars}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1cmplx_a2306ace180d105df5ae2441ac4fdc894}{mqc\+\_\+vector\+\_\+cmplx}} (Vector1, Vector2)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Cmplx is a function that takes a M\+QC vector representing the real part and a M\+QC vector representing the imaginary part and combines them into another M\+QC vector}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -56,6 +56,33 @@ L. M. Thompson
 \doxysubsubsection{\texorpdfstring{mqc\_vector\_cmplx()}{mqc\_vector\_cmplx()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::cmplx\+::mqc\+\_\+vector\+\_\+cmplx (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector1,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{Vector2 }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+\_\+\+Cmplx is a function that takes a M\+QC vector representing the real part and a M\+QC vector representing the imaginary part and combines them into another M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_Vector_Cmplx is a function that takes a MQC vector representing the real 
+    part and a MQC vector representing the imaginary part and combines them into 
+    another MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em Vector1} & \begin{DoxyVerb}        Vector1 is Type(MQC_Vector)
+        The MQC vector containing the real part.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em Vector2} & \begin{DoxyVerb}        Vector2 is Type(MQC_Vector)
+        The MQC vector containing the imaginary part.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+L. M. Thompson 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2019 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}

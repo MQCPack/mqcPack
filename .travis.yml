@@ -22,17 +22,20 @@ matrix:
             - libatlas-base-dev
             - libopenblas-base
             - libopenblas-dev
+              # other
+            - doxygen
 
     - os: osx
       osx_image: xcode10.2
       compiler: gfortran
       env: SOURCES=homebrew
       addons:
-        brew:
+        homebrew:
           packages:
-            -m4
+            - m4
 #            - autoconf
 #            - automake
+            - doxygen
 
 before_install:
   - mkdir gauopen
@@ -50,6 +53,7 @@ install:
 #    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
 #      brew install cmake boost gcc open-mpi autoconf automake
   - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\nn\n" | ./mqc_install
+  - doxygen doc/Doxyfile 
 
 #    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
 #      apt install autotools

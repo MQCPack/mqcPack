@@ -9,11 +9,11 @@
 \begin{DoxyCompactItemize}
 \item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1matmul_a0af3f6d4dd77f4a4fe63bbb5f60f3033}{mqc\+\_\+matrixmatrixdotproduct}} (MA, MB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Dot\+Product is a function that computes the inner product of two M\+QC matrices}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1matmul_a2c9342ce099ed58fa1f1770cc2290ab0}{mqc\+\_\+matrixvectordotproduct}} (MA, VB)
-\item 
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Vector\+Dot\+Product is a function that computes the inner product of a M\+QC matrix and a M\+QC vector}} \end{DoxyCompactList}\item 
 type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function \mbox{\hyperlink{interfacemqc__algebra_1_1matmul_a732a311ca061f91a4011ea30cc00bb70}{mqc\+\_\+vectormatrixdotproduct}} (VA, MB)
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em {\bfseries{ M\+Q\+C\+\_\+\+Vector\+Matrix\+Dot\+Product is a function that computes the inner product of a M\+QC vector and a M\+QC matrix}} \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -26,18 +26,96 @@ type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) func
 \doxysubsubsection{\texorpdfstring{mqc\_matrixmatrixdotproduct()}{mqc\_matrixmatrixdotproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}) function mqc\+\_\+algebra\+::matmul\+::mqc\+\_\+matrixmatrixdotproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Matrix\+Dot\+Product is a function that computes the inner product of two M\+QC matrices}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixMatrixDotProduct is a function that computes the inner product of 
+    two MQC matrices.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em MA} & \begin{DoxyVerb}        MA is Type(MQC_Matrix)
+        The first MQC matrix.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em MB} & \begin{DoxyVerb}        MB is Type(MQC_Matrix)
+        The second MQC matrix.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1matmul_a2c9342ce099ed58fa1f1770cc2290ab0}\label{interfacemqc__algebra_1_1matmul_a2c9342ce099ed58fa1f1770cc2290ab0}} 
 \index{mqc\_algebra::matmul@{mqc\_algebra::matmul}!mqc\_matrixvectordotproduct@{mqc\_matrixvectordotproduct}}
 \index{mqc\_matrixvectordotproduct@{mqc\_matrixvectordotproduct}!mqc\_algebra::matmul@{mqc\_algebra::matmul}}
 \doxysubsubsection{\texorpdfstring{mqc\_matrixvectordotproduct()}{mqc\_matrixvectordotproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::matmul\+::mqc\+\_\+matrixvectordotproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{VB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Matrix\+Vector\+Dot\+Product is a function that computes the inner product of a M\+QC matrix and a M\+QC vector}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_MatrixVectorDotProduct is a function that computes the inner product of 
+    a MQC matrix and a MQC vector.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em MA} & \begin{DoxyVerb}        MA is Type(MQC_Matrix)
+        The MQC matrix multiply.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em VB} & \begin{DoxyVerb}        VB is Type(MQC_Vector)
+        The MQC vector.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 \mbox{\Hypertarget{interfacemqc__algebra_1_1matmul_a732a311ca061f91a4011ea30cc00bb70}\label{interfacemqc__algebra_1_1matmul_a732a311ca061f91a4011ea30cc00bb70}} 
 \index{mqc\_algebra::matmul@{mqc\_algebra::matmul}!mqc\_vectormatrixdotproduct@{mqc\_vectormatrixdotproduct}}
 \index{mqc\_vectormatrixdotproduct@{mqc\_vectormatrixdotproduct}!mqc\_algebra::matmul@{mqc\_algebra::matmul}}
 \doxysubsubsection{\texorpdfstring{mqc\_vectormatrixdotproduct()}{mqc\_vectormatrixdotproduct()}}
 {\footnotesize\ttfamily type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}) function mqc\+\_\+algebra\+::matmul\+::mqc\+\_\+vectormatrixdotproduct (\begin{DoxyParamCaption}\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__vector}{mqc\+\_\+vector}}), intent(in)}]{VA,  }\item[{type(\mbox{\hyperlink{structmqc__algebra_1_1mqc__matrix}{mqc\+\_\+matrix}}), intent(in)}]{MB }\end{DoxyParamCaption})}
 
+
+
+{\bfseries{ M\+Q\+C\+\_\+\+Vector\+Matrix\+Dot\+Product is a function that computes the inner product of a M\+QC vector and a M\+QC matrix}} 
+
+\begin{DoxyParagraph}{Purpose\+:}
+\begin{DoxyVerb}    MQC_VectorMatrixDotProduct is a function that computes the inner product of 
+    a MQC vector and a MQC matrix.\end{DoxyVerb}
+ 
+\end{DoxyParagraph}
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em VA} & \begin{DoxyVerb}        VA is Type(MQC_Vector)
+        The MQC vector to multiply.\end{DoxyVerb}
+\\
+\hline
+\mbox{\texttt{ in}}  & {\em MB} & \begin{DoxyVerb}        MB is Type(MQC_Matrix)
+        The MQC matrix to multiply.\end{DoxyVerb}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyAuthor}{Author}
+X. Sheng 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2017 
+\end{DoxyDate}
 
 
 The documentation for this interface was generated from the following file\+:\begin{DoxyCompactItemize}
