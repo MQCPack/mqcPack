@@ -30,7 +30,7 @@ matrix:
       compiler: gfortran
       env: SOURCES=homebrew
       addons:
-        brew:
+        homebrew:
           packages:
             - m4
 #            - autoconf
