@@ -43,9 +43,13 @@ operations completely transparently to the user. Furthermore, there is no need t
 arrays, as this can be manipulated on the fly. Arrays carry their own procedures, and 
 use underlying lapack routines for efficiency. See the documentation for more 
 information, but as an example: 
-	scalar = vector%pop()   	
+
+	scalar = vector%pop()   
+	
 removes the value from the end of a vector and returns it to scalar,  
-	call matrix%eigensystem(metric,eigenvalues,rightvectors)  	
+
+	call matrix%eigensystem(metric,eigenvalues,rightvectors)  
+	
 computes the generalized eigenequation of the matrix given the metric matrix and returns 
 the eigenvalues and the right eigenvectors (you can return the left eigenvectors as well 
 if you wish, or just the left eigenvectors, or neither set of eigenvectors). MQC can 
