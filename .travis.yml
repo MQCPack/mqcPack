@@ -32,7 +32,7 @@ matrix:
       addons:
         brew:
           packages:
-            -m4
+            - m4
 #            - autoconf
 #            - automake
             - doxygen
