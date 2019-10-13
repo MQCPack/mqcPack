@@ -63,6 +63,7 @@ examples/WriteTest/ReadWrite
 examples/algebra2/algebra_fun
 examples/fullci/fullci
 examples/hartreefock/hartreefock
+examples/diishf/diishf
 examples/tools/FullWavefunctionRW
 src/#
 src/GauOpen/
@@ -76,3 +77,7 @@ examples/SCFenergy/testit.sh
 examples/WriteTest/testit.sh
 examples/hartreefock/Makefile.am
 examples/DataSummary/test/
+doc/
+!doc/Doxygen
+!doc/ABOUT_Algebra2.md
+!doc/mqcpack_logo.png
