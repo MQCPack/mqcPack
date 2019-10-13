@@ -572,6 +572,17 @@ if [ $? -ne 0 ] ; then
     echo "Failure to build"
     exit $? 
 fi
+command -v doxygen >/dev/null 2>&1
+if [ $? -ne 0 ]; then 
+    echo >&2 "MQCPck requires Doxygen to build documentation but it's not installed.  Skipping." 
+else 
+    ( cat ${MQC_HOME}/doc/Doxyfile ; echo "QUIET=YES" ) | doxygen -
+    if [ $? -ne 0 ]; then 
+	echo "Doxygen failed to build documentation"
+    else
+	echo "Doxygen built documentation"
+    fi 
+fi
 echo "Congratulations! The libmqc is built!"
 
 # 
