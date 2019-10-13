@@ -13522,9 +13522,9 @@
 !>    1. Data_Type = 'Real' declares the MQC_Matrix variable to be of real type. 
 !>    2. Data_Type = 'Integer' declares the MQC_Matrix variable to be of integer type.
 !>    3. Data_Type = 'Complex' declares the MQC_Matrix variable to be of complex type.
-!>    1. Data_Type = 'StorFull' declares the MQC_Matrix variable to be unpacked.
-!>    2. Data_Type = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
-!>    3. Data_Type = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.
+!>    4. Storage = 'StorFull' declares the MQC_Matrix variable to be unpacked.
+!>    5. Storage = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
+!>    6. Storage = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.
 !>
 !>    \endverbatim
 !
@@ -13551,17 +13551,17 @@
 !>    \param[in] Data_Type
 !>    \verbatim
 !>        Data_Type is Character(Len=*)
-!>        = 'Real':    the MQC_Scalar is real
-!>        = 'Integer': the MQC_Scalar is integer
-!>        = 'Complex': the MQC_Scalar is complex.
+!>        = 'Real':    the MQC_Matrix is real
+!>        = 'Integer': the MQC_Matrix is integer
+!>        = 'Complex': the MQC_Matrix is complex.
 !>    \endverbatim
 !>
 !>    \param[in] Storage  
 !>    \verbatim
 !>        Storage is Character(Len=*)
-!>        = 'StorFull': the MQC_Scalar is unpacked
-!>        = 'StorSymm': the MQC_Scalar is symmetric packed
-!>        = 'StorDiag': the MQC_Scalar is diagonal packed.
+!>        = 'StorFull': the MQC_Matrix is unpacked
+!>        = 'StorSymm': the MQC_Matrix is symmetric packed
+!>        = 'StorDiag': the MQC_Matrix is diagonal packed.
 !>    \endverbatim
 !
 !     Authors:
@@ -18899,10 +18899,79 @@
 !
 !
 !     PROCEDURE MQC_Allocate_R4Tensor
-      Subroutine MQC_Allocate_R4Tensor(I,J,K,L,Tensor,Data_Type,Storage)
 !
-!     This subroutine allocates an MQC_R4Tensor rank-4 tensor of dimension
-!     I x J x K x L
+!>    \brief <b> MQC_Allocate_R4Tensor is used to allocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_R4Tensor is a subroutine used to allocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_R4Tensor variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_R4Tensor variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_R4Tensor variable to be of complex type.
+!>    4. Storage = 'StorFull' declares the MQC_R4Tensor variable to be unpacked.
+!>
+!>    TODO: Extend storage types for R4Tensor
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        I is the first dimension of Tensor. 
+!>    \endverbatim
+!>    
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        J is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] K
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        K is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] L
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        L is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_R4Tensor is real
+!>        = 'Integer': the MQC_R4Tensor is integer
+!>        = 'Complex': the MQC_R4Tensor is complex.
+!>    \endverbatim
+!>
+!>    \param[in] Storage  
+!>    \verbatim
+!>        Storage is Character(Len=*)
+!>        = 'StorFull': the MQC_R4Tensor is unpacked
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2016
+!
+      Subroutine MQC_Allocate_R4Tensor(I,J,K,L,Tensor,Data_Type,Storage)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
@@ -18954,14 +19023,40 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_R4Tensor
+!
+!>    \brief <b> MQC_Deallocate_R4Tensor is used to deallocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_R4Tensor is a subroutine used to deallocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be deallocated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_R4Tensor(Tensor)
 !
 !     This subroutine deallocates an MQC_R4Tensor rank-4 tensor.
 !
       Implicit None
       Type(MQC_R4Tensor),Intent(InOut)::Tensor
-
-
+!
       If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
       If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
       If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
@@ -18976,9 +19071,68 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_At
-      Function MQC_R4Tensor_At(Tensor,I,J,K,L) Result(Element)
 !
-!     This Function returns the MQC_Scalar Scalar at I, J, K, L.
+!>    \brief <b> MQC_R4Tensor_At is a function that returns the value of an  
+!>    element of a MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_At is a function that returns the value of (I,J,K,L)th element of 
+!>    a MQC rank-4 tensor as an MQC scalar. If I, J, K or L is negative, the (N-I+1)th 
+!>    index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to return the value of the 
+!>        (I,J,K,L)th element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Function MQC_R4Tensor_At(Tensor,I,J,K,L) Result(Element)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
@@ -19021,9 +19175,74 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_Put
-      Subroutine MQC_R4Tensor_Put(Tensor,Element,I,J,K,L)
 !
-!     This Subroutine places the MQC_Scalar Scalar at I, J, K, L.
+!>    \brief <b> MQC_R4Tensor_Put is a subroutine that updates the value of an  
+!>    element of a MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Put is a subroutine that updates the value of (I,J,K,L)th element 
+!>    of a MQC rank-4 tensor. If I, J, K or L is negative, the (N-I+1)th index is 
+!>    selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to update at the (I,J,K,L)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Type(MQC_Scalar)
+!>        The value to update the specified element of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_R4Tensor_Put(Tensor,Element,I,J,K,L)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
@@ -19092,17 +19311,66 @@
         Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
              'Tensor%Data_Type', Tensor%Data_Type )
       EndIf
-      !call mqc_output_scalar(tensor%ten(i,j,k,l),element)
-      !tensor%ten(i,j,k,l) = 60
-      !print*, 'tensor%ten(i,j,k,l)= ', tensor%ten(i,j,k,l)
 
       End Subroutine MQC_R4Tensor_Put
 !
 !
 !     PROCEDURE MQC_Print_R4Tensor_Algebra1
-      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
-!     This Subroutine prints the MQC_R4Tensor Tensor.
+!>    \brief <b> MQC_Print_R4Tensor_Algebra1 is a subroutine used to print an MQC
+!>    rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_R4Tensor_Algebra1 is a subroutine used to print an MQC rank-4 tensor. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_Tensor)
+!>        The variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
@@ -19144,9 +19412,40 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Tensor
-      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
 !
-!     This subroutine sets an MQC_R4Tensor rank-4 tensor to an array.
+!>    \brief <b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor
+!>    equal to an intrinsic rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Class(*),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
 !
       Implicit None
       Class(*),Intent(In)::ArrayIn(:,:,:,:)
@@ -19174,14 +19473,69 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_Initialize
+!
+!>    \brief <b> MQC_R4Tensor_Initialize is a subroutine that initializes an MQC 
+!>    rank-4 tensor with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Initialize is a subroutine that initializes an MQC rank-4 tensor 
+!>    with each element equal to a chosen value. Optional argument Scalar determines 
+!>    the value of each element, with the default equal to zero. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to initialize.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The number of the first dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The number of the second dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] K
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The number of the third dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] L
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The number of the fourth dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of R4Tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_R4Tensor_Initialize(R4Tensor,I,J,K,L,Scalar)
-!
-!     This subroutine initializes an MQC_R4Tensor rank-4 tensor of dimension
-!     I x J x K x L with the value Scalar in all elements.
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
 !
       Implicit None
       Real(kind=real64)::Zero=0.0d0
@@ -19211,15 +19565,42 @@
       End Subroutine MQC_R4Tensor_Initialize
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Real
+!
+!>    \brief <b> MQC_R4Tensor_SymmSymmMatrix_Put_Real is a subroutine that returns a 
+!>    MQC rank-4 tensor with elements defined by values in an intrinsic real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_SymmSymmMatrix_Put_Real is a subroutine that returns a MQC rank-4
+!>    tensor with elements defined by values in an intrinsic real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is class(MQC_R4Tensor)
+!>        MQC rank-4 tensor to overwrite with output rank-4 tensor.
+!>    \endverbatim
+!>
+!>    \param[in] SymmSymmMatrixIn
+!>    \verbatim
+!>        SymmSymmMatrixIn is real(kind=real64),dimension(:)
+!>        Intrinsic real vector to write as rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4Tensor,symmSymmMatrixIn)
-!
-!     This subroutine loads a (MQC) rank-4 tensor <mat> from an input
-!     (fortran intrinsic type) real packed-symmetric-symmetric matrix <symmSymmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
@@ -19264,15 +19645,43 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Complex
+!
+!>    \brief <b> MQC_R4Tensor_SymmSymmMatrix_Put_Complex is a subroutine that returns 
+!>    a MQC rank-4 tensor with elements defined by values in an intrinsic complex 
+!>    vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_SymmSymmMatrix_Put_Complex is a subroutine that returns a MQC 
+!>    rank-4 tensor with elements defined by values in an intrinsic complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is class(MQC_R4Tensor)
+!>        MQC rank-4 tensor to overwrite with output rank-4 tensor.
+!>    \endverbatim
+!>
+!>    \param[in] SymmSymmMatrixIn
+!>    \verbatim
+!>        SymmSymmMatrixIn is complex(kind=real64),dimension(:)
+!>        Intrinsic complex vector to write as rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4Tensor,symmSymmMatrixIn)
-!
-!     This subroutine loads a (MQC) rank-4 tensor <mat> from an input
-!     (fortran intrinsic type) complex packed-symmetric-symmetric matrix <symmSymmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
@@ -19317,13 +19726,34 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveInteger
+!
+!>    \brief <b> MQC_R4Tensor_HaveInteger is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated integer array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveInteger is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated integer array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveInteger(R4Tensor)
-!
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated integer r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -19337,15 +19767,35 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveReal
+!
+!>    \brief <b> MQC_R4Tensor_HaveReal is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated real array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveReal is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated real array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveReal(R4Tensor)
 !
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated real r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
-!
-!     Variable Declarations.
       Implicit None
       Logical::MQC_R4Tensor_HaveReal
       Type(MQC_R4Tensor),Intent(In)::R4Tensor
@@ -19357,15 +19807,35 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveComplex
+!
+!>    \brief <b> MQC_R4Tensor_HaveComplex is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated complex array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveComplex is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated complex array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveComplex(R4Tensor)
 !
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated complex r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
-!
-!     Variable Declarations.
       Implicit None
       Logical::MQC_R4Tensor_HaveComplex
       Type(MQC_R4Tensor),Intent(In)::R4Tensor
