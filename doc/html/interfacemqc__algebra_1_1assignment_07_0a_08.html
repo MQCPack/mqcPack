@@ -164,6 +164,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ac48436304280158dbdfcac59ccdd726c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix equal to an intrinsic complex rank-2 array</b>  <a href="interfacemqc__algebra_1_1assignment_07_0a_08.html#ac48436304280158dbdfcac59ccdd726c">More...</a><br /></td></tr>
 <tr class="separator:ac48436304280158dbdfcac59ccdd726c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a440a7e41e61d8f9c391e48bc3c30fcbd"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="interfacemqc__algebra_1_1assignment_07_0a_08.html#a440a7e41e61d8f9c391e48bc3c30fcbd">mqc_set_array2tensor</a> (TensorOut, ArrayIn)</td></tr>
+<tr class="memdesc:a440a7e41e61d8f9c391e48bc3c30fcbd"><td class="mdescLeft">&#160;</td><td class="mdescRight"><b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor equal to an intrinsic rank-4 array</b>  <a href="interfacemqc__algebra_1_1assignment_07_0a_08.html#a440a7e41e61d8f9c391e48bc3c30fcbd">More...</a><br /></td></tr>
 <tr class="separator:a440a7e41e61d8f9c391e48bc3c30fcbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -488,6 +489,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p><b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor equal to an intrinsic rank-4 array</b> </p>
+<dl class="section user"><dt>Purpose:</dt><dd><pre class="fragment">    MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+    intrinsic rank-4 array.    </pre> </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">TensorOut</td><td><pre class="fragment">        TensorOut is Type(MQC_Matrix)
+        The MQC rank-4 tensor to be set equal to the array.</pre></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ArrayIn</td><td><pre class="fragment">        ArrayIn is Class(*),Dimension(:,:,:,:)
+        The array to be input into TensorOut.</pre> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>L. M. Thompson </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2016, 2017 </dd></dl>
 
 </div>
 </div>
@@ -1118,7 +1134,7 @@ L. M. Thompson </dd></dl>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacemqc__algebra.html">mqc_algebra</a></li><li class="navelem"><a class="el" href="interfacemqc__algebra_1_1assignment_07_0a_08.html">assignment(=)</a></li>
-    <li class="footer">Generated on Sat Oct 12 2019 10:03:17 for MQCPack by
+    <li class="footer">Generated on Sun Oct 13 2019 11:02:52 for MQCPack by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.16 </li>
   </ul>
