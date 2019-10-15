@@ -1,3 +1,31 @@
+!>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
+!>    electronic structure theory </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC EST contains objects that speed up and enhance the implementation of 
+!>    electronic structure theories in Fortan. The objects allow for automatic 
+!>    determination of spin structure and so enables code to be used without 
+!>    modification whether a restricted, unrestricted or general formalism is used.
+!>    The objects are able to store common intermediates in the calculation of 
+!>    electronic structure, and carry their own procedures for manipulation of these 
+!>    intermediates. The EST derived types defined in this package are:
+!>
+!>    1. MQC_SCF_Integral:       EST intermediate operator matrix representation
+!>    2. MQC_SCF_Eigenvalues:    EST intermediate vector variable
+!>    3. MQC_Wavefunction:       EST intermediates of single determinant wavefunctions
+!>    4. MQC_PSCF_Wavefunction:  EST intermediates of post-Hartree-Fock methods 
+!>    5. MQC_Determinant:        Binary strings reresenting occupation number vectors
+!>    6. MQC_TwoERIs:            Two-electron resonance integrals
+!>
+!>    This module is level 2 in the MQC hierarchy and so depends on level 0 and 1
+!>    modules. 
+!>
+!>    \endverbatim
+!
       Module MQC_EST  
 !
 !     **********************************************************************
@@ -44,7 +72,7 @@
 !
 !     Single Reference Wavefunctions...
 !
-!     MQC_SCF_Integral
+!>    \brief <b> EST intermediate operator matrix representation</b>
       Type MQC_SCF_Integral
 !
 !       Blocks are constructed in the order:
@@ -58,6 +86,7 @@
         Character(Len=64),Private::Array_Type ! Space,Spin,General
         Integer(kind=int64),Dimension(:),Allocatable,Private::Energy_List
       Contains 
+!>      \brief <b> Print the MQC_SCF_Integral object</b>
         Procedure, Public::print => mqc_print_integral
         Procedure, Private::hasAlpha => mqc_integral_has_alpha
         Procedure, Private::hasBeta => mqc_integral_has_beta
@@ -65,43 +94,66 @@
         Procedure, Private::hasBetaAlpha => mqc_integral_has_betaalpha
         Procedure, Private::type => mqc_integral_array_type
         Procedure, Private::blockSize => mqc_integral_dimension 
+!>      \brief <b> Return the label of the MQC_SCF_Integral object</b>
         Procedure, Public::getLabel => mqc_integral_array_name
+!>      \brief <b> Set the label of the MQC_SCF_Integral object</b>
         Procedure, Public::addLabel => mqc_integral_add_name
+!>      \brief <b> Return a spin block of MQC_SCF_Integral object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_integral_output_block
+!>      \brief <b> Set an MQC_SCF_Integral object as the identity matrix</b>
         Procedure, Public::identity => mqc_integral_identity 
+!>      \brief <b> Initializes an MQC_SCF_Integral object</b>
         Procedure, Public::init => mqc_integral_initialize 
+!>      \brief <b> Diagonalizes an MQC_SCF_Integral object</b>
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+!>      \brief <b> Solves a generalized eigenvalue problem involving an 
+!>      MQC_SCF_Integral object</b>
         Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
+!>      \brief <b> Inverts an MQC_SCF_Integral object</b>
         Procedure, Public::inv => mqc_scf_integral_inverse
+!>      \brief <b> Returns the trace of an MQC_SCF_Integral object</b>
         Procedure, Public::trace => mqc_scf_integral_trace
+!>      \brief <b> Returns the determinant of an MQC_SCF_Integral object</b>
         Procedure, Public::det => mqc_scf_integral_determinant
+!>      \brief <b> Returns the norm of an MQC_SCF_Integral object</b>
         Procedure, Public::norm => mqc_integral_norm
         Procedure, Private::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+!>      \brief <b> Returns a subset of an MQC_SCF_Integral object</b>
         Procedure, Public::orbitals => mqc_integral_output_orbitals 
+!>      \brief <b> Swaps rows/columns of an MQC_SCF_Integral object</b>
         Procedure, Public::swap => mqc_integral_swap_orbitals
       End Type
 !
+!>    \brief <b> EST intermediate vector variable</b>
 !     MQC_SCF_Eigenvalues
       Type MQC_SCF_Eigenvalues
         Type(MQC_Vector),Private::Alpha,Beta
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General 
       Contains 
+!>      \brief <b> Print the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::print => mqc_print_eigenvalues
         Procedure, Private::hasAlpha => mqc_eigenvalues_has_alpha
         Procedure, Private::hasBeta => mqc_eigenvalues_has_beta
         Procedure, Private::type => mqc_eigenvalues_array_type
         Procedure, Private::blockSize => mqc_eigenvalues_dimension 
+!>      \brief <b> Return the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::getLabel => mqc_eigenvalues_array_name
+!>      \brief <b> Set the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::addLabel => mqc_eigenvalues_add_name
+!>      \brief <b> Return a spin block of MQC_SCF_Eigenvalues object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_eigenvalues_output_block
+!>      \brief <b> Returns values of an MQC_SCF_Eigenvalues object raised to a power</b>
         Procedure, Public::power => mqc_scf_eigenvalues_power
+!>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
+!>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
       End Type
 !
+!>    \brief <b> EST intermediates of single determinant wavefunctions</b>
 !     MQC_Wavefunction
       Type MQC_Wavefunction
         Type(MQC_SCF_Integral)::MO_Coefficients
@@ -116,6 +168,7 @@
         Character(Len=256)::Basis,Symmetry,WF_Type
         Logical::WF_Complex
       Contains 
+!>      \brief <b> Print the MQC_Wavefunction object</b>
         Procedure, Public::print => mqc_print_wavefunction
       End Type MQC_Wavefunction
 !
@@ -123,6 +176,7 @@
 !     Post-SCF Wavefunctions...
 !
 !     Parent Type
+!>    \brief <b> EST intermediates of post-Hartree-Fock methods</b>
       Type,Extends(MQC_Wavefunction)::MQC_PSCF_Wavefunction
         Integer(kind=int64)::NCore,NVal,NActive,NFrz
         Type(MQC_Matrix)::PSCF_Amplitudes
@@ -133,11 +187,12 @@
 !     Determinants....
 !
 !     MQC_Determinant_String
-      Type MQC_Determinant_String
+      Type,Private::MQC_Determinant_String
         Type(MQC_Matrix)::Alpha,Beta
       End Type MQC_Determinant_String
 !
 !     Parent Type
+!>    \brief <b> Binary strings reresenting occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order
@@ -148,11 +203,13 @@
 !     Two electron integrals....
 !
 !     Parent Type
+!>    \brief <b> Two-electron resonance integrals</b>
       type mqc_twoERIs
         type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha
         character(Len=64),private::integralType !regular,raffenetti,space,spin,general
         character(Len=64),private::storageType !full,symm
       contains 
+!>      \brief <b> Print the MQC_TwoERIs object</b>
         procedure, public::print => mqc_print_twoERIs
         procedure, private::at => mqc_twoERIs_at
       end type mqc_twoERIs
