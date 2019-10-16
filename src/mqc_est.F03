@@ -6283,14 +6283,49 @@
 !
 !
 !     PROCEDURE MQC_SCF_Transformation_Matrix
+!
+!>    \brief <b> MQC_SCF_Transformation_Matrix is a subroutine that returns the
+!>    atomic orbital to orthogonal atomic orbital transformation matrix and the
+!>    number of linearly independent atomic orbital basis functions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_SCF_Transformation_Matrix is a subroutine that returns the atomic orbital 
+!>    to orthogonal atomic orbital transformation matrix and the number of linearly 
+!>    independent atomic orbital basis functions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Overlap
+!>    \verbatim
+!>        Overlap is type(mqc_scf_integral)
+!>        The atomic orbital overlap matrix.
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[out] Transform_Matrix  
+!>    \verbatim
+!>        Transform_Matrix is type(mqc_scf_integral)
+!>        The AO -> OAO transformation matrix.
+!>    \endverbatim
+!>    
+!>    \param[out] NBasUse
+!>    \verbatim
+!>        NBasUse is integer(kind=int64),optional
+!>        The number of linearly independent AO basis functions.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       subroutine mqc_scf_transformation_matrix(overlap,transform_matrix,nBasUse)
-!
-!     This function returns the tranformation matrix and number of linearly independent basis functions.
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::overlap
@@ -6324,36 +6359,91 @@
 !=====================================================================
 !     
 !     PROCEDURE GEN_DET_STR 
-! 
+!
+!>    \brief <b> GEN_DET_STR is a subroutine that returns the list of binary strings 
+!>    corresponding to occupation number vectors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GEN_DET_STR is a subroutine that returns the list of binary strings 
+!>    corresponding to occupation number vectors.
+!>
+!>    The index to the determinant strings follows lexical order in which the 
+!>    left most path has index zero (in the case where the right-most bit 
+!>    corresponds to orbital 1 and the left-most bit corresponds to orbital 
+!>    NBasis - the HF determinant is the smallest integer number). 
+!>    Constructing the graph uses the following for the vertex and arc values:
+!>    Yo(e,o)=0, Y1(e,o)=x(e,o+1), x(e,o)=x(e+1,o+1)+x(e,o+1) 
+!>
+!>    The strings are also ordered in reverse lexical order where the right most 
+!>    path has index zero (in the case that the left-most bit corresponds to 
+!>    orbital 1 and the right-most bit corresponds to orbital NBasis - the HF 
+!>    determinant is the largest interger number)
+!>    Constructing the graph uses the following for the vertex and arc values:
+!>    Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
+!>
+!>    While the routine is set up to deal with arbitrary number of orbitals, the 
+!>    maximum number of orbitals is currently limited to the machine word size.
+!>
+!>    Optional argument NCore allows inclusion of set of always occupied orbitals
+!>    in determinant string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] NAlphaIn
+!>    \verbatim
+!>        NAlphaIn is Type(MQC_Scalar)
+!>        The number of alpha electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] NBetaIn
+!>    \verbatim
+!>        NBetaIn is Type(MQC_Scalar)
+!>        The number of beta electrons.
+!>    \endverbatim
+!>    
+!>    \param[out] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The output binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] NCoreIn
+!>    \verbatim
+!>        NCoreIn is Type(MQC_Scalar),optional
+!>        The number of core orbitals to consider always occupied.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine Gen_Det_Str(IOut,IPrint,NBasisIn,NAlphaIn,NBetaIn, &
           Determinants,NCoreIn)
-!
-!     This subroutine generates a list of alpha and beta strings in binary  
-!     notation. 
-!
-!     The index to the determinant strings follows lexical order in which the 
-!     left most path has index zero (in the case where the right-most bit 
-!     corresponds to orbital 1 and the left-most bit corresponds to orbital 
-!     NBasis - the HF determinant is the smallest integer number). 
-!     Constructing the graph uses the following for the vertex and arc values:
-!     Yo(e,o)=0, Y1(e,o)=x(e,o+1), x(e,o)=x(e+1,o+1)+x(e,o+1) 
-!
-!     The strings are also ordered in reverse lexical order where the right most 
-!     path has index zero (in the case that the left-most bit corresponds to 
-!     orbital 1 and the right-most bit corresponds to orbital NBasis - the HF 
-!     determinant is the largest interger number)
-!     Constructing the graph uses the following for the vertex and arc values:
-!     Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
-!
-!     While the routine is set up to deal with arbitrary number of orbitals, the 
-!     maximum number of orbitals is currently limited to the machine word size.
-!
-!     Optional argument NCore allows inclusion of set of always occupied orbitals
-!     in determinant string.
-!
-!     Lee Thompson, 2016.
-!
-!     Variable Declarations...
 !
       Implicit None
 
@@ -6580,15 +6670,99 @@
 !=====================================================================
 !     
 !     PROCEDURE SLATER_CONDON
+!
+!>    \brief <b> SLATER_CONDON is a subroutine that returns the list of binary 
+!>    strings corresponding to occupation number vectors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    SLATER_CONDON is a function that returns the CI Hamiltonian matrix element 
+!>    value using Slater-Condon rules for a given alpha and beta string combination.
+!>    If UHF flag is set to true then Slater Condon rules are returned accounting for 
+!>    different spatial occupation of alpha and beta orbitals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] L_A_String
+!>    \verbatim
+!>        L_A_String is Integer(kind=int64)
+!>        The index of the left alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] L_B_String
+!>    \verbatim
+!>        L_B_String is Integer(kind=int64)
+!>        The index of the left beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_A_String
+!>    \verbatim
+!>        R_A_String is Integer(kind=int64)
+!>        The index of the right alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_B_String
+!>    \verbatim
+!>        R_B_String is Integer(kind=int64)
+!>        The index of the right beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] Core_Hamiltonian
+!>    \verbatim
+!>        Core_Hamiltonian is Type(MQC_SCF_Integral)
+!>        The MO basis core hamiltonian matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is Type(MQC_TwoERIs) 
+!>        The MO basis two-electron intregrals.
+!>    \endverbatim
+!>    
+!>    \param[in] UHF
+!>    \verbatim
+!>        UHF is Logical
+!>        Whether alpha and beta orbitals are restricted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function Slater_Condon(IOut,IPrint,NBasisIn,Determinants,L_A_String, &
        L_B_String,R_A_String,R_B_String,Core_Hamiltonian,ERIs,UHF) &
        Result(MatEl)
 !
-!     This function returns the CI Hamiltonian matrix element value using 
-!     Slater-Condon rules for a given alpha and beta string combination.
-!     If UHF flag is set to true then Slater Condon rules are returned
-!     accounting for different spacial occupation of alpha and beta orbitals but
-!     the ERIs must be dimensioned to twice that of rhf case.
 !
 !     Variable Declarations...
 !
@@ -8629,13 +8803,77 @@
 !=====================================================================
 !     
 !     PROCEDURE MQC_BUILD_CI_HAMILTONIAN
+!
+!>    \brief <b> MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI 
+!>    hamiltonian given MO integrals and determinant strings</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI hamiltonian given 
+!>    MO integrals and determinant strings.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasis
+!>    \verbatim
+!>        NBasis is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_Core_Ham
+!>    \verbatim
+!>        MO_Core_Ham is Type(MQC_SCF_Integral)
+!>        The MO basis core hamiltonian.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_ERIs
+!>    \verbatim
+!>        MO_ERIs is Type(MQC_TwoERIs) 
+!>        The MO basis two-electron intregrals.
+!>    \endverbatim
+!>    
+!>    \param[in] UHF
+!>    \verbatim
+!>        UHF is Logical
+!>        Whether alpha and beta orbitals are restricted.
+!>    \endverbatim
+!>    
+!>    \param[out] CI_Hamiltonian
+!>    \verbatim
+!>        CI_Hamiltonian is Type(MQC_Matrix)
+!>        The CI hamiltonian returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
         MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian)
-!
-!     This subroutine is used to build the CI Hamiltonian given MO
-!     integrals and determinant strings.
-!
-!     Variable Declarations...
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
