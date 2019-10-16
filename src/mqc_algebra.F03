@@ -9766,7 +9766,7 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] A
+!>    \param[in,out] A
 !>    \verbatim
 !>        A is Class(MQC_Vector)
 !>        The name of the MQC_Vector variable.
