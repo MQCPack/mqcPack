@@ -2259,18 +2259,88 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Orbitals
+!
+!>    \brief <b> MQC_Integral_Output_Orbitals is used to output a vector subset from
+!>    an MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Output_Orbitals is used to output a vector subset from an MQC 
+!>    integral type variable. Optional argument orbString enables automatic selection
+!>    of common orbital subsets. Optional arguments alphaOrbsIn and betaOrbsIn can be
+!>    used to manual specify which vectors should be selected, as well as their order.
+!>    Optional argument axis specifies whether row or column vectors are selected. 
+!>    The following options are available:
+!>
+!>    1. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
+!>                   electrons should be specified in a length 1 vector in 
+!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
+!>                   electrons unless specified in a length 1 vector in betaOrbsIn.
+!>    2. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
+!>                   electrons should be specified in a length 1 vector in 
+!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
+!>                   electrons unless specified in a length 1 vector in betaOrbsIn. 
+!>                   The dimension of the fixed length axis is assumed to be the 
+!>                   number of virtual orbitals.
+!>    3. OrbString = 'useStrings' specifies that the vector subset will be specified
+!>                   in alphaOrbsIn. The beta vector subset is assumed to be the same
+!>                   as the alpha vector subset unless betaOrbsIn is specified. This
+!>                   is the default.
+!>    4. Axis =      1 specifies the row vector subset is selected. 
+!>    5. Axis =      2 specifies the column vector subset is selected (default). 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to select orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] OrbString 
+!>    \verbatim
+!>        OrbString is character(len=*),optional
+!>        = 'occupied':   selects occupied orbitals.
+!>        = 'virtual':    selects virtual orbitals.
+!>        = 'useStrings': selects orbitals from strings.
+!>    \endverbatim
+!>    
+!>    \param[in] AlphaOrbsIn
+!>    \verbatim
+!>        AlphaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        Vector of alpha vector subset.
+!>    \endverbatim
+!>    
+!>    \param[in] BetaOrbsIn
+!>    \verbatim
+!>        BetaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        Vector of beta vector subset.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_output_orbitals(integral,orbString,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
-!
-!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
-!     can be input) and orders columns as specified in alphaOrbs and betaOrbs. 
-!
-!     Routine assumes basis that is not being reordered is AOs when using virtual flag
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
-      character(len=*),optional::orbString
+      character(len=*),optional,intent(in)::orbString
       character(len=64)::myOrbString
-      integer(kind=int64),dimension(:),optional::alphaOrbsIn,betaOrbsIn
+      integer(kind=int64),dimension(:),optional,intent(in)::alphaOrbsIn,betaOrbsIn
       integer(kind=int64),dimension(:),allocatable::alphaOrbs,betaOrbs
       integer(kind=int64),intent(in),optional::axis
       type(mqc_scf_integral)::integralOut
@@ -2495,10 +2565,60 @@
 !
 !
 !     PROCEDURE MQC_Integral_Swap_Orbitals
-      function mqc_integral_swap_orbitals(integral,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
 !
-!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
-!     can be input) and swaps columns as specified in alphaOrbs and betaOrbs. 
+!>    \brief <b> MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an
+!>    MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an MQC integral 
+!>    type variable. If integral is restricted type, only alphaOrbsIn need be 
+!>    specified and the restricted type is preserved. If integral is of unrestricted 
+!>    or general type, alphaOrbsIn will only act on the alpha space and betaOrbsIn 
+!>    will only act on the beta space. Optional argument axis specifies whether row 
+!>    or column vectors are selected. The following options are available:
+!>
+!>    1. Axis =      1 specifies the row vector subset is selected. 
+!>    2. Axis =      2 specifies the column vector subset is selected (default). 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to select orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] AlphaOrbsIn
+!>    \verbatim
+!>        AlphaOrbsIn is integer(kind=int64),dimension(2),optional
+!>        Alpha/restricted vectors to swap.
+!>    \endverbatim
+!>    
+!>    \param[in] BetaOrbsIn
+!>    \verbatim
+!>        BetaOrbsIn is integer(kind=int64),dimension(2),optional
+!>        Beta vectors to swap.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
+      function mqc_integral_swap_orbitals(integral,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -2562,7 +2682,7 @@
             betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
             (i,i=betaOrbs(2)+1,NDimBeta)],axis=my_axis)
           
-        elseIf(.not.present(alphaOrbsIn)) then
+        elseIf(.not.present(betaOrbsIn)) then
           alphaOrbs = alphaOrbsIn
           if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
           integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
@@ -2589,7 +2709,48 @@
       end function mqc_integral_swap_orbitals
 !
 !
-!     PROCEDURE MQC_eigenvalues_Output_Block
+!     PROCEDURE MQC_Eigenvalues_Output_Block
+!
+!>    \brief <b> MQC_Eigenvalues_Output_Block is used to output a spin block of an MQC 
+!>    eigenvalues type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Output_Block is used to output a spin block of an MQC 
+!>    eigenvalues type variable. Optional argument blockName is used to specify which 
+!>    spin block should be output, with the default to output the all spin blocks. 
+!>    The following options are available:
+!>
+!>    1. BlockName = 'full' outputs the full MQC_SCF_Integral. 
+!>    2. BlockName = 'alpha' outputs the alpha spin block. 
+!>    3. BlockName = 'beta' outputs the beta spin block. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_SCF_Eigenvalues)
+!>        The MQC_SCF_Eigenvalues variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] BlockName
+!>    \verbatim
+!>        BlockName is character(len=*),optional
+!>        = 'full':        outputs the full MQC_SCF_Integral. 
+!>        = 'alpha':       outputs the alpha spin block.
+!>        = 'beta':        outputs the beta spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_eigenvalues_output_block(eigenvalues,blockName) result(vectorOut)
 !
       implicit none
@@ -2679,6 +2840,39 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Array
+!
+!>    \brief <b> MQC_Integral_Output_Array is used to output an MQC integral type
+!>    variable to an MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Output_Array is used to output an MQC integral type variable to an 
+!>    MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut 
+!>    \verbatim
+!>        MatrixOut is type(mqc_matrix)
+!>        The MQC matrix variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralIn
+!>    \verbatim
+!>        IntegralIn is Class(MQC_SCF_Integral)
+!>        MQC integral variable to output as MQC matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_integral_output_array(matrixOut,integralIn) 
 !
       implicit none
@@ -2763,6 +2957,39 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Output_Array
+!
+!>    \brief <b> MQC_Eigenvalues_Output_Array is used to output an MQC eigenvalues
+!>    type variable to an MQC vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Output_Array is used to output an MQC eigenvalues type variable 
+!>    to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut 
+!>    \verbatim
+!>        VectorOut is type(mqc_vector)
+!>        The MQC vector variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] EigenvaluesIn
+!>    \verbatim
+!>        EigenvaluesIn is Class(MQC_SCF_Eigenvalues)
+!>        MQC eigenvalues variable to output as MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_eigenvalues_output_array(vectorOut,eigenvaluesIn) 
 !
       implicit none
@@ -2814,11 +3041,46 @@
 !
 !
 !     PROCEDURE MQC_Integral_Matrix_Multiply
+!
+!>    \brief <b> MQC_Integral_Matrix_Multiply is used to multiply an MQC integral
+!>    type variable with a MQC matrix and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Matrix_Multiply is used to multiply an MQC integral type variable
+!>    with a MQC matrix and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] MatrixB
+!>    \verbatim
+!>        MaxtrixB is type(mqc_matrix)
+!>        MQC Matrix type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_matrix_multiply(integralA,matrixB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc matrix.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA
@@ -2943,11 +3205,46 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Integral_Multiply
+!
+!>    \brief <b> MQC_Matrix_Integral_Multiply is used to multiply an MQC matrix type
+!>    variable with a MQC integral and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Integral_Multiply is used to multiply an MQC matrix type variable
+!>    with a MQC integral and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixA
+!>    \verbatim
+!>        MaxtrixA is type(mqc_matrix)
+!>        MQC Matrix type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_matrix_integral_multiply(matrixA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc matrix.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralB
@@ -3072,11 +3369,38 @@
 !
 !
 !     PROCEDURE MQC_Integral_Sum
+!
+!>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Sum is used to sum two MQC integral type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The first MQC integral variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The second MQC integral variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_sum(integralA,integralB) result(integralOut)
-!
-!     This function sums two mqc integrals.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -3161,11 +3485,39 @@
 !
 !
 !     PROCEDURE MQC_Integral_Difference
+!
+!>    \brief <b> MQC_Integral_Difference is used to subtract two MQC integral type 
+!>    variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Difference is used to subtract two MQC integral type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The MQC integral variable to subtract from.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_difference(integralA,integralB) result(integralOut)
-!
-!     This function subtracts two mqc integrals.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -3250,11 +3602,46 @@
 !
 !
 !     PROCEDURE MQC_Integral_Integral_Multiply
+!
+!>    \brief <b> MQC_Integral_Integral_Multiply is used to multiply two MQC integral
+!>    type variables and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Integral_Multiply is used to multiply two MQC integral type 
+!>    variables and returns an MQC integral</b> 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The first MQC integral type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The second MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_integral_multiply(integralA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc integral.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -3348,11 +3735,40 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Integral_Multiply
+!
+!>    \brief <b> MQC_Scalar_Integral_Multiply is used to multiply an MQC scalar with
+!>    an MQC integral type variable and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Scalar_Integral_Multiply is used to multiply an MQC scalar with an MQC 
+!>    integral type variable and returns an MQC integral</b> 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is type(mqc_scalar)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_scalar_integral_multiply(scalar,integral) result(integralOut)
-!
-!     This function multiplies a mqc scalar type with an mqc integral.
-!
-!     L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -3392,11 +3808,40 @@
 !
 !
 !     PROCEDURE MQC_Integral_Scalar_Multiply
+!
+!>    \brief <b> MQC_Integral_Scalar_Multiply is used to multiply an MQC integral 
+!>    type variable with an MQC scalar and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Scalar_Multiply is used to multiply an MQC integral type variable 
+!>    with an MQC scalar and returns an MQC integral. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is type(mqc_scalar)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_scalar_multiply(integral,scalar) result(integralOut)
-!
-!     This function multiplies an mqc integral type with an mqc scalar.
-!
-!     L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -3436,12 +3881,49 @@
 !
 !
 !     PROCEDURE MQC_Integral_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC 
+!>    integral type variable with an MQC eigenvalues type variable (a diagonal 
+!>    matrix) and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC integral type 
+!>    variable with an MQC eigenvalues type variable (a diagonal matrix) and returns 
+!>    an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] EigenvaluesB
+!>    \verbatim
+!>        EigenvaluesB is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues type variable (a diagonal matrix) 
+!>        to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_eigenvalues_multiply(integralA,eigenvaluesB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
-!     are treated as a diagonal matrix.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA
@@ -3531,12 +4013,49 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Integral_Multiply
+!
+!>    \brief <b> MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC 
+!>    integral type variable with an MQC eigenvalues type variable (a diagonal 
+!>    matrix) and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC integral type 
+!>    variable with an MQC eigenvalues type variable (a diagonal matrix) and returns 
+!>    an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvaluesA
+!>    \verbatim
+!>        EigenvaluesA is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues type variable (a diagonal matrix) 
+!>        to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eigenvalues_integral_multiply(eigenvaluesA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
-!     are treated as a diagonal matrix.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralB
@@ -3626,11 +4145,49 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Eigenvalues_Eigenvalues_Multiply is used to multiply two MQC 
+!>    eigenvalues type variable (diagonal matrices) and returns an MQC eigenvalues
+!>    type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Eigenvalues_Multiply is used to multiply two MQC eigenvalues 
+!>    type variable (diagonal matrices) and returns an MQC eigenvalues type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvaluesA
+!>    \verbatim
+!>        EigenvaluesA is type(mqc_scf_eigenvalues)
+!>        The first MQC eigenvalues type variable (a diagonal 
+!>        matrix) to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] EigenvaluesB
+!>    \verbatim
+!>        EigenvaluesB is type(mqc_scf_eigenvalues)
+!>        The second MQC eigenvalues type variable (a diagonal 
+!>        matrix) to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eigenvalues_eigenvalues_multiply(eigenvaluesA,eigenvaluesB,label) result(eigenvaluesOut)
-!
-!     This function multiplies an mqc eigenvalues type with an mqc eigenvalues type (diagonal matrix multiplication).
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_eigenvalues),intent(in)::eigenvaluesA,eigenvaluesB 
