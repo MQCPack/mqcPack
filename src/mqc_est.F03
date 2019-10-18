@@ -5573,12 +5573,12 @@
 
       NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
       If(.not.UHF) then
-        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
       ElseIf(UHF) then
-        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorAlphaBeta%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBetaAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBeta%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBeta%init(NBasis,NBasis,NBasis,NBasis)
       EndIf
       MO_ERIs%StorageType = 'Full'
       MO_ERIs%IntegralType = 'Regular'
@@ -5628,8 +5628,8 @@
 
         If(IPrint.ge.2) Write(IOut,3000) 
 
-        Call X%initialize(NBasis,NBasis)
-        Call Y%initialize(NBasis,NBasis)
+        Call X%init(NBasis,NBasis)
+        Call Y%init(NBasis,NBasis)
 
         Do P = 1, NBasis
           Do Q = 1, NBasis
@@ -6221,7 +6221,7 @@
       NBeta_Str = MQC_Matrix_Rows(Determinants%Strings%Beta)
       NDets = NAlpha_Str * NBeta_Str 
 !
-      Call CI_Hamiltonian%initialize(NDets,NDets)
+      Call CI_Hamiltonian%init(NDets,NDets)
 !
       Do L_A_String = 1, NAlpha_Str  
         Do L_B_String = 1, NBeta_Str  
