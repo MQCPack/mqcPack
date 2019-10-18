@@ -125,6 +125,11 @@
         module procedure MQC_Variable_dot_product
       end interface
 !
+!     Interface MQC Varaiable full SUM.
+      interface sum
+        module procedure MQC_Variable_Array_Sum
+      end interface
+!
 !     Interface routines that clear MQC variable objects.
       interface MQC_Variable_clear
         module procedure MQC_Variable_clear_mqc
@@ -2518,7 +2523,7 @@
 !     rank/dimensions.
 !
 !
-!     H. P. Hratchian, 2018.
+!     H. P. Hratchian, 2018, 2019.
 !
 !
 !     Variable Declarations.
@@ -2562,17 +2567,7 @@
         mqcVariableOut = mqcVariableIn
         return
       endIf
-
-!hph+
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - myDimension = ',myDimension
-      write(*,*)' Hrant - resultRank  = ',resultRank
-      write(*,*)
-      write(*,*)
       mqcVariableOut = 0
-!hph-
-
       select case(resultRank)
       case(0)
         select case(MQC_Variable_getTypeCode(mqcVariableIn))
@@ -2630,6 +2625,126 @@
 !
       return
       end function MQC_Variable_Array_Sum
+
+
+!
+!PROCEDURE MQC_Variable_SubArray
+      function MQC_Variable_SubArray(mqcVariableIn,iDimension,newRange)  &
+        result(mqcVariableOut)
+!
+!     This function forms a sub-range in a single dimension of mqcVariableIn and
+!     returns that as its output. iDimension defines the dimension to work over
+!     and range is a 2-dimensional array defining the desired range.
+!
+!     Dummy argument iDimension is optional. If NOT sent, it defaults to 1.
+!
+!
+!     H. P. Hratchian, 2018, 2019.
+!
+
+!hph WORKING HERE
+
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariableIn
+      integer(kind=int64),optional::iDimension,newrange
+      type(MQC_Variable)::mqcVariableOut
+
+      real(kind=real64)::scalarReal
+      real(kind=real64),dimension(:),allocatable::tempReal1
+      integer(kind=int64)::itmp,myDimension,myRank,resultRank,myLen,  &
+        resultLen,scalarInteger
+      integer(kind=int64),dimension(:),allocatable::tempInteger1
+      real(kind=real64),dimension(2,3)::junkMat
+
+!
+!
+!     Ensure that iDimension is valid and determine the rank of the result.
+!
+      myRank = mqcVariableIn%getRank()
+      if(PRESENT(iDimension)) then
+        myDimension = iDimension
+        resultRank = myRank-1
+      else
+        myDimension = 0
+        resultRank = 0
+      endIf
+      if(myDimension.gt.myRank)  &
+        call mqc_error_I('MQC_Variable_Array_Sum: myDimension > RANK.', &
+        6,'myDimension=',myDimension,'RANK=',myRank)
+!
+!     Ensure we are working with full storage array forms. Other storage
+!     options will be coded in the future.
+!
+      if(.not.TRIM(mqcVariableIn%storageFormat).eq.'FULL')  &
+        call mqc_error('SUM of MQC Variables is only available for '//  &
+          'FULL storage arrays.')
+!
+!     Take care of the special case where <mqcVariableIn> is a scalar.
+!
+      if(myRank.eq.0) then
+        mqcVariableOut = mqcVariableIn
+        return
+      endIf
+      mqcVariableOut = 0
+      select case(resultRank)
+      case(0)
+        select case(MQC_Variable_getTypeCode(mqcVariableIn))
+        case(2)
+          scalarReal = SUM(mqcVariableIn%realArray(:))
+          mqcVariableOut = scalarReal
+        case(3)
+          scalarInteger = SUM(mqcVariableIn%integerArray(:))
+          mqcVariableOut = scalarInteger
+        case default
+          call mqc_error_I('MQC_Variable_Array_Sum: '// &
+            'Unknown MQC_Variable type found.',6, &
+            'MQC_Variable_getTypeCode(mqcVariable)',  &
+            MQC_Variable_getTypeCode(mqcVariableIn))
+        end select
+      case(1)
+        myLen = MQC_Variable_getLength(mqcVariableIn)
+        if(myRank.ne.2)  &
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'Confusion with the rank of input array.')
+        select case(MQC_Variable_getTypeCode(mqcVariableIn))
+        case(2) ! REALS
+          select case(myDimension)
+          case(1)
+            ALLOCATE(tempReal1(Size(mqcVariableIn,2)))
+            tempReal1 = SUM(  &
+              RESHAPE(mqcVariableIn%realArray,  &
+              [Size(mqcVariableIn,1),Size(mqcVariableIn,2)]),1)
+            call MQC_Variable_setVal(mqcVariableOut,  &
+              arrayRealIn=tempReal1,dimensions=[Size(tempReal1)])
+            DEALLOCATE(tempReal1)
+          case(2)
+            ALLOCATE(tempReal1(Size(mqcVariableIn,1)))
+            tempReal1 = SUM(  &
+              RESHAPE(mqcVariableIn%realArray,  &
+              [Size(mqcVariableIn,1),Size(mqcVariableIn,2)]),2)
+            call MQC_Variable_setVal(mqcVariableOut,  &
+              arrayRealIn=tempReal1,dimensions=[Size(tempReal1)])
+            DEALLOCATE(tempReal1)
+          case default
+            call mqc_error('MQC_Variable_Array_Sum: '// &
+              'Attempt to contract a matrix using dimension < 1 or > 2.')
+          end select
+        case(3) ! INTEGERS
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'SUM with integers NYI.')
+        case default
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'Unknown array type (Real/Integer/etc.).')
+        end select
+      case default
+          call mqc_error('MQC_Variable_Array_Sum: '// &
+            'SUM with resultant of rank 2 or greater NYI.')
+      end select
+!
+      return
+      end function MQC_Variable_SubArray
 
 
 !
