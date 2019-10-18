@@ -2648,7 +2648,7 @@
 !     Variable Declarations.
       implicit none
       class(MQC_Variable),intent(in)::mqcVariableIn
-      integer(kind=int64),optional::iDimension
+      integer(kind=int64),optional::iDimension,newrange
       type(MQC_Variable)::mqcVariableOut
 
       real(kind=real64)::scalarReal
@@ -2744,7 +2744,7 @@
       end select
 !
       return
-      end function MQC_Variable_Array_Sum
+      end function MQC_Variable_SubArray
 
 
 !
