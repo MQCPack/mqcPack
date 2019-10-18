@@ -1,0 +1,64 @@
+language: generic
+sudo: false
+matrix:
+  include:
+
+    - os: linux
+      compiler: gfortran
+      env: SOURCES=ubuntu-toolchain-r-test
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+             # compilers
+            - g++
+            - gfortran
+            - cmake
+#            - automake
+              # math libraries
+            - libblas-dev
+            - liblapack-dev
+            - libatlas-base-dev
+            - libopenblas-base
+            - libopenblas-dev
+              # other
+            - doxygen
+
+    - os: osx
+      osx_image: xcode10.2
+      compiler: gfortran
+      env: SOURCES=homebrew
+      addons:
+        homebrew:
+          packages:
+            - m4
+#            - autoconf
+#            - automake
+            - doxygen
+
+before_install:
+  - mkdir gauopen
+  - mkdir mqc-install
+  - cd gauopen
+  - wget http://gaussian.com/g16/gauopen_v2.zip
+  - unzip gauopen_v2.zip
+  - cd ..
+  - which automake
+  - autoconf --version
+  - automake --version
+
+install: 
+#  - |
+#    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+#      brew install cmake boost gcc open-mpi autoconf automake
+  - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\nn\n" | ./mqc_install
+  - doxygen doc/Doxyfile 
+
+#    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+#      apt install autotools
+#      echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
+#    fi
+
+notifications:
+  email: false
