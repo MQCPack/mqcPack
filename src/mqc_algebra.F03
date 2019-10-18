@@ -2,7 +2,6 @@
 !       2) Implement ability to store and manipulate different types of arrays in 
 !          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
 !       3) Implement symmetric packed rank-4 tensor.
-!       4) Document the module.
 !
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
