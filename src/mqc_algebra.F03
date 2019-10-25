@@ -157,7 +157,14 @@
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
-        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector,MQC_Vector2DiagMatrix
+
+!hph+
+!        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector,MQC_Vector2DiagMatrix
+        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
+!        Procedure, Public::diag => MQC_Vector2DiagMatrix
+!        Procedure, Public::diag => MQC_Matrix_Diag
+!hph-
+
       End Type MQC_Vector
 !
 !     Matrices...
@@ -419,6 +426,15 @@
       Interface Dot_Product
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
+
+!hph+
+!      Interface MQC_Matrix_Diag
+!        Module Procedure MQC_Matrix_DiagMatrix_Put_Vector
+!        Module Procedure MQC_Vector2DiagMatrix
+!      End Interface
+!hph-
+
+
 !
 !----------------------------------------------------------------
 !                                                               |
