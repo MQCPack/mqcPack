@@ -161,8 +161,6 @@
 !hph+
 !        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector,MQC_Vector2DiagMatrix
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
-!        Procedure, Public::diag => MQC_Vector2DiagMatrix
-!        Procedure, Public::diag => MQC_Matrix_Diag
 !hph-
 
       End Type MQC_Vector
@@ -426,13 +424,6 @@
       Interface Dot_Product
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
-
-!hph+
-!      Interface MQC_Matrix_Diag
-!        Module Procedure MQC_Matrix_DiagMatrix_Put_Vector
-!        Module Procedure MQC_Vector2DiagMatrix
-!      End Interface
-!hph-
 
 
 !
@@ -16024,54 +16015,60 @@
       EndDo
 !
       End Subroutine Matrix_Symm2Sq_Complex
-!
-!
-!     PROCEDURE MQC_Vector2DiagMatrix
-!
-!>    \brief <b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC 
-!>    matrix with elements defined by an MQC vector</b>
-!>
-!>    \par Purpose:
-!     =============
-!>
-!>    \verbatim
-!>       
-!>    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
-!>    elements defined by an MQC vector.
-!>
-!>    \endverbatim
-!
-!     Arguments:
-!     ==========
-!>    \param[in] Vector
-!>    \verbatim
-!>        Vector is Class(MQC_Vector)
-!>        MQC vector defining diagonal elements of output matrix.
-!>    \endverbatim
-!
-!     Authors:
-!     ========
-!>    \author X. Sheng
-!>    \date 2017
-!
-      Function MQC_Vector2DiagMatrix(vector) Result(matrix)
-!
-      Implicit None
-      Type(MQC_Matrix)::matrix
-      Class(MQC_Vector),Intent(In)::vector
-!
-      if (vector%Data_type.eq.'Real') then
-        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Real','StorDiag')
-        matrix%matR(:,1) = vector%vecR
-      elseif (vector%Data_type.eq.'Integer') then
-        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Integer','StorDiag')
-        matrix%matI(:,1) = vector%vecI
-      elseif (vector%Data_type.eq.'Complex') then
-        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Complex','StorDiag')
-        matrix%matC(:,1) = vector%vecC
-      endif
-!
-      End Function MQC_Vector2DiagMatrix
+
+
+!hph+
+!!
+!!
+!!     PROCEDURE MQC_Vector2DiagMatrix
+!!
+!!>    \brief <b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC 
+!!>    matrix with elements defined by an MQC vector</b>
+!!>
+!!>    \par Purpose:
+!!     =============
+!!>
+!!>    \verbatim
+!!>       
+!!>    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
+!!>    elements defined by an MQC vector.
+!!>
+!!>    \endverbatim
+!!
+!!     Arguments:
+!!     ==========
+!!>    \param[in] Vector
+!!>    \verbatim
+!!>        Vector is Class(MQC_Vector)
+!!>        MQC vector defining diagonal elements of output matrix.
+!!>    \endverbatim
+!!
+!!     Authors:
+!!     ========
+!!>    \author X. Sheng
+!!>    \date 2017
+!!
+!      Function MQC_Vector2DiagMatrix(vector) Result(matrix)
+!!
+!      Implicit None
+!      Type(MQC_Matrix)::matrix
+!      Class(MQC_Vector),Intent(In)::vector
+!!
+!      if (vector%Data_type.eq.'Real') then
+!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Real','StorDiag')
+!        matrix%matR(:,1) = vector%vecR
+!      elseif (vector%Data_type.eq.'Integer') then
+!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Integer','StorDiag')
+!        matrix%matI(:,1) = vector%vecI
+!      elseif (vector%Data_type.eq.'Complex') then
+!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Complex','StorDiag')
+!        matrix%matC(:,1) = vector%vecC
+!      endif
+!!
+!      End Function MQC_Vector2DiagMatrix
+!hph-
+
+
 !
 !
 !     PROCEDURE MQC_MatrixMatrixSum
