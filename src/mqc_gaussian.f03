@@ -82,6 +82,7 @@
         procedure,pass::isUnrestricted => MQC_Gaussian_IsUnrestricted
         procedure,pass::isGeneral      => MQC_Gaussian_IsGeneral
         procedure,pass::isComplex      => MQC_Gaussian_IsComplex
+        procedure,pass::getAtomWeights => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
         procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
@@ -1832,7 +1833,6 @@
 !
 !     Do the work...
 !
-      call String_Change_Case(label,'l',myLabel)
       if(.not.allocated(fileinfo%atomicWeights))  &
         call MQC_Error_L('Atomic weights requestion, but NOT available.', 6, &
         'allocated(fileinfo%atomicWeights)', allocated(fileinfo%atomicWeights))
