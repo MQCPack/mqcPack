@@ -157,7 +157,7 @@
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
-        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector,MQC_Vector2DiagMatrix
+        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
       End Type MQC_Vector
 !
 !     Matrices...
@@ -229,7 +229,7 @@
       Type MQC_R4Tensor
         Integer(kind=int64),Private::I,J,K,L
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull
+        Character(Len=64),Private::Storage ! StorFull,StorSymm
         Real(kind=real64),Allocatable,Private::RTen(:,:,:,:)
         Integer(kind=int64),Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=real64),Allocatable,Private::CTen(:,:,:,:)
@@ -1351,7 +1351,7 @@
 !
  1001 Format(1x,A,1x,'=',1x,I14)
 ! 1002 Format(1x,A,1x,'=',1x,F14.6)
- 1002 Format(1x,A,1x,'=',1x,F16.12)
+ 1002 Format(1x,A,1x,'=',1x,F18.12)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
@@ -18914,6 +18914,7 @@
 !>    2. Data_Type = 'Integer' declares the MQC_R4Tensor variable to be of integer type.
 !>    3. Data_Type = 'Complex' declares the MQC_R4Tensor variable to be of complex type.
 !>    4. Storage = 'StorFull' declares the MQC_R4Tensor variable to be unpacked.
+!>    5. Storage = 'StorSymm' declares the MQC_R4Tensor variable to be symmetric packed.
 !>
 !>    TODO: Extend storage types for R4Tensor
 !>
@@ -18963,6 +18964,7 @@
 !>    \verbatim
 !>        Storage is Character(Len=*)
 !>        = 'StorFull': the MQC_R4Tensor is unpacked
+!>        = 'StorSymm': the MQC_R4Tensor is symmetric-packed
 !>    \endverbatim
 !
 !     Authors:
@@ -18994,6 +18996,14 @@
         JCur = J
         KCur = K
         LCur = L
+      ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
+        If(I.ne.J.and.I.ne.K.and.I.ne.L) Call MQC_Error_I('Attempting to assign rank-4 tensor of variable dimensions to &
+     &    symmetric form in MQC_Allocate_R4Tensor', 6, 'I', I, 'J', J, 'K', K, 'L', L)
+        Tensor%Storage = 'StorSymm'
+        ICur = (I**4+2*I**3+3*I**2+2*I)/8
+        JCur = 1
+        KCur = 1
+        LCur = 1
       Else
         Call MQC_Error_A('Storage type not recognised in MQC_Allocate_R4Tensor', 6, &
              'Storage', Storage)
@@ -19388,21 +19398,42 @@
         If(blank_at_top) Write(IOut,1020)
       EndIf
       If(Present(Header)) Write(IOut,1000) Trim(Header)
-      Do I = 1, Tensor%I
-        Do J = 1, Tensor%J
-          Do K = 1, Tensor%K
-            Do l = 1, Tensor%L
-              If(Tensor%Data_Type.eq.'Integer') then
-                Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Real') then
-                Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Complex') then
-                Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
-              EndIf
+      If(MQC_R4Tensor_HaveFull(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
+                EndIf
+              EndDo
             EndDo
           EndDo
         EndDo
-      EndDo
+      ElseIf(MQC_R4Tensor_HaveSymmetric(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
+                EndIf
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      Else
+        Call MQC_Error_A('Unrecognized storage type in MQC_Print_R4Tensor_Algebra1', &
+          6, 'Tensor%Storage', Tensor%Storage)
+      EndIf
       If(present(blank_at_bottom)) then
         If(blank_at_bottom) Write(IOut,1020)
       EndIf
@@ -19843,6 +19874,300 @@
 !
       Return
       End Function MQC_R4Tensor_HaveComplex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveFull   
+!
+!>    \brief <b> MQC_R4Tensor_HaveFull is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveFull is a function that returns TRUE if an MQC rank-4 tensor 
+!>    is stored unpacked and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveFull(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveFull   
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorFull') then
+        MQC_R4Tensor_HaveFull = .True. 
+      Else
+        MQC_R4Tensor_HaveFull = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveFull   
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveSymmetric
+!
+!>    \brief <b> MQC_R4Tensor_HaveSymmetric is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveSymmetric is a function that returns TRUE if an MQC matrix is 
+!>    stored symmetric-packed and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveSymmetric(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveSymmetric 
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorSymm') then
+        MQC_R4Tensor_HaveSymmetric = .True. 
+      Else
+        MQC_R4Tensor_HaveSymmetric = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveSymmetric   
+!
+!
+!     PROCEDURE MQC_R4Tensor_Full2Symm
+!
+!>    \brief <b> MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC 
+!>    rank-4 tensor to symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC rank-4 
+!>    tensor to symmetric-packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be symmetric packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Full2Symm(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L
+!
+      If(.not.Tensor%Storage.eq.'StorFull') Call MQC_Error_A('Input rank-4 tensor must be full &
+     &  packed in MQC_R4Tensor_Full2Symm', 6, 'Tensor%Storage', Tensor%Storage )
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp, source=Tensor%RTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Real','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%RTen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp(Size(Tensor%ITen,1),Size(Tensor%ITen,2),Size(Tensor%ITen,3),Size(Tensor%ITen,4)))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Integer','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%ITen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(TempC, source=Tensor%CTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(TempC,1),Size(TempC,2),Size(TempC,3),Size(TempC,4),Tensor, &
+          'Complex','StorSymm')
+        Do I = 1, Size(TempC,1)
+          Do J = 1, I
+            Do K = 1, Size(TempC,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%CTen(SymIndexHash(I,J,K,L),1,1,1) = TempC(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Full2Symm
+!
+!
+!     PROCEDURE MQC_R4Tensor_Size
+!
+!>    \brief <b> MQC_R4Tensor_Size is a function used to return the dimension of a 
+!>    specified dimension of an MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Size is a function used to return the dimension of a specified 
+!>    dimension of a MQC rank-4 tensor. If the tensor is NOT allocated, the dimension  
+!>    is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        The axis from which the dimension will be returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_Size(Tensor,axis) result(dimen)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64)::dimen
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+      integer(kind=int64),intent(in),optional::axis
+      integer(kind=int64)::my_axis
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+      if(my_axis.eq.1) then
+        dimen = Tensor%I
+      elseIf(my_axis.eq.2) then
+        dimen = Tensor%J
+      elseIf(my_axis.eq.3) then
+        dimen = Tensor%K
+      elseIf(my_axis.eq.4) then
+        dimen = Tensor%L
+      else
+        call mqc_error_i('Axis out of range in MQC_R4Tensor_Size',6,'my_axis',my_axis)
+      endIf
+!
+      Return
+      End Function MQC_R4Tensor_Size
+!
+!
+!     PROCEDURE MQC_R4Tensor_isAllocated
+!
+!>    \brief <b> MQC_R4Tensor_isAllocated is a function that returns the allocation
+!>    status of a MQC_R4Tensor variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_isAllocated is a function that returns the allocation status of a 
+!>    MQC_R4Tensor variable. The function returns TRUE if the tensor is allocated 
+!>    and FALSE if the tensor is not allocated.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_isAllocated(Tensor) Result(isAllocated)
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(Allocated(Tensor%RTen)) isAllocated = .True.
+      If(Allocated(Tensor%ITen)) isAllocated = .True.
+      If(Allocated(Tensor%CTen)) isAllocated = .True.
+!
+      Return
+      End Function MQC_R4Tensor_isAllocated
 !
 !
       End Module MQC_Algebra
