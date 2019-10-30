@@ -19169,15 +19169,23 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L )
-      If(Tensor%Data_Type.eq.'Integer') then
-        Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Real') then
-        Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Complex') then
-        Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+      If(Tensor%Storage.eq.'StorFull') then
+        If(Tensor%Data_Type.eq.'Integer') then
+          Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Real') then
+          Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Complex') then
+          Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+        Else
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+               'Tensor%Data_Type', Tensor%Data_Type )
+        EndIf
+      ElseIf(Tensor%Storage.eq.'StorSymm') then
+        Call MQC_Error_A('Symmetric tensor storage not yet implemented in MQC_R4Tensor_At', 6, &
+          'Tensor%Storage', Tensor%Storage )
       Else
-        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
-             'Tensor%Data_Type', Tensor%Data_Type )
+        Call MQC_Error_A('Storage type not defined in MQC_R4Tensor_At', 6, &
+          'Tensor%Storage', Tensor%Storage )
       EndIf
 
       End Function MQC_R4Tensor_At
@@ -20058,6 +20066,119 @@
 !
       Return
       End Subroutine MQC_R4Tensor_Full2Symm
+!
+!
+!     PROCEDURE MQC_R4Tensor_Symm2Full
+!
+!>    \brief <b> MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed 
+!>    MQC rank-4 tensor to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed MQC rank-4 
+!>    to unpacked. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to unpack.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Symm2Full(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L,N
+!
+      If(.not.Tensor%Storage.eq.'StorSymm') Call MQC_Error_A('Input rank-4 tensor must be &
+     &  symmetric-packed in MQC_R4Tensor_Symm2Full',6,'Tensor%Storage',Tensor%Storage)
+      N = MQC_R4Tensor_Size(Tensor)
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp, source=Tensor%RTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Real','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%RTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%RTen(J,I,K,L) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(I,J,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(J,I,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,J,I) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,J,I) = Tensor%RTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Integer','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%ITen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%ITen(J,I,K,L) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(I,J,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(J,I,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,J,I) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,J,I) = Tensor%ITen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(TempC, source=Tensor%CTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Complex','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%CTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%CTen(J,I,K,L) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(I,J,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(J,I,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,J,I) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,J,I) = Tensor%CTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Symm2Full
 !
 !
 !     PROCEDURE MQC_R4Tensor_Size
