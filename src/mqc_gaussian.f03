@@ -82,6 +82,7 @@
         procedure,pass::isUnrestricted => MQC_Gaussian_IsUnrestricted
         procedure,pass::isGeneral      => MQC_Gaussian_IsGeneral
         procedure,pass::isComplex      => MQC_Gaussian_IsComplex
+        procedure,pass::getAtomCarts   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
         procedure,pass::getAtomWeights => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
         procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
         procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
@@ -1796,6 +1797,51 @@
       MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info = value_out
       return
       end Function MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts(fileinfo)  &
+        Result(arrayOut)
+!
+!     This function is used to get the array of atomic Cartesian coordinates
+!     from the Gaussian matrix file corresponding to argument fileinfo.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      real(kind=int64),dimension(:),allocatable::arrayOut
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      if(.not.allocated(fileinfo%atomicWeights))  &
+        call MQC_Error_L('Atomic Cartesian coordinates requestion, but NOT available.', 6, &
+        'allocated(fileinfo%cartesians)', allocated(fileinfo%cartesians))
+      allocate(arrayOut(3*fileinfo%natoms))
+      arrayOut = fileinfo%cartesians
+!
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
 
 
 !=====================================================================

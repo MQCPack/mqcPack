@@ -1,0 +1,6 @@
+-------------
+MatFile test
+-------------
+Warning, SCFenergy gives incorrect energies for DFT wavefunctions
+ MQC ERROR: MQC_Matrix_Scalar_Put only has StorFull implemented.
+    Matrix%Storage = StorSymm

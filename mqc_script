@@ -151,7 +151,8 @@ do
     elif [ "${MQC_Compiler}" = "P" ] || [ "${MQC_Compiler}" = "p" ]; then
 	export CC="g"
 	path_to_executable="`command -v pgcc`"
-	if [ -x "${path_to_executable}" ] ; then
+#hph	if [ -x "${path_to_executable}" ] ; then
+	if [ "A" = "B" ] ; then
 	    export CC="pgcc"
 	else
 	    echo "pgcc not found in path"

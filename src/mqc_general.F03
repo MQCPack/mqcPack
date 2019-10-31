@@ -66,6 +66,8 @@
       real(kind=real64),public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
+      real(kind=real64),public,parameter::MQC_small = 1.0d-6
+                     ! 10^-6, used as a threshold for near zero.
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -960,6 +962,33 @@
 !----------------------------------------------------------------
 !
 !
+!PROCEDURE mqc_normalizeVector
+      Subroutine mqc_normalizeVector(vector)
+!
+!     This subroutine accepts a vector and returns its normalized form.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vector
+      real(kind=real64)::vectorMagnitude
+!
+      vectorMagnitude = SQRT(dot_product(vector,vector))
+      write(6,*)' Hrant - vectorMagnitude=',vectorMagnitude
+      write(6,*)' Hrant - MQC_small      =',MQC_small
+      if(vectorMagnitude.gt.MQC_small) then
+        vector = vector/vectorMagnitude
+      else
+        vector = float(0)
+      endIf
+!
+      return
+      end subroutine mqc_normalizeVector
+
+
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,upperLower)
