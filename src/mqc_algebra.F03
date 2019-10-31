@@ -19868,40 +19868,12 @@
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       real(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      real(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'real','symm')
+      r4tensor%rten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Real
@@ -19949,40 +19921,12 @@
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       complex(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      complex(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'complex','symm')
+      r4tensor%cten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
