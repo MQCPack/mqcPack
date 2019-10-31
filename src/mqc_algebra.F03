@@ -1,7 +1,6 @@
 ! TODO: 1) Expand ability of MQC objects to interact with Fortran intrinsic types. 
 !       2) Implement ability to store and manipulate different types of arrays in 
 !          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
-!       3) Implement symmetric packed rank-4 tensor.
 !
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
@@ -507,6 +506,8 @@
 !>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
+        Module Procedure MQC_ScalarEQReal
+        Module Procedure MQC_RealEQScalar
       End Interface
 !
 !>    \brief <b> Determines if a variable is less than another</b>
@@ -3102,6 +3103,124 @@
       End Function MQC_ScalarEQ
 !
 !
+!     PROCEDURE MQC_RealEQScalar
+!
+!>    \brief <b> MQC_RealEQScalar is a function that returns TRUE if an intrinsic real
+!>    is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealEQScalar is a function that returns TRUE if an intrinsic real is equal to
+!>    a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealEQScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.eq.Scalar%scar) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.eq.Scalar%scai) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.Scalar%scac) MQC_RealEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQReal
+!
+!>    \brief <b> MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarEQReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarEQReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.RealIn) MQC_ScalarEQReal = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQReal
+!
+!
 !     PROCEDURE MQC_ScalarLT
 !
 !>    \brief <b> MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar
@@ -3267,7 +3386,7 @@
       Return
       End Function MQC_RealLTScalar
 !
-
+!
 !     PROCEDURE MQC_ScalarLTReal
 !
 !>    \brief <b> MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less
