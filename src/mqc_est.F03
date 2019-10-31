@@ -5193,6 +5193,7 @@
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::k,l,m,n,nBasis
       character(len=64)::mylabel
+      real(kind=real64)::zero=1.0d-10
 !
       if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
     &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
@@ -5230,6 +5231,7 @@
         do l = 1, nBasis
           do m = 1, nBasis
             do n = 1, nBasis
+              if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
               ! AA Block
               if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
                 call alpha%put(alpha%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
