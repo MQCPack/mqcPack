@@ -1,3 +1,31 @@
+!>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
+!>    electronic structure theory </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC EST contains objects that speed up and enhance the implementation of 
+!>    electronic structure theories in Fortan. The objects allow for automatic 
+!>    determination of spin structure and so enables code to be used without 
+!>    modification whether a restricted, unrestricted or general formalism is used.
+!>    The objects are able to store common intermediates in the calculation of 
+!>    electronic structure, and carry their own procedures for manipulation of these 
+!>    intermediates. The EST derived types defined in this package are:
+!>
+!>    1. MQC_SCF_Integral:       EST intermediate operator matrix representation
+!>    2. MQC_SCF_Eigenvalues:    EST intermediate diagonal matrix variable
+!>    3. MQC_Wavefunction:       EST intermediates of single determinant wavefunctions
+!>    4. MQC_PSCF_Wavefunction:  EST intermediates of post-Hartree-Fock methods 
+!>    5. MQC_Determinant:        Binary strings reresenting occupation number vectors
+!>    6. MQC_TwoERIs:            Two-electron resonance integrals
+!>
+!>    This module is level 2 in the MQC hierarchy and so depends on level 0 and 1
+!>    modules. 
+!>
+!>    \endverbatim
+!
       Module MQC_EST  
 !
 !     **********************************************************************
@@ -44,7 +72,7 @@
 !
 !     Single Reference Wavefunctions...
 !
-!     MQC_SCF_Integral
+!>    \brief <b> EST intermediate operator matrix representation</b>
       Type MQC_SCF_Integral
 !
 !       Blocks are constructed in the order:
@@ -58,6 +86,7 @@
         Character(Len=64),Private::Array_Type ! Space,Spin,General
         Integer(kind=int64),Dimension(:),Allocatable,Private::Energy_List
       Contains 
+!>      \brief <b> Print the MQC_SCF_Integral object</b>
         Procedure, Public::print => mqc_print_integral
         Procedure, Private::hasAlpha => mqc_integral_has_alpha
         Procedure, Private::hasBeta => mqc_integral_has_beta
@@ -65,43 +94,66 @@
         Procedure, Private::hasBetaAlpha => mqc_integral_has_betaalpha
         Procedure, Private::type => mqc_integral_array_type
         Procedure, Private::blockSize => mqc_integral_dimension 
+!>      \brief <b> Return the label of the MQC_SCF_Integral object</b>
         Procedure, Public::getLabel => mqc_integral_array_name
+!>      \brief <b> Set the label of the MQC_SCF_Integral object</b>
         Procedure, Public::addLabel => mqc_integral_add_name
+!>      \brief <b> Return a spin block of MQC_SCF_Integral object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_integral_output_block
+!>      \brief <b> Set an MQC_SCF_Integral object as the identity matrix</b>
         Procedure, Public::identity => mqc_integral_identity 
+!>      \brief <b> Initializes an MQC_SCF_Integral object</b>
         Procedure, Public::init => mqc_integral_initialize 
+!>      \brief <b> Diagonalizes an MQC_SCF_Integral object</b>
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+!>      \brief <b> Solves a generalized eigenvalue problem involving an 
+!>      MQC_SCF_Integral object</b>
         Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
+!>      \brief <b> Inverts an MQC_SCF_Integral object</b>
         Procedure, Public::inv => mqc_scf_integral_inverse
+!>      \brief <b> Returns the trace of an MQC_SCF_Integral object</b>
         Procedure, Public::trace => mqc_scf_integral_trace
+!>      \brief <b> Returns the determinant of an MQC_SCF_Integral object</b>
         Procedure, Public::det => mqc_scf_integral_determinant
+!>      \brief <b> Returns the norm of an MQC_SCF_Integral object</b>
         Procedure, Public::norm => mqc_integral_norm
         Procedure, Private::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+!>      \brief <b> Returns a subset of an MQC_SCF_Integral object</b>
         Procedure, Public::orbitals => mqc_integral_output_orbitals 
+!>      \brief <b> Swaps rows/columns of an MQC_SCF_Integral object</b>
         Procedure, Public::swap => mqc_integral_swap_orbitals
       End Type
 !
+!>    \brief <b> EST intermediate diagonal matrix variable</b>
 !     MQC_SCF_Eigenvalues
       Type MQC_SCF_Eigenvalues
         Type(MQC_Vector),Private::Alpha,Beta
         Character(Len=64),Private::Array_Name ! See below 
         Character(Len=64),Private::Array_Type ! Space,Spin,General 
       Contains 
+!>      \brief <b> Print the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::print => mqc_print_eigenvalues
         Procedure, Private::hasAlpha => mqc_eigenvalues_has_alpha
         Procedure, Private::hasBeta => mqc_eigenvalues_has_beta
         Procedure, Private::type => mqc_eigenvalues_array_type
         Procedure, Private::blockSize => mqc_eigenvalues_dimension 
+!>      \brief <b> Return the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::getLabel => mqc_eigenvalues_array_name
+!>      \brief <b> Set the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::addLabel => mqc_eigenvalues_add_name
+!>      \brief <b> Return a spin block of MQC_SCF_Eigenvalues object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_eigenvalues_output_block
+!>      \brief <b> Returns values of an MQC_SCF_Eigenvalues object raised to a power</b>
         Procedure, Public::power => mqc_scf_eigenvalues_power
+!>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
+!>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
       End Type
 !
+!>    \brief <b> EST intermediates of single determinant wavefunctions</b>
 !     MQC_Wavefunction
       Type MQC_Wavefunction
         Type(MQC_SCF_Integral)::MO_Coefficients
@@ -116,6 +168,7 @@
         Character(Len=256)::Basis,Symmetry,WF_Type
         Logical::WF_Complex
       Contains 
+!>      \brief <b> Print the MQC_Wavefunction object</b>
         Procedure, Public::print => mqc_print_wavefunction
       End Type MQC_Wavefunction
 !
@@ -123,6 +176,7 @@
 !     Post-SCF Wavefunctions...
 !
 !     Parent Type
+!>    \brief <b> EST intermediates of post-Hartree-Fock methods</b>
       Type,Extends(MQC_Wavefunction)::MQC_PSCF_Wavefunction
         Integer(kind=int64)::NCore,NVal,NActive,NFrz
         Type(MQC_Matrix)::PSCF_Amplitudes
@@ -133,11 +187,12 @@
 !     Determinants....
 !
 !     MQC_Determinant_String
-      Type MQC_Determinant_String
+      Type,Private::MQC_Determinant_String
         Type(MQC_Matrix)::Alpha,Beta
       End Type MQC_Determinant_String
 !
 !     Parent Type
+!>    \brief <b> Binary strings reresenting occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order
@@ -148,11 +203,13 @@
 !     Two electron integrals....
 !
 !     Parent Type
+!>    \brief <b> Two-electron resonance integrals</b>
       type mqc_twoERIs
         type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha
-        character(Len=64),private::integralType !regular,raffenetti,space,spin,general
+        character(Len=64),private::integralType !regular,raffenetti1,raffenetti2,raffenetti3,space,spin,general
         character(Len=64),private::storageType !full,symm
       contains 
+!>      \brief <b> Print the MQC_TwoERIs object</b>
         procedure, public::print => mqc_print_twoERIs
         procedure, private::at => mqc_twoERIs_at
       end type mqc_twoERIs
@@ -163,6 +220,7 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!>    \brief <b> Prints an object</b>
       interface mqc_print
         module procedure mqc_print_wavefunction
         module procedure mqc_print_integral
@@ -170,6 +228,7 @@
         module procedure mqc_print_twoERIS
       end interface
 !
+!>    \brief <b> Multiplies two objects</b>
       Interface MatMul
         Module Procedure MQC_Integral_Matrix_Multiply
         Module Procedure MQC_Matrix_Integral_Multiply
@@ -179,23 +238,28 @@
         Module Procedure MQC_Eigenvalues_Eigenvalues_Multiply
       End Interface
 !
+!>    \brief <b> Returns the dot product</b>
       Interface Dot_Product
         Module Procedure MQC_Eigenvalue_Eigenvalue_DotProduct
       End Interface
 !
+!>    \brief <b> Returns the transpose</b>
       Interface Transpose
         Module Procedure MQC_Integral_Transpose
       End Interface
 !
+!>    \brief <b> Returns the Hermitian conjugate</b>
       Interface Dagger
         Module Procedure MQC_Integral_Conjugate_Transpose
       End Interface
 !
+!>    \brief <b> Contracts two objects</b>
       Interface Contraction
         Module Procedure mqc_scf_integral_contraction
         Module Procedure mqc_eri_integral_contraction
       End Interface
 !
+!>    \brief <b> Converts object from alpha-beta order to energy order</b>
       Interface MQC_Matrix_UndoSpinBlockGHF
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Integral
@@ -210,19 +274,24 @@
 !
 !     Define Operators.
 !
+!>    \brief <b> Assigns a variable to the value of another</b>
       Interface Assignment (=)
         Module Procedure MQC_Integral_Output_Array
         Module Procedure MQC_Eigenvalues_Output_Array
+        Module Procedure mqc_2ERIs_output_array
       End Interface
 !
+!>    \brief <b> Sums two variables</b>
       Interface Operator (+)
         Module Procedure MQC_Integral_Sum
       End Interface
 !
+!>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
         Module Procedure MQC_Integral_Difference
       End Interface
 !
+!>    \brief <b> Multiplies two variables</b>
       Interface Operator (*)
         Module Procedure MQC_Scalar_Integral_Multiply
         Module Procedure MQC_Integral_Scalar_Multiply
@@ -239,6 +308,80 @@
       CONTAINS
 !
 !     PROCEDURE MQC_Print_Wavefunction
+!
+!>    \brief <b> MQC_Print_Wavefunction is a subroutine used to print an MQC
+!>    EST wavefunction object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Wavefunction is a subroutine used to print an MQC EST wavefunction 
+!>    object. A optional argument can be added to specify the array that is printed
+!>    from the wavefunction object. The following options are available:
+!>
+!>    1.  Label = 'overlap' prints the overlap matrix.
+!>    2.  Label = 'core hamiltonian' prints the core hamiltonian matrix.
+!>    3.  Label = 'orbital energies' prints the orbital energies vector.
+!>    4.  Label = 'mo coefficients' prints the MO coefficient matrix.
+!>    5.  Label = 'density' prints the final density matrix (SCF, MP2 etc.).
+!>    6.  Label = 'scf density' prints the SCF density matrix.
+!>    7.  Label = 'fock' prints the Fock matrix.
+!>    8.  Label = 'nbasis' prints the number of basis functions.
+!>    9.  Label = 'nalpha' prints the number of alpha electrons
+!>    10. Label = 'nbeta' prints the number of beta electrons.
+!>    11. Label = 'nelectrons' prints the total number of electrons.
+!>    12. Label = 'charge' prints the molecular charge.
+!>    13. Label = 'multiplicity' prints the electron multiplicity.
+!>    14. Label = 'type' prints the wavefunction spin type (R,U,G).
+!>    15. Label = 'complex' prints TRUE if the wavefunction is complex and FALSE if 
+!>                it is real.
+!>    16. Label = 'all' prints all EST wavefunction objects. This is the default.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Wavefunction
+!>    \verbatim
+!>        Wavefunction is Class(MQC_Wavefunction)
+!>        The EST wavefunction variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The specific object to print.
+!>        = 'overlap':          overlap matrix.
+!>        = 'core hamiltonian': core hamiltonian matrix.
+!>        = 'orbital energies': orbital energies vector.
+!>        = 'mo coefficients':  MO coefficient matrix.
+!>        = 'density':          final density matrix.
+!>        = 'scf density':      SCF density matrix.
+!>        = 'fock':             Fock matrix.
+!>        = 'nbasis':           number of basis functions.
+!>        = 'nalpha':           number of alpha electrons.
+!>        = 'nbeta':            number of beta electrons.
+!>        = 'nelectrons':       total number of electrons.
+!>        = 'charge':           molecular charge.
+!>        = 'multiplicity':     electron multiplicity.
+!>        = 'type':             wavefunction spin type (R,U,G).
+!>        = 'complex':          wavefunction complex (T,F).
+!>        = 'all':              all objects (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_print_wavefunction(wavefunction,iOut,label)
 !
       implicit none
@@ -321,6 +464,60 @@
 !
 !
 !     PROCEDURE MQC_Print_Integral
+!
+!>    \brief <b> MQC_Print_Integral is a subroutine used to print an MQC
+!>    EST SCF integral object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Integral is a subroutine used to print an MQC EST SCF integral object. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The EST SCF integral variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Integral.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_print_integral(integral,iOut,header, &
           blank_at_top,blank_at_bottom)
 !
@@ -363,6 +560,60 @@
 !
 !
 !     PROCEDURE MQC_Print_Eigenvalues
+!
+!>    \brief <b> MQC_Print_Eigenvalues is a subroutine used to print an MQC EST
+!>    eigenvalues object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Eigenvalues is a subroutine used to print an MQC EST eigenvalues 
+!>    object. Blank_At_Top and Blank_At_Bottom are optional logical arguments to 
+!>    print blank lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The EST eigenvalues variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_print_eigenvalues(eigenvalues,iOut,header, &
           blank_at_top,blank_at_bottom)
 !
@@ -400,6 +651,60 @@
 !
 !
 !     PROCEDURE MQC_Print_TwoERIs 
+!
+!>    \brief <b> MQC_Print_TwoERIs is a subroutine used to print an MQC EST 2ERIs
+!>    object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_TwoERIs is a subroutine used to print an MQC EST 2ERIs object.
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] TwoERIs
+!>    \verbatim
+!>        TwoERIs is Class(MQC_TwoERIs)
+!>        The EST 2ERIs variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with TwoERIs.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_print_twoERIs(twoERIs,iOut,header, &
           blank_at_top,blank_at_bottom)
 !
@@ -441,13 +746,35 @@
 !
 !
 !     PROCEDURE MQC_Integral_isAllocated
+!
+!>    \brief <b> MQC_Integeral_isAllocated is a function that returns TRUE if an MQC
+!>    EST integral is allocated and FALSE if it is not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_isAllocated is a function that returns TRUE if an MQC EST integral 
+!>    is allocated and FALSE if it is not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Integral_isAllocated(Integral) Result(isAllocated)
 !
-!     This function returns if an mqc scf integral is allocated or not.
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
       Implicit None
       Class(MQC_SCF_Integral),Intent(InOut)::Integral
       Logical::isAllocated
@@ -463,13 +790,35 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_isAllocated
+!
+!>    \brief <b> MQC_Eigenvalues_isAllocated is a function that returns TRUE if an 
+!>    MQC EST eigenvalues variable is allocated and FALSE if it is not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_isAllocated is a function that returns TRUE if an MQC 
+!>    eigenvalues variable is allocated and FALSE if it is not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Eigenvalues_isAllocated(Eigenvalues) Result(isAllocated)
 !
-!     This function returns if an mqc scf eigenvalue is allocated or not.
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
       Implicit None
       Class(MQC_SCF_Eigenvalues),Intent(InOut)::Eigenvalues
       Logical::isAllocated
@@ -483,6 +832,33 @@
 !
 !
 !     PROCEDURE MQC_Integral_Has_Alpha
+!
+!>    \brief <b> MQC_Integral_Has_Alpha is a function that returns TRUE if an MQC EST 
+!>    SCF integral variable has an allocated alpha spin block and FALSE if it does not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Has_Alpha is a function that returns TRUE if an MQC EST SCF 
+!>    integral variable has an allocated alpha spin block and FALSE if it does not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_has_alpha(integral) result(hasAlpha)
 !
       implicit none
@@ -496,6 +872,33 @@
 !
 !
 !     PROCEDURE MQC_Integral_Has_Beta 
+!
+!>    \brief <b> MQC_Integral_Has_Beta is a function that returns TRUE if an MQC EST 
+!>    SCF integral variable has an allocated beta spin block and FALSE if it does not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Has_beta is a function that returns TRUE if an MQC EST SCF 
+!>    integral variable has an allocated beta spin block and FALSE if it does not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_has_beta(integral) result(hasBeta)
 !
       implicit none
@@ -509,6 +912,35 @@
 !
 !
 !     PROCEDURE MQC_Integral_Has_AlphaBeta
+!
+!>    \brief <b> MQC_Integral_Has_AlphaBeta is a function that returns TRUE if an MQC 
+!>    EST SCF integral variable has an allocated alpha-beta spin block and FALSE if 
+!>    it does not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Has_AlphaBeta is a function that returns TRUE if an MQC EST SCF 
+!>    integral variable has an allocated alpha-beta spin block and FALSE if it does 
+!>    not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_has_alphaBeta(integral) result(hasAlphaBeta)
 !
       implicit none
@@ -522,6 +954,35 @@
 !
 !
 !     PROCEDURE MQC_Integral_Has_BetaAlpha 
+!
+!>    \brief <b> MQC_Integral_Has_BetaAlpha is a function that returns TRUE if an MQC 
+!>    EST SCF integral variable has an allocated beta-alpha spin block and FALSE if 
+!>    it does not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Has_BetaAlpha is a function that returns TRUE if an MQC EST SCF 
+!>    integral variable has an allocated beta-alpha spin block and FALSE if it does 
+!>    not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_has_betaAlpha(integral) result(hasBetaAlpha)
 !
       implicit none
@@ -535,6 +996,35 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Has_Alpha
+!
+!>    \brief <b> MQC_Eigenvalues_Has_Alpha is a function that returns TRUE if an MQC 
+!>    EST eigenvalues variable has an allocated alpha spin block and FALSE if it does 
+!>    not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Has_Alpha is a function that returns TRUE if an MQC EST 
+!>    eigenvalues integral variable has an allocated alpha spin block and FALSE if it 
+!>    does not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_eigenvalues_has_alpha(eigenvalues) result(hasAlpha)
 !
       implicit none
@@ -548,6 +1038,35 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Has_Beta 
+!
+!>    \brief <b> MQC_Eigenvalues_Has_Beta is a function that returns TRUE if an MQC 
+!>    EST eigenvalues variable has an allocated beta spin block and FALSE if it does 
+!>    not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Has_Beta is a function that returns TRUE if an MQC EST 
+!>    eigenvalues integral variable has an allocated beta spin block and FALSE if it 
+!>    does not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_eigenvalues_has_beta(eigenvalues) result(hasBeta)
 !
       implicit none
@@ -561,6 +1080,33 @@
 !
 !
 !     PROCEDURE MQC_Integral_Array_Type
+!
+!>    \brief <b> MQC_Integral_Array_Type is a function that returns whether an MQC 
+!>    EST SCF integral is of restricted (R), unrestricted (U) or general (G) type</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Array_Type is a function that returns whether an MQC EST SCF 
+!>    integral is of restricted (R), unrestricted (U) or general (G) type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_array_type(integral) result(arrayType)
 !
       implicit none
@@ -573,6 +1119,33 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Array_Type
+!
+!>    \brief <b> MQC_Eigenvalues_Array_Type is a function that returns whether an MQC 
+!>    EST eigenvalues is of restricted (R), unrestricted (U) or general (G) type</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Array_Type is a function that returns whether an MQC EST 
+!>    eigenvalues is of restricted (R), unrestricted (U) or general (G) type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_eigenvalues_array_type(eigenvalues) result(arrayType)
 !
       implicit none
@@ -585,6 +1158,33 @@
 !
 !
 !     PROCEDURE MQC_Integral_Array_Name    
+!
+!>    \brief <b> MQC_Integral_Array_Name is a function that returns the label of an 
+!>    MQC EST SCF integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Array_Name is a function that returns the label of an MQC EST SCF 
+!>    integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_array_name(integral) result(arrayName)
 !
       implicit none
@@ -597,6 +1197,33 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Array_Name    
+!
+!>    \brief <b> MQC_Eigenvalues_Array_Name is a function that returns the label of 
+!>    an MQC EST eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Array_Name is a function that returns the label of an MQC EST 
+!>    eigenvalues.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_eigenvalues_array_name(eigenvalues) result(arrayName)
 !
       implicit none
@@ -609,6 +1236,39 @@
 !
 !
 !     PROCEDURE MQC_Integral_Add_Name    
+!
+!>    \brief <b> MQC_Integral_Add_Name is a function that sets the label of an MQC 
+!>    EST SCF integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Add_Name is a function that sets the label of an MQC EST SCF 
+!>    integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayName
+!>    \verbatim
+!>        ArrayName is Character(Len=*)
+!>        The label of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_integral_add_name(integral,arrayName) 
 !
       implicit none
@@ -621,6 +1281,39 @@
 !
 !
 !     PROCEDURE MQC_eigenvalues_Add_Name    
+!
+!>    \brief <b> MQC_Eigenvalues_Add_Name is a function that sets the label of an MQC 
+!>    EST eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Add_Name is a function that sets the label of an MQC EST SCF 
+!>    eigenvalues variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayName
+!>    \verbatim
+!>        ArrayName is Character(Len=*)
+!>        The label of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_eigenvalues_add_name(eigenvalues,arrayName) 
 !
       implicit none
@@ -633,6 +1326,54 @@
 !
 !
 !     PROCEDURE MQC_Integral_Dimension
+!
+!>    \brief <b> MQC_Integral_Dimension is a function that returns the length of a
+!>    spin block axis of an MQC_SCF_Integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Dimension is a function that returns the length of a spin block 
+!>    of an MQC_SCF_Integral. The required argument label specifies which block is 
+!>    queried. The optional argument axis specifies if rows or columns are returned.
+!>    The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Axis  = '1' returns the spin block rows (default).
+!>    4. Axis  = '2' returns the spin block columns.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is Integer(kind=int64),Optional
+!>        The spin block axis to return.
+!>        = 1: number of rows (default).
+!>        = 2: number of columns.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_dimension(integral,label,axis) result(dimBlock)
 !
       implicit none
@@ -691,7 +1432,44 @@
       end function mqc_integral_dimension 
 !
 !
-!     PROCEDURE MQC_Eigenvaues_Dimension
+!     PROCEDURE MQC_Eigenvalues_Dimension
+!
+!>    \brief <b> MQC_Eigenvalues_Dimension is a function that returns the length of a
+!>    spin block axis of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Dimension is a function that returns the length of a spin block 
+!>    of an MQC_Eigenvalues variable. The required argument label specifies which block is 
+!>    queried. The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_eigenvalues_dimension(eigenvalues,label) result(dimBlock)
 !
       implicit none
@@ -727,6 +1505,105 @@
 !
 !
 !     PROCEDURE MQC_TwoERIs_Allocate
+!
+!>    \brief <b> MQC_TwoERIs_Allocate is used to allocate a two-electron integral 
+!>    type variable of the MQC_twoERIs class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_TwoERIs_Allocate is used to allocate a two-electron integral type variable 
+!>    of the MQC_twoERIs class. The following options are available:
+!>
+!>    1. StorageType  = 'Full' declares the MQC_TwoERIs variable is unpacked.
+!>    2. StorageType  = 'Symm' declares the MQC_TwoERIs variable is symmetric packed.
+!>    3. IntegralType = 'Regular' declares the MQC_TwoERIs variable contains regular 
+!>                      atomic orbital 2ERIs. 
+!>    4. IntegralType = 'Raffenetti1' declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 1 atomic orbital 2ERIs. 
+!>    5. IntegralType = 'Raffenetti2 declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 2 atomic orbital 2ERIs. 
+!>    6. IntegralType = 'Raffenetti3' declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 3 atomic orbital 2ERIs. 
+!>    7. IntegralType = 'space' declares the MQC_TwoERIs variable contains restricted
+!>                      molecular orbital 2ERIs.
+!>    8. IntegralType = 'spin' declares the MQC_TwoERIs variable contains unrestricted
+!>                      molecular orbital 2ERIs.
+!>    9. IntegralType = 'general' declares the MQC_TwoERIs variable contains general
+!>                      molecular orbital 2ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TwoERIs
+!>    \verbatim
+!>        TwoERIs is class(mqc_twoERIs)
+!>        The MQC_TwoERIs variable to allocate.
+!>    \endverbatim
+!>    
+!>    \param[in,out] StorageType
+!>    \verbatim
+!>        StorageType is Character(len=*)
+!>        = 'Full': the MQC_TwoERIs variable is upacked
+!>        = 'Symm': the MQC_TwoERIs variable is symmetric packed.
+!>        Note that symmetric packing is not fully implemented.  
+!>    \endverbatim
+!>    
+!>    \param[in,out] IntegralType
+!>    \verbatim
+!>        IntegralType is Character(len=*)
+!>        = 'Regular':     the MQC_TwoERIs variable contains 
+!>                         regular atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ij|kl)
+!>        = 'Raffenetti1': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 1 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
+!>        = 'Raffenetti2': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 2 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ij|kl) + (il|jk)  
+!>        = 'Raffenetti3': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 3 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ik|jl) - (il|jk)
+!>        = 'space':       the MQC_TwoERIs variable contains 
+!>                         restricted molecular orbital 2ERIs.
+!>        = 'spin':        the MQC_TwoERIs variable contains 
+!>                         unrestricted molecular orbital 2ERIs.
+!>        = 'general':     the MQC_TwoERIs variable contains 
+!>                         general molecular orbital 2ERIs.
+!>    \endverbatim
+!>
+!>    \param[in] Alpha
+!>    \verbatim
+!>        Alpha is type(mqc_r4tensor),optional
+!>        The alpha spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] Beta
+!>    \verbatim
+!>        Beta is type(mqc_r4tensor),optional
+!>        The beta spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] AlphaBeta
+!>    \verbatim
+!>        AlphaBeta is type(mqc_r4tensor),optional
+!>        The alpha-beta spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BetaAlpha
+!>    \verbatim
+!>        AlphaBeta is type(mqc_r4tensor),optional
+!>        The beta-alpha spin block 2ERI integrals.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_twoeris_allocate(twoERIs,storageType,integralType,alpha, &
           beta,alphaBeta,betaAlpha) 
 !
@@ -749,6 +1626,81 @@
 !
 !
 !     PROCEDURE MQC_Integral_Allocate
+!
+!>    \brief <b> MQC_Integral_Allocate is used to allocate a MQC SCF integral type
+!>    variable of the MQC_SCF_Integral class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Allocate is used to allocate a MQC SCF integral type variable of 
+!>    the MQC_SCF_Integral class. The following options are available:
+!>
+!>    1. ArrayType = 'space' declares the MQC_SCF_Integral variable contains 
+!>                   restricted spin blocks.
+!>    2. ArrayType = 'spin' declares the MQC_SCF_Integral variable contains 
+!>                   unrestricted spin blocks.
+!>    3. ArrayType = 'general' declares the MQC_TwoERIs variable contains general
+!>                   spin blocks.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is class(mqc_scf_integral)
+!>        The MQC_SCF_Integral variable to allocate.
+!>    \endverbatim
+!>    
+!>    \param[in,out] ArrayName
+!>    \verbatim
+!>        ArrayName is Character(len=*)
+!>        The label of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>    
+!>    \param[in,out] ArrayType
+!>    \verbatim
+!>        IntegralType is Character(len=*)
+!>        = 'space':       the MQC_SCF_Integral variable contains 
+!>                         restricted spin blocks.
+!>        = 'spin':        the MQC_SCF_Integral variable contains
+!>                         unrestricted spin blocks. 
+!>        = 'general':     the MQC_SCF_Integral variable contains
+!>                         general spin blocks.
+!>    \endverbatim
+!>
+!>    \param[in] Alpha
+!>    \verbatim
+!>        Alpha is type(mqc_matrix),optional
+!>        The alpha spin block integrals.
+!>    \endverbatim
+!>
+!>    \param[in] Beta
+!>    \verbatim
+!>        Beta is type(mqc_matrix),optional
+!>        The beta spin block integrals.
+!>    \endverbatim
+!>
+!>    \param[in] AlphaBeta
+!>    \verbatim
+!>        AlphaBeta is type(mqc_matrix),optional
+!>        The alpha-beta spin block integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BetaAlpha
+!>    \verbatim
+!>        AlphaBeta is type(mqc_matrix),optional
+!>        The beta-alpha spin block integrals.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_integral_allocate(integral,arrayName,arrayType,alpha, &
           beta,alphaBeta,betaAlpha) 
 !
@@ -776,6 +1728,67 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Allocate
+!
+!>    \brief <b> MQC_Eigenvalues_Allocate is used to allocate a MQC eigenvalues type
+!>    variable of the MQC_SCF_Eigenvalues class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Allocate is used to allocate a MQC SCF eigenvalues type 
+!>    variable of the MQC_SCF_Eigenvalues class. The following options are available:
+!>
+!>    1. ArrayType = 'space' declares the MQC_SCF_Eigenvalues variable contains 
+!>                   restricted spin blocks.
+!>    2. ArrayType = 'spin' or 'general' declares the MQC_SCF_Eigenvalues variable 
+!>                   contains unrestricted spin blocks.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is class(mqc_scf_eigenvalues)
+!>        The MQC_SCF_Eigenvalues variable to allocate.
+!>    \endverbatim
+!>    
+!>    \param[in,out] ArrayName
+!>    \verbatim
+!>        ArrayName is Character(len=*)
+!>        The label of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!>    
+!>    \param[in,out] ArrayType
+!>    \verbatim
+!>        ArrayType is Character(len=*)
+!>        = 'space':       the MQC_SCF_Eigenvalues variable 
+!>                         contains restricted spin blocks.
+!>        = 'spin':        the MQC_SCF_Eigenvalues variable 
+!>                         contains unrestricted spin blocks. 
+!>        = 'general':     the MQC_SCF_Eigenvalues variable 
+!>                         contains general spin blocks.
+!>    \endverbatim
+!>
+!>    \param[in] Alpha
+!>    \verbatim
+!>        Alpha is type(mqc_vector),optional
+!>        The alpha spin block vector.
+!>    \endverbatim
+!>
+!>    \param[in] Beta
+!>    \verbatim
+!>        Beta is type(mqc_vector),optional
+!>        The beta spin block vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_eigenvalues_allocate(eigenvalues,arrayName,arrayType,alpha, &
           beta) 
 !
@@ -798,6 +1811,68 @@
 !
 !
 !     PROCEDURE MQC_Integral_Identity
+!
+!>    \brief <b> MQC_Integral_Identity is used to set an MQC integral type variable
+!>    of the MQC_SCF_Integral class to the identity matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Identity is used to set an MQC integral type variable of the 
+!>    MQC_SCF_Integral class to the identity matrix. Optional argument label allows a
+!>    description to be carried around with the variable. Optional arguments nAlpha2
+!>    and nBeta2 allow the columns of spin blocks to be sized differently to the rows.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to set to the identiy 
+!>        matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] NAlpha
+!>    \verbatim
+!>        NAlpha is integer
+!>        The dimension of the alpha spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] NBeta
+!>    \verbatim
+!>        NBeta is integer
+!>        The dimension of the beta spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),Optional
+!>        Description of the MQC_SCF_Integral contents.
+!>    \endverbatim
+!>
+!>    \param[in] NAlpha2
+!>    \verbatim
+!>        NAlpha2 is Integer,Optional
+!>        The column number of the alpha spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!>
+!>    \param[in] NBeta2
+!>    \verbatim
+!>        NBeta2 is Integer,Optional
+!>        The column number of the beta spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_integral_identity(integral,nAlpha,nBeta,label,nAlpha2,nBeta2) 
 !
       implicit none
@@ -838,6 +1913,75 @@
 !
 !
 !     PROCEDURE MQC_Integral_Initialize
+!
+!>    \brief <b> MQC_Integral_Initialize is used to initialize an MQC integral type 
+!>    variable with each element equal to a chosen value</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Initialize is used to initialize an MQC integral type variable 
+!>    with each element equal to a chosen value. Optional argument scalar determines
+!>    the value to set each element, with the default being zero. Optional argument 
+!>    label allows a description to be carried around with the variable. Optional 
+!>    arguments nAlpha2 and nBeta2 allow the columns of spin blocks to be sized 
+!>    differently to the rows.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to initialize.
+!>    \endverbatim
+!>    
+!>    \param[in] NAlpha
+!>    \verbatim
+!>        NAlpha is integer
+!>        The dimension of the alpha spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] NBeta
+!>    \verbatim
+!>        NBeta is integer
+!>        The dimension of the beta spin block.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Integral.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),Optional
+!>        Description of the MQC_SCF_Integral contents.
+!>    \endverbatim
+!>
+!>    \param[in] NAlpha2
+!>    \verbatim
+!>        NAlpha2 is Integer,Optional
+!>        The column number of the alpha spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!>
+!>    \param[in] NBeta2
+!>    \verbatim
+!>        NBeta2 is Integer,Optional
+!>        The column number of the beta spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_integral_initialize(integral,nAlpha,nBeta,scalar,label,nAlpha2,nBeta2) 
 !
       implicit none
@@ -878,6 +2022,53 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Block
+!
+!>    \brief <b> MQC_Integral_Output_Block is used to output a spin block of an MQC 
+!>    integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Output_Block is used to output a spin block of an MQC integral 
+!>    type variable. Optional argument blockName is used to specify which spin block
+!>    should be output, with the default to output the all spin blocks. The following
+!>    options are available:
+!>
+!>    1. BlockName = 'full' outputs the full MQC_SCF_Integral. 
+!>    2. BlockName = 'alpha' or 'alpha-alpha' outputs the alpha-alpha spin block. 
+!>    3. BlockName = 'beta' or 'beta-beta' outputs the beta-beta spin block. 
+!>    4. BlockName = 'alpha-beta' outputs the alpha-beta spin block. 
+!>    5. BlockName = 'beta-alpha' outputs the beta-alpha spin block. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in,out] BlockName
+!>    \verbatim
+!>        BlockName is character(len=*),optional
+!>        = 'full':        outputs the full MQC_SCF_Integral. 
+!>        = 'alpha':       outputs the alpha-alpha spin block.
+!>        = 'alpha-alpha': outputs the alpha-alpha spin block. 
+!>        = 'beta':        outputs the beta-beta spin block. 
+!>        = 'beta-beta':   outputs the beta-beta spin block. 
+!>        = 'alpha-beta'   outputs the alpha-beta spin block. 
+!>        = 'beta-alpha'   outputs the beta-alpha spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_integral_output_block(integral,blockName) result(matrixOut)
 !
       implicit none
@@ -1069,18 +2260,88 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Orbitals
+!
+!>    \brief <b> MQC_Integral_Output_Orbitals is used to output a vector subset from
+!>    an MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Output_Orbitals is used to output a vector subset from an MQC 
+!>    integral type variable. Optional argument orbString enables automatic selection
+!>    of common orbital subsets. Optional arguments alphaOrbsIn and betaOrbsIn can be
+!>    used to manual specify which vectors should be selected, as well as their order.
+!>    Optional argument axis specifies whether row or column vectors are selected. 
+!>    The following options are available:
+!>
+!>    1. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
+!>                   electrons should be specified in a length 1 vector in 
+!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
+!>                   electrons unless specified in a length 1 vector in betaOrbsIn.
+!>    2. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
+!>                   electrons should be specified in a length 1 vector in 
+!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
+!>                   electrons unless specified in a length 1 vector in betaOrbsIn. 
+!>                   The dimension of the fixed length axis is assumed to be the 
+!>                   number of virtual orbitals.
+!>    3. OrbString = 'useStrings' specifies that the vector subset will be specified
+!>                   in alphaOrbsIn. The beta vector subset is assumed to be the same
+!>                   as the alpha vector subset unless betaOrbsIn is specified. This
+!>                   is the default.
+!>    4. Axis =      1 specifies the row vector subset is selected. 
+!>    5. Axis =      2 specifies the column vector subset is selected (default). 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to select orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] OrbString 
+!>    \verbatim
+!>        OrbString is character(len=*),optional
+!>        = 'occupied':   selects occupied orbitals.
+!>        = 'virtual':    selects virtual orbitals.
+!>        = 'useStrings': selects orbitals from strings.
+!>    \endverbatim
+!>    
+!>    \param[in] AlphaOrbsIn
+!>    \verbatim
+!>        AlphaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        Vector of alpha vector subset.
+!>    \endverbatim
+!>    
+!>    \param[in] BetaOrbsIn
+!>    \verbatim
+!>        BetaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        Vector of beta vector subset.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_output_orbitals(integral,orbString,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
-!
-!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
-!     can be input) and orders columns as specified in alphaOrbs and betaOrbs. 
-!
-!     Routine assumes basis that is not being reordered is AOs when using virtual flag
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
-      character(len=*),optional::orbString
+      character(len=*),optional,intent(in)::orbString
       character(len=64)::myOrbString
-      integer(kind=int64),dimension(:),optional::alphaOrbsIn,betaOrbsIn
+      integer(kind=int64),dimension(:),optional,intent(in)::alphaOrbsIn,betaOrbsIn
       integer(kind=int64),dimension(:),allocatable::alphaOrbs,betaOrbs
       integer(kind=int64),intent(in),optional::axis
       type(mqc_scf_integral)::integralOut
@@ -1305,10 +2566,60 @@
 !
 !
 !     PROCEDURE MQC_Integral_Swap_Orbitals
-      function mqc_integral_swap_orbitals(integral,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
 !
-!     Takes an MQC SCF integral variable, usually containing MO coefficients (although any 
-!     can be input) and swaps columns as specified in alphaOrbs and betaOrbs. 
+!>    \brief <b> MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an
+!>    MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an MQC integral 
+!>    type variable. If integral is restricted type, only alphaOrbsIn need be 
+!>    specified and the restricted type is preserved. If integral is of unrestricted 
+!>    or general type, alphaOrbsIn will only act on the alpha space and betaOrbsIn 
+!>    will only act on the beta space. Optional argument axis specifies whether row 
+!>    or column vectors are selected. The following options are available:
+!>
+!>    1. Axis =      1 specifies the row vector subset is selected. 
+!>    2. Axis =      2 specifies the column vector subset is selected (default). 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to select orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] AlphaOrbsIn
+!>    \verbatim
+!>        AlphaOrbsIn is integer(kind=int64),dimension(2),optional
+!>        Alpha/restricted vectors to swap.
+!>    \endverbatim
+!>    
+!>    \param[in] BetaOrbsIn
+!>    \verbatim
+!>        BetaOrbsIn is integer(kind=int64),dimension(2),optional
+!>        Beta vectors to swap.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
+      function mqc_integral_swap_orbitals(integral,alphaOrbsIn,betaOrbsIn,axis) result(integralOut)
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -1372,7 +2683,7 @@
             betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
             (i,i=betaOrbs(2)+1,NDimBeta)],axis=my_axis)
           
-        elseIf(.not.present(alphaOrbsIn)) then
+        elseIf(.not.present(betaOrbsIn)) then
           alphaOrbs = alphaOrbsIn
           if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
           integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
@@ -1399,7 +2710,48 @@
       end function mqc_integral_swap_orbitals
 !
 !
-!     PROCEDURE MQC_eigenvalues_Output_Block
+!     PROCEDURE MQC_Eigenvalues_Output_Block
+!
+!>    \brief <b> MQC_Eigenvalues_Output_Block is used to output a spin block of an MQC 
+!>    eigenvalues type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Output_Block is used to output a spin block of an MQC 
+!>    eigenvalues type variable. Optional argument blockName is used to specify which 
+!>    spin block should be output, with the default to output the all spin blocks. 
+!>    The following options are available:
+!>
+!>    1. BlockName = 'full' outputs the full MQC_SCF_Integral. 
+!>    2. BlockName = 'alpha' outputs the alpha spin block. 
+!>    3. BlockName = 'beta' outputs the beta spin block. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_SCF_Eigenvalues)
+!>        The MQC_SCF_Eigenvalues variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] BlockName
+!>    \verbatim
+!>        BlockName is character(len=*),optional
+!>        = 'full':        outputs the full MQC_SCF_Integral. 
+!>        = 'alpha':       outputs the alpha spin block.
+!>        = 'beta':        outputs the beta spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_eigenvalues_output_block(eigenvalues,blockName) result(vectorOut)
 !
       implicit none
@@ -1489,6 +2841,39 @@
 !
 !
 !     PROCEDURE MQC_Integral_Output_Array
+!
+!>    \brief <b> MQC_Integral_Output_Array is used to output an MQC integral type
+!>    variable to an MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Output_Array is used to output an MQC integral type variable to an 
+!>    MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut 
+!>    \verbatim
+!>        MatrixOut is type(mqc_matrix)
+!>        The MQC matrix variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralIn
+!>    \verbatim
+!>        IntegralIn is Class(MQC_SCF_Integral)
+!>        MQC integral variable to output as MQC matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_integral_output_array(matrixOut,integralIn) 
 !
       implicit none
@@ -1573,6 +2958,39 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Output_Array
+!
+!>    \brief <b> MQC_Eigenvalues_Output_Array is used to output an MQC eigenvalues
+!>    type variable to an MQC vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Output_Array is used to output an MQC eigenvalues type variable 
+!>    to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut 
+!>    \verbatim
+!>        VectorOut is type(mqc_vector)
+!>        The MQC vector variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] EigenvaluesIn
+!>    \verbatim
+!>        EigenvaluesIn is Class(MQC_SCF_Eigenvalues)
+!>        MQC eigenvalues variable to output as MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       subroutine mqc_eigenvalues_output_array(vectorOut,eigenvaluesIn) 
 !
       implicit none
@@ -1623,12 +3041,114 @@
       end subroutine mqc_eigenvalues_output_array  
 !
 !
+!     PROCEDURE MQC_2ERIs_Output_Array
+!
+!>    \brief <b> MQC_2ERIs_Output_Array is used to output an MQC 2ERIs type variable
+!>    to an MQC rank-4 tensor</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERIs_Output_Array is used to output an MQC 2ERIs type variable to an MQC
+!>    rank-4 tensor.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut 
+!>    \verbatim
+!>        TensorOut is type(mqc_r4tensor)
+!>        The MQC rank-4 tensor variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] TwoERIsIn
+!>    \verbatim
+!>        TwoERIsIn is Class(MQC_TwoERIs)
+!>        MQC 2ERIs variable to output as MQC rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_2ERIs_output_array(tensorOut,twoERIsIn) 
+!
+      implicit none
+      class(mqc_twoERIs),intent(in)::twoERIsIn
+      type(mqc_r4tensor),intent(inOut)::tensorOut
+      integer(kind=int64)::nDim=0
+!
+!      nDim = size(twoERIsIn%alpha,1)
+
+      select case (TwoERIsIn%integralType)
+      case('regular','raffenetti1','raffenetti2','raffenetti3','space')
+!        if(mqc_have_complex(twoERIsIn%alpha)) then
+!          call tensorOut%init(nDim,nDim,nDim,nDim,cmplx(0.0,0.0))
+!        else
+!          call tensorOut%init(nDim,nDim,nDim,nDim)
+!        endIf
+        if (MQC_R4Tensor_isAllocated(twoERIsIn%alpha)) then
+          tensorOut = twoERIsIn%alpha
+        else
+          call mqc_error_L('block does not exist in mqc_twoERIs_output_array', 6, &
+               'MQC_R4Tensor_isAllocated(twoERIsIn%alpha)', MQC_R4Tensor_isAllocated(twoERIsIn%alpha))
+        endIf
+      case('spin','general')
+        call mqc_error_A('Spin and general input in mqc_2ERIs_output_array is not yet implemented', &
+             6, 'TwoERIsIn%integralType', TwoERIsIn%integralType)
+      case default
+        call mqc_error_A('unrecognised integral type in mqc_2ERIs_output_array', 6, &
+             'TwoERIsIn%integralType', TwoERIsIn%integralType)
+      end select
+!
+      end subroutine mqc_2ERIs_output_array  
+!
+!
 !     PROCEDURE MQC_Integral_Matrix_Multiply
+!
+!>    \brief <b> MQC_Integral_Matrix_Multiply is used to multiply an MQC integral
+!>    type variable with a MQC matrix and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Matrix_Multiply is used to multiply an MQC integral type variable
+!>    with a MQC matrix and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] MatrixB
+!>    \verbatim
+!>        MaxtrixB is type(mqc_matrix)
+!>        MQC Matrix type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_matrix_multiply(integralA,matrixB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc matrix.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA
@@ -1753,11 +3273,46 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Integral_Multiply
+!
+!>    \brief <b> MQC_Matrix_Integral_Multiply is used to multiply an MQC matrix type
+!>    variable with a MQC integral and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Integral_Multiply is used to multiply an MQC matrix type variable
+!>    with a MQC integral and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixA
+!>    \verbatim
+!>        MaxtrixA is type(mqc_matrix)
+!>        MQC Matrix type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_matrix_integral_multiply(matrixA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc matrix.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralB
@@ -1882,11 +3437,38 @@
 !
 !
 !     PROCEDURE MQC_Integral_Sum
+!
+!>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Sum is used to sum two MQC integral type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The first MQC integral variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The second MQC integral variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_sum(integralA,integralB) result(integralOut)
-!
-!     This function sums two mqc integrals.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -1971,11 +3553,39 @@
 !
 !
 !     PROCEDURE MQC_Integral_Difference
+!
+!>    \brief <b> MQC_Integral_Difference is used to subtract two MQC integral type 
+!>    variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Difference is used to subtract two MQC integral type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The MQC integral variable to subtract from.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_difference(integralA,integralB) result(integralOut)
-!
-!     This function subtracts two mqc integrals.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -2060,11 +3670,46 @@
 !
 !
 !     PROCEDURE MQC_Integral_Integral_Multiply
+!
+!>    \brief <b> MQC_Integral_Integral_Multiply is used to multiply two MQC integral
+!>    type variables and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Integral_Multiply is used to multiply two MQC integral type 
+!>    variables and returns an MQC integral</b> 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The first MQC integral type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The second MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_integral_multiply(integralA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc integral.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA,integralB
@@ -2158,11 +3803,40 @@
 !
 !
 !     PROCEDURE MQC_Scalar_Integral_Multiply
+!
+!>    \brief <b> MQC_Scalar_Integral_Multiply is used to multiply an MQC scalar with
+!>    an MQC integral type variable and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Scalar_Integral_Multiply is used to multiply an MQC scalar with an MQC 
+!>    integral type variable and returns an MQC integral</b> 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is type(mqc_scalar)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_scalar_integral_multiply(scalar,integral) result(integralOut)
-!
-!     This function multiplies a mqc scalar type with an mqc integral.
-!
-!     L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -2202,11 +3876,40 @@
 !
 !
 !     PROCEDURE MQC_Integral_Scalar_Multiply
+!
+!>    \brief <b> MQC_Integral_Scalar_Multiply is used to multiply an MQC integral 
+!>    type variable with an MQC scalar and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Scalar_Multiply is used to multiply an MQC integral type variable 
+!>    with an MQC scalar and returns an MQC integral. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is type(mqc_scalar)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_scalar_multiply(integral,scalar) result(integralOut)
-!
-!     This function multiplies an mqc integral type with an mqc scalar.
-!
-!     L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -2246,12 +3949,49 @@
 !
 !
 !     PROCEDURE MQC_Integral_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC 
+!>    integral type variable with an MQC eigenvalues type variable (a diagonal 
+!>    matrix) and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC integral type 
+!>    variable with an MQC eigenvalues type variable (a diagonal matrix) and returns 
+!>    an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] EigenvaluesB
+!>    \verbatim
+!>        EigenvaluesB is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues type variable (a diagonal matrix) 
+!>        to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_eigenvalues_multiply(integralA,eigenvaluesB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
-!     are treated as a diagonal matrix.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralA
@@ -2341,12 +4081,49 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Integral_Multiply
+!
+!>    \brief <b> MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC 
+!>    integral type variable with an MQC eigenvalues type variable (a diagonal 
+!>    matrix) and returns an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Eigenvalues_Multiply is used to multiply an MQC integral type 
+!>    variable with an MQC eigenvalues type variable (a diagonal matrix) and returns 
+!>    an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvaluesA
+!>    \verbatim
+!>        EigenvaluesA is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues type variable (a diagonal matrix) 
+!>        to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eigenvalues_integral_multiply(eigenvaluesA,integralB,label) result(integralOut)
-!
-!     This function multiplies a mqc integral type with an mqc eigenvalues. Note that eigenvalues
-!     are treated as a diagonal matrix.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integralB
@@ -2436,11 +4213,49 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Eigenvalues_Eigenvalues_Multiply is used to multiply two MQC 
+!>    eigenvalues type variable (diagonal matrices) and returns an MQC eigenvalues
+!>    type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Eigenvalues_Multiply is used to multiply two MQC eigenvalues 
+!>    type variable (diagonal matrices) and returns an MQC eigenvalues type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvaluesA
+!>    \verbatim
+!>        EigenvaluesA is type(mqc_scf_eigenvalues)
+!>        The first MQC eigenvalues type variable (a diagonal 
+!>        matrix) to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] EigenvaluesB
+!>    \verbatim
+!>        EigenvaluesB is type(mqc_scf_eigenvalues)
+!>        The second MQC eigenvalues type variable (a diagonal 
+!>        matrix) to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Description tag of output MQC eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eigenvalues_eigenvalues_multiply(eigenvaluesA,eigenvaluesB,label) result(eigenvaluesOut)
-!
-!     This function multiplies an mqc eigenvalues type with an mqc eigenvalues type (diagonal matrix multiplication).
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_eigenvalues),intent(in)::eigenvaluesA,eigenvaluesB 
@@ -2504,11 +4319,43 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalue_Eigenvalue_DotProduct
+!
+!>    \brief <b> MQC_Eigenvalue_Eigenvalue_DotProduct is used to compute the inner
+!>    product of two MQC eigenvalues type variables and returns an MQC eigenvalues
+!>    type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalue_Eigenvalue_DotProduct is used to compute the inner product of 
+!>    two MQC eigenvalues type variables and returns an MQC eigenvalues type variable. 
+!>    This routine is consistent whether considering MQC eigenvalues as a vector or 
+!>    diagonal matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvalueA
+!>    \verbatim
+!>        EigenvaluesA is type(mqc_scf_eigenvalues)
+!>        The first MQC eigenvalues type variable.
+!>    \endverbatim
+!>
+!>    \param[in] EigenvalueB
+!>    \verbatim
+!>        EigenvaluesB is type(mqc_scf_eigenvalues)
+!>        The second MQC eigenvalues type variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eigenvalue_eigenvalue_dotProduct(eigenvalueA,eigenvalueB) result(scalarOut)
-!
-!     This function computes the dot product of an mqc eigenvalue type with an mqc eigenvalue type.
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       type(mqc_scf_eigenvalues),intent(in)::eigenvalueA,eigenvalueB
@@ -2570,11 +4417,40 @@
 !
 !
 !     PROCEDURE MQC_Integral_Transpose
+!
+!>    \brief <b> MQC_Integral_Transpose is used to compute the transpose of a MQC
+!>    integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Transpose is used to compute the transpose of a MQC integral type 
+!>    variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral type variable to transpose.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        A description tag for the transposed integral.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_transpose(integral,label) result(integralOut)
-!
-!     This function transposes a mqc integral type.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -2614,11 +4490,40 @@
 !
 !
 !     PROCEDURE MQC_Integral_Conjugate_Transpose
+!
+!>    \brief <b> MQC_Integral_Conjugate_Transpose is used to compute the conjugate 
+!>    transpose of a MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Conjugate_Transpose is used to compute the conjugate transpose of 
+!>    a MQC integral type variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral type variable to conjugate transpose.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        A description tag for the conjugate transposed integral.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       function mqc_integral_conjugate_transpose(integral,label) result(integralOut)
-!
-!     This function conjguate transposes a mqc integral type.
-!
-!     -L. M. Thompson, 2017.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
@@ -2658,16 +4563,48 @@
 !
 !
 !     PROCEDURE MQC_Integral_Norm
+!
+!>    \brief <b> MQC_Integral_Norm is used to compute the norm of a MQC integral type 
+!>    variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Norm is used to compute the norm of a MQC integral type variable.
+!>    The following options are available:
+!>
+!>    1. methodIn = 'M' uses the maximum absolute value max(abs(A(i,j))).
+!>    2. methodIn = '1' uses the one norm.
+!>    3. methodIn = 'I' uses the infinity norm.
+!>    4. methodIn = 'F' uses the Frobenius norm (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral type variable to determine the norm.
+!>    \endverbatim
+!>
+!>    \param[in] MethodIn
+!>    \verbatim
+!>        MethodIn is Character(len=1)
+!>        = 'M': max(abs(A(i,j)))
+!>        = '1': one norm
+!>        = 'I': infinity norm
+!>        = 'F': Frobenius norm.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_integral_norm(integral,methodIn) result(norm)
-!
-!     This function computes the matrix norm of an mqc integral object
-!     Different norms can be computed with optional argument methodIn.
-!     'M' - max(abs(A(i,j)))
-!     '1' - one norm
-!     'I' - infinty norm
-!     'F' - Frobenius norm (default)
-!
-!     -L. M. Thompson, 2018.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -2687,40 +4624,72 @@
 !
       end function mqc_integral_norm
 !
-!=====================================================================
 !
-!PROCEDURE MQC_Matrix_SpinBlockGHF
+!
+!     PROCEDURE MQC_Matrix_SpinBlockGHF
+!
+!>    \brief <b> MQC_Matrix_SpinBlockGHF is used to return a spin blocked MQC integral 
+!>    type variable from a spin-interleaved array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>     This subroutine takes a GHF spin-interleaved spin array (such as typically 
+!>     generated by e.g. Gaussian) and returns it in spin blocked form i.e. the spinor 
+!>     basis is reordered so that alpha coefficients are before beta coefficients.
+!>
+!>     If MOs are passed, the input matrix columns ae reordered to 'spin block' the 
+!>     orbitals. The input MOs are typically ordered by energy. Spin blocking is 
+!>     performed by determining alpha or beta dominance of each occupied orbital 
+!>     vector through comparing the sum of squares of orbital coefficients. Orbitals 
+!>     are places in their corresponding spin block from left to right in order of 
+!>     spin dominance. If more alpha or beta dominant orbitals are identified than 
+!>     possible through spin multiplicity, the least dominant orbitals are placed in 
+!>     the unfilled spin block with order determined by the contribution of spin of 
+!>     the block into which the orbitals are placed. The procedure is then repeated 
+!>     for virtual orbitals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Array
+!>    \verbatim
+!>        Array is class(*)
+!>        The Array (MQC matrix or MQC vector) to be spin blocked.
+!>    \endverbatim
+!>
+!>    \param[in] NElec
+!>    \verbatim
+!>        NElec is integer(kind=int64),optional
+!>        The number of electrons. Only required when spin 
+!>        blocking MOs.
+!>    \endverbatim
+!>     
+!>    \param[in] Multi
+!>    \verbatim
+!>        Multi is Character(len=1)
+!>        The multiplicity. Only required when spin blocking MOs.
+!>    \endverbatim
+!>     
+!>    \param[in,out] EList
+!>    \verbatim
+!>        Elist is integer(kind=int64),dimension(:),allocatable,optional
+!>        The energy list returns the energy order of MOs required
+!>        for spin unblocking inverse procedure. When allocating 
+!>        an MQC integral, EList should be used to fill the Elist 
+!>        object. Only required when spin blocking MOs.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \author A. D. Mahler
+!>    \date 2017, 2018
+!
       subroutine mqc_matrix_spinBlockGHF(array,nelec,multi,elist)
-!
-!     This subroutine takes a GHF spin-interleaved spin array (such as typically 
-!     generated by e.g. Gaussian) and returns it in spin blocked form i.e. the spinor 
-!     basis is reordered so that alpha coefficients are before beta coefficients.
-!
-!     If MOs are passed, the input matrix columns ae reordered to 'spin block' the 
-!     orbitals. As the orbitals can no longer be defined as being alpha or beta spin,
-!     we use the definition that if a singlet UHF solution is passed to a GHF calculation, 
-!     the input matrix would be reordered such that the off diagonal blocks are zero. I.e.
-!     the alpha columns contain the 1st, 3rd, 5th ... lowest energy orbitals and the beta
-!     columns contain the 2nd, 4th, 6th ... lowest energy orbitals. The first 0.5*(N_elec)+S 
-!     columns of the alpha block and the first 0.5*(N_elec)-S columns of the beta block are 
-!     occupied.
-!
-!     L. M. Thompson, 2017.
-!
-!     5/1/18 - MO coefficients are not interlaced as ababab when UHF is used in GHF solutions.
-!     MOs are arranged by energy.  To facilitate spin-blocking for UHF->GHF calcuations,
-!     each MO is determined to be alpha-dominant or beta-dominant by comparing the sums
-!     of the squares of the AO coefficients for alpha (upper 1/2) and beta (lower 1/2)
-!     components.  Orbitals are then placed in alpha (left) or beta (right) blocks
-!     from left to right based on dominance.  If more alpha-dominant or beta-dominant 
-!     orbitals are present than is indicated by spin multiplicity, occupied orbitals will be 
-!     filled until either the alpha or beta blocks are filled; remaining occupied orbitals will
-!     be assigned to unfilled block regardless of spin dominance.  This procedure is then
-!     repeated for virtual orbitals.
-!
-!     A. Mahler, 2018
-!
-!     Variable Declarations.
 !
       implicit none
       integer(kind=int64)::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas, &
@@ -2920,20 +4889,44 @@
 !
       return
       end subroutine mqc_matrix_spinBlockGHF
-
-
-!=====================================================================
 !
-!PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
+!
+!     PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
+!
+!>    \brief <b> MQC_Matrix_UndoSpinBlockGHF_Eigenvalues is used to return a spin 
+!>    unblocked MQC vector from a spin blocked MQC eigenvalues variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_UndoSpinBlockGHF_Eigenvalues is used to return a spin unblocked MQC 
+!>    vector from a spin blocked MQC eigenvalues variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigenvaluesIn
+!>    \verbatim
+!>        EigenvaluesIn is type(mqc_scf_eigenvalues) 
+!>        The MQC eigenvalues variable to be spin unblocked.
+!>    \endverbatim
+!>
+!>    \param[out] VectorOut
+!>    \verbatim
+!>        VectorOut is type(mqc_vector)
+!>        The MQC vector output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \author A. D. Mahler
+!>    \date 2017, 2018
+!
       subroutine mqc_matrix_undoSpinBlockGHF_EigenValues(eigenvaluesIn,vectorOut)
-!
-!     This subroutine takes a spin-blocked est eigenvalues object and 
-!     returns it as a GHF spin-interleaved mqc vector (such as typically 
-!     generated by e.g. Gaussian). 
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
 !
       implicit none
       integer(kind=int64)::i,j,nAlpha,nBeta,nElectrons
@@ -2963,20 +4956,44 @@
 !
       return
       end subroutine mqc_matrix_undoSpinBlockGHF_EigenValues
-
-
-!=====================================================================
 !
-!PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Integral   
+!
+!     PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Integral   
+!
+!>    \brief <b> MQC_Matrix_UndoSpinBlockGHF_Integral is used to return a spin 
+!>    unblocked MQC matrix from a spin blocked MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>     MQC_Matrix_UndoSpinBlockGHF_Integral is used to return a spin unblocked MQC 
+!>     matrix from a spin blocked MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralIn
+!>    \verbatim
+!>        IntegralIn is type(mqc_scf_integral) 
+!>        The MQC integral to be spin unblocked.
+!>    \endverbatim
+!>
+!>    \param[out] MatrixOut
+!>    \verbatim
+!>        MatrixOut is type(mqc_matrix)
+!>        The MQC matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \author A. D. Mahler
+!>    \date 2017, 2018
+!
       subroutine mqc_matrix_undoSpinBlockGHF_integral(integralIn,matrixOut)
-!
-!     This subroutine takes a spin-blocked est integral object and 
-!     returns it as a GHF spin-interleaved mqc matrix (such as typically 
-!     generated by e.g. Gaussian). 
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
 !
       implicit none
       integer(kind=int64)::i,j,k,iter,rows,columns,nAlpha1,nBeta1,nElectrons1, &
@@ -2987,10 +5004,6 @@
       type(mqc_vector)::tmpVector
       integer(kind=int64),dimension(:),allocatable::elist
 !
-!
-!     Do the work...
-!
-      
       nAlpha1 = integralIn%blockSize('alpha',1) 
       nBeta1 = integralIn%blockSize('beta',1) 
       nElectrons1 = nAlpha1+nBeta1
@@ -3043,15 +5056,40 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Contraction
+!
+!>    \brief <b> MQC_SCF_Integral_Contraction is used to return the contraction of 
+!>    two MQC integrals</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Contraction is used to return the contraction of two MQC 
+!>    integrals. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral1
+!>    \verbatim
+!>        Integral1 is type(mqc_scf_integral) 
+!>        The first MQC integral to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] Integral2
+!>    \verbatim
+!>        Integral2 is type(mqc_scf_integral) 
+!>        The second MQC integral to be contracted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_scf_integral_contraction(integral1,integral2) result(output)
-!
-!     This function returns the contration of two scf integrals, given as input
-!     dummy arguments integral1 and integral2.
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral1,integral2
@@ -3097,20 +5135,55 @@
 !
 !
 !     PROCEDURE MQC_ERI_Integral_Contraction
+!
+!>    \brief <b> MQC_ERI_Integral_Contraction is used to return the contraction of 
+!>    two-ERIs with an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_Integral_Contraction is used to return the contraction of two-ERIs with 
+!>    an MQC integral. Optional argument label can be used to return contractions 
+!>    with single bar ERIs (coulomb or exchange), or the complete contraction with 
+!>    double-bar integrals. The following options are available:
+!>
+!>    1. Label = 'coulomb' returns the contraction with single bar coulomb integrals.
+!>    2. Label = 'exchange' returns the contraction with single bar exchange integrals.
+!>    3. Label = 'doublebar' returns the contraction with double-bar integrals (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is type(mqc_twoERIs) 
+!>        The 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral) 
+!>        The MQC integral to be contracted.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        = 'coulomb':   contracts with coulomb integrals.
+!>        = 'exchange':  contracts with exchange integrals.
+!>        = 'doublebar': contracts with double-bar integrals 
+!>                       (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_eri_integral_contraction(eris,integral,label) result(output)
-!
-!     This function returns the contraction of 2ERIs with scf integrals, given as input
-!     dummy arguments eris and integral.
-!
-!     The optional argument label takes the strings 'coulomb' to return the coulomb only
-!     terms, 'exchange' to return the exchange only terms, and 'doublebar' to return the 
-!     complete contraction (default).
-!     
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       type(mqc_twoERIs),intent(in)::eris
@@ -3120,6 +5193,7 @@
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::k,l,m,n,nBasis
       character(len=64)::mylabel
+      real(kind=real64)::zero=1.0d-10
 !
       if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
     &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
@@ -3157,6 +5231,7 @@
         do l = 1, nBasis
           do m = 1, nBasis
             do n = 1, nBasis
+              if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
               ! AA Block
               if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
                 call alpha%put(alpha%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
@@ -3198,14 +5273,61 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Generalized_Eigensystem
+!
+!>    \brief <b> MQC_Integral_Generalized_Eigensystem is a subroutine that takes a 
+!>    MQC integral and a metric and returns eigenvalues and eigenvectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Generalized_Eigensystem is a subroutine that takes a MQC integral 
+!>    and an optional metric (also as an MQC integral) and optionally returns 
+!>    eigenvalues to a MQC eigenvalues variable and/or left and/or right eigenvectors 
+!>    to an MQC integral variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is Class(MQC_SCF_Integral)
+!>        The MQC integral to diagonalize. 
+!>    \endverbatim
+!>
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is Type(MQC_SCF_Integral),Optional
+!>        The metric. 
+!>    \endverbatim
+!>
+!>    \param[out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_SCF_Eigenvalues),Optional
+!>        Optional MQC eigenvalues variable containing the 
+!>        eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[out] REVecs
+!>    \verbatim
+!>        REVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the right eigenvectors.
+!>    \endverbatim
+!>
+!>    \param[out] LEVecs
+!>    \verbatim
+!>        LEVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the left eigenvectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       subroutine mqc_scf_integral_generalized_eigensystem(integralA,integralB,eVals,rEVecs,lEVecs)
-!
-!     This function solves the generalized eigensystem equation of scf_integrals
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integralA
@@ -3382,15 +5504,48 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Diagonalize
+!
+!>    \brief <b> MQC_SCF_Integral_Diagonalize is a subroutine that takes a symmetric 
+!>    or hermitian MQC integral and returns eigenvalues and eigenvectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Diagonalize is a subroutine that takes a symmetric or 
+!>    hermitian MQC integral and optionally returns eigenvalues to a MQC 
+!>    eigenvalues variable and/or eigenvectors to a MQC integral variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral to diagonalize. 
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_SCF_Eigenvalues),Optional
+!>        Optional MQC eigenvalues variable containing the 
+!>        eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVecs
+!>    \verbatim
+!>        EVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the eigenvectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       subroutine mqc_scf_integral_diagonalize(integral,eVals,eVecs)
-!
-!     This function returns the diagonal of an scf integral and optionally returns
-!     either the eigenvaues as a scf_eigenvalue and eigenvectors as a scf_integral
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -3463,15 +5618,34 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Inverse    
+!
+!>    \brief <b> MQC_SCF_Integral_Inverse is a function that returns the inverse of 
+!>    an MQC integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Inverse is a function that returns the inverse of an MQC 
+!>    integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_scf_integral_inverse(integral) result(inverse)
-!
-!     This function returns the inverse of integral as a mqc_scf_integral
-!     object
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -3504,16 +5678,34 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Trace
+!
+!>    \brief <b> MQC_SCF_Integral_Trace is a function that returns the trace of an 
+!>    MQC SCF integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Trace is a function that returns the trace of an  MQC SCF 
+!>    integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       function mqc_scf_integral_trace(integral) result(trace)
-!
-!
-!     This function returns the trace of integral as an mqc_scalar
-!     object
-!
-!     L. M. Thompson, 2018
-!
-!
-!     Variable Declariations.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -3534,16 +5726,34 @@
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Determinant
+!
+!>    \brief <b> MQC_SCF_Integral_Determinant is a function that returns the 
+!>    determinant of an MQC integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Determinant is a function that returns the determinant of an 
+!>    MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler
+!>    \date 2018
+!
       function mqc_scf_integral_determinant(integral) result(determinant)
-!
-!
-!     This function returns the determinant of integral as an mqc_scalar
-!     object
-!
-!     A. Mahler, 2018
-!
-!
-!     Variable Declariations.
 !
       implicit none
       class(mqc_scf_integral),intent(in)::integral
@@ -3558,15 +5768,40 @@
 !
 !
 !     PROCEDURE MQC_Integral_Set_Energy_List
+!
+!>    \brief <b> MQC_Integral_Set_Energy_List is a subroutine that sets the energy
+!>    list object of an MQC integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Set_Energy_List is a subroutine that sets the energy list object 
+!>    of an MQC integral
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral for which EList will be set.
+!>    \endverbatim
+!>
+!>    \param[in] EList
+!>    \verbatim
+!>        EList is integer(kind=int64),dimension(:),allocatable
+!>        The energy order list to set EList in Integral.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler
+!>    \date 2018
+!
       subroutine mqc_integral_set_energy_list(integral,elist)
-!
-!     This subroutine sets the private array variable Energy_List
-!     for an mqc_integral object.  Subroutine is descrutive.
-!   
-!     A. Mahler, 2018
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -3580,15 +5815,34 @@
 !
 !
 !     PROCEDURE MQC_Integral_Get_Energy_List
+!
+!>    \brief <b> MQC_Integral_Get_Energy_List is a subroutine that returns the energy
+!>    list object of an MQC integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Get_Energy_List is a subroutine that returns the energy list object 
+!>    of an MQC integral
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral from which EList will be returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler
+!>    \date 2018
+!
       function mqc_integral_get_energy_list(integral) result(elist)
-!
-!     This function returns the private variable array Energy_List
-!     of the integral object
-!
-!     A. Mahler, 2018.
-!
-!
-!     Variable Declarations
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -3604,15 +5858,34 @@
 !
 !
 !     PROCEDURE MQC_Integral_Delete_Energy_List
+!
+!>    \brief <b> MQC_Integral_Delete_Energy_List is a subroutine that deletes the 
+!>    energy list object of an MQC integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Delete_Energy_List is a subroutine that deletes the energy list 
+!>    object of an MQC integral
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral from which EList will be deleted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler
+!>    \date 2018
+!
       subroutine mqc_integral_delete_energy_list(integral)
-!
-!     This subroutine deletes the current energy listing for the 
-!     mqc_integral object
-!
-!     A. Mahler, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -3627,14 +5900,40 @@
 !
 !
 !     PROCEDURE MQC_SCF_Eigenvalues_Power
+!
+!>    \brief <b> MQC_SCF_Eigenvalues_Power is a function that returns the value of 
+!>    all elements of an MQC eigenvalues variable raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Eigenvalues_Power is a function that returns the value of all elements 
+!>    of an MQC eigenvalues variable raised to a power.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_SCF_Eigenvalues)
+!>        The name of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Power
+!>    \verbatim
+!>        Power is Class(*)
+!>        The power to raise elements of the MQC eigenvalues.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       subroutine mqc_scf_eigenvalues_power(eigenvalues,power)
-!
-!     This function raises the values in eigenvalues by a power
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       class(mqc_scf_eigenvalues),intent(inOut)::eigenvalues
@@ -3671,9 +5970,84 @@
 !
 !
 !     PROCEDURE MQC_twoERIs_At
-      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlock) result(element)
 !
-!     This function returns the MQC_Scalar element at i, j, k, l.
+!>    \brief <b> MQC_twoERIs_At is a function that returns the value of an element 
+!>    of a MQC 2ERIs variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_twoERIs_At is a function that returns the value of (I,J,K,L)th element of 
+!>    a MQC 2ERIs variable as an MQC scalar. If I, J, K or L is negative, the (N-I+1)th 
+!>    index is selected. Optional argument SpinBlock specifies the spin block of MQC
+!>    2ERIs if the contain MO integrals. If wavefunction is not restricted, the spin 
+!>    block must be specified. The following options are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
+!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] TwoERIs
+!>    \verbatim
+!>        TwoERIs is Class(MQC_TwoERIs)
+!>        The MQC 2ERIs to return the value of the (I,J,K,L)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC 2ERIs
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC 2ERIs
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The third dimension of the element in MQC 2ERIs
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The fourth dimension of the element in MQC 2ERIs
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlock
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>        = 'alphaBeta': alpha-beta spin block
+!>        = 'betaAlpha': beta-alpha spin block.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
+      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlock) result(element)
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
@@ -3689,14 +6063,22 @@
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
-        elseIf(twoERIs%integralType.eq.'spin'.or.twoERIs%integralType.eq.'general') then
+        elseIf(twoERIs%integralType.eq.'spin') then
           if(spinBlock.eq.'alpha') then
             element = twoERIs%alpha%at(i,j,k,l)
           elseif(spinblock.eq.'beta') then
             element = twoeris%beta%at(i,j,k,l)
-          elseif(spinblock.eq.'alphaBeta') then
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(twoERIs%integralType.eq.'general') then
+          if(spinBlock.eq.'alpha') then
+            element = twoERIs%alpha%at(i,j,k,l)
+          elseif(spinblock.eq.'beta') then
+            element = twoeris%beta%at(i,j,k,l)
+          elseif(spinblock.eq.'alphabeta') then
             element = twoeris%alphaBeta%at(i,j,k,l)
-          elseif(spinblock.eq.'betaAlpha') then
+          elseif(spinblock.eq.'betaalpha') then
             element = twoeris%betaAlpha%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
@@ -3720,9 +6102,69 @@
 !
 !
 !     PROCEDURE MQC_Integral_At
-      function mqc_integral_at(integral,i,j,spinBlock) result(element)
 !
-!     This function returns the MQC_Scalar element at i, j.
+!>    \brief <b> MQC_Integral_At is a function that returns the value of an element 
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Integral_At is a function that returns the value of (I,J)th element of a 
+!>    MQC integral variable as an MQC scalar. If I or J is negative, the (N-I+1)th 
+!>    index is selected. Optional argument SpinBlock specifies the spin block of MQC
+!>    integrals. If I or J is greater than the dimension of the alpha spin block, the
+!>    remainder is used as the index of the beta spin block. The following options 
+!>    are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
+!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC integral
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC integral
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlock
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>        = 'alphaBeta': alpha-beta spin block
+!>        = 'betaAlpha': beta-alpha spin block.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
+      function mqc_integral_at(integral,i,j,spinBlock) result(element)
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -3806,9 +6248,59 @@
 !
 !
 !     PROCEDURE MQC_Eigenvalues_At
-      function mqc_eigenvalues_at(eigenvalues,i,spinBlock) result(element)
 !
-!     This function returns the MQC_Scalar element at i, j.
+!>    \brief <b> MQC_Eigenvalues_At is a function that returns the value of an element 
+!>    of a MQC eigenvalues variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_At is a function that returns the value of Ith element of a MQC 
+!>    eigenvalues variable as an MQC scalar. If I is negative, the (N-I+1)th index is 
+!>    selected. Optional argument SpinBlock specifies the spin block of MQC 
+!>    eigenvectors. If I is greater than the dimension of the alpha spin block, the
+!>    remainder is used as the index of the beta spin block. The following options 
+!>    are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
+!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_SCF_Eigenvalues)
+!>        The MQC eigenvalues to return the value of the Ith 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The dimension of the element in Eigenvalues
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlock
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
+      function mqc_eigenvalues_at(eigenvalues,i,spinBlock) result(element)
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
@@ -3839,10 +6331,19 @@
       else 
         if(eigenvalues%array_type.eq.'space') then
           if(i.gt.eigenvalues%blockSize('alpha')) i = i - eigenvalues%blockSize('alpha')
+          if(i.lt.(-1)*eigenvalues%blockSize('alpha')) i = i + eigenvalues%blockSize('alpha')
           element = eigenvalues%alpha%at(i)
         elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
-          if(i.gt.eigenvalues%blockSize('full')) i = i - eigenvalues%blockSize('full')
-          element = eigenvalues%alpha%at(i)
+          if(i.gt.eigenvalues%blockSize('alpha')) then
+            element = eigenvalues%beta%at(i)
+          elseIf(i.ge.0) then
+            element = eigenvalues%alpha%at(i)
+          elseIf(i.lt.(-1)*eigenvalues%blockSize('alpha')) then
+            i = i + eigenvalues%blockSize('alpha')
+            element = eigenvalues%beta%at(i)
+          else
+            element = eigenvalues%alpha%at(i)
+          endIf
         else
           call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
         endIf
@@ -3852,14 +6353,49 @@
 !
 !
 !     PROCEDURE MQC_SCF_Transformation_Matrix
+!
+!>    \brief <b> MQC_SCF_Transformation_Matrix is a subroutine that returns the
+!>    atomic orbital to orthogonal atomic orbital transformation matrix and the
+!>    number of linearly independent atomic orbital basis functions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_SCF_Transformation_Matrix is a subroutine that returns the atomic orbital 
+!>    to orthogonal atomic orbital transformation matrix and the number of linearly 
+!>    independent atomic orbital basis functions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Overlap
+!>    \verbatim
+!>        Overlap is type(mqc_scf_integral)
+!>        The atomic orbital overlap matrix.
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[out] Transform_Matrix  
+!>    \verbatim
+!>        Transform_Matrix is type(mqc_scf_integral)
+!>        The AO -> OAO transformation matrix.
+!>    \endverbatim
+!>    
+!>    \param[out] NBasUse
+!>    \verbatim
+!>        NBasUse is integer(kind=int64),optional
+!>        The number of linearly independent AO basis functions.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       subroutine mqc_scf_transformation_matrix(overlap,transform_matrix,nBasUse)
-!
-!     This function returns the tranformation matrix and number of linearly independent basis functions.
-!
-!     L. M. Thompson, 2018.
-!
-!
-!     Variable Declarations.
 !
       implicit none
       type(mqc_scf_integral),intent(in)::overlap
@@ -3893,36 +6429,91 @@
 !=====================================================================
 !     
 !     PROCEDURE GEN_DET_STR 
-! 
+!
+!>    \brief <b> GEN_DET_STR is a subroutine that returns the list of binary strings 
+!>    corresponding to occupation number vectors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GEN_DET_STR is a subroutine that returns the list of binary strings 
+!>    corresponding to occupation number vectors.
+!>
+!>    The index to the determinant strings follows lexical order in which the 
+!>    left most path has index zero (in the case where the right-most bit 
+!>    corresponds to orbital 1 and the left-most bit corresponds to orbital 
+!>    NBasis - the HF determinant is the smallest integer number). 
+!>    Constructing the graph uses the following for the vertex and arc values:
+!>    Yo(e,o)=0, Y1(e,o)=x(e,o+1), x(e,o)=x(e+1,o+1)+x(e,o+1) 
+!>
+!>    The strings are also ordered in reverse lexical order where the right most 
+!>    path has index zero (in the case that the left-most bit corresponds to 
+!>    orbital 1 and the right-most bit corresponds to orbital NBasis - the HF 
+!>    determinant is the largest interger number)
+!>    Constructing the graph uses the following for the vertex and arc values:
+!>    Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
+!>
+!>    While the routine is set up to deal with arbitrary number of orbitals, the 
+!>    maximum number of orbitals is currently limited to the machine word size.
+!>
+!>    Optional argument NCore allows inclusion of set of always occupied orbitals
+!>    in determinant string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] NAlphaIn
+!>    \verbatim
+!>        NAlphaIn is Type(MQC_Scalar)
+!>        The number of alpha electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] NBetaIn
+!>    \verbatim
+!>        NBetaIn is Type(MQC_Scalar)
+!>        The number of beta electrons.
+!>    \endverbatim
+!>    
+!>    \param[out] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The output binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] NCoreIn
+!>    \verbatim
+!>        NCoreIn is Type(MQC_Scalar),optional
+!>        The number of core orbitals to consider always occupied.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine Gen_Det_Str(IOut,IPrint,NBasisIn,NAlphaIn,NBetaIn, &
           Determinants,NCoreIn)
-!
-!     This subroutine generates a list of alpha and beta strings in binary  
-!     notation. 
-!
-!     The index to the determinant strings follows lexical order in which the 
-!     left most path has index zero (in the case where the right-most bit 
-!     corresponds to orbital 1 and the left-most bit corresponds to orbital 
-!     NBasis - the HF determinant is the smallest integer number). 
-!     Constructing the graph uses the following for the vertex and arc values:
-!     Yo(e,o)=0, Y1(e,o)=x(e,o+1), x(e,o)=x(e+1,o+1)+x(e,o+1) 
-!
-!     The strings are also ordered in reverse lexical order where the right most 
-!     path has index zero (in the case that the left-most bit corresponds to 
-!     orbital 1 and the right-most bit corresponds to orbital NBasis - the HF 
-!     determinant is the largest interger number)
-!     Constructing the graph uses the following for the vertex and arc values:
-!     Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
-!
-!     While the routine is set up to deal with arbitrary number of orbitals, the 
-!     maximum number of orbitals is currently limited to the machine word size.
-!
-!     Optional argument NCore allows inclusion of set of always occupied orbitals
-!     in determinant string.
-!
-!     Lee Thompson, 2016.
-!
-!     Variable Declarations...
 !
       Implicit None
 
@@ -4149,15 +6740,99 @@
 !=====================================================================
 !     
 !     PROCEDURE SLATER_CONDON
+!
+!>    \brief <b> SLATER_CONDON is a subroutine that returns the list of binary 
+!>    strings corresponding to occupation number vectors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    SLATER_CONDON is a function that returns the CI Hamiltonian matrix element 
+!>    value using Slater-Condon rules for a given alpha and beta string combination.
+!>    If UHF flag is set to true then Slater Condon rules are returned accounting for 
+!>    different spatial occupation of alpha and beta orbitals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] L_A_String
+!>    \verbatim
+!>        L_A_String is Integer(kind=int64)
+!>        The index of the left alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] L_B_String
+!>    \verbatim
+!>        L_B_String is Integer(kind=int64)
+!>        The index of the left beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_A_String
+!>    \verbatim
+!>        R_A_String is Integer(kind=int64)
+!>        The index of the right alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_B_String
+!>    \verbatim
+!>        R_B_String is Integer(kind=int64)
+!>        The index of the right beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] Core_Hamiltonian
+!>    \verbatim
+!>        Core_Hamiltonian is Type(MQC_SCF_Integral)
+!>        The MO basis core hamiltonian matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is Type(MQC_TwoERIs) 
+!>        The MO basis two-electron intregrals.
+!>    \endverbatim
+!>    
+!>    \param[in] UHF
+!>    \verbatim
+!>        UHF is Logical
+!>        Whether alpha and beta orbitals are restricted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function Slater_Condon(IOut,IPrint,NBasisIn,Determinants,L_A_String, &
        L_B_String,R_A_String,R_B_String,Core_Hamiltonian,ERIs,UHF) &
        Result(MatEl)
 !
-!     This function returns the CI Hamiltonian matrix element value using 
-!     Slater-Condon rules for a given alpha and beta string combination.
-!     If UHF flag is set to true then Slater Condon rules are returned
-!     accounting for different spacial occupation of alpha and beta orbitals but
-!     the ERIs must be dimensioned to twice that of rhf case.
 !
 !     Variable Declarations...
 !
@@ -5573,12 +8248,12 @@
 
       NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
       If(.not.UHF) then
-        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
       ElseIf(UHF) then
-        call tmpR4TensorAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorAlphaBeta%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBetaAlpha%initialize(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBeta%initialize(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBeta%init(NBasis,NBasis,NBasis,NBasis)
       EndIf
       MO_ERIs%StorageType = 'Full'
       MO_ERIs%IntegralType = 'Regular'
@@ -5628,8 +8303,8 @@
 
         If(IPrint.ge.2) Write(IOut,3000) 
 
-        Call X%initialize(NBasis,NBasis)
-        Call Y%initialize(NBasis,NBasis)
+        Call X%init(NBasis,NBasis)
+        Call Y%init(NBasis,NBasis)
 
         Do P = 1, NBasis
           Do Q = 1, NBasis
@@ -6198,13 +8873,77 @@
 !=====================================================================
 !     
 !     PROCEDURE MQC_BUILD_CI_HAMILTONIAN
+!
+!>    \brief <b> MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI 
+!>    hamiltonian given MO integrals and determinant strings</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI hamiltonian given 
+!>    MO integrals and determinant strings.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasis
+!>    \verbatim
+!>        NBasis is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_Core_Ham
+!>    \verbatim
+!>        MO_Core_Ham is Type(MQC_SCF_Integral)
+!>        The MO basis core hamiltonian.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_ERIs
+!>    \verbatim
+!>        MO_ERIs is Type(MQC_TwoERIs) 
+!>        The MO basis two-electron intregrals.
+!>    \endverbatim
+!>    
+!>    \param[in] UHF
+!>    \verbatim
+!>        UHF is Logical
+!>        Whether alpha and beta orbitals are restricted.
+!>    \endverbatim
+!>    
+!>    \param[out] CI_Hamiltonian
+!>    \verbatim
+!>        CI_Hamiltonian is Type(MQC_Matrix)
+!>        The CI hamiltonian returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
         MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian)
-!
-!     This subroutine is used to build the CI Hamiltonian given MO
-!     integrals and determinant strings.
-!
-!     Variable Declarations...
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
@@ -6221,7 +8960,7 @@
       NBeta_Str = MQC_Matrix_Rows(Determinants%Strings%Beta)
       NDets = NAlpha_Str * NBeta_Str 
 !
-      Call CI_Hamiltonian%initialize(NDets,NDets)
+      Call CI_Hamiltonian%init(NDets,NDets)
 !
       Do L_A_String = 1, NAlpha_Str  
         Do L_B_String = 1, NBeta_Str  

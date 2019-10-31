@@ -123,7 +123,7 @@ do
     echo "Please select a compiler.  The case insenstive available options are:"
     echo "    G - GNU compilers (gfortran/gcc) "
     echo "    I - Intel compilers (ifort/icc) "
-    echo "    P - PGI compilers (pgfortran/pgcc)"
+    echo "    P - PGI compilers (pgfortran/gcc)"
     read -n 1 MQC_Compiler
     echo ""
     if [ "${MQC_Compiler}" = "G" ] || [ "${MQC_Compiler}" = "g" ]; then
@@ -150,21 +150,25 @@ do
 	fi
     elif [ "${MQC_Compiler}" = "P" ] || [ "${MQC_Compiler}" = "p" ]; then
 	export CC="g"
-	path_to_executable="`command -v pgcc`"
+	path_to_executable="`command -v gcc`"
 	if [ -x "${path_to_executable}" ] ; then
-	    export CC="pgcc"
+	    export CC="gcc"
 	else
-	    echo "pgcc not found in path"
+	    echo "gcc not found in path"
 	    path_to_executable="`command -v gcc`"
-	    if [ -x "${path_to_executable}" ] ; then
-		export CC="gcc"
-		echo "gcc will be used"
-	    else
-		echo "Neither pgcc nor gcc found in path."
-		echo "Not finding a C compiler in path."
-		echo "Please fix path before you retry installing MQCPath"
-		exit 1
-	    fi
+#	    if [ -x "${path_to_executable}" ] ; then
+#		export CC="gcc"
+#		echo "gcc will be used"
+#	    else
+#		echo "Neither pgcc nor gcc found in path."
+#		echo "Not finding a C compiler in path."
+#		echo "Please fix path before you retry installing MQCPath"
+#		exit 1
+#	    fi
+           echo "gcc not found in path."
+	   echo "Not finding a C compiler in path."
+	   echo "Please fix path before you retry installing MQCPath"
+	   exit 1
 	fi
 	if [ "$CC" != "g" ]; then
 	    path_to_executable="`command -v pgfortran`"
@@ -571,6 +575,17 @@ make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 if [ $? -ne 0 ] ; then 
     echo "Failure to build"
     exit $? 
+fi
+command -v doxygen >/dev/null 2>&1
+if [ $? -ne 0 ]; then 
+    echo >&2 "MQCPck requires Doxygen to build documentation but it's not installed.  Skipping." 
+else 
+    ( cat ${MQC_HOME}/doc/Doxyfile ; echo "QUIET=YES" ) | doxygen -
+    if [ $? -ne 0 ]; then 
+	echo "Doxygen failed to build documentation"
+    else
+	echo "Doxygen built documentation"
+    fi 
 fi
 echo "Congratulations! The libmqc is built!"
 

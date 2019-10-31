@@ -1,3 +1,7 @@
+! TODO: 1) Expand ability of MQC objects to interact with Fortran intrinsic types. 
+!       2) Implement ability to store and manipulate different types of arrays in 
+!          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
+!
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
 !
@@ -97,12 +101,12 @@
 !
 !>    \brief <b> Rank 1 array variable</b>
       Type MQC_Vector
-        Integer(kind=int64)::Length=0
+        Integer(kind=int64),Private::Length=0
         Logical,Private::Column=.True.
-        Character(Len=64)::Data_Type ! Real,Integer,Complex
-        Real(kind=real64),Dimension(:),Allocatable::VecR
-        Integer(kind=int64),Dimension(:),Allocatable::VecI
-        Complex(Kind=real64),Dimension(:),Allocatable::VecC
+        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+        Real(kind=real64),Private,Dimension(:),Allocatable::VecR
+        Integer(kind=int64),Private,Dimension(:),Allocatable::VecI
+        Complex(Kind=real64),Private,Dimension(:),Allocatable::VecC
       Contains
 !>      \brief <b> Print the MQC Vector</b>
         Procedure, Public::print => MQC_Print_Vector_Algebra1
@@ -165,9 +169,9 @@
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
-        Real(kind=real64),Dimension(:,:),Allocatable::MatR
-        Integer(kind=int64),Dimension(:,:),Allocatable::MatI
-        Complex(Kind=real64),Dimension(:,:),Allocatable::MatC
+        Real(kind=real64),Private,Dimension(:,:),Allocatable::MatR
+        Integer(kind=int64),Private,Dimension(:,:),Allocatable::MatI
+        Complex(Kind=real64),Private,Dimension(:,:),Allocatable::MatC
       Contains
 !>      \brief <b> Print the MQC Matrix</b>
         Procedure, Public::print => MQC_Print_Matrix_Algebra1
@@ -224,7 +228,7 @@
       Type MQC_R4Tensor
         Integer(kind=int64),Private::I,J,K,L
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull
+        Character(Len=64),Private::Storage ! StorFull,StorSymm
         Real(kind=real64),Allocatable,Private::RTen(:,:,:,:)
         Integer(kind=int64),Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=real64),Allocatable,Private::CTen(:,:,:,:)
@@ -282,6 +286,12 @@
       interface mqc_have_complex
         module procedure mqc_vector_havecomplex
         module procedure mqc_matrix_havecomplex
+      end interface
+!
+!>    \brief <b> Sets an array to integer type</b>
+      interface mqc_cast_integer
+        module procedure mqc_vector_cast_integer 
+        module procedure mqc_matrix_cast_integer
       end interface
 !
 !>    \brief <b> Sets an array to real type</b>
@@ -496,6 +506,8 @@
 !>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
+        Module Procedure MQC_ScalarEQReal
+        Module Procedure MQC_RealEQScalar
       End Interface
 !
 !>    \brief <b> Determines if a variable is less than another</b>
@@ -663,7 +675,7 @@
 !>    \param[in] N
 !>    \verbatim
 !>        N is Integer(kind=int64)
-!>        The argument of the factorial function
+!>        The argument of the factorial function.
 !>    \endverbatim
 !
 !     Authors:
@@ -707,13 +719,13 @@
 !>    \param[in] N
 !>    \verbatim
 !>        N is Integer(kind=int64)
-!>        The number of objects
+!>        The number of objects.
 !>    \endverbatim
 !>
 !>    \param[in] K
 !>    \verbatim
 !>        K is Integer(kind=int64) 
-!>        The number of permutations
+!>        The number of permutations.
 !>    \endverbatim
 !
 !     Authors:
@@ -774,7 +786,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable
+!>        The name of the MQC_Scalar variable.
 !>    \endverbatim
 !>
 !>    \param[in] Data_Type
@@ -782,7 +794,7 @@
 !>        Data_Type is Character(Len=*)
 !>        = 'Real':    the MQC_Scalar is real
 !>        = 'Integer': the MQC_Scalar is integer
-!>        = 'Complex': the MQC_Scalar is complex
+!>        = 'Complex': the MQC_Scalar is complex.
 !>    \endverbatim
 !
 !     Authors:
@@ -836,7 +848,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable to deallocate
+!>        The name of the MQC_Scalar variable to deallocate.
 !>    \endverbatim
 !
 !     Authors:
@@ -881,7 +893,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The name of the MQC_Scalar variable to check allocation status
+!>        The name of the MQC_Scalar variable to check allocation status.
 !>    \endverbatim
 !
 !     Authors:
@@ -924,13 +936,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Integer(kind=int64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -971,13 +983,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Real(kind=real64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1018,13 +1030,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Complex(kind=real64) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1065,13 +1077,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Type(MQC_Scalar)
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1127,13 +1139,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Integer(kind=int64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1182,13 +1194,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Real(kind=real64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1237,13 +1249,13 @@
 !>    \param[in,out] ScalarOut
 !>    \verbatim
 !>        ScalarOut is Complex(kind=real64) 
-!>        The name of the output variable
+!>        The name of the output variable.
 !>    \endverbatim
 !>
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar) 
-!>        The value of the input variable
+!>        The value of the input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -1294,33 +1306,33 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The variable to be printed
+!>        The variable to be printed.
 !>    \endverbatim
 !>
 !>    \param[in] IOut
 !>    \verbatim
 !>        IOut is Integer(kind=int64) 
-!>        The Fortran file number to print to 
+!>        The Fortran file number to print to. 
 !>    \endverbatim
 !>
 !>    \param[in] Header
 !>    \verbatim
 !>        Header is Character(Len=*)
-!>        The title to print along with Scalar
+!>        The title to print along with Scalar.
 !>    \endverbatim
 !>
 !>    \param[in] Blank_At_Top
 !>    \verbatim
 !>        Blank_At_Top is Logical,Optional
 !>        = .True.:  print blank line above output
-!>        = .False.: do not print blank line above output
+!>        = .False.: do not print blank line above output.
 !>    \endverbatim
 !>
 !>    \param[in] Blank_At_Bottom
 !>    \verbatim
 !>        Blank_At_Bottom is Logical,Optional
 !>        = .True.:  print blank line below output
-!>        = .False.: do not print blank line below output
+!>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !
 !     Authors:
@@ -1340,7 +1352,7 @@
 !
  1001 Format(1x,A,1x,'=',1x,I14)
 ! 1002 Format(1x,A,1x,'=',1x,F14.6)
- 1002 Format(1x,A,1x,'=',1x,F16.12)
+ 1002 Format(1x,A,1x,'=',1x,F18.12)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
@@ -1385,13 +1397,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The real part of MQC_Scalar_Cmplx
+!>        The real part of MQC_Scalar_Cmplx.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The imaginary part of MQC_Scalar_Cmplx
+!>        The imaginary part of MQC_Scalar_Cmplx.
 !>    \endverbatim
 !
 !     Authors:
@@ -1473,7 +1485,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1526,7 +1538,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1579,7 +1591,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1632,7 +1644,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1685,7 +1697,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1738,7 +1750,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1791,7 +1803,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1845,7 +1857,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The argument of the function
+!>        The argument of the function.
 !>    \endverbatim
 !
 !     Authors:
@@ -1899,7 +1911,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -1940,7 +1952,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -1981,7 +1993,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2022,7 +2034,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2072,7 +2084,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2122,7 +2134,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2172,7 +2184,7 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be tested
+!>        The MQC_Scalar to be tested.
 !>    \endverbatim
 !
 !     Authors:
@@ -2233,7 +2245,7 @@
 !>    \param[in,out] Scalar
 !>    \verbatim
 !>        Scalar is Class(MQC_Scalar)
-!>        The MQC_Scalar to be filled 
+!>        The MQC_Scalar to be filled. 
 !>    \endverbatim
 !>
 !>    \param[in] Seed
@@ -2340,13 +2352,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar to be summed
+!>        The first MQC_Scalar to be summed.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar to be summed
+!>        The second MQC_Scalar to be summed.
 !>    \endverbatim
 !
 !     Authors:
@@ -2428,13 +2440,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar from which Scalar2 will be subtracted
+!>        The first MQC_Scalar from which Scalar2 will be subtracted.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar which will be subtracted from Scalar1
+!>        The second MQC_Scalar which will be subtracted from Scalar1.
 !>    \endverbatim
 !
 !     Authors:
@@ -2513,13 +2525,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The first MQC_Scalar to be multiplied
+!>        The first MQC_Scalar to be multiplied.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The second MQC_Scalar to be multiplied
+!>        The second MQC_Scalar to be multiplied.
 !>    \endverbatim
 !
 !     Authors:
@@ -2598,13 +2610,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The numerator
+!>        The numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The denominator
+!>        The denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -2685,13 +2697,13 @@
 !>    \param[in] Scalar1
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar2
 !>    \verbatim
 !>        Scalar2 is Type(MQC_Scalar)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2772,13 +2784,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] IntIn
 !>    \verbatim
 !>        IntIn is Integer(kind=int64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2837,13 +2849,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -2902,13 +2914,13 @@
 !>    \param[in] Scalar
 !>    \verbatim
 !>        Scalar1 is Type(MQC_Scalar)
-!>        The base value
+!>        The base value.
 !>    \endverbatim
 !>
 !>    \param[in] CompIn
 !>    \verbatim
 !>        CompIn is Complex(kind=real64)
-!>        The power value
+!>        The power value.
 !>    \endverbatim
 !
 !     Authors:
@@ -3091,6 +3103,124 @@
       End Function MQC_ScalarEQ
 !
 !
+!     PROCEDURE MQC_RealEQScalar
+!
+!>    \brief <b> MQC_RealEQScalar is a function that returns TRUE if an intrinsic real
+!>    is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealEQScalar is a function that returns TRUE if an intrinsic real is equal to
+!>    a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealEQScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.eq.Scalar%scar) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.eq.Scalar%scai) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.Scalar%scac) MQC_RealEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQReal
+!
+!>    \brief <b> MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarEQReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarEQReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.RealIn) MQC_ScalarEQReal = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQReal
+!
+!
 !     PROCEDURE MQC_ScalarLT
 !
 !>    \brief <b> MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar
@@ -3256,7 +3386,7 @@
       Return
       End Function MQC_RealLTScalar
 !
-
+!
 !     PROCEDURE MQC_ScalarLTReal
 !
 !>    \brief <b> MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less
@@ -4121,7 +4251,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4166,7 +4296,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4213,7 +4343,7 @@
 !>    \param[in] ScalarIn
 !>    \verbatim
 !>        ScalarIn is Type(MQC_Scalar)
-!>        The MQC_Scalar input variable
+!>        The MQC_Scalar input variable.
 !>    \endverbatim
 !
 !     Authors:
@@ -4256,13 +4386,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to multiply
+!>        The intrinsic integer variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4306,13 +4436,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to multiply
+!>        The intrinsic integer variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar varibale to multiply
+!>        The MQC_Scalar varibale to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4356,13 +4486,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to multiply
+!>        The intrinsic real variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4406,13 +4536,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to multiply
+!>        The intrinsic real variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to multiply
+!>        The MQC_Scalar variable to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4456,13 +4586,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to multiply
+!>        The intrinsic complex variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to multiply
+!>        The MQC_Scalar variabel to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4506,13 +4636,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to multiply
+!>        The intrinsic complex variable to multiply.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to multiply
+!>        The MQC_Scalar variabel to multiply.
 !>    \endverbatim
 !
 !     Authors:
@@ -4556,13 +4686,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable numerator
+!>        The intrinsic integer variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4606,13 +4736,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable denominator
+!>        The intrinsic integer variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4656,13 +4786,13 @@
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable numerator
+!>        The intrinsic real variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4706,13 +4836,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable denominator
+!>        The intrinsic real variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4756,13 +4886,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex variable numerator
+!>        The intrinsic complex variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable denominator
+!>        The MQC_Scalar variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4806,13 +4936,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable numerator
+!>        The MQC_Scalar variable numerator.
 !>    \endverbatim
 !>
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex variable denominator
+!>        The intrinsic complex variable denominator.
 !>    \endverbatim
 !
 !     Authors:
@@ -4856,13 +4986,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to sum
+!>        The intrinsic integer variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -4906,13 +5036,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer variable to sum
+!>        The intrinsic integer variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar varibale to sum
+!>        The MQC_Scalar varibale to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -4956,13 +5086,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to sum
+!>        The intrinsic real variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5006,13 +5136,13 @@
 !>    \param[in] realIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real variable to sum
+!>        The intrinsic real variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to sum
+!>        The MQC_Scalar variable to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5056,13 +5186,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to sum
+!>        The intrinsic complex variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to sum
+!>        The MQC_Scalar variabel to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5106,13 +5236,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        Complex is Complex(kind=real64)
-!>        The intrinsic complex variable to sum
+!>        The intrinsic complex variable to sum.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variabel to sum
+!>        The MQC_Scalar variabel to sum.
 !>    \endverbatim
 !
 !     Authors:
@@ -5156,13 +5286,13 @@
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer to subtract from
+!>        The intrinsic integer to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5206,13 +5336,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] IntegerIn
 !>    \verbatim
 !>        IntegerIn is Integer(kind=int64)
-!>        The intrinsic integer to subtract
+!>        The intrinsic integer to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5256,13 +5386,13 @@
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real to subtract from
+!>        The intrinsic real to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5306,13 +5436,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] RealIn
 !>    \verbatim
 !>        RealIn is Real(kind=real64)
-!>        The intrinsic real to subtract
+!>        The intrinsic real to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5356,13 +5486,13 @@
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex to subtract from
+!>        The intrinsic complex to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract
+!>        The MQC_Scalar variable to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5406,13 +5536,13 @@
 !>    \param[in] Scalar
 !>    \verbatim 
 !>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar variable to subtract from
+!>        The MQC_Scalar variable to subtract from.
 !>    \endverbatim
 !>
 !>    \param[in] ComplexIn
 !>    \verbatim
 !>        ComplexIn is Complex(kind=real64)
-!>        The intrinsic complex to subtract
+!>        The intrinsic complex to subtract.
 !>    \endverbatim
 !
 !     Authors:
@@ -5442,13 +5572,52 @@
 !----------------------------------------------------------------
 !
 !     PROCEDURE MQC_Allocate_Vector
+!
+!>    \brief <b> MQC_Allocate_Vector is used to allocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_Vector is a subroutine used to allocate a vector type variable
+!>    of the MQC_Vector class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_Vector variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_Vector variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_Vector variable to be of complex type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The length of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in,out] Vector 
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_Vector is real
+!>        = 'Integer': the MQC_Vector is integer
+!>        = 'Complex': the MQC_Vector is complex
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Allocate_Vector(N,Vector,Data_Type)
-!
-!     This subroutine is used to allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5478,13 +5647,34 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_Vector
+!
+!>    \brief <b> MQC_Deallocate_Vector is used to deallocate a vector type variable
+!>    of the MQC_Vector class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_Vector is a subroutine used to deallocate a vector type variable
+!>    of the MQC_Vector class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable to deallocate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_Vector(Vector)
-!
-!     This subroutine is used to de-allocate memory for a vector variable
-!     belonging to the MQC_Vector class.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5502,13 +5692,33 @@
 !
 !
 !     PROCEDURE MQC_Length_Vector
+!
+!>    \brief <b> MQC_Length_Vector is used to return the length of an MQC vector</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Length_Vector is used to return the length of an MQC vector. If the vector
+!>    vector is NOT allocated, the length is returned as 0. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The name of the MQC_Vector variable whose length will be returned. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Length_Vector(Vector) Result(ValueOut)
-!
-!     This subroutine is used to return the length of an MQC vector. If the
-!     vector is NOT allocated, the length is returned as 0.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5522,13 +5732,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveReal
+!
+!>    \brief <b> MQC_Vector_HaveReal is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveReal is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveReal(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated real vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5542,13 +5773,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveInteger
+!
+!>    \brief <b> MQC_Vector_HaveInteger is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveInteger is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_HaveInteger(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated integer vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5562,13 +5814,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_HaveComplex
+!
+!>    \brief <b> MQC_Vector_HaveComplex is a function that returns TRUE or FALSE 
+!>    indicating whether the MQC vector has an allocated complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_HaveComplex is a function that returns TRUE or FALSE indicating 
+!>    whether the MQC vector has an allocated complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Function MQC_Vector_HaveComplex(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether Vector has an
-!     allocated complex vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5582,13 +5855,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_IsColumn
+!
+!>    \brief <b> MQC_Vector_IsColumn is a function that returns TRUE if the MQC 
+!>    vector is a column vector and FALSE if the MQC vector is a row vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_IsColumn is a function that returns TRUE if the MQC vector is a
+!>    column vector and FALSE if the MQC vector is a row vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_Vector_IsColumn(Vector)
-!
-!     This function returns TRUE or FALSE indicating whether the vector is
-!     a column or row respectively.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5602,13 +5896,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Real is a subroutine that copies an integer 
+!>    MQC_Vector into its real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Int2Real is a subroutine that copies an integer MQC_Vector 
+!>    into its real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Int2Real(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's real vector
-!     space.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5626,13 +5941,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Int2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Int2Complex is a subroutine that copies an integer 
+!>    MQC_Vector into its complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Int2Complex is a subroutine that copies an integer MQC_Vector 
+!>    into its complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Int2Complex(Vector)
-!
-!     This subroutine copies an integer MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5650,13 +5986,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Int is a subroutine that copies a real 
+!>    MQC_Vector into its integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Real2Int is a subroutine that copies a real MQC_Vector into its
+!>    integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Vector_Copy_Real2Int(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5674,13 +6031,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Real2Complex
+!
+!>    \brief <b> MQC_Vector_Copy_Real2Complex is a subroutine that copies a 
+!>    real MQC_Vector into its complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Real2Complex is a subroutine that copies a real MQC_Vector
+!>    into its complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Real2Complex(Vector)
-!
-!     This subroutine copies a real MQC_Vector into it's complex vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5699,13 +6077,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Int
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Int is a subroutine that copies a 
+!>    complex MQC_Vector into its integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Complex2Int is a subroutine that copies a complex MQC_Vector
+!>    into its integer vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Int(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's integer vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5723,13 +6122,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Copy_Complex2Real
+!
+!>    \brief <b> MQC_Vector_Copy_Complex2Real is a subroutine that copies a 
+!>    complex MQC_Vector into its real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Copy_Complex2Real is a subroutine that copies a complex MQC_Vector
+!>    into its real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Copy_Complex2Real(Vector)
-!
-!     This subroutine copies a complex MQC_Vector into it's real vector
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5747,11 +6167,42 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_At
+!
+!>    \brief <b> MQC_Vector_Scalar_At is a function that returns the ith element of
+!>    a MQC vector as an MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_At is a function that returns the ith element of a MQC vector 
+!>    as an MQC scalar. If the location of the element is negative the it is counted
+!>    from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vec to return. If I is 
+!>        negative it is counted from the last element of Vec.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng 
+!>    \date 2017
+!
       Function MQC_Vector_Scalar_At(Vec,I) Result(Element)
-!
-!     A function that returns the element at (i) of a mqc_vector type as a mqc_scalar type.
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5779,12 +6230,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Vector_At
+!
+!>    \brief <b> MQC_Vector_Vector_At is a function that returns the vector at
+!>    the specified subvector of MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Vector_At is a function that returns the vector at the specified 
+!>    subvector of MQC_Vector. Negative values of I or J indicate that counting 
+!>    proceeds from the last element rather than the first as with positive numbers.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector from which the subvector will be extracted.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the first subvector element in Vec. If I 
+!>        is negative it is counted from the last element of Vec.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The location of the last subvector element in Vec. If J 
+!>        is negative it is counted from the last element of Vec.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Vector_At(Vec,I,J) Result(Vector)
-!
-!     A function that returns MQC_Vector Vector between I and J of an
-!     MQC_Vector Vec. Negative I and J count from end of index.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Vector)::Vec
@@ -5842,12 +6330,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2IntegerArray
+!
+!>    \brief <b> MQC_Set_Vector2IntegerArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic integer array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2IntegerArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic integer array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsc
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian 
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2IntegerArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5881,12 +6399,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2RealArray
+!
+!>    \brief <b> MQC_Set_Vector2RealArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic real array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2RealArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic real array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsic
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2RealArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5920,12 +6468,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2ComplexArray
+!
+!>    \brief <b> MQC_Set_Vector2ComplexArray is a subroutine that outputs an MQC
+!>    vector to a rank 1 intrinsic complex array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2ComplexArray is a subroutine that outputs an MQC vector to
+!>    a rank 1 intrinsic complex array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array which will receive the contents
+!>        of MQC_Vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsic
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Set_Vector2ComplexArray(ArrayOut,VectorIn)
-!
-!     This routine is used to set a rank-1 array equal to an MQC vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5959,12 +6537,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Integer
+!
+!>    \brief <b> MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 
+!>    intrinsic integer array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Integer is a subroutine that sets a rank 1 intrinsic 
+!>    integer array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Array2Vector_Integer(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -5984,12 +6592,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Real
+!
+!>    \brief <b> MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector
+!>    intrinsic real array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Real is a subroutine that sets a rank 1 vector intrinsic
+!>    real array equal to a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn 
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Set_Array2Vector_Real(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6005,12 +6643,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Vector_Complex
+!
+!>    \brief <b> MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 
+!>    vector intrinsic complex array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Complex is a subroutine that sets a rank 1 vector intrinsic
+!>    complex array equal to a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to the rank 1 
+!>        intrinsic array 
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn 
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Set_Array2Vector_Complex(VectorOut,ArrayIn)
-!
-!     This routine is used to set an MQC vector equal to a rank-1 array.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6026,13 +6694,42 @@
 !
 !
 !     PROCEDURE MQC_Set_Vector2Vector
+!
+!>    \brief <b> MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal 
+!>    to another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal to another 
+!>    MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] VectorOut
+!>    \verbatim
+!>        VectorOut is Type(MQC_Vector)
+!>        The MQC vector that will be set equal to VectorIn.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector whose contents will be copied to 
+!>        VectorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Subroutine MQC_Set_Vector2Vector(VectorOut,VectorIn)
-!
-!     This routine is used to set an MQC vector equal to another MQC
-!     vector.
-!
-!     H. P. Hratchian, 2016.
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -6066,12 +6763,40 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorSum
+!
+!>    \brief <b> MQC_VectorVectorSum is a function that adds two MQC vectors and
+!>    stores them in another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorSum is a function that adds two MQC vectors and stores them in
+!>    another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector that will be summed.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector that will be summed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_VectorVectorSum(Vector1In,Vector2In)
-!
-!     This routine is used to add two MQC vectors and store them into
-!     another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorSum
@@ -6154,12 +6879,42 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorDifference
+!
+!>    \brief <b> MQC_VectorVectorDifference is a function that subtracts two MQC 
+!>    vectors and stores them in another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorDifference is a function that subtracts two MQC vectors and 
+!>    stores them in another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector from which the second will be 
+!>        subtracted.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector that will be subtracted from the
+!>        first.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_VectorVectorDifference(Vector1In,Vector2In)
-!
-!     This routine is used to subtract two MQC vectors and store them into
-!     another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_VectorVectorDifference
@@ -6242,12 +6997,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorSum
+!
+!>    \brief <b> MQC_ScalarVectorSum is a function that adds an MQC scalar to all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorSum is a function that adds an MQC scalar to all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to add to the MQC vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements to sum with ScalarIn.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ScalarVectorSum(ScalarIn,VectorIn)
-!
-!     This routine is used to add an MQC scalar to all elements in a MQC vector and
-!     store it into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ScalarVectorSum
@@ -6318,12 +7101,42 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorDifference
+!
+!>    \brief <b> MQC_ScalarVectorDifference is a function that subtracts an MQC 
+!>    scalar from all elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarVectorDifference is a function that subtracts an MQC scalar from 
+!>    all elements of an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to be subtracted from elements of the
+!>        the MQC vector.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements from which ScalarIn will
+!>        be subtracted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ScalarVectorDifference(ScalarIn,VectorIn)
-!
-!     This routine is used to subtract an MQC scalar to all elements in a MQC vector and
-!     store it into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ScalarVectorDifference
@@ -6397,12 +7210,40 @@
 !
 !
 !     PROCEDURE MQC_ElementVectorProduct
+!
+!>    \brief <b> MQC_ElementVectorProduct is a function that multiplies two MQC 
+!>    vectors elementwise and stores them into another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ElementVectorProduct is a function that multiplies two MQC vectors 
+!>    elementwise and stores them into another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The frist MQC vector to multiply elementwise.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector to multiply elementwise.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2016
+!
       Function MQC_ElementVectorProduct(Vector1In,Vector2In)
-!
-!     This routine is used to multiply two MQC vectors elementwise and store them
-!     into another MQC vector.
-!
-!     Lee M. Thompson 2016.
 !
       Implicit None
       Type(MQC_Vector)::MQC_ElementVectorProduct
@@ -6485,12 +7326,33 @@
 !
 !
 !     PROCEDURE MQC_Vector_Transpose
+!
+!>    \brief <b> MQC_Vector_Transpose is a function that returns the transpose of an
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Transpose is a function that returns the transpose of an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC vector to transpose.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Vector_Transpose(Vector)
-!
-!     This function returns the transpose of an MQC vector.
-!
-!     H. P. Hratchian, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6506,12 +7368,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Conjugate_Transpose
+!
+!>    \brief <b> MQC_Vector_Conjugate_Transpose is a function that returns the 
+!>    conjugate transpose of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Conjugate_Transpose is a function that returns the conjugate 
+!>    transpose of an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC vector to conjugate transpose.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Conjugate_Transpose(Vector)
-!
-!     This function returns the conjugate transpose of an MQC vector.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6529,13 +7413,42 @@
 !
 !
 !     PROCEDURE MQC_VectorVectorDotProduct
+!
+!>    \brief <b> MQC_VectorVectorDotProduct is a function that returns the 
+!>    dot product of two MQC vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorVectorDotProduct is a function that returns the dot product of two 
+!>    MQC vectors. The first vector should be a row vector, while the second vector
+!>    should be a column vector. The vectors should be of the same length.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1
+!>    \verbatim
+!>        Vector1 is Type(MQC_Vector)
+!>        The MQC row vector. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector2
+!>    \verbatim
+!>        Vector2 is Type(MQC_Vector)
+!>        The MQC column vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_VectorVectorDotProduct(Vector1,Vector2)
-!
-!     This function is used to compute the dot-product of two MQC vectors.
-!
-!     H. P. Hratchian, 2016.
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6605,14 +7518,44 @@
       EndIf
 !
       Return
-    End Function MQC_VectorVectorDotProduct
+      End Function MQC_VectorVectorDotProduct
 
-!   Procedure mqc_outer
-    Function mqc_outer(VA,VB) result(M)
+!     PROCEDURE MQC_Outer
 !
-!   This function calculates the outer product of mqc_vector VA and VB,
-!   returns a mqc_matrix M.
-!   X. Sheng 2017.02
+!>    \brief <b> MQC_Outer is a function that returns the outer product of two MQC 
+!>    vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Outer is a function that returns the outer product of two MQC vectors. The
+!>    first vector should be a column vector, while the second vector should be a row 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Type(MQC_Vector)
+!>        The MQC column vector. 
+!>    \endverbatim
+!>
+!>    \param[in] VB
+!>    \verbatim
+!>        VB is Type(MQC_Vector)
+!>        The MQC row vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+    Function mqc_outer(VA,VB) result(M)
 !
       implicit none
       type(mqc_vector),intent(in)::VA,VB
@@ -6668,12 +7611,40 @@
 !
 !
 !     PROCEDURE MQC_CrossProduct
+!
+!>    \brief <b> MQC_CrossProduct is a function that returns the cross product of 
+!>    two MQC vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_CrossProduct is a function that returns the cross product of two MQC 
+!>    vectors. The vectors should both be of length 3.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1In
+!>    \verbatim
+!>        Vector1In is Type(MQC_Vector)
+!>        The first MQC vector. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector2In
+!>    \verbatim
+!>        Vector2In is Type(MQC_Vector)
+!>        The second MQC vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_CrossProduct(Vector1In,Vector2In)
-!
-!     This function is used to compute the cross-product of two 3D MQC vectors.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6807,13 +7778,68 @@
 !
 !
 !     PROCEDURE MQC_Print_Vector_Algebra1
+!
+!>    \brief <b> MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC
+!>    vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Vector_Algebra1 is a subroutine used to print an MQC vector. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Vector.
+!>    \endverbatim
+!>
+!>    \param[in] Verbose
+!>    \verbatim
+!>        Verbose is Logical,Optional
+!>        Adds extra printing to output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
         Blank_At_Bottom)
-!
-!     This subroutine is used to print a MQC_Vector type variable.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -6868,12 +7894,79 @@
       End Subroutine MQC_Print_Vector_Algebra1
 !
 !
-!     PROCEDURE MQC_vector_cast_real
-      function MQC_vector_cast_real(VA) result(VB)
-!     This function converts a mqc_vector to real. Only integer vector is allowed
-!     because it would lose accuracy otherwise.
+!     PROCEDURE MQC_vector_cast_integer
 !
-!     X. Sheng, 2017.02
+!>    \brief <b> MQC_vector_cast_integer is a function that converts an MQC vector to
+!>    its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_vector_cast_integer is a function that converts an MQC vector to its 
+!>    integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Type(MQC_Vector)
+!>        The MQC vector to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2019
+!
+      function MQC_vector_cast_integer(VA) result(VB)
+!
+      implicit none
+      type(mqc_vector),intent(in)::VA
+      type(mqc_vector)::VB
+
+      call mqc_allocate_vector(VA%length,VB,'Integer')
+      if(mqc_have_real(VA)) then
+        VB%veci = VA%vecr
+      elseif(mqc_have_complex(VA)) then
+        VB%veci = VA%vecc
+      endif
+
+      end function MQC_vector_cast_integer
+!
+!
+!     PROCEDURE MQC_vector_cast_real
+!
+!>    \brief <b> MQC_vector_cast_real is a function that converts an MQC vector to
+!>    its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_vector_cast_real is a function that converts an MQC vector to its real 
+!>    space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Class(MQC_Vector)
+!>        The MQC vector to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+      function MQC_vector_cast_real(VA) result(VB)
 !
       implicit none
       type(mqc_vector),intent(in)::VA
@@ -6881,16 +7974,48 @@
 
       temp = VA%veci
       call mqc_allocate_vector(VA%length,VB,'Real')
+<<<<<<< HEAD
       VB%vecr = temp
+=======
+      if(mqc_have_int(VA)) then
+        VB%vecr = VA%veci
+      elseif(mqc_have_complex(VA)) then
+        VB%vecr = VA%vecc
+      endif
+>>>>>>> 506360defb7cfe0018cc610be0a5a080202bfd10
 
       end function MQC_vector_cast_real
 !
 !
 !     PROCEDURE MQC_vector_cast_complex
-      function MQC_vector_cast_complex(VA) result(VB)
-!     This function converts a mqc_vector to complex. 
 !
-!     X. Sheng, 2017.02
+!>    \brief <b> MQC_vector_cast_complex is a function that converts an MQC vector to
+!>    its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_vector_cast_complex is a function that converts an MQC vector to its 
+!>    complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Class(MQC_Vector)
+!>        The MQC vector to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      function MQC_vector_cast_complex(VA) result(VB)
 !
       implicit none
       type(mqc_vector),intent(in)::VA
@@ -6907,21 +8032,71 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_Put
-      Subroutine MQC_Vector_Scalar_Put(Vector,Scalar,I)
 !
-!     This subroutine updates the value of MQC_Vector Vector with the value
-!     in MQC_Scalar Scalar at element I.
+!>    \brief <b> MQC_Vector_Scalar_Put is a subroutine that updates the value of the
+!>    ith element of a MQC vector with a value</b>
 !
-!     L. M. Thompson, 2017.
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_Put is a subroutine that updates the value of the ith element
+!>    of a MQC vector with a value. If the location of the element is negative then 
+!>    it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
 !
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update Vector at element I.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vector to update. If I
+!>        is negative it is counted from the last element of 
+!>        Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Vector_Scalar_Put(Vector,ScalarIn,I)
 !
 !     Variable Declarations.
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I
       Class(MQC_Vector),Intent(InOut)::Vector
-      Type(MQC_Scalar),Intent(In)::Scalar
+      Class(*),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI
+
+      Select Type (ScalarIn)
+      Type Is (Integer)
+        Scalar = ScalarIn
+      Type Is (Real)
+        Scalar = ScalarIn
+      Type Is (Complex)
+        Scalar = ScalarIn
+      Type Is (MQC_Scalar)
+        Scalar = ScalarIn
+      Class Default
+        Call MQC_Error_I('ScalarIn type not defined in MQC_Vector_Scalar_Put',6)
+      End Select
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
@@ -6974,11 +8149,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_Increment
+!
+!>    \brief <b> MQC_Vector_Scalar_Increment is a subroutine that increments the 
+!>    value of the ith element of a MQC vector by the value of a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_Increment is a subroutine that increments the value of the 
+!>    ith element of a MQC vector by the value of a MQC scalar. If the location of 
+!>    the element is negative then it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to update the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the element in Vector to update. If I
+!>        is negative it is counted from the last element of 
+!>        Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Scalar_Increment(Vector,Scalar,I)
-!
-!     This subroutine increments the value of MQC_Vector <Vector> by <scalar> at
-!     element <I>.
-!
 !
 !     Variable Declarations.
 !
@@ -7039,13 +8252,49 @@
 !
 !
 !     PROCEDURE MQC_Vector_Vector_Put
+!
+!>    \brief <b> MQC_Vector_Vector_Put is a subroutine that updates the values of a 
+!>    subvector of a MQC vector with the values of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Vector_Put is a subroutine that updates the values of a subvector 
+!>    of a MQC vector starting at element I with the values of a MQC vector. Negative 
+!>    I counts from the end of vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update starting at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Class(MQC_Vector)
+!>        The subvector with values to insert into Vector. 
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The location of the first subvector element in Vector 
+!>        to update. If I is negative it is counted from the last
+!>        element of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Vector_Put(Vector,VectorIn,I)
-!
-!     This subroutine updates the value of MQC_Vector Vector with the value
-!     in MQC_Vector VectorIn elements between I and J. Negative I and J count
-!     from end of vector.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Vector),Intent(InOut)::Vector
@@ -7066,19 +8315,19 @@
       Length = IndJ-IndI+1
       If (Length.le.0.or.Length.gt.Vector%Length.or.Length.ne.VectorIn%Length) Call MQC_Error_I('Vector length badly &
     &  defined in MQC_Vector_Vector_Put', 6, &
-    'Length', Length, &
-    'Vector%Length', Vector%Length, &
-    'VectorIn%Length', VectorIn%Length )
+       'Length', Length, &
+       'Vector%Length', Vector%Length, &
+       'VectorIn%Length', VectorIn%Length )
       If (IndI.le.0.or.IndI.gt.(Vector%Length-Length+1)) Call MQC_Error_I('Index I out of bounds &
     &   in MQC_Vector_Vector_Put', 6, &
-    'IndI', IndI, &
-    'Vector%Length', Vector%Length, &
-    'Length', Length )
+        'IndI', IndI, &
+        'Vector%Length', Vector%Length, &
+        'Length', Length )
       If (IndJ.lt.Length.or.IndJ.gt.Vector%Length) Call MQC_Error_I('Index J out of bounds &
     &   in MQC_Vector_Vector_Put', 6, &
-    'IndJ', IndJ, &
-    'Length', Length, &
-    'Vector%Length', Vector%Length )
+        'IndJ', IndJ, &
+        'Length', Length, &
+        'Vector%Length', Vector%Length )
       If (Vector%Data_Type.eq.'Integer') then
         If (VectorIn%Data_Type.eq.'Integer') then
           Vector%VecI(IndI:IndJ) = VectorIn%VecI
@@ -7124,13 +8373,48 @@
 !
 !
 !     PROCEDURE MQC_Vector_Initialize
+!
+!>    \brief <b> MQC_Vector_Initialize is a subroutine that initializes a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Initialize is a subroutine that initializes a MQC vector. Default
+!>    element values are 0.0, or otherwise vector can be initialized with optional
+!>    argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to intialize.
+!>    \endverbatim
+!>
+!>    \param[in] Length
+!>    \verbatim
+!>        Length is Integer(kind=int64)
+!>        The length to initialize vector
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        Value to set each element of Vector. If not present,
+!>        the value is set to 0.0. Can be of type integer, real,
+!>        complex or MQC_Scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Initialize(Vector,Length,Scalar)
-!
-!     This subroutine initializes an MQC_Vector Vector of dimension
-!     Length with the value Scalar in all elements.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -7174,73 +8458,132 @@
 !
 !
 !     PROCEDURE MQC_ScalarVectorProduct
+!
+!>    \brief <b> MQC_ScalarVectorProduct is a function that returns the product of a
+!>    MQC scalar with a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarVectorProduct is a function that returns the product of a MQC scalar 
+!>    with a MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to multiply. 
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng      
+!>    \author A. D. Mahler  
+!>    \date 2017, 2019
+!
       Function MQC_ScalarVectorProduct(Scalar,Vector) Result(Vector_Res)
-!     This function calculates the product of an mqc_scalar and an mqc_vector
 !
-!      X. Sheng 2017.02
-!      A. Mahler, 2019
-!
-        implicit none
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
-        
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Integer')
-            vector_res%veci = scalar%scai * vector%veci
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%veci
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%veci
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Real') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scai * vector%vecr
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Real')
-            vector_res%vecr = scalar%scar * vector%vecr
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecr
-          else
-            call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
-        elseIf(vector%Data_type.eq.'Complex') then
-          if(scalar%Data_type.eq.'Integer') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scai * vector%vecc
-          elseIf(scalar%Data_type.eq.'Real') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scar * vector%vecc
-          elseIf(scalar%Data_type.eq.'Complex') then
-            call mqc_allocate_vector(vector%length,vector_res,'Complex')
-            vector_res%vecc = scalar%scac * vector%vecc
-          else
-            call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
-                 'scalar%Data_type', scalar%Data_type )
-          endIf
+      implicit none
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+      
+      call mqc_deallocate_vector(vector_res)
+      if (vector%Data_type.eq.'Integer') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Integer')
+          vector_res%veci = scalar%scai * vector%veci
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scar * vector%veci
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%veci
         else
           call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
-               'vector%Data_type', vector%Data_type )
-        endif
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      elseIf(vector%Data_type.eq.'Real') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scai * vector%vecr
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Real')
+          vector_res%vecr = scalar%scar * vector%vecr
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%vecr
+        else
+          call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      elseIf(vector%Data_type.eq.'Complex') then
+        if(scalar%Data_type.eq.'Integer') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scai * vector%vecc
+        elseIf(scalar%Data_type.eq.'Real') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scar * vector%vecc
+        elseIf(scalar%Data_type.eq.'Complex') then
+          call mqc_allocate_vector(vector%length,vector_res,'Complex')
+          vector_res%vecc = scalar%scac * vector%vecc
+        else
+          call mqc_error_A('unrecognised data type in mqc_vectorscalarproduct', 6, &
+               'scalar%Data_type', scalar%Data_type )
+        endIf
+      else
+        call mqc_error_a('unrecognised data type in mqc_vectorscalarproduct', 6, &
+             'vector%Data_type', vector%Data_type )
+      endif
 
       end function mqc_ScalarVectorProduct
 !
 !     PROCEDURE MQC_VectorScalarProduct
+!
+!>    \brief <b> MQC_VectorScalarProduct is a function that returns the product of a
+!>    MQC vector with a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarProduct is a function that returns the product of a MQC vector 
+!>    with a MQC scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply. 
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng      
+!>    \date 2017
+!
       function mqc_VectorScalarProduct(vector,scalar) result(vector_res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_matrix
-!
-!     X. Sheng 2017.02
 !
       implicit none
       type(mqc_scalar),intent(in)::scalar
@@ -7253,42 +8596,97 @@
 !
 !
 !     PROCEDURE MQC_VectorScalarDivide
+!
+!>    \brief <b> MQC_VectorScalarDivide is a function that returns a MQC vector
+!>    divided by a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarDivide is a function that returns a MQC vector divided by a 
+!>    MQC scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler  
+!>    \date 2019
+!
       Function MQC_VectorScalarDivide(vector,scalar) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a scalar.
-!     Function determines if scalar is zero, then passes reciprocal of
-!     scalar to MQC_VectorScalarProduct
-!
-!     A. Mahler, 2019
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        type(mqc_scalar),intent(in)::scalar
-        type(mqc_vector)::vector_res
-        type(mqc_scalar)::zero,neg_one,reciprocal
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_vector)::vector_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
 
-        zero = 0.0
-        neg_one = -1.0
+      zero = 0.0
+      neg_one = -1.0
 
-        if(scalar%abs() .le. zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = scalar
-          reciprocal = reciprocal ** neg_one
-        endif
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
 
-        vector_res = MQC_VectorScalarProduct(vector,reciprocal)
+      vector_res = MQC_VectorScalarProduct(vector,reciprocal)
 
       End Function MQC_VectorScalarDivide
 !
 !
 !     PROCEDURE MQC_RealVectorProduct
+!
+!>    \brief <b> MQC_RealVectorProduct is a function that returns the product of an  
+!>    intrinsic real scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealVectorProduct is a function that returns the product of an intrinsic 
+!>    real scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The real intrinsic to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_RealVectorProduct(RealIn,Vector) Result(Vector_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
 !
         implicit none
         real(kind=real64),intent(in)::realIn
@@ -7314,11 +8712,40 @@
 !
 !
 !     PROCEDURE MQC_VectorRealProduct
+!
+!>    \brief <b> MQC_VectorRealProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic real scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorRealProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic real scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The real intrinsic to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorRealProduct(vector,realIn) result(vector_res)
-!
-!     This function calculates the product of a real and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       real(kind=real64),intent(in)::realIn
@@ -7331,70 +8758,156 @@
 !
 !
 !     PROCEDURE MQC_VectorRealDivide
+!
+!>    \brief <b> MQC_VectorRealDivide is a function that returns a MQC vector
+!>    divided by an intrinsic real integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorRealDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic real scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorRealDivide(vector,realIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a real.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        real(kind=real64),intent(in)::realIn
-        type(mqc_vector)::vector_res
-        real(kind=real64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      real(kind=real64),intent(in)::realIn
+      type(mqc_vector)::vector_res
+      real(kind=real64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(realIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = realIn
-          reciprocal = reciprocal ** (-1.0)
-        endif
+      if(abs(realIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = realIn
+        reciprocal = reciprocal ** (-1.0)
+      endif
 
-        vector_res = MQC_VectorRealProduct(vector,reciprocal)
+      vector_res = MQC_VectorRealProduct(vector,reciprocal)
 
       End Function MQC_VectorRealDivide
 !
 !
-!     PROCEDURE MQC_integerVectorProduct
+!     PROCEDURE MQC_IntegerVectorProduct
+!
+!>    \brief <b> MQC_IntegerVectorProduct is a function that returns the product of 
+!>    an intrinsic integer scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerVectorProduct is a function that returns the product of an intrinsic 
+!>    integer scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_IntegerVectorProduct(intIn,Vector) Result(Vector_Res)
 !
-!     This function calculates the product of an integer and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
-!
-        implicit none
-        integer(kind=int64),intent(in)::intIn
-        type(mqc_vector),intent(in)::vector
-        type(mqc_vector)::vector_res
-        
-        call mqc_deallocate_vector(vector_res)
-        if (vector%Data_type.eq.'Integer') then
-          call mqc_allocate_vector(vector%length,vector_res,'Integer')
-          vector_res%veci = intIn * vector%veci
-        elseIf(vector%Data_type.eq.'Real') then
-          call mqc_allocate_vector(vector%length,vector_res,'Real')
-          vector_res%vecr = intIn * vector%vecr
-        elseIf(vector%Data_type.eq.'Complex') then
-          call mqc_allocate_vector(vector%length,vector_res,'Complex')
-          vector_res%vecc = intIn * vector%vecc
-        else
-          call mqc_error_a('unrecognised data type in mqc_integervectorproduct', 6, &
-               'vector%Data_type', vector%Data_type )
-        endif
+      implicit none
+      integer(kind=int64),intent(in)::intIn
+      type(mqc_vector),intent(in)::vector
+      type(mqc_vector)::vector_res
+      
+      call mqc_deallocate_vector(vector_res)
+      if (vector%Data_type.eq.'Integer') then
+        call mqc_allocate_vector(vector%length,vector_res,'Integer')
+        vector_res%veci = intIn * vector%veci
+      elseIf(vector%Data_type.eq.'Real') then
+        call mqc_allocate_vector(vector%length,vector_res,'Real')
+        vector_res%vecr = intIn * vector%vecr
+      elseIf(vector%Data_type.eq.'Complex') then
+        call mqc_allocate_vector(vector%length,vector_res,'Complex')
+        vector_res%vecc = intIn * vector%vecc
+      else
+        call mqc_error_a('unrecognised data type in mqc_integervectorproduct', 6, &
+             'vector%Data_type', vector%Data_type )
+      endif
 
       end function mqc_IntegerVectorProduct
 !
 !
 !     PROCEDURE MQC_VectorIntegerProduct
+!
+!>    \brief <b> MQC_VectorIntegerProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic integer scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorIntegerProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic integer scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The integer intrinsic to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorIntegerProduct(vector,intIn) result(vector_res)
-!
-!     This function calculates the product of an integer and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       integer(kind=int64),intent(in)::intIn
@@ -7407,40 +8920,97 @@
 !
 !
 !     PROCEDURE MQC_VectorIntegerDivide
+!
+!>    \brief <b> MQC_VectorIntegerDivide is a function that returns a MQC vector
+!>    divided by an intrinsic integer scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorIntegerDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic integer scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn 
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorIntegerDivide(vector,intIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by an integer.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        integer(kind=int64),intent(in)::intIn
-        type(mqc_vector)::vector_res
-        integer(kind=int64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      integer(kind=int64),intent(in)::intIn
+      type(mqc_vector)::vector_res
+      integer(kind=int64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(intIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = intIn
-          reciprocal = reciprocal ** (-1)
-        endif
+      if(abs(intIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = intIn
+        reciprocal = reciprocal ** (-1)
+      endif
 
-        vector_res = MQC_VectorIntegerProduct(vector,reciprocal)
+      vector_res = MQC_VectorIntegerProduct(vector,reciprocal)
 
       End Function MQC_VectorIntegerDivide
 !
 !
 !     PROCEDURE MQC_ComplexVectorProduct
+!
+!>    \brief <b> MQC_ComplexVectorProduct is a function that returns the product of 
+!>    an intrinsic complex scalar and a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexVectorProduct is a function that returns the product of an intrinsic 
+!>    integer scalar and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] CompIn
+!>    \verbatim
+!>        CompIn is Complex(kind=real64)
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_ComplexVectorProduct(CompIn,Vector) Result(Vector_Res)
-!
-!     This function calculates the product of a complex variable and an mqc_vector
-!
-!     L. M. Thompson, 2019.
-!
 !
         implicit none
         complex(kind=real64),intent(in)::compIn
@@ -7466,11 +9036,40 @@
 !
 !
 !     PROCEDURE MQC_VectorComplexProduct
+!
+!>    \brief <b> MQC_VectorComplexProduct is a function that returns the product of a  
+!>    MQC vector and an intrinsic complex scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorComplexProduct is a function that returns the product of a MQC vector 
+!>    and an intrinsic complex scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] CompIn
+!>    \verbatim
+!>        CompIn is Complex(kind=real64)
+!>        The integer complex to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       function mqc_VectorComplexProduct(vector,compIn) result(vector_res)
-!
-!     This function calculates the product of a complex variable and an mqc_vector
-!
-!     L. M. Thompson, 2019.
 !
       implicit none
       complex(kind=real64),intent(in)::compIn
@@ -7483,45 +9082,104 @@
 !
 !
 !     PROCEDURE MQC_VectorComplexDivide
+!
+!>    \brief <b> MQC_VectorComplexDivide is a function that returns a MQC vector
+!>    divided by an intrinsic complex scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorComplexDivide is a function that returns a MQC vector divided by an 
+!>    intrinsic complex scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector to divide.
+!>    \endverbatim
+!>
+!>    \param[in] CompIn 
+!>    \verbatim
+!>        CompIn is Complex(kind=comp64)
+!>        The intrinsic complex scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_VectorComplexDivide(vector,compIn) Result(vector_res)
 !
-!     This function returns the value of a vector divided by a complex.
-!
-!     L. M. Thompson, 2019.
-!
-        implicit none
-        type(mqc_vector),intent(in)::vector
-        complex(kind=real64),intent(in)::compIn
-        type(mqc_vector)::vector_res
-        complex(kind=real64)::reciprocal
-        type(mqc_scalar)::zero
+      implicit none
+      type(mqc_vector),intent(in)::vector
+      complex(kind=real64),intent(in)::compIn
+      type(mqc_vector)::vector_res
+      complex(kind=real64)::reciprocal
+      type(mqc_scalar)::zero
 
-        zero = 0.0
+      zero = 0.0
 
-        if(abs(compIn).le.zero) then 
-          call mqc_error_a('Cannot divide by zero:', 6)
-        else
-          reciprocal = compIn
-          reciprocal = reciprocal ** (-1.0)
-        endif
+      if(abs(compIn).le.zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = compIn
+        reciprocal = reciprocal ** (-1.0)
+      endif
 
-        vector_res = MQC_VectorComplexProduct(vector,reciprocal)
+      vector_res = MQC_VectorComplexProduct(vector,reciprocal)
 
       End Function MQC_VectorComplexDivide
 !
 !
 !     PROCEDURE MQC_Vector_Norm
+!
+!>    \brief <b> MQC_Vector_Norm is a function that returns the norm of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Norm is a function that returns the norm of an MQC vector. The 
+!>    following options are available:
+!>
+!>    1. methodIn = 'M' uses the maximum absolute value max(abs(A(i))).
+!>    2. methodIn = '1' uses the one norm.
+!>    3. methodIn = 'I' uses the infinity norm.
+!>    4. methodIn = 'F' uses the Frobenius norm (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] MethodIn
+!>    \verbatim
+!>        MethodIn is Character(len=1)
+!>        = 'M': max(abs(A(i)))
+!>        = '1': one norm
+!>        = 'I': infinity norm
+!>        = 'F': Frobenius norm.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Norm(vector,methodIn) result(norm)
-!
-!     This function returns the norm of an mqc vector.
-!     Different norms can be computed with optional argument methodIn.
-!     'M' - max(abs(A(i,j)))
-!     '1' - one norm
-!     'I' - infinty norm
-!     'F' - Frobenius norm (default)
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -7564,11 +9222,34 @@
       End Function MQC_Vector_Norm
 !
 !     PROCEDURE MQC_Vector_isAllocated
+!
+!>    \brief <b> MQC_Vector_isAllocated is a function that returns TRUE is an MQC
+!>    vector is allocated and FALSE if it is not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_isAllocated is a function that returns TRUE is an MQC vector is 
+!>    allocated and FALSE if it is not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_isAllocated(Vector) Result(isAllocated)
-!
-!     This function returns if an mqc vector is allocated or not.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -7585,11 +9266,39 @@
 !
 !
 !     PROCEDURE MQC_Vector_Push
+!
+!>    \brief <b> MQC_Vector_Push is a function that adds a value to the end of a 
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Push is a function that adds a value to the end of a MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar) 
+!>        The value that will be added to the end of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Push(Vector,Scalar) 
-!
-!     This function adds a value to the end of a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7613,11 +9322,40 @@
 !
 !
 !     PROCEDURE MQC_Vector_Unshift
+!
+!>    \brief <b> MQC_Vector_Unshift is a function that adds a value to the beginning
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Unshift is a function that adds a value to the beginning of a MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar) 
+!>        The value that will be added to the beginning of Vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Vector_Unshift(Vector,Scalar) 
-!
-!     This function adds a value to the beginning of a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7641,11 +9379,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Pop
+!
+!>    \brief <b> MQC_Vector_Pop is a function that removes a value from the end of
+!>    a MQC vector and returns it</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Pop is a function that removes a value from the end of a MQC vector 
+!>    and returns it.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Pop(Vector) result(Output)
-!
-!     This function removes a value from the end of a vector and returns it.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7668,11 +9429,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Shift
+!
+!>    \brief <b> MQC_Vector_Shift is a function that removes a value from the 
+!>    beginning of a MQC vector and returns it</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Pop is a function that removes a value from the beginning of a MQC 
+!>    vector and returns it.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_Shift(Vector) result(Output)
-!
-!     This function removes a value from the beginning of a vector and returns it.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7695,11 +9479,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MaxVal
+!
+!>    \brief <b> MQC_Vector_MaxVal is a function that returns the largest value in  
+!>    an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MaxVal is a function that returns the largest value in an MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_MaxVal(Vector) result(Output)
-!
-!     This function returns the largest value in a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7723,11 +9530,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MinVal
+!
+!>    \brief <b> MQC_Vector_MinVal is a function that returns the smallest value in  
+!>    an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MinVal is a function that returns the smallest value in an MQC 
+!>    vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Vector_MinVal(Vector) result(Output)
-!
-!     This function returns the smallest value in a vector.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       implicit none
@@ -7751,11 +9581,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MaxLoc
+!
+!>    \brief <b> MQC_Vector_MaxLoc is a function that returns the index of the 
+!>    largest value in an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MaxLoc is a function that returns the index of the largest value in 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_MaxLoc(Vector) result(Output)
-!
-!     This function returns the index of the largest value in a vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -7781,11 +9634,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_MinLoc
+!
+!>    \brief <b> MQC_Vector_MinLoc is a function that returns the index of the 
+!>    smallest value in an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_MinLoc is a function that returns the index of the smallest value 
+!>    in an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_MinLoc(Vector) result(Output)
-!
-!     This function returns the index of the smallest value in a vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -7811,11 +9687,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Argsort
+!
+!>    \brief <b> MQC_Vector_Argsort is a function that returns the indices of an
+!>    an MQC vector sorted from low to high</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Argsort is a function that returns the indices of an MQC vector
+!>    sorted from low to high.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_ArgSort(Vector) result(Output)
-!
-!     This function returns the indices of the vector sorted from low to high
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -7843,13 +9742,41 @@
 !
 !
 !     PROCEDURE MQC_Vector_Sort
+!
+!>    \brief <b> MQC_Vector_Sort is a function that returns an MQC vector sorted
+!>    from low to high unless optional index order is present</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sort is a function that returns an MQC vector sorted from low to 
+!>    high unless optional argument idx is present which gives the new order of the 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] idx
+!>    \verbatim
+!>        idx is Type(MQC_Vector),Optional
+!>        The new order of indices after sort. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Subroutine MQC_Vector_Sort(Vector,idx)
-!
-!     This function returns the vector sorted from low to high unless
-!     optional argument idx is present which gives the new order of the
-!     vector.
-!
-!     L. M. Thompson, 2019.
 !
 !     Variable Declarations.
       implicit none
@@ -7875,9 +9802,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Sqrt
-      subroutine mqc_vector_sqrt(A)
 !
-!     This subroutine returns the square root of INPUT vector A.
+!>    \brief <b> MQC_Vector_Sqrt is a function that returns the square root of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sqrt is a function that returns the square root of all elements of
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_vector_sqrt(A)
 !
       Implicit None
       class(mqc_vector),intent(inOut)::A
@@ -7893,9 +9845,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Abs
-      function mqc_vector_abs(A) result(output)
 !
-!     This function returns the absolute values of INPUT vector A.
+!>    \brief <b> MQC_Vector_Abs is a function that returns the absolute value of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sqrt is a function that returns the absolute value of all elements 
+!>    of an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_abs(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -7913,10 +9890,41 @@
 !
 !
 !     PROCEDURE MQC_Vector_Power
-      subroutine mqc_vector_power(A,P)
 !
-!     This subroutine returns the elements of INPUT vector A raised
-!     to the power P.
+!>    \brief <b> MQC_Vector_Power is a function that returns the value of all
+!>    elements of an MQC vector raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Power is a function that returns the value of all elements of an 
+!>    MQC vector raised to a power. The power can be integer, real, complex or an
+!>    MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_vector_power(A,P)
 !
       Implicit None
       class(mqc_vector),intent(inOut)::A
@@ -7950,9 +9958,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Complex_RealPart
-      function mqc_vector_complex_realPart(A) result(output)
 !
-!     This function returns the real part of INPUT vector A.
+!>    \brief <b> MQC_Vector_Complex_RealPart is a function that returns a MQC vector
+!>    with elements containing the real part of elements of another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Complex_RealPart is a function that returns a MQC vector with 
+!>    elements containing the real part of elements of another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_complex_realPart(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -7970,9 +10003,34 @@
 !
 !
 !     PROCEDURE MQC_Vector_Complex_ImagPart
-      function mqc_vector_complex_imagPart(A) result(output)
 !
-!     This function returns the imaginary part of INPUT vector A.
+!>    \brief <b> MQC_Vector_Complex_ImagPart is a function that returns a MQC vector
+!>    with elements containing the imaginary part of elements of another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Complex_ImagPart is a function that returns a MQC vector with 
+!>    elements containing the imaginary part of elements of another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_complex_imagPart(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -7990,13 +10048,42 @@
 !
 !
 !     PROCEDURE MQC_Vector_Cmplx
+!
+!>    \brief <b> MQC_Vector_Cmplx is a function that takes a MQC vector representing 
+!>    the real part and a MQC vector representing the imaginary part and combines
+!>    them into another MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Cmplx is a function that takes a MQC vector representing the real 
+!>    part and a MQC vector representing the imaginary part and combines them into 
+!>    another MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector1
+!>    \verbatim
+!>        Vector1 is Type(MQC_Vector)
+!>        The MQC vector containing the real part.
+!>    \endverbatim
+!>
+!>    \param[in] Vector2
+!>    \verbatim
+!>        Vector2 is Type(MQC_Vector)
+!>        The MQC vector containing the imaginary part.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_Vector_Cmplx(Vector1,Vector2)
-!
-!     This subroutine is used to set a complex MQC_Vector type 
-!     variable from two other MQC_Vectors.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -8058,11 +10145,48 @@
 !----------------------------------------------------------------
 !
 !     PROCEDURE MQC_Matrix_Diagonalize
+!
+!>    \brief <b> MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or 
+!>    hermitian MQC matrix and returns eigenvalues and eigenvectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or hermitian MQC 
+!>    matrix and optionally returns eigenvalues to a MQC vector and/or eigenvectors 
+!>    to a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to diagonalize. 
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_Vector),Optional
+!>        Optional MQC vector containing the eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVecs
+!>    \verbatim
+!>        EVecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the eigenvectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Diagonalize(A,EVals,EVecs)
-!     This subroutine uses lapack routines to diagonalize a symmetric (Hermitian) MQC matrix, 
-!     and returns eigen vectors as a MQC matrix and eigen values as a MQC vector.
-!     X. Sheng 2017.03
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::A
@@ -8168,12 +10292,34 @@
       End Subroutine MQC_Matrix_Diagonalize
 !
 !     PROCEDURE MQC_Matrix_Cast_Real
+!
+!>    \brief <b> MQC_Matrix_Cast_Real is a function that converts an MQC matrix to
+!>    its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Cast_Real is a function that converts an MQC matrix to its real 
+!>    space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The MQC matrix to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_Matrix_Cast_Real(MA) Result(MB)
-!
-!     This function converts a mqc_matrix to real. Only integer vector is allowed
-!     because it would lose accuracy otherwise.
-!
-!     X. Sheng, 2017.02
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA
@@ -8189,12 +10335,79 @@
       End Function MQC_Matrix_Cast_Real
 !
 !
+!     PROCEDURE MQC_Matrix_Cast_Integer
+!
+!>    \brief <b> MQC_Matrix_Cast_Integer is a function that converts an MQC matrix to
+!>    its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Cast_Integer is a function that converts an MQC matrix to its 
+!>    integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The MQC matrix to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_Matrix_Cast_Integer(MA) Result(MB)
+!
+      Implicit None
+      Type(MQC_Matrix),Intent(In)::MA
+      Type(MQC_Matrix)::MB
+
+      Call MQC_Allocate_Matrix(MA%NRow,MA%NCol,MB,'Integer',MA%Storage)
+      if(mqc_have_real(MA)) then
+        MB%MatI = MA%MatR
+      elseIf(mqc_have_complex(MA)) then
+        MB%MatI = MA%MatC
+      endIf
+
+      End Function MQC_Matrix_Cast_Integer
+!
+!
 !     PROCEDURE MQC_Matrix_Cast_Complex
+!
+!>    \brief <b> MQC_Matrix_Cast_Complex is a function that converts an MQC matrix to
+!>    its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Cast_Complex is a function that converts an MQC matrix to its 
+!>    complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The MQC matrix to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Cast_Complex(MA) Result(MB)
-!
-!     This function converts a mqc_matrix to complex.
-!
-!     X. Sheng, 2017.02
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA
@@ -8211,11 +10424,53 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Scalar_At
+!
+!>    \brief <b> MQC_Matrix_Scalar_At is a function that returns the value of an  
+!>    element of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_At is a function that returns the value of (I,J)th element of 
+!>    a MQC matrix as an MQC scalar. If I or J is negative, the (N-I+1)th index is 
+!>    selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The row of the element in MQC matrix. 
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The column of the element in MQC matrix.
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Scalar_At(Mat,I,J) Result(Element)
-!
-!     A function that returns the element at (I,J) of a mqc_matrix type as a mqc_scalar type.
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
@@ -8302,14 +10557,61 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Vector_At
+!
+!>    \brief <b> MQC_Matrix_Vector_At is a function that returns the subvector of an  
+!>    MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Vector_At is a function that returns the subvector of an MQC matrix.
+!>    The row and column specification are given as a vector where one vector must 
+!>    contain a single non-zero integer to specify the row or column of the 
+!>    subvector, and the other vector must be either zero or two non-zero integers to
+!>    specify the range of elements that will form the subvector. If the value of an
+!>    element specification is negative, it counts from the last element back. If the
+!>    value of an element specification is zero, the whole row/column is specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix from which to return the subvector.
+!>    \endverbatim
+!>    
+!>    \param[in] Rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64),Dimension(:)
+!>        The specification of the rows to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of rows A to B
+!>          If (A,B)>0 row count is from first index
+!>          If (A,B)<0 row count is from last index
+!>        If = [0]: subvector of rows equivalent to [1,-1].
+!>    \endverbatim
+!>    
+!>    \param[in] Cols  
+!>    \verbatim
+!>        Cols is Integer(kind=int64),Dimension(:)
+!>        The specification of the columns to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of columns A to B
+!>          If (A,B)>0 column count is from first index
+!>          If (A,B)<0 column count is from last index
+!>        If = [0]: subvector of columns equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Vector_At(Mat,Rows,Cols) Result(Vector)
-!
-!     A function that returns the vector between (I,J) in the Kth column/row
-!     (depending on whether optional argument ColumnIn is set to 'Row' or
-!     'Column', column is the default) of an MQC_Matrix Mat as an MQC_Vector
-!     Vector. If I, J or K is negative, it selects the (N-I+1)th index value.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
@@ -8490,16 +10792,69 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Vector_Put
-!      Recursive Subroutine MQC_Matrix_Vector_Put(Mat,I,J,K,VectorIn,ColumnIn)
+!
+!>    \brief <b> MQC_Matrix_Vector_Put is a subroutine that writes a subvector to the
+!>    specified position of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Vector_Put is a subroutine that writes a subvector to the specified
+!>    position of a MQC matrix. The row and column specification are given as a vector 
+!>    where one vector must contain a single non-zero integer to specify the row or 
+!>    column where the subvector will be written, and the other vector must be either 
+!>    zero or two non-zero integers to specify the range of elements that will be
+!>    overwritten by the subvector. If the value of an element specification is 
+!>    negative, it counts from the last element back. If the value of an element 
+!>    specification is zero, the whole row/column is specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix from which to return the subvector.
+!>    \endverbatim
+!>    
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The subvector to overwrite at the specified elements 
+!>        of Mat.
+!>    \endverbatim
+!>    
+!>    \param[in] Rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64),Dimension(:)
+!>        The specification of the rows to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of rows A to B
+!>          If (A,B)>0 row count is from first index
+!>          If (A,B)<0 row count is from last index
+!>        If = [0]: subvector of rows equivalent to [1,-1].
+!>    \endverbatim
+!>    
+!>    \param[in] Cols  
+!>    \verbatim
+!>        Cols is Integer(kind=int64),Dimension(:)
+!>        The specification of the columns to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of columns A to B
+!>          If (A,B)>0 column count is from first index
+!>          If (A,B)<0 column count is from last index
+!>        If = [0]: subvector of columns equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Recursive Subroutine MQC_Matrix_Vector_Put(Mat,VectorIn,Rows,Cols)
-!
-!     This subroutine updates the value of MQC_Matrix Mat with the value
-!     in MQC_Vector VectorIn elements between I and J in the Kth column/row
-!     (depending on whether optional argument ColumnIn is set to 'Row' or
-!     'Column', column is the default). If I, J or K are negative, it selects
-!     the (N-I+1)th index value.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::Mat
@@ -8697,7 +11052,7 @@
 !>        If = [A,B]: output is submatrix of rows A to B
 !>          If (A,B)>0 row count is from first index
 !>          If (A,B)<0 row count is from last index
-!>        If = [0]: submatrix of rows equivalent to [1,-1]
+!>        If = [0]: submatrix of rows equivalent to [1,-1].
 !>    \endverbatim
 !>
 !>    \param[in] Cols
@@ -8706,7 +11061,7 @@
 !>        If = [A,B]: output is submatrix of columns A to B
 !>          If (A,B)>0 column count is from first index
 !>          If (A,B)<0 column count is from last index
-!>        If = [0]: submatrix of columns equivalent to [1,-1]
+!>        If = [0]: submatrix of columns equivalent to [1,-1].
 !>    \endverbatim
 !
 !     Authors:
@@ -8893,13 +11248,42 @@
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector 
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a 
+!>    diagonal MQC matrix with elements defined by values in a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_Vector is a subroutine that returns a diagonal MQC 
+!>    matrix with elements defined by values in a MQC vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] DiagVectorIn
+!>    \verbatim
+!>        DiagVectorIn is class(MQC_Vector)
+!>        Name of the MQC vector to write as diagonal matrix.
+!>    \endverbatim
+!>
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2018
+!
       Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat)
-!
-!     This subroutine loads a (MQC) diagonal matrix <mat> from an input (mqc vector
-!     type) diagonal vector <diagVectorIn>.
-!
-!     L. M. Thompson, 2018.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -8927,15 +11311,43 @@
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Integer
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a 
+!>    diagonal MQC matrix with elements defined by values in an intrinsic integer 
+!>    vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_integer is a subroutine that returns a diagonal MQC
+!>    matrix with elements defined by values in an intrinsic integer vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output diagonal matrix.
+!>    \endverbatim
+!>
+!>    \param[in] DiagMatrixIn
+!>    \verbatim
+!>        DiagMatrixIn is integer(kind=int64),dimension(:)
+!>        Intrinsic integer vector to write as diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Subroutine MQC_Matrix_DiagMatrix_Put_Integer(mat,diagMatrixIn)
-!
-!     This subroutine loads a (MQC) diagonal matrix <mat> from an input (fortran
-!     intrinsic type) integer diagonal matrix <diagMatrixIn>, which should be
-!     passed as a rank-1 array with size n where n is the leading dimension of
-!     the matrix.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -8956,15 +11368,43 @@
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Real
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a 
+!>    diagonal MQC matrix with elements defined by values in an intrinsic real 
+!>    vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_Real is a subroutine that returns a diagonal MQC
+!>    matrix with elements defined by values in an intrinsic real vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output diagonal matrix.
+!>    \endverbatim
+!>
+!>    \param[in] DiagMatrixIn
+!>    \verbatim
+!>        DiagMatrixIn is real(kind=real64),dimension(:)
+!>        Intrinsic real vector to write as diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Subroutine MQC_Matrix_DiagMatrix_Put_Real(mat,diagMatrixIn)
-!
-!     This subroutine loads a (MQC) diagonal matrix <mat> from an input (fortran
-!     intrinsic type) integer diagonal matrix <diagMatrixIn>, which should be
-!     passed as a rank-1 array with size n where n is the leading dimension of
-!     the matrix.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -8985,15 +11425,43 @@
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Complex
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a 
+!>    diagonal MQC matrix with elements defined by values in an intrinsic complex 
+!>    vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_Complex is a subroutine that returns a diagonal MQC
+!>    matrix with elements defined by values in an intrinsic complex vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output diagonal matrix.
+!>    \endverbatim
+!>
+!>    \param[in] DiagMatrixIn
+!>    \verbatim
+!>        DiagMatrixIn is complex(kind=real64),dimension(:)
+!>        Intrinsic complex vector to write as diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_DiagMatrix_Put_Complex(mat,diagMatrixIn)
-!
-!     This subroutine loads a (MQC) diagonal matrix <mat> from an input (fortran
-!     intrinsic type) integer diagonal matrix <diagMatrixIn>, which should be
-!     passed as a rank-1 array with size n where n is the leading dimension of
-!     the matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -9014,15 +11482,45 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SymmMatrix_Put_Integer
+!
+!>    \brief <b> MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a 
+!>    symmetric packed MQC matrix with elements defined by values in an intrinsic 
+!>    integer vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a symmetric 
+!>    packed MQC matrix with elements defined by values in an intrinsic integer 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output symmetric matrix.
+!>    \endverbatim
+!>
+!>    \param[in] SymmMatrixIn
+!>    \verbatim
+!>        SymmMatrixIn is integer(kind=int64),dimension(:)
+!>        Intrinsic integer vector to write as symmetric-packed 
+!>        matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmMatrix_Put_Integer(mat,symmMatrixIn)
-!
-!     This subroutine loads a (MQC) symmetric matrix <mat> from an input
-!     (fortran intrinsic type) integer packed-symmetric matrix <symmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -9058,15 +11556,45 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SymmMatrix_Put_Real
+!
+!>    \brief <b> MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a 
+!>    symmetric packed MQC matrix with elements defined by values in an intrinsic 
+!>    real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a symmetric 
+!>    packed MQC matrix with elements defined by values in an intrinsic real
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output symmetric matrix.
+!>    \endverbatim
+!>
+!>    \param[in] SymmMatrixIn
+!>    \verbatim
+!>        SymmMatrixIn is real(kind=real64),dimension(:)
+!>        Intrinsic real vector to write as symmetric-packed 
+!>        matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmMatrix_Put_Real(mat,symmMatrixIn)
-!
-!     This subroutine loads a (MQC) symmetric matrix <mat> from an input
-!     (fortran intrinsic type) real packed-symmetric matrix <symmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -9103,16 +11631,45 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SymmMatrix_Put_Complex
+!
+!>    \brief <b> MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a 
+!>    symmetric packed MQC matrix with elements defined by values in an intrinsic 
+!>    complex vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a symmetric 
+!>    packed MQC matrix with elements defined by values in an intrinsic complex
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] mat 
+!>    \verbatim
+!>        Mat is class(MQC_Matrix)
+!>        MQC matrix to overwrite with output symmetric matrix.
+!>    \endverbatim
+!>
+!>    \param[in] SymmMatrixIn
+!>    \verbatim
+!>        SymmMatrixIn is complex(kind=real64),dimension(:)
+!>        Intrinsic complex vector to write as symmetric-packed 
+!>        matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmMatrix_Put_Complex(mat,symmMatrixIn)
-!
-!     This subroutine loads a (MQC) symmetric matrix <mat> from an input
-!     (fortran intrinsic type) complex packed-symmetric matrix <symmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     H. P. Hratchian, 2017.
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
@@ -9148,14 +11705,68 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Put
+!
+!>    \brief <b> MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the
+!>    specified position of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the specified
+!>    position of a MQC matrix. The row and column specification are given as a vector 
+!>    where each vector must contain either zero or two non-zero integers to specify 
+!>    the range of elements that will be overwritten by the submatrix. If the value 
+!>    of an element specification is negative, it counts from the last element back. 
+!>    If the value of an element specification is zero, the whole row/column is 
+!>    specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix from which to return the subvector.
+!>    \endverbatim
+!>    
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The submatrix to overwrite at the specified elements 
+!>        of Mat.
+!>    \endverbatim
+!>    
+!>    \param[in] Rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64),Dimension(:)
+!>        The specification of the rows to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of rows A to B
+!>          If (A,B)>0 row count is from first index
+!>          If (A,B)<0 row count is from last index
+!>        If = [0]: subvector of rows equivalent to [1,-1].
+!>    \endverbatim
+!>    
+!>    \param[in] Cols  
+!>    \verbatim
+!>        Cols is Integer(kind=int64),Dimension(:)
+!>        The specification of the columns to include in the 
+!>        subvector. 
+!>        If = [A,B]: output is subvector of columns A to B
+!>          If (A,B)>0 column count is from first index
+!>          If (A,B)<0 column count is from last index
+!>        If = [0]: subvector of columns equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Recursive Subroutine MQC_Matrix_Matrix_Put(Mat,MatrixIn,Rows,Cols)
-!
-!     This subroutine updates the value of MQC_Matrix Mat with the value
-!     in MQC_Matrix MatrixIn elements between rows I and J and columns K
-!     and L. If I, J, K or L are negative, it selects the (N-I+1)th index
-!     value.
-!
-!     L. M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::Mat
@@ -9601,12 +12212,57 @@
       End Subroutine MQC_Matrix_Matrix_Put
 !
 !
-      Function symIndexHash(i,j,k,l) result(hash)
-!     This function calculates the correct index for a symmetry packed matrix or rank 4 tensor.
-!     If it is a matrix, it is assumed to be low triangular stored row-wise
+!     PROCEDURE SymIndexHash
 !
-!     X. Sheng 2017.03
-!     L. M. Thompson, 2017
+!>    \brief <b> SymIndexHash is a function that returns the index in a vector of a 
+!>    symmetric-packed matrix or rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    SymIndexHash is a function that returns the index in a vector of a symmetric-
+!>    packed matrix or rank-4 tensor. If a matrix is tested, it is assumed lower-
+!>    triangular row-wise stored.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] I
+!>    \verbatim
+!>        I is integer(kind=int64)
+!>        The first index of the matrix/rank-4 tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] J
+!>    \verbatim
+!>        I is integer(kind=int64)
+!>        The second index of the matrix/rank-4 tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] K
+!>    \verbatim
+!>        K is integer(kind=int64),Optional
+!>        The third index of the rank-4 tensor. This argument is
+!>        only required when taking hash of a rank-4 tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] L
+!>    \verbatim
+!>        L is integer(kind=int64),Optional
+!>        The fourth index of the rank-4 tensor. This argument is
+!>        only required when taking hash of a rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Function symIndexHash(i,j,k,l) result(hash)
 
       implicit none
       integer(kind=int64),intent(in)::i,j
@@ -9637,11 +12293,41 @@
       end function symIndexHash
 !
 !
+!     PROCEDURE MQC_ElementMatrixProduct
+!
+!>    \brief <b> MQC_ElementMatrixProduct is a function that returns the element-
+!>    wise product of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ElementMatrixProduct is a function that returns the element-wise product 
+!>    of two MQC matrices.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is type(mqc_matrix)
+!>        The first matrix to element-wise multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] B
+!>    \verbatim
+!>        B is type(mqc_matrix)
+!>        The second matrix to element-wise multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_ElementMatrixProduct(A,B) Result(C)
-!
-!     This functions calculates the element by element product of two MQC_matrix
-!
-!     X. Sheng, 2017.02
 !
       implicit none
       type(mqc_matrix),intent(in)::A,B
@@ -10124,12 +12810,43 @@
       endif
 
       end function MQC_elementMatrixProduct
-
+!
+!
+!     PROCEDURE MQC_ElementMatrixDivide
+!
+!>    \brief <b> MQC_ElementMatrixDivide is a function that returns the element-
+!>    wise quotient of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ElementMatrixDivide is a function that returns the element-wise quotient 
+!>    of two MQC matrices.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is type(mqc_matrix)
+!>        The matrix with elements being the numerator.
+!>    \endverbatim
+!>    
+!>    \param[in] B
+!>    \verbatim
+!>        B is type(mqc_matrix)
+!>        The matrix with elements being the denominator.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_ElementMatrixDivide(A,B) Result(C)
-!
-!     This functions calculates the element by element product of two MQC_matrix
-!
-!     X. Sheng, 2017.02
 !
       implicit none
       type(mqc_matrix),intent(in)::A,B
@@ -10611,23 +13328,54 @@
         endif
       endif
 
-    end function MQC_elementMatrixDivide
+      end function MQC_elementMatrixDivide
 !
 !
 !     PROCEDURE MQC_Matrix_Test_Symmetric
+!
+!>    \brief <b> MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for
+!>    symmetry</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry 
+!>    specified by optional argument, with the default test being for a symmetric
+!>    matrix. Note that this function differs from haveSymmetric subroutine which
+!>    tests how a matrix is packed. The following options are available: 
+!>
+!>    1. Option = 'symmetric' tests for a symmetric matrix (default).
+!>    2. Option = 'antisymmetric' tests for an antisymmetric matrix.
+!>    3. Option = 'hermitian' tests for a hermitian matrix.
+!>    4. Option = 'antihermitian' tests for an antihermitian matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(mqc_matrix)
+!>        The matrix to be tested for symmetry.
+!>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':     symmetric matrix test
+!>        = 'antisymmetric': antisymmetric matrix test
+!>        = 'hermitian':     hermitian matrix test
+!>        = 'antihermitian': antihermitian matrix test.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
-!
-!     This function tests a matrix for symmetry related options and returns true 
-!     if the matrix fufills the criteria and false if it does not. This contrasts
-!     with the haveSymmetric subroutine which tests how a matrix is packed.
-!
-!     Options for this subroutine are:
-!       'symmetric'      Test if matrix is symmetric
-!       'antisymmetric'  Test if matrix is antisymmetric
-!       'hermitian'      Test if matrix is hermitian
-!       'antihermitian'  Test if matrix is antihermitian
-!
-!     Lee M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
@@ -10807,11 +13555,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Test_Diagonal
+!
+!>    \brief <b> MQC_Matrix_Test_Diagonal is a function that tests a MQC matrix to
+!>    determine if it is diagonal</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Test_Diagonal is a function that tests a MQC matrix to determine 
+!>    if it is diagonal. The function returns TRUE if the matrix is diagonal and 
+!>    FALSE if the matrix is not diagonal.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(mqc_matrix)
+!>        The matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Test_Diagonal(Matrix) Result(Diagonal)
-!
-!     This function returns true if a matrix is diagonal and false if it is not.
-!
-!     Lee M. Thompson, 2017.
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
@@ -10876,14 +13648,70 @@
 !
 !
 !     PROCEDURE MQC_Allocate_Matrix
+!
+!>    \brief <b> MQC_Allocate_Matrix is used to allocate a matrix type variable
+!>    of the MQC_Matrix class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_Matrix is a subroutine used to allocate a matrix type variable
+!>    of the MQC_Matrix class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_Matrix variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_Matrix variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_Matrix variable to be of complex type.
+!>    4. Storage = 'StorFull' declares the MQC_Matrix variable to be unpacked.
+!>    5. Storage = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
+!>    6. Storage = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] M
+!>    \verbatim
+!>        M is Integer(kind=int64)
+!>        M is the number of rows of Matrix. 
+!>    \endverbatim
+!>    
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        N is the number of columns of Matrix.
+!>    \endverbatim
+!>    
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_Matrix is real
+!>        = 'Integer': the MQC_Matrix is integer
+!>        = 'Complex': the MQC_Matrix is complex.
+!>    \endverbatim
+!>
+!>    \param[in] Storage  
+!>    \verbatim
+!>        Storage is Character(Len=*)
+!>        = 'StorFull': the MQC_Matrix is unpacked
+!>        = 'StorSymm': the MQC_Matrix is symmetric packed
+!>        = 'StorDiag': the MQC_Matrix is diagonal packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Allocate_Matrix(M,N,Matrix,Data_Type,Storage)
-!
-!     This subroutine is used to allocate memory for a matrix variable
-!     belonging to the MQC_Matrix class.
-!
-!     H. P. Hratchian, 2016.
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -10950,13 +13778,34 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_Matrix
+!
+!>    \brief <b> MQC_Deallocate_Matrix is used to deallocate a matrix type variable
+!>    of the MQC_Matrix class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_Matrix is a subroutine used to deallocate a matrix type variable
+!>    of the MQC_Matrix class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to be deallocated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_Matrix(Matrix)
-!
-!     This subroutine is used to deallocate memory for a matrix variable
-!     belonging to the MQC_Matrix class.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -10977,11 +13826,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_isAllocated
+!
+!>    \brief <b> MQC_Matrix_isAllocate is a function that returns the allocation
+!>    status of a MQC_Matrix variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_isAllocate is a function that returns the allocation status of a 
+!>    MQC_Matrix variable. The function returns TRUE if the matrix is allocated 
+!>    and FALSE if the matrix is not allocated.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_isAllocated(Matrix) Result(isAllocated)
-!
-!     This function returns if an mqc matrix is allocated or not.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -10998,12 +13871,40 @@
 !
 !
 !     PROCEDURE MQC_Set_IntegerArray2Matrix
+!
+!>    \brief <b> MQC_Set_IntegerArray2Matrix is a subroutine that sets an MQC matrix
+!>    equal to an intrinsic integer rank-2 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_IntegerArray2Matrix is a subroutine that sets an MQC matrix equal to an
+!>    intrinsic integer rank-2 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut
+!>    \verbatim
+!>        MatrixOut is Type(MQC_Matrix)
+!>        The MQC matrix to be set equal to the integer array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Integer(kind=int64),Dimension(:,:)
+!>        The integer array to be input into MatrixOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Set_IntegerArray2Matrix(MatrixOut,ArrayIn)
-!
-!     This routine is used to set an MQC matrix equal to an integer rank-2 array.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11020,12 +13921,40 @@
 !
 !
 !     PROCEDURE MQC_Set_RealArray2Matrix
+!
+!>    \brief <b> MQC_Set_RealArray2Matrix is a subroutine that sets an MQC matrix
+!>    equal to an intrinsic real rank-2 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_RealArray2Matrix is a subroutine that sets an MQC matrix equal to an
+!>    intrinsic real rank-2 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut
+!>    \verbatim
+!>        MatrixOut is Type(MQC_Matrix)
+!>        The MQC matrix to be set equal to the real array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Real(kind=real64),Dimension(:,:)
+!>        The real array to be input into MatrixOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Set_RealArray2Matrix(MatrixOut,ArrayIn)
-!
-!     This routine is used to set an MQC matrix equal to a real rank-2 array.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11042,12 +13971,40 @@
 !
 !
 !     PROCEDURE MQC_Set_ComplexArray2Matrix
+!
+!>    \brief <b> MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix
+!>    equal to an intrinsic complex rank-2 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_ComplexArray2Matrix is a subroutine that sets an MQC matrix equal to an
+!>    intrinsic complex rank-2 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut
+!>    \verbatim
+!>        MatrixOut is Type(MQC_Matrix)
+!>        The MQC matrix to be set equal to the complex array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Complex(kind=real64),Dimension(:,:)
+!>        The complex array to be input into MatrixOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Set_ComplexArray2Matrix(MatrixOut,ArrayIn)
-!
-!     This routine is used to set an MQC matrix equal to a complex rank-2 array.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11062,13 +14019,42 @@
       Return
       End Subroutine MQC_Set_ComplexArray2Matrix
 !
+!
 !     PROCEDURE MQC_Set_Matrix2IntegerArray
+!
+!>    \brief <b> MQC_Set_Matrix2IntegerArray is a subroutine that sets an intrinsic 
+!>    integer rank-2 array equal to an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Matrix2IntegerArray is a subroutine that sets an intrinsic integer 
+!>    rank-2 array equal to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:,:),Allocatable
+!>        The integer array to be set equal to the MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MatrixIn 
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC matrix to be input into ArrayOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Set_Matrix2IntegerArray(ArrayOut,MatrixIn)
-!
-!     This routine is used to set a rank-2 allocatable array equal to an MQC matrix.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11120,12 +14106,40 @@
 !
 !
 !     PROCEDURE MQC_Set_Matrix2RealArray
+!
+!>    \brief <b> MQC_Set_Matrix2RealArray is a subroutine that sets an intrinsic 
+!>    real rank-2 array equal to an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Matrix2RealArray is a subroutine that sets an intrinsic real rank-2 
+!>    array equal to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:,:),Allocatable
+!>        The real array to be set equal to the MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MatrixIn 
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC matrix to be input into ArrayOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Set_Matrix2RealArray(ArrayOut,MatrixIn)
-!
-!     This routine is used to set a rank-2 allocatable array equal to an MQC matrix.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11179,12 +14193,40 @@
 !
 !
 !     PROCEDURE MQC_Set_Matrix2ComplexArray
+!
+!>    \brief <b> MQC_Set_Matrix2ComplexArray is a subroutine that sets an intrinsic 
+!>    complex rank-2 array equal to an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Matrix2ComplexArray is a subroutine that sets an intrinsic complex 
+!>    rank-2 array equal to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:,:),Allocatable
+!>        The complex array to be set equal to the MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MatrixIn 
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC matrix to be input into ArrayOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Set_Matrix2ComplexArray(ArrayOut,MatrixIn)
-!
-!     This routine is used to set a rank-2 allocatable array equal to an MQC matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11238,12 +14280,41 @@
 !
 !
 !     PROCEDURE MQC_Set_Matrix2Matrix
+!
+!>    \brief <b> MQC_Set_Matrix2Matrix is a subroutine that sets an MQC matrix equal
+!>    to another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Matrix2Matrix is a subroutine that sets an MQC matrix equal to another 
+!>    MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatrixOut
+!>    \verbatim
+!>        MatrixOut is Class(MQC_Matrix)
+!>        The MQC matrix to be set equal to the incoming MQC 
+!>        matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MatrixIn 
+!>    \verbatim
+!>        MatrixIn is Class(MQC_Matrix)
+!>        The MQC matrix to be input into MatrixOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Set_Matrix2Matrix(MatrixOut,MatrixIn)
-!
-!     This routine is used to set an MQC matrix equal to another MQC
-!     matrix.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -11274,14 +14345,62 @@
 !
 !
 !     PROCEDURE MQC_Print_Matrix_Algebra1
+!
+!>    \brief <b> MQC_Print_Matrix_Algebra1 is a subroutine used to print an MQC
+!>    matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Matrix_Algebra1 is a subroutine used to print an MQC matrix. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
-!
-!     This subroutine is used to print a MQC_Matrix type variable.
-!     All matricies are converted to full before printing.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11394,13 +14513,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Int2Real
+!
+!>    \brief <b> MQC_Matrix_Copy_Int2Real is a subroutine used to copy an integer MQC
+!>    matrix into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Int2Real is a subroutine used to copy an integer MQC matrix 
+!>    into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Matrix_Copy_Int2Real(Matrix)
-!
-!     This subroutine copies an integer MQC_Matrix into it's real matrix
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11417,13 +14557,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Int2Complex
+!
+!>    \brief <b> MQC_Matrix_Copy_Int2Complex is a subroutine used to copy an integer 
+!>    MQC matrix into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Int2Complex is a subroutine used to copy an integer MQC matrix 
+!>    into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to complex.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Copy_Int2Complex(Matrix)
-!
-!     This subroutine copies an integer MQC_Matrix into it's complex matrix
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11440,13 +14601,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Real2Int
+!
+!>    \brief <b> MQC_Matrix_Copy_Real2Int is a subroutine used to copy a real MQC
+!>    matrix into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Real2Int is a subroutine used to copy a real MQC matrix matrix 
+!>    into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Matrix_Copy_Real2Int(Matrix)
-!
-!     This subroutine copies a real MQC_Matrix into it's integer matrix
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11463,13 +14645,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Real2Complex
+!
+!>    \brief <b> MQC_Matrix_Copy_Real2Complex is a subroutine used to copy a real MQC
+!>    matrix into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Real2Complex is a subroutine used to copy a real MQC matrix 
+!>    matrix into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to complex.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Copy_Real2Complex(Matrix)
-!
-!     This subroutine copies a real MQC_Matrix into it's complex matrix
-!     space.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11486,13 +14689,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Complex2Int
+!
+!>    \brief <b> MQC_Matrix_Copy_Complex2Int is a subroutine used to copy a complex 
+!>    MQC matrix into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Complex2Int is a subroutine used to copy a complex MQC matrix 
+!>    matrix into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Copy_Complex2Int(Matrix)
-!
-!     This subroutine copies a complex MQC_Matrix into it's integer matrix
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11509,13 +14733,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Copy_Complex2Real
+!
+!>    \brief <b> MQC_Matrix_Copy_Complex2Real is a subroutine used to copy a complex 
+!>    MQC matrix into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Copy_Complex2Real is a subroutine used to copy a complex MQC matrix 
+!>    matrix into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Copy_Complex2Real(Matrix)
-!
-!     This subroutine copies a complex MQC_Matrix into it's real matrix
-!     space.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11532,13 +14777,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Rows
+!
+!>    \brief <b> MQC_Matrix_Rows is a function used to return the number of rows of 
+!>    an MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Rows is a function used to return the number of rows of an MQC 
+!>    matrix. If the matrix is NOT allocated, the number of rows is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Rows(Matrix)
-!
-!     This subroutine is used to return the number of rows of an MQC matrix.
-!     If the matrix is NOT allocated, the number of rows is returned as 0.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11552,13 +14818,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Columns
+!
+!>    \brief <b> MQC_Matrix_Columns is a function used to return the number of 
+!>    columns of an MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Columns is a function used to return the number of columns of an MQC 
+!>    matrix. If the matrix is NOT allocated, the number of columns is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Columns(Matrix)
-!
-!     This subroutine is used to return the number of columns of an MQC matrix.
-!     If the matrix is NOT allocated, the number of columns is returned as 0.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11572,13 +14859,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveReal
+!
+!>    \brief <b> MQC_Matrix_HaveReal is a function used to indicate if an MQC matrix
+!>    has an allocated real matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveReal is a function that returns TRUE if an MQC matrix has an 
+!>    allocated real matrix and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_HaveReal(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix has an
-!     allocated real matrix.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11592,13 +14900,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveInteger
+!
+!>    \brief <b> MQC_Matrix_HaveInteger is a function used to indicate if an MQC 
+!>    matrix has an allocated integer matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveInteger is a function that returns TRUE if an MQC matrix has an 
+!>    allocated integer matrix and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_HaveInteger(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix has an
-!     allocated integer matrix.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11612,13 +14941,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveComplex
+!
+!>    \brief <b> MQC_Matrix_HaveComplex is a function used to indicate if an MQC 
+!>    matrix has an allocated complex matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveComplex is a function that returns TRUE if an MQC matrix has an 
+!>    allocated complex matrix and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_HaveComplex(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix has an
-!     allocated complex matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11632,13 +14982,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveFull   
+!
+!>    \brief <b> MQC_Matrix_HaveFull is a function used to indicate if an MQC 
+!>    matrix is stored unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveFull is a function that returns TRUE if an MQC matrix is stored 
+!>    unpacked and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_HaveFull(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix is 
-!     stored full.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11656,13 +15027,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveSymmetric
+!
+!>    \brief <b> MQC_Matrix_HaveSymmetric is a function used to indicate if an MQC 
+!>    matrix is stored symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveSymmetric is a function that returns TRUE if an MQC matrix is stored 
+!>    symmetric-packed and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_HaveSymmetric(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix is 
-!     stored symmetric.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11680,13 +15072,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_HaveDiagonal 
+!
+!>    \brief <b> MQC_Matrix_HaveDiagonal is a function used to indicate if an MQC 
+!>    matrix is stored diagonal-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_HaveDiagonal is a function that returns TRUE if an MQC matrix is stored 
+!>    diagonal-packed and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_HaveDiagonal(Matrix)
-!
-!     This function returns TRUE or FALSE indicating whether Matrix is 
-!     stored diagonal.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11704,13 +15117,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Transpose
+!
+!>    \brief <b> MQC_Matrix_Transpose is a function that returns the transpose of a
+!>    MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Transpose is a function that returns the transpose of a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be transposed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \author X. Sheng
+!>    \date 2016, 2017
+!
       Function MQC_Matrix_Transpose(Matrix)
-!
-!     This function returns the transpose of an MQC matrx.
-!
-!     L. M. Thompson, 2016.
-!     X. Sheng, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11757,11 +15191,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Conjugate_Transpose
+!
+!>    \brief <b> MQC_Matrix_Conjugate_Transpose is a function that returns the 
+!>    conjugate transpose of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Conjugate_Transpose is a function that returns the conjugate 
+!>    transpose of a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be conjugate transposed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Conjugate_Transpose(Matrix)
-!
-!     This function returns the conjugate transpose of an MQC matrx.
-!
-!     L. M. Thompson, 2016.
 !
 !     Variable Declarations.
       Implicit None
@@ -11808,13 +15265,33 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Symmetrize
+!
+!>    \brief <b> MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix. 
+!>      TODO: options to antisymmetrize, hermitianize and antihermitianize. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be symmetrized.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Symmetrize(Matrix)
-!
-!     This subroutine is used to symmetrize or antisymmetrize a full
-!     packed MQC matrix.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11823,8 +15300,7 @@
       Integer(kind=int64)::I,J
       Real(kind=real64),Parameter::Pt5=0.5
 !
-      If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Matrix not full packed in MQC_Matrix_Symmetrize', 6, &
-           'Matrix%Storage', Matrix%Storage )
+      If(.not.Matrix%Storage.eq.'StorFull') Return
       If(Matrix%NCol.ne.Matrix%NRow) Call MQC_Error_I('Only square matricies can be symmetrixed &
      &  in MQC_Matrix_Symmetrize', 6, &
      'Matrix%NCol', Matrix%NCol, &
@@ -11858,13 +15334,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Full2Symm
+!
+!>    \brief <b> MQC_Matrix_Full2Symm is a subroutine that converts an unpacked MQC 
+!>    matrix to symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Full2Symm is a subroutine that converts an unpacked MQC matrix to 
+!>    symmetric-packed.
+!>      TODO: make tests for symmetry more efficient.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be symmetric packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Matrix_Full2Symm(Matrix)
-!
-!     This subroutine is used to convert a matrix from full to lower-
-!     triangular packing.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -11929,19 +15427,50 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Symm2Full
+!
+!>    \brief <b> MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed 
+!>    MQC matrix to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix 
+!>    to unpacked. The following options are available:
+!>      Option = 'symmetric' unpacks as if matrix is symmetric.
+!>      Option = 'antisymmetric' unpacks as if matrix is antisymmetric.
+!>      Option = 'hermitian' unpacks as if matrix is hermitian.
+!>      Option = 'antihermitian' unpacks as if matrix is antihermitian.
+!>
+!>      TODO: when different symm storage flags implemented, use these rather than an
+!>            option
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to unpack.
+!>    \endverbatim
+!>
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack as if matrix is symmetric
+!>        = 'antisymmetric':  Unpack as if matrix is antisymmetric
+!>        = 'hermitian':      Unpack as if matrix is hermitian
+!>        = 'antihermitian':  Unpack as if matrix is antihermitian
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2018
+!
       Subroutine MQC_Matrix_Symm2Full(Matrix,Option)
-!
-!     This subroutine is used to convert a matrix from lower-triangular
-!     to full packing.
-!
-!     Options for this subroutine are:
-!       'symmetric'      Unpack as if matrix is symmetric
-!       'antisymmetric'  Unpack as if matrix is antisymmetric
-!       'hermitian'      Unpack as if matrix is hermitian
-!       'antihermitian'  Unpack as if matrix is antihermitian
-!
-!     L. M. Thompson, 2016, 2018.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -12028,13 +15557,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Full2Diag
+!
+!>    \brief <b> MQC_Matrix_Full2Diag is a subroutine that converts an unpacked MQC 
+!>    matrix to diagonal-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Full2Diag is a subroutine that converts an unpacked MQC matrix to 
+!>    diagonal-packed.
+!>      TODO: make tests for diagonal structure more efficient.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be diagonal packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Subroutine MQC_Matrix_Full2Diag(Matrix)
-!
-!     This subroutine is used to convert a matrix from full to
-!     diagonal packing.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -12089,12 +15640,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Diag2Full
+!
+!>    \brief <b> MQC_Matrix_Diag2Full is a subroutine that converts a diagonal-packed 
+!>    MQC matrix to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Diag2Full is a subroutine that converts a diagonal-packed MQC matrix 
+!>    to unpacked.
+!>      TODO: make tests for diagonal structure more efficient.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be unpacked.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Diag2Full(Matrix)
-!
-!     This subroutine is used to convert a matrix from diagonal
-!     to full packing.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -12143,12 +15717,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Symm2Diag
+!
+!>    \brief <b> MQC_Matrix_Symm2Diag is a subroutine that converts a symmetry-packed 
+!>    MQC matrix to diagonal-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Symm2Diag is a subroutine that converts a symmetry-packed MQC matrix to 
+!>    diagonal-packed.
+!>      TODO: make tests for diagonal structure more efficient.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be diagonal packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Symm2Diag(Matrix)
-!
-!     This subroutine is used to convert a matrix from lower-triangular
-!     to diagonal packing.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -12202,12 +15799,35 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Diag2Symm
+!
+!>    \brief <b> MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed 
+!>    MQC matrix to symmetry-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix 
+!>    to symmetry-packed.
+!>      TODO: make tests for diagonal structure more efficient.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be unpacked.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Diag2Symm(Matrix)
-!
-!     This subroutine is used to convert a matrix from diagonal to
-!     lower-triangular packing.
-!
-!     L. M. Thompson, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -12266,14 +15886,34 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Symm2Full_Func
+!
+!>    \brief <b> MQC_Matrix_Symm2Full_Func is a function that converts a symmetric-
+!>    packed MQC matrix to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Symm2Full_Func is a function that converts a symmetric-packed MQC matrix 
+!>    to unpacked.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be unpacked.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_Matrix_Symm2Full_Func(Matrix) Result(Temp)
-!
-!     This subroutine is used to convert a matrix from lower-triangular
-!     to full packing as a function, for temperory use.
-!     E.g., in MQC_MatrixMatrixDotProduct, a Symm stored matrix have to be converted
-!     to a full symmetric matrix to work with lapack routines.
-!
-!     X. Sheng, 2017.
 !
 !     Variable Declarations.
       Implicit None
@@ -12317,10 +15957,48 @@
 !
 !
 !     PROCEDURE Matrix_Symm2Sq_Integer
-      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq)
 !
-!     This subroutine takes a symmetric matrix (I_Symm) with leading
-!     dimension N and expands it to a N x N square matrix (I_Sq).
+!>    \brief <b> Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric-
+!>    packed intrinsic integer matrix to a rank-2 intrinsic integer array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric-packed 
+!>    intrinsic integer matrix to a rank-2 integer array.
+!>    TODO: Move this routine to MQC general
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The leading dimension of symmetric-packed matrix I_Symm.
+!>        unpacked.
+!>    \endverbatim
+!>
+!>    \param[in] I_Symm
+!>    \verbatim
+!>        I_Symm is Integer(kind=int64),Dimension(:)
+!>        The symmetric-packed intrinsic integer matrix to be unpacked.
+!>    \endverbatim
+!>
+!>    \param[out] I_Sq
+!>    \verbatim
+!>        I_Sq is Integer(kind=int64),Dimension(N,N)
+!>        The upacked intrinsic integer matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
+      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
@@ -12344,10 +16022,48 @@
 !
 !
 !     PROCEDURE Matrix_Symm2Sq_Real
-      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq)
 !
-!     This subroutine takes a symmetric matrix (A_Symm) with leading
-!     dimension N and expands it to a N x N square matrix (A_Sq).
+!>    \brief <b> Matrix_Symm2Sq_Real is a subroutine that converts a symmetric-
+!>    packed intrinsic real matrix to a rank-2 intrinsic real array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    Matrix_Symm2Sq_Real is a subroutine that converts a symmetric-packed 
+!>    intrinsic real matrix to a rank-2 real array.
+!>    TODO: Move this routine to MQC general
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The leading dimension of symmetric-packed matrix I_Symm.
+!>        unpacked.
+!>    \endverbatim
+!>
+!>    \param[in] A_Symm
+!>    \verbatim
+!>        A_Symm is Real(kind=real64),Dimension(:)
+!>        The symmetric-packed intrinsic real matrix to be unpacked.
+!>    \endverbatim
+!>
+!>    \param[out] A_Sq
+!>    \verbatim
+!>        A_Sq is Real(kind=real64),Dimension(N,N)
+!>        The upacked intrinsic real matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
+      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
@@ -12371,10 +16087,49 @@
 !
 !
 !     PROCEDURE Matrix_Symm2Sq_Complex
-      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq)
 !
-!     This subroutine takes a symmetric matrix (A_Symm) with leading
-!     dimension N and expands it to a N x N square matrix (A_Sq).
+!>    \brief <b> Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric-
+!>    packed intrinsic complex matrix to a rank-2 intrinsic complex array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric-packed 
+!>    intrinsic complex matrix to a rank-2 complex array.
+!>    TODO: Move this routine to MQC general
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The leading dimension of symmetric-packed matrix I_Symm.
+!>        unpacked.
+!>    \endverbatim
+!>
+!>    \param[in] A_Symm
+!>    \verbatim
+!>        A_Symm is Complex(kind=real64),Dimension(:)
+!>        The symmetric-packed intrinsic complex matrix to be 
+!>        unpacked.
+!>    \endverbatim
+!>
+!>    \param[out] A_Sq
+!>    \verbatim
+!>        A_Sq is Complex(kind=real64),Dimension(N,N)
+!>        The upacked intrinsic complex matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
+      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
@@ -12398,15 +16153,38 @@
 !
 !
 !     PROCEDURE MQC_Vector2DiagMatrix
+!
+!>    \brief <b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC 
+!>    matrix with elements defined by an MQC vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
+!>    elements defined by an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        MQC vector defining diagonal elements of output matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_Vector2DiagMatrix(vector) Result(matrix)
-!
-!     This subroutine is used to convert a vector to a Diagonal matrix
-!
-!     X. Sheng, 2017.
 !
       Implicit None
       Type(MQC_Matrix)::matrix
-      type(MQC_Vector),Intent(In)::vector
+      Class(MQC_Vector),Intent(In)::vector
 !
       if (vector%Data_type.eq.'Real') then
         call mqc_allocate_matrix(vector%length,vector%length,matrix,'Real','StorDiag')
@@ -12423,13 +16201,39 @@
 !
 !
 !     PROCEDURE MQC_MatrixMatrixSum
+!
+!>    \brief <b> MQC_MatrixMatrixSum is a function that sums two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixMatrixSum is a function that sums two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        First MQC matrix to sum.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        Second MQC matrix to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \author L. M. Thompson 
+!>    \date 2017, 2018
+!
       Function MQC_MatrixMatrixSum(MA,MB) Result(MC)
-!
-!     This function returns the sum of two MQC_Matrix matrices.
-!
-!     H. P. Hratchian, 2017.
-!     L. M. Thompson, 2018.
-!
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
@@ -12536,12 +16340,39 @@
 !
 !
 !     PROCEDURE MQC_MatrixMatrixSubtract
+!
+!>    \brief <b> MQC_MatrixMatrixSubtract is a function that subtracts two MQC 
+!>    matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixMatrixSubtract is a function that subtracts two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The matrix that MB will be subtracted from.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The matrix that will be subtracted from MA.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Function MQC_MatrixMatrixSubtract(MA,MB) Result(MC)
-!
-!     This function returns the difference of two MQC_Matrix matrices.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
@@ -12649,13 +16480,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixMatrixProduct
+!
+!>    \brief <b> MQC_MatrixMatrixProduct is a function that computes the element-
+!>    wise product of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixMatrixProduct is a function that computes the element-wise product of 
+!>    two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The first MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The second MQC matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2017
+!
       Function MQC_MatrixMatrixProduct(MA,MB) Result(MC)
-!
-!     This function returns the (element-by-element) product of two MQC_Matrix
-!     matrices.
-!
-!     H. P. Hratchian, 2017.
-!
 !
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
@@ -12713,12 +16571,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixMatrixDotProduct
+!
+!>    \brief <b> MQC_MatrixMatrixDotProduct is a function that computes the inner
+!>    product of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixMatrixDotProduct is a function that computes the inner product of 
+!>    two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The first MQC matrix.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The second MQC matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixMatrixDotProduct(MA,MB) Result(MC)
-!
-!     This subroutine is used to calculate matrix multiplication for all types of MQC_matrix
-!     MC = MA .dot. MB
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA,MB
@@ -13262,14 +17148,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixVectorDotProduct
+!
+!>    \brief <b> MQC_MatrixVectorDotProduct is a function that computes the inner
+!>    product of a MQC matrix and a MQC vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixVectorDotProduct is a function that computes the inner product of 
+!>    a MQC matrix and a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MA
+!>    \verbatim
+!>        MA is Type(MQC_Matrix)
+!>        The MQC matrix multiply.
+!>    \endverbatim
+!>
+!>    \param[in] VB
+!>    \verbatim
+!>        VB is Type(MQC_Vector)
+!>        The MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixVectorDotProduct(MA,VB) Result(VC)
-!
-!     This subroutine is used to calculate matrix vector multiplication for
-!     all types of MQC_matrix and MQC_vector
-!                         VC = MA .dot. VB
-!     Note that VB%Column has to be .true. and VC%column will be .true.
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MA
@@ -13405,14 +17317,40 @@
 !
 !
 !     PROCEDURE MQC_VectorMatrixDotProduct
+!
+!>    \brief <b> MQC_VectorMatrixDotProduct is a function that computes the inner
+!>    product of a MQC vector and a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorMatrixDotProduct is a function that computes the inner product of 
+!>    a MQC vector and a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VA
+!>    \verbatim
+!>        VA is Type(MQC_Vector)
+!>        The MQC vector to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_VectormatrixDotProduct(VA,MB) Result(VC)
-!
-!     This subroutine is used to calculate vector matrix multiplication for
-!     all types of MQC_matrix and MQC_vector
-!                         VC = VA .dot. MB
-!     Note that VA%Column has to be .false. and VC%column will be .false.
-!
-!     X. Sheng   2017.2.
 !
       Implicit None
       Type(MQC_Matrix),Intent(In)::MB
@@ -13550,11 +17488,40 @@
 !
 !
 !     PROCEDURE MQC_MatrixScalarProduct
+!
+!>    \brief <b> MQC_MatrixScalarProduct is a function that computes the product of
+!>    a MQC scalar and a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixScalarProduct is a function that computes the inner product of a MQC 
+!>    scalar and a MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_MatrixScalarProduct(Matrix,Scalar) Result(Matrix_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_vector
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Type(MQC_Scalar),Intent(In)::Scalar
@@ -13600,11 +17567,40 @@
 !
 !
 !     PROCEDURE MQC_ScalarMatrixProduct
+!
+!>    \brief <b> MQC_ScalarMatrixProduct is a function that computes the product of
+!>    a MQC matrix and a MQC scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarMatrixProduct is a function that computes the product of a MQC matrix
+!>    and a MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
       Function MQC_ScalarMatrixProduct(Scalar,Matrix) Result(Matrix_Res)
-!
-!     This function calculates the product of an mqc_scalar and an mqc_matrix
-!
-!     X. Sheng 2017.02
 !
       Implicit None
       Type(MQC_Scalar),Intent(In)::Scalar
@@ -13649,13 +17645,40 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Contraction
+!
+!>    \brief <b> MQC_Matrix_Matrix_Contraction is a function that returns the 
+!>    contraction of two MQC matrices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Matrix_Contraction is a function that returns the contraction of two 
+!>    MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is Type(MQC_Matrix)
+!>        The first MQC matrix to contract.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is Type(MQC_Matrix)
+!>        The second MQC matrix to contract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       Function MQC_Matrix_Matrix_Contraction(Matrix1,Matrix2) Result(Contraction)
-!
-!     This function returns the contration of two matrices, given as input
-!     dummy arguments Matrix1 and Matrix2.
-!
-!     L. M. Thompson, 2016.
-!
 !
 !     Variable Declarations.
 !
@@ -13677,21 +17700,81 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Scalar_Put
-      Subroutine MQC_Matrix_Scalar_Put(Matrix,Scalar,I,J)
 !
-!     This subroutine updates the value of MQC_Matrix Matrix with the value
-!     in MQC_Scalar Scalar at element I,J.
+!>    \brief <b> MQC_Matrix_Scalar_Put is a subroutine that updates the value of the 
+!>    (i,j)th element of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
+!>    element of a MQC matrix. If the location of an element is negative then it is 
+!>    counted from the end of the MQC matrix row/column.
+!>    TODO: Implement argument to add symmetric, antisymmetric, hermitian and 
+!>          antihermitian
+!>
+!>    \endverbatim
 !
-!     L. M. Thompson, 2017.
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to update at the (i,j)th element..
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn 
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update the (i,j)th element of Matrix..
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64) 
+!>        The location of the row element in Matrix to update. If 
+!>        I is negative it is counted from the last element of 
+!>        Matrix
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64) 
+!>        The location of the column element in Matrix to update. 
+!>        If J is negative it is counted from the last element of 
+!>        Matrix
+!>    \endverbatim
 !
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J)
 !
 !     Variable Declarations.
 !
       Implicit None
       Integer(kind=int64),Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
-      Type(MQC_Scalar),Intent(In)::Scalar
+      Class(*),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI,IndJ
+
+      Select Type (ScalarIn)
+      Type Is (Integer)
+        Scalar = ScalarIn
+      Type Is (Real)
+        Scalar = ScalarIn
+      Type Is (Complex)
+        Scalar = ScalarIn
+      Type Is (MQC_Scalar)
+        Scalar = ScalarIn
+      Class Default
+        Call MQC_Error_I('ScalarIn type not defined in MQC_Matrix_Scalar_Put',6)
+      End Select
 
       IndI = I
       IndJ = J
@@ -13751,15 +17834,60 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Initialize
+!
+!>    \brief <b> MQC_Matrix_Initialize is a subroutine that initializes an MQC matrix
+!>    with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Initialize is a subroutine that initializes an MQC matrix with each 
+!>    element equal to a chosen value. Optional argument Scalar determines the value
+!>    of each element, with the default equal to zero. Optional argument Storage 
+!>    determines the initial packing of MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to initialize.
+!>    \endverbatim
+!>
+!>    \param[in] Rows 
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Columns
+!>    \verbatim
+!>        Columns is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(Len=*),Optional
+!>        The initial packing of Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Initialize(Matrix,Rows,Columns,Scalar,Storage)
-!
-!     This subroutine initializes an MQC_Matrix Matrix of dimension Rows x
-!     Columns with the value Scalar in all elements. <Storage> is a character
-!     string that matches the meanings of argument <Storage> in routine
-!     MQC_Allocate_Matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -13801,12 +17929,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Identity
+!
+!>    \brief <b> MQC_Matrix_Identity is a subroutine that initializes an MQC matrix
+!>    as an identity matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Identity is a subroutine that initializes an MQC matrix as an  
+!>    identity matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to initialize as the NxM identity 
+!>        matrix.
+!>    \endverbatim
+!>
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] M
+!>    \verbatim
+!>        M is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_Matrix_Identity(matrix,n,m)
-!
-!     This subroutine returns an identity matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -13825,12 +17988,50 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Set
+!
+!>    \brief <b> MQC_Matrix_Set is a subroutine that sets an MQC matrix to a value
+!>    without resizing its dimensions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Set is a subroutine that sets an MQC matrix to a value without
+!>    resizing its dimensions. Optional argument scalar specifies the value to set
+!>    each element of the matrix, where the default value is 0.0. Optional argument
+!>    storage allows the storage of the matrix to be defined, where the default is
+!>    unpacked. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix to set values of elements.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix. The default
+!>        is 0.0.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(len=*),Optional
+!>        The packing of the Matrix. The default is unpacked.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine MQC_Matrix_Set(matrix,scalar,storage)
-!
-!     This subroutine sets a matrix that already exists to a value (default 0).
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -13878,17 +18079,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Norm
+!
+!>    \brief <b> MQC_Matrix_Norm is a function that returns the norm of an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Norm is a function that returns the norm of an MQC matrix. The 
+!>    following options are available:
+!>
+!>    1. methodIn = 'M' uses the maximum absolute value max(abs(A(i,j))).
+!>    2. methodIn = '1' uses the one norm.
+!>    3. methodIn = 'I' uses the infinity norm.
+!>    4. methodIn = 'F' uses the Frobenius norm (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!>
+!>    \param[in] MethodIn
+!>    \verbatim
+!>        MethodIn is Character(len=1)
+!>        = 'M': max(abs(A(i,j)))
+!>        = '1': one norm
+!>        = 'I': infinity norm
+!>        = 'F': Frobenius norm.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Function MQC_Matrix_Norm(matrix,methodIn) result(norm)
-!
-!     This function returns the norm of an mqc matrix.
-!     Different norms can be computed with optional argument methodIn.
-!     'M' - max(abs(A(i,j)))
-!     '1' - one norm
-!     'I' - infinty norm
-!     'F' - Frobenius norm (default)
-!
-!     L. M. Thompson, 2017.
-!
 !
 !     Variable Declarations.
 !
@@ -13937,6 +18168,33 @@
 !
 !
 !     PROCEDURE mqc_matrix_determinant
+!
+!>    \brief <b> MQC_Matrix_Determinant is a function that returns the determinant of 
+!>    an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Determinant is a function that returns the determinant of an MQC 
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_matrix_determinant(a) result(det)
 !
 !     This function returns the determinant of MQC matrix A.
@@ -14017,6 +18275,32 @@
 !
 !
 !     PROCEDURE mqc_matrix_inverse
+!
+!>    \brief <b> MQC_Matrix_Inverse is a function that returns the inverse of an MQC 
+!>    matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Inverse is a function that returns the inverse of an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
       function mqc_matrix_inverse(a) result(a_inv)
 !
       implicit none
@@ -14095,9 +18379,33 @@
 !
 !
 !     PROCEDURE mqc_matrix_trace
-      function mqc_matrix_trace(matrix) result(trace)
 !
-!     This function computes the trace of a matrix
+!>    \brief <b> MQC_Matrix_Trace is a function that returns the trace of an MQC 
+!>    matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Trace is a function that returns the trace of an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      function mqc_matrix_trace(matrix) result(trace)
 !
 !     Variable Declarations...
 !
@@ -14115,6 +18423,58 @@
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
+!
+!>    \brief <b> MQC_Matrix_Generalized_Eigensystem is a subroutine that takes a MQC 
+!>    matrix and a metric and returns eigenvalues and eigenvectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Generalized_Eigensystem is a subroutine that takes a MQC matrix and
+!>    an optional metric (also as an MQC matrix) and optionally returns eigenvalues 
+!>    to a MQC vector and/or left and/or right eigenvectors to an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to diagonalize. 
+!>    \endverbatim
+!>
+!>    \param[in] BIn
+!>    \verbatim
+!>        BIn is Type(MQC_Matrix),Optional
+!>        The metric. 
+!>    \endverbatim
+!>
+!>    \param[out] Eigenvals
+!>    \verbatim
+!>        Eigenvals is Type(MQC_Vector),Optional
+!>        Optional MQC vector containing the eigenvalues.
+!>    \endverbatim
+!>
+!>    \param[out] REigenvecs
+!>    \verbatim
+!>        REigenvecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the right eigenvectors.
+!>    \endverbatim
+!>
+!>    \param[out] LEigenvecs
+!>    \verbatim
+!>        LEigenvecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the left eigenvectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       subroutine mqc_matrix_generalized_eigensystem(a,bIn,eigenvals,reigenvecs,leigenvecs)
 !
       implicit none
@@ -14334,11 +18694,52 @@
 !
 !
 !     PROCEDURE MQC_Matrix_SVD
-      Subroutine MQC_Matrix_SVD(A,EVals,EUVecs,EVVecs)
 !
-!     Do SVD decomposition of matrix A.
-!   
-!     L. M. Thompson, 2017
+!>    \brief <b> MQC_Matrix_SVD is a subroutine that computes the singular value 
+!>    decomposition of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_SVD is a subroutine that computes the singular value decomposition 
+!>    of a MQC matrix.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to decompose.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        Eigenvals is Type(MQC_Vector),Optional
+!>        Optional MQC vector containing the singular values.
+!>    \endverbatim
+!>
+!>    \param[in,out] EUVecs
+!>    \verbatim
+!>        EUVecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the U vectors.
+!>    \endverbatim
+!>
+!>    \param[out] EVVecs
+!>    \verbatim
+!>        EVVecs is Type(MQC_Matrix),Optional
+!>        Optional MQC matrix containing the V vectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Matrix_SVD(A,EVals,EUVecs,EVVecs)
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::A
@@ -14426,10 +18827,46 @@
 !
 !
 !     PROCEDURE MQC_Matrix_RMS_Max
-      Subroutine MQC_Matrix_RMS_Max(A,rms_A,max_A)
 !
-!     This subroutine returns the RMS and Max Absolute values from the
-!     INPUT matrix A.
+!>    \brief <b> MQC_Matrix_RMS_Max is a subroutine that returns the RMS and maximum 
+!>    values of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_RMS_Max is a subroutine that returns the RMS and maximum values of a 
+!>    MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!>
+!>    \param[out] RMS_A
+!>    \verbatim
+!>        RMS_A is Type(MQC_Scalar)
+!>        Returns the RMS value of matrix A.
+!>    \endverbatim
+!>
+!>    \param[out] Max_A
+!>    \verbatim
+!>        Max_A is Type(MQC_Scalar)
+!>        Returns the maximum value of matrix A.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_Matrix_RMS_Max(A,rms_A,max_A)
 !
       Implicit None
       Class(MQC_Matrix),Intent(InOut)::A
@@ -14477,9 +18914,47 @@
 !
 !
 !     PROCEDURE MQC_Matrix_Sqrt
-      subroutine mqc_matrix_sqrt(A,eVals,eVecs)
 !
-!     This subroutine returns the square root of INPUT matrix A.
+!>    \brief <b> MQC_Matrix_Sqrt is a subroutine that returns the square root of a 
+!>    MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Sqrt is a subroutine that returns the square root of a MQC matrix.
+!>    Note that the matrix has to be symmetric or hermitian. Optionally, eigenvalues 
+!>    and/or eigenvectors are returned.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_Vector),Optional
+!>        The eigenvalues of matrix A.
+!>    \endverbatim
+!>
+!>    \param[out] EVecs
+!>    \verbatim
+!>        EVecs is Type(MQC_Matrix)
+!>        The eigenvectors of matrix A.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      subroutine mqc_matrix_sqrt(A,eVals,eVecs)
 !
       Implicit None
       class(mqc_matrix),intent(inOut)::A
@@ -14504,14 +18979,52 @@
 !
 !
 !     PROCEDURE MQC_Givens_Matrix
+!
+!>    \brief <b> MQC_Givens_Matrix is a function that outputs a Givens rotation matrix 
+!>    of specified angle and vector pair as an MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Givens_Matrix is a function that outputs a Givens rotation matrix of 
+!>    specified angle and vector pair as an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] M_Size
+!>    \verbatim
+!>        M_Size is integer(kind=int64)
+!>        The dimension of the Givens matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Angle
+!>    \verbatim
+!>        Angle is real(kind=real64)
+!>        The angle of rotation in radians.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is integer(kind=int64)
+!>        The first vector to rotate.
+!>    \endverbatim
+!>
+!>    \param[in] Q
+!>    \verbatim
+!>        Q is integer(kind=int64)
+!>        The second vector to rotate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. D. Mahler  
+!>    \date 2019
+!
       Function MQC_Givens_Matrix(m_size,angle,p,q)
-!
-!     This function returns a Givens rotation matrix of m_size x m_size with
-!     rotation angles appropriate to rotate from vector p to vector q. Angle
-!     must be in radians.
-!
-!     A. Mahler, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -14541,10 +19054,81 @@
 !
 !
 !     PROCEDURE MQC_Allocate_R4Tensor
-      Subroutine MQC_Allocate_R4Tensor(I,J,K,L,Tensor,Data_Type,Storage)
 !
-!     This subroutine allocates an MQC_R4Tensor rank-4 tensor of dimension
-!     I x J x K x L
+!>    \brief <b> MQC_Allocate_R4Tensor is used to allocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Allocate_R4Tensor is a subroutine used to allocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class. The following options are available:
+!>
+!>    1. Data_Type = 'Real' declares the MQC_R4Tensor variable to be of real type. 
+!>    2. Data_Type = 'Integer' declares the MQC_R4Tensor variable to be of integer type.
+!>    3. Data_Type = 'Complex' declares the MQC_R4Tensor variable to be of complex type.
+!>    4. Storage = 'StorFull' declares the MQC_R4Tensor variable to be unpacked.
+!>    5. Storage = 'StorSymm' declares the MQC_R4Tensor variable to be symmetric packed.
+!>
+!>    TODO: Extend storage types for R4Tensor
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        I is the first dimension of Tensor. 
+!>    \endverbatim
+!>    
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        J is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] K
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        K is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] L
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        L is the second dimension of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in] Data_Type
+!>    \verbatim
+!>        Data_Type is Character(Len=*)
+!>        = 'Real':    the MQC_R4Tensor is real
+!>        = 'Integer': the MQC_R4Tensor is integer
+!>        = 'Complex': the MQC_R4Tensor is complex.
+!>    \endverbatim
+!>
+!>    \param[in] Storage  
+!>    \verbatim
+!>        Storage is Character(Len=*)
+!>        = 'StorFull': the MQC_R4Tensor is unpacked
+!>        = 'StorSymm': the MQC_R4Tensor is symmetric-packed
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2016
+!
+      Subroutine MQC_Allocate_R4Tensor(I,J,K,L,Tensor,Data_Type,Storage)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
@@ -14568,6 +19152,14 @@
         JCur = J
         KCur = K
         LCur = L
+      ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
+        If(I.ne.J.and.I.ne.K.and.I.ne.L) Call MQC_Error_I('Attempting to assign rank-4 tensor of variable dimensions to &
+     &    symmetric form in MQC_Allocate_R4Tensor', 6, 'I', I, 'J', J, 'K', K, 'L', L)
+        Tensor%Storage = 'StorSymm'
+        ICur = (I**4+2*I**3+3*I**2+2*I)/8
+        JCur = 1
+        KCur = 1
+        LCur = 1
       Else
         Call MQC_Error_A('Storage type not recognised in MQC_Allocate_R4Tensor', 6, &
              'Storage', Storage)
@@ -14596,14 +19188,40 @@
 !
 !
 !     PROCEDURE MQC_Deallocate_R4Tensor
+!
+!>    \brief <b> MQC_Deallocate_R4Tensor is used to deallocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Deallocate_R4Tensor is a subroutine used to deallocate a rank-4 tensor type 
+!>    variable of the MQC_R4Tensor class. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be deallocated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2016
+!
       Subroutine MQC_Deallocate_R4Tensor(Tensor)
 !
 !     This subroutine deallocates an MQC_R4Tensor rank-4 tensor.
 !
       Implicit None
       Type(MQC_R4Tensor),Intent(InOut)::Tensor
-
-
+!
       If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
       If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
       If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
@@ -14618,9 +19236,68 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_At
-      Function MQC_R4Tensor_At(Tensor,I,J,K,L) Result(Element)
 !
-!     This Function returns the MQC_Scalar Scalar at I, J, K, L.
+!>    \brief <b> MQC_R4Tensor_At is a function that returns the value of an  
+!>    element of a MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_At is a function that returns the value of (I,J,K,L)th element of 
+!>    a MQC rank-4 tensor as an MQC scalar. If I, J, K or L is negative, the (N-I+1)th 
+!>    index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to return the value of the 
+!>        (I,J,K,L)th element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Function MQC_R4Tensor_At(Tensor,I,J,K,L) Result(Element)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
@@ -14648,30 +19325,144 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L )
-      If(Tensor%Data_Type.eq.'Integer') then
-        Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Real') then
-        Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Complex') then
-        Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+      If(Tensor%Storage.eq.'StorFull') then
+        If(Tensor%Data_Type.eq.'Integer') then
+          Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Real') then
+          Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Complex') then
+          Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+        Else
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+               'Tensor%Data_Type', Tensor%Data_Type )
+        EndIf
+      ElseIf(Tensor%Storage.eq.'StorSymm') then
+        If(Tensor%Data_Type.eq.'Integer') then
+          Element = Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        ElseIf(Tensor%Data_Type.eq.'Real') then
+          Element = Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        ElseIf(Tensor%Data_Type.eq.'Complex') then
+          Element = Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        Else
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+            'Tensor%Data_Type', Tensor%Data_Type )
+        EndIf
       Else
-        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
-             'Tensor%Data_Type', Tensor%Data_Type )
+        Call MQC_Error_A('Storage type not defined in MQC_R4Tensor_At', 6, &
+          'Tensor%Storage', Tensor%Storage )
       EndIf
 
       End Function MQC_R4Tensor_At
 !
 !
 !     PROCEDURE MQC_R4Tensor_Put
-      Subroutine MQC_R4Tensor_Put(Tensor,Element,I,J,K,L)
 !
-!     This Subroutine places the MQC_Scalar Scalar at I, J, K, L.
+!>    \brief <b> MQC_R4Tensor_Put is a subroutine that updates the value of an  
+!>    element of a MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Put is a subroutine that updates the value of (I,J,K,L)th element 
+!>    of a MQC rank-4 tensor. If I, J, K or L is negative, the (N-I+1)th index is 
+!>    selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to update at the (I,J,K,L)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] ElementIn
+!>    \verbatim
+!>        Element is Class(*)
+!>        The value to update the specified element of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] SymmFlag  
+!>    \verbatim
+!>        SymmFlag is Character(Len=*),Optional
+!>        Whether to add value to tensor symmetrically
+!>        = 'no symm': do not add symmetrically
+!>        = 'symm:' add value in 8-fold symmetry locations.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Subroutine MQC_R4Tensor_Put(Tensor,ElementIn,I,J,K,L,SymmFlag)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(InOut)::Tensor
-      Type(MQC_Scalar),Intent(In)::Element
+      Class(*),Intent(In)::ElementIn
+      Type(MQC_Scalar)::Element
       Integer(kind=int64)::IndI,IndJ,IndK,IndL
+      Character(Len=*),Intent(In),Optional::SymmFlag
+      Character(Len=64)::my_SymmFlag
+
+      Select Type (ElementIn)
+      Type Is (Integer)
+        Element = ElementIn
+      Type Is (Real)
+        Element = ElementIn
+      Type Is (Complex)
+        Element = ElementIn
+      Type Is (MQC_Scalar)
+        Element = ElementIn
+      Class Default
+        Call MQC_Error_I('ElementIn type not defined in MQC_R4Tensor_Put',6)
+      End Select
+
+      If(Present(SymmFlag)) then
+        my_SymmFlag = SymmFlag
+      Else
+        my_SymmFlag = 'no symm'
+      EndIf
+      If(my_SymmFlag.ne.'no symm'.and.my_SymmFlag.ne.'symm') Call MQC_Error_A('Unrecognized symmetry flag in &
+    &   mqc_r4tensor_put',6,'my_SymmFlag',my_SymmFlag)
+
 
       IndI = I
       IndJ = J
@@ -14693,58 +19484,261 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_put', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L)
-      !print*, 'tensor%ten(i,j,k,l)= ', tensor%ten(i,j,k,l)
-      If (Tensor%Data_Type.eq.'Integer') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaC
+
+
+      If(my_SymmFlag.eq.'no symm'.and.MQC_R4Tensor_HaveSymmetric(Tensor).and. &
+        .not.((IndI.eq.IndJ).and.(IndI.eq.IndK).and.(IndI.eq.IndL))) &
+        Call MQC_R4Tensor_Symm2Full(Tensor) 
+
+
+      If(MQC_R4Tensor_HaveFull(Tensor)) then
+        If (Tensor%Data_Type.eq.'Integer') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%ITen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%ITen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%ITen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%ITen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%ITen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%ITen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%ITen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Call MQC_R4Tensor_Copy_Int2Real(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Call MQC_R4Tensor_Copy_Int2Complex(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Real') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Call MQC_R4Tensor_Copy_Real2Complex(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Complex') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
                'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
-      ElseIf (Tensor%Data_Type.eq.'Real') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+      ElseIf(MQC_R4Tensor_HaveSymmetric(Tensor)) then
+        If (Tensor%Data_Type.eq.'Integer') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Real') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Complex') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
-               'Tensor%Data_Type', Tensor%Data_Type )
-        EndIf
-      ElseIf (Tensor%Data_Type.eq.'Complex') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
-        Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
                'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
       Else
-        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
-             'Tensor%Data_Type', Tensor%Data_Type )
+        Call MQC_Error_A('Unrecognized storage type in MQC_R4Tensor_Put', &
+          6, 'Tensor%Storage', Tensor%Storage)
       EndIf
-      !call mqc_output_scalar(tensor%ten(i,j,k,l),element)
-      !tensor%ten(i,j,k,l) = 60
-      !print*, 'tensor%ten(i,j,k,l)= ', tensor%ten(i,j,k,l)
 
       End Subroutine MQC_R4Tensor_Put
 !
 !
 !     PROCEDURE MQC_Print_R4Tensor_Algebra1
-      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
-!     This Subroutine prints the MQC_R4Tensor Tensor.
+!>    \brief <b> MQC_Print_R4Tensor_Algebra1 is a subroutine used to print an MQC
+!>    rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_R4Tensor_Algebra1 is a subroutine used to print an MQC rank-4 tensor. 
+!>    Blank_At_Top and Blank_At_Bottom are optional logical arguments to print blank
+!>    lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_Tensor)
+!>        The variable to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
@@ -14763,21 +19757,42 @@
         If(blank_at_top) Write(IOut,1020)
       EndIf
       If(Present(Header)) Write(IOut,1000) Trim(Header)
-      Do I = 1, Tensor%I
-        Do J = 1, Tensor%J
-          Do K = 1, Tensor%K
-            Do l = 1, Tensor%L
-              If(Tensor%Data_Type.eq.'Integer') then
-                Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Real') then
-                Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Complex') then
-                Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
-              EndIf
+      If(MQC_R4Tensor_HaveFull(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
+                EndIf
+              EndDo
             EndDo
           EndDo
         EndDo
-      EndDo
+      ElseIf(MQC_R4Tensor_HaveSymmetric(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
+                EndIf
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      Else
+        Call MQC_Error_A('Unrecognized storage type in MQC_Print_R4Tensor_Algebra1', &
+          6, 'Tensor%Storage', Tensor%Storage)
+      EndIf
       If(present(blank_at_bottom)) then
         If(blank_at_bottom) Write(IOut,1020)
       EndIf
@@ -14786,9 +19801,40 @@
 !
 !
 !     PROCEDURE MQC_Set_Array2Tensor
-      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
 !
-!     This subroutine sets an MQC_R4Tensor rank-4 tensor to an array.
+!>    \brief <b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor
+!>    equal to an intrinsic rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Class(*),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
 !
       Implicit None
       Class(*),Intent(In)::ArrayIn(:,:,:,:)
@@ -14816,14 +19862,69 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_Initialize
+!
+!>    \brief <b> MQC_R4Tensor_Initialize is a subroutine that initializes an MQC 
+!>    rank-4 tensor with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Initialize is a subroutine that initializes an MQC rank-4 tensor 
+!>    with each element equal to a chosen value. Optional argument Scalar determines 
+!>    the value of each element, with the default equal to zero. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to initialize.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The number of the first dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The number of the second dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] K
+!>    \verbatim
+!>        K is Integer(kind=int64)
+!>        The number of the third dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] L
+!>    \verbatim
+!>        L is Integer(kind=int64)
+!>        The number of the fourth dimension to initialize 
+!>        R4Tensor.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of R4Tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
       Subroutine MQC_R4Tensor_Initialize(R4Tensor,I,J,K,L,Scalar)
-!
-!     This subroutine initializes an MQC_R4Tensor rank-4 tensor of dimension
-!     I x J x K x L with the value Scalar in all elements.
-!
-!     L. M. Thompson, 2017.
-!
-!     Variable Declarations.
 !
       Implicit None
       Real(kind=real64)::Zero=0.0d0
@@ -14853,119 +19954,139 @@
       End Subroutine MQC_R4Tensor_Initialize
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Real
+!
+!>    \brief <b> MQC_R4Tensor_SymmSymmMatrix_Put_Real is a subroutine that returns a 
+!>    MQC rank-4 tensor with elements defined by values in an intrinsic real vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_SymmSymmMatrix_Put_Real is a subroutine that returns a MQC rank-4
+!>    tensor with elements defined by values in an intrinsic real vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is class(MQC_R4Tensor)
+!>        MQC rank-4 tensor to overwrite with output rank-4 tensor.
+!>    \endverbatim
+!>
+!>    \param[in] SymmSymmMatrixIn
+!>    \verbatim
+!>        SymmSymmMatrixIn is real(kind=real64),dimension(:)
+!>        Intrinsic real vector to write as rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4Tensor,symmSymmMatrixIn)
-!
-!     This subroutine loads a (MQC) rank-4 tensor <mat> from an input
-!     (fortran intrinsic type) real packed-symmetric-symmetric matrix <symmSymmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       real(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      real(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'real','symm')
+      r4tensor%rten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Real
 !
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Complex
+!
+!>    \brief <b> MQC_R4Tensor_SymmSymmMatrix_Put_Complex is a subroutine that returns 
+!>    a MQC rank-4 tensor with elements defined by values in an intrinsic complex 
+!>    vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_SymmSymmMatrix_Put_Complex is a subroutine that returns a MQC 
+!>    rank-4 tensor with elements defined by values in an intrinsic complex vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in,out] R4Tensor
+!>    \verbatim
+!>        R4Tensor is class(MQC_R4Tensor)
+!>        MQC rank-4 tensor to overwrite with output rank-4 tensor.
+!>    \endverbatim
+!>
+!>    \param[in] SymmSymmMatrixIn
+!>    \verbatim
+!>        SymmSymmMatrixIn is complex(kind=real64),dimension(:)
+!>        Intrinsic complex vector to write as rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4Tensor,symmSymmMatrixIn)
-!
-!     This subroutine loads a (MQC) rank-4 tensor <mat> from an input
-!     (fortran intrinsic type) complex packed-symmetric-symmetric matrix <symmSymmMatrixIn>,
-!     which should be passed as a rank-1 array with size n(n+1)/2 where n is the
-!     leading dimension of the matrix.
-!
-!     L. M. Thompson, 2017.
-!
 !
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       complex(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      complex(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'complex','symm')
+      r4tensor%cten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveInteger
+!
+!>    \brief <b> MQC_R4Tensor_HaveInteger is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated integer array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveInteger is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated integer array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveInteger(R4Tensor)
-!
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated integer r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
 !
 !     Variable Declarations.
       Implicit None
@@ -14979,15 +20100,35 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveReal
+!
+!>    \brief <b> MQC_R4Tensor_HaveReal is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated real array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveReal is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated real array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveReal(R4Tensor)
 !
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated real r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
-!
-!     Variable Declarations.
       Implicit None
       Logical::MQC_R4Tensor_HaveReal
       Type(MQC_R4Tensor),Intent(In)::R4Tensor
@@ -14999,15 +20140,35 @@
 !
 !
 !     PROCEDURE MQC_R4Tensor_HaveComplex
+!
+!>    \brief <b> MQC_R4Tensor_HaveComplex is a function used to indicate if an MQC 
+!>    rank-4 tensor has an allocated complex array</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveComplex is a function that returns TRUE if an MQC rank-4 tensor 
+!>    has an allocated complex array and FALSE if it does not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
       Function MQC_R4Tensor_HaveComplex(R4Tensor)
 !
-!     This function returns TRUE or FALSE indicating whether R4Tensor has an
-!     allocated complex r4Tensor.
-!
-!     L. M. Thompson, 2019.
-!
-!
-!     Variable Declarations.
       Implicit None
       Logical::MQC_R4Tensor_HaveComplex
       Type(MQC_R4Tensor),Intent(In)::R4Tensor
@@ -15016,6 +20177,689 @@
 !
       Return
       End Function MQC_R4Tensor_HaveComplex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveFull   
+!
+!>    \brief <b> MQC_R4Tensor_HaveFull is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveFull is a function that returns TRUE if an MQC rank-4 tensor 
+!>    is stored unpacked and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveFull(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveFull   
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorFull') then
+        MQC_R4Tensor_HaveFull = .True. 
+      Else
+        MQC_R4Tensor_HaveFull = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveFull   
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveSymmetric
+!
+!>    \brief <b> MQC_R4Tensor_HaveSymmetric is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveSymmetric is a function that returns TRUE if an MQC matrix is 
+!>    stored symmetric-packed and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveSymmetric(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveSymmetric 
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorSymm') then
+        MQC_R4Tensor_HaveSymmetric = .True. 
+      Else
+        MQC_R4Tensor_HaveSymmetric = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveSymmetric   
+!
+!
+!     PROCEDURE MQC_R4Tensor_Full2Symm
+!
+!>    \brief <b> MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC 
+!>    rank-4 tensor to symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC rank-4 
+!>    tensor to symmetric-packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be symmetric packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Full2Symm(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L
+!
+      If(.not.Tensor%Storage.eq.'StorFull') Call MQC_Error_A('Input rank-4 tensor must be full &
+     &  packed in MQC_R4Tensor_Full2Symm', 6, 'Tensor%Storage', Tensor%Storage )
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp, source=Tensor%RTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Real','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%RTen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp(Size(Tensor%ITen,1),Size(Tensor%ITen,2),Size(Tensor%ITen,3),Size(Tensor%ITen,4)))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Integer','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%ITen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(TempC, source=Tensor%CTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(TempC,1),Size(TempC,2),Size(TempC,3),Size(TempC,4),Tensor, &
+          'Complex','StorSymm')
+        Do I = 1, Size(TempC,1)
+          Do J = 1, I
+            Do K = 1, Size(TempC,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%CTen(SymIndexHash(I,J,K,L),1,1,1) = TempC(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Full2Symm
+!
+!
+!     PROCEDURE MQC_R4Tensor_Symm2Full
+!
+!>    \brief <b> MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed 
+!>    MQC rank-4 tensor to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed MQC rank-4 
+!>    to unpacked. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to unpack.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Symm2Full(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L,N
+!
+      If(.not.Tensor%Storage.eq.'StorSymm') Call MQC_Error_A('Input rank-4 tensor must be &
+     &  symmetric-packed in MQC_R4Tensor_Symm2Full',6,'Tensor%Storage',Tensor%Storage)
+      N = MQC_R4Tensor_Size(Tensor)
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp, source=Tensor%RTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Real','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%RTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%RTen(J,I,K,L) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(I,J,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(J,I,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,J,I) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,J,I) = Tensor%RTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Integer','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%ITen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%ITen(J,I,K,L) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(I,J,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(J,I,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,J,I) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,J,I) = Tensor%ITen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(TempC, source=Tensor%CTen)
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Complex','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%CTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%CTen(J,I,K,L) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(I,J,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(J,I,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,J,I) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,J,I) = Tensor%CTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Symm2Full
+!
+!
+!     PROCEDURE MQC_R4Tensor_Size
+!
+!>    \brief <b> MQC_R4Tensor_Size is a function used to return the dimension of a 
+!>    specified dimension of an MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Size is a function used to return the dimension of a specified 
+!>    dimension of a MQC rank-4 tensor. If the tensor is NOT allocated, the dimension  
+!>    is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        The axis from which the dimension will be returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_Size(Tensor,axis) result(dimen)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64)::dimen
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+      integer(kind=int64),intent(in),optional::axis
+      integer(kind=int64)::my_axis
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+      if(my_axis.eq.1) then
+        dimen = Tensor%I
+      elseIf(my_axis.eq.2) then
+        dimen = Tensor%J
+      elseIf(my_axis.eq.3) then
+        dimen = Tensor%K
+      elseIf(my_axis.eq.4) then
+        dimen = Tensor%L
+      else
+        call mqc_error_i('Axis out of range in MQC_R4Tensor_Size',6,'my_axis',my_axis)
+      endIf
+!
+      Return
+      End Function MQC_R4Tensor_Size
+!
+!
+!     PROCEDURE MQC_R4Tensor_isAllocated
+!
+!>    \brief <b> MQC_R4Tensor_isAllocated is a function that returns the allocation
+!>    status of a MQC_R4Tensor variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_isAllocated is a function that returns the allocation status of a 
+!>    MQC_R4Tensor variable. The function returns TRUE if the tensor is allocated 
+!>    and FALSE if the tensor is not allocated.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_isAllocated(Tensor) Result(isAllocated)
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(Allocated(Tensor%RTen)) isAllocated = .True.
+      If(Allocated(Tensor%ITen)) isAllocated = .True.
+      If(Allocated(Tensor%CTen)) isAllocated = .True.
+!
+      Return
+      End Function MQC_R4Tensor_isAllocated
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Int2Real
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Int2Real is a subroutine used to copy an integer 
+!>    MQC rank-4 tensor into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Int2Real is a subroutine used to copy an integer MQC rank-4 
+!>    tensor into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Int2Real(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveInteger(Tensor)) Call MQC_Error_L('Incoming tensor not integer in MQC_R4Tensor_Copy_Int2Real', 6, &
+           'MQC_R4Tensor_HaveInteger(Tensor)', MQC_R4Tensor_HaveInteger(Tensor) )
+      Tensor%RTen = Tensor%ITen
+      If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
+      Tensor%Data_Type = 'Real'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Int2Real
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Int2Complex
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Int2Complex is a subroutine used to copy an integer 
+!>    MQC rank-4 tensor into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Int2Complex is a subroutine used to copy an integer MQC rank-4 
+!>    tensor into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to complex.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Int2Complex(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveInteger(Tensor)) Call MQC_Error_L('Incoming tensor not integer in MQC_R4Tensor_Copy_Int2Complex',6,&
+           'MQC_R4Tensor_HaveInteger(Tensor)', MQC_R4Tensor_HaveInteger(Tensor) )
+      Tensor%CTen = Tensor%ITen
+      If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
+      Tensor%Data_Type = 'Complex'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Int2Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Real2Int
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Real2Int is a subroutine used to copy a real MQC 
+!>    rank-4 tensor into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Real2Int is a subroutine used to copy a real MQC rank-4 
+!>    tensor into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Real2Int(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveReal(Tensor)) Call MQC_Error_L('Incoming tensor not real in MQC_R4Tensor_Copy_Real2Int', 6, &
+           'MQC_R4Tensor_HaveReal(Tensor)', MQC_R4Tensor_HaveReal(Tensor) )
+      Tensor%ITen = Tensor%RTen
+      If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
+      Tensor%Data_Type = 'Integer'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Real2Int
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Real2Complex
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Real2Complex is a subroutine used to copy a real MQC 
+!>    rank-4 tensor into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Real2Complex is a subroutine used to copy a real MQC rank-4 
+!>    tensor into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Real2Complex(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveReal(Tensor)) Call MQC_Error_L('Incoming tensor not real in MQC_R4Tensor_Copy_Real2Complex', 6, &
+           'MQC_R4Tensor_HaveReal(Tensor)', MQC_R4Tensor_HaveReal(Tensor) )
+      Tensor%CTen = Tensor%RTen
+      If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
+      Tensor%Data_Type = 'Complex'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Real2Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Complex2Int
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Complex2Int is a subroutine used to copy a complex
+!>    MQC rank-4 tensor into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Complex2Int is a subroutine used to copy a complex MQC rank-4 
+!>    tensor into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Complex2Int(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveComplex(Tensor)) Call MQC_Error_L('Incoming tensor not complex in MQC_R4Tensor_Copy_Complex2Int',6,&
+           'MQC_R4Tensor_HaveComplex(Tensor)', MQC_R4Tensor_HaveComplex(Tensor) )
+      Tensor%ITen = Tensor%CTen
+      If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
+      Tensor%Data_Type = 'Integer'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Complex2Int
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Complex2Real
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Complex2Real is a subroutine used to copy a complex
+!>    MQC rank-4 tensor into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Complex2Real is a subroutine used to copy a complex MQC rank-4 
+!>    tensor into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Complex2Real(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveComplex(Tensor)) Call MQC_Error_L('Incoming tensor not complex in MQC_R4Tensor_Copy_Complex2Real',6,&
+           'MQC_R4Tensor_HaveComplex(Tensor)', MQC_R4Tensor_HaveComplex(Tensor) )
+      Tensor%RTen = Tensor%CTen
+      If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
+      Tensor%Data_Type = 'Real'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Complex2Real
 !
 !
       End Module MQC_Algebra
