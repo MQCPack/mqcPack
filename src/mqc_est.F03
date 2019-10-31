@@ -278,6 +278,7 @@
       Interface Assignment (=)
         Module Procedure MQC_Integral_Output_Array
         Module Procedure MQC_Eigenvalues_Output_Array
+        Module Procedure mqc_2ERIs_output_array
       End Interface
 !
 !>    \brief <b> Sums two variables</b>
@@ -1517,7 +1518,7 @@
 !>    of the MQC_twoERIs class. The following options are available:
 !>
 !>    1. StorageType  = 'Full' declares the MQC_TwoERIs variable is unpacked.
-!>    2. StorageType  = 'Full' declares the MQC_TwoERIs variable is symmetric packed.
+!>    2. StorageType  = 'Symm' declares the MQC_TwoERIs variable is symmetric packed.
 !>    3. IntegralType = 'Regular' declares the MQC_TwoERIs variable contains regular 
 !>                      atomic orbital 2ERIs. 
 !>    4. IntegralType = 'Raffenetti1' declares the MQC_TwoERIs variable contains 
@@ -3038,6 +3039,73 @@
       end select
 !
       end subroutine mqc_eigenvalues_output_array  
+!
+!
+!     PROCEDURE MQC_2ERIs_Output_Array
+!
+!>    \brief <b> MQC_2ERIs_Output_Array is used to output an MQC 2ERIs type variable
+!>    to an MQC rank-4 tensor</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERIs_Output_Array is used to output an MQC 2ERIs type variable to an MQC
+!>    rank-4 tensor.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut 
+!>    \verbatim
+!>        TensorOut is type(mqc_r4tensor)
+!>        The MQC rank-4 tensor variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] TwoERIsIn
+!>    \verbatim
+!>        TwoERIsIn is Class(MQC_TwoERIs)
+!>        MQC 2ERIs variable to output as MQC rank-4 tensor.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_2ERIs_output_array(tensorOut,twoERIsIn) 
+!
+      implicit none
+      class(mqc_twoERIs),intent(in)::twoERIsIn
+      type(mqc_r4tensor),intent(inOut)::tensorOut
+      integer(kind=int64)::nDim=0
+!
+!      nDim = size(twoERIsIn%alpha,1)
+
+      select case (TwoERIsIn%integralType)
+      case('regular','raffenetti1','raffenetti2','raffenetti3','space')
+!        if(mqc_have_complex(twoERIsIn%alpha)) then
+!          call tensorOut%init(nDim,nDim,nDim,nDim,cmplx(0.0,0.0))
+!        else
+!          call tensorOut%init(nDim,nDim,nDim,nDim)
+!        endIf
+        if (MQC_R4Tensor_isAllocated(twoERIsIn%alpha)) then
+          tensorOut = twoERIsIn%alpha
+        else
+          call mqc_error_L('block does not exist in mqc_twoERIs_output_array', 6, &
+               'MQC_R4Tensor_isAllocated(twoERIsIn%alpha)', MQC_R4Tensor_isAllocated(twoERIsIn%alpha))
+        endIf
+      case('spin','general')
+        call mqc_error_A('Spin and general input in mqc_2ERIs_output_array is not yet implemented', &
+             6, 'TwoERIsIn%integralType', TwoERIsIn%integralType)
+      case default
+        call mqc_error_A('unrecognised integral type in mqc_2ERIs_output_array', 6, &
+             'TwoERIsIn%integralType', TwoERIsIn%integralType)
+      end select
+!
+      end subroutine mqc_2ERIs_output_array  
 !
 !
 !     PROCEDURE MQC_Integral_Matrix_Multiply
@@ -5125,6 +5193,7 @@
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::k,l,m,n,nBasis
       character(len=64)::mylabel
+      real(kind=real64)::zero=1.0d-10
 !
       if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
     &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
@@ -5162,6 +5231,7 @@
         do l = 1, nBasis
           do m = 1, nBasis
             do n = 1, nBasis
+              if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
               ! AA Block
               if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
                 call alpha%put(alpha%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
