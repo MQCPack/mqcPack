@@ -621,6 +621,8 @@
       Interface Operator (+)
         Module Procedure MQC_MatrixMatrixSum
       End Interface
+!     Pgfortran does not currently support declare reduction
+!      !$OMP DECLARE REDUCTION(+: mqc_matrix: omp_out = omp_out + omp_in) initializer(omp_priv = omp_orig)
 !
 !     Documentation in scalar operator section
       Interface Operator (-)
