@@ -79,6 +79,8 @@ software is, your program will work without any modifications.
 	 - autotools (only for developers)
 	 - BLAS
 	 - LAPACK library
+         - gcc v8 or newer
+         - gfortran v8 or newer, or pgfortran v19 or newer
   + Optional Software:
 	 - gauopen
 	 - Gaussian 16 or higher
@@ -86,7 +88,6 @@ software is, your program will work without any modifications.
 ## Installing
 
   To build:
-   1. chmod 755 mqc_install
    1. ./mqc_install
    1. {Answer questions}
 
