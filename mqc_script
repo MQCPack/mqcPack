@@ -572,11 +572,11 @@ cd ${MQC_HOME}
 chmod 755 ./configure  > ${mqc_tmpfile} 2>&1
 ./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
 make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
-if [ $? -ne 0 ] ; then 
-    echo $?
+stat = $?
+if [ $stat -ne 0 ] ; then 
     echo "Failure to build"
-    echo $?
-    exit $? 
+    echo $stat
+    exit $stat 
 fi
 command -v doxygen >/dev/null 2>&1
 if [ $? -ne 0 ]; then 
