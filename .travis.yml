@@ -12,8 +12,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
              # compilers
-            - g++
-            - gfortran
+            - g++-9
+            - gcc-9
+            - gfortran-9
             - cmake
 #            - automake
               # math libraries
@@ -47,18 +48,16 @@ before_install:
   - which automake
   - autoconf --version
   - automake --version
+  - gcc --version
+  - g++ --version
+  - gfortran --version
 
 install: 
-#  - |
-#    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-#      brew install cmake boost gcc open-mpi autoconf automake
-  - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\nn\n" | ./mqc_install
-  - doxygen doc/Doxyfile 
-
-#    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-#      apt install autotools
-#      echo -e "y\nG\n$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\ng16\n" | ./mqc_install 
-#    fi
+#  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+#      export CC=gcc-9 ;
+#      export CXX=gfortran-9 ;
+#     fi
+  - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
 
 notifications:
   email: false
