@@ -49,8 +49,10 @@ before_install:
   - autoconf --version
   - automake --version
   - gcc --version
-  - g++ --version
+#  - g++ --version
   - gfortran --version
+  - gfortran-8 --version
+  - which gfortran-8
 
 install: 
   -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
