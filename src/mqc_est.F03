@@ -3078,7 +3078,7 @@
       subroutine mqc_2ERIs_output_array(tensorOut,twoERIsIn) 
 !
       implicit none
-      class(mqc_twoERIs),intent(in)::twoERIsIn
+      type(mqc_twoERIs),intent(in)::twoERIsIn
       type(mqc_r4tensor),intent(inOut)::tensorOut
       integer(kind=int64)::nDim=0
 !
@@ -5234,8 +5234,9 @@
 
 !      !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
       !$OMP PARALLEL DEFAULT(NONE), &
-      !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc), &
-      !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha)
+      !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
+      !$OMP PRIVATE(k,l,m,n), &
+      !$OMP FIRSTPRIVATE(alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
       call alphaLoc%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
         call betaLoc%init(nBasis,nBasis)
