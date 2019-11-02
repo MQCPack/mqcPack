@@ -57,9 +57,11 @@ before_install:
 install: 
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+       fc=`which gfortran`
+       gc=`which gcc`
        sudo rm `which gfortran` `which gcc`
-       ln -s `which gfortran-8` `which gfortran`
-       ln -s `which gcc-8` `which gcc`
+       ln -s `which gfortran-8` $fc
+       ln -s `which gcc-8` $gc
     fi
   - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
 
