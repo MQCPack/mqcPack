@@ -55,10 +55,11 @@ before_install:
   - which gfortran-8
 
 install: 
-  -  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-       ln -s `which gfortran-8` `which gfortran`;
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+       ln -s `which gfortran-8` `which gfortran`
        ln -s `which gcc-8` `which gcc`
-     fi
+    fi
   - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
 
 notifications:
