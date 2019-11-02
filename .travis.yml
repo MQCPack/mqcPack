@@ -57,6 +57,7 @@ before_install:
 install: 
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+       rm `which gfortran` `which gcc`
        ln -s `which gfortran-8` `which gfortran`
        ln -s `which gcc-8` `which gcc`
     fi
