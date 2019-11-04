@@ -9298,9 +9298,23 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalar
+      type(mqc_scalar)::my_scalar
       type(mqc_vector)::temp
 !
+      select type (scalar)
+      type is (integer)
+        my_scalar = scalar
+      type is (real)
+        my_scalar = scalar
+      type is (complex)
+        my_scalar = scalar
+      type is (mqc_scalar)
+        my_scalar = scalar
+      class default
+        call mqc_error('Scalar type not defined in mqc_vector_push',6)
+      end select
+      
       if(mqc_length_vector(vector).eq.0) then
         call vector%init(1,scalar)
       else
