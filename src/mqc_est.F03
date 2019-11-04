@@ -5244,7 +5244,7 @@
         call alphaBetaLoc%init(nBasis,nBasis)
         call betaAlphaLoc%init(nBasis,nBasis)
       endIf
-      !$OMP DO 
+      !$OMP DO COLLAPSE(4) 
       do k = 1, nBasis
         do l = 1, nBasis
           do m = 1, nBasis
