@@ -120,7 +120,7 @@ Complex   =          F
      H       0.000000      0.000000      0.000000
      H       0.000000      0.000000      4.999999
  -------------------------------------------------
- Nuclear Repulsion Energy (au) =   0.105835442184
+ Nuclear Repulsion Energy (au) =     0.105835442184
  Initial density matrix
  
                   1             2
@@ -189,8 +189,8 @@ Iteration:   1
                   1             2
        1      0.499946      0.499946
        2      0.499946      0.499946
- Energy =  -1.039196643399
- Convergence on density matrix =   1.414061079173
+ Energy =    -1.039196643399
+ Convergence on density matrix =     1.414061079173
 Iteration:   2
  G(P)
  Alpha Array
@@ -222,11 +222,11 @@ Iteration:   2
   Orthogonal MO coefficients
  Alpha Array
                   1             2
-       1      0.000000     -1.000000
+       1      0.000000      1.000000
        2      1.000000      0.000000
  Beta Array
                   1             2
-       1      0.000000     -1.000000
+       1      0.000000      1.000000
        2      1.000000      0.000000
  Orbital energies
  Alpha Array
@@ -238,12 +238,12 @@ Iteration:   2
  MO coefficients
  Alpha Array
                   1             2
-       1      0.707069      0.707145
-       2      0.707069     -0.707145
+       1      0.707069     -0.707145
+       2      0.707069      0.707145
  Beta Array
                   1             2
-       1      0.707069      0.707145
-       2      0.707069     -0.707145
+       1      0.707069     -0.707145
+       2      0.707069      0.707145
  Density matrix
  Alpha Array
                   1             2
@@ -253,5 +253,5 @@ Iteration:   2
                   1             2
        1      0.499946      0.499946
        2      0.499946      0.499946
- Energy =  -0.599024872991
- Convergence on density matrix =   0.000000000000
+ Energy =    -0.599024872991
+ Convergence on density matrix =     0.000000000000

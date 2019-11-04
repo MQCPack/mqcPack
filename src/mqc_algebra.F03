@@ -18331,7 +18331,7 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_diag2Symm(a)
+      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(nDim1,nDim2))
