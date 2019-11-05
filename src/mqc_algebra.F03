@@ -7978,15 +7978,11 @@
 
       temp = VA%veci
       call mqc_allocate_vector(VA%length,VB,'Real')
-<<<<<<< HEAD
-      VB%vecr = temp
-=======
       if(mqc_have_int(VA)) then
         VB%vecr = VA%veci
       elseif(mqc_have_complex(VA)) then
         VB%vecr = VA%vecc
       endif
->>>>>>> 506360defb7cfe0018cc610be0a5a080202bfd10
 
       end function MQC_vector_cast_real
 !
