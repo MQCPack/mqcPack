@@ -419,6 +419,13 @@
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
 !
+!>    \brief <b> Returns the array length along the specified dimension</b>
+      Interface Size
+        Module Procedure MQC_Length_Vector 
+        Module Procedure MQC_Matrix_Size
+        Module Procedure MQC_R4Tensor_Size
+      End Interface
+!
 !----------------------------------------------------------------
 !                                                               |
 !     OPERATOR INTERFACES                                       |
@@ -9298,9 +9305,23 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalar
+      type(mqc_scalar)::my_scalar
       type(mqc_vector)::temp
 !
+      select type (scalar)
+      type is (integer)
+        my_scalar = scalar
+      type is (real)
+        my_scalar = scalar
+      type is (complex)
+        my_scalar = scalar
+      type is (mqc_scalar)
+        my_scalar = scalar
+      class default
+        call mqc_error('Scalar type not defined in mqc_vector_push',6)
+      end select
+      
       if(mqc_length_vector(vector).eq.0) then
         call vector%init(1,scalar)
       else
@@ -14851,6 +14872,66 @@
 !
       Return
       End Function MQC_Matrix_Columns
+!
+!
+!     PROCEDURE MQC_Matrix_Size
+!
+!>    \brief <b> MQC_Matrix_Size is a function used to return the length of the
+!>    specified dimension of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Size is a function used to return the length of the specified 
+!>    dimension of a MQC matrix. If the matrix is NOT allocated, the number of size 
+!>    is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        The axis from which the dimension will be returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_Matrix_Size(Matrix,Axis)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64)::MQC_Matrix_Size
+      Type(MQC_Matrix),Intent(In)::Matrix
+      integer(kind=int64),intent(in),optional::axis
+      integer(kind=int64)::my_axis
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+
+      if(my_axis.eq.1) then
+        MQC_Matrix_Size = Matrix%NRow
+      elseIf(my_axis.eq.1) then
+        MQC_Matrix_Size = Matrix%NCol
+      endIf
+!
+      Return
+      End Function MQC_Matrix_Size
 !
 !
 !     PROCEDURE MQC_Matrix_HaveReal
