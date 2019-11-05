@@ -621,6 +621,8 @@
       Interface Operator (+)
         Module Procedure MQC_MatrixMatrixSum
       End Interface
+!     Pgfortran does not currently support declare reduction
+!      !$OMP DECLARE REDUCTION(+: mqc_matrix: omp_out = omp_out + omp_in) initializer(omp_priv = omp_orig)
 !
 !     Documentation in scalar operator section
       Interface Operator (-)
@@ -643,7 +645,9 @@
 !
 !     Documentation in scalar operator section
       Interface Assignment (=)
-        Module Procedure MQC_Set_Array2tensor
+        Module Procedure MQC_Set_IntegerArray2tensor
+        Module Procedure MQC_Set_RealArray2tensor
+        Module Procedure MQC_Set_ComplexArray2tensor
       End Interface
 !
 !
@@ -18320,7 +18324,7 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_diag2Symm(a)
+      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(nDim1,nDim2))
@@ -19800,18 +19804,18 @@
       End Subroutine MQC_Print_R4Tensor_Algebra1
 !
 !
-!     PROCEDURE MQC_Set_Array2Tensor
+!     PROCEDURE MQC_Set_IntegralArray2Tensor
 !
-!>    \brief <b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor
-!>    equal to an intrinsic rank-4 array</b> 
+!>    \brief <b> MQC_Set_IntegralArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic integral rank-4 array</b> 
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>
-!>    MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 equal to an 
-!>    intrinsic rank-4 array.    
+!>    MQC_Set_IntegralArray2Tensor is a subroutine that sets an MQC rank-4 equal to 
+!>    an intrinsic integral rank-4 array.    
 !>
 !>    \endverbatim
 !
@@ -19825,7 +19829,7 @@
 !>
 !>    \param[in] ArrayIn
 !>    \verbatim
-!>        ArrayIn is Class(*),Dimension(:,:,:,:)
+!>        ArrayIn is Integer(kind=int64),Dimension(:,:,:,:)
 !>        The array to be input into TensorOut.
 !>    \endverbatim
 !
@@ -19834,31 +19838,114 @@
 !>    \author L. M. Thompson
 !>    \date 2016, 2017
 !
-      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
+      Subroutine MQC_Set_IntegerArray2Tensor(TensorOut,ArrayIn)
 !
       Implicit None
-      Class(*),Intent(In)::ArrayIn(:,:,:,:)
+      Integer(kind=int64),Dimension(:,:,:,:),Intent(In)::ArrayIn
       Type(MQC_R4Tensor),Intent(InOut)::TensorOut
 
       Call MQC_Deallocate_R4Tensor(TensorOut)
-      Select Type (ArrayIn)
-      Type Is (Integer)
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Integer','StorFull')
-        TensorOut%ITen = Arrayin
-      Type Is (Real)
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Real','StorFull')
-        TensorOut%RTen = ArrayIn
-      Type Is (Complex(Kind=real64))
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Complex','StorFull')
-        TensorOut%CTen = ArrayIn
-      Class Default
-        Call MQC_Error_I('Array type not determined in MQC_Array2Tensor', 6)
-      End Select
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Integer','StorFull')
+      TensorOut%ITen = Arrayin
 
-      End Subroutine MQC_Set_Array2Tensor
+      End Subroutine MQC_Set_IntegerArray2Tensor
+!
+!
+!     PROCEDURE MQC_Set_RealArray2Tensor
+!
+!>    \brief <b> MQC_Set_RealArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic real rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_RealArray2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic real rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Real(kind=real64),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_RealArray2Tensor(TensorOut,ArrayIn)
+!
+      Implicit None
+      Real(kind=real64),Dimension(:,:,:,:),Intent(In)::ArrayIn
+      Type(MQC_R4Tensor),Intent(InOut)::TensorOut
+
+      Call MQC_Deallocate_R4Tensor(TensorOut)
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Real','StorFull')
+      TensorOut%RTen = ArrayIn
+
+      End Subroutine MQC_Set_RealArray2Tensor
+!
+!
+!     PROCEDURE MQC_Set_ComplexArray2Tensor
+!
+!>    \brief <b> MQC_Set_ComplexArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic complex rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_ComplexArray2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic complex rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Complex(kind=real64),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_ComplexArray2Tensor(TensorOut,ArrayIn)
+!
+      Implicit None
+      Complex(kind=real64),Dimension(:,:,:,:),Intent(In)::ArrayIn
+      Type(MQC_R4Tensor),Intent(InOut)::TensorOut
+
+      Call MQC_Deallocate_R4Tensor(TensorOut)
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Complex','StorFull')
+      TensorOut%CTen = ArrayIn
+
+      End Subroutine MQC_Set_ComplexArray2Tensor
 !
 !
 !     PROCEDURE MQC_R4Tensor_Initialize
@@ -20304,12 +20391,14 @@
       Type(MQC_R4Tensor),Intent(InOut)::Tensor
       Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
-      Integer(kind=int64)::I,J,K,L
+      Integer(kind=int64)::I,J,K,L,N
 !
       If(.not.Tensor%Storage.eq.'StorFull') Call MQC_Error_A('Input rank-4 tensor must be full &
      &  packed in MQC_R4Tensor_Full2Symm', 6, 'Tensor%Storage', Tensor%Storage )
+      N = MQC_R4Tensor_Size(Tensor)
       If(MQC_R4Tensor_HaveReal(Tensor)) then
-        Allocate(Temp, source=Tensor%RTen)
+        Allocate(Temp(N,N,N,N))
+        Temp = Tensor%RTen
         Call MQC_Deallocate_R4Tensor(Tensor)
         Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
           'Real','StorSymm')
@@ -20329,7 +20418,7 @@
         EndDo
         Deallocate(Temp)
       ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
-        Allocate(Temp(Size(Tensor%ITen,1),Size(Tensor%ITen,2),Size(Tensor%ITen,3),Size(Tensor%ITen,4)))
+        Allocate(Temp(N,N,N,N))
         Temp = Tensor%ITen
         Call MQC_Deallocate_R4Tensor(Tensor)
         Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
@@ -20350,7 +20439,8 @@
         EndDo
         Deallocate(Temp)
       ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
-        Allocate(TempC, source=Tensor%CTen)
+        Allocate(Temp(N,N,N,N))
+        Temp = Tensor%CTen
         Call MQC_Deallocate_R4Tensor(Tensor)
         Call MQC_Allocate_R4Tensor(Size(TempC,1),Size(TempC,2),Size(TempC,3),Size(TempC,4),Tensor, &
           'Complex','StorSymm')
@@ -20416,7 +20506,8 @@
      &  symmetric-packed in MQC_R4Tensor_Symm2Full',6,'Tensor%Storage',Tensor%Storage)
       N = MQC_R4Tensor_Size(Tensor)
       If(MQC_R4Tensor_HaveReal(Tensor)) then
-        Allocate(Temp, source=Tensor%RTen)
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%RTen
         Call MQC_Deallocate_R4Tensor(Tensor)
         Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Real','StorFull')
         Do I = 1, N
@@ -20461,7 +20552,8 @@
         EndDo
         Deallocate(Temp)
       ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
-        Allocate(TempC, source=Tensor%CTen)
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%CTen
         Call MQC_Deallocate_R4Tensor(Tensor)
         Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Complex','StorFull')
         Do I = 1, N
