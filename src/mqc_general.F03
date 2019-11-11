@@ -1014,7 +1014,7 @@
       largestMagnitudeValue = abs(vector(1))
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
-        if(abs(vector(i).gt.largestMagnitudeValue)) then
+        if(abs(vector(i)).gt.largestMagnitudeValue) then
           largestMagnitudeValue = abs(vector(i))
           largestMagnitudePosition = i
         endIf
