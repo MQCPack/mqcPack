@@ -13,8 +13,8 @@ echo "Finished with tests designed to fail">> ../outfile
 echo "-------------" >> ../outfile 2>&1
 echo "MatFile test">> ../outfile
 echo "-------------" >> ../outfile 2>&1
-cp ../../data/MatrixFile/rhf_h2-sto3g.mat . >> ../outfile
-../diishf -f rhf_h2-sto3g.mat >> ../outfile
+cp ../../data/MatrixFile/ch4_rhf.mat . >> ../outfile
+../diishf -f ch4_rhf.mat >> ../outfile
 cd ..
 rm -r workdir
 
