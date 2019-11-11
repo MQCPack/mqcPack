@@ -2,7 +2,8 @@ AC_INIT([MQC_Pack], [0.1.1], [hhratchian@ucmerced.edu])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/mqc_general.F03])
 AC_PROG_CPP
-AC_PROG_CC( [pgcc gcc icc] )
+#hph AC_PROG_CC( [pgcc gcc icc] )
+AC_PROG_CC( [gcc gcc icc] )
 AC_PROG_FC( [pgfortran gfortran ifort] )
 MQC_SPECIFIC_FCFLAGS=;
 if `echo $FC 2>&1 | grep 'pgfortran' >/dev/null 2>&1` ; then

@@ -989,6 +989,39 @@
       end subroutine mqc_normalizeVector
 
 
+!PROCEDURE mqc_vectorPhase
+      Subroutine mqc_vectorPhase(vector,largestPositive)
+!
+!     This subroutine accepts a vector fixes the phase so that the largest
+!     magniture value is either positive (largestPostive=.TRUE.) or negative
+!     (largestPostive=.TRUE.). The vector phase is modified, as needed, in
+!     place. Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vector
+      logical,intent(in),optional::largestPositive
+      integer(kind=int64)::i,largestMagnitudePosition
+      real(kind=real64)::largestMagnitudeValue
+!
+      largestMagnitudeValue = abs(vector(1))
+      largestMagnitudePosition = 1
+      do i = 2,SIZE(vector)
+        if(abs(vector(i).gt.largestMagnitudeValue)) then
+          largestMagnitudeValue = abs(vector(i))
+          largestMagnitudePosition = i
+        endIf
+      endDo
+      if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
+!
+      return
+      end subroutine mqc_vectorPhase
+
+
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,upperLower)
