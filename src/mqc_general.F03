@@ -1007,7 +1007,10 @@
       logical,intent(in),optional::largestPositive
       integer(kind=int64)::i,largestMagnitudePosition
       real(kind=real64)::largestMagnitudeValue
+      logical::myLargestPositive
 !
+      myLargestPositive = .True.
+      if(PRESENT(largestPositive)) myLargestPositive = largestPositive
       largestMagnitudeValue = abs(vector(1))
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
@@ -1016,7 +1019,11 @@
           largestMagnitudePosition = i
         endIf
       endDo
-      if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
+      if(myLargestPositive) then
+        if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
+      else
+        if(vector(largestMagnitudePosition).gt.float(0)) vector = -vector
+      endIf
 !
       return
       end subroutine mqc_vectorPhase
