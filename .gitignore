@@ -43,6 +43,7 @@ configure
 .other_libs/gauopen/default
 .other_libs/gaussian/default_scratch
 Makefile.in
+src/Makefile.in
 aclocal.m4
 autom4te.cache/
 compile
