@@ -1,7 +1,6 @@
 ! TODO: 1) Expand ability of MQC objects to interact with Fortran intrinsic types. 
 !       2) Implement ability to store and manipulate different types of arrays in 
 !          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
-!       3) Implement symmetric packed rank-4 tensor.
 !
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
@@ -157,12 +156,7 @@
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
-
-!hph+
-!        Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector,MQC_Vector2DiagMatrix
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
-!hph-
-
       End Type MQC_Vector
 !
 !     Matrices...
@@ -234,7 +228,7 @@
       Type MQC_R4Tensor
         Integer(kind=int64),Private::I,J,K,L
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull
+        Character(Len=64),Private::Storage ! StorFull,StorSymm
         Real(kind=real64),Allocatable,Private::RTen(:,:,:,:)
         Integer(kind=int64),Allocatable,Private::ITen(:,:,:,:)
         Complex(Kind=real64),Allocatable,Private::CTen(:,:,:,:)
@@ -514,6 +508,8 @@
 !>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
+        Module Procedure MQC_ScalarEQReal
+        Module Procedure MQC_RealEQScalar
       End Interface
 !
 !>    \brief <b> Determines if a variable is less than another</b>
@@ -627,6 +623,8 @@
       Interface Operator (+)
         Module Procedure MQC_MatrixMatrixSum
       End Interface
+!     Pgfortran does not currently support declare reduction
+!      !$OMP DECLARE REDUCTION(+: mqc_matrix: omp_out = omp_out + omp_in) initializer(omp_priv = omp_orig)
 !
 !     Documentation in scalar operator section
       Interface Operator (-)
@@ -649,7 +647,9 @@
 !
 !     Documentation in scalar operator section
       Interface Assignment (=)
-        Module Procedure MQC_Set_Array2tensor
+        Module Procedure MQC_Set_IntegerArray2tensor
+        Module Procedure MQC_Set_RealArray2tensor
+        Module Procedure MQC_Set_ComplexArray2tensor
       End Interface
 !
 !
@@ -1358,7 +1358,7 @@
 !
  1001 Format(1x,A,1x,'=',1x,I14)
 ! 1002 Format(1x,A,1x,'=',1x,F14.6)
- 1002 Format(1x,A,1x,'=',1x,F16.12)
+ 1002 Format(1x,A,1x,'=',1x,F18.12)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
@@ -3109,6 +3109,124 @@
       End Function MQC_ScalarEQ
 !
 !
+!     PROCEDURE MQC_RealEQScalar
+!
+!>    \brief <b> MQC_RealEQScalar is a function that returns TRUE if an intrinsic real
+!>    is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealEQScalar is a function that returns TRUE if an intrinsic real is equal to
+!>    a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealEQScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.eq.Scalar%scar) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.eq.Scalar%scai) MQC_RealEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.eq.Scalar%scac) MQC_RealEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQReal
+!
+!>    \brief <b> MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQReal is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarEQReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarEQReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.RealIn) MQC_ScalarEQReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.RealIn) MQC_ScalarEQReal = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQReal
+!
+!
 !     PROCEDURE MQC_ScalarLT
 !
 !>    \brief <b> MQC_ScalarLT is a function that returns TRUE if the left MQC_Scalar
@@ -3274,7 +3392,7 @@
       Return
       End Function MQC_RealLTScalar
 !
-
+!
 !     PROCEDURE MQC_ScalarLTReal
 !
 !>    \brief <b> MQC_ScalarLTReal is a function that returns TRUE if a MQC_Scalar is less
@@ -7913,7 +8031,7 @@
 !     PROCEDURE MQC_Vector_Scalar_Put
 !
 !>    \brief <b> MQC_Vector_Scalar_Put is a subroutine that updates the value of the
-!>    ith element of a MQC vector with the value of a MQC scalar</b>
+!>    ith element of a MQC vector with a value</b>
 !
 !>    \par Purpose:
 !     =============
@@ -7921,8 +8039,8 @@
 !>    \verbatim
 !>       
 !>    MQC_Vector_Scalar_Put is a subroutine that updates the value of the ith element
-!>    of a MQC vector with the value of a MQC scalar. If the location of the element 
-!>    is negative then it is counted from the end of MQC vector.
+!>    of a MQC vector with a value. If the location of the element is negative then 
+!>    it is counted from the end of MQC vector.
 !>
 !>    \endverbatim
 !
@@ -7934,10 +8052,10 @@
 !>        The MQC_Vector to update at the Ith element.
 !>    \endverbatim
 !>
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is Type(MQC_Scalar)
-!>        The MQC_Scalar to update Vector at element I.
+!>        ScalarIn is Class(*)
+!>        The value to update Vector at element I.
 !>    \endverbatim
 !>
 !>    \param[in] I
@@ -7953,15 +8071,29 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Vector_Scalar_Put(Vector,Scalar,I)
+      Subroutine MQC_Vector_Scalar_Put(Vector,ScalarIn,I)
 !
 !     Variable Declarations.
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I
       Class(MQC_Vector),Intent(InOut)::Vector
-      Type(MQC_Scalar),Intent(In)::Scalar
+      Class(*),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI
+
+      Select Type (ScalarIn)
+      Type Is (Integer)
+        Scalar = ScalarIn
+      Type Is (Real)
+        Scalar = ScalarIn
+      Type Is (Complex)
+        Scalar = ScalarIn
+      Type Is (MQC_Scalar)
+        Scalar = ScalarIn
+      Class Default
+        Call MQC_Error_I('ScalarIn type not defined in MQC_Vector_Scalar_Put',6)
+      End Select
 
       IndI = I
       If (IndI.lt.0) IndI = Vector%Length + IndI + 1
@@ -17585,6 +17717,8 @@
 !>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
 !>    element of a MQC matrix. If the location of an element is negative then it is 
 !>    counted from the end of the MQC matrix row/column.
+!>    TODO: Implement argument to add symmetric, antisymmetric, hermitian and 
+!>          antihermitian
 !>
 !>    \endverbatim
 !
@@ -17596,9 +17730,9 @@
 !>        The MQC matrix to update at the (i,j)th element..
 !>    \endverbatim
 !>
-!>    \param[in] Scalar 
+!>    \param[in] ScalarIn 
 !>    \verbatim
-!>        Scalar is Type(MQC_Scalar)
+!>        ScalarIn is Class(*)
 !>        The value to update the (i,j)th element of Matrix..
 !>    \endverbatim
 !>
@@ -17623,15 +17757,29 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Scalar_Put(Matrix,Scalar,I,J)
+      Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J)
 !
 !     Variable Declarations.
 !
       Implicit None
       Integer(kind=int64),Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
-      Type(MQC_Scalar),Intent(In)::Scalar
+      Class(*),Intent(In)::ScalarIn
+      Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI,IndJ
+
+      Select Type (ScalarIn)
+      Type Is (Integer)
+        Scalar = ScalarIn
+      Type Is (Real)
+        Scalar = ScalarIn
+      Type Is (Complex)
+        Scalar = ScalarIn
+      Type Is (MQC_Scalar)
+        Scalar = ScalarIn
+      Class Default
+        Call MQC_Error_I('ScalarIn type not defined in MQC_Matrix_Scalar_Put',6)
+      End Select
 
       IndI = I
       IndJ = J
@@ -18927,6 +19075,7 @@
 !>    2. Data_Type = 'Integer' declares the MQC_R4Tensor variable to be of integer type.
 !>    3. Data_Type = 'Complex' declares the MQC_R4Tensor variable to be of complex type.
 !>    4. Storage = 'StorFull' declares the MQC_R4Tensor variable to be unpacked.
+!>    5. Storage = 'StorSymm' declares the MQC_R4Tensor variable to be symmetric packed.
 !>
 !>    TODO: Extend storage types for R4Tensor
 !>
@@ -18976,6 +19125,7 @@
 !>    \verbatim
 !>        Storage is Character(Len=*)
 !>        = 'StorFull': the MQC_R4Tensor is unpacked
+!>        = 'StorSymm': the MQC_R4Tensor is symmetric-packed
 !>    \endverbatim
 !
 !     Authors:
@@ -19007,6 +19157,14 @@
         JCur = J
         KCur = K
         LCur = L
+      ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
+        If(I.ne.J.and.I.ne.K.and.I.ne.L) Call MQC_Error_I('Attempting to assign rank-4 tensor of variable dimensions to &
+     &    symmetric form in MQC_Allocate_R4Tensor', 6, 'I', I, 'J', J, 'K', K, 'L', L)
+        Tensor%Storage = 'StorSymm'
+        ICur = (I**4+2*I**3+3*I**2+2*I)/8
+        JCur = 1
+        KCur = 1
+        LCur = 1
       Else
         Call MQC_Error_A('Storage type not recognised in MQC_Allocate_R4Tensor', 6, &
              'Storage', Storage)
@@ -19172,15 +19330,31 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L )
-      If(Tensor%Data_Type.eq.'Integer') then
-        Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Real') then
-        Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
-      ElseIf(Tensor%Data_Type.eq.'Complex') then
-        Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+      If(Tensor%Storage.eq.'StorFull') then
+        If(Tensor%Data_Type.eq.'Integer') then
+          Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Real') then
+          Element = (Tensor%RTen(IndI,IndJ,IndK,IndL))
+        ElseIf(Tensor%Data_Type.eq.'Complex') then
+          Element = (Tensor%CTen(IndI,IndJ,IndK,IndL))
+        Else
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+               'Tensor%Data_Type', Tensor%Data_Type )
+        EndIf
+      ElseIf(Tensor%Storage.eq.'StorSymm') then
+        If(Tensor%Data_Type.eq.'Integer') then
+          Element = Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        ElseIf(Tensor%Data_Type.eq.'Real') then
+          Element = Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        ElseIf(Tensor%Data_Type.eq.'Complex') then
+          Element = Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1)
+        Else
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
+            'Tensor%Data_Type', Tensor%Data_Type )
+        EndIf
       Else
-        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_At', 6, &
-             'Tensor%Data_Type', Tensor%Data_Type )
+        Call MQC_Error_A('Storage type not defined in MQC_R4Tensor_At', 6, &
+          'Tensor%Storage', Tensor%Storage )
       EndIf
 
       End Function MQC_R4Tensor_At
@@ -19211,9 +19385,9 @@
 !>        element.
 !>    \endverbatim
 !>    
-!>    \param[in] Element
+!>    \param[in] ElementIn
 !>    \verbatim
-!>        Element is Type(MQC_Scalar)
+!>        Element is Class(*)
 !>        The value to update the specified element of Tensor.
 !>    \endverbatim
 !>    
@@ -19248,19 +19422,52 @@
 !>          If L>0 row count is from first index
 !>          If L<0 row count is from last index.
 !>    \endverbatim
+!>    
+!>    \param[in] SymmFlag  
+!>    \verbatim
+!>        SymmFlag is Character(Len=*),Optional
+!>        Whether to add value to tensor symmetrically
+!>        = 'no symm': do not add symmetrically
+!>        = 'symm:' add value in 8-fold symmetry locations.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_R4Tensor_Put(Tensor,Element,I,J,K,L)
+      Subroutine MQC_R4Tensor_Put(Tensor,ElementIn,I,J,K,L,SymmFlag)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(InOut)::Tensor
-      Type(MQC_Scalar),Intent(In)::Element
+      Class(*),Intent(In)::ElementIn
+      Type(MQC_Scalar)::Element
       Integer(kind=int64)::IndI,IndJ,IndK,IndL
+      Character(Len=*),Intent(In),Optional::SymmFlag
+      Character(Len=64)::my_SymmFlag
+
+      Select Type (ElementIn)
+      Type Is (Integer)
+        Element = ElementIn
+      Type Is (Real)
+        Element = ElementIn
+      Type Is (Complex)
+        Element = ElementIn
+      Type Is (MQC_Scalar)
+        Element = ElementIn
+      Class Default
+        Call MQC_Error_I('ElementIn type not defined in MQC_R4Tensor_Put',6)
+      End Select
+
+      If(Present(SymmFlag)) then
+        my_SymmFlag = SymmFlag
+      Else
+        my_SymmFlag = 'no symm'
+      EndIf
+      If(my_SymmFlag.ne.'no symm'.and.my_SymmFlag.ne.'symm') Call MQC_Error_A('Unrecognized symmetry flag in &
+    &   mqc_r4tensor_put',6,'my_SymmFlag',my_SymmFlag)
+
 
       IndI = I
       IndJ = J
@@ -19282,46 +19489,200 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_put', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L)
-      !print*, 'tensor%ten(i,j,k,l)= ', tensor%ten(i,j,k,l)
-      If (Tensor%Data_Type.eq.'Integer') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaC
+
+
+      If(my_SymmFlag.eq.'no symm'.and.MQC_R4Tensor_HaveSymmetric(Tensor).and. &
+        .not.((IndI.eq.IndJ).and.(IndI.eq.IndK).and.(IndI.eq.IndL))) &
+        Call MQC_R4Tensor_Symm2Full(Tensor) 
+
+
+      If(MQC_R4Tensor_HaveFull(Tensor)) then
+        If (Tensor%Data_Type.eq.'Integer') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%ITen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%ITen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%ITen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%ITen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%ITen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%ITen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%ITen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%ITen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Call MQC_R4Tensor_Copy_Int2Real(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Call MQC_R4Tensor_Copy_Int2Complex(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Real') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%RTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%RTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%RTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Call MQC_R4Tensor_Copy_Real2Complex(Tensor)  
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Complex') then
+          If (Element%Data_Type.eq.'Integer') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaI
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaI
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaI
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaI
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaI
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaI
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaI
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Real') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaR
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaR
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaR
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaR
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaR
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaR
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaR
+            EndIf
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            If(my_SymmFlag.eq.'no symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+            ElseIf(my_SymmFlag.eq.'symm') then
+              Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndK,IndL) = Element%ScaC
+              Tensor%CTen(IndI,IndJ,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndJ,IndI,IndL,IndK) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndI,IndJ) = Element%ScaC
+              Tensor%CTen(IndK,IndL,IndJ,IndI) = Element%ScaC
+              Tensor%CTen(IndL,IndK,IndJ,IndI) = Element%ScaC
+            EndIf
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
                'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
-      ElseIf (Tensor%Data_Type.eq.'Real') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%RTen(IndI,IndJ,IndK,IndL) = Element%ScaC
+      ElseIf(MQC_R4Tensor_HaveSymmetric(Tensor)) then
+        If (Tensor%Data_Type.eq.'Integer') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%ITen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Real') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%RTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
+        ElseIf (Tensor%Data_Type.eq.'Complex') then
+          If (Element%Data_Type.eq.'Integer') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaI
+          ElseIf (Element%Data_Type.eq.'Real') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaR
+          ElseIf (Element%Data_Type.eq.'Complex') then
+            Tensor%CTen(symIndexHash(IndI,IndJ,IndK,IndL),1,1,1) = Element%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
+                 'Element%Data_Type', Element%Data_Type, &
+                 'Tensor%Data_Type', Tensor%Data_Type )
+          EndIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
-               'Tensor%Data_Type', Tensor%Data_Type )
-        EndIf
-      ElseIf (Tensor%Data_Type.eq.'Complex') then
-        If (Element%Data_Type.eq.'Integer') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaI
-        ElseIf (Element%Data_Type.eq.'Real') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaR
-        ElseIf (Element%Data_Type.eq.'Complex') then
-          Tensor%CTen(IndI,IndJ,IndK,IndL) = Element%ScaC
-        Else
-          Call MQC_Error_A('Scalar type not defined in MQC_R4Tensor_Put', 6, &
-               'Element%Data_Type', Element%Data_Type, &
+          Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
                'Tensor%Data_Type', Tensor%Data_Type )
         EndIf
       Else
-        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Put', 6, &
-             'Tensor%Data_Type', Tensor%Data_Type )
+        Call MQC_Error_A('Unrecognized storage type in MQC_R4Tensor_Put', &
+          6, 'Tensor%Storage', Tensor%Storage)
       EndIf
 
       End Subroutine MQC_R4Tensor_Put
@@ -19401,21 +19762,42 @@
         If(blank_at_top) Write(IOut,1020)
       EndIf
       If(Present(Header)) Write(IOut,1000) Trim(Header)
-      Do I = 1, Tensor%I
-        Do J = 1, Tensor%J
-          Do K = 1, Tensor%K
-            Do l = 1, Tensor%L
-              If(Tensor%Data_Type.eq.'Integer') then
-                Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Real') then
-                Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
-              ElseIf(Tensor%Data_Type.eq.'Complex') then
-                Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
-              EndIf
+      If(MQC_R4Tensor_HaveFull(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
+                EndIf
+              EndDo
             EndDo
           EndDo
         EndDo
-      EndDo
+      ElseIf(MQC_R4Tensor_HaveSymmetric(Tensor)) then
+        Do I = 1, Tensor%I
+          Do J = 1, Tensor%J
+            Do K = 1, Tensor%K
+              Do l = 1, Tensor%L
+                If(Tensor%Data_Type.eq.'Integer') then
+                  Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Real') then
+                  Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
+                ElseIf(Tensor%Data_Type.eq.'Complex') then
+                  Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
+                EndIf
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      Else
+        Call MQC_Error_A('Unrecognized storage type in MQC_Print_R4Tensor_Algebra1', &
+          6, 'Tensor%Storage', Tensor%Storage)
+      EndIf
       If(present(blank_at_bottom)) then
         If(blank_at_bottom) Write(IOut,1020)
       EndIf
@@ -19423,18 +19805,18 @@
       End Subroutine MQC_Print_R4Tensor_Algebra1
 !
 !
-!     PROCEDURE MQC_Set_Array2Tensor
+!     PROCEDURE MQC_Set_IntegralArray2Tensor
 !
-!>    \brief <b> MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 tensor
-!>    equal to an intrinsic rank-4 array</b> 
+!>    \brief <b> MQC_Set_IntegralArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic integral rank-4 array</b> 
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>
-!>    MQC_Set_Array2Tensor is a subroutine that sets an MQC rank-4 equal to an 
-!>    intrinsic rank-4 array.    
+!>    MQC_Set_IntegralArray2Tensor is a subroutine that sets an MQC rank-4 equal to 
+!>    an intrinsic integral rank-4 array.    
 !>
 !>    \endverbatim
 !
@@ -19448,7 +19830,7 @@
 !>
 !>    \param[in] ArrayIn
 !>    \verbatim
-!>        ArrayIn is Class(*),Dimension(:,:,:,:)
+!>        ArrayIn is Integer(kind=int64),Dimension(:,:,:,:)
 !>        The array to be input into TensorOut.
 !>    \endverbatim
 !
@@ -19457,31 +19839,114 @@
 !>    \author L. M. Thompson
 !>    \date 2016, 2017
 !
-      Subroutine MQC_Set_Array2Tensor(TensorOut,ArrayIn)
+      Subroutine MQC_Set_IntegerArray2Tensor(TensorOut,ArrayIn)
 !
       Implicit None
-      Class(*),Intent(In)::ArrayIn(:,:,:,:)
+      Integer(kind=int64),Dimension(:,:,:,:),Intent(In)::ArrayIn
       Type(MQC_R4Tensor),Intent(InOut)::TensorOut
 
       Call MQC_Deallocate_R4Tensor(TensorOut)
-      Select Type (ArrayIn)
-      Type Is (Integer)
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Integer','StorFull')
-        TensorOut%ITen = Arrayin
-      Type Is (Real)
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Real','StorFull')
-        TensorOut%RTen = ArrayIn
-      Type Is (Complex(Kind=real64))
-        Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
-          Size(ArrayIn,4),TensorOut,'Complex','StorFull')
-        TensorOut%CTen = ArrayIn
-      Class Default
-        Call MQC_Error_I('Array type not determined in MQC_Array2Tensor', 6)
-      End Select
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Integer','StorFull')
+      TensorOut%ITen = Arrayin
 
-      End Subroutine MQC_Set_Array2Tensor
+      End Subroutine MQC_Set_IntegerArray2Tensor
+!
+!
+!     PROCEDURE MQC_Set_RealArray2Tensor
+!
+!>    \brief <b> MQC_Set_RealArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic real rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_RealArray2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic real rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Real(kind=real64),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_RealArray2Tensor(TensorOut,ArrayIn)
+!
+      Implicit None
+      Real(kind=real64),Dimension(:,:,:,:),Intent(In)::ArrayIn
+      Type(MQC_R4Tensor),Intent(InOut)::TensorOut
+
+      Call MQC_Deallocate_R4Tensor(TensorOut)
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Real','StorFull')
+      TensorOut%RTen = ArrayIn
+
+      End Subroutine MQC_Set_RealArray2Tensor
+!
+!
+!     PROCEDURE MQC_Set_ComplexArray2Tensor
+!
+!>    \brief <b> MQC_Set_ComplexArray2Tensor is a subroutine that sets an MQC rank-4 
+!>    tensor equal to an intrinsic complex rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_ComplexArray2Tensor is a subroutine that sets an MQC rank-4 equal to an 
+!>    intrinsic complex rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TensorOut
+!>    \verbatim
+!>        TensorOut is Type(MQC_Matrix)
+!>        The MQC rank-4 tensor to be set equal to the array.
+!>    \endverbatim
+!>
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayIn is Complex(kind=real64),Dimension(:,:,:,:)
+!>        The array to be input into TensorOut.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016, 2017
+!
+      Subroutine MQC_Set_ComplexArray2Tensor(TensorOut,ArrayIn)
+!
+      Implicit None
+      Complex(kind=real64),Dimension(:,:,:,:),Intent(In)::ArrayIn
+      Type(MQC_R4Tensor),Intent(InOut)::TensorOut
+
+      Call MQC_Deallocate_R4Tensor(TensorOut)
+      Call MQC_Allocate_R4Tensor(Size(ArrayIn,1),Size(ArrayIn,2),Size(ArrayIn,3), &
+        Size(ArrayIn,4),TensorOut,'Complex','StorFull')
+      TensorOut%CTen = ArrayIn
+
+      End Subroutine MQC_Set_ComplexArray2Tensor
 !
 !
 !     PROCEDURE MQC_R4Tensor_Initialize
@@ -19617,40 +20082,12 @@
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       real(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      real(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'real','symm')
+      r4tensor%rten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Real
@@ -19698,40 +20135,12 @@
       implicit none
       class(MQC_R4Tensor),intent(inOut)::r4Tensor
       complex(kind=real64),dimension(:),intent(in)::symmSymmMatrixIn
-!
-      complex(kind=real64),dimension(:,:,:,:),allocatable::eRIs
-      integer(kind=int64)::ii,jj,kk,ll,n,nSymm
-      logical::DEBUG=.false.
-!
- 5000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
-!
-!
-!     Begin by figuring out the leading dimension of the matrix. Then, ensure
-!     mat is allocated correctly and then use mat%mput routine.
+      integer(kind=int64)::n,nSymm
 !
       nSymm = SIZE(symmSymmMatrixIn)
       n = 0.5*(sqrt(4.0*sqrt(8.0*nSymm+1)-3)-1)
-      allocate(eRIs(n,n,n,n))
-      do ii = 1,n
-        do jj = 1,ii
-          do kk = 1,n
-            do ll = 1,kk
-              if( (((ii*(ii-1))/2)+jj) .lt. (((kk*(kk-1))/2)+ll) ) cycle 
-              if(DEBUG) write(*,5000) ii,jj,kk,ll,symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll))
-              eRIs(ii,jj,kk,ll) = symmSymmMatrixIn(symIndexHash(ii,jj,kk,ll)) 
-              eRIs(jj,ii,kk,ll) = eRIs(ii,jj,kk,ll) 
-              eRIs(ii,jj,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(jj,ii,ll,kk) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(kk,ll,jj,ii) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,kk,ii,jj) = eRIs(ii,jj,kk,ll) 
-              eRIs(ll,Kk,jj,ii) = eRIs(ii,jj,kk,ll) 
-            endDo
-          endDo
-        endDo
-      endDo
-      r4Tensor = eRIs
-      deallocate(eRIs)
+      call mqc_allocate_r4tensor(n,n,n,n,r4tensor,'complex','symm')
+      r4tensor%cten(:,1,1,1) = symmSymmMatrixIn(:)
 !
       return
       end subroutine MQC_Matrix_SymmSymmR4Tensor_Put_Complex
@@ -19856,6 +20265,694 @@
 !
       Return
       End Function MQC_R4Tensor_HaveComplex
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveFull   
+!
+!>    \brief <b> MQC_R4Tensor_HaveFull is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveFull is a function that returns TRUE if an MQC rank-4 tensor 
+!>    is stored unpacked and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveFull(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveFull   
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorFull') then
+        MQC_R4Tensor_HaveFull = .True. 
+      Else
+        MQC_R4Tensor_HaveFull = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveFull   
+!
+!
+!     PROCEDURE MQC_R4Tensor_HaveSymmetric
+!
+!>    \brief <b> MQC_R4Tensor_HaveSymmetric is a function used to indicate if an MQC 
+!>    rank-4 tensor is stored symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_HaveSymmetric is a function that returns TRUE if an MQC matrix is 
+!>    stored symmetric-packed and FALSE if it is not.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_HaveSymmetric(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_R4Tensor_HaveSymmetric 
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+!
+      If(Tensor%Storage.eq.'StorSymm') then
+        MQC_R4Tensor_HaveSymmetric = .True. 
+      Else
+        MQC_R4Tensor_HaveSymmetric = .False.
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_HaveSymmetric   
+!
+!
+!     PROCEDURE MQC_R4Tensor_Full2Symm
+!
+!>    \brief <b> MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC 
+!>    rank-4 tensor to symmetric-packed</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Full2Symm is a subroutine that converts an unpacked MQC rank-4 
+!>    tensor to symmetric-packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be symmetric packed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Full2Symm(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L,N
+!
+      If(.not.Tensor%Storage.eq.'StorFull') Call MQC_Error_A('Input rank-4 tensor must be full &
+     &  packed in MQC_R4Tensor_Full2Symm', 6, 'Tensor%Storage', Tensor%Storage )
+      N = MQC_R4Tensor_Size(Tensor)
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp(N,N,N,N))
+        Temp = Tensor%RTen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Real','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%RTen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp(N,N,N,N))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(Temp,1),Size(Temp,2),Size(Temp,3),Size(Temp,4),Tensor, &
+          'Integer','StorSymm')
+        Do I = 1, Size(Temp,1)
+          Do J = 1, I
+            Do K = 1, Size(Temp,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%ITen(SymIndexHash(I,J,K,L),1,1,1) = Temp(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(Temp(N,N,N,N))
+        Temp = Tensor%CTen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(Size(TempC,1),Size(TempC,2),Size(TempC,3),Size(TempC,4),Tensor, &
+          'Complex','StorSymm')
+        Do I = 1, Size(TempC,1)
+          Do J = 1, I
+            Do K = 1, Size(TempC,1)
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                If((Temp(I,J,K,L).ne.Temp(J,I,K,L)).or.(Temp(I,J,K,L).ne.Temp(I,J,L,K)).or.(Temp(I,J,K,L).ne. &
+                  Temp(J,I,L,K)).or.(Temp(I,J,K,L).ne.Temp(K,L,I,J)).or.(Temp(I,J,K,L).ne.Temp(K,L,J,I)).or. &
+                  (Temp(I,J,K,L).ne.Temp(L,K,I,J)).or.(Temp(I,J,K,L).ne.Temp(L,K,J,I))) &
+                  call mqc_error('Input rank-4 tensor is not symmetric')
+                Tensor%CTen(SymIndexHash(I,J,K,L),1,1,1) = TempC(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Full2Symm
+!
+!
+!     PROCEDURE MQC_R4Tensor_Symm2Full
+!
+!>    \brief <b> MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed 
+!>    MQC rank-4 tensor to unpacked</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Symm2Full is a subroutine that converts a symmetry-packed MQC rank-4 
+!>    to unpacked. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to unpack.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Symm2Full(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(InOut)::Tensor
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::Temp
+      Complex(Kind=real64),Dimension(:,:,:,:),Allocatable::TempC
+      Integer(kind=int64)::I,J,K,L,N
+!
+      If(.not.Tensor%Storage.eq.'StorSymm') Call MQC_Error_A('Input rank-4 tensor must be &
+     &  symmetric-packed in MQC_R4Tensor_Symm2Full',6,'Tensor%Storage',Tensor%Storage)
+      N = MQC_R4Tensor_Size(Tensor)
+      If(MQC_R4Tensor_HaveReal(Tensor)) then
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%RTen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Real','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%RTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%RTen(J,I,K,L) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(I,J,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(J,I,L,K) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(K,L,J,I) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,I,J) = Tensor%RTen(I,J,K,L)
+                Tensor%RTen(L,K,J,I) = Tensor%RTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveInteger(Tensor)) then
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%ITen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Integer','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%ITen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%ITen(J,I,K,L) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(I,J,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(J,I,L,K) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(K,L,J,I) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,I,J) = Tensor%ITen(I,J,K,L)
+                Tensor%ITen(L,K,J,I) = Tensor%ITen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(Temp)
+      ElseIf(MQC_R4Tensor_HaveComplex(Tensor)) then
+        Allocate(Temp((N**4+2*N**3+3*N**2+2*N)/8,1,1,1))
+        Temp = Tensor%CTen
+        Call MQC_Deallocate_R4Tensor(Tensor)
+        Call MQC_Allocate_R4Tensor(N,N,N,N,Tensor,'Complex','StorFull')
+        Do I = 1, N
+          Do J = 1, I
+            Do K = 1, N
+              Do L = 1, K
+                If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                Tensor%CTen(I,J,K,L) = Temp(symIndexHash(I,J,K,L),1,1,1)
+                Tensor%CTen(J,I,K,L) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(I,J,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(J,I,L,K) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(K,L,J,I) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,I,J) = Tensor%CTen(I,J,K,L)
+                Tensor%CTen(L,K,J,I) = Tensor%CTen(I,J,K,L)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+        Deallocate(TempC)
+      EndIf
+!
+      Return
+      End Subroutine MQC_R4Tensor_Symm2Full
+!
+!
+!     PROCEDURE MQC_R4Tensor_Size
+!
+!>    \brief <b> MQC_R4Tensor_Size is a function used to return the dimension of a 
+!>    specified dimension of an MQC rank-4 tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Size is a function used to return the dimension of a specified 
+!>    dimension of a MQC rank-4 tensor. If the tensor is NOT allocated, the dimension  
+!>    is returned as 0.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        The axis from which the dimension will be returned.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_Size(Tensor,axis) result(dimen)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64)::dimen
+      Type(MQC_R4Tensor),Intent(In)::Tensor
+      integer(kind=int64),intent(in),optional::axis
+      integer(kind=int64)::my_axis
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+      if(my_axis.eq.1) then
+        dimen = Tensor%I
+      elseIf(my_axis.eq.2) then
+        dimen = Tensor%J
+      elseIf(my_axis.eq.3) then
+        dimen = Tensor%K
+      elseIf(my_axis.eq.4) then
+        dimen = Tensor%L
+      else
+        call mqc_error_i('Axis out of range in MQC_R4Tensor_Size',6,'my_axis',my_axis)
+      endIf
+!
+      Return
+      End Function MQC_R4Tensor_Size
+!
+!
+!     PROCEDURE MQC_R4Tensor_isAllocated
+!
+!>    \brief <b> MQC_R4Tensor_isAllocated is a function that returns the allocation
+!>    status of a MQC_R4Tensor variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_isAllocated is a function that returns the allocation status of a 
+!>    MQC_R4Tensor variable. The function returns TRUE if the tensor is allocated 
+!>    and FALSE if the tensor is not allocated.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_isAllocated(Tensor) Result(isAllocated)
+!
+!     Variable Declarations.
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Logical::isAllocated
+!
+      isAllocated = .False.
+      If(Allocated(Tensor%RTen)) isAllocated = .True.
+      If(Allocated(Tensor%ITen)) isAllocated = .True.
+      If(Allocated(Tensor%CTen)) isAllocated = .True.
+!
+      Return
+      End Function MQC_R4Tensor_isAllocated
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Int2Real
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Int2Real is a subroutine used to copy an integer 
+!>    MQC rank-4 tensor into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Int2Real is a subroutine used to copy an integer MQC rank-4 
+!>    tensor into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Int2Real(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveInteger(Tensor)) Call MQC_Error_L('Incoming tensor not integer in MQC_R4Tensor_Copy_Int2Real', 6, &
+           'MQC_R4Tensor_HaveInteger(Tensor)', MQC_R4Tensor_HaveInteger(Tensor) )
+      Tensor%RTen = Tensor%ITen
+      If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
+      Tensor%Data_Type = 'Real'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Int2Real
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Int2Complex
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Int2Complex is a subroutine used to copy an integer 
+!>    MQC rank-4 tensor into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Int2Complex is a subroutine used to copy an integer MQC rank-4 
+!>    tensor into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to complex.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Int2Complex(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveInteger(Tensor)) Call MQC_Error_L('Incoming tensor not integer in MQC_R4Tensor_Copy_Int2Complex',6,&
+           'MQC_R4Tensor_HaveInteger(Tensor)', MQC_R4Tensor_HaveInteger(Tensor) )
+      Tensor%CTen = Tensor%ITen
+      If(Allocated(Tensor%ITen)) Deallocate(Tensor%ITen)
+      Tensor%Data_Type = 'Complex'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Int2Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Real2Int
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Real2Int is a subroutine used to copy a real MQC 
+!>    rank-4 tensor into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Real2Int is a subroutine used to copy a real MQC rank-4 
+!>    tensor into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Real2Int(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveReal(Tensor)) Call MQC_Error_L('Incoming tensor not real in MQC_R4Tensor_Copy_Real2Int', 6, &
+           'MQC_R4Tensor_HaveReal(Tensor)', MQC_R4Tensor_HaveReal(Tensor) )
+      Tensor%ITen = Tensor%RTen
+      If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
+      Tensor%Data_Type = 'Integer'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Real2Int
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Real2Complex
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Real2Complex is a subroutine used to copy a real MQC 
+!>    rank-4 tensor into its complex space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Real2Complex is a subroutine used to copy a real MQC rank-4 
+!>    tensor into its complex space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Real2Complex(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveReal(Tensor)) Call MQC_Error_L('Incoming tensor not real in MQC_R4Tensor_Copy_Real2Complex', 6, &
+           'MQC_R4Tensor_HaveReal(Tensor)', MQC_R4Tensor_HaveReal(Tensor) )
+      Tensor%CTen = Tensor%RTen
+      If(Allocated(Tensor%RTen)) Deallocate(Tensor%RTen)
+      Tensor%Data_Type = 'Complex'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Real2Complex
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Complex2Int
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Complex2Int is a subroutine used to copy a complex
+!>    MQC rank-4 tensor into its integer space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Complex2Int is a subroutine used to copy a complex MQC rank-4 
+!>    tensor into its integer space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to integer.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Complex2Int(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveComplex(Tensor)) Call MQC_Error_L('Incoming tensor not complex in MQC_R4Tensor_Copy_Complex2Int',6,&
+           'MQC_R4Tensor_HaveComplex(Tensor)', MQC_R4Tensor_HaveComplex(Tensor) )
+      Tensor%ITen = Tensor%CTen
+      If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
+      Tensor%Data_Type = 'Integer'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Complex2Int
+!
+!
+!     PROCEDURE MQC_R4Tensor_Copy_Complex2Real
+!
+!>    \brief <b> MQC_R4Tensor_Copy_Complex2Real is a subroutine used to copy a complex
+!>    MQC rank-4 tensor into its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Copy_Complex2Real is a subroutine used to copy a complex MQC rank-4 
+!>    tensor into its real space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be converted to real.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Subroutine MQC_R4Tensor_Copy_Complex2Real(Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::Tensor
+!
+      If(.not.MQC_R4Tensor_HaveComplex(Tensor)) Call MQC_Error_L('Incoming tensor not complex in MQC_R4Tensor_Copy_Complex2Real',6,&
+           'MQC_R4Tensor_HaveComplex(Tensor)', MQC_R4Tensor_HaveComplex(Tensor) )
+      Tensor%RTen = Tensor%CTen
+      If(Allocated(Tensor%CTen)) Deallocate(Tensor%CTen)
+      Tensor%Data_Type = 'Real'
+!
+      Return
+      End Subroutine MQC_R4Tensor_Copy_Complex2Real
 !
 !
       End Module MQC_Algebra
