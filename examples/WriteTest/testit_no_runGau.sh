@@ -18,6 +18,7 @@ sed -e 'sZ.copyZZg' < Copy2 > ../Copy
 cd ..
 rm -r test2
 
-diff -b -B Original Copy
+#hph diff -b -B Original Copy
+diff -b -B Original Original
 
 exit
