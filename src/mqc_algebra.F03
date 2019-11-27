@@ -240,6 +240,11 @@
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Procedure, Public::put => MQC_R4Tensor_Put
+!>      \brief <b> Return the specified rank-4 tensor from MQC R4Tensor</b>
+        Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
+!>      \brief <b> Updates the specified subarray of the MQC R4Tensor to the specified
+!>      rank-4 tensor</b>
+        Procedure, Public::tput => MQC_R4Tensor_R4Tensor_Put
 !>      \brief <b> Initialize the MQC R4Tensor</b>
         Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
@@ -263,6 +268,7 @@
 !>    \brief <b> Contracts two arrays</b>
       Interface Contraction
         Module Procedure MQC_Matrix_Matrix_Contraction
+        Module Procedure MQC_R4Tensor_R4Tensor_Contraction
       End Interface
 !
 !>    \brief <b> Returns the complex conjugate</b>
@@ -497,6 +503,7 @@
         Module Procedure MQC_ComplexScalarDivide
         Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
+        Module Procedure MQC_MatrixScalarDivide
       End Interface
 !
 !>    \brief <b> Exponentials a variable to the power of another</b>
@@ -510,6 +517,12 @@
 !>    \brief <b> Determines if two variables are not equal</b>
       Interface Operator (.ne.)
         Module Procedure MQC_ScalarNE
+        Module Procedure MQC_ScalarNEInteger
+        Module Procedure MQC_IntegerNEScalar
+        Module Procedure MQC_ScalarNEReal
+        Module Procedure MQC_RealNEScalar
+        Module Procedure MQC_ScalarNEComplex
+        Module Procedure MQC_ComplexNEScalar
       End Interface
 !
 !>    \brief <b> Determines if two variables are equal</b>
@@ -650,6 +663,10 @@
         Module Procedure MQC_MatrixMatrixDotProduct
       End Interface
 !
+      Interface Operator (.outer.)
+        Module Procedure MQC_Matrix_Matrix_Outer
+      End Interface
+!
 !     Rank 4 tensor operators...
 !
 !     Documentation in scalar operator section
@@ -657,6 +674,16 @@
         Module Procedure MQC_Set_IntegerArray2tensor
         Module Procedure MQC_Set_RealArray2tensor
         Module Procedure MQC_Set_ComplexArray2tensor
+      End Interface
+!
+!     Documentation in scalar operator section
+      Interface Operator (+)
+        Module Procedure MQC_R4Tensor_R4Tensor_Sum
+      End Interface
+!
+!     Documentation in scalar operator section
+      Interface Operator (-)
+        Module Procedure MQC_R4Tensor_R4Tensor_Difference
       End Interface
 !
 !
@@ -3044,6 +3071,354 @@
 !
       Return
       End Function MQC_ScalarNE
+!
+!
+!     PROCEDURE MQC_IntegerNEScalar
+!
+!>    \brief <b> MQC_IntegerNEScalar is a function that returns TRUE if an intrinsic 
+!>    integer is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerNEScalar is a function that returns TRUE if an intrinsic integer is 
+!>    not equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerNEScalar(IntIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+!
+      MQC_IntegerNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.ne.Scalar%scar) MQC_IntegerNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.ne.Scalar%scai) MQC_IntegerNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.ne.Scalar%scac) MQC_IntegerNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEInteger
+!
+!>    \brief <b> MQC_ScalarNEInteger is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEInteger is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] intIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEInteger(Scalar,IntIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+!
+      MQC_ScalarNEInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.IntIn) MQC_ScalarNEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.IntIn) MQC_ScalarNEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.IntIn) MQC_ScalarNEInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEInteger
+!
+!
+!     PROCEDURE MQC_RealNEScalar
+!
+!>    \brief <b> MQC_RealNEScalar is a function that returns TRUE if an intrinsic real
+!>    is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealNEScalar is a function that returns TRUE if an intrinsic real is not
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealNEScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+!
+      MQC_RealNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.ne.Scalar%scar) MQC_RealNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.ne.Scalar%scai) MQC_RealNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.ne.Scalar%scac) MQC_RealNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEReal
+!
+!>    \brief <b> MQC_ScalarNEReal is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEReal is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+!
+      MQC_ScalarNEReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.RealIn) MQC_ScalarNEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.RealIn) MQC_ScalarNEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.RealIn) MQC_ScalarNEReal = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEReal
+!
+!
+!     PROCEDURE MQC_ComplexNEScalar
+!
+!>    \brief <b> MQC_ComplexNEScalar is a function that returns TRUE if an intrinsic complex
+!>    is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexNEScalar is a function that returns TRUE if an intrinsic complex is not
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Copmplex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ComplexNEScalar(ComplexIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ComplexNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+!
+      MQC_ComplexNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(ComplexIn.ne.Scalar%scar) MQC_ComplexNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(ComplexIn.ne.Scalar%scai) MQC_ComplexNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(ComplexIn.ne.Scalar%scac) MQC_ComplexNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ComplexNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ComplexNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEComplex
+!
+!>    \brief <b> MQC_ScalarNEComplex is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEComplex is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEComplex(Scalar,ComplexIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEComplex
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+!
+      MQC_ScalarNEComplex = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEComplex', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEComplex
 !
 !
 !     PROCEDURE MQC_ScalarEQ
@@ -14933,8 +15308,10 @@
 
       if(my_axis.eq.1) then
         MQC_Matrix_Size = Matrix%NRow
-      elseIf(my_axis.eq.1) then
+      elseIf(my_axis.eq.2) then
         MQC_Matrix_Size = Matrix%NCol
+      else
+        call mqc_error_i('Requested axis not allowed in MQC_Matrix_Size',6,'my_axis',my_axis)
       endIf
 !
       Return
@@ -17733,6 +18110,63 @@
       End Function MQC_ScalarMatrixProduct
 !
 !
+!     PROCEDURE MQC_MatrixScalarDivide
+!
+!>    \brief <b> MQC_MatrixScalarDivide is a function that returns a MQC matrix
+!>    divided by a MQC scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixScalarDivide is a function that returns a MQC matrix divided by a 
+!>    MQC scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC_Matrix to divide.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixScalarDivide(matrix,scalar) Result(matrix_res)
+!
+      implicit none
+      type(mqc_matrix),intent(in)::matrix
+      type(mqc_scalar),intent(in)::scalar
+      type(mqc_matrix)::matrix_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
+
+      zero = 0.0
+      neg_one = -1.0
+
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
+
+      matrix_res = MQC_MatrixScalarProduct(matrix,reciprocal)
+
+      End Function MQC_MatrixScalarDivide
+!
+!
 !     PROCEDURE MQC_Matrix_Matrix_Contraction
 !
 !>    \brief <b> MQC_Matrix_Matrix_Contraction is a function that returns the 
@@ -19135,6 +19569,68 @@
       return
       End Function
 !
+!
+!     PROCEDURE MQC_Matrix_Matrix_Outer
+!
+!>    \brief <b> MQC_Matrix_Matrix_Outer is a function that returns the rank-4
+!>    tensor containing the outer product of two MQC matrices</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Outer is a function that returns the rank-4 tensor containing 
+!>    the outer product of two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the outer product.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_Matrix_Matrix_Outer(matrix1,matrix2) result(outer)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_r4tensor)::outer
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::M,N,O,P,i,j,k,l
+      
+      M = size(matrix1,1)
+      N = size(matrix1,2)
+      O = size(matrix2,1)
+      P = size(matrix2,2)
+
+      call outer%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call outer%put(matrix1%at(i,j)*matrix2%at(k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Outer
+!
 !----------------------------------------------------------------
 !                                                               |
 !     R4TENSOR PROCEDURES                                       |
@@ -19400,8 +19896,9 @@
       IndL = L
       If (IndI.lt.0) IndI = Tensor%I + IndI + 1
       If (IndJ.lt.0) IndJ = Tensor%J + IndJ + 1
-      If (IndK.lt.0) IndK = Tensor%K + IndI + 1
-      If (IndL.lt.0) IndL = Tensor%L + IndJ + 1
+      If (IndK.lt.0) IndK = Tensor%K + IndK + 1
+      If (IndL.lt.0) IndL = Tensor%L + IndL + 1
+
       If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error_I('Index I badly specified in mqc_r4tensor_at', 6, &
            'IndI', IndI, &
            'Tensor%I', Tensor%I )
@@ -19414,6 +19911,7 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L )
+      
       If(Tensor%Storage.eq.'StorFull') then
         If(Tensor%Data_Type.eq.'Integer') then
           Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
@@ -21037,6 +21535,965 @@
 !
       Return
       End Subroutine MQC_R4Tensor_Copy_Complex2Real
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Contraction
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Contraction is a function that returns the 
+!>    contraction of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Contraction is a function that returns the contraction of two 
+!>    MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to contract.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to contract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Contraction(R4Tensor1,R4Tensor2) Result(Contraction)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_Scalar)::Contraction
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      Contraction = 0.0
+      M = Min(size(R4Tensor1,1),size(R4Tensor2,1))
+      N = Min(size(R4Tensor1,2),size(R4Tensor2,2))
+      O = Min(size(R4Tensor1,3),size(R4Tensor2,3))
+      P = Min(size(R4Tensor1,4),size(R4Tensor2,4))
+      Do i = 1,M
+        Do j = 1,N
+          Do k = 1,O
+            Do l = 1,P
+              Contraction = Contraction + R4Tensor1%at(i,j,k,l)*R4Tensor2%at(i,j,k,l)
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Contraction
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Sum
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Sum is a function that returns the 
+!>    sum of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Sum is a function that returns the sum of two 
+!>    MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to sum.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Sum(R4Tensor1,R4Tensor2) Result(Summation)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_R4Tensor)::Summation
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      M = size(R4Tensor1,1)
+      N = size(R4Tensor1,2)
+      O = size(R4Tensor1,3)
+      P = size(R4Tensor1,4)
+
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+        call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Sum',6)
+
+      call summation%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call summation%put(R4Tensor1%at(i,j,k,l)+R4Tensor2%at(i,j,k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Sum
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Difference
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Difference is a function that returns the 
+!>    difference of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Difference is a function that returns the difference of 
+!>    two MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to subtract.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Difference(R4Tensor1,R4Tensor2) Result(Difference)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_R4Tensor)::Difference
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      M = size(R4Tensor1,1)
+      N = size(R4Tensor1,2)
+      O = size(R4Tensor1,3)
+      P = size(R4Tensor1,4)
+
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+        call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Subtract',6)
+
+      call difference%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call difference%put(R4Tensor1%at(i,j,k,l)-R4Tensor2%at(i,j,k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Difference
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_At
+!
+!>    \brief <b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
+!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
+!>    negative, the (N-I+1)th index value is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2,D3,D4) Result(TensorOut)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::TensorIn
+      Type(MQC_R4Tensor)::TensorOut
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Integer(kind=int64)::Len1,Len2,Len3,Len4,IndI,IndJ,IndK,IndL,IndM,IndN,IndO,IndP
+      Integer(kind=int64)::I,J,K,L,M,N,O,P,Q,R,S,T,Cnt1,Cnt2,Cnt3,Cnt4
+
+      If(Size(D1).eq.1.and.D1(1).eq.0) then
+        I = 1
+        J = Size(TensorIn,1)
+      elseIf(Size(D1).eq.2.and.D1(1).ne.0.and.D1(2).ne.(0)) then
+        I = D1(1)
+        J = D1(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D1)', Size(D1))
+      endIf
+      If(Size(D2).eq.1.and.D2(1).eq.0) then
+        K = 1
+        L = Size(TensorIn,2)
+      elseIf(Size(D2).eq.2.and.D2(1).ne.0.and.D2(2).ne.(0)) then
+        K = D2(1)
+        L = D2(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D2)', Size(D2))
+      endIf
+      If(Size(D3).eq.1.and.D3(1).eq.0) then
+        M = 1
+        N = Size(TensorIn,3)
+      elseIf(Size(D3).eq.2.and.D3(1).ne.0.and.D3(2).ne.(0)) then
+        M = D3(1)
+        N = D3(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D3)', Size(D3))
+      endIf
+      If(Size(D4).eq.1.and.D4(1).eq.0) then
+        O = 1
+        P = Size(TensorIn,4)
+      elseIf(Size(D4).eq.2.and.D4(1).ne.0.and.D4(2).ne.(0)) then
+        O = D4(1)
+        P = D4(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D4)', Size(D4))
+      endIf
+
+      IndI = I
+      IndJ = J
+      If (IndI.lt.0) IndI = Size(TensorIn,1) + IndI + 1
+      If (IndJ.lt.0) IndJ = Size(TensorIn,1) + IndJ + 1
+      Len1 = IndJ-IndI+1
+      If (Len1.le.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
+           Size(TensorIn,1) )
+      If (IndI.le.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
+           Size(TensorIn,1),'Len1', Len1 )
+      If (IndJ.lt.Len1.or.IndJ.gt.Size(TensorIn,1)) Call MQC_Error_I('Index J out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
+           Size(TensorIn,1))
+      IndK = K
+      IndL = L
+      If (IndK.lt.0) IndK = Size(TensorIn,2) + IndK + 1
+      If (IndL.lt.0) IndL = Size(TensorIn,2) + IndL + 1
+      Len2 = IndL-IndK+1
+      If (Len2.le.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
+           Size(TensorIn,2) )
+      If (IndK.le.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
+           Size(TensorIn,2),'Len2', Len2 )
+      If (IndL.lt.Len2.or.IndL.gt.Size(TensorIn,2)) Call MQC_Error_I('Index L out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
+           Size(TensorIn,2))
+      IndM = M
+      IndN = N
+      If (IndM.lt.0) IndM = Size(TensorIn,3) + IndM + 1
+      If (IndN.lt.0) IndN = Size(TensorIn,3) + IndN + 1
+      Len3 = IndN-IndM+1
+      If (Len3.le.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
+           Size(TensorIn,3) )
+      If (IndM.le.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
+           Size(TensorIn,3),'Len3', Len3 )
+      If (IndN.lt.Len3.or.IndN.gt.Size(TensorIn,3)) Call MQC_Error_I('Index N out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
+           Size(TensorIn,3))
+      IndO = O
+      IndP = P
+      If (IndO.lt.0) IndO = Size(TensorIn,4) + IndO + 1
+      If (IndP.lt.0) IndP = Size(TensorIn,4) + IndP + 1
+      Len4 = IndP-IndO+1
+      If (Len4.le.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
+           Size(TensorIn,4) )
+      If (IndO.le.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
+           Size(TensorIn,4),'Len4', Len4 )
+      If (IndP.lt.Len4.or.IndP.gt.Size(TensorIn,4)) Call MQC_Error_I('Index P out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
+           Size(TensorIn,4))
+
+      If (MQC_R4Tensor_HaveFull(TensorIn)) then
+        If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Integer','StorFull')
+          TensorOut%ITen = TensorIn%ITen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Elseif (MQC_R4Tensor_HaveReal(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Real','StorFull')
+          TensorOut%RTen = TensorIn%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Elseif (MQC_R4Tensor_HaveComplex(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Complex','StorFull')
+          TensorOut%CTen = TensorIn%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Else
+          Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_At', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+        EndIf
+      ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+        If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Integer','StorFull')
+        ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Real','StorFull')
+        ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Complex','StorFull')
+        EndIf
+        Q = 1
+        Do Cnt1 = IndI, IndJ
+          R = 1
+          Do Cnt2 = IndK, IndL
+            S = 1
+            Do Cnt3 = IndM, IndN
+              T = 1
+              Do Cnt4 = IndO, IndP
+                call TensorOut%Put(TensorIn%at(Cnt1,Cnt2,Cnt3,Cnt4),Q,R,S,T)
+                T = T + 1
+              EndDo
+              S = S + 1
+            EndDo
+            R = R + 1
+          EndDo
+          Q = Q + 1
+        EndDo
+        If(MQC_R4Tensor_Test_Symmetric(TensorOut)) Call MQC_R4Tensor_Full2Symm(TensorOut)
+      Else
+        Call MQC_Error_A('R4Tensor type not recognised in MQC_R4Tensor_R4Tensor_At', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+      EndIf
+
+      End Function MQC_R4Tensor_R4Tensor_At
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Put
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Put is a function that writes a subarray of the rank-4 tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_R4Tensor_Put is a subroutine that writes a subarray to the specified
+!>    position of a MQC rank-4 tensor. The dimension specifications are given as a vector 
+!>    where each vector must contain either zero or two non-zero integers to specify 
+!>    the range of elements that will be overwritten by the subarray. If the value 
+!>    of an element specification is negative, it counts from the last element back. 
+!>    If the value of an element specification is zero, the whole dimension is 
+!>    specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] Ten
+!>    \verbatim
+!>        Ten is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable to update with 
+!>        subarray.
+!>    \endverbatim
+!>    
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Type(MQC_R4Tensor)
+!>        The subarray to overwrite at the specified elements of
+!>        Ten.
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Recursive Subroutine MQC_R4Tensor_R4Tensor_Put(Ten,TensorIn,D1,D2,D3,D4) 
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(InOut)::Ten
+      Type(MQC_R4Tensor),Intent(In)::TensorIn
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Integer(kind=int64)::Len1,Len2,Len3,Len4,IndI,IndJ,IndK,IndL,IndM,IndN,IndO,IndP
+      Integer(kind=int64)::I,J,K,L,M,N,O,P
+
+      If(Size(D1).eq.1.and.D1(1).eq.0) then
+        I = 1
+        J = Size(TensorIn,1)
+      elseIf(Size(D1).eq.2.and.D1(1).ne.0.and.D1(2).ne.(0)) then
+        I = D1(1)
+        J = D1(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D1)', Size(D1))
+      endIf
+      If(Size(D2).eq.1.and.D2(1).eq.0) then
+        K = 1
+        L = Size(TensorIn,2)
+      elseIf(Size(D2).eq.2.and.D2(1).ne.0.and.D2(2).ne.(0)) then
+        K = D2(1)
+        L = D2(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D2)', Size(D2))
+      endIf
+      If(Size(D3).eq.1.and.D3(1).eq.0) then
+        M = 1
+        N = Size(TensorIn,3)
+      elseIf(Size(D3).eq.2.and.D3(1).ne.0.and.D3(2).ne.(0)) then
+        M = D3(1)
+        N = D3(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D3)', Size(D3))
+      endIf
+      If(Size(D4).eq.1.and.D4(1).eq.0) then
+        O = 1
+        P = Size(TensorIn,4)
+      elseIf(Size(D4).eq.2.and.D4(1).ne.0.and.D4(2).ne.(0)) then
+        O = D4(1)
+        P = D4(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D4)', Size(D4))
+      endIf
+
+      IndI = I
+      IndJ = J
+      If (IndI.lt.0) IndI = Size(Ten,1) + IndI + 1
+      If (IndJ.lt.0) IndJ = Size(Ten,1) + IndJ + 1
+      Len1 = IndJ-IndI+1
+      If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
+        Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1) )
+      If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
+        'Len1', Len1 )
+      If (IndJ.gt.Size(Ten,1)) Call MQC_Error_I('Index J out of bounds in  &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndJ',IndJ,'Len1',Len1,'Size(Ten,1)', Size(Ten,1))
+      IndK = K
+      IndL = L
+      If (IndK.lt.0) IndK = Size(Ten,2) + IndK + 1
+      If (IndL.lt.0) IndL = Size(Ten,2) + IndL + 1
+      Len2 = IndL-IndK+1
+      If (Len2.le.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
+        Call MQC_Error_I('Dimension 2 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2) )
+      If (IndK.le.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndK',IndK,'Size(Ten,2)', &
+        Size(Ten,2),'Len2', Len2 )
+      If (IndL.gt.Size(Ten,2)) Call MQC_Error_I('Index L out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndL',IndL,'Len2',Len2,'Size(Ten,2)',Size(TensorIn,2))
+      IndM = M
+      IndN = N
+      If (IndM.lt.0) IndM = Size(Ten,3) + IndM + 1
+      If (IndN.lt.0) IndN = Size(Ten,3) + IndN + 1
+      Len3 = IndN-IndM+1
+      If (Len3.le.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
+        Call MQC_Error_I('Dimension 3 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3) )
+      If (IndM.le.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndM',IndM,'Size(Ten,3)', Size(Ten,3), &
+        'Len3', Len3 )
+      If (IndN.gt.Size(Ten,3)) Call MQC_Error_I('Index N out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndN',IndN,'Len3',Len3,'Size(Ten,3)', Size(Ten,3))
+      IndO = O
+      IndP = P
+      If (IndO.lt.0) IndO = Size(Ten,4) + IndO + 1
+      If (IndP.lt.0) IndP = Size(Ten,4) + IndP + 1
+      Len4 = IndP-IndO+1
+      If (Len4.le.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
+        Call MQC_Error_I('Dimension 4 length badly defined in MQC_R4Tensor_R4Tensor_Put',6, &
+        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4) )
+      If (IndO.le.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndO',IndO,'Size(Ten,4)', Size(Ten,4), &
+        'Len4', Len4 )
+      If (IndP.gt.Size(Ten,4)) Call MQC_Error_I('Index P out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndP',IndP,'Len4',Len4,'Size(Ten,4)', Size(Ten,4))
+
+      If (MQC_R4Tensor_HaveFull(Ten)) then
+        If (MQC_R4Tensor_HaveInteger(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Ten%ITen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%ITen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(Ten)  
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%ITen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%ITen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        ElseIf (MQC_R4Tensor_HaveReal(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(TensorIn)  
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(Ten)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        ElseIf (MQC_R4Tensor_HaveComplex(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(TensorIn)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(TensorIn)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        Else
+          Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+           'Ten%Data_Type', Ten%Data_Type )
+        EndIf
+      ElseIf (MQC_R4Tensor_HaveSymmetric(Ten)) then
+        Call MQC_R4Tensor_Symm2Full(Ten)
+        Call MQC_R4Tensor_R4Tensor_Put(Ten,TensorIn,[IndI,IndJ],[IndK,IndL],[IndM,IndN],[IndO,IndP])
+        If(MQC_R4Tensor_Test_Symmetric(Ten)) Call MQC_R4Tensor_Full2Symm(Ten)
+      Else
+        Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+         'Ten%Storage', Ten%Storage )
+      EndIf
+
+      End Subroutine MQC_R4Tensor_R4Tensor_Put
+!
+!
+!     PROCEDURE MQC_R4Tensor_Test_Symmetric
+!
+!>    \brief <b> MQC_R4Tensor_Test_Symmetric is a function that tests a MQC tensor for
+!>    symmetry</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Test_Symmetric is a function that tests a MQC tensor for symmetry. 
+!>    Note that this function differs from haveSymmetric subroutine which tests how a 
+!>    matrix is packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Class(mqc_r4tensor)
+!>        The rank-4 tensor to be tested for symmetry.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_Test_Symmetric(R4Tensor) Result(Symmetric)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::R4Tensor
+      Logical::Symmetric
+      Integer(kind=int64)::I,J,K,L
+      Real(kind=real64)::Thresh=1e-10
+
+      Symmetric = .True.
+        If(Size(R4Tensor,1).ne.Size(R4Tensor,2)) then
+          Symmetric = .False.
+          Return
+        ElseIf(Size(R4Tensor,3).ne.Size(R4Tensor,4)) then
+          Symmetric = .False.
+          Return
+        ElseIf(Size(R4Tensor,1).ne.Size(R4Tensor,3)) then
+          Symmetric = .False.
+          Return
+        Else
+          If(MQC_R4Tensor_HaveSymmetric(R4Tensor)) then
+            Return
+          ElseIf(MQC_R4Tensor_HaveFull(R4Tensor)) then
+            Do I = 1, Size(R4Tensor,1)
+              Do J = 1, I-1
+                Do K = 1, Size(R4Tensor,3)
+                  Do L = 1, K-1
+                    If(MQC_R4Tensor_HaveInteger(R4Tensor)) then
+                      If((R4Tensor%at(I,J,K,L)-R4Tensor%at(I,J,L,K)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,K,L)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,L,K)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,I,J)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,J,I)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,I,J)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,J,I)).ne.0) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    elseIf(MQC_R4Tensor_HaveReal(R4Tensor)) then
+                      If(abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(I,J,L,K)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,K,L)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,L,K)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,I,J)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,J,I)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,I,J)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,J,I)).gt.Thresh) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    elseIf(MQC_R4Tensor_HaveComplex(R4Tensor)) then
+                      If(abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(I,J,L,K))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(J,I,K,L))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(J,I,L,K))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(K,L,I,J))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(K,L,J,I))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(L,K,I,J))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(L,K,J,I))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(I,J,L,K))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(J,I,K,L))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(J,I,L,K))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(K,L,I,J))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(K,L,J,I))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(L,K,I,J))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(L,K,J,I))).gt.Thresh) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    EndIf
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          Else
+            Call MQC_Error_A('R4Tensor type not identified in MQC_R4Tensor_Test_Symmetric', 6, &
+                 'R4Tensor%Storage', R4Tensor%Storage )
+          EndIf
+        EndIf
+
+      Return
+      End Function MQC_R4Tensor_Test_Symmetric
 !
 !
       End Module MQC_Algebra
