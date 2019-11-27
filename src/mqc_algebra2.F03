@@ -1836,7 +1836,7 @@
       subroutine MQC_Variable_mqc2intrinsicReal2Array(intrinsicOut,mqcVariable)
 !
 !     This subroutine is used to set an (output) intrinsic real matrix equal to
-!     an (input) MQC Variable vector.
+!     an (input) MQC Variable matrix.
 !
 !
 !     H. P. Hratchian, 2019.
