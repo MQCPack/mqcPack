@@ -3578,24 +3578,24 @@
       select case (mylabel)
       case('regular')
         call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'full','regular',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'symm','regular',tmpR4TensorAlpha)
       case('raffenetti')
         call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'full','raffenetti',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti',tmpR4TensorAlpha)
       case('molecular')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha)
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
           call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
           call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
           call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta)
           call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
             tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &

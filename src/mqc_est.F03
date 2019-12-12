@@ -5199,8 +5199,8 @@
 !     in critical section.
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
 !
-      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
-    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
+!      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
+!    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
       if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
     &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
 !
@@ -5235,8 +5235,7 @@
 !      !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
       !$OMP PARALLEL DEFAULT(NONE), &
       !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
-      !$OMP PRIVATE(k,l,m,n), &
-      !$OMP FIRSTPRIVATE(alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
+      !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
       call alphaLoc%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
         call betaLoc%init(nBasis,nBasis)

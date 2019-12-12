@@ -483,6 +483,12 @@
         Module Procedure MQC_VectorScalarProduct
         Module Procedure MQC_ScalarMatrixProduct
         Module Procedure MQC_MatrixScalarProduct
+        Module Procedure MQC_IntegerMatrixProduct
+        Module Procedure MQC_MatrixIntegerProduct
+        Module Procedure MQC_RealMatrixProduct
+        Module Procedure MQC_MatrixRealProduct
+        Module Procedure MQC_ComplexMatrixProduct
+        Module Procedure MQC_MatrixComplexProduct
       End Interface
 !
 !>    \brief <b> Divides two variables</b>
@@ -15342,15 +15348,22 @@
 !
 !     PROCEDURE MQC_Matrix_Symmetrize
 !
-!>    \brief <b> MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix</b>
+!>    \brief <b> MQC_Matrix_Symmetrize is a function that returns the symmetric/
+!>    antisymmetric/hermitian/antihermitian component of a MQC matrix</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix. 
-!>      TODO: options to antisymmetrize, hermitianize and antihermitianize. 
+!>    MQC_Matrix_Symmetrize is a function that returns the symmetric/antisymmetric/
+!>    hermitian/antihermitian component of a MQC matrix. The following optional 
+!>    arguments are available:
+!>
+!>    1. Label = 'symmetrize' returns the symmetric component (default).
+!>    2. Label = 'antisymmetrize' returns the antisymmetric component.
+!>    3. Label = 'hermitianize' returns the hermitian component.
+!>    4. Label = 'anitihermitianize' returns the antihermitian component.
 !>
 !>    \endverbatim
 !
@@ -15361,49 +15374,57 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to be symmetrized.
 !>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),optional
+!>        = 'symmetrize':        returns the symmetric component (default).
+!>        = 'antisymmetrize':    returns the antisymmetric component.
+!>        = 'hermitianize':      returns the hermitian component.
+!>        = 'anitihermitianize': returns the antihermitian component.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function MQC_Matrix_Symmetrize(Matrix)
+      Function MQC_Matrix_Symmetrize(Matrix,Label)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Symmetrize
       Type(MQC_Matrix),Intent(In)::Matrix
+      Character(len=*),optional::label
       Integer(kind=int64)::I,J
       Real(kind=real64),Parameter::Pt5=0.5
+      Character(len=64)::mylabel
 !
+      if(present(label)) then
+        call string_change_case(label,'L',myLabel)
+      else
+        myLabel = 'symmetrize'
+      endIf
+
       If(.not.Matrix%Storage.eq.'StorFull') Return
       If(Matrix%NCol.ne.Matrix%NRow) Call MQC_Error_I('Only square matricies can be symmetrixed &
      &  in MQC_Matrix_Symmetrize', 6, &
      'Matrix%NCol', Matrix%NCol, &
      'Matrix%NRow', Matrix%NRow )
-      Call MQC_Set_Matrix2Matrix(MQC_Matrix_Symmetrize,Matrix)
-      If(Matrix%Data_Type.eq.'Real') then
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatR(I,J) = Pt5*(Matrix%MatR(I,J)+Matrix%MatR(J,I))
-          EndDo
-        EndDo
-      EndIf
-      If(Matrix%Data_Type.eq.'Integer') then
-        Call MQC_Matrix_Copy_Int2Real(MQC_Matrix_Symmetrize)
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatR(I,J) = Pt5*(Matrix%MatI(I,J)+Matrix%MatI(J,I))
-          EndDo
-        EndDo
-      EndIf
-      If(Matrix%Data_Type.eq.'Complex') then
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatC(I,J) = Pt5*(Matrix%MatC(I,J)+Matrix%MatC(J,I))
-          EndDo
-        EndDo
-      EndIf
+     MQC_Matrix_Symmetrize = Matrix
+     select case(mylabel)
+     case ('symmetrize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix+transpose(Matrix))
+     case ('antisymmetrize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix-transpose(Matrix))
+     case ('hermitianize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix+dagger(Matrix))
+     case ('antihermitianize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix-dagger(Matrix))
+     case default
+       call mqc_error_a('Unrecognized symmetrization type label in in MQC_Matrix_Symmetrize', &
+         6,'mylabel',mylabel)
+     end select
 !
       Return
       End Function MQC_Matrix_Symmetrize
@@ -17720,6 +17741,342 @@
       EndIf
 
       End Function MQC_ScalarMatrixProduct
+!
+!
+!     PROCEDURE MQC_IntegerMatrixProduct
+!
+!>    \brief <b> MQC_IntegerMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic integer</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64) 
+!>        The intrinsic int to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerMatrixProduct(IntIn,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      integer(kind=int64),Intent(In)::intin
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Integer',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = IntIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_IntegerMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixIntegerProduct
+!
+!>    \brief <b> MQC_MatrixIntegerProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic integer</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixIntegerProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn 
+!>    \verbatim
+!>        IntIn is Integer(kind=int64) 
+!>        The intrinsic integer to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixIntegerProduct(Matrix,IntIn) Result(Matrix_Res)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IntIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Integer',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = IntIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixIntegerProduct
+!
+!
+!     PROCEDURE MQC_RealMatrixProduct
+!
+!>    \brief <b> MQC_RealMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic real</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64) 
+!>        The intrinsic real to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealMatrixProduct(RealIn,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = RealIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_RealMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixRealProduct
+!
+!>    \brief <b> MQC_MatrixRealProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic real</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixRealProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64) 
+!>        The intrinsic real to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixRealProduct(Matrix,RealIn) Result(Matrix_Res)
+!
+      Implicit None
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = RealIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixRealProduct
+!
+!
+!     PROCEDURE MQC_ComplexMatrixProduct
+!
+!>    \brief <b> MQC_ComplexMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic complex</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Comp
+!>    \verbatim
+!>        Comp is Complex(kind=real64) 
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ComplexMatrixProduct(Comp,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      Complex(kind=real64),Intent(In)::Comp
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = Comp * Matrix%MatC
+      EndIf
+
+      End Function MQC_ComplexMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixComplexProduct
+!
+!>    \brief <b> MQC_MatrixComplexProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic complex</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixComplexProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Comp 
+!>    \verbatim
+!>        Comp is Complex(kind=real64) 
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixComplexProduct(Matrix,Comp) Result(Matrix_Res)
+!
+      Implicit None
+      Complex(kind=real64),Intent(In)::Comp
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = Comp * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixComplexProduct
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Contraction
