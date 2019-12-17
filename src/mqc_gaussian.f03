@@ -1157,11 +1157,11 @@
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
-              call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,integerTmp,'antisymmetric')
 !             Matrix files have either symmetric/hermitian storage or antisymmetric/
 !             anthermitian storage. MQC currently has a symmetric only storage for both real 
 !             and complex parts so make nonsymmetric matrices square.
-              call mqc_matrix_symm2full(matrixOut,'antisymmetric')
+!              call mqc_matrix_symm2full(matrixOut,'antisymmetric')
 !             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
 !             file, where first index is the row. Therefore, we need to transpose matrix file
 !             storage to the MQC lower trangular matrix after reading for correct storage. 
@@ -1214,11 +1214,11 @@
 !             storage to the MQC lower trangular matrix after reading for correct storage. 
 !             This is only an issue for nonsymmetric matrices stored in symmetric form.
               if(Present(matrixOut)) then
-                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp,'antisymmetric')
 !               Matrix files have either symmetric/hermitian storage or antisymmetric/
 !               anthermitian storage. MQC currently has a symmetric only storage for both real 
 !               and complex parts so make nonsymmetric matrices square.
-                call mqc_matrix_symm2full(matrixOut,'antisymmetric')
+!                call mqc_matrix_symm2full(matrixOut,'antisymmetric')
                 matrixOut = transpose(matrixOut)
               elseIf(Present(mqcVarOut)) then
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
@@ -1258,11 +1258,11 @@
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
-              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp,'hermitian')
 !             Matrix files have either symmetric/hermitian storage or antisymmetric/
 !             anthermitian storage. MQC currently has a symmetric only storage for both real 
 !             and complex parts so make nonsymmetric matrices square.
-              call mqc_matrix_symm2full(matrixOut,'hermitian')
+!              call mqc_matrix_symm2full(matrixOut,'hermitian')
 !             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
 !             file, where first index is the row. Therefore, we need to transpose matrix file
 !             storage to the MQC lower trangular matrix after reading for correct storage. 
@@ -1275,11 +1275,11 @@
                 'Present(matrixOut)', Present(matrixOut) )
               allocate(complexTmp(LR))
               call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
-              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp,'antihermitian')
 !             Matrix files have either symmetric/hermitian storage or antisymmetric/
 !             anthermitian storage. MQC currently has a symmetric only storage for both real 
 !             and complex parts so make nonsymmetric matrices square.
-              call mqc_matrix_symm2full(matrixOut,'antihermitian')
+!              call mqc_matrix_symm2full(matrixOut,'antihermitian')
 !             Triangular matrices are stored in the order (A(J,I),J=1,I),I=1,N) on the matrix 
 !             file, where first index is the row. Therefore, we need to transpose matrix file
 !             storage to the MQC lower trangular matrix after reading for correct storage. 
@@ -3672,24 +3672,24 @@
       select case (mylabel)
       case('regular')
         call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'full','regular',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'symm','regular',tmpR4TensorAlpha)
       case('raffenetti')
         call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'full','raffenetti',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti',tmpR4TensorAlpha)
       case('molecular')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha)
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha)
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
           call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
           call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
           call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta)
           call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
             tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &

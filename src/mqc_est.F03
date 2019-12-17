@@ -6579,8 +6579,8 @@
 !     in critical section.
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
 !
-      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
-    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
+!      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
+!    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
       if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
     &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
 !
@@ -6615,8 +6615,7 @@
 !      !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
       !$OMP PARALLEL DEFAULT(NONE), &
       !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
-      !$OMP PRIVATE(k,l,m,n), &
-      !$OMP FIRSTPRIVATE(alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
+      !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
       call alphaLoc%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
         call betaLoc%init(nBasis,nBasis)
@@ -8539,7 +8538,7 @@
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
       
-      If(ERIs%type().ne.'regular') call mqc_error_A('Slater_Condon only implemented for &
+      If(ERIs%type().ne.'space'.and.ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
         & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
 
  1050 Format( A )
@@ -10650,7 +10649,7 @@
       Integer(kind=int64)::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index
 !
-      If(MO_ERIs%type().ne.'space'.or.MO_ERIs%type().ne.'spin') &
+      If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') &
         call mqc_error_A('MQC_Build_CI_Hamiltonian only implemented for spin or spatial 2ERIs', &
         6,'MO_ERIs%type()',MO_ERIs%type())
 
