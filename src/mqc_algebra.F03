@@ -1,6 +1,4 @@
 ! TODO: 1) Expand ability of MQC objects to interact with Fortran intrinsic types. 
-!       2) Implement ability to store and manipulate different types of arrays in 
-!          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
 !
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
@@ -12179,7 +12177,7 @@
 !>
 !>    \param[in] label
 !>    \verbatim
-!>        Option is Character(len=*),Optional
+!>        Label is Character(len=*),Optional
 !>        = 'symmetric':      Input matrix is symmetric
 !>        = 'antisymmetric':  Input matrix is antisymmetric
 !>        = 'hermitian':      Input matrix is hermitian
@@ -13066,17 +13064,17 @@
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAsym') then
-        Call MQC_Matrix_Symm2Full(Mat,'antisymmetric')
+        Call MQC_Matrix_Symm2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antisymmetric')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorHerm') then
-        Call MQC_Matrix_Symm2Full(Mat,'hermitian')
+        Call MQC_Matrix_Symm2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'hermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAhrm') then
-        Call MQC_Matrix_Symm2Full(Mat,'antihermitian')
+        Call MQC_Matrix_Symm2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antihermitian')) Call MQC_Matrix_Full2Symm(Mat)
@@ -15632,6 +15630,71 @@
         Else
           If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
             Return
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I-1
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I-1
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -15651,6 +15714,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -15663,10 +15729,135 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm') then
-            Symmetric = .False.
-          ElseIf(Matrix%Storage.eq.'StorDiag') then
-            Symmetric = .True.
+          If(Matrix%Storage.eq.'StorDiag') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(I,1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(I,1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(I,1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(I,1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(Matrix%MatR(symIndexHash(I,I),1).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(Matrix%MatR(symIndexHash(I,I),1).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -15686,6 +15877,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -15698,12 +15892,26 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
+          If(Matrix%Storage.eq.'StorDiag') then
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
-              Symmetric = .True.
+              return
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Do I = 1, MQC_Matrix_Rows(Matrix)
-                Do J = 1, I-1
+                If(abs(Aimag(Matrix%MatC(I,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I
                   K = symIndexHash(I,J)
                   If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
                     Symmetric = .False.
@@ -15715,6 +15923,88 @@
               Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
                    'Matrix%Data_Type', Matrix%Data_Type )
             EndIf
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I-1
+                  K = symIndexHash(I,J)
+                  If(Matrix%MatI(K,1).ne.0) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I-1
+                  K = symIndexHash(I,J)
+                  If(abs(Matrix%MatR(K,1)).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                K = symIndexHash(I,I)
+                If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  return
+                EndIf
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I-1
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              elseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I-1
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              elseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -15734,6 +16024,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -15746,8 +16039,137 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
-            Symmetric = .False.
+          If(Matrix%Storage.eq.'StorDiag') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(I,1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(I,1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(I,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              elseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              elseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I
+                  K = symIndexHash(I,J)
+                  If(Matrix%MatI(K,1).ne.0) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I
+                  K = symIndexHash(I,J)
+                  If(abs(Matrix%MatR(K,1)).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -15826,7 +16248,8 @@
       Diagonal = .True.
       If(Matrix%Storage.eq.'StorDiag') then
         Return
-      ElseIf(Matrix%Storage.eq.'StorSymm') then
+      ElseIf(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or.&
+          Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm') then
         Do I = 1, MQC_Matrix_Rows(Matrix)
           II = (I*(I-1))/2
           Do J = 1, I-1
@@ -15836,12 +16259,13 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(Matrix%MatR(II+J,1).ne.0.0) then
+              If(abs(Matrix%MatR(II+J,1)).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then 
-              If(Real(Matrix%MatC(II+J,1)).ne.0.0.or.Aimag(Matrix%MatC(II+J,1)).ne.0.0) then
+              If(abs(Real(Matrix%MatC(II+J,1))).gt.Thresh.or. &
+                abs(Aimag(Matrix%MatC(II+J,1))).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -15858,12 +16282,13 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(Matrix%MatR(I,J).ne.0.0) then
+              If(abs(Matrix%MatR(I,J)).ne.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then 
-              If(Real(Matrix%MatC(I,J)).ne.0.0.or.Aimag(Matrix%MatC(I,J)).ne.0.0) then
+              If(abs(Real(Matrix%MatC(I,J))).gt.Thresh.or.&
+                abs(Aimag(Matrix%MatC(I,J))).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -15897,6 +16322,9 @@
 !>    3. Data_Type = 'Complex' declares the MQC_Matrix variable to be of complex type.
 !>    4. Storage = 'StorFull' declares the MQC_Matrix variable to be unpacked.
 !>    5. Storage = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
+!>    5. Storage = 'StorAsym' declares the MQC_Matrix variable to be antisymmetric packed.
+!>    5. Storage = 'StorHerm' declares the MQC_Matrix variable to be hermitian packed.
+!>    5. Storage = 'StorAhrm' declares the MQC_Matrix variable to be antihermitian packed.
 !>    6. Storage = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.
 !>
 !>    \endverbatim
@@ -15934,6 +16362,9 @@
 !>        Storage is Character(Len=*)
 !>        = 'StorFull': the MQC_Matrix is unpacked
 !>        = 'StorSymm': the MQC_Matrix is symmetric packed
+!>        = 'StorAsym': the MQC_Matrix is antisymmetric packed
+!>        = 'StorHerm': the MQC_Matrix is hermitian packed
+!>        = 'StorAhrm': the MQC_Matrix is antihermitian packed
 !>        = 'StorDiag': the MQC_Matrix is diagonal packed.
 !>    \endverbatim
 !
@@ -15951,7 +16382,10 @@
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Character(Len=*),Intent(In)::Data_Type,Storage
       Integer(kind=int64)::MCur,NCur
+      character(len=64)::mystorage
 !
+      call string_change_case(storage,'l',myStorage)
+
       If (M.lt.0 .or. N.lt.0) then
         Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_Matrix', 6, &
              'M', M, &
@@ -15960,22 +16394,39 @@
 
       Call MQC_Deallocate_Matrix(Matrix)
 
-      If(Storage.eq.'StorFull' .or. Storage.eq.'Full' .or. Storage.eq.'full' .or. Storage.eq.'storfull') then
+      If(myStorage.eq.'full' .or. myStorage.eq.'storfull') then
         Matrix%Storage = 'StorFull'
         MCur = M
         NCur = N
-      ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
-         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower triangular in MQC_Allocate_Matrix', 6, &
-              'M', M, &
-              'N', N )
+      ElseIf(myStorage.eq.'symm' .or. myStorage.eq.'storsymm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
         Matrix%Storage = 'StorSymm'
         MCur = (M*(M+1))/2
         NCur = 1
-      ElseIf(Storage.eq.'StorDiag' .or. Storage.eq.'Diag' .or. Storage.eq.'diag' .or. Storage.eq.'stordiag') then
+      ElseIf(myStorage.eq.'asym' .or. myStorage.eq.'storasym') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorAsym'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'herm' .or. myStorage.eq.'storherm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorHerm'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'ahrm' .or. myStorage.eq.'storahrm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorAhrm'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'diag' .or. myStorage.eq.'stordiag') then
         Matrix%Storage = 'StorDiag'
         MCur = Min(M,N)
         NCur = 1
-      ElseIf(Storage.eq.'StorTriD' .or. Storage.eq.'TriD' .or. Storage.eq.'trid' .or. Storage.eq.'stortrid') then
+      ElseIf(myStorage.eq.'trid' .or. myStorage.eq.'stortrid') then
         Matrix%Storage = 'StorTriD'
         If(M.ne.N) then
           MCur = 3*Min(M,N)-1
@@ -16308,7 +16759,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -16393,7 +16846,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -16480,7 +16935,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -16648,6 +17105,7 @@
  1002 Format(3x,'This is a diagonal matrix, so only diagonal elements are printed')
  1003 Format(10(17x,I7))
  1020 Format( " " )
+ 1030 Format(3x,A)
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
@@ -16689,7 +17147,12 @@
         EndDo
 
 !     Printing for Symm storage
-      ElseIf(Matrix%Storage.eq.'StorSymm') then
+      ElseIf(Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorAsym' .or. &
+          Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then
+        If(Matrix%Storage.eq.'StorSymm') write(IOut,1030) 'The matrix being printed is symmetric'
+        If(Matrix%Storage.eq.'StorAsym') write(IOut,1030) 'The matrix being printed is antisymmetric'
+        If(Matrix%Storage.eq.'StorHerm') write(IOut,1030) 'The matrix being printed is hermitian'
+        If(Matrix%Storage.eq.'StorAhrm') write(IOut,1030) 'The matrix being printed is anithermitian'
         Do IFirst = 1,NCols,ColWidth
           ILast = Min(IFirst+ColWidth-1,NCols)
           If(Matrix%Data_Type.eq.'Complex') then
@@ -17355,7 +17818,8 @@
       Logical::MQC_Matrix_HaveSymmetric 
       Type(MQC_Matrix),Intent(In)::Matrix
 !
-      If(Matrix%Storage.eq.'StorSymm') then
+      If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym' .or. &
+        Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then
         MQC_Matrix_HaveSymmetric = .True. 
       Else
         MQC_Matrix_HaveSymmetric = .False.
@@ -17444,14 +17908,21 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Transpose
       Class(MQC_Matrix),Intent(In)::Matrix
+      Integer::I
 !
       If(MQC_Matrix_HaveReal(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Transpose, &
           'Real',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Transpose%MatR = Transpose(Matrix%MatR)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatR = Matrix%MatR
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatR = (-1)*Matrix%MatR
+          Do I = 1, Size(MQC_Matrix_Transpose%MatR,1)
+            MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -17461,8 +17932,14 @@
           'Integer',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Transpose%MatI = Transpose(Matrix%MatI)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatI = Matrix%MatI
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatI = (-1)*Matrix%MatI
+          Do I = 1, Size(MQC_Matrix_Transpose%MatI,1)
+            MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -17474,6 +17951,21 @@
           MQC_Matrix_Transpose%MatC = Transpose(Matrix%MatC)
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatC = Matrix%MatC
+        ElseIf (Matrix%Storage.eq.'StorAsym') then
+          MQC_Matrix_Transpose%MatC = (-1)*Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorHerm') then
+          MQC_Matrix_Transpose%MatC = conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatC = (-1)*conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
           'Matrix%Storage', Matrix%Storage )
@@ -17518,14 +18010,22 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Conjugate_Transpose
       Class(MQC_Matrix),Intent(In)::Matrix
+      Integer::I
 !
       If(MQC_Matrix_HaveReal(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Conjugate_Transpose, &
           'Real',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Conjugate_Transpose%MatR = Transpose(Matrix%MatR)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatR = Matrix%MatR
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatR = (-1)*Matrix%MatR
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatR,1)
+            MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -17535,8 +18035,15 @@
           'Integer',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Conjugate_Transpose%MatI = Transpose(Matrix%MatI)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatI = Matrix%MatI
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatI = (-1)*Matrix%MatI
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatI,1)
+            MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -17548,6 +18055,24 @@
           MQC_Matrix_Conjugate_Transpose%MatC = Transpose(conjg(Matrix%MatC))
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatC = conjg(Matrix%MatC)
+        ElseIf (Matrix%Storage.eq.'StorAsym') then
+          MQC_Matrix_Conjugate_Transpose%MatC = (-1)*conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorHerm') then
+          MQC_Matrix_Conjugate_Transpose%MatC = Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              conjg(MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatC = Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -17776,14 +18301,7 @@
 !>    \verbatim
 !>       
 !>    MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix 
-!>    to unpacked. The following options are available:
-!>      Option = 'symmetric' unpacks as if matrix is symmetric.
-!>      Option = 'antisymmetric' unpacks as if matrix is antisymmetric.
-!>      Option = 'hermitian' unpacks as if matrix is hermitian.
-!>      Option = 'antihermitian' unpacks as if matrix is antihermitian.
-!>
-!>      TODO: when different symm storage flags implemented, use these rather than an
-!>            option
+!>    to unpacked.
 !>
 !>    \endverbatim
 !
@@ -17794,44 +18312,25 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to unpack.
 !>    \endverbatim
-!>
-!>    \param[in] Option
-!>    \verbatim
-!>        Option is Character(len=*),Optional
-!>        = 'symmetric':      Unpack as if matrix is symmetric
-!>        = 'antisymmetric':  Unpack as if matrix is antisymmetric
-!>        = 'hermitian':      Unpack as if matrix is hermitian
-!>        = 'antihermitian':  Unpack as if matrix is antihermitian
-!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2016, 2018
 !
-      Subroutine MQC_Matrix_Symm2Full(Matrix,Option)
+      Subroutine MQC_Matrix_Symm2Full(Matrix)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Character(len=*),Optional,Intent(In)::Option
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,J,II,N,NTT
-      Character(len=64)::myOption
 !
-      If(Present(Option)) then
-        call string_change_case(Option,'l',myOption)
-      else
-        myOption = 'symmetric'
-      endIf
-      If(myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and.myOption.ne.'hermitian'.and. &
-        myOption.ne.'antihermitian') Call MQC_Error_A('MQC_Matrix_Full2Symm has unrecognised &
-     &  transformation option',6,'myOption',myOption)
-!
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
-     'Matrix%Storage', Matrix%Storage )
+      If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
+        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
+        Call MQC_Error_A('Input matrix must be lower-triangular packed &
+        & in MQC_Matrix_Symm2Full', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
       If(Matrix%Data_Type.eq.'Real') then
@@ -17842,7 +18341,7 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            If(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
               Matrix%MatR(J,I) = -Temp(II+J,1)
             Else
               Matrix%MatR(J,I) = Temp(II+J,1)
@@ -17859,7 +18358,7 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            If(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
               Matrix%MatI(J,I) = -Temp(II+J,1)
             Else
               Matrix%MatI(J,I) = Temp(II+J,1)
@@ -17876,11 +18375,11 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric') then
+            If(Matrix%Storage.eq.'StorAsym') then
               Matrix%MatC(J,I) = -TempC(II+J,1)
-            ElseIf(myOption.eq.'antihermitian') then
+            ElseIf(Matrix%Storage.eq.'StorAhrm') then
               Matrix%MatC(J,I) = -conjg(TempC(II+J,1))
-            ElseIf(myOption.eq.'hermitian') then
+            ElseIf(Matrix%Storage.eq.'StorHerm') then
               Matrix%MatC(J,I) = conjg(TempC(II+J,1))
             Else
               Matrix%MatC(J,I) = TempC(II+J,1)
@@ -18019,6 +18518,9 @@
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
      &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
      'Matrix%Storage', Matrix%Storage )
+      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
+     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
+      'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       N = Min(MQC_Matrix_Columns(Matrix),MQC_Matrix_Rows(Matrix))
       Columns = MQC_Matrix_Columns(Matrix)
       Rows = MQC_Matrix_Rows(Matrix)
@@ -18093,12 +18595,10 @@
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,II,N,NTT
 !
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Diag', 6, &
-     'Matrix%Storage', Matrix%Storage )
-      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
-     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
-     'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
+      If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
+        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
+        Call MQC_Error_A('Input matrix must be lower-triangular packed &
+        & in MQC_Matrix_Symm2Diag', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
       If(Matrix%Data_Type.eq.'Real') then
@@ -18176,8 +18676,7 @@
       Integer(kind=int64)::I,II
 !
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Symm', 6, &
-     'Matrix%Storage', Matrix%Storage)
+     &  diagonal packed in MQC_Matrix_Diag2Symm', 6, 'Matrix%Storage', Matrix%Storage)
       If(MQC_Matrix_Columns(Matrix).ne.MQC_Matrix_Rows(Matrix)) &
         Call MQC_Error_I('Input matrix must be square in MQC_Matrix_Diag2Symm', 6, &
         'MQC_Matrix_Columns(Matrix)', MQC_Matrix_Columns(Matrix), &
@@ -18270,7 +18769,11 @@
           II = (I*(I-1))/2
           Do J = 1,I
             Temp%MatR(I,J) = Matrix%MatR(II+J,1)
-            Temp%MatR(J,I) = Matrix%MatR(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorHerm') then
+              Temp%MatR(J,I) = Matrix%MatR(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatR(J,I) = (-1)*Matrix%MatR(II+J,1)
+            endIf
           EndDo
         EndDo
       ElseIf(Matrix%Data_Type.eq.'Integer') then
@@ -18278,15 +18781,27 @@
           II = (I*(I-1))/2
           Do J = 1,I
             Temp%MatI(I,J) = Matrix%MatI(II+J,1)
-            Temp%MatI(J,I) = Matrix%MatI(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorHerm') then
+              Temp%MatI(J,I) = Matrix%MatI(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatI(J,I) = (-1)*Matrix%MatI(II+J,1)
+            endIf
           EndDo
         EndDo
       ElseIf(Matrix%Data_Type.eq.'Complex') then
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            Temp%MatI(I,J) = Matrix%MatC(II+J,1)
-            Temp%MatI(J,I) = Matrix%MatC(II+J,1)
+            Temp%MatC(I,J) = Matrix%MatC(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm') then
+              Temp%MatC(J,I) = Matrix%MatC(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorHerm') then
+              Temp%MatC(J,I) = conjg(Matrix%MatC(II+J,1))
+            elseIf(Matrix%Storage.eq.'StorAsym') then
+              Temp%MatC(J,I) = (-1)*Matrix%MatC(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatC(J,I) = (-1)*conjg(Matrix%MatC(II+J,1))
+            endIf
           EndDo
         EndDo
       EndIf
@@ -18306,7 +18821,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric-packed 
-!>    intrinsic integer matrix to a rank-2 integer array.
+!>    intrinsic integer matrix to a rank-2 integer array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -18331,28 +18851,49 @@
 !>        I_Sq is Integer(kind=int64),Dimension(N,N)
 !>        The upacked intrinsic integer matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq)
+      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Integer(kind=int64),Dimension(:),Intent(In)::I_Symm
       Integer(kind=int64),Dimension(N,N),Intent(Out)::I_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
+      If(present(option)) then
+        call string_change_case(option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+
       k = N*(N+1)/2
       Do j = N,1,-1
         Do i = j,1,-1
           I_Sq(i,j) = I_Symm(k)
-          I_Sq(j,i) = I_Symm(k)
+          if(myOption.eq.'symmetric'.or.myOption.eq.'hermitian') then
+            I_Sq(j,i) = I_Symm(k)
+          elseIf(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            I_Sq(j,i) = (-1)*I_Symm(k)
+          endIf
           k = k-1
         EndDo
       EndDo
@@ -18371,7 +18912,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Real is a subroutine that converts a symmetric-packed 
-!>    intrinsic real matrix to a rank-2 real array.
+!>    intrinsic real matrix to a rank-2 real array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -18396,28 +18942,49 @@
 !>        A_Sq is Real(kind=real64),Dimension(N,N)
 !>        The upacked intrinsic real matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq)
+      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Real(kind=real64),Dimension(:),Intent(In)::A_Symm
       Real(kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
+      If(present(option)) then
+        call string_change_case(option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+
       k = N*(N+1)/2
       Do j = N,1,-1
         Do i = j,1,-1
           A_Sq(i,j) = A_Symm(k)
-          A_Sq(j,i) = A_Symm(k)
+          if(myOption.eq.'symmetric'.or.myOption.eq.'hermitian') then
+            A_Sq(j,i) = A_Symm(k)
+          elseIf(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            A_Sq(j,i) = (-1)*A_Symm(k)
+          endIf
           k = k-1
         EndDo
       EndDo
@@ -18436,7 +19003,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric-packed 
-!>    intrinsic complex matrix to a rank-2 complex array.
+!>    intrinsic complex matrix to a rank-2 complex array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -18462,20 +19034,31 @@
 !>        A_Sq is Complex(kind=real64),Dimension(N,N)
 !>        The upacked intrinsic complex matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson 
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq)
+      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Complex(Kind=real64),Dimension(:),Intent(In)::A_Symm
       Complex(Kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
@@ -18483,7 +19066,15 @@
       Do j = N,1,-1
         Do i = j,1,-1
           A_Sq(i,j) = A_Symm(k)
-          A_Sq(j,i) = A_Symm(k)
+          if(myOption.eq.'symmetric') then
+            A_Sq(j,i) = A_Symm(k)
+          elseif(myOption.eq.'hermitian') then
+            A_Sq(j,i) = conjg(A_Symm(k))
+          elseIf(myOption.eq.'antisymmetric') then
+            A_Sq(j,i) = (-1)*A_Symm(k)
+          elseIf(myOption.eq.'antihermitian') then
+            A_Sq(j,i) = (-1)*conjg(A_Symm(k))
+          endIf
           k = k-1
         EndDo
       EndDo
@@ -18584,7 +19175,7 @@
       select case(Tmp1%storage)
       case('StorFull')
         select case(Tmp2%storage)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
         case('StorDiag')
           call MQC_Matrix_Diag2Full(Tmp2)
@@ -18594,13 +19185,13 @@
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
         end select
-      case('StorSymm')
+      case('StorSymm','StorHerm','StorAsym','StorAhrm')
         select case(Tmp2%storage)
         case('StorFull')
           Call MQC_Matrix_Symm2Full(Tmp1)
         case('StorDiag')
           Call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           !-Empty Case-!
         case default
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
@@ -18610,7 +19201,7 @@
         select case(Tmp2%storage)
         case('StorFull')
           Call MQC_Matrix_Diag2Full(Tmp1)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           Call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
           !-Empty Case-!
@@ -18722,7 +19313,7 @@
       select case(Tmp1%storage)
       case('StorFull')
         select case(Tmp2%storage)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
         case('StorDiag')
           call MQC_Matrix_Diag2Full(Tmp2)
@@ -18732,13 +19323,13 @@
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
         end select
-      case('StorSymm')
+      case('StorSymm','StorHerm','StorAsym','StorAhrm')
         select case(Tmp2%storage)
         case('StorFull')
           call MQC_Matrix_Symm2Full(Tmp1)
         case('StorDiag')
           call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           !-Empty Case-!
         case default
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
@@ -18748,7 +19339,7 @@
         select case(Tmp2%storage)
         case('StorFull')
           call MQC_Matrix_Diag2Full(Tmp1)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
           !-Empty Case-!
