@@ -12564,7 +12564,7 @@
       LenRow = IndJ-IndI+1
       LenCol = IndL-IndK+1
       If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
-     &  defined in MQC_Matrix_Matrix_At', 6, &
+     &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow, &
      'MatrixIn%NRow', MatrixIn%NRow )
@@ -12579,7 +12579,7 @@
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow )
       If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
-     &  defined in MQC_Matrix_Matrix_At', 6, &
+     &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenCol', LenCol, &
      'Mat%NCol', Mat%NCol, &
      'MatrixIn%NCol', MatrixIn%NCol )
@@ -15576,10 +15576,11 @@
 !>    matrix. Note that this function differs from haveSymmetric subroutine which
 !>    tests how a matrix is packed. The following options are available: 
 !>
-!>    1. Option = 'symmetric' tests for a symmetric matrix (default).
-!>    2. Option = 'antisymmetric' tests for an antisymmetric matrix.
-!>    3. Option = 'hermitian' tests for a hermitian matrix.
-!>    4. Option = 'antihermitian' tests for an antihermitian matrix.
+!>    1. Option = 'any' tests all matrix symmetries (default).
+!>    2. Option = 'symmetric' tests for a symmetric matrix.
+!>    3. Option = 'antisymmetric' tests for an antisymmetric matrix.
+!>    4. Option = 'hermitian' tests for a hermitian matrix.
+!>    5. Option = 'antihermitian' tests for an antihermitian matrix.
 !>
 !>    \endverbatim
 !
@@ -15594,6 +15595,7 @@
 !>    \param[in] Option
 !>    \verbatim
 !>        Option is Character(len=*),Optional
+!>        = 'any':           test all matrix symmetries
 !>        = 'symmetric':     symmetric matrix test
 !>        = 'antisymmetric': antisymmetric matrix test
 !>        = 'hermitian':     hermitian matrix test
@@ -15605,7 +15607,7 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
+      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
@@ -15618,7 +15620,7 @@
       If(Present(Option)) then
         call string_change_case(Option,'l',myOption)
       else
-        myOption = 'symmetric'
+        myOption = 'any'
       endIf
 
       Symmetric = .True.
@@ -16199,6 +16201,16 @@
 !            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
           EndIf
         EndIf
+      Case ('any')
+        if(mqc_matrix_test_symmetric(matrix,'symmetric').or. &
+          mqc_matrix_test_symmetric(matrix,'antisymmetric').or. &
+          mqc_matrix_test_symmetric(matrix,'hermitian').or. &
+          mqc_matrix_test_symmetric(matrix,'antihermitian')) then
+          return
+        else
+          Symmetric = .False.
+          return
+        endIf
       Case Default
         Call MQC_Error_A('Invalid option sent to mqc_matrix_test_symmetric', 6, &
              'myOption', myOption )
@@ -18269,13 +18281,13 @@
         TempC = Matrix%MatC
         Call MQC_Deallocate_Matrix(Matrix)
         If(label.eq.'symmetric') then
-          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Complex','StorSymm')
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorSymm')
         ElseIf(label.eq.'antisymmetric') then
-          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Complex','StorAsym')
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorAsym')
         ElseIf(label.eq.'hermitian') then
-          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Complex','StorHerm')
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorHerm')
         ElseIf(label.eq.'antihermitian') then
-          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Complex','StorAhrm')
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorAhrm')
         EndIf
         Do I = 1, Size(TempC,1)
           II = (I*(I-1))/2
