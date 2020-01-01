@@ -6571,18 +6571,25 @@
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
-      integer(kind=int64)::k,l,m,n,nBasis
-      character(len=64)::mylabel
+      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1
+      character(len=64)::mylabel,algorithm='square'
       real(kind=real64)::zero=1.0d-10
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
 !     defined arrays. For now define local copies by hand and then sum into global version
 !     in critical section.
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
+      type(mqc_scf_integral)::hermden,ahermden
+      type(mqc_matrix)::aaHden,bbHden,abHHden,abAHden,aaAden,bbAden,abHAden,abAAden
+      type(mqc_matrix)::aaHfoc,bbHfoc,abHHfoc,abAHfoc,aaAfoc,bbAfoc,abHAfoc,abAAfoc
+      type(mqc_scalar)::half
+      logical::DEBUG=.false.,doaaH,dobbH,doabHH,doabAH,doaaA,dobbA,doabHA,doabAA
 !
-!      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
-!    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
+      half = 0.5
       if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
     &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
+      if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
+        call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
+        'algorithm',algorithm)
 !
      
       if(present(label)) then
@@ -6612,71 +6619,253 @@
         call betaAlpha%init(nBasis,nBasis)
       endIf
 
-!      !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
-      !$OMP PARALLEL DEFAULT(NONE), &
-      !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
-      !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
-      call alphaLoc%init(nBasis,nBasis)
-      if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
-        call betaLoc%init(nBasis,nBasis)
-      if(integral%array_type.eq.'general') then
-        call alphaBetaLoc%init(nBasis,nBasis)
-        call betaAlphaLoc%init(nBasis,nBasis)
-      endIf
-      !$OMP DO COLLAPSE(4) 
-      do k = 1, nBasis
-        do l = 1, nBasis
-          do m = 1, nBasis
-            do n = 1, nBasis
-              if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
-              ! AA Block
-              if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
-                call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
-              endIf
-              if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                call alphaLoc%put(alphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n),k,l)
-              endIf
-              !BB Block
+      if(algorithm.eq.'regular') then
+
+        doaaH  = .false.
+        dobbH  = .false.
+        doabHH = .false.
+        doabAH = .false.
+        doaaA  = .false.
+        dobbA  = .false.
+        doabHA = .false.
+        doabAA = .false.
+        
+        hermden = half*(integral+dagger(integral))
+        aaHden = hermden%getblock('alpha')
+        bbHden = hermden%getblock('beta')
+        abHHden = half*(hermden%getblock('alpha-beta')+dagger(hermden%getblock('alpha-beta')))
+        abAHden = half*(hermden%getblock('alpha-beta')-dagger(hermden%getblock('alpha-beta')))
+        if(aaHden%norm('M').gt.zero) doaaH = .true.
+        if(bbHden%norm('M').gt.zero) dobbH = .true.
+        if(abHHden%norm('M').gt.zero) doabHH = .true.
+        if(abAHden%norm('M').gt.zero) doabAH = .true.
+        
+        ahermden = half*(integral-dagger(integral))
+        aaAden = ahermden%getblock('alpha')
+        bbAden = ahermden%getblock('beta')
+        abHAden = half*(ahermden%getblock('alpha-beta')+dagger(ahermden%getblock('alpha-beta')))
+        abAAden = half*(ahermden%getblock('alpha-beta')-dagger(ahermden%getblock('alpha-beta')))
+        if(aaAden%norm('M').gt.zero) doaaA = .true.
+        if(bbAden%norm('M').gt.zero) dobbA = .true.
+        if(abHAden%norm('M').gt.zero) doabHA = .true.
+        if(abAAden%norm('M').gt.zero) doabAA = .true.
+
+        if(DEBUG) then
+          if(doaaH)  call aaHden%print(6,'Alpha-Alpha hermitian density')
+          if(dobbH)  call bbHden%print(6,'Beta-Beta hermitian density')
+          if(doabHH) call abHHden%print(6,'Alpha-Beta hermitian hermitian density')
+          if(doabAH) call abAHden%print(6,'Alpha-Beta hermitian antihermitian density')
+          if(doaaA)  call aaAden%print(6,'Alpha-Alpha antihermitian density')
+          if(dobbA)  call bbAden%print(6,'Beta-Beta antihermitian density')
+          if(doabHA) call abHAden%print(6,'Alpha-Beta hermitian antihermitian density')
+          if(doabAA) call abAAden%print(6,'Alpha-Beta antihermitian antihermitian density')
+        endIf
+
+        call aaHfoc%init(nBasis,nBasis,0.0,'StorHerm')
+        call aaAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
+        call bbHfoc%init(nBasis,nBasis,0.0,'StorHerm')
+        call bbAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
+        call abHHfoc%init(nBasis,nBasis,0.0,'StorHerm')
+        call abAHfoc%init(nBasis,nBasis,0.0,'StorAhrm')
+        call abHAfoc%init(nBasis,nBasis,0.0,'StorHerm')
+        call abAAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
+
+        do kp = 1, (nBasis*(nBasis+1))/2
+          do mp = 1, (nBasis*(nBasis+1))/2
+#ifdef   PGI
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2) 
+            m = floor((1+sqrt(dfloat(-7+8*mp)))/2) 
+#else
+            k = floor((1+sqrt(float(-7+8*kp)))/2) 
+            m = floor((1+sqrt(float(-7+8*mp)))/2) 
+#endif  
+            l = kp - k*(k-1)/2
+            n = mp - m*(m-1)/2
+            
+            if(m.ne.n.and.integral%array_type.eq.'space') then
+              fact1 = 4
+            elseIf(m.ne.n.or.integral%array_type.eq.'space') then
+              fact1 = 2
+            else
+              fact1 = 1
+            endIf
+
+!           COULOMB
+            if((myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar').and. &
+              abs(eris%at(k,l,m,n)).gt.zero) then
+!           AA Hermitian Fock
+              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
+                call aaHfoc%put(aaHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*aaHden%at(m,n),k,l,'hermitian')
+              if(dobbH.and.integral%array_type.ne.'space'.and.abs(bbHden%at(m,n)).gt.zero) &
+                call aaHfoc%put(aaHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*bbHden%at(m,n),k,l,'hermitian')
               if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
-                if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                  call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
-                  call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
-                endIf
-                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaLoc%put(betaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
-                endIf
+!           BB Hermitian Fock
+                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
+                  call bbHfoc%put(bbHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*bbHden%at(m,n),k,l,'hermitian')
+                if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
+                  call bbHfoc%put(bbHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*aaHden%at(m,n),k,l,'hermitian')
               endIf
-              !AB Block
+            endIf
+
+!           EXCHANGE 1
+            if((myLabel.eq.'exchange'.or.myLabel.eq.'doublebar').and. &
+              abs(eris%at(k,n,m,l)).gt.zero) then
+!           AA Hermitian Fock
+              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
+                call aaHfoc%put(aaHfoc%at(k,l)-eris%at(k,n,m,l)*aaHden%at(m,n),k,l,'hermitian')
+              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+!           BB Hermitian Fock
+                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
+                  call bbHfoc%put(bbHfoc%at(k,l)-eris%at(k,n,m,l)*bbHden%at(m,n),k,l,'hermitian')
+              endIf
+!           AA Antihermitian Fock
+              if(doaaA.and.abs(aaAden%at(m,n)).gt.zero) &
+                call aaAfoc%put(aaAfoc%at(k,l)-eris%at(k,n,m,l)*aaAden%at(m,n),k,l,'antihermitian')
+              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+!           BB Antihermitian Fock
+                if(dobbA.and.abs(bbAden%at(m,n)).gt.zero) &
+                  call bbAfoc%put(bbAfoc%at(k,l)-eris%at(k,n,m,l)*bbAden%at(m,n),k,l,'antihermitian')
+              endIf
               if(integral%array_type.eq.'general') then
-                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
-                endIf
-              !BA Block
-                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
-                endIf
+!           AB Hermitian Hermitian Fock
+                if(doabHH.and.abs(abHHden%at(m,n)).gt.zero) &
+                  call abHHfoc%put(abHHfoc%at(k,l)-eris%at(k,n,m,l)*abHHden%at(m,n),k,l,'hermitian')
+!           AB Antihermitian Hermitian Fock
+                if(doabAH.and.abs(abAHden%at(m,n)).gt.zero) &
+                  call abAHfoc%put(abAHfoc%at(k,l)-eris%at(k,n,m,l)*abAHden%at(m,n),k,l,'antihermitian')
+!           AB Hermitian Antihermitian Fock
+                if(doabHA.and.abs(abHAden%at(m,n)).gt.zero) &
+                  call abHAfoc%put(abHAfoc%at(k,l)-eris%at(k,n,m,l)*abHAden%at(m,n),k,l,'hermitian')
+!           AB Antihermitian Antihermitian Fock
+                if(doabAA.and.abs(abAAden%at(m,n)).gt.zero) &
+                  call abAAfoc%put(abAAfoc%at(k,l)-eris%at(k,n,m,l)*abAAden%at(m,n),k,l,'antihermitian')
               endIf
+            endIf
+
+!           EXCHANGE 2
+            if(m.ne.n.and. & 
+              (myLabel.eq.'exchange'.or.myLabel.eq.'doublebar').and. &
+              abs(eris%at(k,m,n,l)).gt.zero) then
+!           AA Hermitian Fock
+              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
+                call aaHfoc%put(aaHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(aaHden%at(m,n)),k,l,'hermitian')
+              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+!           BB Hermitian Fock
+                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
+                  call bbHfoc%put(bbHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(bbHden%at(m,n)),k,l,'hermitian')
+              endIf
+!           AA Antihermitian Fock
+              if(doaaA.and.abs(aaAden%at(m,n)).gt.zero) &
+                call aaAfoc%put(aaAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(aaAden%at(m,n)),k,l,'antihermitian')
+              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+!           BB Antihermitian Fock
+                if(dobbA.and.abs(bbAden%at(m,n)).gt.zero) &
+                  call bbAfoc%put(bbAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(bbAden%at(m,n)),k,l,'antihermitian')
+              endif
+              if(integral%array_type.eq.'general') then
+!           AB Hermitian Hermitian Fock
+                if(doabHH.and.abs(abHHden%at(m,n)).gt.zero) &
+                  call abHHfoc%put(abHHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(abHHden%at(m,n)),k,l,'hermitian')
+!           AB Antihermitian Hermitian Fock
+                if(doabAH.and.abs(abAHden%at(m,n)).gt.zero) &
+                  call abAHfoc%put(abAHfoc%at(k,l)+eris%at(k,m,n,l)*conjg(abAHden%at(m,n)),k,l,'antihermitian')
+!           AB Hermitian Antihermitian Fock
+                if(doabHA.and.abs(abHAden%at(m,n)).gt.zero) &
+                  call abHAfoc%put(abHAfoc%at(l,k)-eris%at(k,m,n,l)*conjg(abHAden%at(m,n)),l,k,'hermitian')
+!           AB Antihermitian Antihermitian Fock
+                if(doabAA.and.abs(abAAden%at(m,n)).gt.zero) &
+                  call abAAfoc%put(abAAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(abAAden%at(m,n)),k,l,'antihermitian')
+              endIf
+            endIf
+          endDo
+        endDo
+
+        if(DEBUG) then
+          call aaHfoc%print(6,'Alpha-Alpha hermitian Fock')
+          call aaAfoc%print(6,'Alpha-Alpha antihermitian Fock')
+          call bbHfoc%print(6,'Beta-Beta hermitian Fock')
+          call bbAfoc%print(6,'Beta-Beta antihermitian Fock')
+          call abHHfoc%print(6,'Alpha-Beta hermitian hermitian Fock')
+          call abAHfoc%print(6,'Alpha-Beta hermitian antihermitian Fock')
+          call abHAfoc%print(6,'Alpha-Beta antihermitian hermitian Fock')
+          call abAAfoc%print(6,'Alpha-Beta antihermitian antihermitian Fock')
+        endIf
+
+        alpha = aaHfoc + aaAfoc
+        beta = bbHfoc + bbAfoc
+        alphaBeta = abHHfoc + abAHfoc + abHAfoc + abAAfoc
+        betaAlpha = abHHfoc - abAHfoc - abHAfoc + abAAfoc
+        
+      elseIf(algorithm.eq.'square') then
+
+!        !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
+        !$OMP PARALLEL DEFAULT(NONE), &
+        !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
+        !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
+        call alphaLoc%init(nBasis,nBasis)
+        if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
+          call betaLoc%init(nBasis,nBasis)
+        if(integral%array_type.eq.'general') then
+          call alphaBetaLoc%init(nBasis,nBasis)
+          call betaAlphaLoc%init(nBasis,nBasis)
+        endIf
+        !$OMP DO COLLAPSE(4) 
+        do k = 1, nBasis
+          do l = 1, nBasis
+            do m = 1, nBasis
+              do n = 1, nBasis
+                if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
+                ! AA Block
+                if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                endIf
+                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                  call alphaLoc%put(alphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n),k,l)
+                endIf
+                !BB Block
+                if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+                  if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
+                    call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
+                  endIf
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call betaLoc%put(betaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
+                  endIf
+                endIf
+                !AB Block
+                if(integral%array_type.eq.'general') then
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                  endIf
+                !BA Block
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                  endIf
+                endIf
+              end do
             end do
           end do
         end do
-      end do
-      !$OMP END DO
-      !$OMP CRITICAL
-      alpha = alpha + alphaLoc
-      if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
-        beta = beta + betaLoc
-      if(integral%array_type.eq.'general') then
-        alphaBeta = alphaBeta + alphaBetaLoc
-        betaAlpha = betaAlpha + betaAlphaLoc
+        !$OMP END DO
+        !$OMP CRITICAL
+        alpha = alpha + alphaLoc
+        if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
+          beta = beta + betaLoc
+        if(integral%array_type.eq.'general') then
+          alphaBeta = alphaBeta + alphaBetaLoc
+          betaAlpha = betaAlpha + betaAlphaLoc
+        endIf
+        !$OMP END CRITICAL
+        !$OMP END PARALLEL
       endIf
-      !$OMP END CRITICAL
-      !$OMP END PARALLEL
 !
       if(integral%array_type.eq.'space') call mqc_integral_allocate(output,'contraction','space',alpha)
       if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contraction','spin',alpha,beta)
       if(integral%array_type.eq.'general') call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
 !
+      if(DEBUG) call output%print(6,'Final Fock matrix')
+      
       end function mqc_eri_integral_contraction
 !
 !
