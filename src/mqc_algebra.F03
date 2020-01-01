@@ -11238,7 +11238,7 @@
           EndIf
           L = L + 1
         EndDo
-      ElseIf (Mat%Storage.eq.'StorASym') then
+      ElseIf (Mat%Storage.eq.'StorAsym') then
         If (Mat%Data_Type.eq.'Integer') then
           Call MQC_Allocate_Vector(Length,Vector,'Integer')
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -18080,7 +18080,7 @@
               conjg(MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1))
           EndDo
         ElseIf (Matrix%Storage.eq.'StorAhrm') then
-          MQC_Matrix_Conjugate_Transpose%MatC = Matrix%MatC
+          MQC_Matrix_Conjugate_Transpose%MatC = (-1)*Matrix%MatC
           Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
             MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
               (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
@@ -18221,7 +18221,7 @@
       If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
      &  packed in MQC_Matrix_Full2Symm', 6, &
      'Matrix%Storage', Matrix%Storage )
-      If(MQC_Matrix_Test_Symmetric(Matrix)) then
+      If(MQC_Matrix_Test_Symmetric(Matrix,'symmetric')) then
         label = 'symmetric'
       ElseIf(MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')) then
         label = 'antisymmetric'
@@ -18338,6 +18338,7 @@
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,J,II,N,NTT
+      Character(len=10)::storage
 !
       If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
         Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
@@ -18345,6 +18346,7 @@
         & in MQC_Matrix_Symm2Full', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
+      storage = Matrix%Storage
       If(Matrix%Data_Type.eq.'Real') then
         Allocate(Temp(NTT,1))
         Temp = Matrix%MatR
@@ -18353,10 +18355,13 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+            If(storage.eq.'StorAsym'.or.storage.eq.'StorAhrm') then
               Matrix%MatR(J,I) = -Temp(II+J,1)
-            Else
+            ElseIf(storage.eq.'StorSymm'.or.storage.eq.'StorHerm') then
               Matrix%MatR(J,I) = Temp(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatR(I,J) = Temp(II+J,1)
           EndDo
@@ -18370,10 +18375,13 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+            If(storage.eq.'StorAsym'.or.storage.eq.'StorAhrm') then
               Matrix%MatI(J,I) = -Temp(II+J,1)
-            Else
+            ElseIf(storage.eq.'StorSymm'.or.storage.eq.'StorHerm') then
               Matrix%MatI(J,I) = Temp(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatI(I,J) = Temp(II+J,1)
           EndDo
@@ -18387,14 +18395,17 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(Matrix%Storage.eq.'StorAsym') then
+            If(storage.eq.'StorAsym') then
               Matrix%MatC(J,I) = -TempC(II+J,1)
-            ElseIf(Matrix%Storage.eq.'StorAhrm') then
-              Matrix%MatC(J,I) = -conjg(TempC(II+J,1))
-            ElseIf(Matrix%Storage.eq.'StorHerm') then
+            ElseIf(storage.eq.'StorAhrm') then
+              Matrix%MatC(J,I) = -(1)*conjg(TempC(II+J,1))
+            ElseIf(storage.eq.'StorHerm') then
               Matrix%MatC(J,I) = conjg(TempC(II+J,1))
-            Else
+            ElseIf(storage.eq.'StorSymm') then
               Matrix%MatC(J,I) = TempC(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatC(I,J) = TempC(II+J,1)
           EndDo
@@ -18660,7 +18671,14 @@
 !>    \verbatim
 !>       
 !>    MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix 
-!>    to symmetry-packed.
+!>    to symmetry-packed.!>     The following options are 
+!>    available: 
+!>
+!>    1. Option = 'symmetric' output matrix is labelled symmetric (default).
+!>    2. Option = 'antisymmetric' output matrix is labelled antisymmetric.
+!>    3. Option = 'hermitian' output matrix is labelled hermitian.
+!>    4. Option = 'antihermitian' output matrix is labelled antihermitian.
+!>
 !>      TODO: make tests for diagonal structure more efficient.
 !>
 !>    \endverbatim
@@ -18672,21 +18690,40 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to be unpacked.
 !>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':     output matrix is labelled symmetric (default)
+!>        = 'antisymmetric': output matrix is labelled antisymmetric
+!>        = 'hermitian':     output matrix is labelled hermitian
+!>        = 'antihermitian': output matrix is labelled antihermitian.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Diag2Symm(Matrix)
+      Subroutine MQC_Matrix_Diag2Symm(Matrix,Option)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
+      Character(len=*),Optional,Intent(In)::Option
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,II
+      Character(len=64)::myOption
 !
+      If(Present(Option)) then
+        call string_change_case(Option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+      If(myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and.myOption.ne.'hermitian'.and.&
+        myOption.ne.'antihermitian') call mqc_error_a('Unrecognized option in &
+        & MQC_Matrix_Scalar_Put',6,'myOption',myOption)
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
      &  diagonal packed in MQC_Matrix_Diag2Symm', 6, 'Matrix%Storage', Matrix%Storage)
       If(MQC_Matrix_Columns(Matrix).ne.MQC_Matrix_Rows(Matrix)) &
@@ -18697,8 +18734,19 @@
         Allocate(Temp(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         Temp = Matrix%MatI
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorAhrm')
+        endIf
         Matrix%MatI = 0
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
@@ -18709,8 +18757,19 @@
         Allocate(Temp(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         Temp = Matrix%MatR
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorAhrm')
+        endIf
         Matrix%MatR = 0.0d0
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
@@ -18721,8 +18780,19 @@
         Allocate(TempC(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         TempC = Matrix%MatC
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,1),Matrix,'Complex', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorAhrm')
+        endIf
         Matrix%MatC = Cmplx(0.0,0.0)
         Do I = 1, Size(TempC,1)
           II = (I*(I-1))/2
@@ -19198,17 +19268,19 @@
                'Tmp2%storage', Tmp2%storage) 
         end select
       case('StorSymm','StorHerm','StorAsym','StorAhrm')
-        select case(Tmp2%storage)
-        case('StorFull')
+        if(Tmp2%storage.eq.'StorFull') then
           Call MQC_Matrix_Symm2Full(Tmp1)
-        case('StorDiag')
+        elseIf(Tmp2%storage.eq.'StorDiag') then
           Call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm','StorHerm','StorAsym','StorAhrm')
+        elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+        elseIf(Tmp2%storage.eq.Tmp1%storage) then
           !-Empty Case-!
-        case default
+        else
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
-        end select
+        endIf
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
@@ -19336,17 +19408,19 @@
                'Tmp2%storage', Tmp2%storage)
         end select
       case('StorSymm','StorHerm','StorAsym','StorAhrm')
-        select case(Tmp2%storage)
-        case('StorFull')
+        if(Tmp2%storage.eq.'StorFull') then
           call MQC_Matrix_Symm2Full(Tmp1)
-        case('StorDiag')
+        elseIf(Tmp2%storage.eq.'StorDiag') then
           call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm','StorHerm','StorAsym','StorAhrm')
+        elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+        elseIf(Tmp2%storage.eq.Tmp1%storage) then
           !-Empty Case-!
-        case default
+        else
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
-        end select
+        endIf
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
@@ -21177,7 +21251,14 @@
 !>       
 !>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
 !>    element of a MQC matrix. If the location of an element is negative then it is 
-!>    counted from the end of the MQC matrix row/column.
+!>    counted from the end of the MQC matrix row/column. The following options are 
+!>    available: 
+!>
+!>    1. Option = 'element' adds scalar into specified element only (default).
+!>    2. Option = 'symmetric' adds scalar symmetrically.
+!>    3. Option = 'antisymmetric' adds scalar antisymmetrically.
+!>    4. Option = 'hermitian' adds scalar hermitianally.
+!>    5. Option = 'antihermitian' adds scalar antihermitianally.
 !>
 !>    \endverbatim
 !
@@ -21210,13 +21291,24 @@
 !>        If J is negative it is counted from the last element of 
 !>        Matrix
 !>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'element':       add scalar into specified element 
+!>                           only (default)
+!>        = 'symmetric':     add scalar symmetrically
+!>        = 'antisymmetric': add scalar antisymmetrically
+!>        = 'hermitian':     add scalar hermitianally
+!>        = 'antihermitian': add scalar antihermitianally.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Recursive Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J)
+      Recursive Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J,Option)
 !
 !     Variable Declarations.
 !
@@ -21224,8 +21316,19 @@
       Integer(kind=int64),Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Class(*),Intent(In)::ScalarIn
+      Character(len=*),Optional,Intent(In)::Option
       Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI,IndJ
+      Character(len=64)::myOption
+
+      If(Present(Option)) then
+        call string_change_case(Option,'l',myOption)
+      else
+        myOption = 'element'
+      endIf
+      If(myOption.ne.'element'.and.myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and. &
+        myOption.ne.'hermitian'.and.myOption.ne.'antihermitian') call mqc_error_a('Unrecognized &
+        & option in MQC_Matrix_Scalar_Put',6,'myOption',myOption)
 
       Select Type (ScalarIn)
       Type Is (Integer)
@@ -21291,44 +21394,66 @@
           Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
                'Matrix%Data_Type', Matrix%Data_Type )
         EndIf
+        If(myOption.eq.'symmetric') then
+          call Matrix%put(scalar,IndJ,IndI)
+        elseIf(myOption.eq.'antisymmetric') then
+          call Matrix%put((-1)*scalar,IndJ,IndI)
+        elseIf(myOption.eq.'hermitian') then
+          call Matrix%put(conjg(scalar),IndJ,IndI)
+        elseIf(myOption.eq.'antihermitian') then
+          call Matrix%put((-1)*conjg(scalar),IndJ,IndI)
+        endIf
       ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorAsym' .or. &
           Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then 
-        If(IndI.ne.IndJ) then
+        If(((IndI.ne.IndJ).and.(myOption.eq.'symmetric'.and.Matrix%Storage.ne.'StorSymm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'antisymmetric'.and.Matrix%Storage.ne.'StorAsym')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'hermitian'.and.Matrix%Storage.ne.'StorHerm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'antihermitian'.and.Matrix%Storage.ne.'StorAhrm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'element'))) then
           call mqc_matrix_symm2full(Matrix)
           call Matrix%put(scalar,IndI,IndJ)
+          If(myOption.eq.'symmetric') then
+            call Matrix%put(scalar,IndJ,IndI)
+          elseIf(myOption.eq.'antisymmetric') then
+            call Matrix%put((-1)*scalar,IndJ,IndI)
+          elseIf(myOption.eq.'hermitian') then
+            call Matrix%put(conjg(scalar),IndJ,IndI)
+          elseIf(myOption.eq.'antihermitian') then
+            call Matrix%put((-1)*conjg(scalar),IndJ,IndI)
+          endIf
         Else
           If (Matrix%Data_Type.eq.'Integer') then
             If (Scalar%Data_Type.eq.'Integer') then
-              Matrix%MatI(symIndexHash(IndI,IndI),1) = Scalar%ScaI
+              Matrix%MatI(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
             ElseIf (Scalar%Data_Type.eq.'Real') then
               Call MQC_Matrix_Copy_Int2Real(Matrix)
-              Matrix%MatR(symIndexHash(IndI,IndI),1) = Scalar%ScaR
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
             ElseIf (Scalar%Data_Type.eq.'Complex') then
               Call MQC_Matrix_Copy_Int2Complex(Matrix)
-              Matrix%MatC(symIndexHash(IndI,IndI),1) = Scalar%ScaC
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
             Else
               Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
                   'Scalar%Data_Type', Scalar%Data_Type ) 
             EndIf
           ElseIf (Matrix%Data_Type.eq.'Real') then
             If (Scalar%Data_Type.eq.'Integer') then
-              Matrix%MatR(symIndexHash(IndI,IndI),1) = Scalar%ScaI
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
             ElseIf (Scalar%Data_Type.eq.'Real') then
-              Matrix%MatR(symIndexHash(IndI,IndI),1) = Scalar%ScaR
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
             ElseIf (Scalar%Data_Type.eq.'Complex') then
               Call MQC_Matrix_Copy_Real2Complex(Matrix)
-              Matrix%MatC(symIndexHash(IndI,IndI),1) = Scalar%ScaC
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
             Else
               Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
                   'Scalar%Data_Type', Scalar%Data_Type ) 
             EndIf
           ElseIf (Matrix%Data_Type.eq.'Complex') then
             If (Scalar%Data_Type.eq.'Integer') then
-              Matrix%MatC(symIndexHash(IndI,IndI),1) = Scalar%ScaI
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
             ElseIf (Scalar%Data_Type.eq.'Real') then
-              Matrix%MatC(symIndexHash(IndI,IndI),1) = Scalar%ScaR
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
             ElseIf (Scalar%Data_Type.eq.'Complex') then
-              Matrix%MatC(symIndexHash(IndI,IndI),1) = Scalar%ScaC
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
             Else
               Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
                    'Scalar%Data_Type', Scalar%Data_Type ) 
@@ -21339,9 +21464,24 @@
           EndIf
         EndIf
       ElseIf (Matrix%Storage.eq.'StorDiag') then
-        If(IndI.ne.IndJ) then
-          call mqc_matrix_diag2full(Matrix)
-          call Matrix%put(scalar,IndI,IndJ)
+        If((IndI.ne.IndJ).and.(myOption.eq.'symmetric'.or.myOption.eq.'antisymmetric'.or. &
+          myOption.eq.'hermitian'.or.myOption.eq.'antihermitian'.or.myOption.eq.'element')) then
+          If(myOption.eq.'element') then
+            call mqc_matrix_diag2full(Matrix)
+            call Matrix%put(scalar,IndI,IndJ)
+          elseIf(myOption.eq.'symmetric') then
+            call mqc_matrix_diag2symm(Matrix,'symmetric')
+            call Matrix%put(scalar,IndI,IndJ,'symmetric')
+          elseIf(myOption.eq.'antisymmetric') then
+            call mqc_matrix_diag2symm(Matrix,'antisymmetric')
+            call Matrix%put(scalar,IndI,IndJ,'antisymmetric')
+          elseIf(myOption.eq.'hermitian') then
+            call mqc_matrix_diag2symm(Matrix,'hermitian')
+            call Matrix%put(scalar,IndI,IndJ,'hermitian')
+          elseIf(myOption.eq.'antihermitian') then
+            call mqc_matrix_diag2symm(Matrix,'antihermitian')
+            call Matrix%put(scalar,IndI,IndJ,'antihermitian')
+          endIf
         Else
           If (Matrix%Data_Type.eq.'Integer') then
             If (Scalar%Data_Type.eq.'Integer') then
