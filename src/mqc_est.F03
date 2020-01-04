@@ -6571,8 +6571,8 @@
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
-      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1
-      character(len=64)::mylabel,algorithm='square'
+      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1,flag
+      character(len=64)::mylabel,algorithm='regular'
       real(kind=real64)::zero=1.0d-10
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
 !     defined arrays. For now define local copies by hand and then sum into global version
@@ -6581,10 +6581,17 @@
       type(mqc_scf_integral)::hermden,ahermden
       type(mqc_matrix)::aaHden,bbHden,abHHden,abAHden,aaAden,bbAden,abHAden,abAAden
       type(mqc_matrix)::aaHfoc,bbHfoc,abHHfoc,abAHfoc,aaAfoc,bbAfoc,abHAfoc,abAAfoc
-      type(mqc_scalar)::half
-      logical::DEBUG=.false.,doaaH,dobbH,doabHH,doabAH,doaaA,dobbA,doabHA,doabAA
+      type(mqc_scalar)::half,temp1,temp2,szero
+      logical::DEBUG=.true.,doHerm,doAhrm
+!
+!     TODO:
+!     1) sum ERIs from both exchange (and coulomb?) terms and contract with density (perhaps
+!        doing real and complex parts separately
+!     2) use intrinsic types 
+!
 !
       half = 0.5
+      szero = 0.0
       if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
     &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
       if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
@@ -6610,6 +6617,15 @@
       if(integral%blockSize('beta',1).ne.integral%blockSize('alpha',2)) call mqc_error_I('Arrays are &
     &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(beta,1)', &
         integral%blockSize('beta',1),'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      flag = 0
+      if(integral%array_type.eq.'spin') then
+        flag = flag + 1
+      elseIf(integral%array_type.eq.'general') then
+        flag = flag + 2
+      endIf
+      if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') flag = flag + 10
+      if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') flag = flag + 100
+
       nBasis = integral%blockSize('alpha')
       call alpha%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
@@ -6621,44 +6637,48 @@
 
       if(algorithm.eq.'regular') then
 
-        doaaH  = .false.
-        dobbH  = .false.
-        doabHH = .false.
-        doabAH = .false.
-        doaaA  = .false.
-        dobbA  = .false.
-        doabHA = .false.
-        doabAA = .false.
+        doHerm = .false.
+        doAhrm = .false.
         
         hermden = half*(integral+dagger(integral))
-        aaHden = hermden%getblock('alpha')
-        bbHden = hermden%getblock('beta')
-        abHHden = half*(hermden%getblock('alpha-beta')+dagger(hermden%getblock('alpha-beta')))
-        abAHden = half*(hermden%getblock('alpha-beta')-dagger(hermden%getblock('alpha-beta')))
-        if(aaHden%norm('M').gt.zero) doaaH = .true.
-        if(bbHden%norm('M').gt.zero) dobbH = .true.
-        if(abHHden%norm('M').gt.zero) doabHH = .true.
-        if(abAHden%norm('M').gt.zero) doabAH = .true.
+        if(hermden%norm('M').gt.zero) doHerm = .true.
+        if(doHerm) then
+          aaHden = hermden%getblock('alpha')
+          if((mod(flag,10).gt.0)) bbHden = hermden%getblock('beta')
+          if((mod(flag,10).eq.2)) then
+            abHHden = half*(hermden%getblock('alpha-beta')+dagger(hermden%getblock('alpha-beta')))
+            abAHden = half*(hermden%getblock('alpha-beta')-dagger(hermden%getblock('alpha-beta')))
+          endIf
+        endIf
         
         ahermden = half*(integral-dagger(integral))
-        aaAden = ahermden%getblock('alpha')
-        bbAden = ahermden%getblock('beta')
-        abHAden = half*(ahermden%getblock('alpha-beta')+dagger(ahermden%getblock('alpha-beta')))
-        abAAden = half*(ahermden%getblock('alpha-beta')-dagger(ahermden%getblock('alpha-beta')))
-        if(aaAden%norm('M').gt.zero) doaaA = .true.
-        if(bbAden%norm('M').gt.zero) dobbA = .true.
-        if(abHAden%norm('M').gt.zero) doabHA = .true.
-        if(abAAden%norm('M').gt.zero) doabAA = .true.
+        if(ahermden%norm('M').gt.zero) doAhrm = .true.
+        if(doAhrm) then
+          aaAden = ahermden%getblock('alpha')
+          if((mod(flag,10).gt.0)) bbAden = ahermden%getblock('beta')
+          if((mod(flag,10).eq.2)) then
+            abHAden = half*(ahermden%getblock('alpha-beta')+dagger(ahermden%getblock('alpha-beta')))
+            abAAden = half*(ahermden%getblock('alpha-beta')-dagger(ahermden%getblock('alpha-beta')))
+          endIf
+        endIf
 
         if(DEBUG) then
-          if(doaaH)  call aaHden%print(6,'Alpha-Alpha hermitian density')
-          if(dobbH)  call bbHden%print(6,'Beta-Beta hermitian density')
-          if(doabHH) call abHHden%print(6,'Alpha-Beta hermitian hermitian density')
-          if(doabAH) call abAHden%print(6,'Alpha-Beta hermitian antihermitian density')
-          if(doaaA)  call aaAden%print(6,'Alpha-Alpha antihermitian density')
-          if(dobbA)  call bbAden%print(6,'Beta-Beta antihermitian density')
-          if(doabHA) call abHAden%print(6,'Alpha-Beta hermitian antihermitian density')
-          if(doabAA) call abAAden%print(6,'Alpha-Beta antihermitian antihermitian density')
+          if(doHerm) then 
+            call aaHden%print(6,'Alpha-Alpha hermitian density')
+            if (mod(flag,10).gt.0) call bbHden%print(6,'Beta-Beta hermitian density')
+            if (mod(flag,10).eq.2) then
+              call abHHden%print(6,'Alpha-Beta hermitian hermitian density')
+              call abAHden%print(6,'Alpha-Beta hermitian antihermitian density')
+            endIf
+          endIf
+          if(doAhrm) then 
+            call aaAden%print(6,'Alpha-Alpha antihermitian density')
+            if (mod(flag,10).gt.0) call bbAden%print(6,'Beta-Beta antihermitian density')
+            if (mod(flag,10).eq.2) then
+              call abHAden%print(6,'Alpha-Beta hermitian antihermitian density')
+              call abAAden%print(6,'Alpha-Beta antihermitian antihermitian density')
+            endIf
+          endIf
         endIf
 
         call aaHfoc%init(nBasis,nBasis,0.0,'StorHerm')
@@ -6682,101 +6702,114 @@
             l = kp - k*(k-1)/2
             n = mp - m*(m-1)/2
             
-            if(m.ne.n.and.integral%array_type.eq.'space') then
+            if(m.ne.n.and.mod(flag,10).eq.0) then
               fact1 = 4
-            elseIf(m.ne.n.or.integral%array_type.eq.'space') then
+            elseIf(m.ne.n.or.mod(flag,10).eq.0) then
               fact1 = 2
             else
               fact1 = 1
             endIf
 
 !           COULOMB
-            if((myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar').and. &
+            if(doHerm.and. &
+              mod(flag,100)/10.eq.1.and. &
               abs(eris%at(k,l,m,n)).gt.zero) then
+
+!              if (mod(flag,10).eq.0.or.abs(bbHden%at(m,n)).le.zero) then
+              if (mod(flag,10).eq.0) then
+                temp1 = fact1*eris%at(k,l,m,n) 
 !           AA Hermitian Fock
-              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
-                call aaHfoc%put(aaHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*aaHden%at(m,n),k,l,'hermitian')
-              if(dobbH.and.integral%array_type.ne.'space'.and.abs(bbHden%at(m,n)).gt.zero) &
-                call aaHfoc%put(aaHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*bbHden%at(m,n),k,l,'hermitian')
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+                call aaHfoc%put(aaHfoc%at(k,l)+temp1*aaHden%at(m,n),k,l,'hermitian')
+              elseIf (mod(flag,10).gt.0) then
+                temp1 = fact1*eris%at(k,l,m,n)*(aaHden%at(m,n)+bbHden%at(m,n))
+!           AA Hermitian Fock
+                call aaHfoc%put(aaHfoc%at(k,l)+temp1,k,l,'hermitian')
 !           BB Hermitian Fock
-                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
-                  call bbHfoc%put(bbHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*bbHden%at(m,n),k,l,'hermitian')
-                if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
-                  call bbHfoc%put(bbHfoc%at(k,l)+fact1*eris%at(k,l,m,n)*aaHden%at(m,n),k,l,'hermitian')
+                call bbHfoc%put(bbHfoc%at(k,l)+temp1,k,l,'hermitian')
               endIf
             endIf
 
-!           EXCHANGE 1
-            if((myLabel.eq.'exchange'.or.myLabel.eq.'doublebar').and. &
-              abs(eris%at(k,n,m,l)).gt.zero) then
+!           EXCHANGE 
+            if(mod(flag,1000)/100.eq.1) then
+              if(m.ne.n) then
+                temp1 = eris%at(k,n,m,l) + eris%at(k,m,n,l)
+                if (doAhrm.or.mod(flag,10).eq.2.or. &
+                  mqc_have_complex(aaHden).or.mqc_have_complex(bbHden)) then
+                  temp2 = eris%at(k,n,m,l) - eris%at(k,m,n,l) 
+                else
+                  temp2 = 0.0
+                endIf
+              else
+                temp1 = eris%at(k,n,m,l)
+                temp2 = 0.0
+              endIf
+              if (doHerm) then
+                if(abs(temp1).le.zero.and.abs(temp2).le.zero) cycle
 !           AA Hermitian Fock
-              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
-                call aaHfoc%put(aaHfoc%at(k,l)-eris%at(k,n,m,l)*aaHden%at(m,n),k,l,'hermitian')
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+                if (abs(aaHden%at(m,n)).gt.zero) then
+                  call aaHfoc%put(aaHfoc%at(k,l)-temp1*real(aaHden%at(m,n)),k,l,'hermitian')
+                  if (m.ne.n.and.mqc_have_complex(aaHden)) &
+                    call aaHfoc%put(aaHfoc%at(k,l)-cmplx(szero,temp2*aimag(aaHden%at(m,n))),k,l,'hermitian')
+                endIf
+                if(mod(flag,10).gt.0) then
 !           BB Hermitian Fock
-                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
-                  call bbHfoc%put(bbHfoc%at(k,l)-eris%at(k,n,m,l)*bbHden%at(m,n),k,l,'hermitian')
+                  if(abs(bbHden%at(m,n)).gt.zero) then
+                    call bbHfoc%put(bbHfoc%at(k,l)-temp1*real(bbHden%at(m,n)),k,l,'hermitian')
+                    if (m.ne.n.and.mqc_have_complex(aaHden)) &
+                      call bbHfoc%put(bbHfoc%at(k,l)-cmplx(szero,temp2*aimag(bbHden%at(m,n))),k,l,'hermitian')
+                  endIf
+                endIf
+                if(mod(flag,10).eq.2) then
+!           AB Hermitian Hermitian Fock
+                  if(abs(abHHden%at(m,n)).gt.zero) then
+                    call abHHfoc%put(abHHfoc%at(k,l)-temp1*real(abHHden%at(m,n)),k,l,'hermitian')
+                    if (m.ne.n.and.mqc_have_complex(aaHden)) &
+                      call abHHfoc%put(abHHfoc%at(k,l)-cmplx(szero,temp2*aimag(abHHden%at(m,n))),k,l,'hermitian')
+                  endIf
+!           AB Antihermitian Hermitian Fock
+                  if(abs(abAHden%at(m,n)).gt.zero) then 
+                    if(m.ne.n) &
+                      call abAHfoc%put(abAHfoc%at(k,l)-temp2*real(abAHden%at(m,n)),k,l,'antihermitian')
+                    if (mqc_have_complex(abAHden)) &
+                      call abAHfoc%put(abAHfoc%at(k,l)-cmplx(szero,temp1*aimag(abAHden%at(m,n))),k,l,'antihermitian')
+                  endIf
+                endIf
               endIf
 !           AA Antihermitian Fock
-              if(doaaA.and.abs(aaAden%at(m,n)).gt.zero) &
-                call aaAfoc%put(aaAfoc%at(k,l)-eris%at(k,n,m,l)*aaAden%at(m,n),k,l,'antihermitian')
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+              if (doAhrm) then
+                if (abs(aaAden%at(m,n)).gt.zero) then 
+                  if(m.ne.n) &
+                    call aaAfoc%put(aaAfoc%at(k,l)-temp2*real(aaAden%at(m,n)),k,l,'antihermitian')
+                  if (mqc_have_complex(aaAden)) &
+                    call aaAfoc%put(aaAfoc%at(k,l)-cmplx(szero,temp1*aimag(aaAden%at(m,n))),k,l,'antihermitian')
+                endIf
+                if(mod(flag,10).gt.0) then
 !           BB Antihermitian Fock
-                if(dobbA.and.abs(bbAden%at(m,n)).gt.zero) &
-                  call bbAfoc%put(bbAfoc%at(k,l)-eris%at(k,n,m,l)*bbAden%at(m,n),k,l,'antihermitian')
-              endIf
-              if(integral%array_type.eq.'general') then
-!           AB Hermitian Hermitian Fock
-                if(doabHH.and.abs(abHHden%at(m,n)).gt.zero) &
-                  call abHHfoc%put(abHHfoc%at(k,l)-eris%at(k,n,m,l)*abHHden%at(m,n),k,l,'hermitian')
-!           AB Antihermitian Hermitian Fock
-                if(doabAH.and.abs(abAHden%at(m,n)).gt.zero) &
-                  call abAHfoc%put(abAHfoc%at(k,l)-eris%at(k,n,m,l)*abAHden%at(m,n),k,l,'antihermitian')
+                  if(abs(bbAden%at(m,n)).gt.zero) then
+                    if(m.ne.n) &
+                      call bbAfoc%put(bbAfoc%at(k,l)-temp2*real(bbAden%at(m,n)),k,l,'antihermitian')
+                    if (mqc_have_complex(bbAden)) &
+                      call bbAfoc%put(bbAfoc%at(k,l)-cmplx(szero,temp1*aimag(bbAden%at(m,n))),k,l,'antihermitian')
+                  endIf
+                endIf
 !           AB Hermitian Antihermitian Fock
-                if(doabHA.and.abs(abHAden%at(m,n)).gt.zero) &
-                  call abHAfoc%put(abHAfoc%at(k,l)-eris%at(k,n,m,l)*abHAden%at(m,n),k,l,'hermitian')
+                if(mod(flag,10).eq.2) then
+                  if(abs(abHAden%at(m,n)).gt.zero) then
+                    call abHAfoc%put(abHAfoc%at(k,l)-temp1*real(abHAden%at(m,n)),k,l,'hermitian')
+                    if (m.ne.n.and.mqc_have_complex(abHAden)) &
+                      call abHAfoc%put(abHAfoc%at(k,l)-cmplx(szero,temp2*aimag(abHAden%at(m,n))),k,l,'hermitian')
+                  endIf
 !           AB Antihermitian Antihermitian Fock
-                if(doabAA.and.abs(abAAden%at(m,n)).gt.zero) &
-                  call abAAfoc%put(abAAfoc%at(k,l)-eris%at(k,n,m,l)*abAAden%at(m,n),k,l,'antihermitian')
+                  if(abs(abAAden%at(m,n)).gt.zero) then
+                    if(m.ne.n) &
+                      call abAAfoc%put(abAAfoc%at(k,l)-temp2*real(abAAden%at(m,n)),k,l,'antihermitian')
+                    if (mqc_have_complex(abAAden)) &
+                      call abAAfoc%put(abAAfoc%at(k,l)-cmplx(szero,temp1*real(abAAden%at(m,n))),k,l,'antihermitian')
+                  endIf
+                endIf
               endIf
             endIf
 
-!           EXCHANGE 2
-            if(m.ne.n.and. & 
-              (myLabel.eq.'exchange'.or.myLabel.eq.'doublebar').and. &
-              abs(eris%at(k,m,n,l)).gt.zero) then
-!           AA Hermitian Fock
-              if(doaaH.and.abs(aaHden%at(m,n)).gt.zero) &
-                call aaHfoc%put(aaHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(aaHden%at(m,n)),k,l,'hermitian')
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
-!           BB Hermitian Fock
-                if(dobbH.and.abs(bbHden%at(m,n)).gt.zero) &
-                  call bbHfoc%put(bbHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(bbHden%at(m,n)),k,l,'hermitian')
-              endIf
-!           AA Antihermitian Fock
-              if(doaaA.and.abs(aaAden%at(m,n)).gt.zero) &
-                call aaAfoc%put(aaAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(aaAden%at(m,n)),k,l,'antihermitian')
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
-!           BB Antihermitian Fock
-                if(dobbA.and.abs(bbAden%at(m,n)).gt.zero) &
-                  call bbAfoc%put(bbAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(bbAden%at(m,n)),k,l,'antihermitian')
-              endif
-              if(integral%array_type.eq.'general') then
-!           AB Hermitian Hermitian Fock
-                if(doabHH.and.abs(abHHden%at(m,n)).gt.zero) &
-                  call abHHfoc%put(abHHfoc%at(k,l)-eris%at(k,m,n,l)*conjg(abHHden%at(m,n)),k,l,'hermitian')
-!           AB Antihermitian Hermitian Fock
-                if(doabAH.and.abs(abAHden%at(m,n)).gt.zero) &
-                  call abAHfoc%put(abAHfoc%at(k,l)+eris%at(k,m,n,l)*conjg(abAHden%at(m,n)),k,l,'antihermitian')
-!           AB Hermitian Antihermitian Fock
-                if(doabHA.and.abs(abHAden%at(m,n)).gt.zero) &
-                  call abHAfoc%put(abHAfoc%at(l,k)-eris%at(k,m,n,l)*conjg(abHAden%at(m,n)),l,k,'hermitian')
-!           AB Antihermitian Antihermitian Fock
-                if(doabAA.and.abs(abAAden%at(m,n)).gt.zero) &
-                  call abAAfoc%put(abAAfoc%at(k,l)+eris%at(k,m,n,l)*conjg(abAAden%at(m,n)),k,l,'antihermitian')
-              endIf
-            endIf
           endDo
         endDo
 
