@@ -6571,7 +6571,7 @@
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
-      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1,flag
+      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1,flag,i
       character(len=64)::mylabel,algorithm='regular'
       real(kind=real64)::zero=1.0d-10
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
@@ -6579,21 +6579,22 @@
 !     in critical section.
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
       type(mqc_scf_integral)::hermden,ahermden
-      type(mqc_matrix)::aaHden,bbHden,abHHden,abAHden,aaAden,bbAden,abHAden,abAAden
-      type(mqc_matrix)::aaHfoc,bbHfoc,abHHfoc,abAHfoc,aaAfoc,bbAfoc,abHAfoc,abAAfoc
-      type(mqc_scalar)::half,temp1,temp2,szero
+      type(mqc_scalar)::half,raf1,raf2,raf3
       logical::DEBUG=.true.,doHerm,doAhrm
+      type(mqc_matrix)::aaHRden,aaHCden,bbHRden,bbHCden,abHHRden,abHHCden,abAHRden,abAHCden, &
+        aaARden,aaACden,bbARden,bbACden,abHARden,abHACden,abAARden,abAACden
+      type(mqc_matrix)::aaHRfoc,aaHCfoc,bbHRfoc,bbHCfoc,abHHRfoc,abHHCfoc,abAHRfoc,abAHCfoc, &
+        aaARfoc,aaACfoc,bbARfoc,bbACfoc,abHARfoc,abHACfoc,abAARfoc,abAACfoc
 !
 !     TODO:
-!     1) sum ERIs from both exchange (and coulomb?) terms and contract with density (perhaps
-!        doing real and complex parts separately
-!     2) use intrinsic types 
+!     1) use intrinsic types 
+!     2) parallelization
 !
 !
       half = 0.5
-      szero = 0.0
       if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
-    &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
+    &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:', &
+        eris%integralType)
       if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
         call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
         'algorithm',algorithm)
@@ -6605,26 +6606,32 @@
         myLabel = 'doublebar'
       endIf
 
-      if(integral%blockSize('alpha',1).ne.integral%blockSize('alpha',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(alpha,1)', &
-        integral%blockSize('alpha',1),'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
-      if(integral%blockSize('beta',1).ne.integral%blockSize('beta',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(beta,1)', &
-        integral%blockSize('beta',1),'integral%blockSize(beta,2)',integral%blockSize('beta',2))
-      if(integral%blockSize('alpha',1).ne.integral%blockSize('beta',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(alpha,1)', &
-        integral%blockSize('alpha',1),'integral%blockSize(beta,2)',integral%blockSize('beta',2))
-      if(integral%blockSize('beta',1).ne.integral%blockSize('alpha',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(beta,1)', &
-        integral%blockSize('beta',1),'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(integral%blockSize('alpha',1).ne.integral%blockSize('alpha',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(alpha,1)', integral%blockSize('alpha',1), &
+        'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(integral%blockSize('beta',1).ne.integral%blockSize('beta',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction' &
+        ,6,'integral%blockSize(beta,1)', integral%blockSize('beta',1), &
+        'integral%blockSize(beta,2)',integral%blockSize('beta',2))
+      if(integral%blockSize('alpha',1).ne.integral%blockSize('beta',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(alpha,1)', integral%blockSize('alpha',1), &
+        'integral%blockSize(beta,2)',integral%blockSize('beta',2))
+      if(integral%blockSize('beta',1).ne.integral%blockSize('alpha',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(beta,1)', integral%blockSize('beta',1), &
+        'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(myLabel.ne.'doublebar'.and.algorithm.eq.'regular') &
+        call mqc_error('Regular Fock build cannot return separate interaction energies')
+
       flag = 0
       if(integral%array_type.eq.'spin') then
         flag = flag + 1
       elseIf(integral%array_type.eq.'general') then
         flag = flag + 2
       endIf
-      if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') flag = flag + 10
-      if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') flag = flag + 100
+      if(mqc_have_complex(integral%getBlock('full'))) flag = flag + 10
 
       nBasis = integral%blockSize('alpha')
       call alpha%init(nBasis,nBasis)
@@ -6643,52 +6650,153 @@
         hermden = half*(integral+dagger(integral))
         if(hermden%norm('M').gt.zero) doHerm = .true.
         if(doHerm) then
-          aaHden = hermden%getblock('alpha')
-          if((mod(flag,10).gt.0)) bbHden = hermden%getblock('beta')
-          if((mod(flag,10).eq.2)) then
-            abHHden = half*(hermden%getblock('alpha-beta')+dagger(hermden%getblock('alpha-beta')))
-            abAHden = half*(hermden%getblock('alpha-beta')-dagger(hermden%getblock('alpha-beta')))
+          aaHRden = real(hermden%getblock('alpha'))
+          if(mod(flag,100)/10.eq.1) then
+            aaHCden = hermden%getblock('alpha')
+            aaHCden = aimag(hermden%getblock('alpha'))
+          endIf
+          if(mod(flag,10).gt.0) then
+            bbHRden = real(hermden%getblock('beta'))
+            if(mod(flag,100)/10.eq.1) bbHCden = aimag(hermden%getblock('beta'))
+          endIf
+          if(mod(flag,10).eq.2) then
+            abHHRden = real(half*(hermden%getblock('alpha-beta')+ &
+              dagger(hermden%getblock('alpha-beta'))))
+            abAHRden = real(half*(hermden%getblock('alpha-beta')- &
+              dagger(hermden%getblock('alpha-beta'))))
+            if(mod(flag,100)/10.eq.1) then
+              abHHCden = aimag(half*(hermden%getblock('alpha-beta')+ &
+                dagger(hermden%getblock('alpha-beta'))))
+              abAHCden = aimag(half*(hermden%getblock('alpha-beta')- &
+                dagger(hermden%getblock('alpha-beta'))))
+            endIf
           endIf
         endIf
         
         ahermden = half*(integral-dagger(integral))
         if(ahermden%norm('M').gt.zero) doAhrm = .true.
         if(doAhrm) then
-          aaAden = ahermden%getblock('alpha')
-          if((mod(flag,10).gt.0)) bbAden = ahermden%getblock('beta')
+          aaARden = real(ahermden%getblock('alpha'))
+          if(mod(flag,100)/10.eq.1) aaACden = aimag(ahermden%getblock('alpha'))
+          if((mod(flag,10).gt.0)) then
+            bbARden = real(ahermden%getblock('beta'))
+            if(mod(flag,100)/10.eq.1) bbACden = aimag(ahermden%getblock('beta'))
+          endIf
           if((mod(flag,10).eq.2)) then
-            abHAden = half*(ahermden%getblock('alpha-beta')+dagger(ahermden%getblock('alpha-beta')))
-            abAAden = half*(ahermden%getblock('alpha-beta')-dagger(ahermden%getblock('alpha-beta')))
+            abHARden = real(half*(ahermden%getblock('alpha-beta')+ &
+              dagger(ahermden%getblock('alpha-beta'))))
+            abAARden = real(half*(ahermden%getblock('alpha-beta')- &
+              dagger(ahermden%getblock('alpha-beta'))))
+            if(mod(flag,100)/10.eq.1) then
+              abHACden = aimag(half*(ahermden%getblock('alpha-beta')+ &
+                dagger(ahermden%getblock('alpha-beta'))))
+              abAACden = aimag(half*(ahermden%getblock('alpha-beta')- &
+                dagger(ahermden%getblock('alpha-beta'))))
+            endIf
           endIf
         endIf
 
         if(DEBUG) then
           if(doHerm) then 
-            call aaHden%print(6,'Alpha-Alpha hermitian density')
-            if (mod(flag,10).gt.0) call bbHden%print(6,'Beta-Beta hermitian density')
+            call aaHRden%print(6,'Alpha-Alpha hermitian real density')
+            if(mod(flag,100)/10.eq.1) &
+              call aaHCden%print(6,'Alpha-Alpha hermitian complex density')
+            if (mod(flag,10).gt.0) then
+              call bbHRden%print(6,'Beta-Beta hermitian real density')
+              if(mod(flag,100)/10.eq.1) &
+                call bbHCden%print(6,'Beta-Beta hermitian complex density')
+            endIf
             if (mod(flag,10).eq.2) then
-              call abHHden%print(6,'Alpha-Beta hermitian hermitian density')
-              call abAHden%print(6,'Alpha-Beta hermitian antihermitian density')
+              call abHHRden%print(6,'Alpha-Beta hermitian hermitian real density')
+              call abAHRden%print(6,'Alpha-Beta hermitian antihermitian real density')
+              if(mod(flag,100)/10.eq.1) then
+                call abHHCden%print(6,'Alpha-Beta hermitian hermitian complex density')
+                call abAHCden%print(6,'Alpha-Beta hermitian antihermitian complex density')
+              endIf
             endIf
           endIf
           if(doAhrm) then 
-            call aaAden%print(6,'Alpha-Alpha antihermitian density')
-            if (mod(flag,10).gt.0) call bbAden%print(6,'Beta-Beta antihermitian density')
+            call aaARden%print(6,'Alpha-Alpha antihermitian real density')
+            if(mod(flag,100)/10.eq.1) &
+              call aaACden%print(6,'Alpha-Alpha antihermitian complex density')
+            if (mod(flag,10).gt.0) then
+              call bbARden%print(6,'Beta-Beta antihermitian real density')
+              if(mod(flag,100)/10.eq.1) &
+                call bbACden%print(6,'Beta-Beta antihermitian complex density')
+            endIf
             if (mod(flag,10).eq.2) then
-              call abHAden%print(6,'Alpha-Beta hermitian antihermitian density')
-              call abAAden%print(6,'Alpha-Beta antihermitian antihermitian density')
+              call abHARden%print(6,'Alpha-Beta hermitian antihermitian real density')
+              call abAARden%print(6,'Alpha-Beta antihermitian antihermitian real density')
+              if(mod(flag,100)/10.eq.1) then
+                call abHACden%print(6,'Alpha-Beta hermitian antihermitian complex density')
+                call abAACden%print(6,'Alpha-Beta antihermitian antihermitian complex density')
+              endIf
             endIf
           endIf
         endIf
 
-        call aaHfoc%init(nBasis,nBasis,0.0,'StorHerm')
-        call aaAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
-        call bbHfoc%init(nBasis,nBasis,0.0,'StorHerm')
-        call bbAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
-        call abHHfoc%init(nBasis,nBasis,0.0,'StorHerm')
-        call abAHfoc%init(nBasis,nBasis,0.0,'StorAhrm')
-        call abHAfoc%init(nBasis,nBasis,0.0,'StorHerm')
-        call abAAfoc%init(nBasis,nBasis,0.0,'StorAhrm')
+        if(doHerm) then
+          if (mod(flag,10).eq.0) then 
+            aaHRden = 4*aaHRden 
+            do i = 1,size(aaHRden,1)
+              call aaHRden%put(aaHRden%at(i,i)/2.0,i,i)
+            endDo
+          else
+            aaHRden = 2*(aaHRden + bbHRden) 
+            bbHRden = 2*(aaHRden/2.0 - 2*bbHRden) 
+            do i = 1,size(aaHRden,1)
+              call aaHRden%put(aaHRden%at(i,i)/2.0,i,i)
+              call bbHRden%put(bbHRden%at(i,i)/2.0,i,i)
+            endDo
+          endIf
+          if (mod(flag,10).eq.2) then
+            do i = 1,size(abHHRden,1)
+              call abHHRden%put(abHHRden%at(i,i)/2.0,i,i)
+              if(mod(flag,100)/10.eq.1) call abAHCden%put(abAHCden%at(i,i)/2.0,i,i)
+            endDo
+          endIf
+        endIf
+
+        if(doAhrm) then
+          do i = 1,size(aaARden,1)
+            if(mod(flag,10).eq.2) call abHARden%put(abHARden%at(i,i)/2.0,i,i)
+            if(mod(flag,100)/10.eq.1) then
+              call aaACden%put(aaHCden%at(i,i)/2.0,i,i)
+              if(mod(flag,10).gt.0) call bbACden%put(bbHCden%at(i,i)/2.0,i,i)
+              if(mod(flag,10).eq.2) call abAACden%put(abAACden%at(i,i)/2.0,i,i)
+            endIf
+          endDo
+        endIf
+
+        if(doHerm) then
+          call aaHRfoc%init(nBasis,nBasis,0.0,'StorSymm')
+          if(mod(flag,100)/10.eq.1) call aaHCfoc%init(nBasis,nBasis,0.0,'StorAsym')
+          if(mod(flag,10).gt.0) then
+            call bbHRfoc%init(nBasis,nBasis,0.0,'StorSymm')
+            if(mod(flag,100)/10.eq.1) call bbHCfoc%init(nBasis,nBasis,0.0,'StorAsym')
+            if(mod(flag,10).eq.2) then
+              call abHHRfoc%init(nBasis,nBasis,0.0,'StorSymm')
+              if(mod(flag,100)/10.eq.1) call abHHCfoc%init(nBasis,nBasis,0.0,'StorAsym')
+              call abAHRfoc%init(nBasis,nBasis,0.0,'StorAsym')
+              if(mod(flag,100)/10.eq.1) call abAHCfoc%init(nBasis,nBasis,0.0,'StorSymm')
+            endIf
+          endIf
+        endIf
+
+        if(doAhrm) then
+          call aaARfoc%init(nBasis,nBasis,0.0,'StorAsym')
+          if(mod(flag,100)/10.eq.1) call aaACfoc%init(nBasis,nBasis,0.0,'StorSymm')
+          if(mod(flag,10).gt.0) then
+            call bbARfoc%init(nBasis,nBasis,0.0,'StorAsym')
+            if(mod(flag,100)/10.eq.1) call bbACfoc%init(nBasis,nBasis,0.0,'StorSymm')
+            if(mod(flag,10).eq.2) then
+              call abHARfoc%init(nBasis,nBasis,0.0,'StorSymm')
+              if(mod(flag,100)/10.eq.1) call abHACfoc%init(nBasis,nBasis,0.0,'StorAsym')
+              call abAARfoc%init(nBasis,nBasis,0.0,'StorAsym')
+              if(mod(flag,100)/10.eq.1) call abAACfoc%init(nBasis,nBasis,0.0,'StorSymm')
+            endIf
+          endIf
+        endIf
 
         do kp = 1, (nBasis*(nBasis+1))/2
           do mp = 1, (nBasis*(nBasis+1))/2
@@ -6701,111 +6809,86 @@
 #endif  
             l = kp - k*(k-1)/2
             n = mp - m*(m-1)/2
-            
-            if(m.ne.n.and.mod(flag,10).eq.0) then
-              fact1 = 4
-            elseIf(m.ne.n.or.mod(flag,10).eq.0) then
-              fact1 = 2
+
+            raf1 = eris%at(k,l,m,n) - 0.25*(eris%at(k,n,m,l) + eris%at(k,m,n,l))
+            if(mod(flag,10).gt.0) then
+              raf2 = eris%at(k,n,m,l) + eris%at(k,m,n,l)
             else
-              fact1 = 1
+              raf2 = 0.0 
+            endIf
+            if (m.ne.n) then
+              if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) &
+                raf3 = eris%at(k,n,m,l) - eris%at(k,m,n,l)
+            else
+              raf3 = 0.0
             endIf
 
-!           COULOMB
-            if(doHerm.and. &
-              mod(flag,100)/10.eq.1.and. &
-              abs(eris%at(k,l,m,n)).gt.zero) then
-
-!              if (mod(flag,10).eq.0.or.abs(bbHden%at(m,n)).le.zero) then
-              if (mod(flag,10).eq.0) then
-                temp1 = fact1*eris%at(k,l,m,n) 
-!           AA Hermitian Fock
-                call aaHfoc%put(aaHfoc%at(k,l)+temp1*aaHden%at(m,n),k,l,'hermitian')
-              elseIf (mod(flag,10).gt.0) then
-                temp1 = fact1*eris%at(k,l,m,n)*(aaHden%at(m,n)+bbHden%at(m,n))
-!           AA Hermitian Fock
-                call aaHfoc%put(aaHfoc%at(k,l)+temp1,k,l,'hermitian')
-!           BB Hermitian Fock
-                call bbHfoc%put(bbHfoc%at(k,l)+temp1,k,l,'hermitian')
+            if(doHerm) then
+!           AA/BB Hermitian Fock
+              if(abs(raf1).gt.zero.and.abs(aaHRden%at(m,n)).gt.zero) &
+                call aaHRfoc%put(aaHRfoc%at(k,l)+raf1*aaHRden%at(m,n),k,l,'symmetric')
+              if(mod(flag,10).gt.0) then
+                if(abs(raf2).gt.zero.and.abs(bbHRden%at(m,n)).gt.zero) &
+                  call bbHRfoc%put(bbHRfoc%at(k,l)+raf2*bbHRden%at(m,n),k,l,'symmetric')
               endIf
-            endIf
-
-!           EXCHANGE 
-            if(mod(flag,1000)/100.eq.1) then
-              if(m.ne.n) then
-                temp1 = eris%at(k,n,m,l) + eris%at(k,m,n,l)
-                if (doAhrm.or.mod(flag,10).eq.2.or. &
-                  mqc_have_complex(aaHden).or.mqc_have_complex(bbHden)) then
-                  temp2 = eris%at(k,n,m,l) - eris%at(k,m,n,l) 
-                else
-                  temp2 = 0.0
-                endIf
-              else
-                temp1 = eris%at(k,n,m,l)
-                temp2 = 0.0
-              endIf
-              if (doHerm) then
-                if(abs(temp1).le.zero.and.abs(temp2).le.zero) cycle
-!           AA Hermitian Fock
-                if (abs(aaHden%at(m,n)).gt.zero) then
-                  call aaHfoc%put(aaHfoc%at(k,l)-temp1*real(aaHden%at(m,n)),k,l,'hermitian')
-                  if (m.ne.n.and.mqc_have_complex(aaHden)) &
-                    call aaHfoc%put(aaHfoc%at(k,l)-cmplx(szero,temp2*aimag(aaHden%at(m,n))),k,l,'hermitian')
-                endIf
-                if(mod(flag,10).gt.0) then
-!           BB Hermitian Fock
-                  if(abs(bbHden%at(m,n)).gt.zero) then
-                    call bbHfoc%put(bbHfoc%at(k,l)-temp1*real(bbHden%at(m,n)),k,l,'hermitian')
-                    if (m.ne.n.and.mqc_have_complex(aaHden)) &
-                      call bbHfoc%put(bbHfoc%at(k,l)-cmplx(szero,temp2*aimag(bbHden%at(m,n))),k,l,'hermitian')
+              if(m.ne.n.and.mod(flag,100)/10.eq.1) then
+                if(abs(raf3).gt.zero) then
+                  if(abs(aaHCden%at(m,n)).gt.zero) &
+                    call aaHCfoc%put(aaHCfoc%at(k,l)+raf3*aaHCden%at(m,n),k,l,'antisymmetric')
+                  if(mod(flag,10).gt.0) then
+                    if(abs(bbHCden%at(m,n)).gt.zero) &
+                      call bbHCfoc%put(bbHCfoc%at(k,l)+raf3*bbHCden%at(m,n),k,l,'antisymmetric')
                   endIf
                 endIf
-                if(mod(flag,10).eq.2) then
+              endIf
+              if(mod(flag,10).eq.2) then
 !           AB Hermitian Hermitian Fock
-                  if(abs(abHHden%at(m,n)).gt.zero) then
-                    call abHHfoc%put(abHHfoc%at(k,l)-temp1*real(abHHden%at(m,n)),k,l,'hermitian')
-                    if (m.ne.n.and.mqc_have_complex(aaHden)) &
-                      call abHHfoc%put(abHHfoc%at(k,l)-cmplx(szero,temp2*aimag(abHHden%at(m,n))),k,l,'hermitian')
-                  endIf
+                if(abs(abHHRden%at(m,n)).gt.zero) &
+                  call abHHRfoc%put(abHHRfoc%at(k,l)-raf2*abHHRden%at(m,n),k,l,'symmetric')
+                if(m.ne.n.and.mod(flag,100)/10.eq.1) then
+                  if(abs(abHHCden%at(m,n)).gt.zero) &
+                    call abHHCfoc%put(abHHCfoc%at(k,l)-raf3*abHHCden%at(m,n),k,l,'antisymmetric')
+                endIf
 !           AB Antihermitian Hermitian Fock
-                  if(abs(abAHden%at(m,n)).gt.zero) then 
-                    if(m.ne.n) &
-                      call abAHfoc%put(abAHfoc%at(k,l)-temp2*real(abAHden%at(m,n)),k,l,'antihermitian')
-                    if (mqc_have_complex(abAHden)) &
-                      call abAHfoc%put(abAHfoc%at(k,l)-cmplx(szero,temp1*aimag(abAHden%at(m,n))),k,l,'antihermitian')
-                  endIf
+                if(m.ne.n.and.abs(abAHRden%at(m,n)).gt.zero) &
+                  call abAHRfoc%put(abAHRfoc%at(k,l)-raf3*abAHRden%at(m,n),k,l,'antisymmetric')
+                if (mod(flag,100)/10.eq.1) then
+                  if(abs(abAHCden%at(m,n)).gt.zero) &
+                    call abAHCfoc%put(abAHCfoc%at(k,l)-raf2*abAHCden%at(m,n),k,l,'symmetric')
                 endIf
               endIf
+            endIf
 !           AA Antihermitian Fock
-              if (doAhrm) then
-                if (abs(aaAden%at(m,n)).gt.zero) then 
-                  if(m.ne.n) &
-                    call aaAfoc%put(aaAfoc%at(k,l)-temp2*real(aaAden%at(m,n)),k,l,'antihermitian')
-                  if (mqc_have_complex(aaAden)) &
-                    call aaAfoc%put(aaAfoc%at(k,l)-cmplx(szero,temp1*aimag(aaAden%at(m,n))),k,l,'antihermitian')
-                endIf
-                if(mod(flag,10).gt.0) then
+            if(doAhrm) then
+              if(m.ne.n.and.abs(aaARden%at(m,n)).gt.zero) &
+                call aaARfoc%put(aaARfoc%at(k,l)-raf3*aaARden%at(m,n),k,l,'antisymmetric')
+              if(mod(flag,100)/10.eq.1) then
+                if(abs(aaACden%at(m,n)).gt.zero) &
+                  call aaACfoc%put(aaACfoc%at(k,l)-raf2*aaACden%at(m,n),k,l,'symmetric')
+              endIf
+              if(mod(flag,10).gt.0) then
 !           BB Antihermitian Fock
-                  if(abs(bbAden%at(m,n)).gt.zero) then
-                    if(m.ne.n) &
-                      call bbAfoc%put(bbAfoc%at(k,l)-temp2*real(bbAden%at(m,n)),k,l,'antihermitian')
-                    if (mqc_have_complex(bbAden)) &
-                      call bbAfoc%put(bbAfoc%at(k,l)-cmplx(szero,temp1*aimag(bbAden%at(m,n))),k,l,'antihermitian')
-                  endIf
+                if(m.ne.n.and.abs(bbARden%at(m,n)).gt.zero) &
+                  call bbARfoc%put(bbARfoc%at(k,l)-raf3*bbARden%at(m,n),k,l,'antisymmetric')
+                if(mod(flag,100)/10.eq.1) then
+                  if(abs(bbACden%at(m,n)).gt.zero) &
+                    call bbACfoc%put(bbACfoc%at(k,l)-raf2*bbACden%at(m,n),k,l,'symmetric')
                 endIf
+              endIf
 !           AB Hermitian Antihermitian Fock
-                if(mod(flag,10).eq.2) then
-                  if(abs(abHAden%at(m,n)).gt.zero) then
-                    call abHAfoc%put(abHAfoc%at(k,l)-temp1*real(abHAden%at(m,n)),k,l,'hermitian')
-                    if (m.ne.n.and.mqc_have_complex(abHAden)) &
-                      call abHAfoc%put(abHAfoc%at(k,l)-cmplx(szero,temp2*aimag(abHAden%at(m,n))),k,l,'hermitian')
-                  endIf
+              if(mod(flag,10).eq.2) then
+                if(abs(abHARden%at(m,n)).gt.zero) &
+                  call abHARfoc%put(abHARfoc%at(k,l)-raf2*abHARden%at(m,n),k,l,'symmetric')
+                if(mod(flag,100)/10.eq.1.and.m.ne.n) then
+                  if(abs(abHACden%at(m,n)).gt.zero) &
+                   call abHACfoc%put(abHACfoc%at(k,l)-raf3*abHACden%at(m,n),k,l,'antisymmetric')
+               endIf
 !           AB Antihermitian Antihermitian Fock
-                  if(abs(abAAden%at(m,n)).gt.zero) then
-                    if(m.ne.n) &
-                      call abAAfoc%put(abAAfoc%at(k,l)-temp2*real(abAAden%at(m,n)),k,l,'antihermitian')
-                    if (mqc_have_complex(abAAden)) &
-                      call abAAfoc%put(abAAfoc%at(k,l)-cmplx(szero,temp1*real(abAAden%at(m,n))),k,l,'antihermitian')
-                  endIf
+                if(m.ne.n.and.abs(abAARden%at(m,n)).gt.zero) &
+                  call abAARfoc%put(abAARfoc%at(k,l)-raf3*abAARden%at(m,n),k,l,'antisymmetric')
+                if(mod(flag,100)/10.eq.1) then
+                  if(abs(abAACden%at(m,n)).gt.zero) &
+                    call abAACfoc%put(abAACfoc%at(k,l)-raf2*abAACden%at(m,n),k,l,'symmetric')
                 endIf
               endIf
             endIf
@@ -6813,21 +6896,113 @@
           endDo
         endDo
 
-        if(DEBUG) then
-          call aaHfoc%print(6,'Alpha-Alpha hermitian Fock')
-          call aaAfoc%print(6,'Alpha-Alpha antihermitian Fock')
-          call bbHfoc%print(6,'Beta-Beta hermitian Fock')
-          call bbAfoc%print(6,'Beta-Beta antihermitian Fock')
-          call abHHfoc%print(6,'Alpha-Beta hermitian hermitian Fock')
-          call abAHfoc%print(6,'Alpha-Beta hermitian antihermitian Fock')
-          call abHAfoc%print(6,'Alpha-Beta antihermitian hermitian Fock')
-          call abAAfoc%print(6,'Alpha-Beta antihermitian antihermitian Fock')
+        if(mod(flag,10).gt.0) then
+          aaHRfoc = aaHRfoc - 0.25*bbHRfoc
+          bbHRfoc = aaHRfoc + 0.5*bbHRfoc
         endIf
 
-        alpha = aaHfoc + aaAfoc
-        beta = bbHfoc + bbAfoc
-        alphaBeta = abHHfoc + abAHfoc + abHAfoc + abAAfoc
-        betaAlpha = abHHfoc - abAHfoc - abHAfoc + abAAfoc
+        if(DEBUG) then
+          if(doHerm) then
+            call aaHRfoc%print(6,'Alpha-Alpha hermitian real Fock')
+            if(mod(flag,100)/10.eq.1) &
+              call aaHCfoc%print(6,'Alpha-Alpha hermitian complex Fock')
+            if(mod(flag,10).gt.0) then
+              call bbHRfoc%print(6,'Beta-Beta hermitian real Fock')
+              if(mod(flag,100)/10.eq.1) &
+                call bbHCfoc%print(6,'Beta-Beta hermitian complex Fock')
+              if(mod(flag,10).eq.2) then
+                call abHHRfoc%print(6,'Alpha-Beta hermitian hermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call abHHCfoc%print(6,'Alpha-Beta hermitian hermitian complex Fock')
+                call abAHRfoc%print(6,'Alpha-Beta hermitian antihermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call abAHCfoc%print(6,'Alpha-Beta hermitian antihermitian complex Fock')
+              endIf
+            endIf
+          endIf
+          if(doAhrm) then
+            call aaARfoc%print(6,'Alpha-Alpha antihermitian real Fock')
+            if(mod(flag,100)/10.eq.1) &
+              call aaACfoc%print(6,'Alpha-Alpha antihermitian complex Fock')
+            if(mod(flag,10).gt.0) then
+              call bbARfoc%print(6,'Beta-Beta antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) &
+                call bbACfoc%print(6,'Beta-Beta antihermitian complex Fock')
+              if(mod(flag,10).eq.2) then
+                call abHARfoc%print(6,'Alpha-Beta antihermitian hermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call abHACfoc%print(6,'Alpha-Beta antihermitian hermitian complex Fock')
+                call abAARfoc%print(6,'Alpha-Beta antihermitian antihermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call abAACfoc%print(6,'Alpha-Beta antihermitian antihermitian complex Fock')
+              endIf
+            endIf
+          endIf
+        endIf
+
+        if(doHerm.and.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            alpha = aaHRfoc + aaARfoc
+            if(mod(flag,10).gt.0) then
+              beta = bbHRfoc + bbARfoc
+              if(mod(flag,10).eq.2) then
+                alphaBeta = abHHRfoc + abAHRfoc + abHARfoc + abAARfoc
+                betaAlpha = abHHRfoc - abAHRfoc - abHARfoc + abAARfoc
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            alpha = cmplx(aaHRfoc,aaHCfoc) + cmplx(aaARfoc,aaACfoc)
+            if(mod(flag,10).gt.0) then
+              beta = cmplx(bbHRfoc,bbHCfoc) + cmplx(bbARfoc,bbACfoc)
+              if(mod(flag,10).eq.2) then
+                alphaBeta = cmplx(abHHRfoc,abHHCfoc) + cmplx(abAHRfoc,abAHCfoc) + &
+                  cmplx(abHARfoc,abHACfoc) + cmplx(abAARfoc,abAACfoc)
+                betaAlpha = cmplx(abHHRfoc,abHHCfoc) - cmplx(abAHRfoc,abAHCfoc) - &
+                  cmplx(abHARfoc,abHACfoc) + cmplx(abAARfoc,abAACfoc)
+              endIf
+            endIf
+          endIf
+        elseIf(doHerm.and..not.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            alpha = aaHRfoc
+            if(mod(flag,10).gt.0) then
+              beta = bbHRfoc
+              if(mod(flag,10).eq.2) then
+                alphaBeta = abHHRfoc + abAHRfoc 
+                betaAlpha = abHHRfoc - abAHRfoc 
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            alpha = cmplx(aaHRfoc,aaHCfoc) 
+            if(mod(flag,10).gt.0) then
+              beta = cmplx(bbHRfoc,bbHCfoc) 
+              if(mod(flag,10).eq.2) then
+                alphaBeta = cmplx(abHHRfoc,abHHCfoc) + cmplx(abAHRfoc,abAHCfoc) 
+                betaAlpha = cmplx(abHHRfoc,abHHCfoc) - cmplx(abAHRfoc,abAHCfoc) 
+              endIf
+            endIf
+          endIf
+        elseIf(.not.doHerm.and.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            alpha = aaARfoc
+            if(mod(flag,10).gt.0) then
+              beta = bbARfoc
+              if(mod(flag,10).eq.2) then
+                alphaBeta = abHARfoc + abAARfoc
+                betaAlpha = abAARfoc - abHARfoc
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            alpha = cmplx(aaARfoc,aaACfoc)
+            if(mod(flag,10).gt.0) then
+              beta = cmplx(bbARfoc,bbACfoc)
+              if(mod(flag,10).eq.2) then
+                alphaBeta = cmplx(abHARfoc,abHACfoc) + cmplx(abAARfoc,abAACfoc)
+                betaAlpha = cmplx(abAARfoc,abAACfoc) - cmplx(abHARfoc,abHACfoc)
+              endIf
+            endIf
+          endIf
+        endIf
         
       elseIf(algorithm.eq.'square') then
 
