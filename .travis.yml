@@ -48,11 +48,11 @@ before_install:
   - which automake
   - autoconf --version
   - automake --version
-  - gcc --version
+#  - gcc --version
 #  - g++ --version
-  - gfortran --version
-  - gfortran-8 --version
-  - which gfortran-8
+#  - gfortran --version
+#  - gfortran-8 --version
+#  - which gfortran-8
 
 install: 
   - |

@@ -81,6 +81,7 @@
         module procedure MQC_Print_Scalar_Real
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
+        module procedure MQC_Print_Vector_Array_Complex
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
@@ -94,6 +95,7 @@
       interface mqc_print_vector
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
+        module procedure MQC_Print_Vector_Array_Complex
       end interface
 !
       interface mqc_print_matrix
@@ -786,6 +788,44 @@
       Return
       End Subroutine MQC_Print_Vector_Array_Real
 
+
+!PROCEDURE MQC_Print_Vector_Array_Complex
+      Subroutine MQC_Print_Vector_Array_Complex(IOut,Vector,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a Vector array type variable.
+!
+!     L. M. Thompson, 2016.
+!     H. P. Hratchian, 2017.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Complex(kind=real64),Dimension(:),Intent(In)::Vector
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,Length
+!
+ 1000 Format(/,1x,A)
+ 1002 Format(1x,I7,F12.5,F11.5,"i")
+ 1020 Format(" ")
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        Write(IOut,1002) I, Vector(I)
+      EndDo
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Vector_Array_Complex
 
 !
 !----------------------------------------------------------------

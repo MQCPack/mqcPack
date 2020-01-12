@@ -28,20 +28,24 @@ Complex   =          F
  
  Overlap matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
        1      1.000000
        2      0.000108      1.000000
  Beta Array
+   The matrix being printed is symmetric
                   1             2
        1      1.000000
        2      0.000108      1.000000
  
  Core Hamiltonian matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
        1     -0.572417
        2     -0.000160     -0.572417
  Beta Array
+   The matrix being printed is symmetric
                   1             2
        1     -0.572417
        2     -0.000160     -0.572417
@@ -66,30 +70,36 @@ Complex   =          F
  
  Density matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
        1      0.499946
        2      0.499946      0.499946
  Beta Array
+   The matrix being printed is symmetric
                   1             2
        1      0.499946
        2      0.499946      0.499946
  
  SCF Density matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
        1      0.499946
        2      0.499946      0.499946
  Beta Array
+   The matrix being printed is symmetric
                   1             2
        1      0.499946
        2      0.499946      0.499946
  
  Fock matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
        1     -0.079309
        2     -0.053049     -0.079309
  Beta Array
+   The matrix being printed is symmetric
                   1             2
        1     -0.079309
        2     -0.053049     -0.079309
@@ -194,21 +204,25 @@ Iteration:   1
 Iteration:   2
  G(P)
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.493108     -0.052889
+       1      0.493108
        2     -0.052889      0.493108
  Beta Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.493108     -0.052889
+       1      0.493108
        2     -0.052889      0.493108
  Fock matrix
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
-       1     -0.079309     -0.053049
+       1     -0.079309
        2     -0.053049     -0.079309
  Beta Array
+   The matrix being printed is symmetric
                   1             2
-       1     -0.079309     -0.053049
+       1     -0.079309
        2     -0.053049     -0.079309
  Orthogonalized Fock matrix
  Alpha Array

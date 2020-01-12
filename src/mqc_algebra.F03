@@ -1,6 +1,4 @@
 ! TODO: 1) Expand ability of MQC objects to interact with Fortran intrinsic types. 
-!       2) Implement ability to store and manipulate different types of arrays in 
-!          symmetric packed MQC matrix (hermitian,antisymmetric,antihermitian).
 !
 !>    \brief <b> MQC Algebra contains mathematical objects that are designed to
 !>    simplify and automate variable use in Fortran </b>
@@ -168,7 +166,7 @@
       Type MQC_Matrix
         Integer(kind=int64),Private::NCol=0,NRow=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag
+        Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorAsym,StorHerm,StorAhrm
         Real(kind=real64),Private,Dimension(:,:),Allocatable::MatR
         Integer(kind=int64),Private,Dimension(:,:),Allocatable::MatI
         Complex(Kind=real64),Private,Dimension(:,:),Allocatable::MatC
@@ -240,6 +238,11 @@
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Procedure, Public::put => MQC_R4Tensor_Put
+!>      \brief <b> Return the specified rank-4 tensor from MQC R4Tensor</b>
+        Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
+!>      \brief <b> Updates the specified subarray of the MQC R4Tensor to the specified
+!>      rank-4 tensor</b>
+        Procedure, Public::tput => MQC_R4Tensor_R4Tensor_Put
 !>      \brief <b> Initialize the MQC R4Tensor</b>
         Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
@@ -263,6 +266,7 @@
 !>    \brief <b> Contracts two arrays</b>
       Interface Contraction
         Module Procedure MQC_Matrix_Matrix_Contraction
+        Module Procedure MQC_R4Tensor_R4Tensor_Contraction
       End Interface
 !
 !>    \brief <b> Returns the complex conjugate</b>
@@ -329,6 +333,7 @@
       Interface Cmplx
         Module Procedure MQC_Scalar_Cmplx
         Module Procedure MQC_Vector_Cmplx
+        Module Procedure MQC_Matrix_Cmplx
       End Interface
 !
 !>    \brief <b> Returns the square root</b>
@@ -346,12 +351,14 @@
       Interface real
         Module Procedure MQC_Scalar_Complex_RealPart
         Module Procedure MQC_Vector_Complex_RealPart
+        Module Procedure MQC_Matrix_Complex_RealPart
       End Interface
 !
 !>    \brief <b> Returns the imaginary part</b>
       Interface aimag
         Module Procedure MQC_Scalar_Complex_ImagPart
         Module Procedure MQC_Vector_Complex_ImagPart
+        Module Procedure MQC_Matrix_Complex_ImagPart
       End Interface
 !
 !>    \brief <b> Returns the sine</b>
@@ -485,6 +492,12 @@
         Module Procedure MQC_VectorScalarProduct
         Module Procedure MQC_ScalarMatrixProduct
         Module Procedure MQC_MatrixScalarProduct
+        Module Procedure MQC_IntegerMatrixProduct
+        Module Procedure MQC_MatrixIntegerProduct
+        Module Procedure MQC_RealMatrixProduct
+        Module Procedure MQC_MatrixRealProduct
+        Module Procedure MQC_ComplexMatrixProduct
+        Module Procedure MQC_MatrixComplexProduct
       End Interface
 !
 !>    \brief <b> Divides two variables</b>
@@ -497,6 +510,7 @@
         Module Procedure MQC_ComplexScalarDivide
         Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
+        Module Procedure MQC_MatrixScalarDivide
       End Interface
 !
 !>    \brief <b> Exponentials a variable to the power of another</b>
@@ -510,6 +524,12 @@
 !>    \brief <b> Determines if two variables are not equal</b>
       Interface Operator (.ne.)
         Module Procedure MQC_ScalarNE
+        Module Procedure MQC_ScalarNEInteger
+        Module Procedure MQC_IntegerNEScalar
+        Module Procedure MQC_ScalarNEReal
+        Module Procedure MQC_RealNEScalar
+        Module Procedure MQC_ScalarNEComplex
+        Module Procedure MQC_ComplexNEScalar
       End Interface
 !
 !>    \brief <b> Determines if two variables are equal</b>
@@ -640,7 +660,8 @@
 !
 !     Documentation in scalar operator section
       Interface Operator (*)
-        Module Procedure MQC_MatrixMatrixProduct
+!        Module Procedure MQC_MatrixMatrixProduct
+        Module Procedure MQC_ElementMatrixProduct
       End Interface
 !
 !     Documentation in scalar operator section
@@ -650,6 +671,10 @@
         Module Procedure MQC_MatrixMatrixDotProduct
       End Interface
 !
+      Interface Operator (.outer.)
+        Module Procedure MQC_Matrix_Matrix_Outer
+      End Interface
+!
 !     Rank 4 tensor operators...
 !
 !     Documentation in scalar operator section
@@ -657,6 +682,16 @@
         Module Procedure MQC_Set_IntegerArray2tensor
         Module Procedure MQC_Set_RealArray2tensor
         Module Procedure MQC_Set_ComplexArray2tensor
+      End Interface
+!
+!     Documentation in scalar operator section
+      Interface Operator (+)
+        Module Procedure MQC_R4Tensor_R4Tensor_Sum
+      End Interface
+!
+!     Documentation in scalar operator section
+      Interface Operator (-)
+        Module Procedure MQC_R4Tensor_R4Tensor_Difference
       End Interface
 !
 !
@@ -3044,6 +3079,354 @@
 !
       Return
       End Function MQC_ScalarNE
+!
+!
+!     PROCEDURE MQC_IntegerNEScalar
+!
+!>    \brief <b> MQC_IntegerNEScalar is a function that returns TRUE if an intrinsic 
+!>    integer is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerNEScalar is a function that returns TRUE if an intrinsic integer is 
+!>    not equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerNEScalar(IntIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+!
+      MQC_IntegerNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.ne.Scalar%scar) MQC_IntegerNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.ne.Scalar%scai) MQC_IntegerNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.ne.Scalar%scac) MQC_IntegerNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEInteger
+!
+!>    \brief <b> MQC_ScalarNEInteger is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEInteger is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] intIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEInteger(Scalar,IntIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+!
+      MQC_ScalarNEInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.IntIn) MQC_ScalarNEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.IntIn) MQC_ScalarNEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.IntIn) MQC_ScalarNEInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEInteger
+!
+!
+!     PROCEDURE MQC_RealNEScalar
+!
+!>    \brief <b> MQC_RealNEScalar is a function that returns TRUE if an intrinsic real
+!>    is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealNEScalar is a function that returns TRUE if an intrinsic real is not
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealNEScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+!
+      MQC_RealNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.ne.Scalar%scar) MQC_RealNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.ne.Scalar%scai) MQC_RealNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.ne.Scalar%scac) MQC_RealNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEReal
+!
+!>    \brief <b> MQC_ScalarNEReal is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEReal is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+!
+      MQC_ScalarNEReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.RealIn) MQC_ScalarNEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.RealIn) MQC_ScalarNEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.RealIn) MQC_ScalarNEReal = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEReal
+!
+!
+!     PROCEDURE MQC_ComplexNEScalar
+!
+!>    \brief <b> MQC_ComplexNEScalar is a function that returns TRUE if an intrinsic complex
+!>    is not equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexNEScalar is a function that returns TRUE if an intrinsic complex is not
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Copmplex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ComplexNEScalar(ComplexIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ComplexNEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+!
+      MQC_ComplexNEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(ComplexIn.ne.Scalar%scar) MQC_ComplexNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(ComplexIn.ne.Scalar%scai) MQC_ComplexNEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(ComplexIn.ne.Scalar%scac) MQC_ComplexNEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ComplexNEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ComplexNEScalar
+!
+!
+!     PROCEDURE MQC_ScalarNEComplex
+!
+!>    \brief <b> MQC_ScalarNEComplex is a function that returns TRUE if a MQC_Scalar is
+!>    not equal to an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarNEComplex is a function that returns TRUE if a MQC_Scalar is not equal 
+!>    to an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarNEComplex(Scalar,ComplexIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarNEComplex
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+!
+      MQC_ScalarNEComplex = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.ne.ComplexIn) MQC_ScalarNEComplex = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarNEComplex', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarNEComplex
 !
 !
 !     PROCEDURE MQC_ScalarEQ
@@ -10287,7 +10670,7 @@
                  'A%NRow', A%NRow, &
                  'A%NCol', A%NCol )
           endif
-        elseIf (A%storage .eq. 'StorSymm') then
+        elseIf (A%storage .eq. 'StorHerm' .or. A%storage .eq. 'StorSymm') then
           allocate(TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
           call ZHPEV('V','U',A%NRow,A%matC(:,1),A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
           if(IError.ne.0) then
@@ -10547,6 +10930,80 @@
                  'Mat%Data_Type', Mat%Data_Type )
           EndIf
         EndIf
+      ElseIf (Mat%Storage.eq.'StorAsym') then
+        If (IndI.ge.IndJ) then
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (Mat%MatI(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (Mat%MatR(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (Mat%MatC(IndI*(IndI-1)/2+IndJ,1))
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        Else
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (-1)*(Mat%MatI(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (-1)*(Mat%MatR(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (-1)*(Mat%MatC(IndJ*(IndJ-1)/2+IndI,1))
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        EndIf
+      ElseIf (Mat%Storage.eq.'StorHerm') then
+        If (IndI.ge.IndJ) then
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (Mat%MatI(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (Mat%MatR(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (Mat%MatC(IndI*(IndI-1)/2+IndJ,1))
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        Else
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (Mat%MatI(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (Mat%MatR(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (Mat%MatC(IndJ*(IndJ-1)/2+IndI,1))
+            Element = conjg(Element)
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        EndIf
+      ElseIf (Mat%Storage.eq.'StorAhrm') then
+        If (IndI.ge.IndJ) then
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (Mat%MatI(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (Mat%MatR(IndI*(IndI-1)/2+IndJ,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (Mat%MatC(IndI*(IndI-1)/2+IndJ,1))
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        Else
+          If (Mat%Data_Type.eq.'Integer') then
+            Element = (-1)*(Mat%MatI(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Real') then
+            Element = (-1)*(Mat%MatR(IndJ*(IndJ-1)/2+IndI,1))
+          ElseIf (Mat%Data_Type.eq.'Complex') then
+            Element = (-1)*(Mat%MatC(IndJ*(IndJ-1)/2+IndI,1))
+            Element = conjg(Element)
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
+                 'Mat%Data_Type', Mat%Data_Type )
+          EndIf
+        EndIf
       ElseIf (Mat%Storage.eq.'StorDiag') then
         If (IndI.eq.IndJ) then
           If (Mat%Data_Type.eq.'Integer') then
@@ -10572,7 +11029,7 @@
           EndIf
         EndIf
       Else
-        Call MQC_Error_A('MQC_Matrix_Scalar_At: Only full, Symm, and Diagonal type matrices are supported', 6, &
+        Call MQC_Error_A('Unrecognized storage type in MQC_Matrix_Scalar_At', 6, &
              'Mat%Storage', Mat%Storage )
       EndIf
 
@@ -10781,6 +11238,78 @@
             If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
+          EndIf
+          L = L + 1
+        EndDo
+      ElseIf (Mat%Storage.eq.'StorAsym') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Vector(Length,Vector,'Integer')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Vector(Length,Vector,'Real')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Vector(Length,Vector,'Complex')
+        Else
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
+        EndIf
+        L = 1
+        Do Cnt = IndI, IndJ
+          If (Cnt.gt.IndK) then
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
+          Else
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
+          EndIf
+          L = L + 1
+        EndDo
+      ElseIf (Mat%Storage.eq.'StorHerm') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Vector(Length,Vector,'Integer')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Vector(Length,Vector,'Real')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Vector(Length,Vector,'Complex')
+        Else
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
+        EndIf
+        L = 1
+        Do Cnt = IndI, IndJ
+          If (Cnt.gt.IndK) then
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
+          Else
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
+          EndIf
+          L = L + 1
+        EndDo
+      ElseIf (Mat%Storage.eq.'StorAhrm') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Vector(Length,Vector,'Integer')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Vector(Length,Vector,'Real')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Vector(Length,Vector,'Complex')
+        Else
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
+               'Mat%Data_Type', Mat%Data_Type )
+        EndIf
+        L = 1
+        Do Cnt = IndI, IndJ
+          If (Cnt.gt.IndK) then
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
+          Else
+            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
+            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
           EndIf
           L = L + 1
         EndDo
@@ -11032,6 +11561,24 @@
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorASym') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
+        If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'antisymmetric')) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorHerm') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
+        If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'hermitian')) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorAhrm') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
+        If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'antihermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
@@ -11236,6 +11783,96 @@
           M = M + 1
         EndDo
         If(MQC_Matrix_Test_Symmetric(Matrix)) Call MQC_Matrix_Full2Symm(Matrix)
+      ElseIf (Mat%Storage.eq.'StorAsym') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Integer','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Real','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Complex','StorFull')
+        EndIf
+        M = 1
+        N = 1
+        Do Cnt1 = IndI, IndJ
+          Do Cnt2 = IndK, IndL
+            If (Cnt1.gt.Cnt2) then
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
+            Else
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (-1)*(Mat%MatI(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (-1)*(Mat%MatR(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (-1)*(Mat%MatC(Cnt2*(Cnt2-1)/2+Cnt1,1))
+            EndIf
+            If(N.eq.LenCol) then
+              N = 1
+            Else
+              N = N + 1
+            EndIf
+          EndDo
+          M = M + 1
+        EndDo
+        If(MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')) Call MQC_Matrix_Full2Symm(Matrix)
+      ElseIf (Mat%Storage.eq.'StorHerm') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Integer','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Real','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Complex','StorFull')
+        EndIf
+        M = 1
+        N = 1
+        Do Cnt1 = IndI, IndJ
+          Do Cnt2 = IndK, IndL
+            If (Cnt1.gt.Cnt2) then
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
+            Else
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = conjg(Mat%MatC(Cnt2*(Cnt2-1)/2+Cnt1,1))
+            EndIf
+            If(N.eq.LenCol) then
+              N = 1
+            Else
+              N = N + 1
+            EndIf
+          EndDo
+          M = M + 1
+        EndDo
+        If(MQC_Matrix_Test_Symmetric(Matrix,'hermitian')) Call MQC_Matrix_Full2Symm(Matrix)
+      ElseIf (Mat%Storage.eq.'StorAhrm') then
+        If (Mat%Data_Type.eq.'Integer') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Integer','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Real') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Real','StorFull')
+        ElseIf (Mat%Data_Type.eq.'Complex') then
+          Call MQC_Allocate_Matrix(LenRow,LenCol,Matrix,'Complex','StorFull')
+        EndIf
+        M = 1
+        N = 1
+        Do Cnt1 = IndI, IndJ
+          Do Cnt2 = IndK, IndL
+            If (Cnt1.gt.Cnt2) then
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
+            Else
+              If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (-1)*(Mat%MatI(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (-1)*(Mat%MatR(Cnt2*(Cnt2-1)/2+Cnt1,1))
+              If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (-1)*conjg(Mat%MatC(Cnt2*(Cnt2-1)/2+Cnt1,1))
+            EndIf
+            If(N.eq.LenCol) then
+              N = 1
+            Else
+              N = N + 1
+            EndIf
+          EndDo
+          M = M + 1
+        EndDo
+        If(MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')) Call MQC_Matrix_Full2Symm(Matrix)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         If (Mat%Data_Type.eq.'Integer') then
           Call Matrix%init(LenRow,LenCol,0)
@@ -11517,7 +12154,11 @@
 !>
 !>    MQC_Matrix_SymmMatrix_Put_Integer is a subroutine that returns a symmetric 
 !>    packed MQC matrix with elements defined by values in an intrinsic integer 
-!>    vector.
+!>    vector. The following options are available:
+!>      Option = 'symmetric' input matrix is symmetric.
+!>      Option = 'antisymmetric' input matrix is antisymmetric.
+!>      Option = 'hermitian' input matrix is hermitian.
+!>      Option = 'antihermitian' input matrix is antihermitian.
 !>
 !>    \endverbatim
 !
@@ -11536,6 +12177,15 @@
 !>        Intrinsic integer vector to write as symmetric-packed 
 !>        matrix.
 !>    \endverbatim
+!>
+!>    \param[in] label
+!>    \verbatim
+!>        Label is Character(len=*),Optional
+!>        = 'symmetric':      Input matrix is symmetric
+!>        = 'antisymmetric':  Input matrix is antisymmetric
+!>        = 'hermitian':      Input matrix is hermitian
+!>        = 'antihermitian':  Input matrix is antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -11543,14 +12193,16 @@
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_SymmMatrix_Put_Integer(mat,symmMatrixIn)
+      Subroutine MQC_Matrix_SymmMatrix_Put_Integer(mat,symmMatrixIn,label)
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
       integer(kind=int64),dimension(:),intent(in)::symmMatrixIn
+      character(len=*),optional,intent(in)::label
 !
       integer(kind=int64)::n,nSymm,intTemp1
       real(kind=real64)::realTemp1,realTemp2
+      character(len=64)::myLabel
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -11569,9 +12221,18 @@
 #else
       realTemp2 = ABS(realTemp1 - float(n))
 #endif
+      If(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = 'symmetric'
+      endIf
+
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
-      call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
+      if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
+      if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAsym')
+      if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorHerm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAherm')
       mat%matI(:,1) = symmMatrixIn(:)
 !
       return
@@ -11591,7 +12252,11 @@
 !>
 !>    MQC_Matrix_SymmMatrix_Put_Real is a subroutine that returns a symmetric 
 !>    packed MQC matrix with elements defined by values in an intrinsic real
-!>    vector.
+!>    vector. The following options are available:
+!>      Option = 'symmetric' input matrix is symmetric.
+!>      Option = 'antisymmetric' input matrix is antisymmetric.
+!>      Option = 'hermitian' input matrix is hermitian.
+!>      Option = 'antihermitian' input matrix is antihermitian.
 !>
 !>    \endverbatim
 !
@@ -11610,6 +12275,15 @@
 !>        Intrinsic real vector to write as symmetric-packed 
 !>        matrix.
 !>    \endverbatim
+!>
+!>    \param[in] label
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Input matrix is symmetric
+!>        = 'antisymmetric':  Input matrix is antisymmetric
+!>        = 'hermitian':      Input matrix is hermitian
+!>        = 'antihermitian':  Input matrix is antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -11617,14 +12291,16 @@
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_SymmMatrix_Put_Real(mat,symmMatrixIn)
+      Subroutine MQC_Matrix_SymmMatrix_Put_Real(mat,symmMatrixIn,label)
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
       real(kind=real64),dimension(:),intent(in)::symmMatrixIn
+      character(len=*),optional,intent(in)::label
 !
       integer(kind=int64)::n,nSymm,intTemp1
       real(kind=real64)::realTemp1,realTemp2
+      character(len=64)::myLabel
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -11643,10 +12319,18 @@
 #else
       realTemp2 = ABS(realTemp1 - float(n))
 #endif
+      If(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = 'symmetric'
+      endIf
+
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
-
-      call MQC_Allocate_Matrix(n,n,mat,'real','symm')
+      if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorSymm')
+      if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorAsym')
+      if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorHerm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorAherm')
       mat%matR(:,1) = symmMatrixIn(:)
 !
       return
@@ -11666,7 +12350,11 @@
 !>
 !>    MQC_Matrix_SymmMatrix_Put_Complex is a subroutine that returns a symmetric 
 !>    packed MQC matrix with elements defined by values in an intrinsic complex
-!>    vector.
+!>    vector. The following options are available:
+!>      Option = 'symmetric' input matrix is symmetric.
+!>      Option = 'antisymmetric' input matrix is antisymmetric.
+!>      Option = 'hermitian' input matrix is hermitian.
+!>      Option = 'antihermitian' input matrix is antihermitian.
 !>
 !>    \endverbatim
 !
@@ -11685,6 +12373,15 @@
 !>        Intrinsic complex vector to write as symmetric-packed 
 !>        matrix.
 !>    \endverbatim
+!>
+!>    \param[in] label
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Input matrix is symmetric
+!>        = 'antisymmetric':  Input matrix is antisymmetric
+!>        = 'hermitian':      Input matrix is hermitian
+!>        = 'antihermitian':  Input matrix is antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -11692,14 +12389,16 @@
 !>    \author L. M. Thompson 
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_SymmMatrix_Put_Complex(mat,symmMatrixIn)
+      Subroutine MQC_Matrix_SymmMatrix_Put_Complex(mat,symmMatrixIn,label)
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
       Complex(Kind=real64),dimension(:),intent(in)::symmMatrixIn
+      character(len=*),optional,intent(in)::label
 !
       integer(kind=int64)::n,nSymm,intTemp1
       real(kind=real64)::realTemp1,realTemp2
+      character(len=64)::myLabel
 !
 !
 !     Begin by figuring out the leading dimension of the matrix. Then, ensure
@@ -11718,9 +12417,18 @@
 #else
       realTemp2 = ABS(realTemp1 - float(n))
 #endif
+      If(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = 'symmetric'
+      endIf
+
       if(realTemp2.gt.1.d-5) call MQC_Error_R('Error in MQC_Matrix_SymmMatrix_Put', 6, &
            'realTemp2', realTemp2 )
-      call MQC_Allocate_Matrix(n,n,mat,'Complex','symm')
+      if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorSymm')
+      if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAsym')
+      if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorHerm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAherm')
       mat%matC(:,1) = symmMatrixIn(:)
 !
       return
@@ -11859,7 +12567,7 @@
       LenRow = IndJ-IndI+1
       LenCol = IndL-IndK+1
       If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
-     &  defined in MQC_Matrix_Matrix_At', 6, &
+     &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow, &
      'MatrixIn%NRow', MatrixIn%NRow )
@@ -11874,7 +12582,7 @@
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow )
       If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
-     &  defined in MQC_Matrix_Matrix_At', 6, &
+     &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenCol', LenCol, &
      'Mat%NCol', Mat%NCol, &
      'MatrixIn%NCol', MatrixIn%NCol )
@@ -11894,12 +12602,21 @@
           If (MatrixIn%Data_Type.eq.'Integer') then
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatI(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
                   Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -11929,12 +12646,21 @@
             Call MQC_Matrix_Copy_Int2Real(Mat)
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
                   Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -11973,6 +12699,33 @@
                   L = L + 1
                 endDo
               endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorHerm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -12003,12 +12756,21 @@
           If (MatrixIn%Data_Type.eq.'Integer') then
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
                   Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -12037,12 +12799,21 @@
           ElseIf (MatrixIn%Data_Type.eq.'Real') then
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatR(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
                   Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -12081,6 +12852,33 @@
                   L = L + 1
                 endDo
               endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorHerm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  L = L + 1
+                endDo
+              endDo
             ElseIf(MatrixIn%Storage.eq.'StorDiag') then
               M = 1
               N = 1
@@ -12111,12 +12909,21 @@
           If (MatrixIn%Data_Type.eq.'Integer') then
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = MatrixIn%MatI
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
                   Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -12145,12 +12952,21 @@
           ElseIf (MatrixIn%Data_Type.eq.'Real') then
             If(MatrixIn%Storage.eq.'StorFull') then
               Mat%MatC(IndI:IndJ,IndK:IndL) = MatrixIn%MatR
-            ElseIf(MatrixIn%Storage.eq.'StorSymm') then
+            ElseIf(MatrixIn%Storage.eq.'StorSymm'.or.MatrixIn%Storage.eq.'StorHerm') then
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
                   Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym'.or.MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -12185,6 +13001,33 @@
                 Do N = 1, M
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
                   Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAsym') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorHerm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  L = L + 1
+                endDo
+              endDo
+            ElseIf(MatrixIn%Storage.eq.'StorAhrm') then
+              L = 1
+              Do M = 1, LenCol
+                Do N = 1, M
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -12223,6 +13066,21 @@
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorAsym') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'antisymmetric')) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorHerm') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'hermitian')) Call MQC_Matrix_Full2Symm(Mat)
+      ElseIf (Mat%Storage.eq.'StorAhrm') then
+        Call MQC_Matrix_Symm2Full(Mat)
+        Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
+        Write(*,1020)
+        If(MQC_Matrix_Test_Symmetric(Mat,'antihermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
         Call MQC_Matrix_Matrix_Put(Mat,MatrixIn,[IndI,IndJ],[IndK,IndL])
@@ -12371,11 +13229,19 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               C%matI = A%matI * B%matI
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matI(i,j) = A%matI(i,j) * B%matI(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matI(i,j) = A%matI(i,j) * B%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matI(i,j) = (-1)*C%matI(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12384,7 +13250,7 @@
                 C%matI(i,1) = A%matI(i,i) * B%matI(i,1)
               enddo
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               do i = 1, A%NRow
@@ -12392,7 +13258,31 @@
                   C%matI(i,j) = B%matI(i,j) * A%matI(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorSymm')
+              C%matI(:,1) = A%matI(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorAsym')
+              C%matI(:,1) = A%matI(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
+              do i = 1, A%NRow
+                  C%matI(i,1) = A%matI(symIndexHash(i,i),1) * B%matI(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matI(i,j) = B%matI(i,j) * A%matI(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matI(i,j) = (-1)*C%matI(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorAsym')
+              C%matI(:,1) = A%matI(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorSymm')
               C%matI(:,1) = A%matI(:,1) * B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
@@ -12407,10 +13297,15 @@
               do i = 1, A%NRow
                 C%matI(i,1) = B%matI(i,i) * A%matI(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
               do i = 1, A%NRow
                   C%matI(i,1) = B%matI(symIndexHash(i,i),1) * A%matI(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
+              do i = 1, A%NRow
+                  C%matI(i,1) = 0
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
@@ -12422,11 +13317,19 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matI * B%matR
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matI(i,j) * B%matR(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = A%matI(i,j) * B%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12435,7 +13338,7 @@
                 C%matR(i,1) = A%matI(i,i) * B%matR(i,1)
               enddo
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
@@ -12443,7 +13346,31 @@
                   C%matR(i,j) = B%matR(i,j) * A%matI(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matI(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matI(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matI(symIndexHash(i,i),1) * B%matR(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = B%matR(i,j) * A%matI(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matI(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matI(:,1) * B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
@@ -12458,10 +13385,15 @@
               do i = 1, A%NRow
                 C%matR(i,1) = B%matR(i,i) * A%matI(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
                   C%matR(i,1) = B%matR(symIndexHash(i,i),1) * A%matI(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = 0.0
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -12478,6 +13410,30 @@
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matI(i,j) * B%matC(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matI(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matI(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matI(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12497,6 +13453,96 @@
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matI(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matI(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matI(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matI(:,1) * B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12509,10 +13555,15 @@
               do i = 1, A%NRow
                 C%matC(i,1) = B%matC(i,i) * A%matI(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
                   C%matC(i,1) = B%matC(symIndexHash(i,i),1) * A%matI(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = (0.0,0.0)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -12526,11 +13577,19 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matR * B%matI
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matR(i,j) * B%matI(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = A%matR(i,j) * (-1)*B%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12539,7 +13598,7 @@
                 C%matR(i,1) = A%matR(i,i) * B%matI(i,1)
               enddo
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
@@ -12547,7 +13606,31 @@
                   C%matR(i,j) = B%matI(i,j) * A%matR(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matR(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) * B%matI(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = B%matI(i,j) * A%matR(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matR(:,1) * B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
@@ -12562,10 +13645,15 @@
               do i = 1, A%NRow
                 C%matR(i,1) = B%matI(i,i) * A%matR(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
                   C%matR(i,1) = B%matI(symIndexHash(i,i),1) * A%matR(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = 0.0
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -12577,11 +13665,19 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matR * B%matR
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matR(i,j) * B%matR(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = A%matR(i,j) * (-1)*B%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12590,7 +13686,7 @@
                 C%matR(i,1) = A%matR(i,i) * B%matR(i,1)
               enddo
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
@@ -12598,7 +13694,31 @@
                   C%matR(i,j) = B%matR(i,j) * A%matR(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matR(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) * B%matR(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matR(i,j) = B%matR(i,j) * A%matR(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matR(i,j) = (-1)*C%matR(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matR(:,1) * B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
@@ -12613,10 +13733,15 @@
               do i = 1, A%NRow
                 C%matR(i,1) = B%matR(i,i) * A%matR(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
                   C%matR(i,1) = B%matR(symIndexHash(i,i),1) * A%matR(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = 0.0
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -12633,6 +13758,30 @@
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matR(i,j) * B%matC(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matR(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matR(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matR(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12652,6 +13801,96 @@
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matR(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matR(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matR(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matR(:,1) * B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12664,10 +13903,15 @@
               do i = 1, A%NRow
                 C%matC(i,1) = B%matC(i,i) * A%matR(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
                   C%matC(i,1) = B%matC(symIndexHash(i,i),1) * A%matR(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = (0.0,0.0)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -12688,6 +13932,30 @@
                   C%matC(i,j) = A%matC(i,j) * B%matI(symIndexHash(i,j),1)
                 enddo
               enddo
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matI(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12705,6 +13973,96 @@
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matI(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matI(i,j) * A%matC(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matI(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matI(i,j) * A%matC(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matI(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matI(i,j) * A%matC(symIndexHash(i,j),1)
+                  If(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12717,10 +14075,15 @@
               do i = 1, A%NRow
                 C%matC(i,1) = B%matI(i,i) * A%matC(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
                   C%matC(i,1) = B%matI(symIndexHash(i,i),1) * A%matC(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = (0.0,0.0)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -12737,6 +14100,30 @@
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matC(i,j) * B%matR(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorASym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matR(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12756,6 +14143,96 @@
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) * B%matR(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matR(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorASym')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) * B%matR(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matR(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) * B%matR(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matR(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12768,10 +14245,15 @@
               do i = 1, A%NRow
                 C%matC(i,1) = B%matR(i,i) * A%matC(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
                   C%matC(i,1) = B%matR(symIndexHash(i,i),1) * A%matC(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = (0.0,0.0)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -12788,6 +14270,30 @@
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matC(i,j) * B%matC(symIndexHash(i,j),1)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = A%matC(i,j) * B%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
                 enddo
               enddo
             else if (B%storage .eq. 'StorDiag') then
@@ -12807,6 +14313,96 @@
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*C%matC(i,j)
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) * B%matC(i,1)
+              enddo
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  C%matC(i,j) = B%matC(i,j) * A%matC(symIndexHash(i,j),1)
+                  if(j.gt.i) C%matC(i,j) = (-1)*conjg(C%matC(i,j))
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) * B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
@@ -12819,10 +14415,15 @@
               do i = 1, A%NRow
                 C%matC(i,1) = B%matC(i,i) * A%matC(i,1)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
                   C%matC(i,1) = B%matC(symIndexHash(i,i),1) * A%matC(i,1)
+              enddo
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              do i = 1, A%NRow
+                  C%matC(i,1) = (0.0,0.0)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -12873,11 +14474,11 @@
 !
       implicit none
       type(mqc_matrix),intent(in)::A,B
-      type(mqc_matrix)::C
+      type(mqc_matrix)::C,Tmp1
       integer(kind=int64)::i,j
 
       if (A%NRow .ne. B%NRow .or. A%NCol .ne. B%NCol) then
-        call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixProduct', 6, &
+        call mqc_error_I('The two matrices must have the same dimensions in MQC_elementMatrixDivide', 6, &
              'A%NRow', A%NRow, &
              'B%NRow', B%NRow, &
              'A%NCol', A%NCol, &
@@ -12890,46 +14491,85 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               C%matI = A%matI / B%matI
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matI(i,j) = A%matI(i,j) / B%matI(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               do i = 1, A%NRow
-                C%matI(i,1) = A%matI(i,i) / B%matI(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matI(i,j) = A%matI(i,j) / B%matI(symIndexHash(i,j),1)
+                  else
+                    C%matI(i,j) = A%matI(i,j) / (-1)*B%matI(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matI = A%matI / B%matI
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matI(i,j) = B%matI(i,j) / A%matI(symIndexHash(i,j),1)
+                  C%matI(i,j) = A%matI(symIndexHash(i,j),1) / B%matI(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorSymm')
+              C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorAsym')
+              C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matI(i,j) = A%matI(symIndexHash(i,j),1) / B%matI(i,j)
+                  else
+                    C%matI(i,j) = (-1)*A%matI(symIndexHash(i,j),1) / B%matI(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorAsym')
+              C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorSymm')
               C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
-              do i = 1, A%NRow
-                  C%matI(i,1) = A%matI(symIndexHash(i,i),1) / B%matI(i,1)
-              enddo
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matI(:,1) = A%matI(:,1) / B%matI(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
               do i = 1, A%NRow
-                C%matI(i,1) = B%matI(i,i) / A%matI(i,1)
+                C%matI(i,1) = A%matI(i,1) / B%matI(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
               do i = 1, A%NRow
-                  C%matI(i,1) = B%matI(symIndexHash(i,i),1) / A%matI(i,1)
+                  C%matI(i,1) = A%matI(i,1) / B%matI(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Integer','StorDiag')
@@ -12941,46 +14581,85 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matI / B%matR
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matI(i,j) / B%matR(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
-                C%matR(i,1) = A%matI(i,i) / B%matR(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matI(i,j) / B%matR(symIndexHash(i,j),1)
+                  else
+                    C%matR(i,j) = A%matI(i,j) / (-1)*B%matR(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matR = A%matI / B%matR
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matR(i,j) = B%matR(i,j) / A%matI(symIndexHash(i,j),1)
+                  C%matR(i,j) = A%matI(symIndexHash(i,j),1) / B%matR(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matI(symIndexHash(i,j),1) / B%matR(i,j)
+                  else
+                    C%matR(i,j) = (-1)*A%matI(symIndexHash(i,j),1) / B%matR(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
-              do i = 1, A%NRow
-                  C%matR(i,1) = A%matI(symIndexHash(i,i),1) / B%matR(i,1)
-              enddo
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matI(:,1) / B%matR(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                C%matR(i,1) = B%matR(i,i) / A%matI(i,1)
+                C%matR(i,1) = A%matI(i,1) / B%matR(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                  C%matR(i,1) = B%matR(symIndexHash(i,i),1) / A%matI(i,1)
+                  C%matR(i,1) = A%matI(i,1) / B%matR(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -12999,39 +14678,112 @@
                   C%matC(i,j) = A%matI(i,j) / B%matC(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                C%matC(i,1) = A%matI(i,i) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matI(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matI(i,j) / (-1)*B%matC(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matI(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matI(i,j) / conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matI(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matI(i,j) / (-1)*conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matC = A%matI / B%matC
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matC(i,j) = B%matC(i,j) / A%matI(symIndexHash(i,j),1)
+                  C%matC(i,j) = A%matI(symIndexHash(i,j),1) / B%matC(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                  C%matC(i,1) = A%matI(symIndexHash(i,i),1) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matI(symIndexHash(i,j),1) / B%matC(i,j)
+                  else
+                    C%matC(i,j) = (-1)*A%matI(symIndexHash(i,j),1) / B%matC(i,j)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matI(:,1) / B%matC(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                C%matC(i,1) = B%matC(i,i) / A%matI(i,1)
+                C%matC(i,1) = A%matI(i,1) / B%matC(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                  C%matC(i,1) = B%matC(symIndexHash(i,i),1) / A%matI(i,1)
+                  C%matC(i,1) = A%matI(i,1) / B%matC(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -13045,46 +14797,85 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matR / B%matI
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matR(i,j) / B%matI(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
-                C%matR(i,1) = A%matR(i,i) / B%matI(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matR(i,j) / B%matI(symIndexHash(i,j),1)
+                  else
+                    C%matR(i,j) = A%matR(i,j) / (-1)*B%matI(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matR = A%matR / B%matI
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matR(i,j) = B%matI(i,j) / A%matR(symIndexHash(i,j),1)
+                  C%matR(i,j) = A%matR(symIndexHash(i,j),1) / B%matI(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matR(symIndexHash(i,j),1) / B%matI(i,j)
+                  else
+                    C%matR(i,j) = (-1)*A%matR(symIndexHash(i,j),1) / B%matI(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
-              do i = 1, A%NRow
-                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) / B%matI(i,1)
-              enddo
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matR(:,1) / B%matI(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                C%matR(i,1) = B%matI(i,i) / A%matR(i,1)
+                C%matR(i,1) = A%matR(i,1) / B%matI(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                  C%matR(i,1) = B%matI(symIndexHash(i,i),1) / A%matR(i,1)
+                  C%matR(i,1) = A%matR(i,1) / B%matI(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -13096,46 +14887,85 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               C%matR = A%matR / B%matR
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matR(i,j) = A%matR(i,j) / B%matR(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
-                C%matR(i,1) = A%matR(i,i) / B%matR(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matR(i,j) / B%matR(symIndexHash(i,j),1)
+                  else
+                    C%matR(i,j) = A%matR(i,j) / (-1)*B%matR(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matR = A%matR / B%matR
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matR(i,j) = B%matR(i,j) / A%matR(symIndexHash(i,j),1)
+                  C%matR(i,j) = A%matR(symIndexHash(i,j),1) / B%matR(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matR(i,j) = A%matR(symIndexHash(i,j),1) / B%matR(i,j)
+                  else
+                    C%matR(i,j) = (-1)*A%matR(symIndexHash(i,j),1) / B%matR(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorSymm')
               C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
-              do i = 1, A%NRow
-                  C%matR(i,1) = A%matR(symIndexHash(i,i),1) / B%matR(i,1)
-              enddo
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matR(:,1) = A%matR(:,1) / B%matR(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                C%matR(i,1) = B%matR(i,i) / A%matR(i,1)
+                C%matR(i,1) = A%matR(i,1) / B%matR(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
               do i = 1, A%NRow
-                  C%matR(i,1) = B%matR(symIndexHash(i,i),1) / A%matR(i,1)
+                  C%matR(i,1) = A%matR(i,1) / B%matR(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Real','StorDiag')
@@ -13154,39 +14984,112 @@
                   C%matC(i,j) = A%matR(i,j) / B%matC(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                C%matC(i,1) = A%matR(i,i) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matR(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matR(i,j) / (-1)*B%matC(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matR(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matR(i,j) / conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matR(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matR(i,j) / (-1)*conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matC = A%matR / B%matC
             endif
-          else if (A%storage .eq. 'StorSymm') then
+          else if (A%storage .eq. 'StorSymm'.or.A%storage .eq. 'StorHerm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matC(i,j) = B%matC(i,j) / A%matR(symIndexHash(i,j),1)
+                  C%matC(i,j) = A%matR(symIndexHash(i,j),1) / B%matC(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym'.or.A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                  C%matC(i,1) = A%matR(symIndexHash(i,i),1) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matR(symIndexHash(i,j),1) / B%matC(i,j)
+                  else
+                    C%matC(i,j) = (-1)*A%matR(symIndexHash(i,j),1) / B%matC(i,j)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matR(:,1) / B%matC(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                C%matC(i,1) = B%matC(i,i) / A%matR(i,1)
+                C%matC(i,1) = A%matR(i,1) / B%matC(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                  C%matC(i,1) = B%matC(symIndexHash(i,i),1) / A%matR(i,1)
+                  C%matC(i,1) = A%matR(i,1) / B%matC(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -13200,46 +15103,133 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               C%matC = A%matC / B%matI
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matC(i,j) / B%matI(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                C%matC(i,1) = A%matC(i,i) / B%matI(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(i,j) / B%matI(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matC(i,j) / (-1)*B%matI(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matC = A%matC / B%matI
             endif
           else if (A%storage .eq. 'StorSymm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matC(i,j) = B%matI(i,j) / A%matC(symIndexHash(i,j),1)
+                  C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matI(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matI(i,j)
+                  else
+                    C%matC(i,j) = (-1)*A%matC(symIndexHash(i,j),1) / B%matI(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) / B%matI(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matI(i,j)
+                  else
+                    C%matC(i,j) = conjg(A%matC(symIndexHash(i,j),1)) / B%matI(i,j)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matI(i,j)
+                  else
+                    C%matC(i,j) = (-1)*conjg(A%matC(symIndexHash(i,j),1)) / B%matI(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matI(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                C%matC(i,1) = B%matI(i,i) / A%matC(i,1)
+                C%matC(i,1) = A%matC(i,1) / B%matI(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                  C%matC(i,1) = B%matI(symIndexHash(i,i),1) / A%matC(i,1)
+                  C%matC(i,1) = A%matC(i,1) / B%matI(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -13251,46 +15241,133 @@
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               C%matC = A%matC / B%matR
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
                   C%matC(i,j) = A%matC(i,j) / B%matR(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                C%matC(i,1) = A%matC(i,i) / B%matR(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(i,j) / B%matR(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matC(i,j) / (-1)*B%matR(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matC = A%matC / B%matR
             endif
           else if (A%storage .eq. 'StorSymm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matC(i,j) = B%matR(i,j) / A%matC(symIndexHash(i,j),1)
+                  C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matR(i,j)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matR(i,j)
+                  else
+                    C%matC(i,j) = (-1)*A%matC(symIndexHash(i,j),1) / B%matR(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) / B%matR(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matR(i,j)
+                  else
+                    C%matC(i,j) = conjg(A%matC(symIndexHash(i,j),1)) / B%matR(i,j)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matR(i,j)
+                  else
+                    C%matC(i,j) = (-1)*conjg(A%matC(symIndexHash(i,j),1)) / B%matR(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matR(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                C%matC(i,1) = B%matR(i,i) / A%matC(i,1)
+                C%matC(i,1) = A%matC(i,1) / B%matR(i,i)
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                  C%matC(i,1) = B%matR(symIndexHash(i,i),1) / A%matC(i,1)
+                  C%matC(i,1) = A%matC(i,1) / B%matR(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -13309,39 +15386,172 @@
                   C%matC(i,j) = A%matC(i,j) / B%matC(symIndexHash(i,j),1)
                 enddo
               enddo
-            else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                C%matC(i,1) = A%matC(i,i) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matC(i,j) / (-1)*B%matC(symIndexHash(i,j),1)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matC(i,j) / conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(i,j) / B%matC(symIndexHash(i,j),1)
+                  else
+                    C%matC(i,j) = A%matC(i,j) / (-1)*conjg(B%matC(symIndexHash(i,j),1))
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              Tmp1 = B
+              call mqc_matrix_diag2full(Tmp1)
+              C%matC = A%matC / B%matC
             endif
           else if (A%storage .eq. 'StorSymm') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
                 do j = 1, A%NCol
-                  C%matC(i,j) = B%matC(i,j) / A%matC(symIndexHash(i,j),1)
+                  C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matC(i,j)
                 enddo
               enddo
             else if (B%storage .eq. 'StorSymm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
               C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
             else if (B%storage .eq. 'StorDiag') then
-              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            endif
+          else if (A%storage .eq. 'StorAsym') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
               do i = 1, A%NRow
-                  C%matC(i,1) = A%matC(symIndexHash(i,i),1) / B%matC(i,1)
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matC(i,j)
+                  else
+                    C%matC(i,j) = (-1)*A%matC(symIndexHash(i,j),1) / B%matC(i,j)
+                  endIf
+                enddo
               enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            endif
+          else if (A%storage .eq. 'StorHerm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matC(i,j)
+                  else
+                    C%matC(i,j) = conjg(A%matC(symIndexHash(i,j),1)) / B%matC(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorSymm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            endif
+          else if (A%storage .eq. 'StorAhrm') then
+            if (B%storage .eq. 'StorFull') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorFull')
+              do i = 1, A%NRow
+                do j = 1, A%NCol
+                  if(i.ge.j) then
+                    C%matC(i,j) = A%matC(symIndexHash(i,j),1) / B%matC(i,j)
+                  else
+                    C%matC(i,j) = (-1)*conjg(A%matC(symIndexHash(i,j),1)) / B%matC(i,j)
+                  endIf
+                enddo
+              enddo
+            else if (B%storage .eq. 'StorSymm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAsym') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorHerm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAsym')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorAhrm') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorHerm')
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
+            else if (B%storage .eq. 'StorDiag') then
+              call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorAhrm')
+              Tmp1 = B
+              call mqc_matrix_diag2symm(Tmp1)
+              C%matC(:,1) = A%matC(:,1) / B%matC(:,1)
             endif
           else if (A%storage .eq. 'StorDiag') then
             if (B%storage .eq. 'StorFull') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                C%matC(i,1) = B%matC(i,i) / A%matR(i,1)
+                C%matC(i,1) = A%matR(i,1) / B%matC(i,i) 
               enddo
-            else if (B%storage .eq. 'StorSymm') then
+            else if (B%storage .eq. 'StorSymm'.or.B%storage .eq. 'StorHerm'.or.&
+              B%storage .eq. 'StorAsym'.or.B%storage .eq. 'StorAhrm') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
               do i = 1, A%NRow
-                  C%matC(i,1) = B%matC(symIndexHash(i,i),1) / A%matR(i,1)
+                  C%matC(i,1) = A%matR(i,1) /  B%matC(symIndexHash(i,i),1)
               enddo
             else if (B%storage .eq. 'StorDiag') then
               call mqc_allocate_matrix(A%NRow,A%NCol,C,'Complex','StorDiag')
@@ -13369,10 +15579,11 @@
 !>    matrix. Note that this function differs from haveSymmetric subroutine which
 !>    tests how a matrix is packed. The following options are available: 
 !>
-!>    1. Option = 'symmetric' tests for a symmetric matrix (default).
-!>    2. Option = 'antisymmetric' tests for an antisymmetric matrix.
-!>    3. Option = 'hermitian' tests for a hermitian matrix.
-!>    4. Option = 'antihermitian' tests for an antihermitian matrix.
+!>    1. Option = 'any' tests all matrix symmetries (default).
+!>    2. Option = 'symmetric' tests for a symmetric matrix.
+!>    3. Option = 'antisymmetric' tests for an antisymmetric matrix.
+!>    4. Option = 'hermitian' tests for a hermitian matrix.
+!>    5. Option = 'antihermitian' tests for an antihermitian matrix.
 !>
 !>    \endverbatim
 !
@@ -13387,6 +15598,7 @@
 !>    \param[in] Option
 !>    \verbatim
 !>        Option is Character(len=*),Optional
+!>        = 'any':           test all matrix symmetries
 !>        = 'symmetric':     symmetric matrix test
 !>        = 'antisymmetric': antisymmetric matrix test
 !>        = 'hermitian':     hermitian matrix test
@@ -13398,7 +15610,7 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
+      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
@@ -13411,7 +15623,7 @@
       If(Present(Option)) then
         call string_change_case(Option,'l',myOption)
       else
-        myOption = 'symmetric'
+        myOption = 'any'
       endIf
 
       Symmetric = .True.
@@ -13423,6 +15635,71 @@
         Else
           If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
             Return
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I-1
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I-1
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -13442,6 +15719,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -13454,10 +15734,135 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm') then
-            Symmetric = .False.
-          ElseIf(Matrix%Storage.eq.'StorDiag') then
-            Symmetric = .True.
+          If(Matrix%Storage.eq.'StorDiag') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(I,1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(I,1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(I,1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(I,1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(Matrix%MatR(symIndexHash(I,I),1).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(Matrix%MatR(symIndexHash(I,I),1).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
+                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -13477,6 +15882,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -13489,12 +15897,26 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
+          If(Matrix%Storage.eq.'StorDiag') then
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
-              Symmetric = .True.
+              return
             ElseIf(Matrix%Data_Type.eq.'Complex') then
               Do I = 1, MQC_Matrix_Rows(Matrix)
-                Do J = 1, I-1
+                If(abs(Aimag(Matrix%MatC(I,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                Do J = 1, I
                   K = symIndexHash(I,J)
                   If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
                     Symmetric = .False.
@@ -13506,6 +15928,88 @@
               Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
                    'Matrix%Data_Type', Matrix%Data_Type )
             EndIf
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I-1
+                  K = symIndexHash(I,J)
+                  If(Matrix%MatI(K,1).ne.0) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I-1
+                  K = symIndexHash(I,J)
+                  If(abs(Matrix%MatR(K,1)).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
+              return
+            ElseIf(Matrix%Data_Type.eq.'Complex') then
+              Do I = 1, MQC_Matrix_Rows(Matrix)
+                K = symIndexHash(I,I)
+                If(abs(Aimag(Matrix%MatC(K,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  return
+                EndIf
+              EndDo
+            Else
+              Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                   'Matrix%Data_Type', Matrix%Data_Type )
+            EndIf
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I-1
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              elseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I-1
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              elseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -13525,6 +16029,9 @@
                     Symmetric = .False.
                     Return
                   EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
                 EndIf
               EndDo
             EndDo
@@ -13537,8 +16044,137 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
-          If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorDiag') then
-            Symmetric = .False.
+          If(Matrix%Storage.eq.'StorDiag') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(I,1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(I,1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(I,1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorSymm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              Do J = 1, I
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Real') then
+                  If(abs(Matrix%MatR(symIndexHash(I,J),1)).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                elseIf(Matrix%Data_Type.eq.'Complex') then
+                  If(abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                       'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAsym') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              elseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              elseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorHerm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                Do J = 1, I
+                  K = symIndexHash(I,J)
+                  If(Matrix%MatI(K,1).ne.0) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                Do J = 1, I
+                  K = symIndexHash(I,J)
+                  If(abs(Matrix%MatR(K,1)).gt.Thresh) then
+                    Symmetric = .False.
+                    return
+                  EndIf
+                EndDo
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+                Do J = 1, I-1
+                  If((abs(Real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) .or. &
+                    (abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh)) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                EndDo
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
+          ElseIf(Matrix%Storage.eq.'StorAhrm') then
+            Do I = 1, MQC_Matrix_Rows(Matrix)
+              If(Matrix%Data_Type.eq.'Integer') then
+                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Real') then
+                If(abs(Matrix%MatR(symIndexHash(I,I),1)).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              ElseIf(Matrix%Data_Type.eq.'Complex') then
+                If(abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) then
+                  Symmetric = .False.
+                  Return
+                EndIf
+              Else
+                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                     'Matrix%Data_Type', Matrix%Data_Type )
+              EndIf
+            EndDo
           ElseIf(Matrix%Storage.eq.'StorFull') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               Do J = 1, I-1
@@ -13568,6 +16204,16 @@
 !            Call MQC_Error('Matrix type not identified in MQC_Matrix_Test_Symmetric')
           EndIf
         EndIf
+      Case ('any')
+        if(mqc_matrix_test_symmetric(matrix,'symmetric').or. &
+          mqc_matrix_test_symmetric(matrix,'antisymmetric').or. &
+          mqc_matrix_test_symmetric(matrix,'hermitian').or. &
+          mqc_matrix_test_symmetric(matrix,'antihermitian')) then
+          return
+        else
+          Symmetric = .False.
+          return
+        endIf
       Case Default
         Call MQC_Error_A('Invalid option sent to mqc_matrix_test_symmetric', 6, &
              'myOption', myOption )
@@ -13617,7 +16263,8 @@
       Diagonal = .True.
       If(Matrix%Storage.eq.'StorDiag') then
         Return
-      ElseIf(Matrix%Storage.eq.'StorSymm') then
+      ElseIf(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or.&
+          Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm') then
         Do I = 1, MQC_Matrix_Rows(Matrix)
           II = (I*(I-1))/2
           Do J = 1, I-1
@@ -13627,12 +16274,13 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(Matrix%MatR(II+J,1).ne.0.0) then
+              If(abs(Matrix%MatR(II+J,1)).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then 
-              If(Real(Matrix%MatC(II+J,1)).ne.0.0.or.Aimag(Matrix%MatC(II+J,1)).ne.0.0) then
+              If(abs(Real(Matrix%MatC(II+J,1))).gt.Thresh.or. &
+                abs(Aimag(Matrix%MatC(II+J,1))).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -13649,12 +16297,13 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(Matrix%MatR(I,J).ne.0.0) then
+              If(abs(Matrix%MatR(I,J)).ne.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then 
-              If(Real(Matrix%MatC(I,J)).ne.0.0.or.Aimag(Matrix%MatC(I,J)).ne.0.0) then
+              If(abs(Real(Matrix%MatC(I,J))).gt.Thresh.or.&
+                abs(Aimag(Matrix%MatC(I,J))).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -13688,6 +16337,9 @@
 !>    3. Data_Type = 'Complex' declares the MQC_Matrix variable to be of complex type.
 !>    4. Storage = 'StorFull' declares the MQC_Matrix variable to be unpacked.
 !>    5. Storage = 'StorSymm' declares the MQC_Matrix variable to be symmetric packed.
+!>    5. Storage = 'StorAsym' declares the MQC_Matrix variable to be antisymmetric packed.
+!>    5. Storage = 'StorHerm' declares the MQC_Matrix variable to be hermitian packed.
+!>    5. Storage = 'StorAhrm' declares the MQC_Matrix variable to be antihermitian packed.
 !>    6. Storage = 'StorDiag' declares the MQC_Matrix variable to be diagonal packed.
 !>
 !>    \endverbatim
@@ -13725,6 +16377,9 @@
 !>        Storage is Character(Len=*)
 !>        = 'StorFull': the MQC_Matrix is unpacked
 !>        = 'StorSymm': the MQC_Matrix is symmetric packed
+!>        = 'StorAsym': the MQC_Matrix is antisymmetric packed
+!>        = 'StorHerm': the MQC_Matrix is hermitian packed
+!>        = 'StorAhrm': the MQC_Matrix is antihermitian packed
 !>        = 'StorDiag': the MQC_Matrix is diagonal packed.
 !>    \endverbatim
 !
@@ -13742,7 +16397,10 @@
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Character(Len=*),Intent(In)::Data_Type,Storage
       Integer(kind=int64)::MCur,NCur
+      character(len=64)::mystorage
 !
+      call string_change_case(storage,'l',myStorage)
+
       If (M.lt.0 .or. N.lt.0) then
         Call MQC_Error_I('Dimensions less than zero in MQC_Allocate_Matrix', 6, &
              'M', M, &
@@ -13751,22 +16409,39 @@
 
       Call MQC_Deallocate_Matrix(Matrix)
 
-      If(Storage.eq.'StorFull' .or. Storage.eq.'Full' .or. Storage.eq.'full' .or. Storage.eq.'storfull') then
+      If(myStorage.eq.'full' .or. myStorage.eq.'storfull') then
         Matrix%Storage = 'StorFull'
         MCur = M
         NCur = N
-      ElseIf(Storage.eq.'StorSymm' .or. Storage.eq.'Symm' .or. Storage.eq.'symm' .or. Storage.eq.'storsymm') then
-         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower triangular in MQC_Allocate_Matrix', 6, &
-              'M', M, &
-              'N', N )
+      ElseIf(myStorage.eq.'symm' .or. myStorage.eq.'storsymm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
         Matrix%Storage = 'StorSymm'
         MCur = (M*(M+1))/2
         NCur = 1
-      ElseIf(Storage.eq.'StorDiag' .or. Storage.eq.'Diag' .or. Storage.eq.'diag' .or. Storage.eq.'stordiag') then
+      ElseIf(myStorage.eq.'asym' .or. myStorage.eq.'storasym') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorAsym'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'herm' .or. myStorage.eq.'storherm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorHerm'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'ahrm' .or. myStorage.eq.'storahrm') then
+         If(M.ne.N) Call MQC_Error_I('Attempting to assign non-square matrix to lower &
+           & triangular in MQC_Allocate_Matrix', 6, 'M', M, 'N', N )
+        Matrix%Storage = 'StorAhrm'
+        MCur = (M*(M+1))/2
+        NCur = 1
+      ElseIf(myStorage.eq.'diag' .or. myStorage.eq.'stordiag') then
         Matrix%Storage = 'StorDiag'
         MCur = Min(M,N)
         NCur = 1
-      ElseIf(Storage.eq.'StorTriD' .or. Storage.eq.'TriD' .or. Storage.eq.'trid' .or. Storage.eq.'stortrid') then
+      ElseIf(myStorage.eq.'trid' .or. myStorage.eq.'stortrid') then
         Matrix%Storage = 'StorTriD'
         If(M.ne.N) then
           MCur = 3*Min(M,N)-1
@@ -14099,7 +16774,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -14184,7 +16861,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -14271,7 +16950,9 @@
         Else
           ColsMatIn = 3*RowsMatIn-2
         EndIf ! Xianghai: Is this the right dimensions for triD?
-      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorDiag') then
+      Elseif (MatrixIn%Storage.eq.'StorSymm' .or. MatrixIn%Storage.eq.'StorAsym' .or. &
+          MatrixIn%Storage.eq.'StorHerm'.or. MatrixIn%Storage.eq.'StorAhrm' .or. &
+          MatrixIn%Storage.eq.'StorDiag') then
         ColsMatIn = 1
       Else
         Call MQC_Error_A('MatrixIn storage type unkown in MQC_Matrix2Array', 6, &
@@ -14439,6 +17120,7 @@
  1002 Format(3x,'This is a diagonal matrix, so only diagonal elements are printed')
  1003 Format(10(17x,I7))
  1020 Format( " " )
+ 1030 Format(3x,A)
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
@@ -14480,7 +17162,12 @@
         EndDo
 
 !     Printing for Symm storage
-      ElseIf(Matrix%Storage.eq.'StorSymm') then
+      ElseIf(Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorAsym' .or. &
+          Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then
+        If(Matrix%Storage.eq.'StorSymm') write(IOut,1030) 'The matrix being printed is symmetric'
+        If(Matrix%Storage.eq.'StorAsym') write(IOut,1030) 'The matrix being printed is antisymmetric'
+        If(Matrix%Storage.eq.'StorHerm') write(IOut,1030) 'The matrix being printed is hermitian'
+        If(Matrix%Storage.eq.'StorAhrm') write(IOut,1030) 'The matrix being printed is anithermitian'
         Do IFirst = 1,NCols,ColWidth
           ILast = Min(IFirst+ColWidth-1,NCols)
           If(Matrix%Data_Type.eq.'Complex') then
@@ -14933,8 +17620,10 @@
 
       if(my_axis.eq.1) then
         MQC_Matrix_Size = Matrix%NRow
-      elseIf(my_axis.eq.1) then
+      elseIf(my_axis.eq.2) then
         MQC_Matrix_Size = Matrix%NCol
+      else
+        call mqc_error_i('Requested axis not allowed in MQC_Matrix_Size',6,'my_axis',my_axis)
       endIf
 !
       Return
@@ -15144,7 +17833,8 @@
       Logical::MQC_Matrix_HaveSymmetric 
       Type(MQC_Matrix),Intent(In)::Matrix
 !
-      If(Matrix%Storage.eq.'StorSymm') then
+      If(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym' .or. &
+        Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then
         MQC_Matrix_HaveSymmetric = .True. 
       Else
         MQC_Matrix_HaveSymmetric = .False.
@@ -15233,14 +17923,21 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Transpose
       Class(MQC_Matrix),Intent(In)::Matrix
+      Integer::I
 !
       If(MQC_Matrix_HaveReal(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Transpose, &
           'Real',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Transpose%MatR = Transpose(Matrix%MatR)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatR = Matrix%MatR
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatR = (-1)*Matrix%MatR
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
+            MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -15250,8 +17947,14 @@
           'Integer',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Transpose%MatI = Transpose(Matrix%MatI)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatI = Matrix%MatI
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatI = (-1)*Matrix%MatI
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
+            MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -15263,6 +17966,21 @@
           MQC_Matrix_Transpose%MatC = Transpose(Matrix%MatC)
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Transpose%MatC = Matrix%MatC
+        ElseIf (Matrix%Storage.eq.'StorAsym') then
+          MQC_Matrix_Transpose%MatC = (-1)*Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorHerm') then
+          MQC_Matrix_Transpose%MatC = conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Transpose%MatC = (-1)*conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
+            MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
         Else
           Call MQC_Error_A('transposing a triD matrix is not supported yet', 6, &
           'Matrix%Storage', Matrix%Storage )
@@ -15307,14 +18025,22 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Conjugate_Transpose
       Class(MQC_Matrix),Intent(In)::Matrix
+      Integer(kind=int64)::I
 !
       If(MQC_Matrix_HaveReal(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Conjugate_Transpose, &
           'Real',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Conjugate_Transpose%MatR = Transpose(Matrix%MatR)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatR = Matrix%MatR
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatR = (-1)*Matrix%MatR
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
+            MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -15324,8 +18050,15 @@
           'Integer',Matrix%Storage)
         If (Matrix%Storage.eq.'StorFull') then
           MQC_Matrix_Conjugate_Transpose%MatI = Transpose(Matrix%MatI)
-        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
+        ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorHerm' .or. &
+            Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatI = Matrix%MatI
+        ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatI = (-1)*Matrix%MatI
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
+            MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -15337,6 +18070,24 @@
           MQC_Matrix_Conjugate_Transpose%MatC = Transpose(conjg(Matrix%MatC))
         ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorDiag') then
           MQC_Matrix_Conjugate_Transpose%MatC = conjg(Matrix%MatC)
+        ElseIf (Matrix%Storage.eq.'StorAsym') then
+          MQC_Matrix_Conjugate_Transpose%MatC = (-1)*conjg(Matrix%MatC)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorHerm') then
+          MQC_Matrix_Conjugate_Transpose%MatC = Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              conjg(MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1))
+          EndDo
+        ElseIf (Matrix%Storage.eq.'StorAhrm') then
+          MQC_Matrix_Conjugate_Transpose%MatC = (-1)*Matrix%MatC
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
+            MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
+              (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
+          EndDo
         Else
           Call MQC_Error_A('Unrecognise matrix storage type in MQC_Matrix_Conjugate_Transpose', 6, &
                'Matrix%Storage', Matrix%Storage )
@@ -15349,15 +18100,22 @@
 !
 !     PROCEDURE MQC_Matrix_Symmetrize
 !
-!>    \brief <b> MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix</b>
+!>    \brief <b> MQC_Matrix_Symmetrize is a function that returns the symmetric/
+!>    antisymmetric/hermitian/antihermitian component of a MQC matrix</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Matrix_Symmetrize is a function that symmetrizes a MQC matrix. 
-!>      TODO: options to antisymmetrize, hermitianize and antihermitianize. 
+!>    MQC_Matrix_Symmetrize is a function that returns the symmetric/antisymmetric/
+!>    hermitian/antihermitian component of a MQC matrix. The following optional 
+!>    arguments are available:
+!>
+!>    1. Label = 'symmetrize' returns the symmetric component (default).
+!>    2. Label = 'antisymmetrize' returns the antisymmetric component.
+!>    3. Label = 'hermitianize' returns the hermitian component.
+!>    4. Label = 'anitihermitianize' returns the antihermitian component.
 !>
 !>    \endverbatim
 !
@@ -15368,49 +18126,57 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to be symmetrized.
 !>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),optional
+!>        = 'symmetrize':        returns the symmetric component (default).
+!>        = 'antisymmetrize':    returns the antisymmetric component.
+!>        = 'hermitianize':      returns the hermitian component.
+!>        = 'anitihermitianize': returns the antihermitian component.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function MQC_Matrix_Symmetrize(Matrix)
+      Function MQC_Matrix_Symmetrize(Matrix,Label)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Symmetrize
       Type(MQC_Matrix),Intent(In)::Matrix
+      Character(len=*),optional::label
       Integer(kind=int64)::I,J
       Real(kind=real64),Parameter::Pt5=0.5
+      Character(len=64)::mylabel
 !
+      if(present(label)) then
+        call string_change_case(label,'L',myLabel)
+      else
+        myLabel = 'symmetrize'
+      endIf
+
       If(.not.Matrix%Storage.eq.'StorFull') Return
       If(Matrix%NCol.ne.Matrix%NRow) Call MQC_Error_I('Only square matricies can be symmetrixed &
      &  in MQC_Matrix_Symmetrize', 6, &
      'Matrix%NCol', Matrix%NCol, &
      'Matrix%NRow', Matrix%NRow )
-      Call MQC_Set_Matrix2Matrix(MQC_Matrix_Symmetrize,Matrix)
-      If(Matrix%Data_Type.eq.'Real') then
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatR(I,J) = Pt5*(Matrix%MatR(I,J)+Matrix%MatR(J,I))
-          EndDo
-        EndDo
-      EndIf
-      If(Matrix%Data_Type.eq.'Integer') then
-        Call MQC_Matrix_Copy_Int2Real(MQC_Matrix_Symmetrize)
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatR(I,J) = Pt5*(Matrix%MatI(I,J)+Matrix%MatI(J,I))
-          EndDo
-        EndDo
-      EndIf
-      If(Matrix%Data_Type.eq.'Complex') then
-        Do I = 1, Matrix%NCol
-          Do J = 1, Matrix%NRow
-            MQC_Matrix_Symmetrize%MatC(I,J) = Pt5*(Matrix%MatC(I,J)+Matrix%MatC(J,I))
-          EndDo
-        EndDo
-      EndIf
+     MQC_Matrix_Symmetrize = Matrix
+     select case(mylabel)
+     case ('symmetrize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix+transpose(Matrix))
+     case ('antisymmetrize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix-transpose(Matrix))
+     case ('hermitianize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix+dagger(Matrix))
+     case ('antihermitianize')
+       MQC_Matrix_Symmetrize = Pt5*(Matrix-dagger(Matrix))
+     case default
+       call mqc_error_a('Unrecognized symmetrization type label in in MQC_Matrix_Symmetrize', &
+         6,'mylabel',mylabel)
+     end select
 !
       Return
       End Function MQC_Matrix_Symmetrize
@@ -15453,23 +18219,39 @@
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,J,II
+      Character(len=64)::label
 !
       If(.not.Matrix%Storage.eq.'StorFull') Call MQC_Error_A('Input matrix must be full &
      &  packed in MQC_Matrix_Full2Symm', 6, &
      'Matrix%Storage', Matrix%Storage )
-      If(.not.MQC_Matrix_Test_Symmetric(Matrix).and. &
-        .not.MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric').and. &
-        .not.MQC_Matrix_Test_Symmetric(Matrix,'hermitian')) &
+      If(MQC_Matrix_Test_Symmetric(Matrix,'symmetric')) then
+        label = 'symmetric'
+      ElseIf(MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')) then
+        label = 'antisymmetric'
+      ElseIf(MQC_Matrix_Test_Symmetric(Matrix,'hermitian')) then
+        label = 'hermitian'
+      ElseIf(MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')) then
+        label = 'antihermitian'
+      Else
         Call MQC_Error_L('Input matrix must be symmetric/antisymmetric/hermitian in MQC_Matrix_Full2Symm', 6, &
-        'MQC_Matrix_Test_Symmetric(Matrix)', MQC_Matrix_Test_Symmetric(Matrix), &
-        "MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')", MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric'), &
-        "MQC_Matrix_Test_Symmetric(Matrix,'hermitian')", MQC_Matrix_Test_Symmetric(Matrix,'hermitian') )
+          'MQC_Matrix_Test_Symmetric(Matrix)', MQC_Matrix_Test_Symmetric(Matrix), &
+          "MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')", MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric'), &
+          "MQC_Matrix_Test_Symmetric(Matrix,'hermitian')", MQC_Matrix_Test_Symmetric(Matrix,'hermitian'), &
+          "MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')", MQC_Matrix_Test_Symmetric(Matrix,'antihermitian') )
+      EndIf
       If(MQC_Matrix_HaveReal(Matrix)) then
         Allocate(Temp(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
         Temp = Matrix%MatR
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Real', &
-          'StorSymm')
+        If(label.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Real','StorSymm')
+        ElseIf(label.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Real','StorAsym')
+        ElseIf(label.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Real','StorHerm')
+        ElseIf(label.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Real','StorAhrm')
+        EndIf
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
           Do J = 1, I
@@ -15481,8 +18263,15 @@
         Allocate(Temp(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
         Temp = Matrix%MatI
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Integer', &
-          'StorSymm')
+        If(label.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Integer','StorSymm')
+        ElseIf(label.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Integer','StorAsym')
+        ElseIf(label.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Integer','StorHerm')
+        ElseIf(label.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,2),Matrix,'Integer','StorAhrm')
+        EndIf
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
           Do J = 1, I
@@ -15494,8 +18283,15 @@
         Allocate(TempC(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
         TempC = Matrix%MatC
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex', &
-          'StorSymm')
+        If(label.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorSymm')
+        ElseIf(label.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorAsym')
+        ElseIf(label.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorHerm')
+        ElseIf(label.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,2),Matrix,'Complex','StorAhrm')
+        EndIf
         Do I = 1, Size(TempC,1)
           II = (I*(I-1))/2
           Do J = 1, I
@@ -15520,14 +18316,7 @@
 !>    \verbatim
 !>       
 !>    MQC_Matrix_Symm2Full is a subroutine that converts a symmetry-packed MQC matrix 
-!>    to unpacked. The following options are available:
-!>      Option = 'symmetric' unpacks as if matrix is symmetric.
-!>      Option = 'antisymmetric' unpacks as if matrix is antisymmetric.
-!>      Option = 'hermitian' unpacks as if matrix is hermitian.
-!>      Option = 'antihermitian' unpacks as if matrix is antihermitian.
-!>
-!>      TODO: when different symm storage flags implemented, use these rather than an
-!>            option
+!>    to unpacked.
 !>
 !>    \endverbatim
 !
@@ -15538,46 +18327,29 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to unpack.
 !>    \endverbatim
-!>
-!>    \param[in] Option
-!>    \verbatim
-!>        Option is Character(len=*),Optional
-!>        = 'symmetric':      Unpack as if matrix is symmetric
-!>        = 'antisymmetric':  Unpack as if matrix is antisymmetric
-!>        = 'hermitian':      Unpack as if matrix is hermitian
-!>        = 'antihermitian':  Unpack as if matrix is antihermitian
-!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2016, 2018
 !
-      Subroutine MQC_Matrix_Symm2Full(Matrix,Option)
+      Subroutine MQC_Matrix_Symm2Full(Matrix)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
-      Character(len=*),Optional,Intent(In)::Option
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,J,II,N,NTT
-      Character(len=64)::myOption
+      Character(len=10)::storage
 !
-      If(Present(Option)) then
-        call string_change_case(Option,'l',myOption)
-      else
-        myOption = 'symmetric'
-      endIf
-      If(myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and.myOption.ne.'hermitian'.and. &
-        myOption.ne.'antihermitian') Call MQC_Error_A('MQC_Matrix_Full2Symm has unrecognised &
-     &  transformation option',6,'myOption',myOption)
-!
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
-     'Matrix%Storage', Matrix%Storage )
+      If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
+        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
+        Call MQC_Error_A('Input matrix must be lower-triangular packed &
+        & in MQC_Matrix_Symm2Full', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
+      storage = Matrix%Storage
       If(Matrix%Data_Type.eq.'Real') then
         Allocate(Temp(NTT,1))
         Temp = Matrix%MatR
@@ -15586,10 +18358,13 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            If(storage.eq.'StorAsym'.or.storage.eq.'StorAhrm') then
               Matrix%MatR(J,I) = -Temp(II+J,1)
-            Else
+            ElseIf(storage.eq.'StorSymm'.or.storage.eq.'StorHerm') then
               Matrix%MatR(J,I) = Temp(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatR(I,J) = Temp(II+J,1)
           EndDo
@@ -15603,10 +18378,13 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            If(storage.eq.'StorAsym'.or.storage.eq.'StorAhrm') then
               Matrix%MatI(J,I) = -Temp(II+J,1)
-            Else
+            ElseIf(storage.eq.'StorSymm'.or.storage.eq.'StorHerm') then
               Matrix%MatI(J,I) = Temp(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatI(I,J) = Temp(II+J,1)
           EndDo
@@ -15620,14 +18398,17 @@
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            If(myOption.eq.'antisymmetric') then
+            If(storage.eq.'StorAsym') then
               Matrix%MatC(J,I) = -TempC(II+J,1)
-            ElseIf(myOption.eq.'antihermitian') then
-              Matrix%MatC(J,I) = -conjg(TempC(II+J,1))
-            ElseIf(myOption.eq.'hermitian') then
+            ElseIf(storage.eq.'StorAhrm') then
+              Matrix%MatC(J,I) = -(1)*conjg(TempC(II+J,1))
+            ElseIf(storage.eq.'StorHerm') then
               Matrix%MatC(J,I) = conjg(TempC(II+J,1))
-            Else
+            ElseIf(storage.eq.'StorSymm') then
               Matrix%MatC(J,I) = TempC(II+J,1)
+            Else
+              Call MQC_Error_A('Unrecognized initial matrix storage type in &
+                & MQC_Matrix_Symm2Full',6,'storage',storage)
             EndIf
             Matrix%MatC(I,J) = TempC(II+J,1)
           EndDo
@@ -15763,6 +18544,9 @@
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
      &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
      'Matrix%Storage', Matrix%Storage )
+      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
+     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
+      'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       N = Min(MQC_Matrix_Columns(Matrix),MQC_Matrix_Rows(Matrix))
       Columns = MQC_Matrix_Columns(Matrix)
       Rows = MQC_Matrix_Rows(Matrix)
@@ -15837,12 +18621,10 @@
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,II,N,NTT
 !
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Diag', 6, &
-     'Matrix%Storage', Matrix%Storage )
-      If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
-     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
-     'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
+      If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
+        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
+        Call MQC_Error_A('Input matrix must be lower-triangular packed &
+        & in MQC_Matrix_Symm2Diag', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
       If(Matrix%Data_Type.eq.'Real') then
@@ -15892,7 +18674,14 @@
 !>    \verbatim
 !>       
 !>    MQC_Matrix_Diag2Symm is a subroutine that converts a diagonal-packed MQC matrix 
-!>    to symmetry-packed.
+!>    to symmetry-packed.!>     The following options are 
+!>    available: 
+!>
+!>    1. Option = 'symmetric' output matrix is labelled symmetric (default).
+!>    2. Option = 'antisymmetric' output matrix is labelled antisymmetric.
+!>    3. Option = 'hermitian' output matrix is labelled hermitian.
+!>    4. Option = 'antihermitian' output matrix is labelled antihermitian.
+!>
 !>      TODO: make tests for diagonal structure more efficient.
 !>
 !>    \endverbatim
@@ -15904,24 +18693,42 @@
 !>        Matrix is Type(MQC_Matrix)
 !>        The MQC matrix to be unpacked.
 !>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':     output matrix is labelled symmetric (default)
+!>        = 'antisymmetric': output matrix is labelled antisymmetric
+!>        = 'hermitian':     output matrix is labelled hermitian
+!>        = 'antihermitian': output matrix is labelled antihermitian.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Diag2Symm(Matrix)
+      Subroutine MQC_Matrix_Diag2Symm(Matrix,Option)
 !
 !     Variable Declarations.
       Implicit None
       Type(MQC_Matrix),Intent(InOut)::Matrix
+      Character(len=*),Optional,Intent(In)::Option
       Real(kind=real64),Dimension(:,:),Allocatable::Temp
       Complex(Kind=real64),Dimension(:,:),Allocatable::TempC
       Integer(kind=int64)::I,II
+      Character(len=64)::myOption
 !
+      If(Present(Option)) then
+        call string_change_case(Option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+      If(myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and.myOption.ne.'hermitian'.and.&
+        myOption.ne.'antihermitian') call mqc_error_a('Unrecognized option in &
+        & MQC_Matrix_Scalar_Put',6,'myOption',myOption)
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Symm', 6, &
-     'Matrix%Storage', Matrix%Storage)
+     &  diagonal packed in MQC_Matrix_Diag2Symm', 6, 'Matrix%Storage', Matrix%Storage)
       If(MQC_Matrix_Columns(Matrix).ne.MQC_Matrix_Rows(Matrix)) &
         Call MQC_Error_I('Input matrix must be square in MQC_Matrix_Diag2Symm', 6, &
         'MQC_Matrix_Columns(Matrix)', MQC_Matrix_Columns(Matrix), &
@@ -15930,8 +18737,19 @@
         Allocate(Temp(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         Temp = Matrix%MatI
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Integer', &
+            'StorAhrm')
+        endIf
         Matrix%MatI = 0
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
@@ -15942,8 +18760,19 @@
         Allocate(Temp(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         Temp = Matrix%MatR
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Real', &
+            'StorAhrm')
+        endIf
         Matrix%MatR = 0.0d0
         Do I = 1, Size(Temp,1)
           II = (I*(I-1))/2
@@ -15954,8 +18783,19 @@
         Allocate(TempC(Min(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)),1))
         TempC = Matrix%MatC
         Call MQC_Deallocate_Matrix(Matrix)
-        Call MQC_Allocate_Matrix(Size(TempC,1),Size(TempC,1),Matrix,'Complex', &
-          'StorSymm')
+        If(myOption.eq.'symmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorSymm')
+        elseIf(myOption.eq.'antisymmetric') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorAsym')
+        elseIf(myOption.eq.'hermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorHerm')
+        elseIf(myOption.eq.'antihermitian') then
+          Call MQC_Allocate_Matrix(Size(Temp,1),Size(Temp,1),Matrix,'Complex', &
+            'StorAhrm')
+        endIf
         Matrix%MatC = Cmplx(0.0,0.0)
         Do I = 1, Size(TempC,1)
           II = (I*(I-1))/2
@@ -16014,7 +18854,11 @@
           II = (I*(I-1))/2
           Do J = 1,I
             Temp%MatR(I,J) = Matrix%MatR(II+J,1)
-            Temp%MatR(J,I) = Matrix%MatR(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorHerm') then
+              Temp%MatR(J,I) = Matrix%MatR(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatR(J,I) = (-1)*Matrix%MatR(II+J,1)
+            endIf
           EndDo
         EndDo
       ElseIf(Matrix%Data_Type.eq.'Integer') then
@@ -16022,15 +18866,27 @@
           II = (I*(I-1))/2
           Do J = 1,I
             Temp%MatI(I,J) = Matrix%MatI(II+J,1)
-            Temp%MatI(J,I) = Matrix%MatI(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorHerm') then
+              Temp%MatI(J,I) = Matrix%MatI(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAsym'.or.Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatI(J,I) = (-1)*Matrix%MatI(II+J,1)
+            endIf
           EndDo
         EndDo
       ElseIf(Matrix%Data_Type.eq.'Complex') then
         Do I = 1, N
           II = (I*(I-1))/2
           Do J = 1,I
-            Temp%MatI(I,J) = Matrix%MatC(II+J,1)
-            Temp%MatI(J,I) = Matrix%MatC(II+J,1)
+            Temp%MatC(I,J) = Matrix%MatC(II+J,1)
+            if(Matrix%Storage.eq.'StorSymm') then
+              Temp%MatC(J,I) = Matrix%MatC(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorHerm') then
+              Temp%MatC(J,I) = conjg(Matrix%MatC(II+J,1))
+            elseIf(Matrix%Storage.eq.'StorAsym') then
+              Temp%MatC(J,I) = (-1)*Matrix%MatC(II+J,1)
+            elseIf(Matrix%Storage.eq.'StorAhrm') then
+              Temp%MatC(J,I) = (-1)*conjg(Matrix%MatC(II+J,1))
+            endIf
           EndDo
         EndDo
       EndIf
@@ -16050,7 +18906,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Integer is a subroutine that converts a symmetric-packed 
-!>    intrinsic integer matrix to a rank-2 integer array.
+!>    intrinsic integer matrix to a rank-2 integer array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -16075,28 +18936,49 @@
 !>        I_Sq is Integer(kind=int64),Dimension(N,N)
 !>        The upacked intrinsic integer matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq)
+      Subroutine Matrix_Symm2Sq_Integer(N,I_Symm,I_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Integer(kind=int64),Dimension(:),Intent(In)::I_Symm
       Integer(kind=int64),Dimension(N,N),Intent(Out)::I_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
+      If(present(option)) then
+        call string_change_case(option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+
       k = N*(N+1)/2
       Do j = N,1,-1
         Do i = j,1,-1
           I_Sq(i,j) = I_Symm(k)
-          I_Sq(j,i) = I_Symm(k)
+          if(myOption.eq.'symmetric'.or.myOption.eq.'hermitian') then
+            I_Sq(j,i) = I_Symm(k)
+          elseIf(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            I_Sq(j,i) = (-1)*I_Symm(k)
+          endIf
           k = k-1
         EndDo
       EndDo
@@ -16115,7 +18997,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Real is a subroutine that converts a symmetric-packed 
-!>    intrinsic real matrix to a rank-2 real array.
+!>    intrinsic real matrix to a rank-2 real array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -16140,28 +19027,49 @@
 !>        A_Sq is Real(kind=real64),Dimension(N,N)
 !>        The upacked intrinsic real matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author H. P. Hratchian
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq)
+      Subroutine Matrix_Symm2Sq_Real(N,A_Symm,A_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Real(kind=real64),Dimension(:),Intent(In)::A_Symm
       Real(kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
+      If(present(option)) then
+        call string_change_case(option,'l',myOption)
+      else
+        myOption = 'symmetric'
+      endIf
+
       k = N*(N+1)/2
       Do j = N,1,-1
         Do i = j,1,-1
           A_Sq(i,j) = A_Symm(k)
-          A_Sq(j,i) = A_Symm(k)
+          if(myOption.eq.'symmetric'.or.myOption.eq.'hermitian') then
+            A_Sq(j,i) = A_Symm(k)
+          elseIf(myOption.eq.'antisymmetric'.or.myOption.eq.'antihermitian') then
+            A_Sq(j,i) = (-1)*A_Symm(k)
+          endIf
           k = k-1
         EndDo
       EndDo
@@ -16180,7 +19088,12 @@
 !>    \verbatim
 !>       
 !>    Matrix_Symm2Sq_Complex is a subroutine that converts a symmetric-packed 
-!>    intrinsic complex matrix to a rank-2 complex array.
+!>    intrinsic complex matrix to a rank-2 complex array.The following options 
+!>    are available:
+!>      Option = 'symmetric' unpack matrix as symmetric.
+!>      Option = 'antisymmetric' unpack matrix as antisymmetric.
+!>      Option = 'hermitian' unpack matrix as hermitian.
+!>      Option = 'antihermitian' unpack matrix as antihermitian.
 !>    TODO: Move this routine to MQC general
 !>
 !>    \endverbatim
@@ -16206,20 +19119,31 @@
 !>        A_Sq is Complex(kind=real64),Dimension(N,N)
 !>        The upacked intrinsic complex matrix output.
 !>    \endverbatim
+!>
+!>    \param[in] option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'symmetric':      Unpack matrix as symmetric
+!>        = 'antisymmetric':  Unpack matrix as antisymmetric
+!>        = 'hermitian':      Unpack matrix as hermitian
+!>        = 'antihermitian':  Unpack matrix as antihermitian
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson 
 !>    \date 2017
 !
-      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq)
+      Subroutine Matrix_Symm2Sq_Complex(N,A_Symm,A_Sq,option)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::N
+      character(len=*),optional,intent(in)::option
       Complex(Kind=real64),Dimension(:),Intent(In)::A_Symm
       Complex(Kind=real64),Dimension(N,N),Intent(Out)::A_Sq
 !
       Integer(kind=int64)::i,j,k
+      character(len=64)::myoption
 !
 !     Do the work...
 !
@@ -16227,66 +19151,68 @@
       Do j = N,1,-1
         Do i = j,1,-1
           A_Sq(i,j) = A_Symm(k)
-          A_Sq(j,i) = A_Symm(k)
+          if(myOption.eq.'symmetric') then
+            A_Sq(j,i) = A_Symm(k)
+          elseif(myOption.eq.'hermitian') then
+            A_Sq(j,i) = conjg(A_Symm(k))
+          elseIf(myOption.eq.'antisymmetric') then
+            A_Sq(j,i) = (-1)*A_Symm(k)
+          elseIf(myOption.eq.'antihermitian') then
+            A_Sq(j,i) = (-1)*conjg(A_Symm(k))
+          endIf
           k = k-1
         EndDo
       EndDo
 !
       End Subroutine Matrix_Symm2Sq_Complex
-
-
-!hph+
-!!
-!!
-!!     PROCEDURE MQC_Vector2DiagMatrix
-!!
-!!>    \brief <b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC 
-!!>    matrix with elements defined by an MQC vector</b>
-!!>
-!!>    \par Purpose:
-!!     =============
-!!>
-!!>    \verbatim
-!!>       
-!!>    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
-!!>    elements defined by an MQC vector.
-!!>
-!!>    \endverbatim
-!!
-!!     Arguments:
-!!     ==========
-!!>    \param[in] Vector
-!!>    \verbatim
-!!>        Vector is Class(MQC_Vector)
-!!>        MQC vector defining diagonal elements of output matrix.
-!!>    \endverbatim
-!!
-!!     Authors:
-!!     ========
-!!>    \author X. Sheng
-!!>    \date 2017
-!!
-!      Function MQC_Vector2DiagMatrix(vector) Result(matrix)
-!!
-!      Implicit None
-!      Type(MQC_Matrix)::matrix
-!      Class(MQC_Vector),Intent(In)::vector
-!!
-!      if (vector%Data_type.eq.'Real') then
-!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Real','StorDiag')
-!        matrix%matR(:,1) = vector%vecR
-!      elseif (vector%Data_type.eq.'Integer') then
-!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Integer','StorDiag')
-!        matrix%matI(:,1) = vector%vecI
-!      elseif (vector%Data_type.eq.'Complex') then
-!        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Complex','StorDiag')
-!        matrix%matC(:,1) = vector%vecC
-!      endif
-!!
-!      End Function MQC_Vector2DiagMatrix
-!hph-
-
-
+!
+!
+!     PROCEDURE MQC_Vector2DiagMatrix
+!
+!>    \brief <b> MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC 
+!>    matrix with elements defined by an MQC vector</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector2DiagMatrix is a function that outputs a diagonal MQC matrix with
+!>    elements defined by an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        MQC vector defining diagonal elements of output matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author X. Sheng
+!>    \date 2017
+!
+      Function MQC_Vector2DiagMatrix(vector) Result(matrix)
+!
+      Implicit None
+      Type(MQC_Matrix)::matrix
+      Class(MQC_Vector),Intent(In)::vector
+!
+      if (vector%Data_type.eq.'Real') then
+        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Real','StorDiag')
+        matrix%matR(:,1) = vector%vecR
+      elseif (vector%Data_type.eq.'Integer') then
+        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Integer','StorDiag')
+        matrix%matI(:,1) = vector%vecI
+      elseif (vector%Data_type.eq.'Complex') then
+        call mqc_allocate_matrix(vector%length,vector%length,matrix,'Complex','StorDiag')
+        matrix%matC(:,1) = vector%vecC
+      endif
+!
+      End Function MQC_Vector2DiagMatrix
 !
 !
 !     PROCEDURE MQC_MatrixMatrixSum
@@ -16327,14 +19253,16 @@
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
       type(MQC_Matrix)::MC,Tmp1,Tmp2
+      character(len=8)::storage
 !
 !
       Tmp1 = MA
       Tmp2 = MB
       select case(Tmp1%storage)
       case('StorFull')
+        storage = 'StorFull'
         select case(Tmp2%storage)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
         case('StorDiag')
           call MQC_Matrix_Diag2Full(Tmp2)
@@ -16344,26 +19272,33 @@
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
         end select
-      case('StorSymm')
-        select case(Tmp2%storage)
-        case('StorFull')
+      case('StorSymm','StorHerm','StorAsym','StorAhrm')
+        if(Tmp2%storage.eq.'StorFull') then
+          storage = 'StorFull'
           Call MQC_Matrix_Symm2Full(Tmp1)
-        case('StorDiag')
+        elseIf(Tmp2%storage.eq.'StorDiag') then
+          storage = Tmp1%storage
           Call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm')
-          !-Empty Case-!
-        case default
+        elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          storage = 'StorFull'
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+        elseIf(Tmp2%storage.eq.Tmp1%storage) then
+          storage = Tmp1%storage
+        else
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
-        end select
+        endIf
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
+          storage = 'StorFull'
           Call MQC_Matrix_Diag2Full(Tmp1)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
+          storage = Tmp2%storage
           Call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
-          !-Empty Case-!
+          storage = 'StorDiag'
         case default
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
@@ -16423,6 +19358,7 @@
         call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
              'Tmp1%data_type', Tmp1%data_type) 
       end select
+      MC%storage = storage
 !
       return
       end function MQC_MatrixMatrixSum
@@ -16466,13 +19402,15 @@
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
       type(MQC_Matrix)::MC,Tmp1,Tmp2
+      character(len=8)::storage
 
       Tmp1 = MA
       Tmp2 = MB
       select case(Tmp1%storage)
       case('StorFull')
+        storage = 'StorFull'
         select case(Tmp2%storage)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
         case('StorDiag')
           call MQC_Matrix_Diag2Full(Tmp2)
@@ -16482,26 +19420,33 @@
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
         end select
-      case('StorSymm')
-        select case(Tmp2%storage)
-        case('StorFull')
+      case('StorSymm','StorHerm','StorAsym','StorAhrm')
+        if(Tmp2%storage.eq.'StorFull') then
+          storage = 'StorFull'
           call MQC_Matrix_Symm2Full(Tmp1)
-        case('StorDiag')
+        elseIf(Tmp2%storage.eq.'StorDiag') then
+          storage = Tmp1%Storage
           call MQC_Matrix_Diag2Symm(Tmp2)
-        case('StorSymm')
-          !-Empty Case-!
-        case default
+        elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          storage = 'StorFull'
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+        elseIf(Tmp2%storage.eq.Tmp1%storage) then
+          storage = Tmp1%Storage
+        else
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
-        end select
+        endIf
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
+          storage = 'StorFull'
           call MQC_Matrix_Diag2Full(Tmp1)
-        case('StorSymm')
+        case('StorSymm','StorHerm','StorAsym','StorAhrm')
+          storage = Tmp2%storage
           call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
-          !-Empty Case-!
+          storage = 'StorDiag'
         case default
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
@@ -16563,100 +19508,10 @@
         call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
              'Tmp1%data_type', Tmp1%data_type)
       end select
+      MC%storage = storage
 !
       return
       end function MQC_MatrixMatrixSubtract
-!
-!
-!     PROCEDURE MQC_MatrixMatrixProduct
-!
-!>    \brief <b> MQC_MatrixMatrixProduct is a function that computes the element-
-!>    wise product of two MQC matrices</b>
-!>
-!>    \par Purpose:
-!     =============
-!>
-!>    \verbatim
-!>       
-!>    MQC_MatrixMatrixProduct is a function that computes the element-wise product of 
-!>    two MQC matrices.
-!>
-!>    \endverbatim
-!
-!     Arguments:
-!     ==========
-!>    \param[in] MA
-!>    \verbatim
-!>        MA is Type(MQC_Matrix)
-!>        The first MQC matrix.
-!>    \endverbatim
-!>
-!>    \param[in] MB
-!>    \verbatim
-!>        MB is Type(MQC_Matrix)
-!>        The second MQC matrix.
-!>    \endverbatim
-!
-!     Authors:
-!     ========
-!>    \author H. P. Hratchian
-!>    \date 2017
-!
-      Function MQC_MatrixMatrixProduct(MA,MB) Result(MC)
-!
-      implicit none
-      type(MQC_Matrix),Intent(In)::MA,MB
-      type(MQC_Matrix)::MC
-      type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
-      character(len=64)::matrixType
-!
-!     For now, addition of two MQC matrices is only allowed for same-type and
-!     same-storage pairs. Start by ensuring this limitation is honored.
-!
-      if(TRIM(MA%data_type) /= TRIM(MB%data_type)) then 
-        if(MA%data_type.eq.'Integer') then
-          if(MB%data_type.eq.'Real') then
-            Call MQC_Matrix_Copy_Int2Real(MA)
-          elseIf(MB%data_type.eq.'Complex') then
-            Call MQC_Matrix_Copy_Real2Complex(MA)
-          endIf
-        elseIf(MA%data_type.eq.'Real') then
-          if(MB%data_type.eq.'Integer') then
-            Call MQC_Matrix_Copy_Int2Real(MB)
-          elseIf(MB%data_type.eq.'Complex') then
-            Call MQC_Matrix_Copy_Real2Complex(MA)
-          endIf
-        elseIf(MA%data_type.eq.'Complex') then
-          if(MB%data_type.eq.'Integer') then
-            Call MQC_Matrix_Copy_Int2Complex(MB)
-          elseIf(MB%data_type.eq.'Real') then
-            Call MQC_Matrix_Copy_Real2Complex(MB)
-          endIf
-        endIf
-      endIf
-      if(TRIM(MA%storage) /= TRIM(MB%storage))  &
-        call mqc_error_a('MQC_MatrixMatrixProduct: Storage forms do NOT match.', 6, &
-        'TRIM(MA%storage)', TRIM(MA%storage), &
-        'TRIM(MB%storage)', TRIM(MB%storage) )
-      MC = MA
-!
-!     Do the work.
-!
-      call String_Change_Case(MC%Data_Type,'u',matrixType)
-      select case(TRIM(matrixType))
-      case('REAL')
-        MC%MatR = MC%MatR * MB%MatR
-      case('INTEGER')
-        MC%MatI = MC%MatI * MB%MatI
-      case('COMPLEX')
-        MC%MatC = MC%MatC * MB%MatC
-      case default
-        call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixProduct.', 6, &
-             'TRIM(matrixType)', TRIM(matrixType) )
-      end select
-!
-      return
-      end function MQC_MatrixMatrixProduct
 !
 !
 !     PROCEDURE MQC_MatrixMatrixDotProduct
@@ -16705,10 +19560,7 @@
            'MA%NCol', MA%NCol, &
            'MB%NRow', MB%NRow )
 
-      If (MQC_Matrix_HaveInteger(MA)) MAreal = MQC_Cast_Real(MA)
-      If (MQC_Matrix_HaveInteger(MB)) MBreal = MQC_Cast_Real(MB)
       If (MQC_Matrix_HaveReal(MA) .and. MQC_Matrix_HaveReal(MB)) then
-
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           MC%MatR = MatMul(MA%MatR,MB%MatR)
@@ -16716,241 +19568,395 @@
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
-          mc = matmul(MA%MatR,Tmp1%MatR)
-!          Call DSymm('r','L',MA%NRow,MB%NCol,1.0,Tmp1%MatR,MB%NRow,MA%MatR,MA%NRow,0, &
-!            MC%MatR,MC%NRow)
+          Call DSymm('r','L',MA%NRow,MB%NCol,1.0,Tmp1%MatR,MB%NRow,MA%MatR,MA%NRow,0, &
+            MC%MatR,MC%NRow)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
-          mc = matmul(Tmp1%MatR,MB%MatR)
-!          Call DSymm('l','L',MA%NRow,MB%NCol,1.0,MA%MatR,MA%NRow,Tmp1%MatR,MB%NRow,0, &
-!            MC%MatR,MC%NRow)
+          Call DSymm('l','L',MA%NRow,MB%NCol,1.0,Tmp1%MatR,MA%NRow,MB%MatR,MB%NRow,0, &
+            MC%MatR,MC%NRow)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
-          Tmp1 = MA
-          Tmp2 = MB
-          Call MQC_Matrix_Symm2Full(Tmp1)
-          Call MQC_Matrix_Symm2Full(Tmp2)
-          mc = matmul(Tmp1%MatR,Tmp2%MatR)
-!          Call DSymm('r','L',MA%nrow,MB%ncol,1.0,Tmp2%MatR,MB%NRow,Tmp1%MatR,MA%NRow,0, &
-!            MC%MatR,MC%NRow)
-          Call MQC_Deallocate_Matrix(Tmp1)
-          Call MQC_Deallocate_Matrix(Tmp2)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             MC%matR(i,:) = MA%matR(i,1) * MB%matR(i,:)
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
+          MC%matR = MA%matR * MB%matR
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NCol
+            MC%matR(:,i) = MA%matR(:,i) * MB%matR(i,1)
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorHerm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             do j = 1, MB%NCol
               MC%matR(i,j) = MA%matR(i,1) * MB%matR(symIndexHash(i,j),1)
             enddo
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
-          MC%matR = MA%matR * MB%matR
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
-          do i = 1, MA%NCol
-            MC%matR(:,i) = MA%matR(:,i) * MB%matR(i,1)
-          enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorHerm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MA%NRow
             do j = 1, MA%NCol
-              MC%matR(i,j) = MB%matR(i,1) * MA%matR(symIndexHash(i,j),1)
+              MC%matR(i,j) = MA%matR(symIndexHash(i,j),1) * MB%matR(j,1)
             enddo
           enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorDiag')
-          MC%matR = MB%matR * MA%matR
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(MA%MatR,Tmp1%MatR)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm') .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MA
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(Tmp1%MatR,MB%MatR)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MA
+          Tmp2 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+          mc = matmul(Tmp1%MatR,Tmp2%MatR)
+          Call MQC_Deallocate_Matrix(Tmp1)
+          Call MQC_Deallocate_Matrix(Tmp2)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matR(symIndexHash(i,j),1) * MB%matR(j,1)
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = (-1)*MA%matR(symIndexHash(i,j),1) * MB%matR(j,1)
+              endIf
+            enddo
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matR(i,1) * MB%matR(symIndexHash(i,j),1) 
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = MA%matR(i,1) * (-1)*MB%matR(symIndexHash(i,j),1)
+              endIf
+            enddo
+          enddo
         EndIf
       ElseIf (MQC_Matrix_HaveReal(MA) .and. MQC_Matrix_HaveInteger(MB)) then
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MA%NRow,MBreal%NCol,MC,'Real','StorFull')
-          MC%MatR = MatMul(MA%MatR,MBreal%MatR)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MBreal%Storage.eq.'StorSymm') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          MC%MatR = MatMul(MA%MatR,MB%MatI)
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+          MBreal = MQC_Cast_Real(MB)
           Call MQC_Allocate_Matrix(MA%NRow,MBreal%NCol,MC,'Real','StorFull')
           Call MQC_Matrix_Symm2Full(MBreal)
           Call DSymm('r','L',MA%NRow,MBreal%NCol,1.0,MBreal%MatR,MBreal%NRow,MA%MatR, &
             MA%NRow,0,MC%MatR,MC%NRow)
-          Call MQC_Matrix_Full2Symm(MBreal)
         ElseIf (MA%Storage.eq.'StorSymm' .and. MBreal%Storage.eq.'StorFull') then
+          MBreal = MQC_Cast_Real(MB)
           Call MQC_Allocate_Matrix(MA%NRow,MBreal%NCol,MC,'Real','StorFull')
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
-          Call DSymm('l','L',MA%NRow,MBreal%NCol,1.0,Tmp1%MatR,MA%NRow,MBreal%MatR, &
+          Call DSymm('l','L',MA%NRow,MBreal%NCol,1.0,MA%MatR,MA%NRow,MBreal%MatR, &
             MBreal%NRow,0,MC%MatR,MC%NRow)
-          Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MBreal%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MA%NRow,MBreal%NCol,MC,'Real','StorFull')
-          Tmp1 = MA
-          Call MQC_Matrix_Symm2Full(MBreal)
-          Call MQC_Matrix_Symm2Full(Tmp1)
-          Call DSymm('r','L',MA%NRow,MBreal%NCol,1.0,MBreal%MatR,MBreal%NRow,Tmp1%MatR, &
-            MA%NRow,0,MC%MatR,MC%NRow)
-          Call MQC_Matrix_Full2Symm(MBreal)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             MC%matR(i,:) = MA%matR(i,1) * MB%matI(i,:)
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
+          MC%matR = MA%matR * MB%matI
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NCol
+            MC%matR(:,i) = MA%matR(:,i) * MB%matI(i,1)
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorHerm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             do j = 1, MB%NCol
               MC%matR(i,j) = MA%matR(i,1) * MB%matI(symIndexHash(i,j),1)
             enddo
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
-          MC%matR = MA%matR * MB%matI
-
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
-          do i = 1, MA%NRow
-            MC%matR(i,:) = MB%matR(i,1) * MA%matI(i,:)
-          enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorHerm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MA%NRow
             do j = 1, MA%NCol
-              MC%matR(i,j) = MB%matR(i,1) * MA%matI(symIndexHash(i,j),1)
+              MC%matR(i,j) = MA%matR(symIndexHash(i,j),1) * MB%matI(j,1)
             enddo
           enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorDiag')
-          MC%matR = MB%matR * MA%matI
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(MA%MatR,Tmp1%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm') .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MA
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(Tmp1%MatR,MB%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          Tmp1 = MA
+          Tmp2 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+          mc = matmul(Tmp1%MatR,Tmp2%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+          Call MQC_Deallocate_Matrix(Tmp2)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matR(symIndexHash(i,j),1) * MB%matI(j,1)
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = (-1)*MA%matR(symIndexHash(i,j),1) * MB%matI(j,1)
+              endIf
+            enddo
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matR(i,1) * MB%matI(symIndexHash(i,j),1) 
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = MA%matR(i,1) * (-1)*MB%matI(symIndexHash(i,j),1)
+              endIf
+            enddo
+          enddo
         EndIf
       ElseIf (MQC_Matrix_HaveInteger(MA) .and. MQC_Matrix_HaveReal(MB)) then
-        If (MAreal%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MAreal%nrow,MB%ncol,MC,'Real','StorFull')
-          MC%MatR = MatMul(MAreal%MatR,MB%MatR)
-        ElseIf (MAreal%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Real','StorFull')
+          MC%MatR = MatMul(MA%MatI,MB%MatR)
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+          MAreal = MQC_Cast_Real(MA)
           Call MQC_Allocate_Matrix(MAreal%nrow,MB%ncol,MC,'Real','StorFull')
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call DSymm('r','L',MAreal%NRow,MB%NCol,1.0,Tmp1%MatR,MB%NRow,MAreal%MatR, &
             MAreal%NRow,0,MC%MatR,MC%NRow)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MAreal%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+          MAreal = MQC_Cast_Real(MA)
           Call MQC_Allocate_Matrix(MAreal%nrow,MB%ncol,MC,'Real','StorFull')
           Call MQC_Matrix_Symm2Full(MAreal)
           Call DSymm('l','L',MAreal%NRow,MB%NCol,1.0,MAreal%MatR,MAreal%NRow,MB%MatR, &
             MB%NRow,0,MC%MatR,MC%NRow)
-          Call MQC_Matrix_Full2Symm(MAreal)
-        ElseIf (MAreal%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MAreal%nrow,MB%ncol,MC,'Real','StorFull')
-          Tmp1 = MB
-          Call MQC_Matrix_Symm2Full(Tmp1)
-          Call MQC_Matrix_Symm2Full(MAreal)
-          Call DSymm('r','L',MAreal%nrow,MB%ncol,1.0,Tmp1%MatR,MB%NRow,MAreal%MatR, &
-            MAreal%NRow,0,MC%MatR,MC%NRow)
-          Call MQC_Deallocate_Matrix(Tmp1)
-          Call MQC_Matrix_Full2Symm(MAreal)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             MC%matR(i,:) = MA%matI(i,1) * MB%matR(i,:)
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
+          MC%matR = MA%matI * MB%matR
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NCol
+            MC%matR(:,i) = MA%matI(:,i) * MB%matR(i,1)
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorHerm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MB%NRow
             do j = 1, MB%NCol
               MC%matR(i,j) = MA%matI(i,1) * MB%matR(symIndexHash(i,j),1)
             enddo
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorDiag')
-          MC%matR = MA%matI * MB%matR
-
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
-          do i = 1, MA%NRow
-            MC%matR(i,:) = MB%matI(i,1) * MA%matR(i,:)
-          enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorFull')
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorHerm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           do i = 1, MA%NRow
             do j = 1, MA%NCol
-              MC%matR(i,j) = MB%matI(i,1) * MA%matR(symIndexHash(i,j),1)
+              MC%matR(i,j) = MA%matI(symIndexHash(i,j),1) * MB%matR(j,1)
             enddo
           enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Real','StorDiag')
-          MC%matR = MB%matI * MA%matR
-        EndIf
-      ElseIf (MQC_Matrix_HaveInteger(MA) .and. MQC_Matrix_HaveInteger(MB)) then
-        Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Integer','StorFull')
-        If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
-          MC%MatI = MatMul(MA%MatI,MB%MatI)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
-          MC%MatI = MatMul(MA%MatI,Tmp1%MatI)
+          mc = matmul(MA%MatI,Tmp1%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-          !call dsymm('r','L',MA%nrow,MB%ncol,1.0,MQC_Matrix_Symm2Full_func(MB)%mati,&
-           !MB%nrow,MA%mati,MA%nrow,0,MC%mati,MC%nrow)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm') .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
-          MC%MatI = MatMul(Tmp1%MatI,MB%MatI)
+          mc = matmul(Tmp1%MatI,MB%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-          !call dsymm('l','L',MA%nrow,MB%ncol,1.0,MQC_Matrix_Symm2Full_func(MA),&
-           !MA%nrow,MB%mati,MB%nrow,0,MC%mati,MC%nrow)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call MQC_Matrix_Symm2Full(Tmp2)
-          MC%MatI = MatMul(Tmp2%MatI,Tmp1%MatI)
+          mc = matmul(Tmp1%MatI,Tmp2%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-          !call dsymm('r','L',MA%nrow,MB%ncol,1.0,MQC_Matrix_Symm2Full_func(MB),&
-           !MB%nrow,MQC_Matrix_Symm2Full_func(MA),MA%nrow,0,MC%mati,MC%nrow)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matI(symIndexHash(i,j),1) * MB%matR(j,1)
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = (-1)*MA%matI(symIndexHash(i,j),1) * MB%matR(j,1)
+              endIf
+            enddo
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matR(i,j) = MA%matI(i,1) * MB%matR(symIndexHash(i,j),1) 
+              elseIf(j.gt.i) then
+                MC%matR(i,j) = MA%matI(i,1) * (-1)*MB%matR(symIndexHash(i,j),1)
+              endIf
+            enddo
+          enddo
+        EndIf
+      ElseIf (MQC_Matrix_HaveInteger(MA) .and. MQC_Matrix_HaveInteger(MB)) then
+        If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Integer','StorFull')
+          MC%MatI = MatMul(MA%MatI,MB%MatI)
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Integer','StorFull')
+          Tmp1 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          MC%MatI = MatMul(MA%MatI,Tmp1%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Integer','StorFull')
+          Tmp1 = MA
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          MC%MatI = MatMul(Tmp1%MatI,MB%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorFull') then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
           do i = 1, MB%NRow
             MC%matI(i,:) = MA%matI(i,1) * MB%matI(i,:)
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorDiag')
+          MC%matI = MA%matI * MB%matI
+        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          do i = 1, MA%NCol
+            MC%matI(:,i) = MA%matI(:,i) * MB%matI(i,1)
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorHerm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
           do i = 1, MB%NRow
             do j = 1, MB%NCol
               MC%matI(i,j) = MA%matI(i,1) * MB%matI(symIndexHash(i,j),1)
             enddo
           enddo
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorDiag')
-          MC%matI = MA%matI * MB%matI
-
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorFull') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Integer','StorFull')
-          do i = 1, MA%NRow
-            MC%matI(i,:) = MB%matI(i,1) * MA%matI(i,:)
-          enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorSymm') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Integer','StorFull')
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorHerm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
           do i = 1, MA%NRow
             do j = 1, MA%NCol
-              MC%matI(i,j) = MB%matI(i,1) * MA%matI(symIndexHash(i,j),1)
+              MC%matI(i,j) = MA%matI(symIndexHash(i,j),1) * MB%matI(j,1)
             enddo
           enddo
-        ElseIf (MB%Storage.eq.'StorDiag' .and. MA%Storage.eq.'StorDiag') then
-          Call MQC_Allocate_Matrix(MB%NRow,MA%NCol,MC,'Integer','StorDiag')
-          MC%matI = MB%matI * MA%matI
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          Tmp1 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(MA%MatI,Tmp1%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm') .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          Tmp1 = MA
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          mc = matmul(Tmp1%MatI,MB%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          Tmp1 = MA
+          Tmp2 = MB
+          Call MQC_Matrix_Symm2Full(Tmp1)
+          Call MQC_Matrix_Symm2Full(Tmp2)
+          mc = matmul(Tmp1%MatI,Tmp2%MatI)
+          Call MQC_Deallocate_Matrix(Tmp1)
+          Call MQC_Deallocate_Matrix(Tmp2)
+        ElseIf ((MA%Storage.eq.'StorAsym' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matI(i,j) = MA%matI(symIndexHash(i,j),1) * MB%matI(j,1)
+              elseIf(j.gt.i) then
+                MC%matI(i,j) = (-1)*MA%matI(symIndexHash(i,j),1) * MB%matI(j,1)
+              endIf
+            enddo
+          enddo
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Integer','StorFull')
+          do i = 1, MA%NRow
+            do j = 1, MA%NCol
+              if(i.ge.j) then
+                MC%matI(i,j) = MA%matI(i,1) * MB%matI(symIndexHash(i,j),1) 
+              elseIf(j.gt.i) then
+                MC%matI(i,j) = MA%matI(i,1) * (-1)*MB%matI(symIndexHash(i,j),1)
+              endIf
+            enddo
+          enddo
         EndIf
       ElseIf (MQC_Matrix_HaveComplex(MA) .and. MQC_Matrix_HaveInteger(MB)) then
         Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           MC%MatC = MatMul(MA%MatC,MB%MatI)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatI)
@@ -16960,12 +19966,17 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatI)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorFull') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatI)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -16973,7 +19984,9 @@
           MC%MatC = MatMul(Tmp1%MatC,Tmp2%MatI)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorDiag') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -16986,7 +19999,9 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatI)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -17007,7 +20022,9 @@
         Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           MC%MatC = MatMul(MA%MatC,MB%MatR)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatR)
@@ -17017,12 +20034,17 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorFull') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17030,7 +20052,9 @@
           MC%MatC = MatMul(Tmp1%MatC,Tmp2%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorDiag') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17043,7 +20067,9 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -17064,7 +20090,9 @@
         Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           MC%MatC = MatMul(MA%MatI,MB%MatC)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatI,Tmp1%MatC)
@@ -17074,12 +20102,17 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatI,Tmp1%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorFull') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatI,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17087,7 +20120,9 @@
           MC%MatC = MatMul(Tmp1%MatI,Tmp2%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorDiag') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17100,7 +20135,9 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatI,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -17121,7 +20158,9 @@
         Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           MC%MatC = MatMul(MA%MatR,MB%MatC)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatR,Tmp1%MatC)
@@ -17131,12 +20170,17 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatR,Tmp1%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorFull') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatR,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17144,7 +20188,9 @@
           MC%MatC = MatMul(Tmp1%MatR,Tmp2%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorDiag') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17157,7 +20203,9 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatR,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -17178,7 +20226,9 @@
         Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
           MC%MatC = MatMul(MA%MatC,MB%MatC)
-        ElseIf (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatC)
@@ -17188,12 +20238,17 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorFull') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorFull') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17201,7 +20256,9 @@
           MC%MatC = MatMul(Tmp1%MatC,Tmp2%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
-        ElseIf (MA%Storage.eq.'StorSymm' .and. MB%Storage.eq.'StorDiag') then
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+            MB%Storage.eq.'StorDiag') then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -17214,7 +20271,9 @@
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
+            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+            MA%Storage.eq.'StorAhrm')) then
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -17291,7 +20350,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Real')
         If (MA%Storage.eq.'StorFull') then
           Call DGemV('N',MA%NRow,MA%NCol,1.0,MA%MatR,MA%NRow,VB%VecR,1,0.0,VC%VecR,1)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call DSymV('L',MA%NRow,1.0,Tmp1%MatR,MA%NRow,VB%VecR,1,0.0,VC%VecR,1)
@@ -17303,7 +20363,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Real')
         If (MA%Storage.eq.'StorFull') then
           Call DGemV('N',MA%NRow,MA%NCol,1.0,MA%MatR,MA%NRow,VBreal%VecR,1,0.0,VC%VecR,1)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call DSymV('L',MA%NRow,1.0,Tmp1%MatR,MA%NRow,VBreal%VecR,1,0.0,VC%VecR,1)
@@ -17315,7 +20376,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Real')
         If (MA%Storage.eq.'StorFull') then
           Call DGemV('N',MA%NRow,MA%NCol,1.0,MAreal%MatR,MA%NRow,VB%VecR,1,0.0,VC%VecR,1)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Call MQC_Matrix_Symm2Full(MAreal)
           Call DSymV('L',MA%NRow,1.0,MAreal%MatR,MA%NRow,VB%VecR,1,0.0,VC%VecR,1)
           Call MQC_Matrix_Full2Symm(MAreal)
@@ -17329,7 +20391,8 @@
           Result = MatMul(MA%MatI,Reshape(VB%VecI,[MA%NCol,1]))
           VC%VecI = Result(:,1)
           !call dgemv('N',MA%nrow,MA%ncol,1.0,MA%mati,MA%nrow,VB%veci,1,0.0,VC%veci,1)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           Result = MatMul(Tmp1%MatI,Reshape(VB%VecI,[MA%NCol,1]))
@@ -17344,7 +20407,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Complex')
         If (MA%Storage.eq.'StorFull') then
           VC%VecC = MatMul(MA%MatI,VB%VecC)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(Tmp1%MatI,VB%VecC)
@@ -17356,7 +20420,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Complex')
         If (MA%Storage.eq.'StorFull') then
           VC%VecC = MatMul(MA%MatR,VB%VecC)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(Tmp1%MatR,VB%VecC)
@@ -17368,7 +20433,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Complex')
         If (MA%Storage.eq.'StorFull') then
           VC%VecC = MatMul(MA%MatC,VB%VecI)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(Tmp1%MatC,VB%VecI)
@@ -17380,7 +20446,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Complex')
         If (MA%Storage.eq.'StorFull') then
           VC%VecC = MatMul(MA%MatC,VB%VecR)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(Tmp1%MatC,VB%VecR)
@@ -17392,7 +20459,8 @@
         Call MQC_Allocate_Vector(MA%NRow,VC,'Complex')
         If (MA%Storage.eq.'StorFull') then
           VC%VecC = MatMul(MA%MatC,VB%VecC)
-        ElseIf (MA%Storage.eq.'StorSymm') then
+        ElseIf (MA%Storage.eq.'StorSymm'.or.MA%Storage.eq.'StorAsym' .or. &
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') then
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(Tmp1%MatC,VB%VecC)
@@ -17459,7 +20527,8 @@
         VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           Call DGemV('T',MB%NRow,MB%NCol,1.0,MB%MatR,MB%NRow,VA%VecR,1,0.0,VC%VecR,1)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call DSymV('L',MB%NRow,1.0,Tmp1%MatR,MB%NRow,VA%VecR,1,0.0,VC%VecR,1)
@@ -17472,7 +20541,8 @@
         VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           Call DGemV('T',MB%NRow,MB%NCol,1.0,MBreal%MatR,MB%NRow,VA%VecR,1,0.0,VC%VecR,1)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Call MQC_Matrix_Symm2Full(MBreal)
           Call DSymV('L',MB%NRow,1.0,MBreal%MatR,MB%NRow,VA%VecR,1,0.0,VC%VecR,1)
           Call MQC_Matrix_Full2Symm(MBreal)
@@ -17484,7 +20554,8 @@
         VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           Call DGemV('T',MB%nrow,MB%ncol,1.0,MB%matr,MB%nrow,VAreal%vecr,1,0.0,VC%vecr,1)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call DSymV('L',MB%NRow,1.0,Tmp1%MatR,MB%NRow,VAreal%VecR,1,0.0,VC%VecR,1)
@@ -17500,7 +20571,8 @@
           Result = MatMul(Reshape(VA%VecI,[1,MB%NRow]),MB%MatI)
           VC%VecI = Result(1,:)
           !call dgemv('T',MB%nrow,MB%ncol,1.0,MB%mati,MB%nrow,VA%veci,1,0.0,VC%veci,1)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           Result = MatMul(Reshape(VA%VecI,[1,MB%NRow]),Tmp1%MatI)
@@ -17515,7 +20587,8 @@
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecI,MB%MatC)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(VA%VecI,Tmp1%MatC)
@@ -17527,7 +20600,8 @@
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecR,MB%MatC)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(VA%VecR,Tmp1%MatC)
@@ -17539,7 +20613,8 @@
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatI)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(VA%VecC,Tmp1%MatI)
@@ -17551,7 +20626,8 @@
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatR)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(VA%VecC,Tmp1%MatR)
@@ -17563,7 +20639,8 @@
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatC)
-        ElseIf (MB%Storage.eq.'StorSymm') then
+        ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
+            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') then
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           VC%VecC = MatMul(VA%VecC,Tmp1%MatC)
@@ -17733,6 +20810,413 @@
       End Function MQC_ScalarMatrixProduct
 !
 !
+!     PROCEDURE MQC_IntegerMatrixProduct
+!
+!>    \brief <b> MQC_IntegerMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic integer</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64) 
+!>        The intrinsic int to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerMatrixProduct(IntIn,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      integer(kind=int64),Intent(In)::intin
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Integer',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = IntIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_IntegerMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixIntegerProduct
+!
+!>    \brief <b> MQC_MatrixIntegerProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic integer</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixIntegerProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn 
+!>    \verbatim
+!>        IntIn is Integer(kind=int64) 
+!>        The intrinsic integer to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixIntegerProduct(Matrix,IntIn) Result(Matrix_Res)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IntIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Integer',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = IntIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = IntIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixIntegerProduct
+!
+!
+!     PROCEDURE MQC_RealMatrixProduct
+!
+!>    \brief <b> MQC_RealMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic real</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_RealMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64) 
+!>        The intrinsic real to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealMatrixProduct(RealIn,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = RealIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_RealMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixRealProduct
+!
+!>    \brief <b> MQC_MatrixRealProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic real</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixRealProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn 
+!>    \verbatim
+!>        RealIn is Real(kind=real64) 
+!>        The intrinsic real to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixRealProduct(Matrix,RealIn) Result(Matrix_Res)
+!
+      Implicit None
+      Real(kind=real64),Intent(In)::RealIn
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Real',Matrix%Storage)
+        Matrix_Res%MatR = RealIn * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = RealIn * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixRealProduct
+!
+!
+!     PROCEDURE MQC_ComplexMatrixProduct
+!
+!>    \brief <b> MQC_ComplexMatrixProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic complex</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexMatrixProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Comp
+!>    \verbatim
+!>        Comp is Complex(kind=real64) 
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ComplexMatrixProduct(Comp,Matrix) Result(Matrix_Res)
+!
+      Implicit None
+      Complex(kind=real64),Intent(In)::Comp
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = Comp * Matrix%MatC
+      EndIf
+
+      End Function MQC_ComplexMatrixProduct
+!
+!
+!     PROCEDURE MQC_MatrixComplexProduct
+!
+!>    \brief <b> MQC_MatrixComplexProduct is a function that computes the product of
+!>    a MQC matrix and an intrinsic complex</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixComplexProduct is a function that computes the product of a MQC matrix
+!>    and an intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Comp 
+!>    \verbatim
+!>        Comp is Complex(kind=real64) 
+!>        The intrinsic complex to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixComplexProduct(Matrix,Comp) Result(Matrix_Res)
+!
+      Implicit None
+      Complex(kind=real64),Intent(In)::Comp
+      Type(MQC_Matrix),Intent(In)::Matrix
+      Type(MQC_Matrix)::Matrix_Res
+
+      Call MQC_Deallocate_Matrix(Matrix_Res)
+      If (Matrix%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatI
+      Else If (Matrix%Data_Type.eq.'Real') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatR = Comp * Matrix%MatR
+      Else If (Matrix%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+        Matrix_Res%MatC = Comp * Matrix%MatC
+      EndIf
+
+      End Function MQC_MatrixComplexProduct
+!
+!
+!     PROCEDURE MQC_MatrixScalarDivide
+!
+!>    \brief <b> MQC_MatrixScalarDivide is a function that returns a MQC matrix
+!>    divided by a MQC scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_MatrixScalarDivide is a function that returns a MQC matrix divided by a 
+!>    MQC scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC_Matrix to divide.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC_Scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_MatrixScalarDivide(matrix,scalarIn) Result(matrix_res)
+!
+      implicit none
+      type(mqc_matrix),intent(in)::matrix
+      class(*),intent(in)::scalarIn
+      type(mqc_scalar)::scalar
+      type(mqc_matrix)::matrix_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_MatrixScalarDivide')
+      end select
+
+      zero = 0.0
+      neg_one = -1.0
+
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
+
+      matrix_res = MQC_MatrixScalarProduct(matrix,reciprocal)
+
+      End Function MQC_MatrixScalarDivide
+!
+!
 !     PROCEDURE MQC_Matrix_Matrix_Contraction
 !
 !>    \brief <b> MQC_Matrix_Matrix_Contraction is a function that returns the 
@@ -17800,9 +21284,14 @@
 !>       
 !>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
 !>    element of a MQC matrix. If the location of an element is negative then it is 
-!>    counted from the end of the MQC matrix row/column.
-!>    TODO: Implement argument to add symmetric, antisymmetric, hermitian and 
-!>          antihermitian
+!>    counted from the end of the MQC matrix row/column. The following options are 
+!>    available: 
+!>
+!>    1. Option = 'element' adds scalar into specified element only (default).
+!>    2. Option = 'symmetric' adds scalar symmetrically.
+!>    3. Option = 'antisymmetric' adds scalar antisymmetrically.
+!>    4. Option = 'hermitian' adds scalar hermitianally.
+!>    5. Option = 'antihermitian' adds scalar antihermitianally.
 !>
 !>    \endverbatim
 !
@@ -17835,13 +21324,24 @@
 !>        If J is negative it is counted from the last element of 
 !>        Matrix
 !>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'element':       add scalar into specified element 
+!>                           only (default)
+!>        = 'symmetric':     add scalar symmetrically
+!>        = 'antisymmetric': add scalar antisymmetrically
+!>        = 'hermitian':     add scalar hermitianally
+!>        = 'antihermitian': add scalar antihermitianally.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J)
+      Recursive Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J,Option)
 !
 !     Variable Declarations.
 !
@@ -17849,8 +21349,19 @@
       Integer(kind=int64),Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Class(*),Intent(In)::ScalarIn
+      Character(len=*),Optional,Intent(In)::Option
       Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI,IndJ
+      Character(len=64)::myOption
+
+      If(Present(Option)) then
+        call string_change_case(Option,'l',myOption)
+      else
+        myOption = 'element'
+      endIf
+      If(myOption.ne.'element'.and.myOption.ne.'symmetric'.and.myOption.ne.'antisymmetric'.and. &
+        myOption.ne.'hermitian'.and.myOption.ne.'antihermitian') call mqc_error_a('Unrecognized &
+        & option in MQC_Matrix_Scalar_Put',6,'myOption',myOption)
 
       Select Type (ScalarIn)
       Type Is (Integer)
@@ -17875,48 +21386,180 @@
       If (IndJ.eq.0.or.IndJ.gt.Matrix%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
            'IndJ', IndJ, &
            'Matrix%NRow', Matrix%NRow )
-!     storage types only for full at the moment
-      If (Matrix%Storage.ne.'StorFull') Call MQC_Error_A('MQC_Matrix_Scalar_Put only has StorFull implemented.', 6, &
-           'Matrix%Storage', Matrix%Storage )
-      If (Matrix%Data_Type.eq.'Integer') then
-        If (Scalar%Data_Type.eq.'Integer') then
-          Matrix%MatI(IndI,IndJ) = Scalar%ScaI
-        ElseIf (Scalar%Data_Type.eq.'Real') then
-          Call MQC_Matrix_Copy_Int2Real(Matrix)
-          Matrix%MatR(IndI,IndJ) = Scalar%ScaR
-        ElseIf (Scalar%Data_Type.eq.'Complex') then
-          Call MQC_Matrix_Copy_Int2Complex(Matrix)
-          Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+      If (Matrix%Storage.eq.'StorFull') then 
+        If (Matrix%Data_Type.eq.'Integer') then
+          If (Scalar%Data_Type.eq.'Integer') then
+            Matrix%MatI(IndI,IndJ) = Scalar%ScaI
+          ElseIf (Scalar%Data_Type.eq.'Real') then
+            Call MQC_Matrix_Copy_Int2Real(Matrix)
+            Matrix%MatR(IndI,IndJ) = Scalar%ScaR
+          ElseIf (Scalar%Data_Type.eq.'Complex') then
+            Call MQC_Matrix_Copy_Int2Complex(Matrix)
+            Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                'Scalar%Data_Type', Scalar%Data_Type ) 
+          EndIf
+        ElseIf (Matrix%Data_Type.eq.'Real') then
+          If (Scalar%Data_Type.eq.'Integer') then
+            Matrix%MatR(IndI,IndJ) = Scalar%ScaI
+          ElseIf (Scalar%Data_Type.eq.'Real') then
+            Matrix%MatR(IndI,IndJ) = Scalar%ScaR
+          ElseIf (Scalar%Data_Type.eq.'Complex') then
+            Call MQC_Matrix_Copy_Real2Complex(Matrix)
+            Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                'Scalar%Data_Type', Scalar%Data_Type ) 
+          EndIf
+        ElseIf (Matrix%Data_Type.eq.'Complex') then
+          If (Scalar%Data_Type.eq.'Integer') then
+            Matrix%MatC(IndI,IndJ) = Scalar%ScaI
+          ElseIf (Scalar%Data_Type.eq.'Real') then
+            Matrix%MatC(IndI,IndJ) = Scalar%ScaR
+          ElseIf (Scalar%Data_Type.eq.'Complex') then
+            Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+          Else
+            Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                 'Scalar%Data_Type', Scalar%Data_Type ) 
+          EndIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
-              'Scalar%Data_Type', Scalar%Data_Type ) 
+          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
+               'Matrix%Data_Type', Matrix%Data_Type )
         EndIf
-      ElseIf (Matrix%Data_Type.eq.'Real') then
-        If (Scalar%Data_Type.eq.'Integer') then
-          Matrix%MatR(IndI,IndJ) = Scalar%ScaI
-        ElseIf (Scalar%Data_Type.eq.'Real') then
-          Matrix%MatR(IndI,IndJ) = Scalar%ScaR
-        ElseIf (Scalar%Data_Type.eq.'Complex') then
-          Call MQC_Matrix_Copy_Real2Complex(Matrix)
-          Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+        If(myOption.eq.'symmetric') then
+          call Matrix%put(scalar,IndJ,IndI)
+        elseIf(myOption.eq.'antisymmetric') then
+          call Matrix%put((-1)*scalar,IndJ,IndI)
+        elseIf(myOption.eq.'hermitian') then
+          call Matrix%put(conjg(scalar),IndJ,IndI)
+        elseIf(myOption.eq.'antihermitian') then
+          call Matrix%put((-1)*conjg(scalar),IndJ,IndI)
+        endIf
+      ElseIf (Matrix%Storage.eq.'StorSymm' .or. Matrix%Storage.eq.'StorAsym' .or. &
+          Matrix%Storage.eq.'StorHerm' .or. Matrix%Storage.eq.'StorAhrm') then 
+        If(((IndI.ne.IndJ).and.(myOption.eq.'symmetric'.and.Matrix%Storage.ne.'StorSymm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'antisymmetric'.and.Matrix%Storage.ne.'StorAsym')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'hermitian'.and.Matrix%Storage.ne.'StorHerm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'antihermitian'.and.Matrix%Storage.ne.'StorAhrm')).or. &
+          ((IndI.ne.IndJ).and.(myOption.eq.'element'))) then
+          call mqc_matrix_symm2full(Matrix)
+          call Matrix%put(scalar,IndI,IndJ)
+          If(myOption.eq.'symmetric') then
+            call Matrix%put(scalar,IndJ,IndI)
+          elseIf(myOption.eq.'antisymmetric') then
+            call Matrix%put((-1)*scalar,IndJ,IndI)
+          elseIf(myOption.eq.'hermitian') then
+            call Matrix%put(conjg(scalar),IndJ,IndI)
+          elseIf(myOption.eq.'antihermitian') then
+            call Matrix%put((-1)*conjg(scalar),IndJ,IndI)
+          endIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
-              'Scalar%Data_Type', Scalar%Data_Type ) 
+          If (Matrix%Data_Type.eq.'Integer') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatI(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Call MQC_Matrix_Copy_Int2Real(Matrix)
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Call MQC_Matrix_Copy_Int2Complex(Matrix)
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                  'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          ElseIf (Matrix%Data_Type.eq.'Real') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Matrix%MatR(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Call MQC_Matrix_Copy_Real2Complex(Matrix)
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                  'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          ElseIf (Matrix%Data_Type.eq.'Complex') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Matrix%MatC(symIndexHash(IndI,IndJ),1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                   'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
+                 'Matrix%Data_Type', Matrix%Data_Type )
+          EndIf
         EndIf
-      ElseIf (Matrix%Data_Type.eq.'Complex') then
-        If (Scalar%Data_Type.eq.'Integer') then
-          Matrix%MatC(IndI,IndJ) = Scalar%ScaI
-        ElseIf (Scalar%Data_Type.eq.'Real') then
-          Matrix%MatC(IndI,IndJ) = Scalar%ScaR
-        ElseIf (Scalar%Data_Type.eq.'Complex') then
-          Matrix%MatC(IndI,IndJ) = Scalar%ScaC
+      ElseIf (Matrix%Storage.eq.'StorDiag') then
+        If((IndI.ne.IndJ).and.(myOption.eq.'symmetric'.or.myOption.eq.'antisymmetric'.or. &
+          myOption.eq.'hermitian'.or.myOption.eq.'antihermitian'.or.myOption.eq.'element')) then
+          If(myOption.eq.'element') then
+            call mqc_matrix_diag2full(Matrix)
+            call Matrix%put(scalar,IndI,IndJ)
+          elseIf(myOption.eq.'symmetric') then
+            call mqc_matrix_diag2symm(Matrix,'symmetric')
+            call Matrix%put(scalar,IndI,IndJ,'symmetric')
+          elseIf(myOption.eq.'antisymmetric') then
+            call mqc_matrix_diag2symm(Matrix,'antisymmetric')
+            call Matrix%put(scalar,IndI,IndJ,'antisymmetric')
+          elseIf(myOption.eq.'hermitian') then
+            call mqc_matrix_diag2symm(Matrix,'hermitian')
+            call Matrix%put(scalar,IndI,IndJ,'hermitian')
+          elseIf(myOption.eq.'antihermitian') then
+            call mqc_matrix_diag2symm(Matrix,'antihermitian')
+            call Matrix%put(scalar,IndI,IndJ,'antihermitian')
+          endIf
         Else
-          Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
-               'Scalar%Data_Type', Scalar%Data_Type ) 
+          If (Matrix%Data_Type.eq.'Integer') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatI(IndI,1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Call MQC_Matrix_Copy_Int2Real(Matrix)
+              Matrix%MatR(IndI,1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Call MQC_Matrix_Copy_Int2Complex(Matrix)
+              Matrix%MatC(IndI,1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                  'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          ElseIf (Matrix%Data_Type.eq.'Real') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatR(IndI,1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Matrix%MatR(IndI,1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Call MQC_Matrix_Copy_Real2Complex(Matrix)
+              Matrix%MatC(IndI,1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                  'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          ElseIf (Matrix%Data_Type.eq.'Complex') then
+            If (Scalar%Data_Type.eq.'Integer') then
+              Matrix%MatC(IndI,1) = Scalar%ScaI
+            ElseIf (Scalar%Data_Type.eq.'Real') then
+              Matrix%MatC(IndI,1) = Scalar%ScaR
+            ElseIf (Scalar%Data_Type.eq.'Complex') then
+              Matrix%MatC(IndI,1) = Scalar%ScaC
+            Else
+              Call MQC_Error_A('Scalar type not defined in MQC_Matrix_Scalar_Put', 6, &
+                   'Scalar%Data_Type', Scalar%Data_Type ) 
+            EndIf
+          Else
+            Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
+                 'Matrix%Data_Type', Matrix%Data_Type )
+          EndIf
         EndIf
       Else
-        Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_Put', 6, &
-             'Matrix%Data_Type', Matrix%Data_Type )
+        Call MQC_Error_A('Storage type not defined in MQC_Matrix_Scalar_Put', 6, &
+             'Matrix%Storage', Matrix%Storage )
       EndIf
 
       End Subroutine MQC_Matrix_Scalar_Put
@@ -18005,6 +21648,19 @@
         Type is (Complex(Kind=real64))
             Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
             Matrix%MatC = Scalar
+        Type is (MQC_Scalar)
+          If(MQC_Scalar_HaveInteger(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar%ScaI
+          ElseIf(MQC_Scalar_HaveReal(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar%ScaR
+          ElseIf(MQC_Scalar_HaveComplex(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar%ScaC
+          Else
+            Call MQC_Error_I('Unrecognized MQC scalar Type in MQC_Matrix_Initialize', 6)
+          EndIf
         Class Default
           Call MQC_Error_I('Scalar Type not defined in MQC_Matrix_Initialize', 6)
         End Select
@@ -18068,10 +21724,7 @@
       type(MQC_Scalar)::one
 
       one = 1.0
-      call matrix%init(n,m)
-      Do i = 1,min(n,m)
-        call matrix%put(one,i,i)
-      EndDo
+      call matrix%init(n,m,one,'StorDiag')
 
       End Subroutine MQC_Matrix_Identity
 !
@@ -18151,6 +21804,19 @@
         type is (complex(kind=real64))
             call mqc_allocate_matrix(rows,columns,matrix,'Complex',TRIM(myStorage))
             Matrix%MatC = scalar
+        Type is (MQC_Scalar)
+          If(MQC_Scalar_HaveInteger(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar%ScaI
+          ElseIf(MQC_Scalar_HaveReal(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar%ScaR
+          ElseIf(MQC_Scalar_HaveComplex(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar%ScaC
+          Else
+            Call MQC_Error_I('Unrecognized MQC scalar Type in MQC_Matrix_Initialize', 6)
+          EndIf
         class default
           call mqc_error_i('scalar type not defined in MQC_Matrix_Set', 6)
         end select
@@ -18229,7 +21895,9 @@
       StorFlag = Matrix%Storage
       TypeFlag = Matrix%Data_Type
       if(Matrix%Storage.eq.'StorDiag') Call MQC_Matrix_Diag2Full(matrix)
-      if(Matrix%Storage.eq.'StorSymm') Call MQC_Matrix_Symm2Full(matrix)
+      if(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
+        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm') &
+        Call MQC_Matrix_Symm2Full(matrix)
       If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then 
         If(Matrix%Data_Type.eq.'Integer') Call MQC_Matrix_Copy_Int2Real(matrix)
         allocate(temp(MQC_Matrix_Rows(matrix),MQC_Matrix_Columns(matrix)))
@@ -18251,7 +21919,9 @@
              'matrix%Data_Type', matrix%Data_Type )
       EndIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(matrix)
-      if(StorFlag.eq.'StorSymm') Call MQC_Matrix_Full2Symm(matrix)
+      if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or. &
+        StorFlag.eq.'StorHerm'.or.StorFlag.eq.'StorAhrm') &
+        Call MQC_Matrix_Full2Symm(matrix)
 
       End Function MQC_Matrix_Norm
 !
@@ -18307,7 +21977,9 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
+      if(a%Storage.eq.'StorSymm'.or.a%Storage.eq.'StorAsym'.or.&
+        a%Storage.eq.'StorHerm'.or.a%Storage.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(rows,cols))
@@ -18358,7 +22030,9 @@
         if(allocated(tempC)) deallocate(tempC)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
-      if(StorFlag.eq.'StorSymm') Call MQC_Matrix_Full2Symm(a)
+      if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or.&
+        StorFlag.eq.'StorHerm'.or.StorFlag.eq.'StorAhrm') &
+        Call MQC_Matrix_Full2Symm(a)
 
       end function mqc_matrix_determinant
 !
@@ -18409,7 +22083,9 @@
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
+      if(a%Storage.eq.'StorSymm'.or.a%Storage.eq.'StorAsym'.or. &
+        a%Storage.eq.'StorHerm'.or.a%Storage.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(a)
       if(a%Data_Type.eq.'Integer'.or.a%Data_Type.eq.'Real') then
         If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
         allocate(temp(nDim1,nDim2))
@@ -18462,7 +22138,9 @@
         if(allocated(tempC)) deallocate(tempC)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
-      if(StorFlag.eq.'StorSymm') Call MQC_Matrix_Full2Symm(a)
+      if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or.&
+        StorFlag.eq.'StorHerm'.or.StorFlag.eq.'StorAhrm') &
+        Call MQC_Matrix_Full2Symm(a)
 !
       end function mqc_matrix_inverse
 !
@@ -18606,8 +22284,12 @@
       typeFlagB = b%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
       if(b%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(b)
-      if(a%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(a)
-      if(b%Storage.eq.'StorSymm') call mqc_matrix_symm2Full(b)
+      if(a%Storage.eq.'StorSymm'.or.a%Storage.eq.'StorAsym'.or. &
+        a%Storage.eq.'StorHerm'.or.a%Storage.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(a)
+      if(b%Storage.eq.'StorSymm'.or.b%Storage.eq.'StorAsym'.or. &
+        b%Storage.eq.'StorHerm'.or.b%Storage.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(b)
       If(a%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(a)
       If(b%Data_Type.eq.'Integer') call mqc_matrix_copy_int2Real(b)
       If(a%Data_Type.eq.'Complex'.and.b%Data_Type.ne.'Complex') call mqc_matrix_copy_real2Complex(b)
@@ -18776,8 +22458,12 @@
       if(typeFlagB.eq.'Real'.and.b%Data_Type.eq.'Complex') Call MQC_Matrix_Copy_Complex2Real(b)
       if(storFlagA.eq.'StorDiag') Call MQC_Matrix_full2Diag(a)
       if(storFlagB.eq.'StorDiag') Call MQC_Matrix_full2Diag(b)
-      if(storFlagA.eq.'StorSymm') Call MQC_Matrix_full2Symm(a)
-      if(storFlagB.eq.'StorSymm') Call MQC_Matrix_full2Symm(b)
+      if(storFlagA.eq.'StorSymm'.or.storFlagA.eq.'StorAsym'.or. &
+        storFlagA.eq.'StorHerm'.or.storFlagA.eq.'StorAhrm') &
+        Call MQC_Matrix_full2Symm(a)
+      if(storFlagB.eq.'StorSymm'.or.storFlagB.eq.'StorAsym'.or. &
+        storFlagB.eq.'StorHerm'.or.storFlagB.eq.'StorAhrm') &
+        Call MQC_Matrix_full2Symm(b)
 !
       end subroutine mqc_matrix_generalized_eigensystem
 !
@@ -18850,7 +22536,9 @@
  1050 Format( A, I10 )
 !
       if(storFlag.eq.'StorDiag') return
-      if(storFlag.eq.'StorSymm') call mqc_matrix_symm2Full(A)
+      if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
+        storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(A)
       if(storFlag.eq.'StorFull') then
         if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
           if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
@@ -18909,7 +22597,9 @@
      endIf
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
-      if(storFlag.eq.'StorSymm') call mqc_matrix_full2Symm(A)
+      if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
+        storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
+        call mqc_matrix_full2Symm(A)
 !
       Return
       End Subroutine MQC_Matrix_SVD
@@ -18972,7 +22662,9 @@
       storFlag = A%Storage
       N = MQC_Matrix_Rows(A)*MQC_Matrix_Columns(A)
       if(storFlag.eq.'StorDiag') call mqc_matrix_diag2Full(A) 
-      if(storFlag.eq.'StorSymm') call mqc_matrix_symm2Full(A)
+      if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
+        storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
+        call mqc_matrix_symm2Full(A)
       if(storFlag.eq.'StorFull') then
         if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
           if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
@@ -18995,7 +22687,9 @@
       endIf
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
-      if(storFlag.eq.'StorSymm') call mqc_matrix_full2Symm(A)
+      if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
+        storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
+        call mqc_matrix_full2Symm(A)
       if(storFlag.eq.'StorDiag') call mqc_matrix_full2Diag(A)
 !
       Return
@@ -19134,6 +22828,329 @@
 !
       return
       End Function
+!
+!
+!     PROCEDURE MQC_Matrix_Matrix_Outer
+!
+!>    \brief <b> MQC_Matrix_Matrix_Outer is a function that returns the rank-4
+!>    tensor containing the outer product of two MQC matrices</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Outer is a function that returns the rank-4 tensor containing 
+!>    the outer product of two MQC matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the outer product.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_Matrix_Matrix_Outer(matrix1,matrix2) result(outer)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_r4tensor)::outer
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::M,N,O,P,i,j,k,l
+      
+      M = size(matrix1,1)
+      N = size(matrix1,2)
+      O = size(matrix2,1)
+      P = size(matrix2,2)
+
+      call outer%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call outer%put(matrix1%at(i,j)*matrix2%at(k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Outer
+!
+!
+!     PROCEDURE MQC_Matrix_Complex_RealPart
+!
+!>    \brief <b> MQC_Matrix_Complex_RealPart is a function that returns a MQC matrix
+!>    with elements containing the real part of elements of another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Complex_RealPart is a function that returns a MQC matrix with 
+!>    elements containing the real part of elements of another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_matrix_complex_realPart(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      if(A%Data_Type.eq.'Complex') then
+        call MQC_Matrix_Copy_Complex2Real(output)
+        if(output%Storage.eq.'StorHerm') then
+          output%Storage = 'StorSymm'
+        elseIf(output%Storage.eq.'StorAhrm') then
+          output%Storage = 'StorAsym'
+        endIf
+      endIf
+!
+      end function mqc_matrix_complex_realPart
+!
+!
+!     PROCEDURE MQC_Matrix_Complex_ImagPart
+!
+!>    \brief <b> MQC_Matrix_Complex_ImagPart is a function that returns a MQC matrix
+!>    with elements containing the imaginary part of elements of another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Complex_ImagPart is a function that returns a MQC matrix with 
+!>    elements containing the imaginary part of elements of another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_matrix_complex_imagPart(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      select case (A%Data_Type)
+      case('Integer')
+        output%matI = 0
+      case('Real')
+        output%matR = 0.0
+      case('Complex')
+        output = A
+        call MQC_Matrix_Copy_Complex2Real(output)
+        output%matR = aimag(A%matC)
+        if(output%Storage.eq.'StorHerm') then
+          output%Storage = 'StorAsym'
+        elseIf(output%Storage.eq.'StorAhrm') then
+          output%Storage = 'StorSymm'
+        endIf
+      case default
+        call mqc_error_a('Unrecognized MQC_Matrix data type in mqc_matrix_complex_realPart',&
+          6,'A%Data_Type',A%Data_Type)
+      end select
+!
+      end function mqc_matrix_complex_imagPart
+!
+!
+!     PROCEDURE MQC_Matrix_Cmplx
+!
+!>    \brief <b> MQC_Matrix_Cmplx is a function that takes a MQC matrix representing 
+!>    the real part and a MQC matrix representing the imaginary part and combines
+!>    them into another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Cmplx is a function that takes a MQC matrix representing the real 
+!>    part and a MQC matrix representing the imaginary part and combines them into 
+!>    another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is Type(MQC_Matrix)
+!>        The MQC matrix containing the real part.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is Type(MQC_Matrix)
+!>        The MQC matrix containing the imaginary part.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Cmplx(Matrix1,Matrix2)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix)::MQC_Matrix_Cmplx
+      Type(MQC_Matrix),Intent(In)::Matrix1,Matrix2
+      Type(MQC_Matrix)::Tmp1,Tmp2
+      Character(len=8)::Storage
+!
+      If(Size(Matrix1,1).ne.Size(Matrix2,1).or.Size(Matrix1,2).ne.Size(Matrix2,2)) &
+        call mqc_error_i('Input matrix sizes do not conform in MQC_Matrix_Cmplx', 6, &
+        'Size(Matrix1,1)',Size(Matrix1,1),'Size(Matrix2,1)',Size(Matrix2,1), &
+        'Size(Matrix1,2)',Size(Matrix1,2),'Size(Matrix2,2)',Size(Matrix2,2))
+
+      if(Matrix1%Data_Type.eq.'Complex'.or.Matrix2%Data_Type.eq.'Complex') &
+        call mqc_error_a('Complex MQC matrix cannot be set as real/imaginary part in MQC_Matrix_Cmplx', &
+        6,'Matrix1%Data_Type',Matrix1%Data_Type,'Matrix2%Data_Type',Matrix2%Data_Type)
+
+      If(Matrix1%Storage.eq.'StorFull'.or.Matrix2%Storage.eq.'StorFull') then
+        Storage = 'StorFull'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorDiag'.and.Matrix2%Storage.eq.'StorDiag') then
+        Storage = 'StorDiag'
+      ElseIf(Matrix1%Storage.eq.'StorDiag') then
+        Storage = Matrix2%Storage
+      ElseIf(Matrix2%Storage.eq.'StorDiag') then
+        Storage = Matrix1%Storage
+      Else
+        Call MQC_Error('MQC_Matrix_Cmplx is confused')
+      EndIf
+        
+      call mqc_allocate_matrix(Size(Matrix1,1),Size(Matrix1,2),MQC_Matrix_Cmplx, &
+        'Complex',Storage)
+
+      Tmp1 = Matrix1
+      Tmp2 = Matrix2
+
+      if(Tmp1%Storage.eq.'StorFull') then
+        if(Tmp2%Storage.eq.'StorSymm'.or.Tmp2%Storage.eq.'StorAsym'.or. &
+          Tmp2%Storage.eq.'StorHerm'.or.Tmp2%Storage.eq.'StorAhrm') &
+          call mqc_matrix_symm2full(Tmp2)
+        if(Tmp2%Storage.eq.'StorDiag') &
+          call mqc_matrix_diag2full(Tmp2)
+      elseIf(Tmp1%Storage.eq.'StorSymm'.or.Tmp1%Storage.eq.'StorAsym'.or. &
+        Tmp1%Storage.eq.'StorHerm'.or.Tmp1%Storage.eq.'StorAhrm') then
+        if(Tmp2%Storage.eq.'StorFull') &
+          call mqc_matrix_symm2full(Tmp1)
+        if(Tmp2%Storage.eq.'StorDiag') &
+          call mqc_matrix_diag2symm(Tmp2)
+      elseIf(Tmp1%Storage.eq.'StorDiag') then
+        if(Tmp2%Storage.eq.'StorFull') &
+          call mqc_matrix_diag2full(Tmp1)
+        if(Tmp2%Storage.eq.'StorSymm'.or.Tmp2%Storage.eq.'StorAsym'.or. &
+          Tmp2%Storage.eq.'StorHerm'.or.Tmp2%Storage.eq.'StorAhrm') &
+          call mqc_matrix_diag2symm(Tmp1)
+      endIf
+
+      if(Tmp1%Data_Type.eq.'Integer') then
+        if(Tmp2%Data_Type.eq.'Integer') then
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatI,Tmp2%MatI)
+        elseIf(Tmp2%Data_Type.eq.'Real') then
+#ifdef PGI
+          MQC_Matrix_Cmplx%MatC = cmplx(dfloat(Tmp1%MatI),Tmp2%MatR)
+#else
+          MQC_Matrix_Cmplx%MatC = cmplx(float(Tmp1%MatI),Tmp2%MatR)
+#endif
+        endIf
+      elseIf(Tmp1%Data_Type.eq.'Real') then
+        if(Tmp2%Data_Type.eq.'Integer') then
+#ifdef PGI
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,dfloat(Tmp2%MatI))
+#else
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,float(Tmp2%MatI))
+#endif
+        elseIf(Tmp2%Data_Type.eq.'Real') then
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,Tmp2%MatR)
+        endIf
+      endIf
+!
+      Return
+      End Function MQC_Matrix_Cmplx
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -19400,8 +23417,9 @@
       IndL = L
       If (IndI.lt.0) IndI = Tensor%I + IndI + 1
       If (IndJ.lt.0) IndJ = Tensor%J + IndJ + 1
-      If (IndK.lt.0) IndK = Tensor%K + IndI + 1
-      If (IndL.lt.0) IndL = Tensor%L + IndJ + 1
+      If (IndK.lt.0) IndK = Tensor%K + IndK + 1
+      If (IndL.lt.0) IndL = Tensor%L + IndL + 1
+
       If (IndI.eq.0.or.IndI.gt.Tensor%I) Call MQC_Error_I('Index I badly specified in mqc_r4tensor_at', 6, &
            'IndI', IndI, &
            'Tensor%I', Tensor%I )
@@ -19414,6 +23432,7 @@
       If (IndL.eq.0.or.IndL.gt.Tensor%L) Call MQC_Error_I('Index L badly specified in mqc_r4tensor_at', 6, &
            'IndL', IndL, &
            'Tensor%L', Tensor%L )
+      
       If(Tensor%Storage.eq.'StorFull') then
         If(Tensor%Data_Type.eq.'Integer') then
           Element = (Tensor%ITen(IndI,IndJ,IndK,IndL))
@@ -21037,6 +25056,965 @@
 !
       Return
       End Subroutine MQC_R4Tensor_Copy_Complex2Real
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Contraction
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Contraction is a function that returns the 
+!>    contraction of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Contraction is a function that returns the contraction of two 
+!>    MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to contract.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to contract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Contraction(R4Tensor1,R4Tensor2) Result(Contraction)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_Scalar)::Contraction
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      Contraction = 0.0
+      M = Min(size(R4Tensor1,1),size(R4Tensor2,1))
+      N = Min(size(R4Tensor1,2),size(R4Tensor2,2))
+      O = Min(size(R4Tensor1,3),size(R4Tensor2,3))
+      P = Min(size(R4Tensor1,4),size(R4Tensor2,4))
+      Do i = 1,M
+        Do j = 1,N
+          Do k = 1,O
+            Do l = 1,P
+              Contraction = Contraction + R4Tensor1%at(i,j,k,l)*R4Tensor2%at(i,j,k,l)
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Contraction
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Sum
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Sum is a function that returns the 
+!>    sum of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Sum is a function that returns the sum of two 
+!>    MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to sum.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Sum(R4Tensor1,R4Tensor2) Result(Summation)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_R4Tensor)::Summation
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      M = size(R4Tensor1,1)
+      N = size(R4Tensor1,2)
+      O = size(R4Tensor1,3)
+      P = size(R4Tensor1,4)
+
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+        call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Sum',6)
+
+      call summation%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call summation%put(R4Tensor1%at(i,j,k,l)+R4Tensor2%at(i,j,k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Sum
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Difference
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Difference is a function that returns the 
+!>    difference of two MQC rank-4 tensors</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Difference is a function that returns the difference of 
+!>    two MQC rank-4 tensors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor1
+!>    \verbatim
+!>        R4Tensor1 is Type(MQC_R4Tensor)
+!>        The first MQC rank-4 tensor to subtract.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor2
+!>    \verbatim
+!>        R4Tensor2 is Type(MQC_R4Tensor)
+!>        The second MQC rank-4 tensor to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_Difference(R4Tensor1,R4Tensor2) Result(Difference)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
+      Type(MQC_R4Tensor)::Difference
+      Integer(kind=int64)::M,N,O,P,i,j,k,l
+!
+      M = size(R4Tensor1,1)
+      N = size(R4Tensor1,2)
+      O = size(R4Tensor1,3)
+      P = size(R4Tensor1,4)
+
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+        call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Subtract',6)
+
+      call difference%init(M,N,O,P)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call difference%put(R4Tensor1%at(i,j,k,l)-R4Tensor2%at(i,j,k,l),i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      End Function MQC_R4Tensor_R4Tensor_Difference
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_At
+!
+!>    \brief <b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
+!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
+!>    negative, the (N-I+1)th index value is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2,D3,D4) Result(TensorOut)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::TensorIn
+      Type(MQC_R4Tensor)::TensorOut
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Integer(kind=int64)::Len1,Len2,Len3,Len4,IndI,IndJ,IndK,IndL,IndM,IndN,IndO,IndP
+      Integer(kind=int64)::I,J,K,L,M,N,O,P,Q,R,S,T,Cnt1,Cnt2,Cnt3,Cnt4
+
+      If(Size(D1).eq.1.and.D1(1).eq.0) then
+        I = 1
+        J = Size(TensorIn,1)
+      elseIf(Size(D1).eq.2.and.D1(1).ne.0.and.D1(2).ne.(0)) then
+        I = D1(1)
+        J = D1(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D1)', Size(D1))
+      endIf
+      If(Size(D2).eq.1.and.D2(1).eq.0) then
+        K = 1
+        L = Size(TensorIn,2)
+      elseIf(Size(D2).eq.2.and.D2(1).ne.0.and.D2(2).ne.(0)) then
+        K = D2(1)
+        L = D2(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D2)', Size(D2))
+      endIf
+      If(Size(D3).eq.1.and.D3(1).eq.0) then
+        M = 1
+        N = Size(TensorIn,3)
+      elseIf(Size(D3).eq.2.and.D3(1).ne.0.and.D3(2).ne.(0)) then
+        M = D3(1)
+        N = D3(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D3)', Size(D3))
+      endIf
+      If(Size(D4).eq.1.and.D4(1).eq.0) then
+        O = 1
+        P = Size(TensorIn,4)
+      elseIf(Size(D4).eq.2.and.D4(1).ne.0.and.D4(2).ne.(0)) then
+        O = D4(1)
+        P = D4(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D4)', Size(D4))
+      endIf
+
+      IndI = I
+      IndJ = J
+      If (IndI.lt.0) IndI = Size(TensorIn,1) + IndI + 1
+      If (IndJ.lt.0) IndJ = Size(TensorIn,1) + IndJ + 1
+      Len1 = IndJ-IndI+1
+      If (Len1.le.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
+           Size(TensorIn,1) )
+      If (IndI.le.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
+           Size(TensorIn,1),'Len1', Len1 )
+      If (IndJ.lt.Len1.or.IndJ.gt.Size(TensorIn,1)) Call MQC_Error_I('Index J out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
+           Size(TensorIn,1))
+      IndK = K
+      IndL = L
+      If (IndK.lt.0) IndK = Size(TensorIn,2) + IndK + 1
+      If (IndL.lt.0) IndL = Size(TensorIn,2) + IndL + 1
+      Len2 = IndL-IndK+1
+      If (Len2.le.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
+           Size(TensorIn,2) )
+      If (IndK.le.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
+           Size(TensorIn,2),'Len2', Len2 )
+      If (IndL.lt.Len2.or.IndL.gt.Size(TensorIn,2)) Call MQC_Error_I('Index L out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
+           Size(TensorIn,2))
+      IndM = M
+      IndN = N
+      If (IndM.lt.0) IndM = Size(TensorIn,3) + IndM + 1
+      If (IndN.lt.0) IndN = Size(TensorIn,3) + IndN + 1
+      Len3 = IndN-IndM+1
+      If (Len3.le.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
+           Size(TensorIn,3) )
+      If (IndM.le.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
+           Size(TensorIn,3),'Len3', Len3 )
+      If (IndN.lt.Len3.or.IndN.gt.Size(TensorIn,3)) Call MQC_Error_I('Index N out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
+           Size(TensorIn,3))
+      IndO = O
+      IndP = P
+      If (IndO.lt.0) IndO = Size(TensorIn,4) + IndO + 1
+      If (IndP.lt.0) IndP = Size(TensorIn,4) + IndP + 1
+      Len4 = IndP-IndO+1
+      If (Len4.le.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
+           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
+           Size(TensorIn,4) )
+      If (IndO.le.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
+           Size(TensorIn,4),'Len4', Len4 )
+      If (IndP.lt.Len4.or.IndP.gt.Size(TensorIn,4)) Call MQC_Error_I('Index P out of bounds &
+           & in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
+           Size(TensorIn,4))
+
+      If (MQC_R4Tensor_HaveFull(TensorIn)) then
+        If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Integer','StorFull')
+          TensorOut%ITen = TensorIn%ITen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Elseif (MQC_R4Tensor_HaveReal(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Real','StorFull')
+          TensorOut%RTen = TensorIn%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Elseif (MQC_R4Tensor_HaveComplex(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Complex','StorFull')
+          TensorOut%CTen = TensorIn%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP)
+        Else
+          Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_At', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+        EndIf
+      ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+        If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Integer','StorFull')
+        ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Real','StorFull')
+        ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+          Call MQC_Allocate_R4Tensor(Len1,Len2,Len3,Len4,TensorOut,'Complex','StorFull')
+        EndIf
+        Q = 1
+        Do Cnt1 = IndI, IndJ
+          R = 1
+          Do Cnt2 = IndK, IndL
+            S = 1
+            Do Cnt3 = IndM, IndN
+              T = 1
+              Do Cnt4 = IndO, IndP
+                call TensorOut%Put(TensorIn%at(Cnt1,Cnt2,Cnt3,Cnt4),Q,R,S,T)
+                T = T + 1
+              EndDo
+              S = S + 1
+            EndDo
+            R = R + 1
+          EndDo
+          Q = Q + 1
+        EndDo
+        If(MQC_R4Tensor_Test_Symmetric(TensorOut)) Call MQC_R4Tensor_Full2Symm(TensorOut)
+      Else
+        Call MQC_Error_A('R4Tensor type not recognised in MQC_R4Tensor_R4Tensor_At', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+      EndIf
+
+      End Function MQC_R4Tensor_R4Tensor_At
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Put
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Put is a function that writes a subarray of the rank-4 tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_R4Tensor_Put is a subroutine that writes a subarray to the specified
+!>    position of a MQC rank-4 tensor. The dimension specifications are given as a vector 
+!>    where each vector must contain either zero or two non-zero integers to specify 
+!>    the range of elements that will be overwritten by the subarray. If the value 
+!>    of an element specification is negative, it counts from the last element back. 
+!>    If the value of an element specification is zero, the whole dimension is 
+!>    specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] Ten
+!>    \verbatim
+!>        Ten is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable to update with 
+!>        subarray.
+!>    \endverbatim
+!>    
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Type(MQC_R4Tensor)
+!>        The subarray to overwrite at the specified elements of
+!>        Ten.
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: coordinates to write subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Recursive Subroutine MQC_R4Tensor_R4Tensor_Put(Ten,TensorIn,D1,D2,D3,D4) 
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(InOut)::Ten
+      Type(MQC_R4Tensor),Intent(In)::TensorIn
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Integer(kind=int64)::Len1,Len2,Len3,Len4,IndI,IndJ,IndK,IndL,IndM,IndN,IndO,IndP
+      Integer(kind=int64)::I,J,K,L,M,N,O,P
+
+      If(Size(D1).eq.1.and.D1(1).eq.0) then
+        I = 1
+        J = Size(TensorIn,1)
+      elseIf(Size(D1).eq.2.and.D1(1).ne.0.and.D1(2).ne.(0)) then
+        I = D1(1)
+        J = D1(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D1)', Size(D1))
+      endIf
+      If(Size(D2).eq.1.and.D2(1).eq.0) then
+        K = 1
+        L = Size(TensorIn,2)
+      elseIf(Size(D2).eq.2.and.D2(1).ne.0.and.D2(2).ne.(0)) then
+        K = D2(1)
+        L = D2(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D2)', Size(D2))
+      endIf
+      If(Size(D3).eq.1.and.D3(1).eq.0) then
+        M = 1
+        N = Size(TensorIn,3)
+      elseIf(Size(D3).eq.2.and.D3(1).ne.0.and.D3(2).ne.(0)) then
+        M = D3(1)
+        N = D3(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D3)', Size(D3))
+      endIf
+      If(Size(D4).eq.1.and.D4(1).eq.0) then
+        O = 1
+        P = Size(TensorIn,4)
+      elseIf(Size(D4).eq.2.and.D4(1).ne.0.and.D4(2).ne.(0)) then
+        O = D4(1)
+        P = D4(2)
+      else
+        Call MQC_Error_I('Vector bounds badly specified in mqc_r4tensor_r4tensor_at', 6, &
+          'Size(D4)', Size(D4))
+      endIf
+
+      IndI = I
+      IndJ = J
+      If (IndI.lt.0) IndI = Size(Ten,1) + IndI + 1
+      If (IndJ.lt.0) IndJ = Size(Ten,1) + IndJ + 1
+      Len1 = IndJ-IndI+1
+      If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
+        Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1) )
+      If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
+        'Len1', Len1 )
+      If (IndJ.gt.Size(Ten,1)) Call MQC_Error_I('Index J out of bounds in  &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndJ',IndJ,'Len1',Len1,'Size(Ten,1)', Size(Ten,1))
+      IndK = K
+      IndL = L
+      If (IndK.lt.0) IndK = Size(Ten,2) + IndK + 1
+      If (IndL.lt.0) IndL = Size(Ten,2) + IndL + 1
+      Len2 = IndL-IndK+1
+      If (Len2.le.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
+        Call MQC_Error_I('Dimension 2 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2) )
+      If (IndK.le.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndK',IndK,'Size(Ten,2)', &
+        Size(Ten,2),'Len2', Len2 )
+      If (IndL.gt.Size(Ten,2)) Call MQC_Error_I('Index L out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndL',IndL,'Len2',Len2,'Size(Ten,2)',Size(TensorIn,2))
+      IndM = M
+      IndN = N
+      If (IndM.lt.0) IndM = Size(Ten,3) + IndM + 1
+      If (IndN.lt.0) IndN = Size(Ten,3) + IndN + 1
+      Len3 = IndN-IndM+1
+      If (Len3.le.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
+        Call MQC_Error_I('Dimension 3 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
+        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3) )
+      If (IndM.le.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndM',IndM,'Size(Ten,3)', Size(Ten,3), &
+        'Len3', Len3 )
+      If (IndN.gt.Size(Ten,3)) Call MQC_Error_I('Index N out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndN',IndN,'Len3',Len3,'Size(Ten,3)', Size(Ten,3))
+      IndO = O
+      IndP = P
+      If (IndO.lt.0) IndO = Size(Ten,4) + IndO + 1
+      If (IndP.lt.0) IndP = Size(Ten,4) + IndP + 1
+      Len4 = IndP-IndO+1
+      If (Len4.le.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
+        Call MQC_Error_I('Dimension 4 length badly defined in MQC_R4Tensor_R4Tensor_Put',6, &
+        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4) )
+      If (IndO.le.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+        & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndO',IndO,'Size(Ten,4)', Size(Ten,4), &
+        'Len4', Len4 )
+      If (IndP.gt.Size(Ten,4)) Call MQC_Error_I('Index P out of bounds in &
+        & MQC_R4Tensor_R4Tensor_Put',6,'IndP',IndP,'Len4',Len4,'Size(Ten,4)', Size(Ten,4))
+
+      If (MQC_R4Tensor_HaveFull(Ten)) then
+        If (MQC_R4Tensor_HaveInteger(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Ten%ITen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%ITen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(Ten)  
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%ITen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%ITen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%ITen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%ITen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        ElseIf (MQC_R4Tensor_HaveReal(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(TensorIn)  
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Ten%RTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%RTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(Ten)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Real(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%RTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%RTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%RTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(Ten)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        ElseIf (MQC_R4Tensor_HaveComplex(Ten)) then
+          If (MQC_R4Tensor_HaveFull(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(TensorIn)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(TensorIn)  
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Ten%CTen(IndI:IndJ,IndK:IndL,IndM:IndN,IndO:IndP) = TensorIn%CTen
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          ElseIf (MQC_R4Tensor_HaveSymmetric(TensorIn)) then
+            If (MQC_R4Tensor_HaveInteger(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Int2Complex(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveReal(TensorIn)) then
+              Call MQC_R4Tensor_Copy_Real2Complex(TensorIn)  
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            ElseIf (MQC_R4Tensor_HaveComplex(TensorIn)) then
+              Do I = 1, Len1
+                Do J = 1, I
+                  Do K = 1, Len3
+                    Do L = 1, K
+                      If(I*(I-1)/2+J.lt.K*(K-1)/2+L) Cycle
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) = TensorIn%CTen(symIndexHash(I,J,K,L),1,1,1)
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndM+K-1,IndO+L-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndI+I-1,Indk+J-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(Indk+J-1,IndI+I-1,IndO+L-1,IndM+K-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,IndI+I-1,Indk+J-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndM+K-1,IndO+L-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                      Ten%CTen(IndO+L-1,IndM+K-1,Indk+J-1,IndI+I-1) = Ten%CTen(IndI+I-1,Indk+J-1,IndM+K-1,IndO+L-1) 
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            Else
+              Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+               'TensorIn%Data_Type', TensorIn%Data_Type )
+            EndIf
+          Else
+            Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+             'TensorIn%Storage', TensorIn%Storage )
+          EndIf
+        Else
+          Call MQC_Error_A('R4Tensor type not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+           'Ten%Data_Type', Ten%Data_Type )
+        EndIf
+      ElseIf (MQC_R4Tensor_HaveSymmetric(Ten)) then
+        Call MQC_R4Tensor_Symm2Full(Ten)
+        Call MQC_R4Tensor_R4Tensor_Put(Ten,TensorIn,[IndI,IndJ],[IndK,IndL],[IndM,IndN],[IndO,IndP])
+        If(MQC_R4Tensor_Test_Symmetric(Ten)) Call MQC_R4Tensor_Full2Symm(Ten)
+      Else
+        Call MQC_Error_A('R4Tensor storage not defined in MQC_R4Tensor_R4Tensor_Put', 6, &
+         'Ten%Storage', Ten%Storage )
+      EndIf
+
+      End Subroutine MQC_R4Tensor_R4Tensor_Put
+!
+!
+!     PROCEDURE MQC_R4Tensor_Test_Symmetric
+!
+!>    \brief <b> MQC_R4Tensor_Test_Symmetric is a function that tests a MQC tensor for
+!>    symmetry</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Test_Symmetric is a function that tests a MQC tensor for symmetry. 
+!>    Note that this function differs from haveSymmetric subroutine which tests how a 
+!>    matrix is packed.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is Class(mqc_r4tensor)
+!>        The rank-4 tensor to be tested for symmetry.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_R4Tensor_Test_Symmetric(R4Tensor) Result(Symmetric)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::R4Tensor
+      Logical::Symmetric
+      Integer(kind=int64)::I,J,K,L
+      Real(kind=real64)::Thresh=1e-10
+
+      Symmetric = .True.
+        If(Size(R4Tensor,1).ne.Size(R4Tensor,2)) then
+          Symmetric = .False.
+          Return
+        ElseIf(Size(R4Tensor,3).ne.Size(R4Tensor,4)) then
+          Symmetric = .False.
+          Return
+        ElseIf(Size(R4Tensor,1).ne.Size(R4Tensor,3)) then
+          Symmetric = .False.
+          Return
+        Else
+          If(MQC_R4Tensor_HaveSymmetric(R4Tensor)) then
+            Return
+          ElseIf(MQC_R4Tensor_HaveFull(R4Tensor)) then
+            Do I = 1, Size(R4Tensor,1)
+              Do J = 1, I-1
+                Do K = 1, Size(R4Tensor,3)
+                  Do L = 1, K-1
+                    If(MQC_R4Tensor_HaveInteger(R4Tensor)) then
+                      If((R4Tensor%at(I,J,K,L)-R4Tensor%at(I,J,L,K)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,K,L)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,L,K)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,I,J)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,J,I)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,I,J)).ne.0.or. &
+                        (R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,J,I)).ne.0) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    elseIf(MQC_R4Tensor_HaveReal(R4Tensor)) then
+                      If(abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(I,J,L,K)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,K,L)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(J,I,L,K)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,I,J)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(K,L,J,I)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,I,J)).gt.Thresh.or. &
+                        abs(R4Tensor%at(I,J,K,L)-R4Tensor%at(L,K,J,I)).gt.Thresh) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    elseIf(MQC_R4Tensor_HaveComplex(R4Tensor)) then
+                      If(abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(I,J,L,K))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(J,I,K,L))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(J,I,L,K))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(K,L,I,J))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(K,L,J,I))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(L,K,I,J))).gt.Thresh.or.&
+                        abs(Real(R4Tensor%at(I,J,K,L))-Real(R4Tensor%at(L,K,J,I))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(I,J,L,K))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(J,I,K,L))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(J,I,L,K))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(K,L,I,J))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(K,L,J,I))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(L,K,I,J))).gt.Thresh.or.&
+                        abs(Aimag(R4Tensor%at(I,J,K,L))-Aimag(R4Tensor%at(L,K,J,I))).gt.Thresh) then
+                        Symmetric = .False.
+                        Return
+                      EndIf
+                    EndIf
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          Else
+            Call MQC_Error_A('R4Tensor type not identified in MQC_R4Tensor_Test_Symmetric', 6, &
+                 'R4Tensor%Storage', R4Tensor%Storage )
+          EndIf
+        EndIf
+
+      Return
+      End Function MQC_R4Tensor_Test_Symmetric
 !
 !
       End Module MQC_Algebra
