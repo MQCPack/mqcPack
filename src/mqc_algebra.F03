@@ -333,6 +333,7 @@
       Interface Cmplx
         Module Procedure MQC_Scalar_Cmplx
         Module Procedure MQC_Vector_Cmplx
+        Module Procedure MQC_Matrix_Cmplx
       End Interface
 !
 !>    \brief <b> Returns the square root</b>
@@ -350,12 +351,14 @@
       Interface real
         Module Procedure MQC_Scalar_Complex_RealPart
         Module Procedure MQC_Vector_Complex_RealPart
+        Module Procedure MQC_Matrix_Complex_RealPart
       End Interface
 !
 !>    \brief <b> Returns the imaginary part</b>
       Interface aimag
         Module Procedure MQC_Scalar_Complex_ImagPart
         Module Procedure MQC_Vector_Complex_ImagPart
+        Module Procedure MQC_Matrix_Complex_ImagPart
       End Interface
 !
 !>    \brief <b> Returns the sine</b>
@@ -10667,7 +10670,7 @@
                  'A%NRow', A%NRow, &
                  'A%NCol', A%NCol )
           endif
-        elseIf (A%storage .eq. 'StorSymm') then
+        elseIf (A%storage .eq. 'StorHerm' .or. A%storage .eq. 'StorSymm') then
           allocate(TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
           call ZHPEV('V','U',A%NRow,A%matC(:,1),A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
           if(IError.ne.0) then
@@ -10927,7 +10930,7 @@
                  'Mat%Data_Type', Mat%Data_Type )
           EndIf
         EndIf
-      ElseIf (Mat%Storage.eq.'StorASym') then
+      ElseIf (Mat%Storage.eq.'StorAsym') then
         If (IndI.ge.IndJ) then
           If (Mat%Data_Type.eq.'Integer') then
             Element = (Mat%MatI(IndI*(IndI-1)/2+IndJ,1))
@@ -11026,7 +11029,7 @@
           EndIf
         EndIf
       Else
-        Call MQC_Error_A('MQC_Matrix_Scalar_At: Only full, Symm, and Diagonal type matrices are supported', 6, &
+        Call MQC_Error_A('Unrecognized storage type in MQC_Matrix_Scalar_At', 6, &
              'Mat%Storage', Mat%Storage )
       EndIf
 
@@ -17932,7 +17935,7 @@
           MQC_Matrix_Transpose%MatR = Matrix%MatR
         ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Transpose%MatR = (-1)*Matrix%MatR
-          Do I = 1, Size(MQC_Matrix_Transpose%MatR,1)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
             MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatR(symIndexHash(I,I),1)
           EndDo
         Else
@@ -17949,7 +17952,7 @@
           MQC_Matrix_Transpose%MatI = Matrix%MatI
         ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Transpose%MatI = (-1)*Matrix%MatI
-          Do I = 1, Size(MQC_Matrix_Transpose%MatI,1)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
             MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatI(symIndexHash(I,I),1)
           EndDo
         Else
@@ -17965,17 +17968,17 @@
           MQC_Matrix_Transpose%MatC = Matrix%MatC
         ElseIf (Matrix%Storage.eq.'StorAsym') then
           MQC_Matrix_Transpose%MatC = (-1)*Matrix%MatC
-          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
             MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1)
           EndDo
         ElseIf (Matrix%Storage.eq.'StorHerm') then
           MQC_Matrix_Transpose%MatC = conjg(Matrix%MatC)
-          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
             MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
           EndDo
         ElseIf (Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Transpose%MatC = (-1)*conjg(Matrix%MatC)
-          Do I = 1, Size(MQC_Matrix_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Transpose,1)
             MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1) = (-1)*conjg(MQC_Matrix_Transpose%MatC(symIndexHash(I,I),1))
           EndDo
         Else
@@ -18022,7 +18025,7 @@
       Implicit None
       Type(MQC_Matrix)::MQC_Matrix_Conjugate_Transpose
       Class(MQC_Matrix),Intent(In)::Matrix
-      Integer::I
+      Integer(kind=int64)::I
 !
       If(MQC_Matrix_HaveReal(Matrix)) then
         Call MQC_Allocate_Matrix(Matrix%NCol,Matrix%NRow,MQC_Matrix_Conjugate_Transpose, &
@@ -18034,7 +18037,7 @@
           MQC_Matrix_Conjugate_Transpose%MatR = Matrix%MatR
         ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Conjugate_Transpose%MatR = (-1)*Matrix%MatR
-          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatR,1)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
             MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1) = &
               (-1)*MQC_Matrix_Conjugate_Transpose%MatR(symIndexHash(I,I),1)
           EndDo
@@ -18052,7 +18055,7 @@
           MQC_Matrix_Conjugate_Transpose%MatI = Matrix%MatI
         ElseIf (Matrix%Storage.eq.'StorAsym' .or. Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Conjugate_Transpose%MatI = (-1)*Matrix%MatI
-          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatI,1)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
             MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1) = &
               (-1)*MQC_Matrix_Conjugate_Transpose%MatI(symIndexHash(I,I),1)
           EndDo
@@ -18069,19 +18072,19 @@
           MQC_Matrix_Conjugate_Transpose%MatC = conjg(Matrix%MatC)
         ElseIf (Matrix%Storage.eq.'StorAsym') then
           MQC_Matrix_Conjugate_Transpose%MatC = (-1)*conjg(Matrix%MatC)
-          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
             MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
               (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
           EndDo
         ElseIf (Matrix%Storage.eq.'StorHerm') then
           MQC_Matrix_Conjugate_Transpose%MatC = Matrix%MatC
-          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
             MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
               conjg(MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1))
           EndDo
         ElseIf (Matrix%Storage.eq.'StorAhrm') then
           MQC_Matrix_Conjugate_Transpose%MatC = (-1)*Matrix%MatC
-          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose%MatC,1)
+          Do I = 1, Size(MQC_Matrix_Conjugate_Transpose,1)
             MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1) = &
               (-1)*MQC_Matrix_Conjugate_Transpose%MatC(symIndexHash(I,I),1)
           EndDo
@@ -19250,12 +19253,14 @@
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
       type(MQC_Matrix)::MC,Tmp1,Tmp2
+      character(len=8)::storage
 !
 !
       Tmp1 = MA
       Tmp2 = MB
       select case(Tmp1%storage)
       case('StorFull')
+        storage = 'StorFull'
         select case(Tmp2%storage)
         case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
@@ -19269,14 +19274,17 @@
         end select
       case('StorSymm','StorHerm','StorAsym','StorAhrm')
         if(Tmp2%storage.eq.'StorFull') then
+          storage = 'StorFull'
           Call MQC_Matrix_Symm2Full(Tmp1)
         elseIf(Tmp2%storage.eq.'StorDiag') then
+          storage = Tmp1%storage
           Call MQC_Matrix_Diag2Symm(Tmp2)
         elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          storage = 'StorFull'
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call MQC_Matrix_Symm2Full(Tmp2)
         elseIf(Tmp2%storage.eq.Tmp1%storage) then
-          !-Empty Case-!
+          storage = Tmp1%storage
         else
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
@@ -19284,11 +19292,13 @@
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
+          storage = 'StorFull'
           Call MQC_Matrix_Diag2Full(Tmp1)
         case('StorSymm','StorHerm','StorAsym','StorAhrm')
+          storage = Tmp2%storage
           Call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
-          !-Empty Case-!
+          storage = 'StorDiag'
         case default
           call mqc_error_A('UNKOWN storage type in MQC_MatrixMatrixSum.', 6, &
                'Tmp2%storage', Tmp2%storage) 
@@ -19348,6 +19358,7 @@
         call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSum.', 6, &
              'Tmp1%data_type', Tmp1%data_type) 
       end select
+      MC%storage = storage
 !
       return
       end function MQC_MatrixMatrixSum
@@ -19391,11 +19402,13 @@
       implicit none
       type(MQC_Matrix),Intent(In)::MA,MB
       type(MQC_Matrix)::MC,Tmp1,Tmp2
+      character(len=8)::storage
 
       Tmp1 = MA
       Tmp2 = MB
       select case(Tmp1%storage)
       case('StorFull')
+        storage = 'StorFull'
         select case(Tmp2%storage)
         case('StorSymm','StorHerm','StorAsym','StorAhrm')
           call MQC_Matrix_Symm2Full(Tmp2)
@@ -19409,14 +19422,17 @@
         end select
       case('StorSymm','StorHerm','StorAsym','StorAhrm')
         if(Tmp2%storage.eq.'StorFull') then
+          storage = 'StorFull'
           call MQC_Matrix_Symm2Full(Tmp1)
         elseIf(Tmp2%storage.eq.'StorDiag') then
+          storage = Tmp1%Storage
           call MQC_Matrix_Diag2Symm(Tmp2)
         elseIf(Tmp2%storage.ne.Tmp1%storage) then
+          storage = 'StorFull'
           Call MQC_Matrix_Symm2Full(Tmp1)
           Call MQC_Matrix_Symm2Full(Tmp2)
         elseIf(Tmp2%storage.eq.Tmp1%storage) then
-          !-Empty Case-!
+          storage = Tmp1%Storage
         else
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
@@ -19424,11 +19440,13 @@
       case('StorDiag')
         select case(Tmp2%storage)
         case('StorFull')
+          storage = 'StorFull'
           call MQC_Matrix_Diag2Full(Tmp1)
         case('StorSymm','StorHerm','StorAsym','StorAhrm')
+          storage = Tmp2%storage
           call MQC_Matrix_Diag2Symm(Tmp1)
         case('StorDiag')
-          !-Empty Case-!
+          storage = 'StorDiag'
         case default
           call mqc_error_A('UNKNOWN storage type in MQC_MatrixMatrixSubtract.', 6, &
                'Tmp2%storage', Tmp2%storage)
@@ -19490,6 +19508,7 @@
         call mqc_error_A('UNKNOWN matrix type in MQC_MatrixMatrixSubtract.', 6, &
              'Tmp1%data_type', Tmp1%data_type)
       end select
+      MC%storage = storage
 !
       return
       end function MQC_MatrixMatrixSubtract
@@ -21150,9 +21169,9 @@
 !>        The MQC_Matrix to divide.
 !>    \endverbatim
 !>
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is Type(MQC_Scalar)
+!>        ScalarIn is Type(MQC_Scalar)
 !>        The MQC_Scalar to divide by.
 !>    \endverbatim
 !
@@ -21161,13 +21180,27 @@
 !>    \author L. M. Thompson
 !>    \date 2019
 !
-      Function MQC_MatrixScalarDivide(matrix,scalar) Result(matrix_res)
+      Function MQC_MatrixScalarDivide(matrix,scalarIn) Result(matrix_res)
 !
       implicit none
       type(mqc_matrix),intent(in)::matrix
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalarIn
+      type(mqc_scalar)::scalar
       type(mqc_matrix)::matrix_res
       type(mqc_scalar)::zero,neg_one,reciprocal
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_MatrixScalarDivide')
+      end select
 
       zero = 0.0
       neg_one = -1.0
@@ -22857,6 +22890,267 @@
       endDo
 
       end function MQC_Matrix_Matrix_Outer
+!
+!
+!     PROCEDURE MQC_Matrix_Complex_RealPart
+!
+!>    \brief <b> MQC_Matrix_Complex_RealPart is a function that returns a MQC matrix
+!>    with elements containing the real part of elements of another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Complex_RealPart is a function that returns a MQC matrix with 
+!>    elements containing the real part of elements of another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_matrix_complex_realPart(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      if(A%Data_Type.eq.'Complex') then
+        call MQC_Matrix_Copy_Complex2Real(output)
+        if(output%Storage.eq.'StorHerm') then
+          output%Storage = 'StorSymm'
+        elseIf(output%Storage.eq.'StorAhrm') then
+          output%Storage = 'StorAsym'
+        endIf
+      endIf
+!
+      end function mqc_matrix_complex_realPart
+!
+!
+!     PROCEDURE MQC_Matrix_Complex_ImagPart
+!
+!>    \brief <b> MQC_Matrix_Complex_ImagPart is a function that returns a MQC matrix
+!>    with elements containing the imaginary part of elements of another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Complex_ImagPart is a function that returns a MQC matrix with 
+!>    elements containing the imaginary part of elements of another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_matrix_complex_imagPart(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      select case (A%Data_Type)
+      case('Integer')
+        output%matI = 0
+      case('Real')
+        output%matR = 0.0
+      case('Complex')
+        output = A
+        call MQC_Matrix_Copy_Complex2Real(output)
+        output%matR = aimag(A%matC)
+        if(output%Storage.eq.'StorHerm') then
+          output%Storage = 'StorAsym'
+        elseIf(output%Storage.eq.'StorAhrm') then
+          output%Storage = 'StorSymm'
+        endIf
+      case default
+        call mqc_error_a('Unrecognized MQC_Matrix data type in mqc_matrix_complex_realPart',&
+          6,'A%Data_Type',A%Data_Type)
+      end select
+!
+      end function mqc_matrix_complex_imagPart
+!
+!
+!     PROCEDURE MQC_Matrix_Cmplx
+!
+!>    \brief <b> MQC_Matrix_Cmplx is a function that takes a MQC matrix representing 
+!>    the real part and a MQC matrix representing the imaginary part and combines
+!>    them into another MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Cmplx is a function that takes a MQC matrix representing the real 
+!>    part and a MQC matrix representing the imaginary part and combines them into 
+!>    another MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is Type(MQC_Matrix)
+!>        The MQC matrix containing the real part.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is Type(MQC_Matrix)
+!>        The MQC matrix containing the imaginary part.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Cmplx(Matrix1,Matrix2)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix)::MQC_Matrix_Cmplx
+      Type(MQC_Matrix),Intent(In)::Matrix1,Matrix2
+      Type(MQC_Matrix)::Tmp1,Tmp2
+      Character(len=8)::Storage
+!
+      If(Size(Matrix1,1).ne.Size(Matrix2,1).or.Size(Matrix1,2).ne.Size(Matrix2,2)) &
+        call mqc_error_i('Input matrix sizes do not conform in MQC_Matrix_Cmplx', 6, &
+        'Size(Matrix1,1)',Size(Matrix1,1),'Size(Matrix2,1)',Size(Matrix2,1), &
+        'Size(Matrix1,2)',Size(Matrix1,2),'Size(Matrix2,2)',Size(Matrix2,2))
+
+      if(Matrix1%Data_Type.eq.'Complex'.or.Matrix2%Data_Type.eq.'Complex') &
+        call mqc_error_a('Complex MQC matrix cannot be set as real/imaginary part in MQC_Matrix_Cmplx', &
+        6,'Matrix1%Data_Type',Matrix1%Data_Type,'Matrix2%Data_Type',Matrix2%Data_Type)
+
+      If(Matrix1%Storage.eq.'StorFull'.or.Matrix2%Storage.eq.'StorFull') then
+        Storage = 'StorFull'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorSymm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAsym'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorSymm'
+      ElseIf(Matrix1%Storage.eq.'StorHerm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorHerm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorSymm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorAsym') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorHerm') then
+        Storage = 'StorAhrm'
+      ElseIf(Matrix1%Storage.eq.'StorAhrm'.and.Matrix2%Storage.eq.'StorAhrm') then
+        Storage = 'StorAsym'
+      ElseIf(Matrix1%Storage.eq.'StorDiag'.and.Matrix2%Storage.eq.'StorDiag') then
+        Storage = 'StorDiag'
+      ElseIf(Matrix1%Storage.eq.'StorDiag') then
+        Storage = Matrix2%Storage
+      ElseIf(Matrix2%Storage.eq.'StorDiag') then
+        Storage = Matrix1%Storage
+      Else
+        Call MQC_Error('MQC_Matrix_Cmplx is confused')
+      EndIf
+        
+      call mqc_allocate_matrix(Size(Matrix1,1),Size(Matrix1,2),MQC_Matrix_Cmplx, &
+        'Complex',Storage)
+
+      Tmp1 = Matrix1
+      Tmp2 = Matrix2
+
+      if(Tmp1%Storage.eq.'StorFull') then
+        if(Tmp2%Storage.eq.'StorSymm'.or.Tmp2%Storage.eq.'StorAsym'.or. &
+          Tmp2%Storage.eq.'StorHerm'.or.Tmp2%Storage.eq.'StorAhrm') &
+          call mqc_matrix_symm2full(Tmp2)
+        if(Tmp2%Storage.eq.'StorDiag') &
+          call mqc_matrix_diag2full(Tmp2)
+      elseIf(Tmp1%Storage.eq.'StorSymm'.or.Tmp1%Storage.eq.'StorAsym'.or. &
+        Tmp1%Storage.eq.'StorHerm'.or.Tmp1%Storage.eq.'StorAhrm') then
+        if(Tmp2%Storage.eq.'StorFull') &
+          call mqc_matrix_symm2full(Tmp1)
+        if(Tmp2%Storage.eq.'StorDiag') &
+          call mqc_matrix_diag2symm(Tmp2)
+      elseIf(Tmp1%Storage.eq.'StorDiag') then
+        if(Tmp2%Storage.eq.'StorFull') &
+          call mqc_matrix_diag2full(Tmp1)
+        if(Tmp2%Storage.eq.'StorSymm'.or.Tmp2%Storage.eq.'StorAsym'.or. &
+          Tmp2%Storage.eq.'StorHerm'.or.Tmp2%Storage.eq.'StorAhrm') &
+          call mqc_matrix_diag2symm(Tmp1)
+      endIf
+
+      if(Tmp1%Data_Type.eq.'Integer') then
+        if(Tmp2%Data_Type.eq.'Integer') then
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatI,Tmp2%MatI)
+        elseIf(Tmp2%Data_Type.eq.'Real') then
+#ifdef PGI
+          MQC_Matrix_Cmplx%MatC = cmplx(dfloat(Tmp1%MatI),Tmp2%MatR)
+#else
+          MQC_Matrix_Cmplx%MatC = cmplx(float(Tmp1%MatI),Tmp2%MatR)
+#endif
+        endIf
+      elseIf(Tmp1%Data_Type.eq.'Real') then
+        if(Tmp2%Data_Type.eq.'Integer') then
+#ifdef PGI
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,dfloat(Tmp2%MatI))
+#else
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,float(Tmp2%MatI))
+#endif
+        elseIf(Tmp2%Data_Type.eq.'Real') then
+          MQC_Matrix_Cmplx%MatC = cmplx(Tmp1%MatR,Tmp2%MatR)
+        endIf
+      endIf
+!
+      Return
+      End Function MQC_Matrix_Cmplx
+!
 !
 !----------------------------------------------------------------
 !                                                               |
