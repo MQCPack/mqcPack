@@ -6580,7 +6580,7 @@
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
       type(mqc_scf_integral)::hermden,ahermden
       type(mqc_scalar)::half,raf1,raf2,raf3
-      logical::DEBUG=.true.,doHerm,doAhrm
+      logical::DEBUG=.false.,doHerm,doAhrm
       type(mqc_matrix)::aaHRden,aaHCden,bbHRden,bbHCden,abHHRden,abHHCden,abAHRden,abAHCden, &
         aaARden,aaACden,bbARden,bbACden,abHARden,abHACden,abAARden,abAACden
       type(mqc_matrix)::aaHRfoc,aaHCfoc,bbHRfoc,bbHCfoc,abHHRfoc,abHHCfoc,abAHRfoc,abAHCfoc, &
