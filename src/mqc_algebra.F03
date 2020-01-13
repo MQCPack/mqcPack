@@ -12232,7 +12232,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAhrm')
       mat%matI(:,1) = symmMatrixIn(:)
 !
       return
@@ -12330,7 +12330,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorAhrm')
       mat%matR(:,1) = symmMatrixIn(:)
 !
       return
@@ -12428,7 +12428,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAhrm')
       mat%matC(:,1) = symmMatrixIn(:)
 !
       return
