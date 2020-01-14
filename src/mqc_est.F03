@@ -6945,68 +6945,79 @@
           endDo
         endIf
 
-        if(doHerm) then
+!       Logic here is commented out as cannot do reduction over unallocated arrays in
+!       OMP section below. Therefore allocate and initialize all components of output 
+!       matrix even though some will never be used.
+!
+!        if(doHerm) then
           allocate(aaHRfoc((nBasis*(nBasis+1))/2))
           aaHRfoc = 0.0
-          if(mod(flag,100)/10.eq.1) then
+!          if(mod(flag,100)/10.eq.1) then
             allocate(aaHCfoc((nBasis*(nBasis+1))/2))
             aaHCfoc = 0.0
-          endIf
-          if(mod(flag,10).gt.0) then
+!          endIf
+!          if(mod(flag,10).gt.0) then
             allocate(bbHRfoc((nBasis*(nBasis+1))/2))
             bbHRfoc = 0.0 
-            if(mod(flag,100)/10.eq.1) then
+!            if(mod(flag,100)/10.eq.1) then
               allocate(bbHCfoc((nBasis*(nBasis+1))/2))
               bbHCfoc = 0.0 
-            endIf
-            if(mod(flag,10).eq.2) then
+!            endIf
+!            if(mod(flag,10).eq.2) then
               allocate(abHHRfoc((nBasis*(nBasis+1))/2))
               abHHRfoc = 0.0
-              if(mod(flag,100)/10.eq.1) then
+!              if(mod(flag,100)/10.eq.1) then
                 allocate(abHHCfoc((nBasis*(nBasis+1))/2))
                 abHHCfoc = 0.0
-              endIf
+!              endIf
               allocate(abAHRfoc((nBasis*(nBasis+1))/2))
               abAHRfoc = 0.0
-              if(mod(flag,100)/10.eq.1) then
+!              if(mod(flag,100)/10.eq.1) then
                 allocate(abAHCfoc((nBasis*(nBasis+1))/2))
                 abAHCfoc = 0.0
-              endIf
-            endIf
-          endIf
-        endIf
+!              endIf
+!            endIf
+!          endIf
+!        endIf
 
-        if(doAhrm) then
+!        if(doAhrm) then
           allocate(aaARfoc((nBasis*(nBasis+1))/2))
           aaARfoc = 0.0
-          if(mod(flag,100)/10.eq.1) then
+!          if(mod(flag,100)/10.eq.1) then
             allocate(aaACfoc((nBasis*(nBasis+1))/2))
             aaACfoc = 0.0
-          endIf
-          if(mod(flag,10).gt.0) then
+!          endIf
+!          if(mod(flag,10).gt.0) then
             allocate(bbARfoc((nBasis*(nBasis+1))/2))
             bbARfoc = 0.0
-            if(mod(flag,100)/10.eq.1) then
+!            if(mod(flag,100)/10.eq.1) then
               allocate(bbACfoc((nBasis*(nBasis+1))/2))
               bbACfoc = 0.0 
-            endIf
-            if(mod(flag,10).eq.2) then
+!            endIf
+!            if(mod(flag,10).eq.2) then
               allocate(abHARfoc((nBasis*(nBasis+1))/2))
               abHARfoc = 0.0
-              if(mod(flag,100)/10.eq.1) then
+!              if(mod(flag,100)/10.eq.1) then
                 allocate(abHACfoc((nBasis*(nBasis+1))/2))
                 abHACfoc = 0.0
-              endIf
+!              endIf
               allocate(abAARfoc((nBasis*(nBasis+1))/2))
               abAARfoc = 0.0
-              if(mod(flag,100)/10.eq.1) then
+!              if(mod(flag,100)/10.eq.1) then
                 allocate(abAACfoc((nBasis*(nBasis+1))/2))
                 abAACfoc = 0.0
-              endIf
-            endIf
-          endIf
-        endIf
+!              endIf
+!            endIf
+!          endIf
+!        endIf
 
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaHRfoc,bbHRfoc,aaHCfoc,bbHCfoc,abHHRfoc,abAHRfoc,abHHCfoc,abAHCfoc, &
+!$OMP aaARfoc,bbARfoc,aaACfoc,bbACfoc,abHARfoc,abAARfoc,abHACfoc,abAACfoc), &
+!$OMP SHARED(eris,ntt,aaHRden,bbHRden,aaHCden,bbHCden,abHHRden,abAHRden,abHHCden,abAHCden, &
+!$OMP aaARden,bbARden,aaACden,bbACden,abHARden,abAARden,abHACden,abAACden,flag,doHerm, &
+!$OMP doAhrm,zero), &
+!$OMP PRIVATE(cnt,kp,mp,k,l,m,n,raf1,raf2,raf3)
         do cnt = 1, (ntt*(ntt+1))/2
 #ifdef   PGI
           kp = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
@@ -7198,6 +7209,7 @@
           endIf
 
         endDo
+!$OMP END PARALLEL DO
 
         if(mod(flag,10).gt.0) then
           aaHRfoc = aaHRfoc - 0.25*bbHRfoc
