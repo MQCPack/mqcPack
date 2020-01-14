@@ -2277,76 +2277,139 @@
       type(mqc_scf_integral),optional,intent(in)::mo_coefficients
       character(len=64)::my_integralType
       type(mqc_r4tensor)::aaaa
+      real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,ip,kp,bs,iOut=6,iPrint=0
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0
 
       call string_change_case(integralType,'l',my_integralType)
 
-      select case (my_integralType)
+      select case (twoERIs%type())
       case ('regular')
-        if(twoERIs%type().eq.'regular') then
+        if(my_integralType.eq.'regular') then
           return
-        elseIf(twoERIs%type().eq.'raffenetti1') then
+        elseIf(my_integralType.eq.'raffenetti1') then
           bs = twoERIs%blockSize('alpha',1)
-          call aaaa%init((bs**4+2*bs**3+3*bs**2+2*bs)/8,1,1,1,0.0)
-          do ip = 1, (bs*(bs+1))/2
-            do kp = 1, (bs*(bs+1))/2
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
 #ifdef   PGI
-              i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
-              k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
 #else
-              i = floor((1+sqrt(float(-7+8*ip)))/2)
-              k = floor((1+sqrt(float(-7+8*kp)))/2)
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
 #endif  
-              j = ip - i*(i-1)/2
-              l = kp - k*(k-1)/2
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
 
-              call aaaa%put(twoERIs%at(i,j,k,l) - 0.25*(twoERIs%at(i,k,j,l) + &
-                twoERIs%at(i,l,j,k)),symIndexHash(i,j,k,l),1,1,1)
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,j,k,l) - &
+              0.25*(twoERIs%at(i,l,k,j) + twoERIs%at(i,k,l,j))
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
 
-            endDo
           endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
           call mqc_twoeris_allocate(twoERIs,'symm','raffenetti1',aaaa)
           return
-        elseIf(twoERIs%type().eq.'raffenetti2') then
-          do i = 1, twoERIs%blockSize('alpha',1)
-            do j = 1, twoERIs%blockSize('alpha',2)
-              do k = 1, twoERIs%blockSize('alpha',3)
-                do l = 1, twoERIs%blockSize('alpha',4)
-                  call aaaa%put(twoERIs%at(i,k,j,l)+twoERIs%at(i,l,j,k),i,j,k,l)
-                endDo
-              endDo
-            endDo
+        elseIf(my_integralType.eq.'raffenetti2') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif  
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) + &
+              twoERIs%at(i,k,l,j)
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+
           endDo
-          call mqc_twoeris_allocate(twoERIs,'full','raffenetti1',aaaa)
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'symm','raffenetti2',aaaa)
           return
-        elseIf(twoERIs%type().eq.'raffenetti3') then
-          do i = 1, twoERIs%blockSize('alpha',1)
-            do j = 1, twoERIs%blockSize('alpha',2)
-              do k = 1, twoERIs%blockSize('alpha',3)
-                do l = 1, twoERIs%blockSize('alpha',4)
-                  call aaaa%put(twoERIs%at(i,k,j,l)-twoERIs%at(i,l,j,k),i,j,k,l)
-                endDo
-              endDo
-            endDo
+        elseIf(my_integralType.eq.'raffenetti3') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif  
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) - &
+              twoERIs%at(i,k,l,j)
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+
           endDo
-          call mqc_twoeris_allocate(twoERIs,'full','raffenetti3',aaaa)
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'symm','raffenetti3',aaaa)
           return
-        elseIf(twoERIs%type().eq.'space') then
+        elseIf(my_integralType.eq.'space') then
           call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.false.)
           call mqc_twoeris_allocate(twoERIs,'full','space',temp%getBlock('alph'))
           return
-        elseIf(twoERIs%type().eq.'spin') then
+        elseIf(my_integralType.eq.'spin') then
           call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.true.)
           call mqc_twoeris_allocate(twoERIs,'full','spin',temp%getBlock('alpha'), &
             temp%getBlock('beta'),temp%getBlock('alphaBeta'),temp%getBlock('betaAlpha'))
           return
-        elseIf(twoERIs%type().eq.'general') then
+        elseIf(my_integralType.eq.'general') then
           call mqc_error_a('Transformation of regular to general MO 2ERIs NYI in &
-            & mqc_twoeris_transform',6,'twoERIs%type()',twoERIs%type())
+            & mqc_twoeris_transform',6,'my_integralType',my_integralType)
         else
-          call mqc_error_a('Unrecognized 2ERIs integral type in mqc_twoeris_transform',6, &
-            'twoERIs%type()',twoERIs%type())
+          call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
+            'my_integralType',my_integralType)
         endIf
       case ('raffenetti1')
         call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
@@ -2367,8 +2430,8 @@
         call mqc_error_a('Transformation of general MO 2ERIs NYI in mqc_twoeris_transform',6, &
           'twoERIs%type()',twoERIs%type())
       case default
-        call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
-          'my_integralType','my_integralType')
+        call mqc_error_a('Unrecognized 2ERIs integral type in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
       end select
 
       end subroutine mqc_twoeris_transform
@@ -6576,12 +6639,12 @@
       function mqc_eri_integral_contraction(eris,integral,label) result(output)
 !
       implicit none
-      type(mqc_twoERIs),intent(in)::eris
+      type(mqc_twoERIs),dimension(:),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
-      integer(kind=int64)::kp,mp,k,l,m,n,nBasis,fact1,flag,i
+      integer(kind=int64)::cnt,kp,mp,k,l,m,n,nBasis,ntt,fact1,flag,i
       character(len=64)::mylabel,algorithm='regular'
       real(kind=real64)::zero=1.0d-10
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
@@ -6602,14 +6665,10 @@
       type(mqc_matrix)::tmpMat,tmpMat2,tmpMat3
 !
 !     TODO:
-!     1) integral inputs
-!     2) parallelization
+!     1) parallelization
 !
 !
       half = 0.5
-      if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
-    &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:', &
-        eris%integralType)
       if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
         call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
         'algorithm',algorithm)
@@ -6647,8 +6706,40 @@
         flag = flag + 2
       endIf
       if(mqc_have_complex(integral%getBlock('full'))) flag = flag + 10
+      if(eris(1)%type().eq.'regular') then
+        flag = flag + 100
+      elseif(eris(1)%type().eq.'raffenetti1') then
+        flag = flag + 200
+      elseif(eris(1)%type().eq.'raffenetti2') then
+        flag = flag + 300
+      elseif(eris(1)%type().eq.'raffenetti3') then
+        flag = flag + 400
+      endIf
+      if(size(eris).ge.2) then
+        if(eris(2)%type().eq.'regular') then
+          flag = flag + 1000
+        elseif(eris(2)%type().eq.'raffenetti1') then
+          flag = flag + 2000
+        elseif(eris(2)%type().eq.'raffenetti2') then
+          flag = flag + 3000
+        elseif(eris(2)%type().eq.'raffenetti3') then
+          flag = flag + 4000
+        endIf
+      endIf
+      if(size(eris).ge.3) then
+        if(eris(3)%type().eq.'regular') then
+          flag = flag + 10000
+        elseif(eris(3)%type().eq.'raffenetti1') then
+          flag = flag + 20000
+        elseif(eris(3)%type().eq.'raffenetti2') then
+          flag = flag + 30000
+        elseif(eris(3)%type().eq.'raffenetti3') then
+          flag = flag + 40000
+        endIf
+      endIf
 
       nBasis = integral%blockSize('alpha')
+      ntt = (nBasis*(nBasis+1))/2
       call alpha%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
         call beta%init(nBasis,nBasis)
@@ -6908,118 +6999,196 @@
           endIf
         endIf
 
-        do kp = 1, (nBasis*(nBasis+1))/2
-          do mp = 1, (nBasis*(nBasis+1))/2
+        do cnt = 1, (ntt*(ntt+1))/2
 #ifdef   PGI
-            k = floor((1+sqrt(dfloat(-7+8*kp)))/2) 
-            m = floor((1+sqrt(dfloat(-7+8*mp)))/2) 
+          kp = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+          mp = cnt - kp*(kp-1)/2
+          k = floor((1+sqrt(dfloat(-7+8*kp)))/2) 
+          m = floor((1+sqrt(dfloat(-7+8*mp)))/2) 
 #else
-            k = floor((1+sqrt(float(-7+8*kp)))/2) 
-            m = floor((1+sqrt(float(-7+8*mp)))/2) 
+          kp = floor((1+sqrt(float(-7+8*cnt)))/2)
+          mp = cnt - kp*(kp-1)/2
+          k = floor((1+sqrt(float(-7+8*kp)))/2) 
+          m = floor((1+sqrt(float(-7+8*mp)))/2) 
 #endif  
-            l = kp - k*(k-1)/2
-            n = mp - m*(m-1)/2
+          l = kp - k*(k-1)/2
+          n = mp - m*(m-1)/2
 
-            raf1 = eris%at(k,l,m,n) - 0.25*(eris%at(k,n,m,l) + eris%at(k,m,n,l))
+          if(mod(flag,1000)/100.eq.1) then
+            raf1 = eris(1)%at(k,l,m,n) - 0.25*(eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l))
+            if(kp.eq.mp) raf1 = 0.5*raf1 
+          elseIf(mod(flag,1000)/100.eq.2) then
+            raf1 = eris(1)%at(k,l,m,n)
+          else
+            call mqc_error_a('Unrecognized/incorrect integrals given in eris(1) in &
+              & mqc_eri_integral_contraction',6,'eris(1)%type()',eris(1)%type())
+          endIf
+          if(mod(flag,10).gt.0) then
+            if(mod(flag,1000)/100.eq.1) then
+              raf2 = eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l)
+              if(kp.eq.mp) raf2 = 0.5*raf2 
+            elseIf(mod(flag,10000)/1000.eq.3) then
+              raf2 = eris(2)%at(k,l,m,n) 
+            else
+              call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) in &
+                & mqc_eri_integral_contraction',6,'eris(2)%type()',eris(2)%type())
+            endIf
+          else
+            raf2 = 0.0 
+          endIf
+          if (m.ne.n) then
+            if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) then
+              if(mod(flag,1000)/100.eq.1) then
+                raf3 = eris(1)%at(k,n,m,l) - eris(1)%at(k,m,n,l)
+                if(kp.eq.mp) raf3 = 0.5*raf3 
+              elseIf(mod(flag,10000)/1000.eq.4) then
+                raf3 = eris(2)%at(k,l,m,n) 
+              elseIf(mod(flag,100000)/10000.eq.4) then
+                raf3 = eris(3)%at(k,l,m,n) 
+              else
+                call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) or & 
+                  & eris(3) in mqc_eri_integral_contraction',6,'eris(2)%type()', &
+                  eris(2)%type(),'eris(3)%type()',eris(3)%type())
+              endIf
+            endIf
+          else
+            raf3 = 0.0
+          endIf
+
+          if(doHerm) then
+!         AA/BB Hermitian Fock
+            if(abs(raf1).gt.zero.and.abs(aaHRden(symIndexHash(m,n))).gt.zero) &
+              aaHRfoc(symIndexHash(k,l)) = aaHRfoc(symIndexHash(k,l)) + &
+              raf1*aaHRden(symIndexHash(m,n))
+            if(abs(raf1).gt.zero.and.abs(aaHRden(symIndexHash(k,l))).gt.zero) &
+              aaHRfoc(symIndexHash(m,n)) = aaHRfoc(symIndexHash(m,n)) + &
+              raf1*aaHRden(symIndexHash(k,l))
             if(mod(flag,10).gt.0) then
-              raf2 = eris%at(k,n,m,l) + eris%at(k,m,n,l)
-            else
-              raf2 = 0.0 
+              if(abs(raf2).gt.zero.and.abs(bbHRden(symIndexHash(m,n))).gt.zero) &
+                bbHRfoc(symIndexHash(k,l)) = bbHRfoc(symIndexHash(k,l)) + &
+                raf2*bbHRden(symIndexHash(m,n))
+              if(abs(raf2).gt.zero.and.abs(bbHRden(symIndexHash(k,l))).gt.zero) &
+                bbHRfoc(symIndexHash(m,n)) = bbHRfoc(symIndexHash(m,n)) + &
+                raf2*bbHRden(symIndexHash(k,l))
             endIf
-            if (m.ne.n) then
-              if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) &
-                raf3 = eris%at(k,n,m,l) - eris%at(k,m,n,l)
-            else
-              raf3 = 0.0
-            endIf
-
-            if(doHerm) then
-!           AA/BB Hermitian Fock
-              if(abs(raf1).gt.zero.and.abs(aaHRden(symIndexHash(m,n))).gt.zero) &
-                aaHRfoc(symIndexHash(k,l)) = aaHRfoc(symIndexHash(k,l)) + &
-                raf1*aaHRden(symIndexHash(m,n))
-              if(mod(flag,10).gt.0) then
-                if(abs(raf2).gt.zero.and.abs(bbHRden(symIndexHash(m,n))).gt.zero) &
-                  bbHRfoc(symIndexHash(k,l)) = bbHRfoc(symIndexHash(k,l)) + &
-                  raf2*bbHRden(symIndexHash(m,n))
+            if(m.ne.n.and.mod(flag,100)/10.eq.1) then
+              if(abs(raf3).gt.zero) then
+                if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
+                  raf3*aaHCden(symIndexHash(m,n))
+                if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
+                  raf3*aaHCden(symIndexHash(k,l))
+                if(mod(flag,10).gt.0) then
+                  if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
+                    raf3*bbHCden(symIndexHash(m,n))
+                  if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
+                    raf3*bbHCden(symIndexHash(k,l))
+                endIf
               endIf
+            endIf
+            if(mod(flag,10).eq.2) then
+!         AB Hermitian Hermitian Fock
+              if(abs(abHHRden(symIndexHash(m,n))).gt.zero) &
+                abHHRfoc(symIndexHash(k,l)) = abHHRfoc(symIndexHash(k,l)) - &
+                raf2*abHHRden(symIndexHash(m,n))
+              if(abs(abHHRden(symIndexHash(k,l))).gt.zero) &
+                abHHRfoc(symIndexHash(m,n)) = abHHRfoc(symIndexHash(m,n)) - &
+                raf2*abHHRden(symIndexHash(k,l))
               if(m.ne.n.and.mod(flag,100)/10.eq.1) then
-                if(abs(raf3).gt.zero) then
-                  if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
-                    aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
-                    raf3*aaHCden(symIndexHash(m,n))
-                  if(mod(flag,10).gt.0) then
-                    if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
-                      bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
-                      raf3*bbHCden(symIndexHash(m,n))
-                  endIf
-                endIf
+                if(abs(abHHCden(symIndexHash(m,n))).gt.zero) &
+                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) - &
+                  raf3*abHHCden(symIndexHash(m,n))
+                if(abs(abHHCden(symIndexHash(k,l))).gt.zero) &
+                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) - &
+                  raf3*abHHCden(symIndexHash(k,l))
               endIf
-              if(mod(flag,10).eq.2) then
-!           AB Hermitian Hermitian Fock
-                if(abs(abHHRden(symIndexHash(m,n))).gt.zero) &
-                  abHHRfoc(symIndexHash(k,l)) = abHHRfoc(symIndexHash(k,l)) - &
-                  raf2*abHHRden(symIndexHash(m,n))
-                if(m.ne.n.and.mod(flag,100)/10.eq.1) then
-                  if(abs(abHHCden(symIndexHash(m,n))).gt.zero) &
-                    abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) - &
-                    raf3*abHHCden(symIndexHash(m,n))
-                endIf
-!           AB Antihermitian Hermitian Fock
-                if(m.ne.n.and.abs(abAHRden(symIndexHash(m,n))).gt.zero) &
-                  abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) - &
-                  raf3*abAHRden(symIndexHash(m,n))
-                if (mod(flag,100)/10.eq.1) then
-                  if(abs(abAHCden(symIndexHash(m,n))).gt.zero) &
-                    abAHCfoc(symIndexHash(k,l)) = abAHCfoc(symIndexHash(k,l)) - &
-                    raf2*abAHCden(symIndexHash(m,n))
-                endIf
+!         AB Antihermitian Hermitian Fock
+              if(m.ne.n.and.abs(abAHRden(symIndexHash(m,n))).gt.zero) &
+                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) - &
+                raf3*abAHRden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(abAHRden(symIndexHash(k,l))).gt.zero) &
+                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) - &
+                raf3*abAHRden(symIndexHash(k,l))
+              if (mod(flag,100)/10.eq.1) then
+                if(abs(abAHCden(symIndexHash(m,n))).gt.zero) &
+                  abAHCfoc(symIndexHash(k,l)) = abAHCfoc(symIndexHash(k,l)) - &
+                  raf2*abAHCden(symIndexHash(m,n))
+                if(abs(abAHCden(symIndexHash(k,l))).gt.zero) &
+                  abAHCfoc(symIndexHash(m,n)) = abAHCfoc(symIndexHash(m,n)) - &
+                  raf2*abAHCden(symIndexHash(k,l))
               endIf
             endIf
-!           AA Antihermitian Fock
-            if(doAhrm) then
-              if(m.ne.n.and.abs(aaARden(symIndexHash(m,n))).gt.zero) &
-                aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) - &
-                raf3*aaARden(symIndexHash(m,n))
+          endIf
+!         AA Antihermitian Fock
+          if(doAhrm) then
+            if(m.ne.n.and.abs(aaARden(symIndexHash(m,n))).gt.zero) &
+              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) - &
+              raf3*aaARden(symIndexHash(m,n))
+            if(m.ne.n.and.abs(aaARden(symIndexHash(k,l))).gt.zero) &
+              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) - &
+              raf3*aaARden(symIndexHash(k,l))
+            if(mod(flag,100)/10.eq.1) then
+              if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
+                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) - &
+                raf2*aaACden(symIndexHash(m,n))
+              if(abs(aaACden(symIndexHash(k,l))).gt.zero) &
+                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) - &
+                raf2*aaACden(symIndexHash(k,l))
+            endIf
+            if(mod(flag,10).gt.0) then
+!         BB Antihermitian Fock
+              if(m.ne.n.and.abs(bbARden(symIndexHash(m,n))).gt.zero) &
+                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) - &
+                raf3*bbARden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(bbARden(symIndexHash(k,l))).gt.zero) &
+                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) - &
+                raf3*bbARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
-                if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
-                  aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) - &
-                  raf2*aaACden(symIndexHash(m,n))
-              endIf
-              if(mod(flag,10).gt.0) then
-!           BB Antihermitian Fock
-                if(m.ne.n.and.abs(bbARden(symIndexHash(m,n))).gt.zero) &
-                  bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) - &
-                  raf3*bbARden(symIndexHash(m,n))
-                if(mod(flag,100)/10.eq.1) then
-                  if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
-                    bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) - &
-                    raf2*bbACden(symIndexHash(m,n))
-                endIf
-              endIf
-!           AB Hermitian Antihermitian Fock
-              if(mod(flag,10).eq.2) then
-                if(abs(abHARden(symIndexHash(m,n))).gt.zero) &
-                  abHARfoc(symIndexHash(k,l)) = abHARfoc(symIndexHash(k,l)) - &
-                  raf2*abHARden(symIndexHash(m,n))
-                if(mod(flag,100)/10.eq.1.and.m.ne.n) then
-                  if(abs(abHACden(symIndexHash(m,n))).gt.zero) &
-                   abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) - &
-                   raf3*abHACden(symIndexHash(m,n))
-               endIf
-!           AB Antihermitian Antihermitian Fock
-                if(m.ne.n.and.abs(abAARden(symIndexHash(m,n))).gt.zero) &
-                  abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) - &
-                  raf3*abAARden(symIndexHash(m,n))
-                if(mod(flag,100)/10.eq.1) then
-                  if(abs(abAACden(symIndexHash(m,n))).gt.zero) &
-                    abAACfoc(symIndexHash(k,l)) = abAACfoc(symIndexHash(k,l)) - &
-                    raf2*abAACden(symIndexHash(m,n))
-                endIf
+                if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
+                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) - &
+                  raf2*bbACden(symIndexHash(m,n))
+                if(abs(bbACden(symIndexHash(k,l))).gt.zero) &
+                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) - &
+                  raf2*bbACden(symIndexHash(k,l))
               endIf
             endIf
+!         AB Hermitian Antihermitian Fock
+            if(mod(flag,10).eq.2) then
+              if(abs(abHARden(symIndexHash(m,n))).gt.zero) &
+                abHARfoc(symIndexHash(k,l)) = abHARfoc(symIndexHash(k,l)) - &
+                raf2*abHARden(symIndexHash(m,n))
+              if(abs(abHARden(symIndexHash(k,l))).gt.zero) &
+                abHARfoc(symIndexHash(m,n)) = abHARfoc(symIndexHash(m,n)) - &
+                raf2*abHARden(symIndexHash(k,l))
+              if(mod(flag,100)/10.eq.1.and.m.ne.n) then
+                if(abs(abHACden(symIndexHash(m,n))).gt.zero) &
+                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) - &
+                 raf3*abHACden(symIndexHash(m,n))
+                if(abs(abHACden(symIndexHash(k,l))).gt.zero) &
+                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) - &
+                 raf3*abHACden(symIndexHash(k,l))
+             endIf
+!         AB Antihermitian Antihermitian Fock
+              if(m.ne.n.and.abs(abAARden(symIndexHash(m,n))).gt.zero) &
+                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) - &
+                raf3*abAARden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(abAARden(symIndexHash(k,l))).gt.zero) &
+                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) - &
+                raf3*abAARden(symIndexHash(k,l))
+              if(mod(flag,100)/10.eq.1) then
+                if(abs(abAACden(symIndexHash(m,n))).gt.zero) &
+                  abAACfoc(symIndexHash(k,l)) = abAACfoc(symIndexHash(k,l)) - &
+                  raf2*abAACden(symIndexHash(m,n))
+                if(abs(abAACden(symIndexHash(k,l))).gt.zero) &
+                  abAACfoc(symIndexHash(m,n)) = abAACfoc(symIndexHash(m,n)) - &
+                  raf2*abAACden(symIndexHash(k,l))
+              endIf
+            endIf
+          endIf
 
-          endDo
         endDo
 
         if(mod(flag,10).gt.0) then
@@ -7154,6 +7323,10 @@
         
       elseIf(algorithm.eq.'square') then
 
+        if(eris(1)%integralType.ne.'regular') call mqc_error_A('2ERI contraction only &
+          & implemented with regular integrals in mqc_eri_integral_contraction',6, &
+          'eris(1)%integralType:',eris(1)%integralType)
+
 !        !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
         !$OMP PARALLEL DEFAULT(NONE), &
         !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
@@ -7170,33 +7343,33 @@
           do l = 1, nBasis
             do m = 1, nBasis
               do n = 1, nBasis
-                if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
+                if(abs(eris(1)%at(k,l,m,n)).le.zero.and.abs(eris(1)%at(k,n,m,l)).le.zero) cycle
                 ! AA Block
                 if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                  call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
-                  call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
                 endIf
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaLoc%put(alphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n),k,l)
                 endIf
                 !BB Block
                 if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
                   if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                    call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
-                    call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
                   endIf
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaLoc%put(betaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
                   endIf
                 endIf
                 !AB Block
                 if(integral%array_type.eq.'general') then
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                   endIf
                 !BA Block
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                   endIf
                 endIf
               end do
@@ -8319,9 +8492,12 @@
       else
         if(twoERIs%integralType.eq.'regular') then
           element = twoERIs%alpha%at(i,j,k,l)
-        elseIf(twoERIs%integralType.eq.'raffenetti1'.or.twoERIs%integralType.eq.'raffenetti2'.or. &
-            twoERIs%integralType.eq.'raffenetti3') then
-          call mqc_error('Still need to implement Raffenetti type integrals')
+        elseIf(twoERIs%integralType.eq.'raffenetti1') then
+          element = twoERIs%alpha%at(i,j,k,l)
+        elseIf(twoERIs%integralType.eq.'raffenetti2') then
+          element = twoERIs%alpha%at(i,j,k,l)
+        elseIf(twoERIs%integralType.eq.'raffenetti3') then
+          element = twoERIs%alpha%at(i,j,k,l)
         elseIf(twoERIs%integralType.eq.'space') then
 !         need to implement accounting for NBas*2 dimensions
           element = twoERIs%alpha%at(i,j,k,l)
