@@ -25159,28 +25159,103 @@
 !
       Implicit None
       Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
-      Type(MQC_R4Tensor)::Summation
+      Type(MQC_R4Tensor)::Summation,Tmp1,Tmp2
       Integer(kind=int64)::M,N,O,P,i,j,k,l
+      character(len=8)::storage
 !
       M = size(R4Tensor1,1)
       N = size(R4Tensor1,2)
       O = size(R4Tensor1,3)
       P = size(R4Tensor1,4)
 
-      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or. &
+        P.ne.size(R4Tensor2,4)) &
         call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Sum',6)
 
-      call summation%init(M,N,O,P)
+      Tmp1 = R4Tensor1
+      Tmp2 = R4Tensor2
 
-      do i = 1,M
-        do j = 1,N
-          do k = 1,O
-            do l = 1,P
-              call summation%put(R4Tensor1%at(i,j,k,l)+R4Tensor2%at(i,j,k,l),i,j,k,l)
-            endDo
-          endDo
-        endDo
-      endDo
+      select case(Tmp1%Storage) 
+      case('StorFull')
+        storage = 'StorFull'
+        select case(Tmp2%storage)
+        case('StorSymm')
+          call MQC_R4Tensor_Symm2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+            'Tmp2%Storage',Tmp2%Storage)
+        end select
+      case('StorSymm')
+        select case (Tmp2%storage)
+        case('StorSymm')
+          storage = 'StorSymm'
+        case('StorFull')
+          call MQC_R4Tensor_Symm2Full(Tmp1)
+          storage = 'StorFull'
+        case default 
+          call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+            'Tmp2%Storage',Tmp2%Storage)
+        end select
+      case default
+        call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+          'Tmp1%Storage',Tmp1%Storage)
+      end select
+
+
+      select case(Tmp1%data_type)
+      case('Real')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp2
+          summation%RTen = Tmp1%RTen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp1
+          summation%RTen = Tmp1%RTen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%RTen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Integer')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp2
+          summation%RTen = Tmp1%ITen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp2
+          summation%ITen = Tmp1%ITen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%ITen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Complex')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp1
+          summation%CTen = Tmp1%CTen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp1
+          summation%CTen = Tmp1%CTen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%CTen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case default
+        call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+             'Tmp1%data_type', Tmp1%data_type) 
+      end select
+
+      summation%storage = storage
 !
       End Function MQC_R4Tensor_R4Tensor_Sum
 !

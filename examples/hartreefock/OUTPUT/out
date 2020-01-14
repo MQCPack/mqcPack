@@ -236,11 +236,11 @@ Iteration:   2
   Orthogonal MO coefficients
  Alpha Array
                   1             2
-       1      0.000000     -1.000000
+       1      0.000000      1.000000
        2      1.000000      0.000000
  Beta Array
                   1             2
-       1      0.000000     -1.000000
+       1      0.000000      1.000000
        2      1.000000      0.000000
  Orbital energies
  Alpha Array
@@ -252,12 +252,12 @@ Iteration:   2
  MO coefficients
  Alpha Array
                   1             2
-       1      0.707069      0.707145
-       2      0.707069     -0.707145
+       1      0.707069     -0.707145
+       2      0.707069      0.707145
  Beta Array
                   1             2
-       1      0.707069      0.707145
-       2      0.707069     -0.707145
+       1      0.707069     -0.707145
+       2      0.707069      0.707145
  Density matrix
  Alpha Array
                   1             2

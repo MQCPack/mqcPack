@@ -993,7 +993,8 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Read_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
-       label,matrixOut,vectorOut,r4TensorOut,filename,mqcVarOut,foundOut)
+       label,matrixOut,vectorOut,r4TensorOut,filename,mqcVarOut,foundOut, &
+       arraynum)
 !
 !     This Routine is used to look-up a matrix in a unformatted matrix file load
 !     that array into either (OPTIONAL) output dummy MQC_Matrix argument
@@ -1014,8 +1015,13 @@
 !     routine. However, it is also OK to call this routine first. In that case,
 !     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
+!     Optional argument <arraynum> allows the user to specify a specific array in
+!     the case that the matrix file has several arrays under a specific label. 
+!     Currently only implemented for the case '2ERIS-SYMSYMR4TENSOR' so that we 
+!     can access Raffenetti 2 and Raffenetti 3 integrals.
+!
 !     H. P. Hratchian, 2017, 2018.
-!     L. M. Thompson, 2017
+!     L. M. Thompson, 2017, 2020
 !
 !     Variable Declarations.
 !
@@ -1028,6 +1034,7 @@
       character(len=*),intent(in),OPTIONAL::filename
       type(MQC_Variable),intent(inout),OPTIONAL::mqcVarOut
       logical,OPTIONAL::foundOut
+      integer,intent(in),OPTIONAL::arrayNum
 !
       integer::iout=6
 !
@@ -1037,7 +1044,7 @@
       logical::EOF,ASym
 !
 !     Local temp variables.
-      integer::i,nOutputArrays,LNZ
+      integer::i,nOutputArrays,LNZ,myArrayNum
 !      integer,external::LenArr
       integer,allocatable,dimension(:)::integerTmp
       real,allocatable,dimension(:)::arrayTmp
@@ -1100,6 +1107,12 @@
       if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
            'nOutputArrays', nOutputArrays )
 !
+      if(present(arrayNum)) then
+        myArrayNum = arrayNum
+      else
+        myArrayNum = 1
+      endIf
+!
 !     Look for the label sent by the calling program unit. If the label is
 !     found, then load the appropriate output argument with the data on the
 !     file.
@@ -1111,6 +1124,8 @@
         Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
         LR = LenArr(N1,N2,N3,N4,N5)
+        if(NR.ne.0.and.myArrayNum.gt.NR) call mqc_error_I('Array number requested not found &
+          & under specified label',6,'NR',NR,'myArrayNum',myArrayNum)
         if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
@@ -1300,23 +1315,23 @@
       'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
       MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
             case('2ERIS-SYMSYMR4TENSOR')
-              if(.not.Present(r4TensorOut)) call mqc_error_l('Reading r4 tensor from Gaussian matrix file, but NO R4TENSOR SENT to &
-                & procedure.', 6, &
-                'Present(r4TensorOut)', Present(r4TensorOut) )
+              if(.not.Present(r4TensorOut)) &
+                call mqc_error_l('Reading r4 tensor from Gaussian matrix file, but required &
+                & variable R4TENSOR not sent to procedure.',6,'Present(r4TensorOut)', &
+                Present(r4TensorOut))
               if(NRI.eq.1) then
-                allocate(arrayTmp(LR))
+                allocate(arrayTmp(LR*NR))
                 call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
-                call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,arrayTmp)
+                call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,&
+                  arrayTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
                 deallocate(arrayTmp)
               elseIf(NRI.eq.2) then
-                allocate(arrayTmp(LR*2))
-!                allocate(complexTmp(LR))
+                allocate(arrayTmp(NR*LR*2))
                 call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,arrayTmp)
-!                call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,complexTmp)
-                complexTmp = reshape(arrayTmp, shape(complexTmp))
-                call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut,complexTmp)
-!                deallocate(complexTmp)
-                deallocate(arrayTmp)
+                complexTmp = reshape(arrayTmp,shape(complexTmp))
+                call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut, &
+                  complexTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
+                deallocate(arrayTmp,complexTmp)
               endIf
             case('SCALARS-VECTOR') 
 !             Just read Gaussian scalars into a real vector for now
@@ -3611,12 +3626,15 @@
 !     The recognized labels and their meaning include:
 !           'regular'            return the regular stored 2ERIs 
 !                                  R(i,j,k,l) = (ij|kl)
-!           'raffenetti1'        return the raffenetti 1 stored 2ERIs  
-!                                  R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
-!           'raffenetti2'        return the raffenetti 2 stored 2ERIs  
-!                                  R(i,j,k,l) = (ij|kl) + (il|jk)
-!           'raffenetti3'        return the raffenetti 3 stored 2ERIs  
-!                                  R(i,j,k,l) = (ik|jl) - (il|jk)
+!           'raffenetti1'        return the raffenetti stored 2ERIs for real
+!                                restricted wavefunctions
+!                                  R1(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
+!           'raffenetti2'        return the raffenetti stored 2ERIs for real
+!                                unrestricted wavefunctions
+!                                  R2(i,j,k,l) = (ij|kl) + (il|jk)
+!           'raffenetti3'        return the raffenetti stored 2ERIs for complex
+!                                and/or general wavefunctions
+!                                  R3(i,j,k,l) = (ik|jl) - (il|jk)
 !           'molecular'          return the molecular orbital basis 2ERIs
 
 !     L. M. Thompson, 2018.
@@ -3673,9 +3691,17 @@
       case('regular')
         call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
         call mqc_twoeris_allocate(est_twoeris,'symm','regular',tmpR4TensorAlpha)
-      case('raffenetti')
+      case('raffenetti1')
         call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti1',tmpR4TensorAlpha)
+      case('raffenetti2')
+        call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha, &
+          arraynum=2)
+        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti2',tmpR4TensorAlpha)
+      case('raffenetti3')
+        call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha, &
+          arraynum=3)
+        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti3',tmpR4TensorAlpha)
       case('molecular')
         if(fileinfo%isRestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
