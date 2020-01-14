@@ -6636,17 +6636,18 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_eri_integral_contraction(eris,integral,label) result(output)
+      function mqc_eri_integral_contraction(eris,integral,zeroIn,label) result(output)
 !
       implicit none
       type(mqc_twoERIs),dimension(:),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
+      real(kind=real64),optional,intent(in)::zeroIn
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
       integer(kind=int64)::cnt,kp,mp,k,l,m,n,nBasis,ntt,fact1,flag,i
       character(len=64)::mylabel,algorithm='regular'
-      real(kind=real64)::zero=1.0d-10
+      real(kind=real64)::zero
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
 !     defined arrays. For now define local copies by hand and then sum into global version
 !     in critical section.
@@ -6667,15 +6668,22 @@
 !     TODO:
 !     1) parallelization
 !
-!
       half = 0.5
       if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
         call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
         'algorithm',algorithm)
 !
-     
+      if(present(zeroIn)) then
+        zero = zeroIn
+      else
+        zero = 1.0d-10
+      endIf
+!
       if(present(label)) then
         call string_change_case(label,'L',myLabel)
+        if(algorithm.eq.'regular'.and.myLabel.ne.'doublebar') &
+          call mqc_error_a('Regular algorithm only returns double bar integrals',6, &
+          'algorithm',algorithm,'myLabel',myLabel)
       else
         myLabel = 'doublebar'
       endIf
