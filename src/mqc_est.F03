@@ -6665,9 +6665,6 @@
       real(kind=real64),dimension(:,:),allocatable::temp
       type(mqc_matrix)::tmpMat,tmpMat2,tmpMat3
 !
-!     TODO:
-!     1) parallelization
-!
       half = 0.5
       if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
         call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
