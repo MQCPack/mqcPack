@@ -151,6 +151,8 @@
         Procedure, Public::sqrt => MQC_Vector_Sqrt
 !>      \brief <b> Returns the absolute value of each element in the MQC_Vector</b>
         Procedure, Public::abs => MQC_Vector_Abs
+!>      \brief <b> Returns the sum of elements in the MQC_Vector</b>
+        Procedure, Public::sum => MQC_Vector_Sum
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
@@ -274,6 +276,16 @@
         module procedure MQC_Scalar_Complex_Conjugate
       end interface
 !
+!>    \brief <b> Returns the object as a floating point intrinsic</b>
+      Interface float
+        Module Procedure MQC_Scalar_Get_Intrinsic_Real
+      End Interface
+!
+!>    \brief <b> Returns the object as an integer intrinsic</b>
+      Interface int
+        Module Procedure MQC_Scalar_Get_Intrinsic_Integer
+      End Interface
+!
 !>    \brief <b> Determines in an array is real type</b>
       interface mqc_have_real
         Module procedure mqc_vector_havereal
@@ -332,6 +344,7 @@
 !>    \brief <b> Defines a complex number</b>
       Interface Cmplx
         Module Procedure MQC_Scalar_Cmplx
+        Module Procedure MQC_Scalar_Get_Intrinsic_Complex
         Module Procedure MQC_Vector_Cmplx
         Module Procedure MQC_Matrix_Cmplx
       End Interface
@@ -10260,8 +10273,8 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Sqrt is a function that returns the absolute value of all elements 
-!>    of an MQC vector.
+!>    MQC_Vector_Abs is a function that returns the absolute value of all elements of 
+!>    an MQC vector.
 !>
 !>    \endverbatim
 !
@@ -10542,6 +10555,51 @@
 !
       Return
       End Function MQC_Vector_Cmplx
+!
+!
+!     PROCEDURE MQC_Vector_Sum
+!
+!>    \brief <b> MQC_Vector_Sum is a function that returns the sum of all elements 
+!>    of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sum is a function that returns the sum of all elements of an MQC
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_vector_sum(A) result(output)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = 0.0
+      do i=1,MQC_Length_Vector(A)
+        output = output + A%at(i)
+      endDo
+!
+      end function mqc_vector_sum
 !
 !
 !----------------------------------------------------------------
@@ -16297,7 +16355,7 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(abs(Matrix%MatR(I,J)).ne.Thresh) then
+              If(abs(Matrix%MatR(I,J)).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -18542,10 +18600,9 @@
       Integer(kind=int64)::I,N,Columns,Rows
 !
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
-     'Matrix%Storage', Matrix%Storage )
+     &  diagonal packed in MQC_Matrix_Diag2Full',6,'Matrix%Storage', Matrix%Storage )
       If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
-     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
+     &  diagonal in MQC_Matrix_Diag2Full', 6, &
       'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       N = Min(MQC_Matrix_Columns(Matrix),MQC_Matrix_Rows(Matrix))
       Columns = MQC_Matrix_Columns(Matrix)
