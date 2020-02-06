@@ -151,6 +151,8 @@
         Procedure, Public::sqrt => MQC_Vector_Sqrt
 !>      \brief <b> Returns the absolute value of each element in the MQC_Vector</b>
         Procedure, Public::abs => MQC_Vector_Abs
+!>      \brief <b> Returns the sum of elements in the MQC_Vector</b>
+        Procedure, Public::sum => MQC_Vector_Sum
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
@@ -272,7 +274,19 @@
 !>    \brief <b> Returns the complex conjugate</b>
       interface conjg
         module procedure MQC_Scalar_Complex_Conjugate
+        module procedure MQC_Vector_Complex_Conjugate
+        module procedure MQC_Matrix_Complex_Conjugate
       end interface
+!
+!>    \brief <b> Returns the object as a floating point intrinsic</b>
+      Interface float
+        Module Procedure MQC_Scalar_Get_Intrinsic_Real
+      End Interface
+!
+!>    \brief <b> Returns the object as an integer intrinsic</b>
+      Interface int
+        Module Procedure MQC_Scalar_Get_Intrinsic_Integer
+      End Interface
 !
 !>    \brief <b> Determines in an array is real type</b>
       interface mqc_have_real
@@ -332,6 +346,7 @@
 !>    \brief <b> Defines a complex number</b>
       Interface Cmplx
         Module Procedure MQC_Scalar_Cmplx
+        Module Procedure MQC_Scalar_Get_Intrinsic_Complex
         Module Procedure MQC_Vector_Cmplx
         Module Procedure MQC_Matrix_Cmplx
       End Interface
@@ -425,8 +440,12 @@
       Interface Dot_Product
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
-
-
+!
+!>    \brief <b> Reshapes arrays</b>
+      Interface Reshape
+        Module Procedure MQC_Vector_Reshape_Matrix
+        Module Procedure MQC_Matrix_Reshape_Vector
+      End Interface
 !
 !>    \brief <b> Returns the array length along the specified dimension</b>
       Interface Size
@@ -10260,8 +10279,8 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Sqrt is a function that returns the absolute value of all elements 
-!>    of an MQC vector.
+!>    MQC_Vector_Abs is a function that returns the absolute value of all elements of 
+!>    an MQC vector.
 !>
 !>    \endverbatim
 !
@@ -10542,6 +10561,163 @@
 !
       Return
       End Function MQC_Vector_Cmplx
+!
+!
+!     PROCEDURE MQC_Vector_Sum
+!
+!>    \brief <b> MQC_Vector_Sum is a function that returns the sum of all elements 
+!>    of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sum is a function that returns the sum of all elements of an MQC
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_vector_sum(A) result(output)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = 0.0
+      do i=1,MQC_Length_Vector(A)
+        output = output + A%at(i)
+      endDo
+!
+      end function mqc_vector_sum
+!
+!
+!     PROCEDURE MQC_Vector_Complex_Conjugate
+!
+!>    \brief <b> MQC_Vector_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector input variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Vector_Complex_Conjugate(VectorIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Type(MQC_Vector)::VectorOut
+!
+      If(VectorIn%Data_Type.eq.'Complex') then
+        VectorOut = conjg(VectorIn%VecC)
+      Else
+        VectorOut = VectorIn
+      EndIf
+!
+      Return
+      End Function MQC_Vector_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Vector_Reshape_Matrix
+!
+!>    \brief <b> MQC_Vector_Reshape_Matrix is a function that reshapes an MQC vector as an
+!>    MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Reshape_Matrix is a function that reshapes an MQC vector as an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector input variable.
+!>    \endverbatim
+!>
+!>    \param[in] DimArr
+!>    \verbatim
+!>        DimArr is Type(MQC_Vector)
+!>        The dimensions of the MQC Matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Vector_Reshape_Matrix(VectorIn,DimArr) Result(MatrixOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Integer(kind=int64),dimension(2),intent(in)::DimArr
+      type(MQC_Matrix)::MatrixOut
+      integer(kind=int64),dimension(:),allocatable::intVector
+      real(kind=real64),dimension(:),allocatable::realVector
+      complex(kind=real64),dimension(:),allocatable::compVector
+!
+      If(Size(VectorIn).gt.(DimArr(1)*DimArr(2))) Call MQC_Error_I('Vector not conformable &
+        &with requested dimensions',6,'Size(VectorIn)',Size(VectorIn),'DimArr(1)*DimArr(2)',&
+        DimArr(1)*DimArr(2))
+!
+      select case(VectorIn%Data_Type)
+      case('Integer')
+        intVector = VectorIn
+        MatrixOut = reshape(intVector,[DimArr(1),DimArr(2)]) 
+      case('Real')
+        realVector = VectorIn
+        MatrixOut = reshape(realVector,[DimArr(1),DimArr(2)]) 
+      case('Complex')
+        compVector = VectorIn
+        MatrixOut = reshape(compVector,[DimArr(1),DimArr(2)]) 
+      case default
+        call mqc_error_a('Unrecognized data type in VectorIn in MQC_Vector_Reshape_Matrix',6,&
+          'VectorIn%Data_Type',VectorIn%Data_Type)
+      end select
+!
+      Return
+      End Function MQC_Vector_Reshape_Matrix
 !
 !
 !----------------------------------------------------------------
@@ -12232,7 +12408,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'integer','StorAhrm')
       mat%matI(:,1) = symmMatrixIn(:)
 !
       return
@@ -12330,7 +12506,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'real','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'real','StorAhrm')
       mat%matR(:,1) = symmMatrixIn(:)
 !
       return
@@ -12428,7 +12604,7 @@
       if(mylabel.eq.'symmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorSymm')
       if(mylabel.eq.'antisymmetric') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAsym')
       if(mylabel.eq.'hermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorHerm')
-      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAherm')
+      if(mylabel.eq.'antihermitian') call MQC_Allocate_Matrix(n,n,mat,'complex','StorAhrm')
       mat%matC(:,1) = symmMatrixIn(:)
 !
       return
@@ -16297,7 +16473,7 @@
                 Return
               EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              If(abs(Matrix%MatR(I,J)).ne.Thresh) then
+              If(abs(Matrix%MatR(I,J)).gt.Thresh) then
                 Diagonal = .False.
                 Return
               EndIf
@@ -18542,10 +18718,9 @@
       Integer(kind=int64)::I,N,Columns,Rows
 !
       If(.not.Matrix%Storage.eq.'StorDiag') Call MQC_Error_A('Input matrix must be &
-     &  diagonal packed in MQC_Matrix_Diag2Full', 6, &
-     'Matrix%Storage', Matrix%Storage )
+     &  diagonal packed in MQC_Matrix_Diag2Full',6,'Matrix%Storage', Matrix%Storage )
       If(.not.MQC_Matrix_Test_Diagonal(Matrix)) Call MQC_Error_L('Input matrix must be &
-     &  diagonal in MQC_Matrix_Symm2Diag', 6, &
+     &  diagonal in MQC_Matrix_Diag2Full', 6, &
       'MQC_Matrix_Test_Diagonal(Matrix)', MQC_Matrix_Test_Diagonal(Matrix) )
       N = Min(MQC_Matrix_Columns(Matrix),MQC_Matrix_Rows(Matrix))
       Columns = MQC_Matrix_Columns(Matrix)
@@ -23152,6 +23327,118 @@
       End Function MQC_Matrix_Cmplx
 !
 !
+!     PROCEDURE MQC_Matrix_Complex_Conjugate
+!
+!>    \brief <b> MQC_Matrix_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_Matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC_Matrix input variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Complex_Conjugate(MatrixIn) Result(MatrixOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix),Intent(In)::MatrixIn
+      Type(MQC_Matrix)::MatrixOut
+!
+      If(MatrixIn%Data_Type.eq.'Complex') then
+        MatrixOut = conjg(MatrixIn%MatC)
+      Else
+        MatrixOut = MatrixIn
+      EndIf
+!
+      Return
+      End Function MQC_Matrix_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Matrix_Reshape_Vector
+!
+!>    \brief <b> MQC_Matrix_Reshape_Vector is a function that reshapes an MQC matrix as an
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Reshape_Vector is a function that reshapes an MQC matrix as an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC_Matrix input variable.
+!>    \endverbatim
+!>
+!>    \param[in] DimArr
+!>    \verbatim
+!>        DimArr is Type(MQC_Vector)
+!>        The dimensions of the MQC Vector output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Reshape_Vector(MatrixIn,DimArr) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix),Intent(In)::MatrixIn
+      Integer(kind=int64),dimension(1),intent(in)::DimArr
+      type(MQC_Vector)::VectorOut
+      integer(kind=int64),dimension(:,:),allocatable::intMatrix
+      real(kind=real64),dimension(:,:),allocatable::realMatrix
+      complex(kind=real64),dimension(:,:),allocatable::compMatrix
+!
+      If((Size(MatrixIn,1)*Size(MatrixIn,2)).gt.DimArr(1)) Call MQC_Error_I('Matrix not conformable &
+        &with requested dimensions',6,'Size(MatrixIn,1)*Size(MatrixIn,2)',Size(MatrixIn,1)*Size(MatrixIn,2), &
+        'DimArr(1)',DimArr(1))
+!
+      select case(MatrixIn%Data_Type)
+      case('Integer')
+        intMatrix = MatrixIn
+        VectorOut = reshape(intMatrix,[DimArr(1)]) 
+      case('Real')
+        realMatrix = MatrixIn
+        VectorOut = reshape(realMatrix,[DimArr(1)]) 
+      case('Complex')
+        compMatrix = MatrixIn
+        VectorOut = reshape(compMatrix,[DimArr(1)]) 
+      case default
+        call mqc_error_a('Unrecognized data type in MatrixIn in MQC_Matrix_Reshape_Vector',6,&
+          'MatrixIn%Data_Type',MatrixIn%Data_Type)
+      end select
+!
+      Return
+      End Function MQC_Matrix_Reshape_Vector
+!
+!
 !----------------------------------------------------------------
 !                                                               |
 !     R4TENSOR PROCEDURES                                       |
@@ -25159,28 +25446,103 @@
 !
       Implicit None
       Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
-      Type(MQC_R4Tensor)::Summation
+      Type(MQC_R4Tensor)::Summation,Tmp1,Tmp2
       Integer(kind=int64)::M,N,O,P,i,j,k,l
+      character(len=8)::storage
 !
       M = size(R4Tensor1,1)
       N = size(R4Tensor1,2)
       O = size(R4Tensor1,3)
       P = size(R4Tensor1,4)
 
-      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or.P.ne.size(R4Tensor2,4)) &
+      if(M.ne.size(R4Tensor2,1).or.N.ne.size(R4Tensor2,2).or.O.ne.size(R4Tensor2,3).or. &
+        P.ne.size(R4Tensor2,4)) &
         call MQC_Error('R4Tensors not conformable in MQC_R4Tensor_R4Tensor_Sum',6)
 
-      call summation%init(M,N,O,P)
+      Tmp1 = R4Tensor1
+      Tmp2 = R4Tensor2
 
-      do i = 1,M
-        do j = 1,N
-          do k = 1,O
-            do l = 1,P
-              call summation%put(R4Tensor1%at(i,j,k,l)+R4Tensor2%at(i,j,k,l),i,j,k,l)
-            endDo
-          endDo
-        endDo
-      endDo
+      select case(Tmp1%Storage) 
+      case('StorFull')
+        storage = 'StorFull'
+        select case(Tmp2%storage)
+        case('StorSymm')
+          call MQC_R4Tensor_Symm2Full(Tmp2)
+        case('StorFull')
+          !-Empty Case-!
+        case default
+          call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+            'Tmp2%Storage',Tmp2%Storage)
+        end select
+      case('StorSymm')
+        select case (Tmp2%storage)
+        case('StorSymm')
+          storage = 'StorSymm'
+        case('StorFull')
+          call MQC_R4Tensor_Symm2Full(Tmp1)
+          storage = 'StorFull'
+        case default 
+          call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+            'Tmp2%Storage',Tmp2%Storage)
+        end select
+      case default
+        call mqc_error_A('Unkown storage type in MQC_R4Tensor_R4Tensor_Sum',6, &
+          'Tmp1%Storage',Tmp1%Storage)
+      end select
+
+
+      select case(Tmp1%data_type)
+      case('Real')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp2
+          summation%RTen = Tmp1%RTen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp1
+          summation%RTen = Tmp1%RTen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%RTen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Integer')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp2
+          summation%RTen = Tmp1%ITen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp2
+          summation%ITen = Tmp1%ITen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%ITen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case('Complex')
+        select case(Tmp2%data_type)
+        case('Real')
+          summation = Tmp1
+          summation%CTen = Tmp1%CTen + Tmp2%RTen
+        case('Integer')
+          summation = Tmp1
+          summation%CTen = Tmp1%CTen + Tmp2%ITen
+        case('Complex')
+          summation = Tmp2
+          summation%CTen = Tmp1%CTen + Tmp2%CTen
+        case default
+          call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+               'Tmp2%data_type', Tmp2%data_type) 
+        end select
+      case default
+        call mqc_error_A('UNKNOWN matrix type in MQC_R4Tensor_R4Tensor_Sum.', 6, &
+             'Tmp1%data_type', Tmp1%data_type) 
+      end select
+
+      summation%storage = storage
 !
       End Function MQC_R4Tensor_R4Tensor_Sum
 !
