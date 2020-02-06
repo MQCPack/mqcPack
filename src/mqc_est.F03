@@ -2397,7 +2397,7 @@
           return
         elseIf(my_integralType.eq.'space') then
           call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.false.)
-          call mqc_twoeris_allocate(twoERIs,'full','space',temp%getBlock('alph'))
+          call mqc_twoeris_allocate(twoERIs,'full','space',temp%getBlock('alpha'))
           return
         elseIf(my_integralType.eq.'spin') then
           call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.true.)

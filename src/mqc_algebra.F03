@@ -274,6 +274,8 @@
 !>    \brief <b> Returns the complex conjugate</b>
       interface conjg
         module procedure MQC_Scalar_Complex_Conjugate
+        module procedure MQC_Vector_Complex_Conjugate
+        module procedure MQC_Matrix_Complex_Conjugate
       end interface
 !
 !>    \brief <b> Returns the object as a floating point intrinsic</b>
@@ -438,8 +440,12 @@
       Interface Dot_Product
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
-
-
+!
+!>    \brief <b> Reshapes arrays</b>
+      Interface Reshape
+        Module Procedure MQC_Vector_Reshape_Matrix
+        Module Procedure MQC_Matrix_Reshape_Vector
+      End Interface
 !
 !>    \brief <b> Returns the array length along the specified dimension</b>
       Interface Size
@@ -10600,6 +10606,118 @@
       endDo
 !
       end function mqc_vector_sum
+!
+!
+!     PROCEDURE MQC_Vector_Complex_Conjugate
+!
+!>    \brief <b> MQC_Vector_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_Vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector input variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Vector_Complex_Conjugate(VectorIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Type(MQC_Vector)::VectorOut
+!
+      If(VectorIn%Data_Type.eq.'Complex') then
+        VectorOut = conjg(VectorIn%VecC)
+      Else
+        VectorOut = VectorIn
+      EndIf
+!
+      Return
+      End Function MQC_Vector_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Vector_Reshape_Matrix
+!
+!>    \brief <b> MQC_Vector_Reshape_Matrix is a function that reshapes an MQC vector as an
+!>    MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Reshape_Matrix is a function that reshapes an MQC vector as an MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector input variable.
+!>    \endverbatim
+!>
+!>    \param[in] DimArr
+!>    \verbatim
+!>        DimArr is Type(MQC_Vector)
+!>        The dimensions of the MQC Matrix output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Vector_Reshape_Matrix(VectorIn,DimArr) Result(MatrixOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Integer(kind=int64),dimension(2),intent(in)::DimArr
+      type(MQC_Matrix)::MatrixOut
+      integer(kind=int64),dimension(:),allocatable::intVector
+      real(kind=real64),dimension(:),allocatable::realVector
+      complex(kind=real64),dimension(:),allocatable::compVector
+!
+      If(Size(VectorIn).gt.(DimArr(1)*DimArr(2))) Call MQC_Error_I('Vector not conformable &
+        &with requested dimensions',6,'Size(VectorIn)',Size(VectorIn),'DimArr(1)*DimArr(2)',&
+        DimArr(1)*DimArr(2))
+!
+      select case(VectorIn%Data_Type)
+      case('Integer')
+        intVector = VectorIn
+        MatrixOut = reshape(intVector,[DimArr(1),DimArr(2)]) 
+      case('Real')
+        realVector = VectorIn
+        MatrixOut = reshape(realVector,[DimArr(1),DimArr(2)]) 
+      case('Complex')
+        compVector = VectorIn
+        MatrixOut = reshape(compVector,[DimArr(1),DimArr(2)]) 
+      case default
+        call mqc_error_a('Unrecognized data type in VectorIn in MQC_Vector_Reshape_Matrix',6,&
+          'VectorIn%Data_Type',VectorIn%Data_Type)
+      end select
+!
+      Return
+      End Function MQC_Vector_Reshape_Matrix
 !
 !
 !----------------------------------------------------------------
@@ -23207,6 +23325,118 @@
 !
       Return
       End Function MQC_Matrix_Cmplx
+!
+!
+!     PROCEDURE MQC_Matrix_Complex_Conjugate
+!
+!>    \brief <b> MQC_Matrix_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_Matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC_Matrix input variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Complex_Conjugate(MatrixIn) Result(MatrixOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix),Intent(In)::MatrixIn
+      Type(MQC_Matrix)::MatrixOut
+!
+      If(MatrixIn%Data_Type.eq.'Complex') then
+        MatrixOut = conjg(MatrixIn%MatC)
+      Else
+        MatrixOut = MatrixIn
+      EndIf
+!
+      Return
+      End Function MQC_Matrix_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_Matrix_Reshape_Vector
+!
+!>    \brief <b> MQC_Matrix_Reshape_Vector is a function that reshapes an MQC matrix as an
+!>    MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Reshape_Vector is a function that reshapes an MQC matrix as an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        MatrixIn is Type(MQC_Matrix)
+!>        The MQC_Matrix input variable.
+!>    \endverbatim
+!>
+!>    \param[in] DimArr
+!>    \verbatim
+!>        DimArr is Type(MQC_Vector)
+!>        The dimensions of the MQC Vector output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_Reshape_Vector(MatrixIn,DimArr) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Matrix),Intent(In)::MatrixIn
+      Integer(kind=int64),dimension(1),intent(in)::DimArr
+      type(MQC_Vector)::VectorOut
+      integer(kind=int64),dimension(:,:),allocatable::intMatrix
+      real(kind=real64),dimension(:,:),allocatable::realMatrix
+      complex(kind=real64),dimension(:,:),allocatable::compMatrix
+!
+      If((Size(MatrixIn,1)*Size(MatrixIn,2)).gt.DimArr(1)) Call MQC_Error_I('Matrix not conformable &
+        &with requested dimensions',6,'Size(MatrixIn,1)*Size(MatrixIn,2)',Size(MatrixIn,1)*Size(MatrixIn,2), &
+        'DimArr(1)',DimArr(1))
+!
+      select case(MatrixIn%Data_Type)
+      case('Integer')
+        intMatrix = MatrixIn
+        VectorOut = reshape(intMatrix,[DimArr(1)]) 
+      case('Real')
+        realMatrix = MatrixIn
+        VectorOut = reshape(realMatrix,[DimArr(1)]) 
+      case('Complex')
+        compMatrix = MatrixIn
+        VectorOut = reshape(compMatrix,[DimArr(1)]) 
+      case default
+        call mqc_error_a('Unrecognized data type in MatrixIn in MQC_Matrix_Reshape_Vector',6,&
+          'MatrixIn%Data_Type',MatrixIn%Data_Type)
+      end select
+!
+      Return
+      End Function MQC_Matrix_Reshape_Vector
 !
 !
 !----------------------------------------------------------------
