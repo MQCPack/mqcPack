@@ -22029,9 +22029,9 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in,out] Matrix
+!>    \param[in,out] MatrixIn
 !>    \verbatim
-!>        Matrix is Class(MQC_Matrix)
+!>        MatrixIn is Class(MQC_Matrix)
 !>        The name of the MQC_Matrix variable.
 !>    \endverbatim
 !>
@@ -22049,12 +22049,12 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_Matrix_Norm(matrix,methodIn) result(norm)
+      Function MQC_Matrix_Norm(matrixIn,methodIn) result(norm)
 !
 !     Variable Declarations.
 !
       implicit none
-      class(MQC_Matrix),intent(inOut)::matrix
+      class(MQC_Matrix),intent(in)::matrixIn
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::StorFlag,TypeFlag
@@ -22063,7 +22063,9 @@
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
+      type(mqc_matrix)::matrix
 
+      matrix = matrixIn
       if(Present(methodIn)) method = methodIn
       if(.not.Present(methodIn)) method = 'F'
       if(method.eq.'I') allocate(work(max(1,MQC_Matrix_Rows(matrix))))
