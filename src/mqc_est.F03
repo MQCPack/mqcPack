@@ -8949,8 +8949,8 @@
       Type(MQC_Scalar)::NAlphaIn,NBetaIn,NBasisIn
       Type(MQC_Scalar),optional::NCoreIn
       Type(MQC_Determinant)::Determinants
-      Type(MQC_LinkedList),Pointer::String_List_1=>Null(),String_List_2=>Null(),&
-        String_Node_1=>Null(),String_Node_2=>Null()
+      Type(MQC_LinkedList),Pointer::String_List_1,String_List_2,&
+        String_Node_1,String_Node_2
       Integer(kind=int64)::New_Value
       Integer(kind=int64),Allocatable::Returned_Value
       Logical::Last
@@ -8960,6 +8960,10 @@
 !
 !     Initialize Arrays
 !
+      String_List_1=>Null()
+      String_List_2=>Null()
+      String_Node_1=>Null()
+      String_Node_2=>Null()
       NAlpha = NAlphaIn 
       NBeta = NBetaIn
       NBasis = NBasisIn
