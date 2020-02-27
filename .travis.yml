@@ -37,6 +37,7 @@ matrix:
 #            - autoconf
 #            - automake
             - doxygen
+          update: true
 
 before_install:
   - mkdir gauopen
