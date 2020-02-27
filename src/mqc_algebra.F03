@@ -200,6 +200,10 @@
         Procedure, Public::det => mqc_matrix_determinant
 !>      \brief <b> Returns the trace of the MQC Matrix</b>
         Procedure, Public::trace => mqc_matrix_trace
+!>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
+        Procedure, Public::pinv => mqc_matrix_MRInv
+!>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
+        Procedure, Public::diagonal => mqc_matrix_diagonal_elements
 !>      \brief <b> Returns the root mean square deviation and maximum
 !>      deviation of elements of the MQC Matrix</b>
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
@@ -586,6 +590,10 @@
 !>    \brief <b> Determines if a variable is greater than or equal to another</b>
       Interface Operator (.ge.)
         Module Procedure MQC_ScalarGE
+        Module Procedure MQC_ScalarGEReal
+        Module Procedure MQC_RealGEScalar
+        Module Procedure MQC_ScalarGEInteger
+        Module Procedure MQC_IntegerGEScalar
       End Interface
 !
 !     Vector operators...
@@ -4644,6 +4652,258 @@
 !
       Return
       End Function MQC_ScalarGE
+!
+!
+!     PROCEDURE MQC_RealGEScalar
+!
+!>    \brief <b> MQC_RealGEScalar is a function that returns TRUE if an intrinsic real
+!>    is greater than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>        
+!>    MQC_RealGEScalar is a function that returns TRUE if an intrinsic real is greater 
+!>    than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is greater than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    real is less than the real part of the MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealGEScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealGEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealGEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.ge.Scalar%scar) MQC_RealGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.ge.Scalar%scai) MQC_RealGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.ge.real(Scalar%scac)) MQC_RealGEScalar = .True. 
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealGEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealGEScalar
+!
+!
+!     PROCEDURE MQC_ScalarGEReal
+!
+!>    \brief <b> MQC_ScalarGEReal is a function that returns TRUE if a MQC_Scalar is
+!>    greater than or equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGEReal is a function that returns TRUE if a MQC_Scalar is greater 
+!>    than or equal to an intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part 
+!>    of the MQC_Scalar is less than or equal to the intrinsic real and FALSE if the 
+!>    real part of the MQC_Scalar is less than the intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarGEReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGEReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGEReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ge.RealIn) MQC_ScalarGEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ge.RealIn) MQC_ScalarGEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).ge.RealIn) MQC_ScalarGEReal = .True. 
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGEReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGEReal
+!
+!
+!     PROCEDURE MQC_IntegerGEScalar
+!
+!>    \brief <b> MQC_IntegerGEScalar is a function that returns TRUE if an intrinsic 
+!>    integer is greater than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerGEScalar is a function that returns TRUE if an intrinsic integer is 
+!>    greater than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic 
+!>    integer is greater than or equal to the real part of the MQC_Scalar and FALSE 
+!>    if the intrinsic integer is less than the real part of the MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerGEScalar(IntIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerGEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_IntegerGEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.ge.Scalar%scar) MQC_IntegerGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.ge.Scalar%scai) MQC_IntegerGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.ge.real(Scalar%scac)) MQC_IntegerGEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerGEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerGEScalar
+!
+!
+!     PROCEDURE MQC_ScalarGEInteger
+!
+!>    \brief <b> MQC_ScalarGEInteger is a function that returns TRUE if a MQC_Scalar 
+!>    is greater than or equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGEInteger is a function that returns TRUE if a MQC_Scalar is greater 
+!>    than or equal to an intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part 
+!>    of the MQC_Scalar is gretaer than or equal to the intrinsic integer and FALSE 
+!>    if the real part of the MQC_Scalar is less than the intrinsic integer. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarGEInteger(Scalar,IntIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGEInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGEInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ge.IntIn) MQC_ScalarGEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ge.IntIn) MQC_ScalarGEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).ge.IntIn) MQC_ScalarGEInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGEInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGEInteger
 !
 !
 !     PROCEDURE MQC_Scalar_Complex_Conjugate
@@ -22366,6 +22626,51 @@
       end function mqc_matrix_trace
 !
 !
+!     PROCEDURE mqc_matrix_diagonal_elements
+!
+!>    \brief <b> MQC_Matrix_Diagonal_Elements is a function that returns the diagonal 
+!>    of an MQC matrix as an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Diagonal_Elements is a function that returns the diagonal of an MQC 
+!>    matrix as an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      function mqc_matrix_diagonal_elements(matrix) result(vector)
+!
+!     Variable Declarations...
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::matrix
+      type(mqc_vector)::vector
+      integer(kind=int64)::i
+!
+      call vector%init(min(size(matrix,1),size(matrix,2)))
+      do i = 1, min(size(matrix,1),size(matrix,2))
+        call vector%put(matrix%at(i,i),i)
+      enddo
+!
+      end function mqc_matrix_diagonal_elements
+!
+!
 !     PROCEDURE mqc_matrix_generalized_eigensystem
 !
 !>    \brief <b> MQC_Matrix_Generalized_Eigensystem is a subroutine that takes a MQC 
@@ -23439,6 +23744,62 @@
 !
       Return
       End Function MQC_Matrix_Reshape_Vector
+!
+!
+!     PROCEDURE MQC_Matrix_MPInv
+!
+!>    \brief <b> MQC_Matrix_MPInv is a function that returns the Moore-Penrose 
+!>    psuedoinverse of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_MPInv is a function that returns the Moore-Penrose psuedoinverse 
+!>    of a MQC matrix.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A 
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to psuedoinvert
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_MRInv(A) Result(PInv)
+!
+      Implicit None
+      Class(MQC_Matrix)::A
+!
+      Type(MQC_Matrix)::EUVecs,EVVecs,SMat
+      Type(MQC_Vector)::EVals
+      Type(MQC_Matrix)::PInv
+      Type(MQC_Scalar)::Thresh,Zero
+      Integer(kind=int64)::I
+!
+      Thresh = 1.0e-14
+      Zero = 0.0e0
+      call A%SVD(EVals,EUVecs,EVVecs)
+      Do I = 1, Size(EVals)
+        If(EVals%at(I).gt.Thresh) then
+          call EVals%put(1.0/EVals%at(I),I)
+        else
+          call EVals%put(zero,I)
+        endIf
+      EndDo
+      call EVals%diag(SMat)
+      PInv = matmul(matmul(dagger(EVVecs),SMat),dagger(EUVecs))
+!      
+      Return
+      End Function MQC_Matrix_MRInv
 !
 !
 !----------------------------------------------------------------
