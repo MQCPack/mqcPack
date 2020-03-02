@@ -112,14 +112,40 @@
 !----------------------------------------------------------------
 !
 !
-
-
-
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     MODULE VARIABLES/CONSTANTS                                |
+!                                                               |
+!----------------------------------------------------------------
+!
+      Logical,Private::MQC_Gaussian_DEBUG=.False.
 !
 !
 !     Subroutines/Functions...
 !
       CONTAINS
+!
+!
+!PROCEDURE MQC_Gaussian_SetDEBUG
+      subroutine MQC_Gaussian_SetDEBUG(setDebugValue)
+!
+!     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
+!     .FALSE.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+      implicit none
+      logical,intent(IN)::setDebugValue
+!
+      MQC_Gaussian_DEBUG = setDebugValue
+!
+      return
+      end subroutine MQC_Gaussian_SetDEBUG
+
+
 !
 !PROCEDURE MQC_Gaussian_ICGU
       subroutine MQC_Gaussian_ICGU(ICGU,wf_type,wf_complex)
@@ -1054,6 +1080,8 @@
  1040 Format( A, I15 )
  1050 Format( 2A )
  1060 Format( A )
+!
+      if(MQC_Gaussian_DEBUG) DEBUG=.true.
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
 !     program unit. If so, then get the file declared before reading the
