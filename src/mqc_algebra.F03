@@ -458,6 +458,12 @@
         Module Procedure MQC_R4Tensor_Size
       End Interface
 !
+!>    \brief <b> Returns the absolute value of one scalar with the 
+!>    sign of another</b>
+      interface Sign
+        module procedure MQC_Scalar_Sign
+      end interface
+!
 !----------------------------------------------------------------
 !                                                               |
 !     OPERATOR INTERFACES                                       |
@@ -6240,6 +6246,53 @@
       Return
       End Function MQC_ScalarComplexSubtract
 !
+!
+!     PROCEDURE MQC_Scalar_Sign
+!
+!>    \brief <b> MQC_Scalar_Sign returns the absolute value of the first argument
+!>    times the sign of the second argument</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Sign returns the absolute value of the first argument times the sign 
+!>    of the second argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim 
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The MQC_Scalar to take the absolute value from.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The MQC_Scalar to take the sign from.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Scalar_Sign(Scalar1,Scalar2) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+
+      Output = Sign(Scalar1%rval(),Scalar2%rval())
+
+      Return
+      End Function MQC_Scalar_Sign
+!
 !----------------------------------------------------------------
 !                                                               |
 !     VECTOR PROCEDURES                                         |
@@ -8514,20 +8567,21 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,high_precision)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Vector),Intent(In)::Vector
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose,high_precision
       Integer(kind=int64)::I,Length
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2X,F12.5,F11.5,"i")
+ 1004 Format(1x,I7,2X,F20.12)
  1020 Format( " " )
  1030 Format( A )
 !
@@ -8550,7 +8604,15 @@
           EndDo
       ElseIf(Vector%Data_type.eq.'Real') then
         Do I = 1,Length
-          Write(IOut,1002) I, Vector%vecr(I)
+          if(present(high_precision)) then
+            if(high_precision) then 
+              Write(IOut,1004) I, Vector%vecr(I)
+            else
+              Write(IOut,1002) I, Vector%vecr(I)
+            endIf
+          else
+            Write(IOut,1002) I, Vector%vecr(I)
+          endIf
         EndDo
       ElseIf(Vector%Data_type.eq.'Complex') then
         Do I = 1,Length
@@ -17540,14 +17602,14 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,high_precision)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,high_precision
       Integer(kind=int64)::I,J,II,ILim,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
@@ -17560,6 +17622,7 @@
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
+ 2004 Format(1x,I7,10F20.12)
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17585,7 +17648,15 @@
               !If(Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2004) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+              endIf
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
@@ -23788,6 +23859,7 @@
       Thresh = 1.0e-14
       Zero = 0.0e0
       call A%SVD(EVals,EUVecs,EVVecs)
+      call EVals%diag(SMat)
       Do I = 1, Size(EVals)
         If(EVals%at(I).gt.Thresh) then
           call EVals%put(1.0/EVals%at(I),I)
