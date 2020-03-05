@@ -153,6 +153,8 @@
         Procedure, Public::abs => MQC_Vector_Abs
 !>      \brief <b> Returns the sum of elements in the MQC_Vector</b>
         Procedure, Public::sum => MQC_Vector_Sum
+!>      \brief <b> Returns the product of elements in the MQC_Vector</b>
+        Procedure, Public::product => MQC_Vector_Product
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
@@ -10928,6 +10930,51 @@
       endDo
 !
       end function mqc_vector_sum
+!
+!
+!     PROCEDURE MQC_Vector_Product
+!
+!>    \brief <b> MQC_Vector_Product is a function that returns the product of all elements 
+!>    of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Product is a function that returns the sum of all elements of an MQC
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_vector_product(A) result(output)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = 1.0
+      do i=1,MQC_Length_Vector(A)
+        output = output * A%at(i)
+      endDo
+!
+      end function mqc_vector_product
 !
 !
 !     PROCEDURE MQC_Vector_Complex_Conjugate
