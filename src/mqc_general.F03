@@ -977,8 +977,6 @@
       real(kind=real64)::vectorMagnitude
 !
       vectorMagnitude = SQRT(dot_product(vector,vector))
-      write(6,*)' Hrant - vectorMagnitude=',vectorMagnitude
-      write(6,*)' Hrant - MQC_small      =',MQC_small
       if(vectorMagnitude.gt.MQC_small) then
         vector = vector/vectorMagnitude
       else
