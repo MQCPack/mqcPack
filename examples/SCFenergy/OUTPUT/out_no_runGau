@@ -2,10 +2,5 @@
 MatFile test
 -------------
 Warning, SCFenergy gives incorrect energies for DFT wavefunctions
-Finished reading file 'rhf_h2-sto3g.mat'
-Matrix File:  rhf_h2-sto3g.mat
-UHF or ROHF
-   Electronic Energy:	       	          -0.1323442724E+00
-   Electronic/Nuclear Energy:	           -0.572516043E+00
-   Nuclear Energy:	       	           0.1058354422E+00
-   Total Energy:	       	          -0.5990248730E+00
+ MQC ERROR: MQC_Matrix_Scalar_Put only has StorFull implemented.
+    Matrix%Storage = StorSymm

@@ -1,0 +1,69 @@
+language: generic
+sudo: false
+matrix:
+  include:
+
+    - os: linux
+      compiler: gfortran
+      env: SOURCES=ubuntu-toolchain-r-test
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+             # compilers
+#            - g++-9
+            - gcc-8
+            - gfortran-8
+            - cmake
+#            - automake
+              # math libraries
+            - libblas-dev
+            - liblapack-dev
+            - libatlas-base-dev
+            - libopenblas-base
+            - libopenblas-dev
+              # other
+            - doxygen
+
+    - os: osx
+      osx_image: xcode10.2
+      compiler: gfortran
+      env: SOURCES=homebrew
+      addons:
+        homebrew:
+          packages:
+            - m4
+#            - autoconf
+#            - automake
+            - doxygen
+
+before_install:
+  - mkdir gauopen
+  - mkdir mqc-install
+  - cd gauopen
+  - wget http://gaussian.com/g16/gauopen_v2.zip
+  - unzip gauopen_v2.zip
+  - cd ..
+  - which automake
+  - autoconf --version
+  - automake --version
+  - gcc --version
+#  - g++ --version
+  - gfortran --version
+  - gfortran-8 --version
+  - which gfortran-8
+
+install: 
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+       fc=`which gfortran`
+       gc=`which gcc`
+       sudo rm `which gfortran` `which gcc`
+       sudo ln -s `which gfortran-8` $fc
+       sudo ln -s `which gcc-8` $gc
+    fi
+  - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
+
+notifications:
+  email: false

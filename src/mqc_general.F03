@@ -66,6 +66,8 @@
       real(kind=real64),public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
+      real(kind=real64),public,parameter::MQC_small = 1.0d-6
+                     ! 10^-6, used as a threshold for near zero.
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -81,6 +83,7 @@
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
+        module procedure MQC_Print_Matrix_Array_Complex
       end interface
 !
       interface mqc_print_scalar
@@ -96,6 +99,7 @@
       interface mqc_print_matrix
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
+        module procedure MQC_Print_Matrix_Array_Complex
       end interface
 !
       interface mqc_packedDiagonalMatrix2FullMatrix
@@ -607,8 +611,8 @@
 !
       Return
     End Subroutine MQC_Print_Matrix_Array_Integer
-
-
+!
+!
 !PROCEDURE MQC_Print_Matrix_Array_Real
       Subroutine MQC_Print_Matrix_Array_Real(IOut,Array,Header,Blank_At_Top, &
         Blank_At_Bottom)
@@ -655,6 +659,53 @@
 !
       Return
       End Subroutine MQC_Print_Matrix_Array_Real
+
+!
+!PROCEDURE MQC_Print_Matrix_Array_Complex
+      Subroutine MQC_Print_Matrix_Array_Complex(Array,IOut,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a complex Matrix array variable.
+!
+!     L. M. Thompson, 2019.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Complex(kind=real64),dimension(:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10 
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2003 Format(1x,I7,10(F12.5,F11.5,"i"))
+!
+      NRows = Size(Array,1)
+      NCols = Size(Array,2)
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+
+      Do IFirst = 1,NCols,ColWidth
+        ILast = Min(IFirst+ColWidth-1,NCols)
+        Write(IOut,1001) (I,I=IFirst,ILast)
+        do I = 1,NRows
+          Write(IOut,2003) I, (Array(I,J),J=IFirst,ILast)
+        enddo
+      EndDo
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Matrix_Array_Complex
 
 
 !PROCEDURE MQC_Print_Vector_Array_Integer
@@ -911,6 +962,73 @@
 !----------------------------------------------------------------
 !
 !
+!PROCEDURE mqc_normalizeVector
+      Subroutine mqc_normalizeVector(vector)
+!
+!     This subroutine accepts a vector and returns its normalized form.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vector
+      real(kind=real64)::vectorMagnitude
+!
+      vectorMagnitude = SQRT(dot_product(vector,vector))
+      write(6,*)' Hrant - vectorMagnitude=',vectorMagnitude
+      write(6,*)' Hrant - MQC_small      =',MQC_small
+      if(vectorMagnitude.gt.MQC_small) then
+        vector = vector/vectorMagnitude
+      else
+        vector = float(0)
+      endIf
+!
+      return
+      end subroutine mqc_normalizeVector
+
+
+!PROCEDURE mqc_vectorPhase
+      Subroutine mqc_vectorPhase(vector,largestPositive)
+!
+!     This subroutine accepts a vector fixes the phase so that the largest
+!     magniture value is either positive (largestPostive=.TRUE.) or negative
+!     (largestPostive=.TRUE.). The vector phase is modified, as needed, in
+!     place. Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!
+!
+!     H. P. Hratchian, 2019.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vector
+      logical,intent(in),optional::largestPositive
+      integer(kind=int64)::i,largestMagnitudePosition
+      real(kind=real64)::largestMagnitudeValue
+      logical::myLargestPositive
+!
+      myLargestPositive = .True.
+      if(PRESENT(largestPositive)) myLargestPositive = largestPositive
+      largestMagnitudeValue = abs(vector(1))
+      largestMagnitudePosition = 1
+      do i = 2,SIZE(vector)
+        if(abs(vector(i)).gt.largestMagnitudeValue) then
+          largestMagnitudeValue = abs(vector(i))
+          largestMagnitudePosition = i
+        endIf
+      endDo
+      if(myLargestPositive) then
+        if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
+      else
+        if(vector(largestMagnitudePosition).gt.float(0)) vector = -vector
+      endIf
+!
+      return
+      end subroutine mqc_vectorPhase
+
+
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,upperLower)
