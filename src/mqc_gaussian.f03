@@ -71,8 +71,8 @@
         integer,allocatable::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
           NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
         integer,dimension(:),allocatable::atomicNumbers,atomTypes,basisFunction2Atom, &
-          IBasisFunctionType
-        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians
+          IBasisFunctionType,IgaussianScalars
+        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians   !hph,gaussianScalarsR
       Contains
         procedure,pass::OpenFile       => MQC_Gaussian_Unformatted_Matrix_Open
         procedure,pass::CloseFile      => MQC_Gaussian_Unformatted_Matrix_Close
@@ -681,6 +681,12 @@
       if(allocated(fileinfo%NShlDB)) deallocate(fileinfo%NShlDB)
       if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
+
+!hph+
+!      if(allocated(fileinfo%gaussianScalarsI)) deallocate(fileinfo%gaussianScalarsI)
+!      if(allocated(fileinfo%gaussianScalarsR)) deallocate(fileinfo%gaussianScalarsR)
+!hph-
+
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
@@ -813,6 +819,10 @@
         fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
         fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
         IOpCl,fileinfo%ICGU
+!
+!     Load the Gaussian scalars arrays from the Matrix File.
+!
+
 !
       return
       end subroutine MQC_Gaussian_Unformatted_Matrix_Read_Header
@@ -947,9 +957,7 @@
         allocate(fileinfo%NBTot)
         fileinfo%NBTot = 0
       endIf
-
       nAt3 = fileinfo%natoms*3
-
       if(.not.allocated(fileinfo%atomicNumbers)) then
         allocate(fileinfo%atomicNumbers(fileinfo%natoms))
         fileinfo%atomicNumbers = 0
@@ -1064,7 +1072,6 @@
 !
 !     Local temp variables.
       integer::i,nOutputArrays,LNZ
-!      integer,external::LenArr
       integer,allocatable,dimension(:)::integerTmp
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
@@ -1148,6 +1155,13 @@
 !           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
 !           type (integer, real, etc.) and data structure (scalar, vector,
 !           matrix, etc.).
+!
+
+!hph+
+!            write(IOut,*)' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+!              MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
+!hph-
+
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
@@ -1314,7 +1328,6 @@
 !             This is only an issue for nonsymmetric matrices stored in symmetric form.
               matrixOut = transpose(matrixOut)
               deallocate(complexTmp)
-
             case('MIXED')
               write(*,1020)
               write(*,1040)' Hrant - LR   = ',LR
