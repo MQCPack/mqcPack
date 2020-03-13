@@ -424,18 +424,42 @@
       else
         mqcVariable%dimensions(1:myRank) = dimensions
       endIf
-
-!hph+
-      if(myDebug) call mqc_error('Hrant - Wow2')
-!hph-
-
 !
 !     Now, deallocate/reallocate the data arrays if necessary.
 !
+
+!hph+
+      if(myDebug) then
+!        if(myDebug) call mqc_error('Hrant - Wow2AA')
+       endIf
+!hph-
+
       myLength = MQC_Variable_getLength(mqcVariable)
+
+!hph+
+      if(myDebug) then
+        write(*,*)
+        write(*,*)' Hrant - myLength = ',myLength
+        write(*,*)' Hrant - mqcVariable%dataType = ',mqcVariable%dataType
+!        if(myDebug) call mqc_error('Hrant - Wow2A')
+       endIf
+!hph-
+
       select case(mqcVariable%dataType)
       case('REAL')
-        if(Allocated(mqcVariable%integerArray)) DeAllocate(mqcVariable%integerArray)
+
+!hph+
+      if(myDebug) then
+        write(*,*)' Allocated(mqcVariable%integerArray) = ',Allocated(mqcVariable%integerArray)
+        write(*,*)' Size(mqcVariable%integerArray)      = ',Size(mqcVariable%integerArray)
+        write(*,*)' initialized: ',mqcVariable%initialized
+!        deAllocate(mqcVariable%integerArray)
+        if(myDebug) call mqc_error('Hrant - Inside REAL - A')
+      endIf
+!hph-
+
+        if(Allocated(mqcVariable%integerArray))  &
+          DeAllocate(mqcVariable%integerArray)
         if(.not.Allocated(mqcVariable%realArray)) then
           Allocate(mqcVariable%realArray(myLength))
         elseIf(Size(mqcVariable%realArray).ne.myLength) then
@@ -443,6 +467,13 @@
           Allocate(mqcVariable%realArray(myLength))
         endIf
       case('INTEGER')
+
+!hph+
+        write(*,*)
+        write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
+        write(*,*)
+!hph-
+
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
         if(.not.Allocated(mqcVariable%integerArray)) then
           Allocate(mqcVariable%integerArray(myLength))
@@ -455,6 +486,11 @@
           'allocation block.',6,'mqcVariable%dataType',  &
           mqcVariable%dataType)
       end select
+
+!hph+
+      if(myDebug) call mqc_error('Hrant - Wow3')
+!hph-
+
 !
 !     Lastly, set the initialized flag.
 !
@@ -1384,6 +1420,13 @@
         Allocate(mqcVariable%realArray(SIZE(mqcIn%realArray(:))))
         mqcVariable%realArray = mqcIn%realArray
       case('INTEGER')
+
+!hph+
+        write(*,*)
+        write(*,*)' Hrant - In MQC2MQC, INTEGER length = ',SIZE(mqcIn%integerArray(:))
+        write(*,*)
+!hph-
+
         Allocate(mqcVariable%integerArray(SIZE(mqcIn%integerArray(:))))
         mqcVariable%integerArray = mqcIn%integerArray
       case default
