@@ -74,26 +74,27 @@
           IBasisFunctionType,IgaussianScalars
         real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians   !hph,gaussianScalarsR
       Contains
-        procedure,pass::OpenFile       => MQC_Gaussian_Unformatted_Matrix_Open
-        procedure,pass::CloseFile      => MQC_Gaussian_Unformatted_Matrix_Close
-        procedure,pass::load           => MQC_Gaussian_Unformatted_Matrix_Read_Header
-        procedure,pass::create         => MQC_Gaussian_Unformatted_Matrix_Write_Header
-        procedure,pass::isRestricted   => MQC_Gaussian_IsRestricted
-        procedure,pass::isUnrestricted => MQC_Gaussian_IsUnrestricted
-        procedure,pass::isGeneral      => MQC_Gaussian_IsGeneral
-        procedure,pass::isComplex      => MQC_Gaussian_IsComplex
-        procedure,pass::getAtomCarts   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
-        procedure,pass::getAtomWeights => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
-        procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
-        procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
-        procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
-        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
-        procedure,pass::getBasisArray  => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
-        procedure,pass::getMolData     => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
-        procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
-        procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
-        procedure,pass::writeArray     => MQC_Gaussian_Unformatted_Matrix_Write_Array
-        procedure,pass::writeESTObj    => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
+        procedure,pass::OpenFile         => MQC_Gaussian_Unformatted_Matrix_Open
+        procedure,pass::CloseFile        => MQC_Gaussian_Unformatted_Matrix_Close
+        procedure,pass::load             => MQC_Gaussian_Unformatted_Matrix_Read_Header
+        procedure,pass::create           => MQC_Gaussian_Unformatted_Matrix_Write_Header
+        procedure,pass::isRestricted     => MQC_Gaussian_IsRestricted
+        procedure,pass::isUnrestricted   => MQC_Gaussian_IsUnrestricted
+        procedure,pass::isGeneral        => MQC_Gaussian_IsGeneral
+        procedure,pass::isComplex        => MQC_Gaussian_IsComplex
+        procedure,pass::getAtomicNumbers => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+        procedure,pass::getAtomCarts     => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
+        procedure,pass::getAtomWeights   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
+        procedure,pass::getVal           => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
+        procedure,pass::getArray         => MQC_Gaussian_Unformatted_Matrix_Read_Array
+        procedure,pass::getAtomInfo      => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
+        procedure,pass::getBasisInfo     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+        procedure,pass::getBasisArray    => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+        procedure,pass::getMolData       => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+        procedure,pass::getESTObj        => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
+        procedure,pass::get2ERIs         => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+        procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
+        procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
       End Type MQC_Gaussian_Unformatted_Matrix_File
 !
 !
@@ -1913,6 +1914,51 @@
 
 !=====================================================================
 !
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers(fileinfo)  &
+        Result(arrayOut)
+!
+!     This function is used to get the array of atomic numbers from the Gaussian
+!     matrix file corresponding to argument fileinfo.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      integer(kind=int64),dimension(:),allocatable::arrayOut
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve atomic numbers array from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      if(.not.allocated(fileinfo%atomicNumbers))  &
+        call MQC_Error_L('Atomic numbers requested, but NOT available.', 6, &
+        'allocated(fileinfo%atomicNumbers)', allocated(fileinfo%cartesians))
+      allocate(arrayOut(fileinfo%natoms))
+      arrayOut = fileinfo%atomicNumbers
+!
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+
+
+!=====================================================================
+!
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
       Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts(fileinfo)  &
         Result(arrayOut)
@@ -1928,14 +1974,14 @@
 !
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
-      real(kind=int64),dimension(:),allocatable::arrayOut
+      real(kind=real64),dimension(:),allocatable::arrayOut
       character(len=256)::my_filename
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen())  &
-        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        call MQC_Error_L('Failed to atomic cartesian coordinates from Gaussian matrix file: File not open.', 6, &
         'fileinfo%isOpen()', fileinfo%isOpen() )
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
@@ -1946,7 +1992,7 @@
 !
 !     Do the work...
 !
-      if(.not.allocated(fileinfo%atomicWeights))  &
+      if(.not.allocated(fileinfo%cartesians))  &
         call MQC_Error_L('Atomic Cartesian coordinates requestion, but NOT available.', 6, &
         'allocated(fileinfo%cartesians)', allocated(fileinfo%cartesians))
       allocate(arrayOut(3*fileinfo%natoms))
