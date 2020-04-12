@@ -1,3 +1,4 @@
+!TODO:1. Continue developing 2ERIs type as the rank-4 tensor EST object 
 !>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
 !>    electronic structure theory </b>
 !
@@ -205,13 +206,20 @@
 !     Parent Type
 !>    \brief <b> Two-electron resonance integrals</b>
       type mqc_twoERIs
-        type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha
+        type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha,aaab,aaba,abaa,baaa,abab, &
+          baab,baba,abba,bbba,bbab,babb,abbb
         character(Len=64),private::integralType !regular,raffenetti1,raffenetti2,raffenetti3,space,spin,general
         character(Len=64),private::storageType !full,symm
       contains 
 !>      \brief <b> Print the MQC_TwoERIs object</b>
         procedure, public::print => mqc_print_twoERIs
         procedure, private::at => mqc_twoERIs_at
+!>      \brief <b> Return the spin block dimention of the MQC_TwoERIs object</b>
+        procedure, public::blockSize => mqc_eris_dimension
+        procedure, private::hasSpinBlock => mqc_eris_has_spinBlock
+!>      \brief <b> Return a spin block of MQC_TwoERIs object as an MQC rank-4 tensor</b>
+        procedure, public:: getBlock => mqc_2eris_output_block
+        procedure, private::type => mqc_eris_array_type
       end type mqc_twoERIs
 !
 !----------------------------------------------------------------
@@ -257,6 +265,7 @@
       Interface Contraction
         Module Procedure mqc_scf_integral_contraction
         Module Procedure mqc_eri_integral_contraction
+        Module Procedure mqc_eri_r4tensor_contraction
       End Interface
 !
 !>    \brief <b> Converts object from alpha-beta order to energy order</b>
@@ -726,13 +735,38 @@
       call string_change_case(twoERIs%integraltype,'L')
       if(twoERIs%integralType.eq.'regular') then
         call twoERIs%alpha%print(iout,'Regular 2ERIs')
-      elseIf(twoERIs%integralType.eq.'raffenetti') then
-        call twoERIs%alpha%print(iout,'Raffenetti 2ERIs')
-      elseIf(twoERIs%integralType.eq.'molecular') then
-        call twoERIs%alpha%print(iout,'Alpha-Alpha Block')
-        call twoERIs%alphaBeta%print(iout,'Alpha-Beta Block')
-        call twoERIs%betaAlpha%print(iout,'Beta-Alpha Block')
-        call twoERIs%beta%print(iout,'Beta-Beta Block')
+      elseIf(twoERIs%integralType.eq.'raffenetti1') then
+        call twoERIs%alpha%print(iout,'Raffenetti 1 2ERIs')
+      elseIf(twoERIs%integralType.eq.'raffenetti2') then
+        call twoERIs%alpha%print(iout,'Raffenetti 2 2ERIs')
+      elseIf(twoERIs%integralType.eq.'raffenetti3') then
+        call twoERIs%alpha%print(iout,'Raffenetti 3 2ERIs')
+      elseIf(twoERIs%integralType.eq.'space') then
+        call twoERIs%alpha%print(iout,'Restricted MO 2ERIs')
+      elseIf(twoERIs%integralType.eq.'spin') then
+        write(iout,'(A)') 'Unrestricted MO 2ERIs'
+        call twoERIs%alpha%print(iout,'(aa|aa)')
+        call twoERIs%beta%print(iout,'(bb|bb)')
+        call twoERIs%alphaBeta%print(iout,'(aa|bb)')
+        call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+      elseIf(twoERIs%integralType.eq.'general') then
+        write(iout,'(A)') 'General MO 2ERIs'
+        call twoERIs%alpha%print(iout,'(aa|aa)')
+        call twoERIs%beta%print(iout,'(bb|bb)')
+        call twoERIs%alphaBeta%print(iout,'(aa|bb)')
+        call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+        call twoERIs%abab%print(iout,'(ab|ab)')
+        call twoERIs%abba%print(iout,'(ab|ba)')
+        call twoERIs%baab%print(iout,'(ba|ab)')
+        call twoERIs%baba%print(iout,'(ba|ba)')
+        call twoERIs%aaab%print(iout,'(aa|ab)')
+        call twoERIs%aaba%print(iout,'(aa|ba)')
+        call twoERIs%abaa%print(iout,'(ab|aa)')
+        call twoERIs%baaa%print(iout,'(ba|aa)')
+        call twoERIs%bbba%print(iout,'(bb|ba)')
+        call twoERIs%bbab%print(iout,'(bb|ab)')
+        call twoERIs%babb%print(iout,'(ba|bb)')
+        call twoERIs%abbb%print(iout,'(ab|bb)')
       else
         call mqc_error_A('Integral type unrecogised in mqc_print_twoERIs', 6, &
              'twoERIs%integralType', twoERIs%integralType )
@@ -1079,6 +1113,109 @@
       end function mqc_eigenvalues_has_beta
 !
 !
+!     PROCEDURE MQC_ERIs_Has_SpinBlock
+!
+!>    \brief <b> MQC_ERIs_Has_SpinBlock is a function that returns TRUE if an MQC 2ERIs 
+!>    variable has the specified spin block allocated and FALSE if it does not</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERIs_Has_SpinBlock is a function that returns TRUE if an MQC 2ERIs variable 
+!>    has the specified spin block allocated and FALSE if it does not.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ERIs
+!>    \verbatim
+!>        ERIs is Class(MQC_TwoERIs)
+!>        The name of the MQC_TwoERIs variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is character(len=*)
+!>        = 'alpha':       tests the alpha-alpha spin block.
+!>        = 'alpha-alpha': tests the alpha-alpha spin block. 
+!>        = 'aaaa':        tests the alpha-alpha spin block. 
+!>        = 'beta':        tests the beta-beta spin block. 
+!>        = 'beta-beta':   tests the beta-beta spin block. 
+!>        = 'bbbb':        tests the beta-beta spin block. 
+!>        = 'alpha-beta'   tests the alpha-beta spin block. 
+!>        = 'aabb':        tests the alpha-beta spin block. 
+!>        = 'beta-alpha'   tests the beta-alpha spin block. 
+!>        = 'bbaa':        tests the beta-alpha spin block. 
+!>        = 'abab':        tests the (ab|ab) spin block. 
+!>        = 'abba':        tests the (ab|ba) spin block. 
+!>        = 'baab':        tests the (ba|ab) spin block. 
+!>        = 'baba':        tests the (ba|ba) spin block. 
+!>        = 'aaab':        tests the (aa|ab) spin block. 
+!>        = 'aaba':        tests the (aa|ba) spin block. 
+!>        = 'abaa':        tests the (ab|aa) spin block. 
+!>        = 'baaa':        tests the (ba|aa) spin block. 
+!>        = 'bbba':        tests the (bb|ba) spin block. 
+!>        = 'bbab':        tests the (bb|ab) spin block. 
+!>        = 'babb':        tests the (ba|bb) spin block. 
+!>        = 'abbb':        tests the (ab|bb) spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_eris_has_spinBlock(eris,label) result(hasBlock)
+!
+      implicit none
+      class(mqc_twoeris),intent(in)::eris
+      character(len=*),intent(in)::label
+      character(len=12)::mylabel
+      logical::hasBlock
+!
+      call string_change_case(label,'L',myLabel)
+      
+      hasBlock = .false.
+      if(mylabel.eq.'aaaa'.or.mylabel.eq.'alpha'.or.mylabel.eq.'alpha-alpha') then
+        if(MQC_R4Tensor_isAllocated(eris%alpha)) hasBlock = .true. 
+      elseIf(mylabel.eq.'bbbb'.or.mylabel.eq.'beta'.or.mylabel.eq.'beta-beta') then
+        if(MQC_R4Tensor_isAllocated(eris%beta)) hasBlock = .true. 
+      elseIf(mylabel.eq.'aabb'.or.mylabel.eq.'alpha-beta') then
+        if(MQC_R4Tensor_isAllocated(eris%alphaBeta)) hasBlock = .true. 
+      elseIf(mylabel.eq.'bbaa'.or.mylabel.eq.'beta-alpha') then
+        if(MQC_R4Tensor_isAllocated(eris%betaAlpha)) hasBlock = .true. 
+      elseIf(mylabel.eq.'aaab') then
+        if(MQC_R4Tensor_isAllocated(eris%aaab)) hasBlock = .true. 
+      elseIf(mylabel.eq.'aaba') then
+        if(MQC_R4Tensor_isAllocated(eris%aaba)) hasBlock = .true. 
+      elseIf(mylabel.eq.'abaa') then
+        if(MQC_R4Tensor_isAllocated(eris%abaa)) hasBlock = .true. 
+      elseIf(mylabel.eq.'baaa') then
+        if(MQC_R4Tensor_isAllocated(eris%baaa)) hasBlock = .true. 
+      elseIf(mylabel.eq.'abab') then
+        if(MQC_R4Tensor_isAllocated(eris%abab)) hasBlock = .true. 
+      elseIf(mylabel.eq.'baab') then
+        if(MQC_R4Tensor_isAllocated(eris%baab)) hasBlock = .true. 
+      elseIf(mylabel.eq.'baba') then
+        if(MQC_R4Tensor_isAllocated(eris%baba)) hasBlock = .true. 
+      elseIf(mylabel.eq.'abba') then
+        if(MQC_R4Tensor_isAllocated(eris%abba)) hasBlock = .true. 
+      elseIf(mylabel.eq.'bbba') then
+        if(MQC_R4Tensor_isAllocated(eris%bbba)) hasBlock = .true. 
+      elseIf(mylabel.eq.'bbab') then
+        if(MQC_R4Tensor_isAllocated(eris%bbab)) hasBlock = .true. 
+      elseIf(mylabel.eq.'babb') then
+        if(MQC_R4Tensor_isAllocated(eris%babb)) hasBlock = .true. 
+      elseIf(mylabel.eq.'abbb') then
+        if(MQC_R4Tensor_isAllocated(eris%abbb)) hasBlock = .true. 
+      endIf
+!
+      end function mqc_eris_has_spinBlock
+!
+!
 !     PROCEDURE MQC_Integral_Array_Type
 !
 !>    \brief <b> MQC_Integral_Array_Type is a function that returns whether an MQC 
@@ -1155,6 +1292,47 @@
       arrayType = eigenvalues%array_type 
 !
       end function mqc_eigenvalues_array_type
+!
+!
+!     PROCEDURE MQC_ERIs_Array_Type
+!
+!>    \brief <b> MQC_ERIs_Array_Type is a function that returns whether an MQC 2ERIs
+!>    variable is of AO (regular, raffenettit1, raffenetti2, raffenetti3) or MO 
+!>    (restricted, unrestricted, general) type</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    \brief <b> MQC_ERIs_Array_Type is a function that returns whether an MQC 2ERIs
+!>    variable is of AO (regular, raffenettit1, raffenetti2, raffenetti3) or MO 
+!>    (restricted, unrestricted, general) type</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ERIs
+!>    \verbatim
+!>        Integral is Class(MQC_TwoERIs)
+!>        The name of the MQC_TwoERIs variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_eris_array_type(eris) result(arrayType)
+!
+      implicit none
+      class(mqc_twoeris)::eris
+      Character(Len=64)::arrayType
+!
+      arrayType = eris%integraltype 
+!
+      end function mqc_eris_array_type
 !
 !
 !     PROCEDURE MQC_Integral_Array_Name    
@@ -1504,6 +1682,129 @@
       end function mqc_eigenvalues_dimension 
 !
 !
+!     PROCEDURE MQC_ERIs_Dimension
+!
+!>    \brief <b> MQC_ERIs_Dimension is a function that returns the length of a spin
+!>    block axis of an MQC_TwoERIs object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERIs_Dimension is a function that returns the length of a spin block of an
+!>    MQC_ERIs_Integral. The required argument label specifies which block is queried. 
+!>    The optional argument axis specifies which dimension is returned. The following 
+!>    options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Axis  = '1' returns the first spin block dimension (default).
+!>    4. Axis  = '2' returns the second spin block dimension.
+!>    5. Axis  = '3' returns the third spin block dimension.
+!>    6. Axis  = '4' returns the fourth spin block dimension.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ERIs
+!>    \verbatim
+!>        ERIs is Class(MQC_TwoERIs)
+!>        The name of the MQC_TwoERIs variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is Integer(kind=int64),Optional
+!>        The spin block axis to return.
+!>        = 1: number of first dimension (default).
+!>        = 2: number of second dimension.
+!>        = 3: number of third dimension.
+!>        = 4: number of fourth dimension.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_eris_dimension(eris,label,axis) result(dimBlock)
+!
+      implicit none
+      class(mqc_twoERIs),intent(in)::eris
+      integer(kind=int64)::dimBlock
+      Character(Len=*),intent(in)::label
+      integer(kind=int64),intent(in),optional::axis
+      Character(Len=64)::myLabel
+      integer(kind=int64)::my_axis
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+
+      call string_change_case(label,'l',myLabel)
+      select case (myLabel)
+      case('alpha') 
+        if(.not.eris%hasSpinBlock('alpha')) then
+          dimBlock = 0
+        elseIf(my_axis.eq.1) then
+          dimBlock = size(eris%alpha,1)
+        elseIf(my_axis.eq.2) then
+          dimBlock = size(eris%alpha,2)
+        elseIf(my_axis.eq.3) then
+          dimBlock = size(eris%alpha,3)
+        elseIf(my_axis.eq.4) then
+          dimBlock = size(eris%alpha,4)
+        else
+          call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+        endIf
+      case('beta')
+        if(.not.eris%hasSpinBlock('beta')) then
+          if(eris%type().eq.'space') then
+            if(.not.eris%hasSpinBlock('alpha')) then
+              dimBlock = 0
+            elseIf(my_axis.eq.1) then
+              dimBlock = size(eris%alpha,1)
+            elseIf(my_axis.eq.2) then
+              dimBlock = size(eris%alpha,2)
+            elseIf(my_axis.eq.3) then
+              dimBlock = size(eris%alpha,3)
+            elseIf(my_axis.eq.4) then
+              dimBlock = size(eris%alpha,4)
+            else
+              call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+            endIf
+          else
+            dimBlock = 0
+          endIf
+        elseIf(my_axis.eq.1) then
+          dimBlock = size(eris%beta,1)
+        elseIf(my_axis.eq.2) then
+          dimBlock = size(eris%beta,2)
+        elseIf(my_axis.eq.3) then
+          dimBlock = size(eris%beta,3)
+        elseIf(my_axis.eq.4) then
+          dimBlock = size(eris%beta,4)
+        else
+          call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+        endIf
+      case default
+        call mqc_error_A('label not valid in mqc_eris_dimension', 6, &
+             'myLabel', myLabel )
+      end select 
+!
+      end function mqc_eris_dimension 
+!
+!
 !     PROCEDURE MQC_TwoERIs_Allocate
 !
 !>    \brief <b> MQC_TwoERIs_Allocate is used to allocate a two-electron integral 
@@ -1563,7 +1864,7 @@
 !>                         R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
 !>        = 'Raffenetti2': the MQC_TwoERIs variable contains 
 !>                         raffenetti type 2 atomic orbital 2ERIs.
-!>                         R(i,j,k,l) = (ij|kl) + (il|jk)  
+!>                         R(i,j,k,l) = (ik|jl) + (il|jk)  
 !>        = 'Raffenetti3': the MQC_TwoERIs variable contains 
 !>                         raffenetti type 3 atomic orbital 2ERIs.
 !>                         R(i,j,k,l) = (ik|jl) - (il|jk)
@@ -1598,6 +1899,78 @@
 !>        AlphaBeta is type(mqc_r4tensor),optional
 !>        The beta-alpha spin block 2ERI integrals.
 !>    \endverbatim
+!>
+!>    \param[in] ABAB 
+!>    \verbatim
+!>        ABAB is type(mqc_r4tensor),optional
+!>        The abab spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] ABBA 
+!>    \verbatim
+!>        ABBA is type(mqc_r4tensor),optional
+!>        The abba spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BAAB 
+!>    \verbatim
+!>        BAAB is type(mqc_r4tensor),optional
+!>        The baab spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BABA 
+!>    \verbatim
+!>        BABA is type(mqc_r4tensor),optional
+!>        The baba spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] AAAB 
+!>    \verbatim
+!>        AAAB is type(mqc_r4tensor),optional
+!>        The aaab spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] AABA 
+!>    \verbatim
+!>        AABA is type(mqc_r4tensor),optional
+!>        The aaba spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] ABAA 
+!>    \verbatim
+!>        ABAA is type(mqc_r4tensor),optional
+!>        The abaa spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BAAA 
+!>    \verbatim
+!>        BAAA is type(mqc_r4tensor),optional
+!>        The baaa spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BBBA 
+!>    \verbatim
+!>        BBBA is type(mqc_r4tensor),optional
+!>        The bbba spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BBAB 
+!>    \verbatim
+!>        BBAB is type(mqc_r4tensor),optional
+!>        The bbab spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] BABB 
+!>    \verbatim
+!>        BABB is type(mqc_r4tensor),optional
+!>        The babb spin block 2ERI integrals.
+!>    \endverbatim
+!>
+!>    \param[in] ABBB 
+!>    \verbatim
+!>        ABBB is type(mqc_r4tensor),optional
+!>        The abbb spin block 2ERI integrals.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -1605,12 +1978,14 @@
 !>    \date 2017
 !
       subroutine mqc_twoeris_allocate(twoERIs,storageType,integralType,alpha, &
-          beta,alphaBeta,betaAlpha) 
+          beta,alphaBeta,betaAlpha,abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba, &
+          bbab,babb,abbb) 
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
       character(len=*)::storageType,integralType
-      type(mqc_r4tensor),optional::alpha,beta,alphaBeta,betaAlpha
+      type(mqc_r4tensor),optional::alpha,beta,alphaBeta,betaAlpha,abab,abba,baab, &
+        baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
 !
       call string_change_case(storageType,'L')
       call string_change_case(integralType,'L')
@@ -1621,6 +1996,18 @@
       if(present(beta))  twoERIs%beta = beta
       if(present(alphaBeta)) twoERIs%alphaBeta = alphaBeta
       if(present(betaAlpha)) twoERIs%betaAlpha = betaAlpha
+      if(present(abab)) twoERIs%abab = abab
+      if(present(abba)) twoERIs%abba = abba
+      if(present(baab)) twoERIs%baab = baab
+      if(present(baba)) twoERIs%baba = baba
+      if(present(aaab)) twoERIs%aaab = aaab
+      if(present(aaba)) twoERIs%aaba = aaba
+      if(present(abaa)) twoERIs%abaa = abaa
+      if(present(baaa)) twoERIs%baaa = baaa
+      if(present(bbba)) twoERIs%bbba = bbba
+      if(present(bbab)) twoERIs%bbab = bbab
+      if(present(babb)) twoERIs%babb = babb
+      if(present(abbb)) twoERIs%abbb = abbb
 !
       end subroutine mqc_twoeris_allocate  
 !
@@ -1642,8 +2029,8 @@
 !>                   restricted spin blocks.
 !>    2. ArrayType = 'spin' declares the MQC_SCF_Integral variable contains 
 !>                   unrestricted spin blocks.
-!>    3. ArrayType = 'general' declares the MQC_TwoERIs variable contains general
-!>                   spin blocks.
+!>    3. ArrayType = 'general' declares the MQC_SCF_Integral variable contains 
+!>                   general spin blocks.
 !>
 !>    \endverbatim
 !
@@ -1808,6 +2195,246 @@
       endIf
 !
       end subroutine mqc_eigenvalues_allocate  
+!
+!
+!     PROCEDURE MQC_TwoERIs_Transform
+!
+!>    \brief <b> MQC_TwoERIs_Transform is used to transform two-electron integral 
+!>    type variables between different integral types</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_TwoERIs_Transform is used to transform two-electron integral type variables 
+!>    between different integral types. nThe following options are available:
+!>
+!>    1. IntegralType = 'Regular' declares the MQC_TwoERIs variable contains regular 
+!>                      atomic orbital 2ERIs. 
+!>    2. IntegralType = 'Raffenetti1' declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 1 atomic orbital 2ERIs. 
+!>    3. IntegralType = 'Raffenetti2 declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 2 atomic orbital 2ERIs. 
+!>    4. IntegralType = 'Raffenetti3' declares the MQC_TwoERIs variable contains 
+!>                      raffenetti type 3 atomic orbital 2ERIs. 
+!>    5. IntegralType = 'space' declares the MQC_TwoERIs variable contains restricted
+!>                      molecular orbital 2ERIs.
+!>    6. IntegralType = 'spin' declares the MQC_TwoERIs variable contains unrestricted
+!>                      molecular orbital 2ERIs.
+!>    7. IntegralType = 'general' declares the MQC_TwoERIs variable contains general
+!>                      molecular orbital 2ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TwoERIs
+!>    \verbatim
+!>        TwoERIs is class(mqc_twoERIs)
+!>        The MQC_TwoERIs variable to transform.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralType
+!>    \verbatim
+!>        IntegralType is Character(len=*)
+!>        = 'Regular':     the MQC_TwoERIs variable contains 
+!>                         regular atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ij|kl)
+!>        = 'Raffenetti1': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 1 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
+!>        = 'Raffenetti2': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 2 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ik|jl) + (il|jk)  
+!>        = 'Raffenetti3': the MQC_TwoERIs variable contains 
+!>                         raffenetti type 3 atomic orbital 2ERIs.
+!>                         R(i,j,k,l) = (ik|jl) - (il|jk)
+!>        = 'space':       the MQC_TwoERIs variable contains 
+!>                         restricted molecular orbital 2ERIs.
+!>        = 'spin':        the MQC_TwoERIs variable contains 
+!>                         unrestricted molecular orbital 2ERIs.
+!>        = 'general':     the MQC_TwoERIs variable contains 
+!>                         general molecular orbital 2ERIs.
+!>    \endverbatim
+!>    
+!>    \param[in] mo_coefficients 
+!>    \verbatim
+!>        mo_coefficients is type(mqc_scf_integral),optional
+!>        MO coefficients required for AO -> MO transformations. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients)
+!
+      implicit none
+      class(mqc_twoERIs)::twoERIs
+      character(len=*),intent(in)::integralType
+      type(mqc_scf_integral),optional,intent(in)::mo_coefficients
+      character(len=64)::my_integralType
+      type(mqc_r4tensor)::aaaa
+      real(kind=real64),dimension(:),allocatable::aaaaLoc
+      type(mqc_twoERIs)::temp
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0
+
+      call string_change_case(integralType,'l',my_integralType)
+
+      select case (twoERIs%type())
+      case ('regular')
+        if(my_integralType.eq.'regular') then
+          return
+        elseIf(my_integralType.eq.'raffenetti1') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif  
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,j,k,l) - &
+              0.25*(twoERIs%at(i,l,k,j) + twoERIs%at(i,k,l,j))
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+
+          endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'symm','raffenetti1',aaaa)
+          return
+        elseIf(my_integralType.eq.'raffenetti2') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif  
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) + &
+              twoERIs%at(i,k,l,j)
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+
+          endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'symm','raffenetti2',aaaa)
+          return
+        elseIf(my_integralType.eq.'raffenetti3') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,i,j,k,l)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif  
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) - &
+              twoERIs%at(i,k,l,j)
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+
+          endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'symm','raffenetti3',aaaa)
+          return
+        elseIf(my_integralType.eq.'space') then
+          call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.false.)
+          call mqc_twoeris_allocate(twoERIs,'full','space',temp%getBlock('alpha'))
+          return
+        elseIf(my_integralType.eq.'spin') then
+          call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.true.)
+          call mqc_twoeris_allocate(twoERIs,'full','spin',temp%getBlock('alpha'), &
+            temp%getBlock('beta'),temp%getBlock('alphaBeta'),temp%getBlock('betaAlpha'))
+          return
+        elseIf(my_integralType.eq.'general') then
+          call mqc_error_a('Transformation of regular to general MO 2ERIs NYI in &
+            & mqc_twoeris_transform',6,'my_integralType',my_integralType)
+        else
+          call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
+            'my_integralType',my_integralType)
+        endIf
+      case ('raffenetti1')
+        call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case ('raffenetti2')
+        call mqc_error_a('Transformation of Raffenetti 2 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case ('raffenetti3')
+        call mqc_error_a('Transformation of Raffenetti 3 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case ('space')
+        call mqc_error_a('Transformation of spatial MO 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case ('spin')
+        call mqc_error_a('Transformation of spin MO 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case ('general')
+        call mqc_error_a('Transformation of general MO 2ERIs NYI in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      case default
+        call mqc_error_a('Unrecognized 2ERIs integral type in mqc_twoeris_transform',6, &
+          'twoERIs%type()',twoERIs%type())
+      end select
+
+      end subroutine mqc_twoeris_transform
 !
 !
 !     PROCEDURE MQC_Integral_Identity
@@ -2840,6 +3467,831 @@
       end function mqc_eigenvalues_output_block  
 !
 !
+!     PROCEDURE MQC_2ERIs_Output_Block
+!
+!>    \brief <b> MQC_2ERIs_Output_Block is used to output a spin block of an MQC 
+!>    2ERIs type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERIs_Output_Block is used to output a spin block of an MQC 2ERIs type 
+!>    variable. Optional argument blockName is used to specify which spin block
+!>    should be output, with the default to output the all spin blocks. The following
+!>    options are available:
+!>
+!>    1.  BlockName = 'full' outputs the full MQC_TwoERIs variable.
+!>    2.  BlockName = 'alpha', 'alpha-alpha' or 'aaaa' outputs the alpha-alpha spin block. 
+!>    3.  BlockName = 'beta', 'beta-beta' or 'bbbb' outputs the beta-beta spin block. 
+!>    4.  BlockName = 'alpha-beta' or 'aabb' outputs the alpha-beta spin block. 
+!>    5.  BlockName = 'beta-alpha' or 'bbaa' outputs the beta-alpha spin block. 
+!>    6.  BlockName = 'abab' outputs the (ab|ab) spin block. 
+!>    7.  BlockName = 'abba' outputs the (ab|ba) spin block. 
+!>    8.  BlockName = 'baab' outputs the (ba|ab) spin block. 
+!>    9.  BlockName = 'baba' outputs the (ba|ba) spin block. 
+!>    10. BlockName = 'aaab' outputs the (aa|ab) spin block. 
+!>    11. BlockName = 'aaba' outputs the (aa|ba) spin block. 
+!>    12. BlockName = 'abaa' outputs the (ab|aa) spin block. 
+!>    13. BlockName = 'baaa' outputs the (ba|aa) spin block. 
+!>    14. BlockName = 'bbba' outputs the (bb|ba) spin block. 
+!>    15. BlockName = 'bbab' outputs the (bb|ab) spin block. 
+!>    16. BlockName = 'babb' outputs the (ba|bb) spin block. 
+!>    17. BlockName = 'abbb' outputs the (ab|bb) spin block. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ERIs
+!>    \verbatim
+!>        eris is class(mqc_twoeris)
+!>        The MQC_TwoERIs variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in,out] BlockName
+!>    \verbatim
+!>        BlockName is character(len=*),optional
+!>        = 'full':        outputs the full MQC_SCF_Integral. 
+!>        = 'alpha':       outputs the alpha-alpha spin block.
+!>        = 'alpha-alpha': outputs the alpha-alpha spin block. 
+!>        = 'beta':        outputs the beta-beta spin block. 
+!>        = 'beta-beta':   outputs the beta-beta spin block. 
+!>        = 'alpha-beta'   outputs the alpha-beta spin block. 
+!>        = 'beta-alpha'   outputs the beta-alpha spin block. 
+!>        = 'abab':        outputs the (ab|ab) spin block. 
+!>        = 'abba':        outputs the (ab|ba) spin block. 
+!>        = 'baab':        outputs the (ba|ab) spin block. 
+!>        = 'baba':        outputs the (ba|ba) spin block. 
+!>        = 'aaab':        outputs the (aa|ab) spin block. 
+!>        = 'aaba':        outputs the (aa|ba) spin block. 
+!>        = 'abaa':        outputs the (ab|aa) spin block. 
+!>        = 'baaa':        outputs the (ba|aa) spin block. 
+!>        = 'bbba':        outputs the (bb|ba) spin block. 
+!>        = 'bbab':        outputs the (bb|ab) spin block. 
+!>        = 'babb':        outputs the (ba|bb) spin block. 
+!>        = 'abbb':        outputs the (ab|bb) spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_2ERIs_output_block(eris,blockName) result(r4tOut)
+!
+      implicit none
+      class(mqc_twoeris)::eris
+      character(len=*),optional::blockName
+      character(len=64)::myBlockName
+      type(mqc_r4Tensor)::r4tOut
+      integer(kind=int64)::nDimAlpha1=0,nDimBeta1=0,nDimTotal1=0,nDimAlpha2=0,nDimBeta2=0, &
+        nDimTotal2=0,nDimAlpha3=0,nDimBeta3=0,nDimTotal3=0,nDimAlpha4=0,nDimBeta4=0, &
+        nDimTotal4=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
+!
+      if(present(blockName)) then
+        call string_change_case(blockName,'l',myBlockName)
+      else
+        myBlockName = 'full'
+      endIf
+
+      nDimAlpha1 = eris%blockSize('Alpha',1) 
+      nDimBeta1 = eris%blockSize('Beta',1)
+      nDimTotal1 = nDimAlpha1 + nDimBeta1
+      nDimAlpha2 = eris%blockSize('Alpha',2) 
+      nDimBeta2 = eris%blockSize('Beta',2)
+      nDimTotal2 = nDimAlpha2 + nDimBeta2
+      nDimAlpha3 = eris%blockSize('Alpha',3) 
+      nDimBeta3 = eris%blockSize('Beta',3)
+      nDimTotal3 = nDimAlpha3 + nDimBeta3
+      nDimAlpha4 = eris%blockSize('Alpha',4) 
+      nDimBeta4 = eris%blockSize('Beta',4)
+      nDimTotal4 = nDimAlpha4 + nDimBeta4
+
+      select case (myBlockName)
+      case('full')
+        if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+          eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+          eris%type().eq.'space') then
+          if (eris%hasSpinBlock('aaaa')) then
+            if(mqc_r4Tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
+            elseif(mqc_r4Tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
+            elseIf(mqc_r4Tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
+            else
+              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
+            endIf
+            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%alpha,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[nDimAlpha3+1,nDimTotal3], &
+              [nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%alpha,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3],[1,nDimAlpha4]) 
+          else
+            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
+          endIf
+        elseIf (eris%type().eq.'spin') then
+          if (eris%hasSpinBlock('aaaa').and.eris%hasSpinBlock('bbbb').and. &
+            eris%hasSpinBlock('aabb').and.eris%hasSpinBlock('bbaa')) then
+            if(mqc_r4tensor_haveComplex(eris%alpha).or.mqc_r4tensor_haveComplex(eris%beta).or.&
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or.mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or.mqc_r4tensor_haveReal(eris%beta).or.&
+              mqc_r4tensor_haveReal(eris%alphaBeta).or.mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
+            elseIf(mqc_r4tensor_haveInteger(eris%alpha).or.mqc_r4tensor_haveInteger(eris%beta).or.&
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or.mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
+            else
+              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
+            endIf
+            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3], &
+              [1,nDimAlpha4]) 
+            call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
+          else
+            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa'), &
+              'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb'), &
+              'eris%hasSpinBlock(''aabb'')', eris%hasSpinBlock('aabb'), &
+              'eris%hasSpinBlock(''bbaa'')', eris%hasSpinBlock('bbaa'))
+          endIf
+        elseIf (eris%type().eq.'general') then
+          if (eris%hasSpinBlock('aaaa').and.eris%hasSpinBlock('bbbb').and. &
+            eris%hasSpinBlock('aabb').and.eris%hasSpinBlock('bbaa').and. &
+            eris%hasSpinBlock('abab').and.eris%hasSpinBlock('abba').and. &
+            eris%hasSpinBlock('baab').and.eris%hasSpinBlock('baba').and. &
+            eris%hasSpinBlock('aaab').and.eris%hasSpinBlock('aaba').and. &
+            eris%hasSpinBlock('abaa').and.eris%hasSpinBlock('baaa').and. &
+            eris%hasSpinBlock('bbba').and.eris%hasSpinBlock('bbab').and. &
+            eris%hasSpinBlock('babb').and.eris%hasSpinBlock('abbb')) then
+            if(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha).or. &
+              mqc_r4tensor_haveComplex(eris%abab).or. &
+              mqc_r4tensor_haveComplex(eris%abba).or. &
+              mqc_r4tensor_haveComplex(eris%baab).or. &
+              mqc_r4tensor_haveComplex(eris%baba).or. &
+              mqc_r4tensor_haveComplex(eris%aaab).or. &
+              mqc_r4tensor_haveComplex(eris%aaba).or. &
+              mqc_r4tensor_haveComplex(eris%abaa).or. &
+              mqc_r4tensor_haveComplex(eris%baaa).or. &
+              mqc_r4tensor_haveComplex(eris%bbba).or. &
+              mqc_r4tensor_haveComplex(eris%bbab).or. &
+              mqc_r4tensor_haveComplex(eris%babb).or. &
+              mqc_r4tensor_haveComplex(eris%abbb)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha).or. &
+              mqc_r4tensor_haveReal(eris%abab).or. &
+              mqc_r4tensor_haveReal(eris%abba).or. &
+              mqc_r4tensor_haveReal(eris%baab).or. &
+              mqc_r4tensor_haveReal(eris%baba).or. &
+              mqc_r4tensor_haveReal(eris%aaab).or. &
+              mqc_r4tensor_haveReal(eris%aaba).or. &
+              mqc_r4tensor_haveReal(eris%abaa).or. &
+              mqc_r4tensor_haveReal(eris%baaa).or. &
+              mqc_r4tensor_haveReal(eris%bbba).or. &
+              mqc_r4tensor_haveReal(eris%bbab).or. &
+              mqc_r4tensor_haveReal(eris%babb).or. &
+              mqc_r4tensor_haveReal(eris%abbb)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
+            elseif(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha).or. &
+              mqc_r4tensor_haveInteger(eris%abab).or. &
+              mqc_r4tensor_haveInteger(eris%abba).or. &
+              mqc_r4tensor_haveInteger(eris%baab).or. &
+              mqc_r4tensor_haveInteger(eris%baba).or. &
+              mqc_r4tensor_haveInteger(eris%aaab).or. &
+              mqc_r4tensor_haveInteger(eris%aaba).or. &
+              mqc_r4tensor_haveInteger(eris%abaa).or. &
+              mqc_r4tensor_haveInteger(eris%baaa).or. &
+              mqc_r4tensor_haveInteger(eris%bbba).or. &
+              mqc_r4tensor_haveInteger(eris%bbab).or. &
+              mqc_r4tensor_haveInteger(eris%babb).or. &
+              mqc_r4tensor_haveInteger(eris%abbb)) then
+              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
+            else
+              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
+            endIf
+            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3], &
+              [1,nDimAlpha4]) 
+            call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%abab,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3], [nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%abba,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%baab,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%baba,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%aaab,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%aaba,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%abaa,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%baaa,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%bbba,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
+            call r4tOut%tput(eris%bbab,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%babb,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+            call r4tOut%tput(eris%abbb,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+          else
+            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa'), &
+              'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb'), &
+              'eris%hasSpinBlock(''aabb'')', eris%hasSpinBlock('aabb'), &
+              'eris%hasSpinBlock(''bbaa'')', eris%hasSpinBlock('bbaa'), &
+              'eris%hasSpinBlock(''abab'')', eris%hasSpinBlock('abab'), &
+!              'eris%hasSpinBlock(''abba'')', eris%hasSpinBlock('abba'), &
+!              'eris%hasSpinBlock(''baab'')', eris%hasSpinBlock('baab'), &
+!              'eris%hasSpinBlock(''baba'')', eris%hasSpinBlock('baba'), &
+!              'eris%hasSpinBlock(''aaab'')', eris%hasSpinBlock('aaab'), &
+!              'eris%hasSpinBlock(''aaba'')', eris%hasSpinBlock('aaba'), &
+!              'eris%hasSpinBlock(''abaa'')', eris%hasSpinBlock('abaa'), &
+!              'eris%hasSpinBlock(''baaa'')', eris%hasSpinBlock('baaa'), &
+!              'eris%hasSpinBlock(''bbba'')', eris%hasSpinBlock('bbba'), &
+!              'eris%hasSpinBlock(''bbab'')', eris%hasSpinBlock('bbab'), &
+!              'eris%hasSpinBlock(''babb'')', eris%hasSpinBlock('babb'), &
+              'eris%hasSpinBlock(''abbb'')', eris%hasSpinBlock('abbb'))
+          endIf
+        endIf
+      case('alpha','aaaa','alpha-alpha')
+        if (eris%hasSpinBlock('aaaa')) then
+          r4tOut = eris%alpha
+        else
+          call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+            'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
+        endIf
+      case('beta','bbbb','beta-beta')
+        if (eris%hasSpinBlock('bbbb')) then
+          r4tOut = eris%beta
+        elseIf (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+          eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+          eris%type().eq.'space') then
+          if (eris%hasSpinBlock('aaaa')) then
+            r4tOut = eris%alpha
+          else
+            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
+          endIf
+        else
+          call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
+            'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb') )
+        endIf
+      case('alpha-beta','aabb')
+        if (eris%hasSpinBlock('aabb')) then
+          r4tOut = eris%alphaBeta
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('beta-alpha','bbaa')
+        if (eris%hasSpinBlock('bbaa')) then
+          r4tOut = eris%betaAlpha
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('abab')
+        if (eris%hasSpinBlock('abab')) then
+          r4tOut = eris%abab
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('abba')
+        if (eris%hasSpinBlock('abba')) then
+          r4tOut = eris%abba
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('baab')
+        if (eris%hasSpinBlock('baab')) then
+          r4tOut = eris%baab
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('baba')
+        if (eris%hasSpinBlock('baba')) then
+          r4tOut = eris%baba
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('aaab')
+        if (eris%hasSpinBlock('aaab')) then
+          r4tOut = eris%aaab
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('aaba')
+        if (eris%hasSpinBlock('aaba')) then
+          r4tOut = eris%aaba
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('abaa')
+        if (eris%hasSpinBlock('abaa')) then
+          r4tOut = eris%abaa
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('baaa')
+        if (eris%hasSpinBlock('baaa')) then
+          r4tOut = eris%baaa
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('bbba')
+        if (eris%hasSpinBlock('bbba')) then
+          r4tOut = eris%bbba
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('bbab')
+        if (eris%hasSpinBlock('bbab')) then
+          r4tOut = eris%bbab
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('babb')
+        if (eris%hasSpinBlock('babb')) then
+          r4tOut = eris%babb
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case('abbb')
+        if (eris%hasSpinBlock('abbb')) then
+          r4tOut = eris%abbb
+        else
+          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+            eris%type().eq.'space') then
+            if(mqc_r4tensor_haveInteger(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+            else
+              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+            endIf
+          elseIf (eris%type().eq.'spin') then
+            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
+              mqc_r4tensor_haveInteger(eris%beta).or. &
+              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
+              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroI)
+            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
+              mqc_r4tensor_haveReal(eris%beta).or. &
+              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
+              mqc_r4tensor_haveReal(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
+            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
+              mqc_r4tensor_haveComplex(eris%beta).or. &
+              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
+              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroC)
+            else 
+              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
+            endIf
+          endIf
+        endIf
+      case default
+        call mqc_error_A('unrecognised block name in mqc_eris_output_block', 6, &
+             'myBlockName', myBlockName )
+      end select
+!
+      end function mqc_2ERIs_output_block  
+!
+!
 !     PROCEDURE MQC_Integral_Output_Array
 !
 !>    \brief <b> MQC_Integral_Output_Array is used to output an MQC integral type
@@ -3098,6 +4550,7 @@
                'MQC_R4Tensor_isAllocated(twoERIsIn%alpha)', MQC_R4Tensor_isAllocated(twoERIsIn%alpha))
         endIf
       case('spin','general')
+!       need tensor tensor put to implement this 
         call mqc_error_A('Spin and general input in mqc_2ERIs_output_array is not yet implemented', &
              6, 'TwoERIsIn%integralType', TwoERIsIn%integralType)
       case default
@@ -5183,47 +6636,115 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_eri_integral_contraction(eris,integral,label) result(output)
+      function mqc_eri_integral_contraction(eris,integral,zeroIn,label) result(output)
 !
       implicit none
-      type(mqc_twoERIs),intent(in)::eris
+      type(mqc_twoERIs),dimension(:),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
+      real(kind=real64),optional,intent(in)::zeroIn
       character(len=*),optional::label
       type(mqc_scf_integral)::output
       type(mqc_matrix)::alpha,beta,alphaBeta,betaAlpha
-      integer(kind=int64)::k,l,m,n,nBasis
-      character(len=64)::mylabel
-      real(kind=real64)::zero=1.0d-10
+      integer(kind=int64)::cnt,kp,mp,k,l,m,n,nBasis,ntt,fact1,flag,i
+      character(len=64)::mylabel,algorithm='regular'
+      real(kind=real64)::zero
 !     Pgfortran does not support declare reduce AND no way to restrict reduction to only 
 !     defined arrays. For now define local copies by hand and then sum into global version
 !     in critical section.
       type(mqc_matrix)::alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc
+      type(mqc_scf_integral)::hermden,ahermden
+      type(mqc_scalar)::half
+      real(kind=real64)::raf1,raf2,raf3
+      logical::DEBUG=.false.,doHerm,doAhrm
+      real(kind=real64),dimension(:),allocatable::aaHRden,bbHRden,aaHCden,bbHCden,abHHRden, &
+        abAHRden,abHHCden,abAHCden,aaARden,bbARden,aaACden,bbACden,abHARden,abAARden, &
+        abHACden,abAACden
+      real(kind=real64),dimension(:),allocatable::aaHRfoc,bbHRfoc,aaHCfoc,bbHCfoc,abHHRfoc, &
+        abAHRfoc,abHHCfoc,abAHCfoc,aaARfoc,bbARfoc,aaACfoc,bbACfoc,abHARfoc,abAARfoc, &
+        abHACfoc,abAACfoc
+      real(kind=real64),dimension(:,:),allocatable::temp
+      type(mqc_matrix)::tmpMat,tmpMat2,tmpMat3
 !
-      if(eris%storageType.ne.'full') call mqc_error_A('2ERI contraction only implemented &
-    &   with full storage in mqc_eri_integral_contraction',6,'eris%storageType:',eris%storageType)
-      if(eris%integralType.ne.'regular') call mqc_error_A('2ERI contraction only implemented &
-    &   with regular integrals in mqc_eri_integral_contraction',6,'eris%integralType:',eris%integralType)
+      half = 0.5
+      if(algorithm.ne.'square'.and.algorithm.ne.'regular') &
+        call mqc_error_A('Unknown algorithm option in mqc_eri_integral_contraction',6, &
+        'algorithm',algorithm)
 !
-     
+      if(present(zeroIn)) then
+        zero = zeroIn
+      else
+        zero = 1.0d-10
+      endIf
+!
       if(present(label)) then
         call string_change_case(label,'L',myLabel)
+        if(algorithm.eq.'regular'.and.myLabel.ne.'doublebar') &
+          call mqc_error_a('Regular algorithm only returns double bar integrals',6, &
+          'algorithm',algorithm,'myLabel',myLabel)
       else
         myLabel = 'doublebar'
       endIf
 
-      if(integral%blockSize('alpha',1).ne.integral%blockSize('alpha',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(alpha,1)', &
-        integral%blockSize('alpha',1),'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
-      if(integral%blockSize('beta',1).ne.integral%blockSize('beta',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(beta,1)', &
-        integral%blockSize('beta',1),'integral%blockSize(beta,2)',integral%blockSize('beta',2))
-      if(integral%blockSize('alpha',1).ne.integral%blockSize('beta',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(alpha,1)', &
-        integral%blockSize('alpha',1),'integral%blockSize(beta,2)',integral%blockSize('beta',2))
-      if(integral%blockSize('beta',1).ne.integral%blockSize('alpha',2)) call mqc_error_I('Arrays are &
-    &   not sized as expected in MQC_ERI_Integral_Contraction',6,'integral%blockSize(beta,1)', &
-        integral%blockSize('beta',1),'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(integral%blockSize('alpha',1).ne.integral%blockSize('alpha',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(alpha,1)', integral%blockSize('alpha',1), &
+        'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(integral%blockSize('beta',1).ne.integral%blockSize('beta',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction' &
+        ,6,'integral%blockSize(beta,1)', integral%blockSize('beta',1), &
+        'integral%blockSize(beta,2)',integral%blockSize('beta',2))
+      if(integral%blockSize('alpha',1).ne.integral%blockSize('beta',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(alpha,1)', integral%blockSize('alpha',1), &
+        'integral%blockSize(beta,2)',integral%blockSize('beta',2))
+      if(integral%blockSize('beta',1).ne.integral%blockSize('alpha',2)) &
+        call mqc_error_I('Arrays are not sized as expected in MQC_ERI_Integral_Contraction', &
+        6,'integral%blockSize(beta,1)', integral%blockSize('beta',1), &
+        'integral%blockSize(alpha,2)',integral%blockSize('alpha',2))
+      if(myLabel.ne.'doublebar'.and.algorithm.eq.'regular') &
+        call mqc_error('Regular Fock build cannot return separate interaction energies')
+
+      flag = 0
+      if(integral%array_type.eq.'spin') then
+        flag = flag + 1
+      elseIf(integral%array_type.eq.'general') then
+        flag = flag + 2
+      endIf
+      if(mqc_have_complex(integral%getBlock('full'))) flag = flag + 10
+      if(eris(1)%type().eq.'regular') then
+        flag = flag + 100
+      elseif(eris(1)%type().eq.'raffenetti1') then
+        flag = flag + 200
+      elseif(eris(1)%type().eq.'raffenetti2') then
+        flag = flag + 300
+      elseif(eris(1)%type().eq.'raffenetti3') then
+        flag = flag + 400
+      endIf
+      if(size(eris).ge.2) then
+        if(eris(2)%type().eq.'regular') then
+          flag = flag + 1000
+        elseif(eris(2)%type().eq.'raffenetti1') then
+          flag = flag + 2000
+        elseif(eris(2)%type().eq.'raffenetti2') then
+          flag = flag + 3000
+        elseif(eris(2)%type().eq.'raffenetti3') then
+          flag = flag + 4000
+        endIf
+      endIf
+      if(size(eris).ge.3) then
+        if(eris(3)%type().eq.'regular') then
+          flag = flag + 10000
+        elseif(eris(3)%type().eq.'raffenetti1') then
+          flag = flag + 20000
+        elseif(eris(3)%type().eq.'raffenetti2') then
+          flag = flag + 30000
+        elseif(eris(3)%type().eq.'raffenetti3') then
+          flag = flag + 40000
+        endIf
+      endIf
+
       nBasis = integral%blockSize('alpha')
+      ntt = (nBasis*(nBasis+1))/2
       call alpha%init(nBasis,nBasis)
       if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
         call beta%init(nBasis,nBasis)
@@ -5232,74 +6753,891 @@
         call betaAlpha%init(nBasis,nBasis)
       endIf
 
-!      !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
-      !$OMP PARALLEL DEFAULT(NONE), &
-      !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
-      !$OMP PRIVATE(k,l,m,n), &
-      !$OMP FIRSTPRIVATE(alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
-      call alphaLoc%init(nBasis,nBasis)
-      if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
-        call betaLoc%init(nBasis,nBasis)
-      if(integral%array_type.eq.'general') then
-        call alphaBetaLoc%init(nBasis,nBasis)
-        call betaAlphaLoc%init(nBasis,nBasis)
-      endIf
-      !$OMP DO COLLAPSE(4) 
-      do k = 1, nBasis
-        do l = 1, nBasis
-          do m = 1, nBasis
-            do n = 1, nBasis
-              if(abs(eris%at(k,l,m,n)).le.zero.and.abs(eris%at(k,n,m,l)).le.zero) cycle
-              ! AA Block
-              if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
-                call alphaLoc%put(alphaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+      if(algorithm.eq.'regular') then
+
+        doHerm = .false.
+        doAhrm = .false.
+        
+        hermden = half*(integral+dagger(integral))
+        if(hermden%norm('M').gt.zero) doHerm = .true.
+        if(doHerm) then
+          tmpMat = real(hermden%getblock('alpha'))
+          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          temp = tmpMat
+          aaHRden = temp(:,1)
+          if(mod(flag,100)/10.eq.1) then
+            tmpMat = aimag(hermden%getblock('alpha'))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            aaHCden = temp(:,1)
+          endIf
+          if(mod(flag,10).gt.0) then
+            tmpMat = real(hermden%getblock('beta'))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            bbHRden = temp(:,1)
+            if(mod(flag,100)/10.eq.1) then
+              tmpMat = aimag(hermden%getblock('beta'))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              bbHCden = temp(:,1)
+            endIf
+          endIf
+          if(mod(flag,10).eq.2) then
+            tmpMat = real(half*(hermden%getblock('alpha-beta')+ &
+              dagger(hermden%getblock('alpha-beta'))))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            abHHRden = temp(:,1)
+            tmpMat = real(half*(hermden%getblock('alpha-beta')- &
+              dagger(hermden%getblock('alpha-beta'))))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            abAHRden = temp(:,1)
+            if(mod(flag,100)/10.eq.1) then
+              tmpMat = aimag(half*(hermden%getblock('alpha-beta')+ &
+                dagger(hermden%getblock('alpha-beta'))))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              abHHCden = temp(:,1)
+              tmpMat = aimag(half*(hermden%getblock('alpha-beta')- &
+                dagger(hermden%getblock('alpha-beta'))))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              abAHCden = temp(:,1)
+            endIf
+          endIf
+        endIf
+        
+        ahermden = half*(integral-dagger(integral))
+        if(ahermden%norm('M').gt.zero) doAhrm = .true.
+        if(doAhrm) then
+          tmpMat = real(ahermden%getblock('alpha'))
+          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          temp = tmpMat
+          aaARden = temp(:,1)
+          if(mod(flag,100)/10.eq.1) then
+            tmpMat = aimag(ahermden%getblock('alpha'))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            aaACden = temp(:,1)
+          endIf
+          if((mod(flag,10).gt.0)) then
+            tmpMat = real(ahermden%getblock('beta'))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            bbARden = temp(:,1)
+            if(mod(flag,100)/10.eq.1) then
+              tmpMat = aimag(ahermden%getblock('beta'))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              bbACden = temp(:,1)
+            endIf
+          endIf
+          if((mod(flag,10).eq.2)) then
+            tmpMat = real(half*(ahermden%getblock('alpha-beta')+ &
+              dagger(ahermden%getblock('alpha-beta'))))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            abHARden = temp(:,1)
+            tmpMat = real(half*(ahermden%getblock('alpha-beta')- &
+              dagger(ahermden%getblock('alpha-beta'))))
+            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            temp = tmpMat
+            abAARden = temp(:,1)
+            if(mod(flag,100)/10.eq.1) then
+              tmpMat = aimag(half*(ahermden%getblock('alpha-beta')+ &
+                dagger(ahermden%getblock('alpha-beta'))))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              abHACden = temp(:,1)
+              tmpMat = aimag(half*(ahermden%getblock('alpha-beta')- &
+                dagger(ahermden%getblock('alpha-beta'))))
+              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              temp = tmpMat
+              abAACden = temp(:,1)
+            endIf
+          endIf
+        endIf
+
+!       if integral is zero then output is also zero
+        if(.not.doHerm.and..not.doAhrm) then
+          output = integral
+          return
+        endIf
+
+        if(DEBUG) then
+          if(doHerm) then 
+            call mqc_print(6,aaHRden,'Alpha-Alpha hermitian real density')
+            if(mod(flag,100)/10.eq.1) &
+              call mqc_print(6,aaHCden,'Alpha-Alpha hermitian complex density')
+            if (mod(flag,10).gt.0) then
+              call mqc_print(6,bbHRden,'Beta-Beta hermitian real density')
+              if(mod(flag,100)/10.eq.1) &
+                call mqc_print(6,bbHCden,'Beta-Beta hermitian complex density')
+            endIf
+            if (mod(flag,10).eq.2) then
+              call mqc_print(6,abHHRden,'Alpha-Beta hermitian hermitian real density')
+              call mqc_print(6,abAHRden,'Alpha-Beta hermitian antihermitian real density')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(6,abHHCden,'Alpha-Beta hermitian hermitian complex density')
+                call mqc_print(6,abAHCden,'Alpha-Beta hermitian antihermitian complex density')
               endIf
-              if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                call alphaLoc%put(alphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n),k,l)
+            endIf
+          endIf
+          if(doAhrm) then 
+            call mqc_print(6,aaARden,'Alpha-Alpha antihermitian real density')
+            if(mod(flag,100)/10.eq.1) &
+              call mqc_print(6,aaACden,'Alpha-Alpha antihermitian complex density')
+            if (mod(flag,10).gt.0) then
+              call mqc_print(6,bbARden,'Beta-Beta antihermitian real density')
+              if(mod(flag,100)/10.eq.1) &
+                call mqc_print(6,bbACden,'Beta-Beta antihermitian complex density')
+            endIf
+            if (mod(flag,10).eq.2) then
+              call mqc_print(6,abHARden,'Alpha-Beta hermitian antihermitian real density')
+              call mqc_print(6,abAARden,'Alpha-Beta antihermitian antihermitian real density')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(6,abHACden,'Alpha-Beta hermitian antihermitian complex density')
+                call mqc_print(6,abAACden,'Alpha-Beta antihermitian antihermitian complex density')
               endIf
-              !BB Block
-              if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+            endIf
+          endIf
+        endIf
+
+        if(doHerm) then
+          if (mod(flag,10).eq.0) then 
+            aaHRden = 4*aaHRden 
+            do i = 1,nBasis
+              aaHRden(symIndexHash(i,i)) = aaHRden(symIndexHash(i,i))/2.0
+            endDo
+          else
+            aaHRden = 2*(aaHRden + bbHRden) 
+            bbHRden = 2*(aaHRden/2.0 - 2*bbHRden) 
+            do i = 1,nBasis
+              aaHRden(symIndexHash(i,i)) = aaHRden(symIndexHash(i,i))/2.0
+              bbHRden(symIndexHash(i,i)) = bbHRden(symIndexHash(i,i))/2.0
+            endDo
+          endIf
+          if (mod(flag,10).eq.2) then
+            do i = 1,nBasis
+              abHHRden(symIndexHash(i,i)) = abHHRden(symIndexHash(i,i))/2.0
+              if(mod(flag,100)/10.eq.1) &
+                abAHCden(symIndexHash(i,i)) = abAHCden(symIndexHash(i,i))/2.0
+            endDo
+          endIf
+        endIf
+
+        if(doAhrm) then
+          do i = 1,nBasis
+            if(mod(flag,10).eq.2) &
+              abHARden(symIndexHash(i,i)) = abHARden(symIndexHash(i,i))/2.0
+            if(mod(flag,100)/10.eq.1) then
+              aaACden(symIndexHash(i,i)) = aaACden(symIndexHash(i,i))/2.0
+              if(mod(flag,10).gt.0) &
+                bbACden(symIndexHash(i,i)) = bbACden(symIndexHash(i,i))/2.0
+              if(mod(flag,10).eq.2) &
+                abAACden(symIndexHash(i,i)) = abAACden(symIndexHash(i,i))/2.0
+            endIf
+          endDo
+        endIf
+
+!       Logic here is commented out as cannot do reduction over unallocated arrays in
+!       OMP section below. Therefore allocate and initialize all components of output 
+!       matrix even though some will never be used.
+!
+!        if(doHerm) then
+          allocate(aaHRfoc((nBasis*(nBasis+1))/2))
+          aaHRfoc = 0.0
+!          if(mod(flag,100)/10.eq.1) then
+            allocate(aaHCfoc((nBasis*(nBasis+1))/2))
+            aaHCfoc = 0.0
+!          endIf
+!          if(mod(flag,10).gt.0) then
+            allocate(bbHRfoc((nBasis*(nBasis+1))/2))
+            bbHRfoc = 0.0 
+!            if(mod(flag,100)/10.eq.1) then
+              allocate(bbHCfoc((nBasis*(nBasis+1))/2))
+              bbHCfoc = 0.0 
+!            endIf
+!            if(mod(flag,10).eq.2) then
+              allocate(abHHRfoc((nBasis*(nBasis+1))/2))
+              abHHRfoc = 0.0
+!              if(mod(flag,100)/10.eq.1) then
+                allocate(abHHCfoc((nBasis*(nBasis+1))/2))
+                abHHCfoc = 0.0
+!              endIf
+              allocate(abAHRfoc((nBasis*(nBasis+1))/2))
+              abAHRfoc = 0.0
+!              if(mod(flag,100)/10.eq.1) then
+                allocate(abAHCfoc((nBasis*(nBasis+1))/2))
+                abAHCfoc = 0.0
+!              endIf
+!            endIf
+!          endIf
+!        endIf
+
+!        if(doAhrm) then
+          allocate(aaARfoc((nBasis*(nBasis+1))/2))
+          aaARfoc = 0.0
+!          if(mod(flag,100)/10.eq.1) then
+            allocate(aaACfoc((nBasis*(nBasis+1))/2))
+            aaACfoc = 0.0
+!          endIf
+!          if(mod(flag,10).gt.0) then
+            allocate(bbARfoc((nBasis*(nBasis+1))/2))
+            bbARfoc = 0.0
+!            if(mod(flag,100)/10.eq.1) then
+              allocate(bbACfoc((nBasis*(nBasis+1))/2))
+              bbACfoc = 0.0 
+!            endIf
+!            if(mod(flag,10).eq.2) then
+              allocate(abHARfoc((nBasis*(nBasis+1))/2))
+              abHARfoc = 0.0
+!              if(mod(flag,100)/10.eq.1) then
+                allocate(abHACfoc((nBasis*(nBasis+1))/2))
+                abHACfoc = 0.0
+!              endIf
+              allocate(abAARfoc((nBasis*(nBasis+1))/2))
+              abAARfoc = 0.0
+!              if(mod(flag,100)/10.eq.1) then
+                allocate(abAACfoc((nBasis*(nBasis+1))/2))
+                abAACfoc = 0.0
+!              endIf
+!            endIf
+!          endIf
+!        endIf
+
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaHRfoc,bbHRfoc,aaHCfoc,bbHCfoc,abHHRfoc,abAHRfoc,abHHCfoc,abAHCfoc, &
+!$OMP aaARfoc,bbARfoc,aaACfoc,bbACfoc,abHARfoc,abAARfoc,abHACfoc,abAACfoc), &
+!$OMP SHARED(eris,ntt,aaHRden,bbHRden,aaHCden,bbHCden,abHHRden,abAHRden,abHHCden,abAHCden, &
+!$OMP aaARden,bbARden,aaACden,bbACden,abHARden,abAARden,abHACden,abAACden,flag,doHerm, &
+!$OMP doAhrm,zero), &
+!$OMP PRIVATE(cnt,kp,mp,k,l,m,n,raf1,raf2,raf3)
+        do cnt = 1, (ntt*(ntt+1))/2
+#ifdef   PGI
+          kp = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+          mp = cnt - kp*(kp-1)/2
+          k = floor((1+sqrt(dfloat(-7+8*kp)))/2) 
+          m = floor((1+sqrt(dfloat(-7+8*mp)))/2) 
+#else
+          kp = floor((1+sqrt(float(-7+8*cnt)))/2)
+          mp = cnt - kp*(kp-1)/2
+          k = floor((1+sqrt(float(-7+8*kp)))/2) 
+          m = floor((1+sqrt(float(-7+8*mp)))/2) 
+#endif  
+          l = kp - k*(k-1)/2
+          n = mp - m*(m-1)/2
+
+          if(mod(flag,1000)/100.eq.1) then
+            raf1 = eris(1)%at(k,l,m,n) - 0.25*(eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l))
+            if(kp.eq.mp) raf1 = 0.5*raf1 
+          elseIf(mod(flag,1000)/100.eq.2) then
+            raf1 = eris(1)%at(k,l,m,n)
+          else
+            call mqc_error_a('Unrecognized/incorrect integrals given in eris(1) in &
+              & mqc_eri_integral_contraction',6,'eris(1)%type()',eris(1)%type())
+          endIf
+          if(mod(flag,10).gt.0) then
+            if(mod(flag,1000)/100.eq.1) then
+              raf2 = eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l)
+              if(kp.eq.mp) raf2 = 0.5*raf2 
+            elseIf(mod(flag,10000)/1000.eq.3) then
+              raf2 = eris(2)%at(k,l,m,n) 
+            else
+              call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) in &
+                & mqc_eri_integral_contraction',6,'eris(2)%type()',eris(2)%type())
+            endIf
+          else
+            raf2 = 0.0 
+          endIf
+          if (m.ne.n) then
+            if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) then
+              if(mod(flag,1000)/100.eq.1) then
+                raf3 = eris(1)%at(k,n,m,l) - eris(1)%at(k,m,n,l)
+                if(kp.eq.mp) raf3 = 0.5*raf3 
+              elseIf(mod(flag,10000)/1000.eq.4) then
+                raf3 = eris(2)%at(k,l,m,n) 
+              elseIf(mod(flag,100000)/10000.eq.4) then
+                raf3 = eris(3)%at(k,l,m,n) 
+              else
+                call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) or & 
+                  & eris(3) in mqc_eri_integral_contraction',6,'eris(2)%type()', &
+                  eris(2)%type(),'eris(3)%type()',eris(3)%type())
+              endIf
+            endIf
+          else
+            raf3 = 0.0
+          endIf
+
+          if(doHerm) then
+!         AA/BB Hermitian Fock
+            if(abs(raf1).gt.zero.and.abs(aaHRden(symIndexHash(m,n))).gt.zero) &
+              aaHRfoc(symIndexHash(k,l)) = aaHRfoc(symIndexHash(k,l)) + &
+              raf1*aaHRden(symIndexHash(m,n))
+            if(abs(raf1).gt.zero.and.abs(aaHRden(symIndexHash(k,l))).gt.zero) &
+              aaHRfoc(symIndexHash(m,n)) = aaHRfoc(symIndexHash(m,n)) + &
+              raf1*aaHRden(symIndexHash(k,l))
+            if(mod(flag,10).gt.0) then
+              if(abs(raf2).gt.zero.and.abs(bbHRden(symIndexHash(m,n))).gt.zero) &
+                bbHRfoc(symIndexHash(k,l)) = bbHRfoc(symIndexHash(k,l)) + &
+                raf2*bbHRden(symIndexHash(m,n))
+              if(abs(raf2).gt.zero.and.abs(bbHRden(symIndexHash(k,l))).gt.zero) &
+                bbHRfoc(symIndexHash(m,n)) = bbHRfoc(symIndexHash(m,n)) + &
+                raf2*bbHRden(symIndexHash(k,l))
+            endIf
+            if(m.ne.n.and.mod(flag,100)/10.eq.1) then
+              if(abs(raf3).gt.zero) then
+                if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
+                  raf3*aaHCden(symIndexHash(m,n))
+                if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
+                  raf3*aaHCden(symIndexHash(k,l))
+                if(mod(flag,10).gt.0) then
+                  if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
+                    raf3*bbHCden(symIndexHash(m,n))
+                  if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
+                    raf3*bbHCden(symIndexHash(k,l))
+                endIf
+              endIf
+            endIf
+            if(mod(flag,10).eq.2) then
+!         AB Hermitian Hermitian Fock
+              if(abs(abHHRden(symIndexHash(m,n))).gt.zero) &
+                abHHRfoc(symIndexHash(k,l)) = abHHRfoc(symIndexHash(k,l)) - &
+                raf2*abHHRden(symIndexHash(m,n))
+              if(abs(abHHRden(symIndexHash(k,l))).gt.zero) &
+                abHHRfoc(symIndexHash(m,n)) = abHHRfoc(symIndexHash(m,n)) - &
+                raf2*abHHRden(symIndexHash(k,l))
+              if(m.ne.n.and.mod(flag,100)/10.eq.1) then
+                if(abs(abHHCden(symIndexHash(m,n))).gt.zero) &
+                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) - &
+                  raf3*abHHCden(symIndexHash(m,n))
+                if(abs(abHHCden(symIndexHash(k,l))).gt.zero) &
+                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) - &
+                  raf3*abHHCden(symIndexHash(k,l))
+              endIf
+!         AB Antihermitian Hermitian Fock
+              if(m.ne.n.and.abs(abAHRden(symIndexHash(m,n))).gt.zero) &
+                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) - &
+                raf3*abAHRden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(abAHRden(symIndexHash(k,l))).gt.zero) &
+                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) - &
+                raf3*abAHRden(symIndexHash(k,l))
+              if (mod(flag,100)/10.eq.1) then
+                if(abs(abAHCden(symIndexHash(m,n))).gt.zero) &
+                  abAHCfoc(symIndexHash(k,l)) = abAHCfoc(symIndexHash(k,l)) - &
+                  raf2*abAHCden(symIndexHash(m,n))
+                if(abs(abAHCden(symIndexHash(k,l))).gt.zero) &
+                  abAHCfoc(symIndexHash(m,n)) = abAHCfoc(symIndexHash(m,n)) - &
+                  raf2*abAHCden(symIndexHash(k,l))
+              endIf
+            endIf
+          endIf
+!         AA Antihermitian Fock
+          if(doAhrm) then
+            if(m.ne.n.and.abs(aaARden(symIndexHash(m,n))).gt.zero) &
+              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) - &
+              raf3*aaARden(symIndexHash(m,n))
+            if(m.ne.n.and.abs(aaARden(symIndexHash(k,l))).gt.zero) &
+              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) - &
+              raf3*aaARden(symIndexHash(k,l))
+            if(mod(flag,100)/10.eq.1) then
+              if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
+                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) - &
+                raf2*aaACden(symIndexHash(m,n))
+              if(abs(aaACden(symIndexHash(k,l))).gt.zero) &
+                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) - &
+                raf2*aaACden(symIndexHash(k,l))
+            endIf
+            if(mod(flag,10).gt.0) then
+!         BB Antihermitian Fock
+              if(m.ne.n.and.abs(bbARden(symIndexHash(m,n))).gt.zero) &
+                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) - &
+                raf3*bbARden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(bbARden(symIndexHash(k,l))).gt.zero) &
+                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) - &
+                raf3*bbARden(symIndexHash(k,l))
+              if(mod(flag,100)/10.eq.1) then
+                if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
+                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) - &
+                  raf2*bbACden(symIndexHash(m,n))
+                if(abs(bbACden(symIndexHash(k,l))).gt.zero) &
+                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) - &
+                  raf2*bbACden(symIndexHash(k,l))
+              endIf
+            endIf
+!         AB Hermitian Antihermitian Fock
+            if(mod(flag,10).eq.2) then
+              if(abs(abHARden(symIndexHash(m,n))).gt.zero) &
+                abHARfoc(symIndexHash(k,l)) = abHARfoc(symIndexHash(k,l)) - &
+                raf2*abHARden(symIndexHash(m,n))
+              if(abs(abHARden(symIndexHash(k,l))).gt.zero) &
+                abHARfoc(symIndexHash(m,n)) = abHARfoc(symIndexHash(m,n)) - &
+                raf2*abHARden(symIndexHash(k,l))
+              if(mod(flag,100)/10.eq.1.and.m.ne.n) then
+                if(abs(abHACden(symIndexHash(m,n))).gt.zero) &
+                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) - &
+                 raf3*abHACden(symIndexHash(m,n))
+                if(abs(abHACden(symIndexHash(k,l))).gt.zero) &
+                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) - &
+                 raf3*abHACden(symIndexHash(k,l))
+             endIf
+!         AB Antihermitian Antihermitian Fock
+              if(m.ne.n.and.abs(abAARden(symIndexHash(m,n))).gt.zero) &
+                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) - &
+                raf3*abAARden(symIndexHash(m,n))
+              if(m.ne.n.and.abs(abAARden(symIndexHash(k,l))).gt.zero) &
+                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) - &
+                raf3*abAARden(symIndexHash(k,l))
+              if(mod(flag,100)/10.eq.1) then
+                if(abs(abAACden(symIndexHash(m,n))).gt.zero) &
+                  abAACfoc(symIndexHash(k,l)) = abAACfoc(symIndexHash(k,l)) - &
+                  raf2*abAACden(symIndexHash(m,n))
+                if(abs(abAACden(symIndexHash(k,l))).gt.zero) &
+                  abAACfoc(symIndexHash(m,n)) = abAACfoc(symIndexHash(m,n)) - &
+                  raf2*abAACden(symIndexHash(k,l))
+              endIf
+            endIf
+          endIf
+
+        endDo
+!$OMP END PARALLEL DO
+
+        if(mod(flag,10).gt.0) then
+          aaHRfoc = aaHRfoc - 0.25*bbHRfoc
+          bbHRfoc = aaHRfoc + 0.5*bbHRfoc
+        endIf
+
+        if(DEBUG) then
+          if(doHerm) then
+            call mqc_print(6,aaHRfoc,'Alpha-Alpha hermitian real Fock')
+            if(mod(flag,100)/10.eq.1) &
+              call mqc_print(6,aaHCfoc,'Alpha-Alpha hermitian complex Fock')
+            if(mod(flag,10).gt.0) then
+              call mqc_print(6,bbHRfoc,'Beta-Beta hermitian real Fock')
+              if(mod(flag,100)/10.eq.1) &
+                call mqc_print(6,bbHCfoc,'Beta-Beta hermitian complex Fock')
+              if(mod(flag,10).eq.2) then
+                call mqc_print(6,abHHRfoc,'Alpha-Beta hermitian hermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call mqc_print(6,abHHCfoc,'Alpha-Beta hermitian hermitian complex Fock')
+                call mqc_print(6,abAHRfoc,'Alpha-Beta hermitian antihermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call mqc_print(6,abAHCfoc,'Alpha-Beta hermitian antihermitian complex Fock')
+              endIf
+            endIf
+          endIf
+          if(doAhrm) then
+            call mqc_print(6,aaARfoc,'Alpha-Alpha antihermitian real Fock')
+            if(mod(flag,100)/10.eq.1) &
+              call mqc_print(6,aaACfoc,'Alpha-Alpha antihermitian complex Fock')
+            if(mod(flag,10).gt.0) then
+              call mqc_print(6,bbARfoc,'Beta-Beta antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) &
+                call mqc_print(6,bbACfoc,'Beta-Beta antihermitian complex Fock')
+              if(mod(flag,10).eq.2) then
+                call mqc_print(6,abHARfoc,'Alpha-Beta antihermitian hermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call mqc_print(6,abHACfoc,'Alpha-Beta antihermitian hermitian complex Fock')
+                call mqc_print(6,abAARfoc,'Alpha-Beta antihermitian antihermitian real Fock')
+                if(mod(flag,100)/10.eq.1) &
+                  call mqc_print(6,abAACfoc,'Alpha-Beta antihermitian antihermitian complex Fock')
+              endIf
+            endIf
+          endIf
+        endIf
+
+        if(doHerm.and.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,aaHRfoc,'symmetric')
+            call MQC_Matrix_SymmMatrix_Put(tmpMat,aaARfoc,'antisymmetric')
+            alpha = alpha + tmpMat
+            if(mod(flag,10).gt.0) then
+              call MQC_Matrix_SymmMatrix_Put(beta,bbHRfoc,'symmetric')
+              call MQC_Matrix_SymmMatrix_Put(tmpMat,bbARfoc,'antisymmetric')
+              beta = beta + tmpMat 
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHHRfoc,'symmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat2,abHARfoc,'symmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,abAARfoc,'antisymmetric')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
+            call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
+            alpha = alpha + tmpMat
+            if(mod(flag,10).gt.0) then
+              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
+              call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
+              beta = beta + tmpMat
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,abHACfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx(abAARfoc,abAACfoc),'antihermitian')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3 
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3 
+              endIf
+            endIf
+          endIf
+        elseIf(doHerm.and..not.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,aaHRfoc,'symmetric')
+            if(mod(flag,10).gt.0) then
+              call MQC_Matrix_SymmMatrix_Put(beta,bbHRfoc,'symmetric')
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHHRfoc,'symmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
+                betaAlpha = alphaBeta - tmpMat
+                alphaBeta = alphaBeta + tmpMat
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian') 
+            if(mod(flag,10).gt.0) then
+               call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian') 
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
+                betaAlpha = alphaBeta - tmpMat
+                alphaBeta = alphaBeta + tmpMat
+              endIf
+            endIf
+          endIf
+        elseIf(.not.doHerm.and.doAhrm) then
+          if(mod(flag,100)/10.eq.0) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,aaARfoc,'antisymmetric')
+            if(mod(flag,10).gt.0) then
+            call MQC_Matrix_SymmMatrix_Put(beta,bbARfoc,'antisymmetric')
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHARfoc,'symmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,abAARfoc,'antisymmetric')
+                betaAlpha = alphaBeta - tmpMat
+                alphaBeta = alphaBeta + tmpMat
+              endIf
+            endIf
+          elseIf(mod(flag,100)/10.eq.1) then
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaARfoc,aaACfoc),'antihermitian') 
+            if(mod(flag,10).gt.0) then
+              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbARfoc,bbACfoc),'antihermitian') 
+              if(mod(flag,10).eq.2) then
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHARfoc,abHACfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAARfoc,abAACfoc),'antihermitian')
+                betaAlpha = tmpMat - alphaBeta 
+                alphaBeta = alphaBeta + tmpMat
+              endIf
+            endIf
+          endIf
+        endIf
+        
+      elseIf(algorithm.eq.'square') then
+
+        if(eris(1)%integralType.ne.'regular') call mqc_error_A('2ERI contraction only &
+          & implemented with regular integrals in mqc_eri_integral_contraction',6, &
+          'eris(1)%integralType:',eris(1)%integralType)
+
+!        !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
+        !$OMP PARALLEL DEFAULT(NONE), &
+        !$OMP SHARED(eris,integral,zero,nBasis,mylabel,alpha,beta,alphaBeta,betaAlpha), &
+        !$OMP PRIVATE(k,l,m,n,alphaLoc,betaLoc,alphaBetaLoc,betaAlphaLoc)
+        call alphaLoc%init(nBasis,nBasis)
+        if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
+          call betaLoc%init(nBasis,nBasis)
+        if(integral%array_type.eq.'general') then
+          call alphaBetaLoc%init(nBasis,nBasis)
+          call betaAlphaLoc%init(nBasis,nBasis)
+        endIf
+        !$OMP DO COLLAPSE(4) 
+        do k = 1, nBasis
+          do l = 1, nBasis
+            do m = 1, nBasis
+              do n = 1, nBasis
+                if(abs(eris(1)%at(k,l,m,n)).le.zero.and.abs(eris(1)%at(k,n,m,l)).le.zero) cycle
+                ! AA Block
                 if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                  call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
-                  call betaLoc%put(betaLoc%at(k,l)+eris%at(k,l,m,n)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
                 endIf
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaLoc%put(betaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n),k,l)
                 endIf
-              endIf
-              !AB Block
-              if(integral%array_type.eq.'general') then
-                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                !BB Block
+                if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
+                  if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
+                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
+                  endIf
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call betaLoc%put(betaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
+                  endIf
                 endIf
-              !BA Block
-                if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                !AB Block
+                if(integral%array_type.eq.'general') then
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                  endIf
+                !BA Block
+                  if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                  endIf
                 endIf
-              endIf
+              end do
             end do
           end do
         end do
-      end do
-      !$OMP END DO
-      !$OMP CRITICAL
-      alpha = alpha + alphaLoc
-      if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
-        beta = beta + betaLoc
-      if(integral%array_type.eq.'general') then
-        alphaBeta = alphaBeta + alphaBetaLoc
-        betaAlpha = betaAlpha + betaAlphaLoc
+        !$OMP END DO
+        !$OMP CRITICAL
+        alpha = alpha + alphaLoc
+        if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') &
+          beta = beta + betaLoc
+        if(integral%array_type.eq.'general') then
+          alphaBeta = alphaBeta + alphaBetaLoc
+          betaAlpha = betaAlpha + betaAlphaLoc
+        endIf
+        !$OMP END CRITICAL
+        !$OMP END PARALLEL
       endIf
-      !$OMP END CRITICAL
-      !$OMP END PARALLEL
 !
       if(integral%array_type.eq.'space') call mqc_integral_allocate(output,'contraction','space',alpha)
       if(integral%array_type.eq.'spin') call mqc_integral_allocate(output,'contraction','spin',alpha,beta)
       if(integral%array_type.eq.'general') call mqc_integral_allocate(output,'contraction','general',alpha,beta,alphaBeta,betaAlpha)
 !
+      if(DEBUG) call output%print(6,'Final Fock matrix')
+      
       end function mqc_eri_integral_contraction
 !
+!
+!     PROCEDURE MQC_ERI_R4Tensor_Contraction
+!
+!>    \brief <b> MQC_ERI_R4Tensor_Contraction is used to return the contraction of 
+!>    two-ERIs with an MQC rank-4 tensor</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_R4Tensor_Contraction is used to return the contraction of two-ERIs with 
+!>    an MQC rank-4 tensor. This routine takes care of whether the rank-4 tensor includes
+!>    separate spin components. The following options are available: 
+!>
+!>    1. Label = 'coulomb' returns the contraction with single bar coulomb integrals.
+!>    2. Label = 'exchange' returns the contraction with single bar exchange integrals.
+!>    3. Label = 'doublebar' returns the contraction with double-bar integrals (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is type(mqc_twoERIs) 
+!>        The 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        R4Tensor is type(mqc_R4Tensor) 
+!>        The MQC rank-4 tensor to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is character(len=*),optional 
+!>        = 'coulomb':   contracts with coulomb integrals.
+!>        = 'exchange':  contracts with exchange integrals.
+!>        = 'doublebar': contracts with double bar integrals
+!>                       (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_eri_r4tensor_contraction(eris,r4tensor,label) result(output)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::eris
+      type(mqc_r4Tensor),intent(in)::r4tensor
+      character(len=*),optional,intent(in)::label
+      type(mqc_scalar)::output
+      character(len=64)::mylabel
+      integer(kind=int64)::r4t1,r4t2,r4t3,r4t4,nB1,nB2,nB3,nB4
+      type(mqc_r4tensor)::temp
+!      integer(kind=int64)::k,l,m,n,nBasis
+!      character(len=64)::mylabel
+!      real(kind=real64)::zero=1.0d-10
+!     
+      if(present(label)) then
+        call string_change_case(label,'L',myLabel)
+      else
+        myLabel = 'doublebar'
+      endIf
+!
+      r4t1 = size(r4tensor,1)
+      r4t2 = size(r4tensor,2)
+      r4t3 = size(r4tensor,3)
+      r4t4 = size(r4tensor,4)
+      if(eris%type().eq.'regular') then
+        nB1 = eris%blockSize('alpha',1)
+        nB2 = eris%blockSize('alpha',2)
+        nB3 = eris%blockSize('alpha',3)
+        nB4 = eris%blockSize('alpha',4)
+        if(r4t1.eq.nB1.and.r4t2.eq.nB2.and.r4t3.eq.nB3.and.r4t4.eq.nB4) then
+          select case (myLabel)
+          case ('coulomb')
+            temp = eris
+            output = contraction(temp,r4tensor)
+          case ('exchange')
+            temp = mqc_eri_interaction(eris,'exchange') 
+            output = contraction(temp,r4tensor)
+          case ('doublebar')
+            temp = mqc_eri_interaction(eris,'doublebar') 
+            output = contraction(temp,r4tensor)
+          case default
+            call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
+          end select
+        elseIf(r4t1.eq.2*nB1.and.r4t2.eq.2*nB2.and.r4t3.eq.2*nB3.and.r4t4.eq.2*nB4) then
+          select case (myLabel)
+          case ('coulomb')
+            temp = eris 
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+          case ('exchange')
+            temp = mqc_eri_interaction(eris,'exchange') 
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+          case ('doublebar')
+            temp = mqc_eri_interaction(eris,'doublebar') 
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            temp = mqc_eri_interaction(eris,'coulomb') 
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            temp = mqc_eri_interaction(eris,'exchange') 
+            output = output - contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output - contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+          case default
+            call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
+          end select
+        else
+          call mqc_error_i('2ERIs and rank-4 tensor not correctly dimensioned in &
+            & mqc_eri_r4tensor_contraction',6,'r4t1-nB1',r4t1-nB1,'r4t2-nB2',r4t2-nB2,'r4t3-nB3',r4t3-nB3,'r4t4-nB4', &
+            r4t4-nB4)
+        endIf
+      else
+        call mqc_error_a('mqc_eri_r4tensor_contraction only implemented with regular 2ERIs', &
+          6,'eris%type()',eris%type())
+      endIf
+!
+      end function mqc_eri_r4tensor_contraction
+!
+!
+!     PROCEDURE MQC_ERI_Interaction
+!
+!>    \brief <b> MQC_ERI_Interaction is used to return the two-electron integrals of
+!>    the requested two-body interaction type</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_Interaction is used to return the two-electron integrals of the 
+!>    requested two-body interaction type. The following options are available: 
+!>
+!>    1. Label = 'coulomb' returns the 2ERIs with single bar coulomb integrals (default).
+!>    2. Label = 'exchange' returns the 2ERIs with single bar exchange integrals.
+!>    3. Label = 'doublebar' returns the 2ERIs with double-bar integrals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is type(mqc_twoERIs) 
+!>        The 2ERIs from which to construct the interaction type.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is character(len=*),optional 
+!>        = 'coulomb':   returns coulomb integrals.
+!>        = 'exchange':  returns exchange integrals.
+!>        = 'doublebar': returns double bar integrals (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_eri_interaction(eris,label) result(output)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::eris
+      character(len=*),optional,intent(in)::label
+      type(mqc_twoERIs)::output
+      character(len=64)::mylabel
+      integer(kind=int64)::nBasis,i,j
+      type(mqc_r4tensor)::temp,temp2
+!     
+      if(present(label)) then
+        call string_change_case(label,'L',myLabel)
+      else
+        myLabel = 'coulomb'
+      endIf
+
+      select case (eris%type())
+      case ('regular')
+        select case (myLabel)
+        case('coulomb')
+          output = eris
+        case('exchange')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),[0],[j,j],[0],[i,i])
+            endDo
+          endDo
+          call mqc_twoeris_allocate(output,'full','regular',temp)
+        case('doublebar')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),[0],[j,j],[0],[i,i])
+            endDo
+          endDo
+          temp = temp2 - temp
+          call mqc_twoeris_allocate(output,'full','regular',temp)
+        case default
+          call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
+            6,'myLabel',myLabel) 
+        end select
+      case default
+        call mqc_error_a('2ERI type either not recognized or not yet implemented in &
+          & mqc_eri_interaction',6,'eris%type()',eris%type()) 
+      end select
+
+      end function mqc_eri_interaction
 !
 !     PROCEDURE MQC_SCF_Integral_Generalized_Eigensystem
 !
@@ -6014,10 +8352,22 @@
 !>    2ERIs if the contain MO integrals. If wavefunction is not restricted, the spin 
 !>    block must be specified. The following options are available:
 !>
-!>    1. SpinBlock = 'alpha' uses the alpha spin block.
-!>    2. SpinBlock = 'beta' uses the beta spin block.
-!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
-!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>    1.  SpinBlock = 'aaaa' or 'alpha' uses the alpha spin block.
+!>    2.  SpinBlock = 'bbbb' or 'beta' uses the beta spin block.
+!>    3.  SpinBlock = 'aabb' or 'alphaBeta' uses the alpha-beta spin block.
+!>    4.  SpinBlock = 'bbaa' or 'betaAlpha' uses the beta-alpha spin block.
+!>    5.  SpinBlock = 'abab' uses the abab spin block.
+!>    6.  SpinBlock = 'abba' uses the abba spin block.
+!>    7.  SpinBlock = 'baab' uses the baab spin block.
+!>    8.  SpinBlock = 'baba' uses the baba spin block.
+!>    9.  SpinBlock = 'aaab' uses the aaab spin block.
+!>    10. SpinBlock = 'aaba' uses the aaba spin block.
+!>    11. SpinBlock = 'abaa' uses the abaa spin block.
+!>    12. SpinBlock = 'baaa' uses the baaa spin block.
+!>    13. SpinBlock = 'bbba' uses the bbba spin block.
+!>    14. SpinBlock = 'bbab' uses the bbab spin block.
+!>    15. SpinBlock = 'babb' uses the babb spin block.
+!>    16. SpinBlock = 'abbb' uses the abbb spin block.
 !>
 !>    \endverbatim
 !
@@ -6062,13 +8412,25 @@
 !>          If L<0 row count is from last index.
 !>    \endverbatim
 !>    
-!>    \param[in,out] SpinBlock
+!>    \param[in,out] SpinBlockIn
 !>    \verbatim
-!>        SpinBlock is character(len=64),optional
-!>        = 'alpha':     alpha spin block
-!>        = 'beta':      beta spin block
-!>        = 'alphaBeta': alpha-beta spin block
-!>        = 'betaAlpha': beta-alpha spin block.
+!>        SpinBlockIn is character(len=64),optional
+!>        = 'aaaa' or 'alpha':     alpha spin block
+!>        = 'bbbb' or 'beta':      beta spin block
+!>        = 'aabb' or 'alphaBeta': alpha-beta spin block
+!>        = 'bbaa' or 'betaAlpha': beta-alpha spin block.
+!>        = 'abab':                abab spin block.
+!>        = 'abba':                abba spin block.
+!>        = 'baab':                baab spin block.
+!>        = 'baba':                baba spin block.
+!>        = 'aaab':                aaab spin block.
+!>        = 'aaba':                aaba spin block.
+!>        = 'abaa':                abaa spin block.
+!>        = 'baaa':                baaa spin block.
+!>        = 'bbba':                bbba spin block.
+!>        = 'bbab':                bbab spin block.
+!>        = 'babb':                babb spin block.
+!>        = 'abbb':                abbb spin block.
 !>    \endverbatim
 !
 !     Authors:
@@ -6076,39 +8438,68 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlock) result(element)
+      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlockIn) result(element)
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
       integer(kind=int64),intent(in)::i,j,k,l
       type(mqc_scalar)::element
-      character(len=64),optional::spinBlock
+      character(len=64),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
 
-      if(present(spinBlock)) then
-        call string_change_case(spinBlock,'L')
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
         if(twoERIs%integralType.eq.'space') then
-          if(spinBlock.eq.'alpha') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
             element = twoERIs%alpha%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
         elseIf(twoERIs%integralType.eq.'spin') then
-          if(spinBlock.eq.'alpha') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
             element = twoERIs%alpha%at(i,j,k,l)
-          elseif(spinblock.eq.'beta') then
+          elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
             element = twoeris%beta%at(i,j,k,l)
+          elseif(spinblock.eq.'alphaBeta'.or.spinBlock.eq.'aabb') then
+            element = twoeris%alphaBeta%at(i,j,k,l)
+          elseif(spinblock.eq.'betaAlpha'.or.spinBlock.eq.'bbaa') then
+            element = twoeris%betaAlpha%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
         elseIf(twoERIs%integralType.eq.'general') then
-          if(spinBlock.eq.'alpha') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
             element = twoERIs%alpha%at(i,j,k,l)
-          elseif(spinblock.eq.'beta') then
+          elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
             element = twoeris%beta%at(i,j,k,l)
-          elseif(spinblock.eq.'alphabeta') then
+          elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
             element = twoeris%alphaBeta%at(i,j,k,l)
-          elseif(spinblock.eq.'betaalpha') then
+          elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
             element = twoeris%betaAlpha%at(i,j,k,l)
+          elseif(spinBlock.eq.'abab') then
+            element = twoeris%abab%at(i,j,k,l)
+          elseif(spinBlock.eq.'abba') then
+            element = twoeris%abba%at(i,j,k,l)
+          elseif(spinBlock.eq.'baab') then
+            element = twoeris%baab%at(i,j,k,l)
+          elseif(spinBlock.eq.'baba') then
+            element = twoeris%baba%at(i,j,k,l)
+          elseif(spinBlock.eq.'aaab') then
+            element = twoeris%aaab%at(i,j,k,l)
+          elseif(spinBlock.eq.'aaba') then
+            element = twoeris%aaba%at(i,j,k,l)
+          elseif(spinBlock.eq.'abaa') then
+            element = twoeris%abaa%at(i,j,k,l)
+          elseif(spinBlock.eq.'baaa') then
+            element = twoeris%baaa%at(i,j,k,l)
+          elseif(spinBlock.eq.'bbba') then
+            element = twoeris%bbba%at(i,j,k,l)
+          elseif(spinBlock.eq.'bbab') then
+            element = twoeris%bbab%at(i,j,k,l)
+          elseif(spinBlock.eq.'babb') then
+            element = twoeris%babb%at(i,j,k,l)
+          elseif(spinBlock.eq.'abbb') then
+            element = twoeris%abbb%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
@@ -6118,9 +8509,14 @@
       else
         if(twoERIs%integralType.eq.'regular') then
           element = twoERIs%alpha%at(i,j,k,l)
-        elseIf(twoERIs%integralType.eq.'raffenetti') then
-          call mqc_error('Still need to implement Raffenetti type integrals')
+        elseIf(twoERIs%integralType.eq.'raffenetti1') then
+          element = twoERIs%alpha%at(i,j,k,l)
+        elseIf(twoERIs%integralType.eq.'raffenetti2') then
+          element = twoERIs%alpha%at(i,j,k,l)
+        elseIf(twoERIs%integralType.eq.'raffenetti3') then
+          element = twoERIs%alpha%at(i,j,k,l)
         elseIf(twoERIs%integralType.eq.'space') then
+!         need to implement accounting for NBas*2 dimensions
           element = twoERIs%alpha%at(i,j,k,l)
         else
           call mqc_error_A('Integral type not valid in MQC_TwoERIs_At',6,'integralType',twoERIs%integralType)
@@ -6880,6 +9276,9 @@
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
       
+      If(ERIs%type().ne.'space'.and.ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
+        & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
+
  1050 Format( A )
       NBasis = NBasisIn
       NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
@@ -8274,7 +10673,10 @@
 !     Initialize Arrays
 !
       DoON5 = .True.
-
+!
+      If(ERIs%type().ne.'regular') call mqc_error_A('Slater_Condon only implemented for &
+        & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
+!
       NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
       If(.not.UHF) then
         call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
@@ -8478,9 +10880,9 @@
       EndIf
       
       If(.not.UHF) then
-        call mqc_twoeris_allocate(mo_eris,'full','molecular',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(mo_eris,'full','space',tmpR4TensorAlpha)
       ElseIf(UHF) then
-        call mqc_twoeris_allocate(mo_eris,'full','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+        call mqc_twoeris_allocate(mo_eris,'full','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
           tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
       EndIf
 
@@ -8985,6 +11387,10 @@
       Integer(kind=int64)::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index
 !
+      If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') &
+        call mqc_error_A('MQC_Build_CI_Hamiltonian only implemented for spin or spatial 2ERIs', &
+        6,'MO_ERIs%type()',MO_ERIs%type())
+
       NAlpha_Str = MQC_Matrix_Rows(Determinants%Strings%Alpha)
       NBeta_Str = MQC_Matrix_Rows(Determinants%Strings%Beta)
       NDets = NAlpha_Str * NBeta_Str 

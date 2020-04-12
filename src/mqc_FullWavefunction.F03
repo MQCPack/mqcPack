@@ -2832,11 +2832,14 @@ CONTAINS
          Else
             R2D(1:((N2+1)*N2)/2,1:1)=>Alpha_Array%ArrR
             Call MQC_Allocate_Matrix(N2,N2,Alpha_Matrix,'Real','StorSymm')
-            J=1
-            Do I=1,(N2+1)*N2/2
+            IJ = 0 
+            Do J= 1,N2
+              Do I=1,J
+                IJ =IJ+1
 !               Alpha_Matrix%MatR(I,J) = R2D(I,J)
-               temp = R2D(I,J)
-               call Alpha_Matrix%put(temp,I,J)
+                temp = R2D(IJ,1)
+                call Alpha_Matrix%put(temp,I,J)
+              EndDo
             EndDo
          EndIf
       EndIf

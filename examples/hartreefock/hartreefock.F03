@@ -76,7 +76,7 @@
         write(iOut,'(A,I3)') 'Iteration: ',iter
 !
 !       form G matrix
-        Gmat = contraction(eris,wavefunc%density_matrix)
+        Gmat = contraction([eris],wavefunc%density_matrix)
         call Gmat%print(iOut,'G(P)')
 !
 !       form Fock matrix
