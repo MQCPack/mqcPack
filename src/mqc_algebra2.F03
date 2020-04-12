@@ -1811,14 +1811,14 @@
 !
 
 !hph+
-      write(*,*)
-      write(*,*)
-      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-        ' DEBUG = ',DEBUG
-      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-        ' MQC_Algebra2_DEBUG = ',MQC_Algebra2_DEBUG
-      write(*,*)
-      write(*,*)
+!      write(*,*)
+!      write(*,*)
+!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
+!        ' DEBUG = ',DEBUG
+!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
+!        ' MQC_Algebra2_DEBUG = ',MQC_Algebra2_DEBUG
+!      write(*,*)
+!      write(*,*)
 !hph-
 
       DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
@@ -2339,7 +2339,6 @@
               'typeCode1*10', typeCode1*10, &
               'typeCode2', typeCode2)
         end select
-        write(*,*)
       case default
         call mqc_error('MQC_Variable_Addition is confused!')
       end select
@@ -2476,7 +2475,6 @@
               'typeCode1*10', typeCode1*10, &
               'typeCode2', typeCode2)
         end select
-        write(*,*)
       case default
         call mqc_error('MQC_Variable_Subtraction is confused!')
       end select
