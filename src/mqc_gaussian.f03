@@ -1082,6 +1082,8 @@
 !
 !     Format statements.
 !
+ 1000 format(' MQC_Gaussian_Read is looking for array ',A,  &
+        ' in matrix file.')
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
  1020 Format( " " )!
@@ -1133,16 +1135,18 @@
       if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
       if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
       if(Present(mqcVarOut)) nOutputArrays = nOutputArrays+1
-      if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
+      if(nOutputArrays.ne.1) call mqc_error_i(  &
+           'Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
            'nOutputArrays', nOutputArrays )
 !
 !     Look for the label sent by the calling program unit. If the label is
 !     found, then load the appropriate output argument with the data on the
 !     file.
 !
+      call String_Change_Case(label,'u',tmpLabel)
+      if(DEBUG) write(IOut,1000) TRIM(tmpLabel)
       found = .false.
       outerLoop:do i = 1,2
-        call String_Change_Case(label,'u',tmpLabel)
         EOF = .false.
         Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
@@ -1151,6 +1155,15 @@
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - TEST: cBuffer = ',TRIM(cBuffer)
+          write(IOut,*)
+        endIf
+!hph-
+
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
 !
 !           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
@@ -1159,8 +1172,20 @@
 !
 
 !hph+
-!            write(IOut,*)' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
-!              MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
+            if(DEBUG) then
+              write(IOut,*)' Hrant - FOUND tmpLabel!!!'
+              write(IOut,*)   &
+                ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+                MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,  &
+                N2,N3,N4,N5,NRI,ASym)
+!hph              return
+            endIf
+!hph-
+
+!hph+
+            if(DEBUG) write(IOut,*)  &
+              ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+              MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
 !hph-
 
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
@@ -1240,10 +1265,56 @@
             case('REAL-SYMMATRIX')
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - Read in the symmetric matrix...'
+          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
+            Header='arrayTmp of OVERLAP???')
+          write(IOut,*)
+        endIf
+!hph-
+
               if(Present(matrixOut)) then
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - matrixOut is PRESENT!'
+          write(IOut,*)
+        endIf
+!hph-
+
                 call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
               elseIf(Present(mqcVarOut)) then
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - mqcVarOut is PRESENT!'
+          write(IOut,*)
+          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
+            Header='arrayTmp of OVERLAP???')
+          write(IOut,*)
+          call mqc_print(IOut,mqc_matrixSymm2Full(arrayTmp,'U'),  &
+            Header='Overlap again!')
+          write(IOut,*)
+        endIf
+!hph-
+
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          call mqcVarOut%print(  &
+            header='mqcVarOut version of the overlap...')
+          write(IOut,*)
+!hph          return
+        endIf
+!hph-
+
               else
                 call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
                   6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
