@@ -1311,12 +1311,6 @@
       end Function mqc_matrixSymm2Full_real
 
 
-
-
-
-
-
-
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_integer
       Subroutine mqc_packedDiagonalMatrix2FullMatrix_integer(matrixDiagonal,  &
         matrixFull)
