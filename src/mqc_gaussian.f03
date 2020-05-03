@@ -2579,7 +2579,7 @@
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
-      logical::found
+      logical::found,OK
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
@@ -2636,6 +2636,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2649,6 +2650,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2659,6 +2661,7 @@
               errorMsg = 'BETA MO COEFFICIENTS not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2674,6 +2677,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2703,6 +2707,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2716,6 +2721,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2726,6 +2732,7 @@
               errorMsg = 'BETA ORBITAL ENERGIES not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2741,6 +2748,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2766,6 +2774,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2783,6 +2792,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2793,6 +2803,7 @@
               errorMsg = 'CORE HAMILTONIAN BETA not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2816,6 +2827,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2847,6 +2859,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2864,6 +2877,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2874,6 +2888,7 @@
               errorMsg = 'BETA FOCK MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2897,6 +2912,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2928,6 +2944,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2945,6 +2962,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2955,6 +2973,7 @@
               errorMsg = 'BETA DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2978,6 +2997,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3009,6 +3029,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3026,6 +3047,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3036,6 +3058,7 @@
               errorMsg = 'BETA SCF DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -3059,6 +3082,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3090,6 +3114,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3107,6 +3132,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3125,6 +3151,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf

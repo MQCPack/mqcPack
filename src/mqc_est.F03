@@ -126,6 +126,8 @@
         Procedure, Public::orbitals => mqc_integral_output_orbitals 
 !>      \brief <b> Swaps rows/columns of an MQC_SCF_Integral object</b>
         Procedure, Public::swap => mqc_integral_swap_orbitals
+!>      \brief <b> Combines virtual and occupied MQC_SCF_Integral objects</b>
+        Procedure, Public::combine => mqc_integral_combine_orbitals
       End Type
 !
 !>    \brief <b> EST intermediate diagonal matrix variable</b>
@@ -2636,14 +2638,24 @@
       else
         my_nBeta2 = nBeta2
       endIf
-!
-      call tmpMatrixAlpha%init(nAlpha,my_nAlpha2,scalar)
-      if (nAlpha.eq.nBeta.and.my_nAlpha2.eq.my_nBeta2) then
-        call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
-      else 
-        call tmpMatrixBeta%init(nBeta,my_nBeta2,scalar)
-        call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+      if(present(scalar)) then
+        call tmpMatrixAlpha%init(nAlpha,my_nAlpha2,scalar)
+        if (nAlpha.eq.nBeta.and.my_nAlpha2.eq.my_nBeta2) then
+          call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
+        else 
+          call tmpMatrixBeta%init(nBeta,my_nBeta2,scalar)
+          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        endIf
+      else
+        call tmpMatrixAlpha%init(nAlpha,my_nAlpha2)
+        if (nAlpha.eq.nBeta.and.my_nAlpha2.eq.my_nBeta2) then
+          call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
+        else 
+          call tmpMatrixBeta%init(nBeta,my_nBeta2)
+          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        endIf
       endIf
+!
 !
       end subroutine mqc_integral_initialize
 !
@@ -2983,14 +2995,15 @@
       endIf
 
       if(present(orbString)) then
+        call string_change_case(orbString,'l',myOrbString)
         if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared with &
      &    number of alpha and/or beta electrons in string input',6,'present(orbString)', &
           present(orbString),'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)', &
           present(betaOrbsIn))
-        if(size(alphaOrbsIn).ne.1) call mqc_error_i('OrbString variable must be declared with &
+        if(myOrbString.ne.'usestrings'.and.size(alphaOrbsIn).ne.1) call mqc_error_i('OrbString variable must be declared with &
      &    number of alpha and/or beta electrons in string input',6,'size(alphaOrbsIn)', &
           size(alphaOrbsIn))
-        if(present(betaOrbsIn).and.size(betaOrbsIn).ne.1) call mqc_error_i('OrbString variable &
+        if(myOrbString.ne.'usestrings'.and.present(betaOrbsIn).and.size(betaOrbsIn).ne.1) call mqc_error_i('OrbString variable &
      &    must be declared with number of alpha and/or beta electrons in string input',6, &
           'size(betaOrbsIn)',size(betaOrbsIn))
         nAlpha = alphaOrbsIn(1)
@@ -2999,7 +3012,6 @@
         else
           nBeta = nAlpha
         endIf
-        call string_change_case(orbString,'l',myOrbString)
       else
         if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared &
      &    if no alpha string',6,'present(orbString)',present(orbString),'present(alphaOrbsIn)', &
@@ -3010,7 +3022,7 @@
         else
           betaOrbs = betaOrbsIn
         endIf
-        myOrbString = 'useStrings'
+        myOrbString = 'usestrings'
       endIf
 
       nDimAlpha1 = integral%blockSize('Alpha',1) 
@@ -3026,8 +3038,8 @@
       case ('virtual')
         if(my_axis.eq.2) then
           allocate(alphaOrbs(nDimAlpha1-nAlpha),betaOrbs(nDimBeta1-nBeta))
-          alphaOrbs = [(i,i=nAlpha,nDimAlpha1)]
-          betaOrbs = [(i,i=nBeta,nDimBeta1)]
+          alphaOrbs = [(i,i=nAlpha+1,nDimAlpha1)]
+          betaOrbs = [(i,i=nBeta+1,nDimBeta1)]
         elseIf(my_axis.eq.1) then
           allocate(alphaOrbs(nDimAlpha2-nAlpha),betaOrbs(nDimBeta2-nBeta))
           alphaOrbs = [(i,i=nAlpha,nDimAlpha2)]
@@ -3035,7 +3047,13 @@
         else
           call mqc_error_I('Unknown array is in MQC_Integral_Output_Orbitals',6,'my_axis',my_axis)
         endIf
-      case ('useStrings')
+      case ('usestrings')
+        alphaOrbs = alphaOrbsIn
+        if(.not.present(betaOrbsIn)) then
+          betaOrbs = alphaOrbsIn
+        else
+          betaOrbs = betaOrbsIn
+        endIf
       case default
         call mqc_error_a('Unrecognized orbital string definition in MQC_Integral_Output_Orbitals',&
           6,'myOrbString',myOrbString)
@@ -3335,6 +3353,287 @@
       end select
 !
       end function mqc_integral_swap_orbitals
+!
+!
+!     PROCEDURE MQC_Integral_Combine_Orbitals
+!
+!>    \brief <b> MQC_Integral_Combine_Orbitals is used to combine two MQC integral 
+!>    type variables containing occupied/virtual orbitals into a single MQC integral
+!>    type</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Combine_Orbitals is used to combine two MQC integral type variables 
+!>    containing occupied/virtual orbitals into a single MQC integral type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable with combined orbital sets.
+!>    \endverbatim
+!>    
+!>    \param[in] Occupieds
+!>    \verbatim
+!>        Occupieds is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable with the occupied orbital set.
+!>    \endverbatim
+!>    
+!>    \param[in] Virtuals
+!>    \verbatim
+!>        Virtuals is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable with the virtual orbital set.
+!>    \endverbatim
+!>    
+!>    \param[in] arrayNameIn
+!>    \verbatim
+!>        arrayNameIn is character(len=*),intent(in),optional 
+!>        The array name label for the MQC_SCF_integrals variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      subroutine mqc_integral_combine_orbitals(integral,occupieds,virtuals,arrayNameIn) 
+!
+      implicit none
+      class(mqc_scf_integral),intent(inOut)::integral
+      type(mqc_scf_integral),intent(in)::occupieds,virtuals
+      character(len=*),intent(in),optional::arrayNameIn
+      type(mqc_matrix)::tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,alpha,beta,alphaBeta,betaAlpha
+      character(len=64)::arrayName
+
+      if(present(arrayNameIn)) then
+        arrayName = arrayNameIn
+      else
+        arrayName = ''
+      endIf
+
+      if(occupieds%type().eq.'space'.and.virtuals%type().eq.'space') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = virtuals%getBlock('alpha')
+        if(size(tmp1,1).ne.size(tmp2,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp2,1)',&
+          size(tmp2,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp2,2))
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp2,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp2,2)])
+        call mqc_integral_allocate(integral,arrayName,'space',alpha)
+      elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'spin') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = virtuals%getBlock('alpha')
+        tmp3 = virtuals%getBlock('beta')
+        if(size(tmp1,1).ne.size(tmp2,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp2,1)',&
+          size(tmp2,1))
+        if(size(tmp1,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp2,2))
+        call beta%init(size(tmp1,1),size(tmp1,2)+size(tmp3,2))
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp2,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp2,2)])
+        call beta%mput(tmp1,[0],[1,size(tmp1,2)])
+        call beta%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta)
+      elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'space') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = virtuals%getBlock('alpha')
+        if(size(tmp1,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        if(size(tmp2,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp3,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp3,2))
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp3,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp3,2)])
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta)
+      elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'spin') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = virtuals%getBlock('alpha')
+        tmp4 = virtuals%getBlock('beta')
+        if(size(tmp1,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        if(size(tmp2,1).ne.size(tmp4,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp4,1)',&
+          size(tmp4,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp3,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp4,2))
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp4,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp4,2)])
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta)
+      elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'general') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = virtuals%getBlock('alpha')
+        tmp3 = virtuals%getBlock('beta')
+        tmp4 = virtuals%getBlock('alpha-beta')
+        tmp5 = virtuals%getBlock('beta-alpha')
+        if(size(tmp1,1).ne.size(tmp2,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp2,1)',&
+          size(tmp2,1))
+        if(size(tmp1,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        if(size(tmp1,1).ne.size(tmp4,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp4,1)',&
+          size(tmp4,1))
+        if(size(tmp1,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp2,2))
+        call beta%init(size(tmp1,1),size(tmp1,2)+size(tmp3,2))
+        call alphaBeta%init(size(tmp1,1),size(tmp1,2)+size(tmp4,2),0.0)
+        call betaAlpha%init(size(tmp1,1),size(tmp1,2)+size(tmp5,2),0.0)
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp2,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp2,2)])
+        call beta%mput(tmp1,[0],[1,size(tmp1,2)])
+        call beta%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
+        call alphaBeta%mput(tmp4,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp4,2)])
+        call betaAlpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
+        call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha)
+      elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'space') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = occupieds%getBlock('alpha-beta')
+        tmp4 = occupieds%getBlock('beta-alpha')
+        tmp5 = virtuals%getBlock('alpha')
+        if(size(tmp1,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp2,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp3,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp3,1)',size(tmp3,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp4,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp4,1)',size(tmp4,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp5,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp5,2))
+        call alphaBeta%init(size(tmp3,1),size(tmp3,2)+size(tmp5,2),0.0)
+        call betaAlpha%init(size(tmp4,1),size(tmp4,2)+size(tmp5,2),0.0)
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp5,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp5,2)])
+        call alphaBeta%mput(tmp3,[0],[1,size(tmp3,2)])
+        call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
+        call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha)
+      elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'general') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = virtuals%getBlock('alpha')
+        tmp4 = virtuals%getBlock('beta')
+        tmp5 = virtuals%getBlock('alpha-beta')
+        tmp6 = virtuals%getBlock('beta-alpha')
+        if(size(tmp1,1).ne.size(tmp3,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp3,1)',&
+          size(tmp3,1))
+        if(size(tmp2,1).ne.size(tmp4,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp4,1)',&
+          size(tmp4,1))
+        if(size(tmp1,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp2,1).ne.size(tmp6,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp6,1)',&
+          size(tmp6,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp3,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp4,2))
+        call alphaBeta%init(size(tmp1,1),size(tmp1,2)+size(tmp5,2),0.0)
+        call betaAlpha%init(size(tmp2,1),size(tmp2,2)+size(tmp6,2),0.0)
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp4,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp4,2)])
+        call alphaBeta%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
+        call betaAlpha%mput(tmp6,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp6,2)])
+        call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha)
+      elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'spin') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = occupieds%getBlock('alpha-beta')
+        tmp4 = occupieds%getBlock('beta-alpha')
+        tmp5 = virtuals%getBlock('alpha')
+        tmp6 = virtuals%getBlock('beta')
+        if(size(tmp1,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp2,1).ne.size(tmp6,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp6,1)',&
+          size(tmp6,1))
+        if(size(tmp3,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp3,1)',size(tmp3,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp4,1).ne.size(tmp6,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp4,1)',size(tmp4,1),'size(tmp6,1)',&
+          size(tmp6,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp5,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp6,2))
+        call alphaBeta%init(size(tmp3,1),size(tmp3,2)+size(tmp5,2),0.0)
+        call betaAlpha%init(size(tmp4,1),size(tmp4,2)+size(tmp6,2),0.0)
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp6,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp6,2)])
+        call alphaBeta%mput(tmp3,[0],[1,size(tmp3,2)])
+        call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
+        call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha)
+      elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'general') then
+        tmp1 = occupieds%getBlock('alpha')
+        tmp2 = occupieds%getBlock('beta')
+        tmp3 = occupieds%getBlock('alpha-beta')
+        tmp4 = occupieds%getBlock('beta-alpha')
+        tmp5 = virtuals%getBlock('alpha')
+        tmp6 = virtuals%getBlock('beta')
+        tmp7 = virtuals%getBlock('alpha-beta')
+        tmp8 = virtuals%getBlock('beta-alpha')
+        if(size(tmp1,1).ne.size(tmp5,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp1,1)',size(tmp1,1),'size(tmp5,1)',&
+          size(tmp5,1))
+        if(size(tmp2,1).ne.size(tmp6,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp2,1)',size(tmp2,1),'size(tmp6,1)',&
+          size(tmp6,1))
+        if(size(tmp3,1).ne.size(tmp7,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp3,1)',size(tmp3,1),'size(tmp7,1)',&
+          size(tmp7,1))
+        if(size(tmp4,1).ne.size(tmp8,1)) call mqc_error_i('AO basis size does not match in &
+          &mqc_integral_combine_orbitals',6,'size(tmp4,1)',size(tmp4,1),'size(tmp8,1)',&
+          size(tmp8,1))
+        call alpha%init(size(tmp1,1),size(tmp1,2)+size(tmp5,2))
+        call beta%init(size(tmp2,1),size(tmp2,2)+size(tmp6,2))
+        call alphaBeta%init(size(tmp3,1),size(tmp3,2)+size(tmp7,2),0.0)
+        call betaAlpha%init(size(tmp4,1),size(tmp4,2)+size(tmp8,2),0.0)
+        call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
+        call alpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
+        call beta%mput(tmp2,[0],[1,size(tmp2,2)])
+        call beta%mput(tmp6,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp6,2)])
+        call alphaBeta%mput(tmp3,[0],[1,size(tmp3,2)])
+        call alphaBeta%mput(tmp7,[0],[size(tmp3,2)+1,size(tmp3,2)+size(tmp7,2)])
+        call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
+        call betaAlpha%mput(tmp8,[0],[size(tmp4,2)+1,size(tmp4,2)+size(tmp8,2)])
+        call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha)
+      endIf
+!
+      end subroutine mqc_integral_combine_orbitals
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Output_Block
@@ -4630,7 +4929,7 @@
         nBasisTotal2 = nBasisAlpha2 + nBasisBeta2
         if((rows.eq.nBasisAlpha2).and.(nBasisAlpha2.eq.nBasisBeta2)) then
           doOffDiag = .False.
-        elseIf(rows.eq.nBasisTotal1) then
+        elseIf(rows.eq.nBasisTotal2) then
           doOffDiag = .True.
         else
           call mqc_error_I('Integral and matrix are wrongly sized for multiplication', 6, &
@@ -6483,7 +6782,6 @@
         DO I = 1, columns
           DO ITER = 1, columns
             if(elist(iter).eq.I) then
-              print *, iter
               call matrixOut%vput(tmpMatrix%vat([0],[iter]),[0],[i])
               exit
             endif

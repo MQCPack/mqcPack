@@ -211,6 +211,8 @@
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
 !>      \brief <b> Returns the square root of the MQC Matrix elements</b>
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
+!>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
+        Procedure, Public::sum => MQC_Matrix_Sum
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
         Procedure, Public::at => MQC_Matrix_Scalar_At
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
@@ -21932,13 +21934,13 @@
       IndI = I
       IndJ = J
       If (IndI.lt.0) IndI = Matrix%NRow + IndI + 1
-      If (IndJ.lt.0) IndJ = Matrix%NRow + IndJ + 1
+      If (IndJ.lt.0) IndJ = Matrix%NCol + IndJ + 1
       If (IndI.eq.0.or.IndI.gt.Matrix%NRow) Call MQC_Error_I('Index I badly specified in mqc_matrix_scalar_put', 6, &
            'IndI', IndI, &
            'Matrix%NRow', Matrix%NRow )
-      If (IndJ.eq.0.or.IndJ.gt.Matrix%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
+      If (IndJ.eq.0.or.IndJ.gt.Matrix%NCol) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
            'IndJ', IndJ, &
-           'Matrix%NRow', Matrix%NRow )
+           'Matrix%NCol', Matrix%NCol )
       If (Matrix%Storage.eq.'StorFull') then 
         If (Matrix%Data_Type.eq.'Integer') then
           If (Scalar%Data_Type.eq.'Integer') then
@@ -23919,6 +23921,53 @@
 !      
       Return
       End Function MQC_Matrix_MRInv
+!
+!
+!     PROCEDURE MQC_Matrix_Sum
+!
+!>    \brief <b> MQC_Matrix_Sum is a function that returns the sum of all elements 
+!>    of an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Sum is a function that returns the sum of all elements of an MQC
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_matrix_sum(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i,j
+!
+!     Do the work.
+!
+      output = 0.0
+      do i=1,size(A,1)
+        do j=1,size(A,2)
+          output = output + A%at(i,j)
+        endDo
+      endDo
+!
+      end function mqc_matrix_sum
 !
 !
 !----------------------------------------------------------------
