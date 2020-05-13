@@ -127,6 +127,64 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!PROCEDURE mqc_version_check
+      function mqc_version_check(olderThanMajor,olderThenMinor,  &
+        olderThanRevision,newerThanMajor,newerThenMinor,newerThanRevision) result(ok)
+!
+!     This function is used to test if the MQC package being used is new and/or
+!     older than a specified version. The output argument is a logical, which is
+!     returned TRUE or FALSE for the version limitations requested being met or
+!     not. The dummy arguments <olderThanMajor>, <olderThenMinor>,
+!     <olderThanVevision>, <newerThanMajor>, <newerThenMinor>, and
+!     <newerThanVevision> are all OPTIONAL and should be sent with appropriate
+!     integers. 
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
+      integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
+      logical,intent(out)::ok
+      integer::major,minor,revision
+!
+      ok = .true.
+      call mqc_version(major,minor,revision)
+!
+      if(PRESENT(olderThanMajor))    ok = ok.and.major.le.olderThanMajor
+      if(PRESENT(olderThanMinor))    ok = ok.and.minor.le.olderThanMinor
+      if(PRESENT(olderThanRevision)) ok = ok.and.revision.le.olderThanRevision
+      if(PRESENT(newerThanMajor))    ok = ok.and.major.ge.newerThanMajor
+      if(PRESENT(newerThanMinor))    ok = ok.and.minor.ge.newerThanMinor
+      if(PRESENT(newerThanRevision)) ok = ok.and.revision.ge.newerThanRevision
+!
+      return
+      end function mqc_version_check
+
+
+!
+!PROCEDURE mqc_version
+      subroutine mqc_version(major,minor,revision,versionString)
+!
+!     This subroutine returns the current MQC version number. The full MQC
+!     version number is comprised of three components: major.minor.revision. The
+!     major version indicated is given by the last two digits of the versioning
+!     year; the minor label is two digits indicating a versioning month; and the
+!     last digit gives a revision number.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(out)::major,minor,revision
+      character(len=64),OPTIONAL,intent(out)::versionString
+!
+      if(PRESENT(major))         major         = 20
+      if(PRESENT(minor))         minor         = 5
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '20.05.1'
+!
+      return
+      end subroutine mqc_version
+
+
+!
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
 !
