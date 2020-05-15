@@ -469,9 +469,11 @@
       case('INTEGER')
 
 !hph+
-        write(*,*)
-        write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
-        write(*,*)
+        if(MQC_Algebra2_DEBUG) then
+          write(*,*)
+          write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
+          write(*,*)
+        endIf
 !hph-
 
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
