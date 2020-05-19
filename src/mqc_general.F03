@@ -128,19 +128,23 @@
 !----------------------------------------------------------------
 !
 !PROCEDURE mqc_version_check
-      function mqc_version_check(olderThanMajor,olderThenMinor,  &
-        olderThanRevision,newerThanMajor,newerThenMinor,newerThanRevision) result(ok)
+      function mqc_version_check(isMajor,isMinor,isRevision,  &
+        olderThanMajor,olderThanMinor,olderThanRevision,  &
+        newerThanMajor,newerThanMinor,newerThanRevision) result(ok)
 !
 !     This function is used to test if the MQC package being used is new and/or
 !     older than a specified version. The output argument is a logical, which is
 !     returned TRUE or FALSE for the version limitations requested being met or
-!     not. The dummy arguments <olderThanMajor>, <olderThenMinor>,
-!     <olderThanVevision>, <newerThanMajor>, <newerThenMinor>, and
-!     <newerThanVevision> are all OPTIONAL and should be sent with appropriate
-!     integers. 
+!     not. The dummy arguments <isMajor>, <isMinor>, <isRevision>,
+!     <olderThanMajor>, <olderThanMinor>, <olderThanVevision>, <newerThanMajor>,
+!     <newerThanMinor>, and <newerThanVevision> are all OPTIONAL and should be
+!     sent with appropriate integers. The "olderThan" and "newerThan" arguments
+!     are treated as being inclusive. Asking for a major revision with
+!     oldThanMajor=2019 will be TRUE is the Major version is <= 2019, etc.
 !
 !
       implicit none
+      integer,OPTIONAL,intent(in)::isMajor,isMinor,isRevision
       integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
       integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
       logical,intent(out)::ok
@@ -149,6 +153,9 @@
       ok = .true.
       call mqc_version(major,minor,revision)
 !
+      if(PRESENT(isMajor))           ok = ok.and.major.eq.isMajor
+      if(PRESENT(isMinor))           ok = ok.and.minor.eq.isMinor
+      if(PRESENT(isRevision))        ok = ok.and.revision.eq.isRevision
       if(PRESENT(olderThanMajor))    ok = ok.and.major.le.olderThanMajor
       if(PRESENT(olderThanMinor))    ok = ok.and.minor.le.olderThanMinor
       if(PRESENT(olderThanRevision)) ok = ok.and.revision.le.olderThanRevision
@@ -173,7 +180,7 @@
 !
       implicit none
       integer,OPTIONAL,intent(out)::major,minor,revision
-      character(len=64),OPTIONAL,intent(out)::versionString
+      character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 20
       if(PRESENT(minor))         minor         = 5
@@ -641,7 +648,7 @@
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64),Parameter::ColWidth=10
 !
 !
  1000 Format(/,1x,A)
@@ -690,7 +697,7 @@
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64),Parameter::ColWidth=10
 !
  1000 Format(/,1x,A)
  1001 Format(5x,10(7x,I7))
