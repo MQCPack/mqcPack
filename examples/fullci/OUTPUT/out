@@ -5,11 +5,11 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
-
+ 
  Full Configuration Interaction Energy Calculator
-
+ 
  L. M. Thompson 2016
-
+ 
  
  nBasis =              2
  
@@ -217,8 +217,8 @@ Beta Strings
  CI Eigenvectors
                   1             2             3             4
        1     -0.706846      0.000000      0.000000      0.707367
-       2      0.000000     -0.707107     -0.707107      0.000000
-       3      0.000000      0.707107     -0.707107      0.000000
+       2      0.000000      0.707107      0.707107      0.000000
+       3      0.000000     -0.707107      0.707107      0.000000
        4      0.707367      0.000000      0.000000      0.706846
  CI Eigenvalues
        1       -1.038999
