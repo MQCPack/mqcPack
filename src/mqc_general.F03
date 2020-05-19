@@ -127,6 +127,71 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!PROCEDURE mqc_version_check
+      function mqc_version_check(isMajor,isMinor,isRevision,  &
+        olderThanMajor,olderThanMinor,olderThanRevision,  &
+        newerThanMajor,newerThanMinor,newerThanRevision) result(ok)
+!
+!     This function is used to test if the MQC package being used is new and/or
+!     older than a specified version. The output argument is a logical, which is
+!     returned TRUE or FALSE for the version limitations requested being met or
+!     not. The dummy arguments <isMajor>, <isMinor>, <isRevision>,
+!     <olderThanMajor>, <olderThanMinor>, <olderThanVevision>, <newerThanMajor>,
+!     <newerThanMinor>, and <newerThanVevision> are all OPTIONAL and should be
+!     sent with appropriate integers. The "olderThan" and "newerThan" arguments
+!     are treated as being inclusive. Asking for a major revision with
+!     oldThanMajor=2019 will be TRUE is the Major version is <= 2019, etc.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(in)::isMajor,isMinor,isRevision
+      integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
+      integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
+      logical,intent(out)::ok
+      integer::major,minor,revision
+!
+      ok = .true.
+      call mqc_version(major,minor,revision)
+!
+      if(PRESENT(isMajor))           ok = ok.and.major.eq.isMajor
+      if(PRESENT(isMinor))           ok = ok.and.minor.eq.isMinor
+      if(PRESENT(isRevision))        ok = ok.and.revision.eq.isRevision
+      if(PRESENT(olderThanMajor))    ok = ok.and.major.le.olderThanMajor
+      if(PRESENT(olderThanMinor))    ok = ok.and.minor.le.olderThanMinor
+      if(PRESENT(olderThanRevision)) ok = ok.and.revision.le.olderThanRevision
+      if(PRESENT(newerThanMajor))    ok = ok.and.major.ge.newerThanMajor
+      if(PRESENT(newerThanMinor))    ok = ok.and.minor.ge.newerThanMinor
+      if(PRESENT(newerThanRevision)) ok = ok.and.revision.ge.newerThanRevision
+!
+      return
+      end function mqc_version_check
+
+
+!
+!PROCEDURE mqc_version
+      subroutine mqc_version(major,minor,revision,versionString)
+!
+!     This subroutine returns the current MQC version number. The full MQC
+!     version number is comprised of three components: major.minor.revision. The
+!     major version indicated is given by the last two digits of the versioning
+!     year; the minor label is two digits indicating a versioning month; and the
+!     last digit gives a revision number.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(out)::major,minor,revision
+      character(len=*),OPTIONAL,intent(out)::versionString
+!
+      if(PRESENT(major))         major         = 20
+      if(PRESENT(minor))         minor         = 5
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '20.05.1'
+!
+      return
+      end subroutine mqc_version
+
+
+!
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
 !
@@ -583,7 +648,7 @@
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64),Parameter::ColWidth=10
 !
 !
  1000 Format(/,1x,A)
@@ -632,7 +697,7 @@
       Character(Len=*),Intent(In),Optional::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Integer(kind=int64),Parameter::ColWidth=10
 !
  1000 Format(/,1x,A)
  1001 Format(5x,10(7x,I7))
@@ -1017,8 +1082,6 @@
       real(kind=real64)::vectorMagnitude
 !
       vectorMagnitude = SQRT(dot_product(vector,vector))
-      write(6,*)' Hrant - vectorMagnitude=',vectorMagnitude
-      write(6,*)' Hrant - MQC_small      =',MQC_small
       if(vectorMagnitude.gt.MQC_small) then
         vector = vector/vectorMagnitude
       else
@@ -1311,12 +1374,6 @@
 !
       return
       end Function mqc_matrixSymm2Full_real
-
-
-
-
-
-
 
 
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_integer
