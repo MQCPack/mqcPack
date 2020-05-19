@@ -1097,7 +1097,7 @@
 !
 !     This subroutine accepts a vector fixes the phase so that the largest
 !     magniture value is either positive (largestPostive=.TRUE.) or negative
-!     (largestPostive=.TRUE.). The vector phase is modified, as needed, in
+!     (largestPostive=.FALSE.). The vector phase is modified, as needed, in
 !     place. Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
 !
 !
@@ -1114,11 +1114,11 @@
 !
       myLargestPositive = .True.
       if(PRESENT(largestPositive)) myLargestPositive = largestPositive
-      largestMagnitudeValue = abs(vector(1))
+      largestMagnitudeValue = abs(vector(1)) + MQC_small
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
         if(abs(vector(i)).gt.largestMagnitudeValue) then
-          largestMagnitudeValue = abs(vector(i))
+          largestMagnitudeValue = abs(vector(i)) + MQC_small
           largestMagnitudePosition = i
         endIf
       endDo
