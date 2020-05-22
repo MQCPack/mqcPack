@@ -6919,6 +6919,13 @@
 !>        Integral is type(mqc_scf_integral) 
 !>        The MQC integral to be contracted.
 !>    \endverbatim
+!>
+!>    \param[in] ZeroIn
+!>    \verbatim
+!>        ZeroIn is real(kind=real64),optional
+!>        The threshold value for performing contraction between integrals and 
+!>        density matrix elements. 
+!>    \endverbatim
 !>    
 !>    \param[in] Label
 !>    \verbatim

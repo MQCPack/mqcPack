@@ -8564,6 +8564,15 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] high_precision
+!>    \verbatim
+!>        high_precision is Logical,Optional
+!>        Temporary hack to print high precision reals. To be
+!>        replaced with a proper option soon.
+!>        = .True.:  print high precision (reals only) 
+!>        = .False.: print normal precision (default)
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -17643,6 +17652,15 @@
 !>        Blank_At_Bottom is Logical,Optional
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!>
+!>    \param[in] high_precision
+!>    \verbatim
+!>        high_precision is Logical,Optional
+!>        Temporary hack to print high precision reals. To be
+!>        replaced with a proper option soon.
+!>        = .True.:  print high precision (reals only) 
+!>        = .False.: print normal precision (default)
 !>    \endverbatim
 !
 !     Authors:
