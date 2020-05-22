@@ -253,6 +253,15 @@
 !hph-
 !
 !
+!----------------------------------------------------------------
+!                                                               |
+!     MODULE VARIABLES/CONSTANTS                                |
+!                                                               |
+!----------------------------------------------------------------
+!
+      Integer,Private::MQC_Algebra2_IOut=6
+      Logical,Private::MQC_Algebra2_DEBUG=.false.
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -265,13 +274,57 @@
 !
 !----------------------------------------------------------------
 !                                                               |
+!     MODULE CONTROL PROCEDURES                                 |
+!                                                               |
+!----------------------------------------------------------------
+!
+!PROCEDURE MQC_Gaussian_SetDEBUG
+      subroutine MQC_Algebra2_SetIOut(setIOutValue)
+!
+!     This subroutine is called to set a Module-Wide default output unit number.
+!     The default is unit 6.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+      implicit none
+      integer(kind=int64),intent(IN)::setIOutValue
+!
+      MQC_Algebra2_IOut = setIOutValue
+!
+      return
+      end subroutine MQC_Algebra2_SetIOut
+
+
+!
+!PROCEDURE MQC_Gaussian_SetDEBUG
+      subroutine MQC_Algebra2_SetDEBUG(setDebugValue)
+!
+!     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
+!     .FALSE.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+      implicit none
+      logical,intent(IN)::setDebugValue
+!
+      MQC_Algebra2_DEBUG = setDebugValue
+!
+      return
+      end subroutine MQC_Algebra2_SetDEBUG
+
+
+!
+!----------------------------------------------------------------
+!                                                               |
 !     MQC_Variable MANAGEMENT PROCEDURES                        |
 !                                                               |
 !----------------------------------------------------------------
 !
 !PROCEDURE MQC_Variable_initialize
       subroutine MQC_Variable_initialize(mqcVariable,dataType,dimensions,  &
-          rank,storageFormat)
+          rank,storageFormat,debug)
 !
 !     This subroutine is used to initialize an MQC_Variable object.
 !
@@ -286,15 +339,23 @@
       integer(kind=int64),dimension(:),intent(in),optional::dimensions
       integer(kind=int64),intent(in),optional::rank
       character(len=*),intent(in),optional::storageFormat
+      logical,intent(in),optional::debug
 !
       character(len=64)::myDataType
       integer(kind=int64)::myRank,myLength
       character(len=64)::myStorageFormat
+      logical::myDebug
 !
 !
 !     Set-up <myRank> and ensure the sent <rank> and <dimensions> are
 !     compatable.
 !
+      if(Present(debug)) then
+        myDebug = debug
+      else
+        myDebug = .False.
+      endIf
+      myDebug = myDebug.or.MQC_Algebra2_DEBUG
       call string_change_case(dataType,'u',myDataType)
       if(Present(rank)) then
         myRank = rank
@@ -305,7 +366,8 @@
       endIf
       if(Present(dimensions)) then
         if(Size(dimensions).ne.myRank)  &
-          call MQC_Error_I('Logic error in MQC_Variable_initialize: Dimensions and Rank do not jive!', 6, &
+          call MQC_Error_I('Logic error in MQC_Variable_initialize:'// &
+            ' Dimensions and Rank do not jive!', 6, &
           'Size(dimensions)', Size(dimensions), &
           'myRank', myRank )
       endIf
@@ -319,6 +381,13 @@
       endIf
       call string_change_case(myStorageFormat,'u')
       mqcVariable%storageFormat = TRIM(myStorageFormat)
+
+!hph+
+      if(myDebug) write(6,*)  &
+        ' initializing a mqcVar that current init=',  &
+        mqcVariable%initialized
+!hph-
+
 !
 !     Fill the dataType.
 !
@@ -328,8 +397,8 @@
       case('INTEGER','INT','I')
         mqcVariable%dataType = 'INTEGER'
       case default
-        call MQC_Error_A('Initializing MQC_Variable with unknown data type.', 6, &
-             'myDataType', myDataType)
+        call MQC_Error_A('Initializing MQC_Variable with unknown'//  &
+          ' data type.', 6,'myDataType', myDataType)
       end select
 !
 !     Take care of rank and dimensions.
@@ -341,8 +410,9 @@
           mqcVariable%dimensions = 0
         case(1:10)
           if(.not.Present(dimensions))  &
-            call MQC_Error_L('Illegal attempt to initialize MQC_Variable of rank > 0 without defined dimensions.', 6, &
-            'Present(dimensions)', Present(dimensions) )
+            call MQC_Error_L('Illegal attempt to initialize '//  &
+              'MQC_Variable of rank > 0 without defined dimensions.',  &
+              6,'Present(dimensions)', Present(dimensions) )
           mqcVariable%dimensions = 0
           mqcVariable%dimensions(1:myRank) = dimensions
         case default
@@ -357,10 +427,39 @@
 !
 !     Now, deallocate/reallocate the data arrays if necessary.
 !
+
+!hph+
+      if(myDebug) then
+!        if(myDebug) call mqc_error('Hrant - Wow2AA')
+       endIf
+!hph-
+
       myLength = MQC_Variable_getLength(mqcVariable)
+
+!hph+
+      if(myDebug) then
+        write(*,*)
+        write(*,*)' Hrant - myLength = ',myLength
+        write(*,*)' Hrant - mqcVariable%dataType = ',mqcVariable%dataType
+!        if(myDebug) call mqc_error('Hrant - Wow2A')
+       endIf
+!hph-
+
       select case(mqcVariable%dataType)
       case('REAL')
-        if(Allocated(mqcVariable%integerArray)) DeAllocate(mqcVariable%integerArray)
+
+!hph+
+      if(myDebug) then
+        write(*,*)' Allocated(mqcVariable%integerArray) = ',Allocated(mqcVariable%integerArray)
+        write(*,*)' Size(mqcVariable%integerArray)      = ',Size(mqcVariable%integerArray)
+        write(*,*)' initialized: ',mqcVariable%initialized
+!        deAllocate(mqcVariable%integerArray)
+        if(myDebug) call mqc_error('Hrant - Inside REAL - A')
+      endIf
+!hph-
+
+        if(Allocated(mqcVariable%integerArray))  &
+          DeAllocate(mqcVariable%integerArray)
         if(.not.Allocated(mqcVariable%realArray)) then
           Allocate(mqcVariable%realArray(myLength))
         elseIf(Size(mqcVariable%realArray).ne.myLength) then
@@ -368,6 +467,15 @@
           Allocate(mqcVariable%realArray(myLength))
         endIf
       case('INTEGER')
+
+!hph+
+        if(MQC_Algebra2_DEBUG) then
+          write(*,*)
+          write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
+          write(*,*)
+        endIf
+!hph-
+
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
         if(.not.Allocated(mqcVariable%integerArray)) then
           Allocate(mqcVariable%integerArray(myLength))
@@ -380,10 +488,20 @@
           'allocation block.',6,'mqcVariable%dataType',  &
           mqcVariable%dataType)
       end select
+
+!hph+
+      if(myDebug) call mqc_error('Hrant - Wow3')
+!hph-
+
 !
 !     Lastly, set the initialized flag.
 !
       mqcVariable%initialized = .True.
+
+!hph+
+!      if(myDebug) call mqc_error('STOP 9')
+!hph-
+
 !
       return
       end subroutine MQC_Variable_initialize
@@ -1304,6 +1422,13 @@
         Allocate(mqcVariable%realArray(SIZE(mqcIn%realArray(:))))
         mqcVariable%realArray = mqcIn%realArray
       case('INTEGER')
+
+!hph+
+        write(*,*)
+        write(*,*)' Hrant - In MQC2MQC, INTEGER length = ',SIZE(mqcIn%integerArray(:))
+        write(*,*)
+!hph-
+
         Allocate(mqcVariable%integerArray(SIZE(mqcIn%integerArray(:))))
         mqcVariable%integerArray = mqcIn%integerArray
       case default
@@ -1377,6 +1502,7 @@
       else
         DEBUG = .False.
       endIf
+      DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
       if(DEBUG) then
         write(*,*)
         write(*,*)' ---------------------------------------------------'
@@ -1467,10 +1593,11 @@
 !
       if(DEBUG) write(*,*)'   Calling Init...'
       if(myRank.eq.0) then
-        call MQC_Variable_initialize(mqcVariable,myDataType)
+!hphHERE
+        call MQC_Variable_initialize(mqcVariable,myDataType,debug=DEBUG)
       else
         call MQC_Variable_initialize(mqcVariable,myDataType,myDimensions,  &
-          myRank,'FULL')
+          myRank,'FULL',debug=DEBUG)
       endIf
       if(DEBUG) then
         write(*,*)'   Back from init.'
@@ -1480,6 +1607,7 @@
         write(*,*)'   ALLOCATED(integerArray) ? = ',ALLOCATED(mqcVariable%integerArray)
         if(Allocated(mqcVariable%realArray)) write(*,*)'   SIZE(realArray) = ',SIZE(mqcVariable%realArray)
         if(Allocated(mqcVariable%integerArray)) write(*,*)'   SIZE(integerArray) = ',SIZE(mqcVariable%integerArray)
+        call mqc_error('StopIt - 123D')
       endIf
       if(fillScalar) then
         if(fillInteger) then
@@ -1494,6 +1622,16 @@
             'fillReal', fillReal )
         endIf
       elseIf(fillArray) then
+
+!hph+
+        if(DEBUG) then
+          write(*,*)
+          write(*,*)' fillArray  = ',fillArray
+          write(*,*)' fillInteger= ',fillInteger
+          write(*,*)' fillReal   = ',fillReal
+        endIf
+!hph-
+
         if(fillInteger) then
           mqcVariable%integerArray(:) = arrayIntegerIn
         elseIf(fillReal) then
@@ -1656,7 +1794,7 @@
       subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real(mqcVariable,intrinsicIn)
 !
 !     This subroutine is used to set an MQC Variable matrix (full storage form)
-!     equal to an intrinsic integer fortran matrix.
+!     equal to an intrinsic real fortran matrix.
 !
 !
 !     H. P. Hratchian, 2018.
@@ -1668,15 +1806,44 @@
       real(kind=real64),dimension(:,:),intent(in)::intrinsicIn
       integer(kind=int64)::myLength
       integer(kind=int64),dimension(2)::myDimensions
+      logical::DEBUG=.false.
 !
+ 1000 format(1x,'Converting an intrinsic real matrix to an mqcVar.')
+ 1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8)
+!
+
+!hph+
+!      write(*,*)
+!      write(*,*)
+!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
+!        ' DEBUG = ',DEBUG
+!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
+!        ' MQC_Algebra2_DEBUG = ',MQC_Algebra2_DEBUG
+!      write(*,*)
+!      write(*,*)
+!hph-
+
+      DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
 !
 !     Load the MQC variable.
 !
+      if(DEBUG) write(MQC_Algebra2_IOut,1000)
       myLength = SIZE(intrinsicIn)
       myDimensions(1) = SIZE(intrinsicIn,1)
       myDimensions(2) = SIZE(intrinsicIn,2)
+      if(DEBUG) write(MQC_Algebra2_IOut,1100) myLength,  &
+        myDimensions(1),myDimensions(2)
       call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
-        dimensions=myDimensions,DEBUGPRINT=.False.)
+        dimensions=myDimensions,DEBUGPRINT=DEBUG)
+
+      if(DEBUG) call mqc_error('Hrant - SUCCESS!!!')
+!hph+
+          if(DEBUG) then
+            call mqcVariable%print(header='mqcVar...')
+            call mqc_error('STOPa')
+          endIf
+!hph-
+
 !
       return
       end subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
@@ -2174,7 +2341,6 @@
               'typeCode1*10', typeCode1*10, &
               'typeCode2', typeCode2)
         end select
-        write(*,*)
       case default
         call mqc_error('MQC_Variable_Addition is confused!')
       end select
@@ -2311,7 +2477,6 @@
               'typeCode1*10', typeCode1*10, &
               'typeCode2', typeCode2)
         end select
-        write(*,*)
       case default
         call mqc_error('MQC_Variable_Subtraction is confused!')
       end select
