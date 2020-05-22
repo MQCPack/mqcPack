@@ -11240,7 +11240,12 @@
       endIf
 
       if(present(EVecs)) then
-        if(allocated(A_EVecs)) EVecs = A_EVecs
+        if(allocated(A_EVecs)) then
+          do i = 1,A%NRow
+            call mqc_vectorPhase(A_EVecs(:,i),.True.)
+          endDo
+          EVecs = A_EVecs
+        endIf
         if(allocated(AC_EVecs)) EVecs = AC_EVecs
       endIf
       if(present(EVals)) EVals = A_EVals
