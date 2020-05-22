@@ -1165,8 +1165,14 @@
         Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
         LR = LenArr(N1,N2,N3,N4,N5)
-        if(NR.ne.0.and.myArrayNum.gt.NR) call mqc_error_I('Array number requested not found &
-          & under specified label',6,'NR',NR,'myArrayNum',myArrayNum)
+        if(NR.ne.0.and.myArrayNum.gt.NR) then
+          if(present(foundOut)) then
+            exit outerLoop
+          else
+            call mqc_error_I('Array number requested not found &
+              &under specified label',6,'NR',NR,'myArrayNum',myArrayNum)
+          endIf
+        endIf
         if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
@@ -2732,7 +2738,7 @@
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
-      logical::found
+      logical::found,OK
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
@@ -2789,8 +2795,9 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call mqc_integral_allocate(est_integral,'mo coefficients','space',tmpMatrixAlpha)
@@ -2802,8 +2809,9 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('BETA MO COEFFICIENTS',tmpMatrixBeta,foundOut=found)
@@ -2812,8 +2820,9 @@
               errorMsg = 'BETA MO COEFFICIENTS not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
               call mqc_integral_allocate(est_integral,'mo coefficients','spin',tmpMatrixAlpha, &
@@ -2827,8 +2836,9 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             nBasis = fileInfo%getVal('nBasis')
@@ -2856,8 +2866,9 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','space',tmpVectorAlpha)
@@ -2869,8 +2880,9 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('BETA ORBITAL ENERGIES',vectorOut=tmpVectorBeta,foundOut=found)
@@ -2879,8 +2891,9 @@
               errorMsg = 'BETA ORBITAL ENERGIES not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
               call mqc_eigenvalues_allocate(est_eigenvalues,'mo energies','spin',tmpVectorAlpha, &
@@ -2894,8 +2907,9 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             nBasis = fileInfo%getVal('nBasis')
@@ -2919,8 +2933,9 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -2936,8 +2951,9 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('CORE HAMILTONIAN BETA',tmpMatrixBeta,foundOut=found)
@@ -2946,8 +2962,9 @@
               errorMsg = 'CORE HAMILTONIAN BETA not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
 !              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -2969,8 +2986,9 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3000,8 +3018,9 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3017,8 +3036,9 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('BETA FOCK MATRIX',tmpMatrixBeta,foundOut=found)
@@ -3027,8 +3047,9 @@
               errorMsg = 'BETA FOCK MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
 !              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3050,8 +3071,9 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3081,8 +3103,9 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3098,8 +3121,9 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('BETA DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
@@ -3108,8 +3132,9 @@
               errorMsg = 'BETA DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
 !              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3131,8 +3156,9 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3162,8 +3188,9 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3179,8 +3206,9 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
             call fileInfo%getArray('BETA SCF DENSITY MATRIX',tmpMatrixBeta,foundOut=found)
@@ -3189,8 +3217,9 @@
               errorMsg = 'BETA SCF DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
-                call mqc_error_l('errorMsg',6,'found',found)
+                call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
             else
 !              if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3212,8 +3241,9 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3243,8 +3273,9 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3260,8 +3291,9 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3278,8 +3310,9 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
-              call mqc_error_l('errorMsg',6,'found',found)
+              call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
 !            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
@@ -3763,7 +3796,7 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_twoERIs   
       subroutine mqc_gaussian_unformatted_matrix_get_twoERIs(fileinfo,label, &
-        est_twoeris,filename)
+        est_twoeris,filename,foundERI)
 !
 !     This subroutine loads the two-electron resonance integrals from a 
 !     Gaussian unformatted matrix file sent in object <fileinfo>. The 
@@ -3803,12 +3836,14 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::label
+      logical,optional::foundERI
       type(mqc_twoERIs),optional::est_twoeris
       character(len=*),intent(in),optional::filename
-      character(len=256)::my_filename
+      character(len=256)::my_filename,errorMsg
       character(len=64)::myLabel
       integer::nBasis,nAlpha,nBeta
       type(mqc_r4tensor)::tmpR4TensorAlpha,tmpR4TensorBeta,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha
+      logical::found
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
@@ -3848,34 +3883,109 @@
       call String_Change_Case(label,'l',myLabel)
       select case (mylabel)
       case('regular')
-        call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'symm','regular',tmpR4TensorAlpha)
+        call fileInfo%getArray('REGULAR 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
+        if(present(foundERI)) foundERI = found
+        if(.not.found) then
+          errorMsg = 'REGULAR 2E INTEGRALS not present on file'
+          if(present(foundERI)) then
+            write(6,'(A)') errorMsg
+          else
+            call mqc_error_l(trim(errorMsg),6,'found',found)
+          endIf
+        else
+          call mqc_twoeris_allocate(est_twoeris,'symm','regular',tmpR4TensorAlpha)
+        endIf
       case('raffenetti1')
-        call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti1',tmpR4TensorAlpha)
+        call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
+        if(present(foundERI)) foundERI = found
+        if(.not.found) then
+          errorMsg = 'RAFFENETTI 1 2E INTEGRALS not present on file'
+          if(present(foundERI)) then
+            write(6,'(A)') errorMsg
+          else
+            call mqc_error_l(trim(errorMsg),6,'found',found)
+          endIf
+        else
+          call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti1',tmpR4TensorAlpha)
+        endIf
       case('raffenetti2')
         call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha, &
-          arraynum=2)
-        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti2',tmpR4TensorAlpha)
+          arraynum=2,foundOut=found)
+        if(present(foundERI)) foundERI = found
+        if(.not.found) then
+          errorMsg = 'RAFFENETTI 2 2E INTEGRALS not present on file'
+          if(present(foundERI)) then
+            write(6,'(A)') errorMsg
+          else
+            call mqc_error_l(trim(errorMsg),6,'found',found)
+          endIf
+        else
+          call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti2',tmpR4TensorAlpha)
+        endIf
       case('raffenetti3')
         call fileInfo%getArray('RAFFENETTI 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha, &
-          arraynum=3)
-        call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti3',tmpR4TensorAlpha)
+          arraynum=3,foundOut=found)
+        if(present(foundERI)) foundERI = found
+        if(.not.found) then
+          errorMsg = 'RAFFENETTI 3 2E INTEGRALS not present on file'
+          if(present(foundERI)) then
+            write(6,'(A)') errorMsg
+          else
+            call mqc_error_l(trim(errorMsg),6,'found',found)
+          endIf
+        else
+          call mqc_twoeris_allocate(est_twoeris,'symm','raffenetti3',tmpR4TensorAlpha)
+        endIf
       case('molecular')
         if(fileinfo%isRestricted()) then
-          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha)
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
+          if(present(foundERI)) foundERI = found
+          if(.not.found) then
+            errorMsg = 'AA MO 2E INTEGRALS not present on file'
+            if(present(foundERI)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha)
+          endIf
         elseIf(fileinfo%isUnrestricted()) then
-          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
-          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
+          if(present(foundERI)) foundERI = found
+          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta,foundOut=found)
+          if(present(foundERI)) found = foundERI.and.found
+          if(.not.found) then
+            errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS not present on file'
+            if(present(foundERI)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+          endIf
         elseIf(fileinfo%isGeneral()) then
-          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha)
-          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta)
-          call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta)
-          call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha)
-          call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
-            tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
+          call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
+          if(present(foundERI)) foundERI = found
+          call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta,foundOut=found)
+          if(present(foundERI)) foundERI = foundERI.and.found
+          call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta,foundOut=found)
+          if(present(foundERI)) foundERI = foundERI.and.found
+          call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha,foundOut=found)
+          if(present(foundERI)) found = foundERI.and.found
+          if(.not.found) then
+            errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS and/or AB MO 2E INTEGRALS &
+              &and/or BA MO 2E INTEGRALS not present on file'
+            if(present(foundERI)) then
+              write(6,'(A)') errorMsg
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+              tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
+          endIf
         else
           call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
                'fileinfo%isRestricted()', fileinfo%isRestricted(), &

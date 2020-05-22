@@ -153,6 +153,8 @@
         Procedure, Public::abs => MQC_Vector_Abs
 !>      \brief <b> Returns the sum of elements in the MQC_Vector</b>
         Procedure, Public::sum => MQC_Vector_Sum
+!>      \brief <b> Returns the product of elements in the MQC_Vector</b>
+        Procedure, Public::product => MQC_Vector_Product
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
@@ -200,11 +202,17 @@
         Procedure, Public::det => mqc_matrix_determinant
 !>      \brief <b> Returns the trace of the MQC Matrix</b>
         Procedure, Public::trace => mqc_matrix_trace
+!>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
+        Procedure, Public::pinv => mqc_matrix_MRInv
+!>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
+        Procedure, Public::diagonal => mqc_matrix_diagonal_elements
 !>      \brief <b> Returns the root mean square deviation and maximum
 !>      deviation of elements of the MQC Matrix</b>
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
 !>      \brief <b> Returns the square root of the MQC Matrix elements</b>
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
+!>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
+        Procedure, Public::sum => MQC_Matrix_Sum
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
         Procedure, Public::at => MQC_Matrix_Scalar_At
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
@@ -454,6 +462,12 @@
         Module Procedure MQC_R4Tensor_Size
       End Interface
 !
+!>    \brief <b> Returns the absolute value of one scalar with the 
+!>    sign of another</b>
+      interface Sign
+        module procedure MQC_Scalar_Sign
+      end interface
+!
 !----------------------------------------------------------------
 !                                                               |
 !     OPERATOR INTERFACES                                       |
@@ -586,6 +600,10 @@
 !>    \brief <b> Determines if a variable is greater than or equal to another</b>
       Interface Operator (.ge.)
         Module Procedure MQC_ScalarGE
+        Module Procedure MQC_ScalarGEReal
+        Module Procedure MQC_RealGEScalar
+        Module Procedure MQC_ScalarGEInteger
+        Module Procedure MQC_IntegerGEScalar
       End Interface
 !
 !     Vector operators...
@@ -4646,6 +4664,258 @@
       End Function MQC_ScalarGE
 !
 !
+!     PROCEDURE MQC_RealGEScalar
+!
+!>    \brief <b> MQC_RealGEScalar is a function that returns TRUE if an intrinsic real
+!>    is greater than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>        
+!>    MQC_RealGEScalar is a function that returns TRUE if an intrinsic real is greater 
+!>    than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic real
+!>    is greater than or equal to the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    real is less than the real part of the MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=real64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_RealGEScalar(RealIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_RealGEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_RealGEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(RealIn.ge.Scalar%scar) MQC_RealGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(RealIn.ge.Scalar%scai) MQC_RealGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(RealIn.ge.real(Scalar%scac)) MQC_RealGEScalar = .True. 
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_RealGEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_RealGEScalar
+!
+!
+!     PROCEDURE MQC_ScalarGEReal
+!
+!>    \brief <b> MQC_ScalarGEReal is a function that returns TRUE if a MQC_Scalar is
+!>    greater than or equal to an intrinsic real</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGEReal is a function that returns TRUE if a MQC_Scalar is greater 
+!>    than or equal to an intrinsic real.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part 
+!>    of the MQC_Scalar is less than or equal to the intrinsic real and FALSE if the 
+!>    real part of the MQC_Scalar is less than the intrinsic real.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] RealIn
+!>    \verbatim
+!>        RealIn is Real(kind=int64)
+!>        The intrinsic real that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarGEReal(Scalar,RealIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGEReal
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Real(kind=real64),Intent(In)::RealIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGEReal = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ge.RealIn) MQC_ScalarGEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ge.RealIn) MQC_ScalarGEReal = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).ge.RealIn) MQC_ScalarGEReal = .True. 
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGEReal', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGEReal
+!
+!
+!     PROCEDURE MQC_IntegerGEScalar
+!
+!>    \brief <b> MQC_IntegerGEScalar is a function that returns TRUE if an intrinsic 
+!>    integer is greater than or equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerGEScalar is a function that returns TRUE if an intrinsic integer is 
+!>    greater than or equal to a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic 
+!>    integer is greater than or equal to the real part of the MQC_Scalar and FALSE 
+!>    if the intrinsic integer is less than the real part of the MQC_Scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_IntegerGEScalar(IntIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerGEScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_IntegerGEScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntIn.ge.Scalar%scar) MQC_IntegerGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntIn.ge.Scalar%scai) MQC_IntegerGEScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntIn.ge.real(Scalar%scac)) MQC_IntegerGEScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerGEScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerGEScalar
+!
+!
+!     PROCEDURE MQC_ScalarGEInteger
+!
+!>    \brief <b> MQC_ScalarGEInteger is a function that returns TRUE if a MQC_Scalar 
+!>    is greater than or equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGEInteger is a function that returns TRUE if a MQC_Scalar is greater 
+!>    than or equal to an intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part 
+!>    of the MQC_Scalar is gretaer than or equal to the intrinsic integer and FALSE 
+!>    if the real part of the MQC_Scalar is less than the intrinsic integer. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntIn
+!>    \verbatim
+!>        IntIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      Function MQC_ScalarGEInteger(Scalar,IntIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarGEInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntIn
+      Real(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarGEInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.ge.IntIn) MQC_ScalarGEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.ge.IntIn) MQC_ScalarGEInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).ge.IntIn) MQC_ScalarGEInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarGEInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarGEInteger
+!
+!
 !     PROCEDURE MQC_Scalar_Complex_Conjugate
 !
 !>    \brief <b> MQC_Scalar_Complex_Conjugate is a function that returns the complex conjugate 
@@ -5979,6 +6249,53 @@
 
       Return
       End Function MQC_ScalarComplexSubtract
+!
+!
+!     PROCEDURE MQC_Scalar_Sign
+!
+!>    \brief <b> MQC_Scalar_Sign returns the absolute value of the first argument
+!>    times the sign of the second argument</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Sign returns the absolute value of the first argument times the sign 
+!>    of the second argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar1
+!>    \verbatim 
+!>        Scalar1 is Type(MQC_Scalar)
+!>        The MQC_Scalar to take the absolute value from.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar2
+!>    \verbatim
+!>        Scalar2 is Type(MQC_Scalar)
+!>        The MQC_Scalar to take the sign from.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Scalar_Sign(Scalar1,Scalar2) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::Output
+      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+
+      Output = Sign(Scalar1%rval(),Scalar2%rval())
+
+      Return
+      End Function MQC_Scalar_Sign
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -8247,6 +8564,15 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] high_precision
+!>    \verbatim
+!>        high_precision is Logical,Optional
+!>        Temporary hack to print high precision reals. To be
+!>        replaced with a proper option soon.
+!>        = .True.:  print high precision (reals only) 
+!>        = .False.: print normal precision (default)
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -8254,20 +8580,21 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,high_precision)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Vector),Intent(In)::Vector
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose,high_precision
       Integer(kind=int64)::I,Length
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2X,F12.5,F11.5,"i")
+ 1004 Format(1x,I7,2X,F20.12)
  1020 Format( " " )
  1030 Format( A )
 !
@@ -8290,7 +8617,15 @@
           EndDo
       ElseIf(Vector%Data_type.eq.'Real') then
         Do I = 1,Length
-          Write(IOut,1002) I, Vector%vecr(I)
+          if(present(high_precision)) then
+            if(high_precision) then 
+              Write(IOut,1004) I, Vector%vecr(I)
+            else
+              Write(IOut,1002) I, Vector%vecr(I)
+            endIf
+          else
+            Write(IOut,1002) I, Vector%vecr(I)
+          endIf
         EndDo
       ElseIf(Vector%Data_type.eq.'Complex') then
         Do I = 1,Length
@@ -10606,6 +10941,51 @@
       endDo
 !
       end function mqc_vector_sum
+!
+!
+!     PROCEDURE MQC_Vector_Product
+!
+!>    \brief <b> MQC_Vector_Product is a function that returns the product of all elements 
+!>    of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Product is a function that returns the sum of all elements of an MQC
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_vector_product(A) result(output)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = 1.0
+      do i=1,MQC_Length_Vector(A)
+        output = output * A%at(i)
+      endDo
+!
+      end function mqc_vector_product
 !
 !
 !     PROCEDURE MQC_Vector_Complex_Conjugate
@@ -17278,6 +17658,15 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] high_precision
+!>    \verbatim
+!>        high_precision is Logical,Optional
+!>        Temporary hack to print high precision reals. To be
+!>        replaced with a proper option soon.
+!>        = .True.:  print high precision (reals only) 
+!>        = .False.: print normal precision (default)
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -17285,14 +17674,14 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,high_precision)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,high_precision
       Integer(kind=int64)::I,J,II,ILim,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
 !
@@ -17305,6 +17694,7 @@
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
+ 2004 Format(1x,I7,10F20.12)
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17330,7 +17720,15 @@
               !If(Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2004) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
+              endIf
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
@@ -21559,13 +21957,13 @@
       IndI = I
       IndJ = J
       If (IndI.lt.0) IndI = Matrix%NRow + IndI + 1
-      If (IndJ.lt.0) IndJ = Matrix%NRow + IndJ + 1
+      If (IndJ.lt.0) IndJ = Matrix%NCol + IndJ + 1
       If (IndI.eq.0.or.IndI.gt.Matrix%NRow) Call MQC_Error_I('Index I badly specified in mqc_matrix_scalar_put', 6, &
            'IndI', IndI, &
            'Matrix%NRow', Matrix%NRow )
-      If (IndJ.eq.0.or.IndJ.gt.Matrix%NRow) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
+      If (IndJ.eq.0.or.IndJ.gt.Matrix%NCol) Call MQC_Error_I('Index J badly specified in mqc_matrix_scalar_put', 6, &
            'IndJ', IndJ, &
-           'Matrix%NRow', Matrix%NRow )
+           'Matrix%NCol', Matrix%NCol )
       If (Matrix%Storage.eq.'StorFull') then 
         If (Matrix%Data_Type.eq.'Integer') then
           If (Scalar%Data_Type.eq.'Integer') then
@@ -22034,9 +22432,9 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in,out] Matrix
+!>    \param[in,out] MatrixIn
 !>    \verbatim
-!>        Matrix is Class(MQC_Matrix)
+!>        MatrixIn is Class(MQC_Matrix)
 !>        The name of the MQC_Matrix variable.
 !>    \endverbatim
 !>
@@ -22054,12 +22452,12 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_Matrix_Norm(matrix,methodIn) result(norm)
+      Function MQC_Matrix_Norm(matrixIn,methodIn) result(norm)
 !
 !     Variable Declarations.
 !
       implicit none
-      class(MQC_Matrix),intent(inOut)::matrix
+      class(MQC_Matrix),intent(in)::matrixIn
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::StorFlag,TypeFlag
@@ -22068,7 +22466,9 @@
       real(kind=real64),dimension(:,:),allocatable::temp
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Type(MQC_Scalar)::norm
+      type(mqc_matrix)::matrix
 
+      matrix = matrixIn
       if(Present(methodIn)) method = methodIn
       if(.not.Present(methodIn)) method = 'F'
       if(method.eq.'I') allocate(work(max(1,MQC_Matrix_Rows(matrix))))
@@ -22367,6 +22767,51 @@
       enddo
 !
       end function mqc_matrix_trace
+!
+!
+!     PROCEDURE mqc_matrix_diagonal_elements
+!
+!>    \brief <b> MQC_Matrix_Diagonal_Elements is a function that returns the diagonal 
+!>    of an MQC matrix as an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Diagonal_Elements is a function that returns the diagonal of an MQC 
+!>    matrix as an MQC vector. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      function mqc_matrix_diagonal_elements(matrix) result(vector)
+!
+!     Variable Declarations...
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::matrix
+      type(mqc_vector)::vector
+      integer(kind=int64)::i
+!
+      call vector%init(min(size(matrix,1),size(matrix,2)))
+      do i = 1, min(size(matrix,1),size(matrix,2))
+        call vector%put(matrix%at(i,i),i)
+      enddo
+!
+      end function mqc_matrix_diagonal_elements
 !
 !
 !     PROCEDURE mqc_matrix_generalized_eigensystem
@@ -23442,6 +23887,110 @@
 !
       Return
       End Function MQC_Matrix_Reshape_Vector
+!
+!
+!     PROCEDURE MQC_Matrix_MPInv
+!
+!>    \brief <b> MQC_Matrix_MPInv is a function that returns the Moore-Penrose 
+!>    psuedoinverse of a MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_MPInv is a function that returns the Moore-Penrose psuedoinverse 
+!>    of a MQC matrix.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A 
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to psuedoinvert
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_Matrix_MRInv(A) Result(PInv)
+!
+      Implicit None
+      Class(MQC_Matrix)::A
+!
+      Type(MQC_Matrix)::EUVecs,EVVecs,SMat
+      Type(MQC_Vector)::EVals
+      Type(MQC_Matrix)::PInv
+      Type(MQC_Scalar)::Thresh,Zero
+      Integer(kind=int64)::I
+!
+      Thresh = 1.0e-14
+      Zero = 0.0e0
+      call A%SVD(EVals,EUVecs,EVVecs)
+      call EVals%diag(SMat)
+      Do I = 1, Size(EVals)
+        If(EVals%at(I).gt.Thresh) then
+          call EVals%put(1.0/EVals%at(I),I)
+        else
+          call EVals%put(zero,I)
+        endIf
+      EndDo
+      call EVals%diag(SMat)
+      PInv = matmul(matmul(dagger(EVVecs),SMat),dagger(EUVecs))
+!      
+      Return
+      End Function MQC_Matrix_MRInv
+!
+!
+!     PROCEDURE MQC_Matrix_Sum
+!
+!>    \brief <b> MQC_Matrix_Sum is a function that returns the sum of all elements 
+!>    of an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Sum is a function that returns the sum of all elements of an MQC
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      function mqc_matrix_sum(A) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_scalar)::output
+      integer(kind=int64)::i,j
+!
+!     Do the work.
+!
+      output = 0.0
+      do i=1,size(A,1)
+        do j=1,size(A,2)
+          output = output + A%at(i,j)
+        endDo
+      endDo
+!
+      end function mqc_matrix_sum
 !
 !
 !----------------------------------------------------------------
