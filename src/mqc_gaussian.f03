@@ -71,29 +71,30 @@
         integer,allocatable::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
           NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
         integer,dimension(:),allocatable::atomicNumbers,atomTypes,basisFunction2Atom, &
-          IBasisFunctionType
-        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians
+          IBasisFunctionType,IgaussianScalars
+        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians   !hph,gaussianScalarsR
       Contains
-        procedure,pass::OpenFile       => MQC_Gaussian_Unformatted_Matrix_Open
-        procedure,pass::CloseFile      => MQC_Gaussian_Unformatted_Matrix_Close
-        procedure,pass::load           => MQC_Gaussian_Unformatted_Matrix_Read_Header
-        procedure,pass::create         => MQC_Gaussian_Unformatted_Matrix_Write_Header
-        procedure,pass::isRestricted   => MQC_Gaussian_IsRestricted
-        procedure,pass::isUnrestricted => MQC_Gaussian_IsUnrestricted
-        procedure,pass::isGeneral      => MQC_Gaussian_IsGeneral
-        procedure,pass::isComplex      => MQC_Gaussian_IsComplex
-        procedure,pass::getAtomCarts   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
-        procedure,pass::getAtomWeights => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
-        procedure,pass::getVal         => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
-        procedure,pass::getArray       => MQC_Gaussian_Unformatted_Matrix_Read_Array
-        procedure,pass::getAtomInfo    => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
-        procedure,pass::getBasisInfo   => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
-        procedure,pass::getBasisArray  => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
-        procedure,pass::getMolData     => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
-        procedure,pass::getESTObj      => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
-        procedure,pass::get2ERIs       => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
-        procedure,pass::writeArray     => MQC_Gaussian_Unformatted_Matrix_Write_Array
-        procedure,pass::writeESTObj    => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
+        procedure,pass::OpenFile         => MQC_Gaussian_Unformatted_Matrix_Open
+        procedure,pass::CloseFile        => MQC_Gaussian_Unformatted_Matrix_Close
+        procedure,pass::load             => MQC_Gaussian_Unformatted_Matrix_Read_Header
+        procedure,pass::create           => MQC_Gaussian_Unformatted_Matrix_Write_Header
+        procedure,pass::isRestricted     => MQC_Gaussian_IsRestricted
+        procedure,pass::isUnrestricted   => MQC_Gaussian_IsUnrestricted
+        procedure,pass::isGeneral        => MQC_Gaussian_IsGeneral
+        procedure,pass::isComplex        => MQC_Gaussian_IsComplex
+        procedure,pass::getAtomicNumbers => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+        procedure,pass::getAtomCarts     => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
+        procedure,pass::getAtomWeights   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
+        procedure,pass::getVal           => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
+        procedure,pass::getArray         => MQC_Gaussian_Unformatted_Matrix_Read_Array
+        procedure,pass::getAtomInfo      => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
+        procedure,pass::getBasisInfo     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
+        procedure,pass::getBasisArray    => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+        procedure,pass::getMolData       => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+        procedure,pass::getESTObj        => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
+        procedure,pass::get2ERIs         => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+        procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
+        procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
       End Type MQC_Gaussian_Unformatted_Matrix_File
 !
 !
@@ -112,14 +113,40 @@
 !----------------------------------------------------------------
 !
 !
-
-
-
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     MODULE VARIABLES/CONSTANTS                                |
+!                                                               |
+!----------------------------------------------------------------
+!
+      Logical,Private::MQC_Gaussian_DEBUG=.False.
 !
 !
 !     Subroutines/Functions...
 !
       CONTAINS
+!
+!
+!PROCEDURE MQC_Gaussian_SetDEBUG
+      subroutine MQC_Gaussian_SetDEBUG(setDebugValue)
+!
+!     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
+!     .FALSE.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+      implicit none
+      logical,intent(IN)::setDebugValue
+!
+      MQC_Gaussian_DEBUG = setDebugValue
+!
+      return
+      end subroutine MQC_Gaussian_SetDEBUG
+
+
 !
 !PROCEDURE MQC_Gaussian_ICGU
       subroutine MQC_Gaussian_ICGU(ICGU,wf_type,wf_complex)
@@ -655,6 +682,12 @@
       if(allocated(fileinfo%NShlDB)) deallocate(fileinfo%NShlDB)
       if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
+
+!hph+
+!      if(allocated(fileinfo%gaussianScalarsI)) deallocate(fileinfo%gaussianScalarsI)
+!      if(allocated(fileinfo%gaussianScalarsR)) deallocate(fileinfo%gaussianScalarsR)
+!hph-
+
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
@@ -787,6 +820,10 @@
         fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
         fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
         IOpCl,fileinfo%ICGU
+!
+!     Load the Gaussian scalars arrays from the Matrix File.
+!
+
 !
       return
       end subroutine MQC_Gaussian_Unformatted_Matrix_Read_Header
@@ -921,9 +958,7 @@
         allocate(fileinfo%NBTot)
         fileinfo%NBTot = 0
       endIf
-
       nAt3 = fileinfo%natoms*3
-
       if(.not.allocated(fileinfo%atomicNumbers)) then
         allocate(fileinfo%atomicNumbers(fileinfo%natoms))
         fileinfo%atomicNumbers = 0
@@ -1055,12 +1090,16 @@
 !
 !     Format statements.
 !
+ 1000 format(' MQC_Gaussian_Read is looking for array ',A,  &
+        ' in matrix file.')
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
  1020 Format( " " )!
  1040 Format( A, I15 )
  1050 Format( 2A )
  1060 Format( A )
+!
+      if(MQC_Gaussian_DEBUG) DEBUG=.true.
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
 !     program unit. If so, then get the file declared before reading the
@@ -1104,7 +1143,8 @@
       if(Present(vectorOut)) nOutputArrays = nOutputArrays+1
       if(Present(r4TensorOut)) nOutputArrays = nOutputArrays+1
       if(Present(mqcVarOut)) nOutputArrays = nOutputArrays+1
-      if(nOutputArrays.ne.1) call mqc_error_i('Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
+      if(nOutputArrays.ne.1) call mqc_error_i(  &
+           'Too many output arrays sent to Gaussian matrix file reading procedure.', 6, &
            'nOutputArrays', nOutputArrays )
 !
       if(present(arrayNum)) then
@@ -1117,9 +1157,10 @@
 !     found, then load the appropriate output argument with the data on the
 !     file.
 !
+      call String_Change_Case(label,'u',tmpLabel)
+      if(DEBUG) write(IOut,1000) TRIM(tmpLabel)
       found = .false.
       outerLoop:do i = 1,2
-        call String_Change_Case(label,'u',tmpLabel)
         EOF = .false.
         Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
@@ -1136,11 +1177,39 @@
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - TEST: cBuffer = ',TRIM(cBuffer)
+          write(IOut,*)
+        endIf
+!hph-
+
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
 !
 !           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
 !           type (integer, real, etc.) and data structure (scalar, vector,
 !           matrix, etc.).
+!
+
+!hph+
+            if(DEBUG) then
+              write(IOut,*)' Hrant - FOUND tmpLabel!!!'
+              write(IOut,*)   &
+                ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+                MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,  &
+                N2,N3,N4,N5,NRI,ASym)
+!hph              return
+            endIf
+!hph-
+
+!hph+
+            if(DEBUG) write(IOut,*)  &
+              ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+              MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
+!hph-
+
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
@@ -1218,10 +1287,56 @@
             case('REAL-SYMMATRIX')
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - Read in the symmetric matrix...'
+          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
+            Header='arrayTmp of OVERLAP???')
+          write(IOut,*)
+        endIf
+!hph-
+
               if(Present(matrixOut)) then
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - matrixOut is PRESENT!'
+          write(IOut,*)
+        endIf
+!hph-
+
                 call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
               elseIf(Present(mqcVarOut)) then
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          write(IOut,*)' Hrant - mqcVarOut is PRESENT!'
+          write(IOut,*)
+          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
+            Header='arrayTmp of OVERLAP???')
+          write(IOut,*)
+          call mqc_print(IOut,mqc_matrixSymm2Full(arrayTmp,'U'),  &
+            Header='Overlap again!')
+          write(IOut,*)
+        endIf
+!hph-
+
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
+
+!hph+
+        if(DEBUG) then
+          write(IOut,*)
+          call mqcVarOut%print(  &
+            header='mqcVarOut version of the overlap...')
+          write(IOut,*)
+!hph          return
+        endIf
+!hph-
+
               else
                 call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
                   6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
@@ -1307,7 +1422,6 @@
 !             This is only an issue for nonsymmetric matrices stored in symmetric form.
               matrixOut = transpose(matrixOut)
               deallocate(complexTmp)
-
             case('MIXED')
               write(*,1020)
               write(*,1040)' Hrant - LR   = ',LR
@@ -1822,6 +1936,51 @@
 
 !=====================================================================
 !
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers(fileinfo)  &
+        Result(arrayOut)
+!
+!     This function is used to get the array of atomic numbers from the Gaussian
+!     matrix file corresponding to argument fileinfo.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      integer(kind=int64),dimension(:),allocatable::arrayOut
+      character(len=256)::my_filename
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen())  &
+        call MQC_Error_L('Failed to retrieve atomic numbers array from Gaussian matrix file: File not open.', 6, &
+        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      if(.not.allocated(fileinfo%atomicNumbers))  &
+        call MQC_Error_L('Atomic numbers requested, but NOT available.', 6, &
+        'allocated(fileinfo%atomicNumbers)', allocated(fileinfo%cartesians))
+      allocate(arrayOut(fileinfo%natoms))
+      arrayOut = fileinfo%atomicNumbers
+!
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Numbers
+
+
+!=====================================================================
+!
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
       Function MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts(fileinfo)  &
         Result(arrayOut)
@@ -1837,14 +1996,14 @@
 !
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
-      real(kind=int64),dimension(:),allocatable::arrayOut
+      real(kind=real64),dimension(:),allocatable::arrayOut
       character(len=256)::my_filename
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen())  &
-        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
+        call MQC_Error_L('Failed to atomic cartesian coordinates from Gaussian matrix file: File not open.', 6, &
         'fileinfo%isOpen()', fileinfo%isOpen() )
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
@@ -1855,7 +2014,7 @@
 !
 !     Do the work...
 !
-      if(.not.allocated(fileinfo%atomicWeights))  &
+      if(.not.allocated(fileinfo%cartesians))  &
         call MQC_Error_L('Atomic Cartesian coordinates requestion, but NOT available.', 6, &
         'allocated(fileinfo%cartesians)', allocated(fileinfo%cartesians))
       allocate(arrayOut(3*fileinfo%natoms))
@@ -2579,7 +2738,7 @@
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
       type(mqc_scalar)::tmpScalar
-      logical::found
+      logical::found,OK
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
@@ -2636,6 +2795,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2649,6 +2809,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2659,6 +2820,7 @@
               errorMsg = 'BETA MO COEFFICIENTS not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2674,6 +2836,7 @@
             errorMsg = 'ALPHA MO COEFFICIENTS not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2703,6 +2866,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2716,6 +2880,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2726,6 +2891,7 @@
               errorMsg = 'BETA ORBITAL ENERGIES not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2741,6 +2907,7 @@
             errorMsg = 'ALPHA ORBITAL ENERGIES not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2766,6 +2933,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2783,6 +2951,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2793,6 +2962,7 @@
               errorMsg = 'CORE HAMILTONIAN BETA not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2816,6 +2986,7 @@
             errorMsg = 'CORE HAMILTONIAN ALPHA not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2847,6 +3018,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2864,6 +3036,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2874,6 +3047,7 @@
               errorMsg = 'BETA FOCK MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2897,6 +3071,7 @@
             errorMsg = 'ALPHA FOCK MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2928,6 +3103,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2945,6 +3121,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -2955,6 +3132,7 @@
               errorMsg = 'BETA DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -2978,6 +3156,7 @@
             errorMsg = 'ALPHA DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3009,6 +3188,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3026,6 +3206,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3036,6 +3217,7 @@
               errorMsg = 'BETA SCF DENSITY MATRIX not present on file'
               if(present(foundObj)) then
                 write(6,'(A)') errorMsg
+                call fileinfo%load()
               else
                 call mqc_error_l(trim(errorMsg),6,'found',found)
               endIf
@@ -3059,6 +3241,7 @@
             errorMsg = 'ALPHA SCF DENSITY MATRIX not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3090,6 +3273,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3107,6 +3291,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3125,6 +3310,7 @@
             errorMsg = 'OVERLAP not present on file'
             if(present(foundObj)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
