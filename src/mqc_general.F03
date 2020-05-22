@@ -147,7 +147,7 @@
       integer,OPTIONAL,intent(in)::isMajor,isMinor,isRevision
       integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
       integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
-      logical,intent(out)::ok
+      logical::ok
       integer::major,minor,revision
 !
       ok = .true.

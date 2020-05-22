@@ -43,6 +43,7 @@
       Contains 
         Procedure, Public::print => MQC_Print_Nuclear_Geometry
         Procedure, Public::getNucRep => MQC_Get_Nuclear_Repulsion
+        Procedure, Public::getNumAtoms => MQC_Molecule_Data_GetNAtoms
       End Type MQC_Molecule_Data
 !
       Interface MQC_Print
