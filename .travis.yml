@@ -91,6 +91,7 @@ install:
 #       sudo ln -s `which gfortran-8` $fc
 #       sudo ln -s `which gcc-8` $gc
 #    fi
+  - echo "${TRAVIS_COMPILER}"
   - |
     if [[ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
        echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
