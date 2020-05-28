@@ -1,5 +1,6 @@
 language: generic
-jobs:
+#jobs:
+matrix:
   include:
 
     - os: linux
