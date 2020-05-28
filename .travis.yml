@@ -26,7 +26,7 @@ jobs:
               # other
               - doxygen
 
-      - compiler: pgfortran
+      - compiler: gfortran
         env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc 
         addons:
           apt:
