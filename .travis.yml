@@ -78,7 +78,8 @@ before_install:
 
 install: 
   - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ] && ["${TRAVIS_COMPILER}" == "gfortran" ]]; then
+#    if [[ "${TRAVIS_OS_NAME}" == "linux" ] && ["${TRAVIS_COMPILER}" == "gfortran" ]]; then
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
        fc=`which gfortran`
        gc=`which gcc`
        sudo rm `which gfortran` `which gcc`
