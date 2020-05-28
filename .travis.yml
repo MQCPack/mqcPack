@@ -1,9 +1,9 @@
 language: generic
-sudo: false
-matrix:
+jobs:
   include:
 
     - os: linux
+      dist: xenial
       - compiler: gfortran
         env: SOURCES=ubuntu-toolchain-r-test
         addons:
