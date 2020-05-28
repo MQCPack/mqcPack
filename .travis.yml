@@ -1,5 +1,6 @@
 language: generic
 #jobs:
+sudo: false
 matrix:
   include:
 
