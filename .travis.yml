@@ -92,12 +92,12 @@ install:
 #       sudo ln -s `which gcc-8` $gc
 #    fi
   - |
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
+    if [[ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
        echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
-    elif [[ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_COMPILER}" == "pgfortran" ]]; then
+    elif [[ "${TRAVIS_COMPILER}" == "pgfortran" ]]; then
        echo -e "yP$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
     else 
-       echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+      travis_terminate 1  
     fi
 
 notifications:
