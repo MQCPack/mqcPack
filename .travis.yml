@@ -5,7 +5,7 @@ matrix:
 
     - os: linux
       compiler: gfortran
-      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=gfortran-8 C_COMPILER=gcc-8
+      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=gfortran-8 C_COMPILER=gcc-8 TRAVIS_COMPILER=gfortran
       addons:
         apt:
           sources:
@@ -28,7 +28,7 @@ matrix:
 
     - os: linux
       compiler: pgfortran
-      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc
+      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc TRAVIS_COMPILER=pgfortran
       addons:
         apt:
           sources:
@@ -48,7 +48,7 @@ matrix:
     - os: osx
       osx_image: xcode10.2
       compiler: gfortran
-      env: SOURCES=homebrew
+      env: SOURCES=homebrew TRAVIS_COMPILER=gfortran
       addons:
         homebrew:
           packages:
