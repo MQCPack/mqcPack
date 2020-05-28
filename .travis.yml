@@ -74,6 +74,7 @@ before_install:
 #  - gfortran-8 --version
 #  - which gfortran-8
 #  - if [ "${FORTRAN_COMPILER}" = "gfortran-8" -o "${C_COMPILER}" = "gcc-8" ]; then fc=`which gfortran`; gc=`which gcc`; sudo rm `which gfortran` `which gcc`; sudo ln -s `which gfortran-8` $fc; sudo ln -s `which gcc-8` $gc; fi
+  - if [ "${C_COMPILER}" = "gcc-8" ]; then gc=`which gcc`; sudo rm `which gcc`; sudo ln -s `which gcc-8` $gc; fi
   - if [ "${FORTRAN_COMPILER}" = "pgfortran" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
   - if [ -n "${C_COMPILER}" ]; then export CC="${C_COMPILER}"; fi
   - if [ -n "${FORTRAN_COMPILER}" ]; then export FC="${FORTRAN_COMPILER}"; fi
