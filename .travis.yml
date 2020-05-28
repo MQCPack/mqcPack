@@ -3,7 +3,7 @@ jobs:
   include:
 
     - os: linux
-      dist: xenial
+#      dist: xenial
       - compiler: gfortran
         env: SOURCES=ubuntu-toolchain-r-test
         addons:
