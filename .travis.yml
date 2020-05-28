@@ -26,23 +26,23 @@ jobs:
               # other
               - doxygen
 
-      - compiler: gfortran
-        env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc 
-        addons:
-          apt:
-            sources:
-              - ubuntu-toolchain-r-test
-            packages:
-              # compilers
-              - cmake
-              # math libraries
-              - libblas-dev
-              - liblapack-dev
-              - libatlas-base-dev
-              - libopenblas-base
-              - libopenblas-dev
-              # other
-              - doxygen
+#      - compiler: gfortran
+#        env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc 
+#        addons:
+#          apt:
+#            sources:
+#              - ubuntu-toolchain-r-test
+#            packages:
+#              # compilers
+#              - cmake
+#              # math libraries
+#              - libblas-dev
+#              - liblapack-dev
+#              - libatlas-base-dev
+#              - libopenblas-base
+#              - libopenblas-dev
+#              # other
+#              - doxygen
 
     - os: osx
       osx_image: xcode10.2
@@ -72,9 +72,9 @@ before_install:
 #  - gfortran --version
 #  - gfortran-8 --version
 #  - which gfortran-8
-  - if [ "${FORTRAN_COMPILER}" = "pgfortran" -o "${C_COMPILER}" = "pgcc" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
-  - if [ -n "${C_COMPILER}" ]; then export CC="${C_COMPILER}"; fi
-  - if [ -n "${FORTRAN_COMPILER}" ]; then export FC="${FORTRAN_COMPILER}"; fi
+#  - if [ "${FORTRAN_COMPILER}" = "pgfortran" -o "${C_COMPILER}" = "pgcc" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
+#  - if [ -n "${C_COMPILER}" ]; then export CC="${C_COMPILER}"; fi
+#  - if [ -n "${FORTRAN_COMPILER}" ]; then export FC="${FORTRAN_COMPILER}"; fi
 
 install: 
   - |
