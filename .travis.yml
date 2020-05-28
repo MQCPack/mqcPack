@@ -28,7 +28,7 @@ matrix:
 
     - os: linux
       compiler: pgfortran
-      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=gcc-8
+      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc
       addons:
         apt:
           sources:
@@ -91,7 +91,14 @@ install:
 #       sudo ln -s `which gfortran-8` $fc
 #       sudo ln -s `which gcc-8` $gc
 #    fi
-  - echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
+       echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
+    elif [[ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_COMPILER}" == "pgfortran" ]]; then
+       echo -e "yP$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
+    else 
+       echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+    fi
 
 notifications:
   email: false
