@@ -1,5 +1,4 @@
 language: generic
-sudo: false
 matrix:
   include:
 
@@ -12,11 +11,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
            # compilers
-#          - g++-9
             - gcc-8
             - gfortran-8
             - cmake
-#           - automake
             # math libraries
             - libblas-dev
             - liblapack-dev
@@ -53,8 +50,6 @@ matrix:
         homebrew:
           packages:
             - m4
-#            - autoconf
-#            - automake
             - doxygen
           update: true
 
@@ -68,30 +63,13 @@ before_install:
   - which automake
   - autoconf --version
   - automake --version
-#  - gcc --version
-#  - g++ --version
-#  - gfortran --version
-#  - gfortran-8 --version
-#  - which gfortran-8
   - if [ "${FORTRAN_COMPILER}" = "pgfortran" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
-#  - if [ "${FORTRAN_COMPILER}" = "gfortran-8" -o "${C_COMPILER}" = "gcc-8" ]; then fc=`which gfortran`; gc=`which gcc`; sudo rm `which gfortran` `which gcc`; sudo ln -s `which gfortran-8` $fc; sudo ln -s `which gcc-8` $gc; fi
   - if [ "${FORTRAN_COMPILER}" = "gfortran-8" ]; then fc=`which gfortran`; sudo rm `which gfortran`; sudo ln -s `which gfortran-8` $fc; fi
   - if [ "${C_COMPILER}" = "gcc-8" ]; then gc=`which gcc`; sudo rm `which gcc`; sudo ln -s `which gcc-8` $gc; fi
   - if [ -n "${C_COMPILER}" ]; then export CC="${C_COMPILER}"; fi
   - if [ -n "${FORTRAN_COMPILER}" ]; then export FC="${FORTRAN_COMPILER}"; fi
-  - echo ${FC}
-  - echo ${CC}
 
 install: 
-#  - |
-#    if [[ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
-#       fc=`which gfortran`
-#       gc=`which gcc`
-#       sudo rm `which gfortran` `which gcc`
-#       sudo ln -s `which gfortran-8` $fc
-#       sudo ln -s `which gcc-8` $gc
-#    fi
-  - echo "${TRAVIS_COMPILER}"
   - |
     if [[ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
        echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
