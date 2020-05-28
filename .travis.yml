@@ -26,6 +26,29 @@ matrix:
             # other
             - doxygen
 
+    - os: linux
+      compiler: gfortran
+      env: SOURCES=ubuntu-toolchain-r-test
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+           # compilers
+#          - g++-9
+            - gcc-8
+            - gfortran-8
+            - cmake
+#           - automake
+            # math libraries
+            - libblas-dev
+            - liblapack-dev
+            - libatlas-base-dev
+            - libopenblas-base
+            - libopenblas-dev
+            # other
+            - doxygen
+
     - os: osx
       osx_image: xcode10.2
       compiler: gfortran
