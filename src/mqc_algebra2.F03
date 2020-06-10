@@ -324,7 +324,7 @@
 !
 !PROCEDURE MQC_Variable_initialize
       subroutine MQC_Variable_initialize(mqcVariable,dataType,dimensions,  &
-          rank,storageFormat,debug)
+        rank,storageFormat,debug)
 !
 !     This subroutine is used to initialize an MQC_Variable object.
 !
@@ -381,13 +381,6 @@
       endIf
       call string_change_case(myStorageFormat,'u')
       mqcVariable%storageFormat = TRIM(myStorageFormat)
-
-!hph+
-      if(myDebug) write(6,*)  &
-        ' initializing a mqcVar that current init=',  &
-        mqcVariable%initialized
-!hph-
-
 !
 !     Fill the dataType.
 !
@@ -427,37 +420,9 @@
 !
 !     Now, deallocate/reallocate the data arrays if necessary.
 !
-
-!hph+
-      if(myDebug) then
-!        if(myDebug) call mqc_error('Hrant - Wow2AA')
-       endIf
-!hph-
-
       myLength = MQC_Variable_getLength(mqcVariable)
-
-!hph+
-      if(myDebug) then
-        write(*,*)
-        write(*,*)' Hrant - myLength = ',myLength
-        write(*,*)' Hrant - mqcVariable%dataType = ',mqcVariable%dataType
-!        if(myDebug) call mqc_error('Hrant - Wow2A')
-       endIf
-!hph-
-
       select case(mqcVariable%dataType)
       case('REAL')
-
-!hph+
-      if(myDebug) then
-        write(*,*)' Allocated(mqcVariable%integerArray) = ',Allocated(mqcVariable%integerArray)
-        write(*,*)' Size(mqcVariable%integerArray)      = ',Size(mqcVariable%integerArray)
-        write(*,*)' initialized: ',mqcVariable%initialized
-!        deAllocate(mqcVariable%integerArray)
-        if(myDebug) call mqc_error('Hrant - Inside REAL - A')
-      endIf
-!hph-
-
         if(Allocated(mqcVariable%integerArray))  &
           DeAllocate(mqcVariable%integerArray)
         if(.not.Allocated(mqcVariable%realArray)) then
@@ -467,15 +432,6 @@
           Allocate(mqcVariable%realArray(myLength))
         endIf
       case('INTEGER')
-
-!hph+
-        if(MQC_Algebra2_DEBUG) then
-          write(*,*)
-          write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
-          write(*,*)
-        endIf
-!hph-
-
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
         if(.not.Allocated(mqcVariable%integerArray)) then
           Allocate(mqcVariable%integerArray(myLength))
@@ -488,20 +444,10 @@
           'allocation block.',6,'mqcVariable%dataType',  &
           mqcVariable%dataType)
       end select
-
-!hph+
-      if(myDebug) call mqc_error('Hrant - Wow3')
-!hph-
-
 !
 !     Lastly, set the initialized flag.
 !
       mqcVariable%initialized = .True.
-
-!hph+
-!      if(myDebug) call mqc_error('STOP 9')
-!hph-
-
 !
       return
       end subroutine MQC_Variable_initialize
