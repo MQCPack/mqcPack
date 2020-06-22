@@ -44,7 +44,7 @@
 
         use iso_c_binding
         use mqc_general
-        use iso_fortran_env
+        use iso_fortran_env, only: int32, int64, real64
         implicit none
 
         character (kind=c_char, len=1), dimension (2048), intent (inout) :: in_message
@@ -73,7 +73,7 @@
 ! Insure that All I/O to unit 6 happens through Fortran
 
         use iso_c_binding
-        use iso_fortran_env
+        use iso_fortran_env, only: int32, int64, real64
         implicit none
 
         character (kind=c_char, len=1), dimension (2048), intent (in) :: in_message
@@ -96,7 +96,7 @@
 
       subroutine flush_c2f ( iout ) bind ( C, name="flush_c2f" )
         use iso_c_binding
-        use iso_fortran_env
+        use iso_fortran_env, only: int32, int64, real64
         implicit none
 
         integer (kind=c_int), intent (in) :: iout
@@ -111,7 +111,7 @@
 !
     subroutine mqc_create_File_Name_lists_F2C(FileName_F, Program_F, iout_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -142,7 +142,7 @@
 #ifdef MATRIXFILE
     subroutine mqc_simplify_formula_F2C(Formula_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -175,7 +175,7 @@
          rec_len_F, bufsize_F )
 
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -223,7 +223,7 @@
 
     subroutine mqc_get_MatrixFile_Name_F2C(FileName_F, iout_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -259,7 +259,7 @@
 
     subroutine mqc_get_FormChk_Name_F2C(FileName_F, iout_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -294,7 +294,7 @@
 
     subroutine mqc_File_Exists_F2C(FileName_F, Status_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -318,7 +318,7 @@
 
     subroutine mqc_File_Is_Executable_F2C(FileName_F, Status_F, iout_F)
       use iso_c_binding
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       implicit none
 
       interface
@@ -354,7 +354,7 @@
 !
       subroutine mqc_copy_vec( integerTmp8, integerTmp4, arrayTmp, LR)
       use MQC_MatWrapper
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
       Implicit None
       integer(kind=int64),dimension(:),intent(inout)::integerTmp8
       integer(kind=int32),dimension(:),intent(in)::integerTmp4
