@@ -1165,14 +1165,6 @@
         Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,NRI,EOF)
         LR = LenArr(N1,N2,N3,N4,N5)
-        if(NR.ne.0.and.myArrayNum.gt.NR) then
-          if(present(foundOut)) then
-            exit outerLoop
-          else
-            call mqc_error_I('Array number requested not found &
-              &under specified label',6,'NR',NR,'myArrayNum',myArrayNum)
-          endIf
-        endIf
         if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
@@ -1187,6 +1179,14 @@
 !hph-
 
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
+            if(NR.ne.0.and.myArrayNum.gt.NR) then
+              if(present(foundOut)) then
+                exit outerLoop
+              else
+                call mqc_error_I('Array number requested not found &
+                  &under specified label',6,'NR',NR,'myArrayNum',myArrayNum)
+              endIf
+            endIf
 !
 !           This CASE block uses NI, NR, N1-N5, and NRI to determine the data
 !           type (integer, real, etc.) and data structure (scalar, vector,
