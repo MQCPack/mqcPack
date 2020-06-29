@@ -63,7 +63,7 @@
       Use MQC_Algebra
       Use MQC_DataStructures
       Use MQC_Files
-      Use iso_fortran_env
+      Use iso_fortran_env, only: int32, int64, real64
 !
 !----------------------------------------------------------------
 !                                                               |

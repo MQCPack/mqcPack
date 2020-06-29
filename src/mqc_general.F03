@@ -47,7 +47,7 @@
 !
 !     Define Types and Classes.
 !
-      use iso_fortran_env
+      use iso_fortran_env, only: int64, real64
       implicit none
       real(kind=real64),public,parameter::angPBohr=0.52917706d0                                                          ! Angstom per Bohr
       real(kind=real64),public,parameter::kGPAMU=1.660538921d-27                                                         ! Kilograms per atomic mass unit

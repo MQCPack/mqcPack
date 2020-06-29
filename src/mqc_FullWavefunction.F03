@@ -36,7 +36,7 @@ module MQC_FullWavefunction
       Use MQC_Files
       Use MQC_EST
       use mqc_gaussian
-      use iso_fortran_env
+      use iso_fortran_env, only: int64, real64
 !                                                                    
 !----------------------------------------------------------------    
 !                                                               |    

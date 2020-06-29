@@ -40,7 +40,7 @@
 ! C to Fortran 2003 Interface
 !
         use mqc_general
-        use iso_fortran_env
+        use iso_fortran_env, only: int32, int64, real64
 !
 !
 !
