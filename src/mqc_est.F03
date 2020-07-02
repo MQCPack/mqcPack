@@ -9209,19 +9209,19 @@
 !>    
 !>    \param[in] NBasisIn
 !>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
+!>        NBasisIn is Class(*)
 !>        The number of basis functions. 
 !>    \endverbatim
 !>    
 !>    \param[in] NAlphaIn
 !>    \verbatim
-!>        NAlphaIn is Type(MQC_Scalar)
+!>        NAlphaIn is Class(*)
 !>        The number of alpha electrons.
 !>    \endverbatim
 !>    
 !>    \param[in] NBetaIn
 !>    \verbatim
-!>        NBetaIn is Type(MQC_Scalar)
+!>        NBetaIn is Class(*)
 !>        The number of beta electrons.
 !>    \endverbatim
 !>    
@@ -9233,7 +9233,7 @@
 !>    
 !>    \param[in] NCoreIn
 !>    \verbatim
-!>        NCoreIn is Type(MQC_Scalar),optional
+!>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
 !
@@ -9251,8 +9251,8 @@
         NElec,NEMax,NEMin,I,J,K,NCore,Pos
       Integer(kind=int64),Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_Core,Beta_Core,Temp_String
-      Type(MQC_Scalar)::NAlphaIn,NBetaIn,NBasisIn
-      Type(MQC_Scalar),optional::NCoreIn
+      Class(*)::NBasisIn,NAlphaIn,NBetaIn
+      Class(*),Optional::NCoreIn
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1,String_List_2,&
         String_Node_1,String_Node_2
@@ -9263,20 +9263,55 @@
  1001 Format(1x,I7,2x,*(B64))
  1050 Format( A )
 !
+      Select Type (NBasisIn)
+      Type Is (Integer)
+        NBasis = NBasisIn
+      Type Is (MQC_Scalar)
+        NBasis = NBasisIn
+      Class Default
+        Call MQC_Error('NBasisIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (NAlphaIn)
+      Type Is (Integer)
+        NAlpha = NAlphaIn
+      Type Is (MQC_Scalar)
+        NAlpha = NAlphaIn
+      Class Default
+        Call MQC_Error('NAlphaIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (NBetaIn)
+      Type Is (Integer)
+        NBeta = NBetaIn
+      Type Is (MQC_Scalar)
+        NBeta = NBetaIn
+      Class Default
+        Call MQC_Error('NBetaIn type is not integer or MQC scalar')
+      End Select
+
+      if(present(NCoreIn)) then
+        Select Type (NCoreIn)
+        Type Is (Integer)
+          NCore = NCoreIn
+        Type Is (MQC_Scalar)
+          NCore = NCoreIn
+        Class Default
+          Call MQC_Error('NCoreIn type is not integer or MQC scalar')
+        End Select
+      EndIf
+      write(*,*) 'LMTLMT ',nAlpha,nBeta,nBasis,NCore
+!
 !     Initialize Arrays
 !
       String_List_1=>Null()
       String_List_2=>Null()
       String_Node_1=>Null()
       String_Node_2=>Null()
-      NAlpha = NAlphaIn 
-      NBeta = NBetaIn
-      NBasis = NBasisIn
       NAlpha_Str = Bin_Coeff(NBasis,NAlpha)
       NBeta_Str = Bin_Coeff(NBasis,NBeta)
       If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
         if(present(NCoreIn)) then
-          NCore = NCoreIn
           Write(iOut,'(A,I4,A)') 'Adding ',NCore,' core orbitals to string'
           NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
         else
