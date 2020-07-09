@@ -2113,7 +2113,51 @@
         if(present(betaAlpha)) integral%betaAlpha = betaAlpha
       endIf
 !
-      end subroutine mqc_integral_allocate  
+      end subroutine mqc_integral_allocate
+!
+!
+!     PROCEDURE MQC_Matrix_To_Integral
+!
+      subroutine mqc_matrix_to_integral(matrix,integral,integralName,integralType,nBasis)
+!
+        implicit none
+        type(mqc_matrix)::matrix
+        class(mqc_scf_integral)::integral
+        character(len=*)::integralName,integralType
+        integer(kind=int64),optional::nBasis
+!
+        call string_change_case(integralType,'L')
+        integral%array_name = integralName
+!
+        if((integralType == 'space').or.(integralType == 'spin').or.&
+          (integralType == 'general')) then         
+          integral%array_type = integralType
+        else
+          call mqc_error_a('Bad integralType specification in MQC_Matrix_To_Integral',6,&
+            'integralType = ', integralType)
+        endif
+!
+        if((integralType /= 'space').and..not.(present(nBasis))) then
+          call mqc_error('Integral types "spin" and "general" require nBasis argument '&
+            //'in MQC_Matrix_To_Integral',6)
+        end if
+!
+        if(integralType == 'space') then
+          integral%alpha = matrix
+        else if(integralType == 'spin') then
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+        else
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+          integral%alphaBeta = matrix%mat([nBasis+1,nBasis*2],[1,nBasis])
+          integral%betaAlpha = matrix%mat([1,nBasis],[nBasis+1,nBasis*2])
+        endif
+!
+        end subroutine mqc_matrix_to_integral
+
+
+
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Allocate
@@ -2270,6 +2314,7 @@
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2019
+!
 !
       subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients)
 !
