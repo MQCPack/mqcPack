@@ -2118,6 +2118,72 @@
 !
 !     PROCEDURE MQC_Matrix_To_Integral
 !
+!>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
+!>    MQC_SCF_Integral objects
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into MQC_SCF_Integral
+!>    objects.  The following options are available:
+!>
+!>    1.  integralType = 'space' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha component only (restricted spin).
+!>    2.  integralType = 'spin' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha and beta-beta component (unrestricted spin).  
+!>                       This option requires nBasis parameter to be set.
+!>    3.  integralType = 'general' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with all four spin component blocks (general spin).  This option
+!>                       requires nBasis parameter to be set.
+!>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>      Matrix is type(mqc_matrix)
+!>      The MQC_Matrix to be coverted to MQC_SCF_Integral
+!>    \endverbatim
+!>
+!>    \param[in,out] Integral
+!>    \verbatim
+!>      Integral is class(mqc_scf_integral)
+!>      The MQC_SCF_Integral that is to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralName
+!>    \verbatim
+!>      IntegralName is Character(len=*)
+!>      The label of the MQC_SCF_Integral object to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralType
+!>    \verbatim
+!>      IntegralType is Character(len=*)
+!>      = 'space':       the MQC_SCF_Integral variable contains
+!>                       restricted spin blocks.
+!>      = 'spin':        the MQC_SCF_Integral variable contains
+!>                       unrestricted spin blocks.
+!>      = 'general':     the MQC_SCF_Integral variable contains
+!>                       general spin blocks.
+!>    \endverbatim
+!>
+!>    \param[in,out] nBasis
+!>    \verbatim
+!>      nBasis is integer(kind=int64), optional
+!>      The basis size used to partition Matrix into spin blocks.
+!>      Required when IntegralType = 'spin' or 'general'.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. Mahler
+!>    \date 2020
+!
       subroutine mqc_matrix_to_integral(matrix,integral,integralName,integralType,nBasis)
 !
         implicit none
