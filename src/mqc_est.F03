@@ -2113,7 +2113,117 @@
         if(present(betaAlpha)) integral%betaAlpha = betaAlpha
       endIf
 !
-      end subroutine mqc_integral_allocate  
+      end subroutine mqc_integral_allocate
+!
+!
+!     PROCEDURE MQC_Matrix_To_Integral
+!
+!>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
+!>    MQC_SCF_Integral objects
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into MQC_SCF_Integral
+!>    objects.  The following options are available:
+!>
+!>    1.  integralType = 'space' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha component only (restricted spin).
+!>    2.  integralType = 'spin' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha and beta-beta component (unrestricted spin).  
+!>                       This option requires nBasis parameter to be set.
+!>    3.  integralType = 'general' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with all four spin component blocks (general spin).  This option
+!>                       requires nBasis parameter to be set.
+!>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>      Matrix is type(mqc_matrix)
+!>      The MQC_Matrix to be coverted to MQC_SCF_Integral
+!>    \endverbatim
+!>
+!>    \param[in,out] Integral
+!>    \verbatim
+!>      Integral is class(mqc_scf_integral)
+!>      The MQC_SCF_Integral that is to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralName
+!>    \verbatim
+!>      IntegralName is Character(len=*)
+!>      The label of the MQC_SCF_Integral object to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralType
+!>    \verbatim
+!>      IntegralType is Character(len=*)
+!>      = 'space':       the MQC_SCF_Integral variable contains
+!>                       restricted spin blocks.
+!>      = 'spin':        the MQC_SCF_Integral variable contains
+!>                       unrestricted spin blocks.
+!>      = 'general':     the MQC_SCF_Integral variable contains
+!>                       general spin blocks.
+!>    \endverbatim
+!>
+!>    \param[in,out] nBasis
+!>    \verbatim
+!>      nBasis is integer(kind=int64), optional
+!>      The basis size used to partition Matrix into spin blocks.
+!>      Required when IntegralType = 'spin' or 'general'.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. Mahler
+!>    \date 2020
+!
+      subroutine mqc_matrix_to_integral(matrix,integral,integralName,integralType,nBasis)
+!
+        implicit none
+        type(mqc_matrix)::matrix
+        class(mqc_scf_integral)::integral
+        character(len=*)::integralName,integralType
+        integer(kind=int64),optional::nBasis
+!
+        call string_change_case(integralType,'L')
+        integral%array_name = integralName
+!
+        if((integralType == 'space').or.(integralType == 'spin').or.&
+          (integralType == 'general')) then         
+          integral%array_type = integralType
+        else
+          call mqc_error_a('Bad integralType specification in MQC_Matrix_To_Integral',6,&
+            'integralType = ', integralType)
+        endif
+!
+        if((integralType /= 'space').and..not.(present(nBasis))) then
+          call mqc_error('Integral types "spin" and "general" require nBasis argument '&
+            //'in MQC_Matrix_To_Integral',6)
+        end if
+!
+        if(integralType == 'space') then
+          integral%alpha = matrix
+        else if(integralType == 'spin') then
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+        else
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+          integral%alphaBeta = matrix%mat([nBasis+1,nBasis*2],[1,nBasis])
+          integral%betaAlpha = matrix%mat([1,nBasis],[nBasis+1,nBasis*2])
+        endif
+!
+        end subroutine mqc_matrix_to_integral
+
+
+
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Allocate
@@ -2270,6 +2380,7 @@
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2019
+!
 !
       subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients)
 !
