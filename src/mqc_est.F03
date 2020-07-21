@@ -9411,7 +9411,6 @@
           Call MQC_Error('NCoreIn type is not integer or MQC scalar')
         End Select
       EndIf
-      write(*,*) 'LMTLMT ',nAlpha,nBeta,nBasis,NCore
 !
 !     Initialize Arrays
 !
