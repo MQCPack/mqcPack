@@ -209,18 +209,14 @@
       implicit none
       character(LEN=*),intent(in),OPTIONAL::Message
       integer(kind=int64),intent(in),OPTIONAL::IOut
-      integer(kind=int64)::IJunk
+      integer(kind=int64)::myIOut,IJunk
 !
  1000 Format(/,1x,'MQC ERROR: ',A,/)
 !
-      If(Present(Message)) then
-        If(Present(IOut)) then
-          Write(IOut,1000) TRIM(Message)
-        else
-          Write(6,1000) TRIM(Message)
-        endIf
-      endIf
-      flush(IOut)
+      myIOut = 6
+      If(Present(IOut)) myIOut = IOut
+      If(Present(Message)) Write(myIOut,1000) TRIM(Message)
+      flush(myIOut)
       call mqc_abort()
 !
       Return
