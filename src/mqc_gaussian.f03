@@ -122,6 +122,7 @@
 !----------------------------------------------------------------
 !
       Logical,Private::MQC_Gaussian_DEBUG=.False.
+      Logical,Public::MQC_Gaussian_DEBUGHPH=.False.
 !
 !
 !     Subroutines/Functions...
@@ -745,6 +746,8 @@
         /,3x,' NAtoms=',I6,' NBasis=',I6,' NBsUse=',I6,' ICharg=',I6,  &
         ' Multip=',I6,' NElec=',I6,' Len12L=',I1,' Len4L=',I1,' IOpCl=',I6,  &
         ' ICGU=',I3)
+ 1020 format(3x,'BasisFunction2Atom Map:')
+ 1022 format(3x,10(2x,i5))
 !
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
@@ -815,11 +818,15 @@
         fileinfo%CurrentlyOpen = .true.
         fileinfo%header_read   = .true.
       endIf
-      if(DEBUG) write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
-        TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
-        fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
-        fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
-        IOpCl,fileinfo%ICGU
+      if(DEBUG.or.MQC_Gaussian_DEBUGHPH) then
+        write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
+          TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
+          fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
+          fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
+          IOpCl,fileinfo%ICGU
+        write(iOut,1020)
+        write(iOut,1022) fileinfo%basisFunction2Atom
+      endIf
 !
 !     Load the Gaussian scalars arrays from the Matrix File.
 !
@@ -2103,6 +2110,8 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
 !
+ 1000 format(1x,'getBasisInfo: element,value=',I5,2x,I5)
+!
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
@@ -2123,12 +2132,14 @@
       case('basis2atom')
         if(.not.allocated(fileinfo%basisFunction2Atom))  &
           call MQC_Error_L('Requested basis2Atom not possible.', 6, &
-'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
+          'allocated(fileinfo%basisFunction2Atom)',  &
+          allocated(fileinfo%basisFunction2Atom) )
         if((element.le.0).or.(element.gt.fileinfo%nbasis))  &
           call MQC_Error_I('element to %getBasisInfo is invalid.', 6, &
           'element', element, &
           'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%basisFunction2Atom(element)
+        if(MQC_Gaussian_DEBUGHPH) write(*,1000)element,value_out
       case('basis type')
         if(.not.allocated(fileinfo%IBasisFunctionType))  &
           call MQC_Error_l('Requested basis type not possible.', 6, &
@@ -4008,7 +4019,17 @@
       Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer(fileinfo,label)
 !
 !     This function is used to get an integer scalar value that is stored in a
-!     Gaussian matrix file object.
+!     Gaussian matrix file object. Available label values that can be sent here
+!     include:
+!       natoms
+!       nbasis
+!       nbasisuse
+!       charge
+!       multiplicity
+!       nelectrons
+!       nalpha
+!       nbeta
+!
 !
 !     H. P. Hratchian, 2017.
 !

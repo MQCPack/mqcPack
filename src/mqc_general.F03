@@ -220,7 +220,8 @@
           Write(6,1000) TRIM(Message)
         endIf
       endIf
-      Stop 999
+      flush(IOut)
+      call mqc_abort()
 !
       Return
       End Subroutine MQC_Error
