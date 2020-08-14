@@ -8572,9 +8572,9 @@
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
         else
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
         endif
       endif
 
@@ -17935,6 +17935,7 @@
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
  2004 Format(1x,I7,10F20.12)
+ 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17972,7 +17973,15 @@
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              endIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
