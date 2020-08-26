@@ -6530,9 +6530,39 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar)::Output
-      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Class(*),Intent(In)::Scalar1,Scalar2
+      Type(MQC_Scalar)::ScalarA,ScalarB
 
-      Output = Sign(Scalar1%rval(),Scalar2%rval())
+      Select Type (Scalar1)
+      Type Is (Integer)
+        ScalarA = Scalar1
+      Type Is (Real)
+        ScalarA = Scalar1
+      Type Is (Complex)
+        ScalarA = Scalar1
+      Type Is (MQC_Scalar)
+        ScalarA = Scalar1
+      Class Default
+        Call MQC_Error_I('Scalar1 type not defined in MQC_Scalar_Sign',6)
+      End Select
+      Select Type (Scalar2)
+      Type Is (Integer)
+        ScalarB = Scalar2
+      Type Is (Real)
+        ScalarB = Scalar2
+      Type Is (Complex)
+        ScalarB = Scalar2
+      Type Is (MQC_Scalar)
+        ScalarB = Scalar2
+      Class Default
+        Call MQC_Error_I('Scalar2 type not defined in MQC_SCalar_Sign',6)
+      End Select
+
+      If(ScalarB.ge.0) then
+        Output = abs(ScalarA)
+      Else
+        Output = (-1)*abs(ScalarA)
+      EndIf
 
       Return
       End Function MQC_Scalar_Sign
@@ -8572,9 +8602,9 @@
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
         else
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
         endif
       endif
 
@@ -17935,6 +17965,7 @@
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
  2004 Format(1x,I7,10F20.12)
+ 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17972,7 +18003,15 @@
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              endIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
