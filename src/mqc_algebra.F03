@@ -6530,9 +6530,39 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar)::Output
-      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Class(*),Intent(In)::Scalar1,Scalar2
+      Type(MQC_Scalar)::ScalarA,ScalarB
 
-      Output = Sign(Scalar1%rval(),Scalar2%rval())
+      Select Type (Scalar1)
+      Type Is (Integer)
+        ScalarA = Scalar1
+      Type Is (Real)
+        ScalarA = Scalar1
+      Type Is (Complex)
+        ScalarA = Scalar1
+      Type Is (MQC_Scalar)
+        ScalarA = Scalar1
+      Class Default
+        Call MQC_Error_I('Scalar1 type not defined in MQC_Scalar_Sign',6)
+      End Select
+      Select Type (Scalar2)
+      Type Is (Integer)
+        ScalarB = Scalar2
+      Type Is (Real)
+        ScalarB = Scalar2
+      Type Is (Complex)
+        ScalarB = Scalar2
+      Type Is (MQC_Scalar)
+        ScalarB = Scalar2
+      Class Default
+        Call MQC_Error_I('Scalar2 type not defined in MQC_SCalar_Sign',6)
+      End Select
+
+      If(ScalarB.ge.0) then
+        Output = abs(ScalarA)
+      Else
+        Output = (-1)*abs(ScalarA)
+      EndIf
 
       Return
       End Function MQC_Scalar_Sign
