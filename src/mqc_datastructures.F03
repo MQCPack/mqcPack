@@ -31,7 +31,7 @@
 !     **********************************************************************
 !
       Use MQC_General
-      use iso_fortran_env
+      use iso_fortran_env, only: int64, real64
 !
 !
 !     MQC_LinkedList Type

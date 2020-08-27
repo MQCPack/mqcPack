@@ -63,7 +63,7 @@
       Use MQC_Algebra
       Use MQC_DataStructures
       Use MQC_Files
-      Use iso_fortran_env
+      Use iso_fortran_env, only: int32, int64, real64
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -2113,7 +2113,117 @@
         if(present(betaAlpha)) integral%betaAlpha = betaAlpha
       endIf
 !
-      end subroutine mqc_integral_allocate  
+      end subroutine mqc_integral_allocate
+!
+!
+!     PROCEDURE MQC_Matrix_To_Integral
+!
+!>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
+!>    MQC_SCF_Integral objects
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into MQC_SCF_Integral
+!>    objects.  The following options are available:
+!>
+!>    1.  integralType = 'space' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha component only (restricted spin).
+!>    2.  integralType = 'spin' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with an alpha-alpha and beta-beta component (unrestricted spin).  
+!>                       This option requires nBasis parameter to be set.
+!>    3.  integralType = 'general' declares the MQC_Matrix object to be of a MQC_SCF_Integral
+!>                       object with all four spin component blocks (general spin).  This option
+!>                       requires nBasis parameter to be set.
+!>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>      Matrix is type(mqc_matrix)
+!>      The MQC_Matrix to be coverted to MQC_SCF_Integral
+!>    \endverbatim
+!>
+!>    \param[in,out] Integral
+!>    \verbatim
+!>      Integral is class(mqc_scf_integral)
+!>      The MQC_SCF_Integral that is to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralName
+!>    \verbatim
+!>      IntegralName is Character(len=*)
+!>      The label of the MQC_SCF_Integral object to be allocated.
+!>    \endverbatim
+!>
+!>    \param[in,out] IntegralType
+!>    \verbatim
+!>      IntegralType is Character(len=*)
+!>      = 'space':       the MQC_SCF_Integral variable contains
+!>                       restricted spin blocks.
+!>      = 'spin':        the MQC_SCF_Integral variable contains
+!>                       unrestricted spin blocks.
+!>      = 'general':     the MQC_SCF_Integral variable contains
+!>                       general spin blocks.
+!>    \endverbatim
+!>
+!>    \param[in,out] nBasis
+!>    \verbatim
+!>      nBasis is integer(kind=int64), optional
+!>      The basis size used to partition Matrix into spin blocks.
+!>      Required when IntegralType = 'spin' or 'general'.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author A. Mahler
+!>    \date 2020
+!
+      subroutine mqc_matrix_to_integral(matrix,integral,integralName,integralType,nBasis)
+!
+        implicit none
+        type(mqc_matrix)::matrix
+        class(mqc_scf_integral)::integral
+        character(len=*)::integralName,integralType
+        integer(kind=int64),optional::nBasis
+!
+        call string_change_case(integralType,'L')
+        integral%array_name = integralName
+!
+        if((integralType == 'space').or.(integralType == 'spin').or.&
+          (integralType == 'general')) then         
+          integral%array_type = integralType
+        else
+          call mqc_error_a('Bad integralType specification in MQC_Matrix_To_Integral',6,&
+            'integralType = ', integralType)
+        endif
+!
+        if((integralType /= 'space').and..not.(present(nBasis))) then
+          call mqc_error('Integral types "spin" and "general" require nBasis argument '&
+            //'in MQC_Matrix_To_Integral',6)
+        end if
+!
+        if(integralType == 'space') then
+          integral%alpha = matrix
+        else if(integralType == 'spin') then
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+        else
+          integral%alpha = matrix%mat([1,nBasis],[1,nBasis])
+          integral%beta = matrix%mat([nBasis+1,nBasis*2],[nBasis+1,nBasis*2])
+          integral%alphaBeta = matrix%mat([nBasis+1,nBasis*2],[1,nBasis])
+          integral%betaAlpha = matrix%mat([1,nBasis],[nBasis+1,nBasis*2])
+        endif
+!
+        end subroutine mqc_matrix_to_integral
+
+
+
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Allocate
@@ -2270,6 +2380,7 @@
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2019
+!
 !
       subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients)
 !
@@ -9209,19 +9320,19 @@
 !>    
 !>    \param[in] NBasisIn
 !>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
+!>        NBasisIn is Class(*)
 !>        The number of basis functions. 
 !>    \endverbatim
 !>    
 !>    \param[in] NAlphaIn
 !>    \verbatim
-!>        NAlphaIn is Type(MQC_Scalar)
+!>        NAlphaIn is Class(*)
 !>        The number of alpha electrons.
 !>    \endverbatim
 !>    
 !>    \param[in] NBetaIn
 !>    \verbatim
-!>        NBetaIn is Type(MQC_Scalar)
+!>        NBetaIn is Class(*)
 !>        The number of beta electrons.
 !>    \endverbatim
 !>    
@@ -9233,7 +9344,7 @@
 !>    
 !>    \param[in] NCoreIn
 !>    \verbatim
-!>        NCoreIn is Type(MQC_Scalar),optional
+!>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
 !
@@ -9251,8 +9362,8 @@
         NElec,NEMax,NEMin,I,J,K,NCore,Pos
       Integer(kind=int64),Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_Core,Beta_Core,Temp_String
-      Type(MQC_Scalar)::NAlphaIn,NBetaIn,NBasisIn
-      Type(MQC_Scalar),optional::NCoreIn
+      Class(*)::NBasisIn,NAlphaIn,NBetaIn
+      Class(*),Optional::NCoreIn
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1,String_List_2,&
         String_Node_1,String_Node_2
@@ -9263,20 +9374,54 @@
  1001 Format(1x,I7,2x,*(B64))
  1050 Format( A )
 !
+      Select Type (NBasisIn)
+      Type Is (Integer)
+        NBasis = NBasisIn
+      Type Is (MQC_Scalar)
+        NBasis = NBasisIn
+      Class Default
+        Call MQC_Error('NBasisIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (NAlphaIn)
+      Type Is (Integer)
+        NAlpha = NAlphaIn
+      Type Is (MQC_Scalar)
+        NAlpha = NAlphaIn
+      Class Default
+        Call MQC_Error('NAlphaIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (NBetaIn)
+      Type Is (Integer)
+        NBeta = NBetaIn
+      Type Is (MQC_Scalar)
+        NBeta = NBetaIn
+      Class Default
+        Call MQC_Error('NBetaIn type is not integer or MQC scalar')
+      End Select
+
+      if(present(NCoreIn)) then
+        Select Type (NCoreIn)
+        Type Is (Integer)
+          NCore = NCoreIn
+        Type Is (MQC_Scalar)
+          NCore = NCoreIn
+        Class Default
+          Call MQC_Error('NCoreIn type is not integer or MQC scalar')
+        End Select
+      EndIf
+!
 !     Initialize Arrays
 !
       String_List_1=>Null()
       String_List_2=>Null()
       String_Node_1=>Null()
       String_Node_2=>Null()
-      NAlpha = NAlphaIn 
-      NBeta = NBetaIn
-      NBasis = NBasisIn
       NAlpha_Str = Bin_Coeff(NBasis,NAlpha)
       NBeta_Str = Bin_Coeff(NBasis,NBeta)
       If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
         if(present(NCoreIn)) then
-          NCore = NCoreIn
           Write(iOut,'(A,I4,A)') 'Adding ',NCore,' core orbitals to string'
           NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
         else

@@ -64,7 +64,7 @@
 !     **********************************************************************
 !
       Use MQC_General
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -568,8 +568,12 @@
 !>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
+        Module Procedure MQC_ScalarEQInteger
+        Module Procedure MQC_IntegerEQScalar
         Module Procedure MQC_ScalarEQReal
         Module Procedure MQC_RealEQScalar
+        Module Procedure MQC_ScalarEQComplex
+        Module Procedure MQC_ComplexEQScalar
       End Interface
 !
 !>    \brief <b> Determines if a variable is less than another</b>
@@ -3536,6 +3540,124 @@
       End Function MQC_ScalarEQ
 !
 !
+!     PROCEDURE MQC_IntegerEQScalar
+!
+!>    \brief <b> MQC_IntegerEQScalar is a function that returns TRUE if an intrinsic 
+!>    integer is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerEQScalar is a function that returns TRUE if an intrinsic integer is 
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_IntegerEQScalar(IntegerIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_IntegerEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntegerIn.eq.Scalar%scar) MQC_IntegerEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntegerIn.eq.Scalar%scai) MQC_IntegerEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntegerIn.eq.Scalar%scac) MQC_IntegerEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQInteger
+!
+!>    \brief <b> MQC_ScalarEQInteger is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQInteger is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarEQInteger(Scalar,IntegerIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_ScalarEQInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.IntegerIn) MQC_ScalarEQInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.IntegerIn) MQC_ScalarEQInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.integerIn) MQC_ScalarEQInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQInteger
+!
+!
 !     PROCEDURE MQC_RealEQScalar
 !
 !>    \brief <b> MQC_RealEQScalar is a function that returns TRUE if an intrinsic real
@@ -3652,6 +3774,124 @@
 !
       Return
       End Function MQC_ScalarEQReal
+!
+!
+!     PROCEDURE MQC_ComplexEQScalar
+!
+!>    \brief <b> MQC_ComplexEQScalar is a function that returns TRUE if an intrinsic 
+!>    complex is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexEQScalar is a function that returns TRUE if an intrinsic complex is 
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ComplexEQScalar(ComplexIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ComplexEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Complex(kind=real64)::Zero=0.0d0
+!
+      MQC_ComplexEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(ComplexIn.eq.Scalar%scar) MQC_ComplexEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(ComplexIn.eq.Scalar%scai) MQC_ComplexEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(ComplexIn.eq.Scalar%scac) MQC_ComplexEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ComplexEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ComplexEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQComplex
+!
+!>    \brief <b> MQC_ScalarEQComplex is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQComplex is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarEQComplex(Scalar,ComplexIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQComplex
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Complex(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarEQComplex = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQComplex', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQComplex
 !
 !
 !     PROCEDURE MQC_ScalarLT
@@ -6290,9 +6530,39 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar)::Output
-      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Class(*),Intent(In)::Scalar1,Scalar2
+      Type(MQC_Scalar)::ScalarA,ScalarB
 
-      Output = Sign(Scalar1%rval(),Scalar2%rval())
+      Select Type (Scalar1)
+      Type Is (Integer)
+        ScalarA = Scalar1
+      Type Is (Real)
+        ScalarA = Scalar1
+      Type Is (Complex)
+        ScalarA = Scalar1
+      Type Is (MQC_Scalar)
+        ScalarA = Scalar1
+      Class Default
+        Call MQC_Error_I('Scalar1 type not defined in MQC_Scalar_Sign',6)
+      End Select
+      Select Type (Scalar2)
+      Type Is (Integer)
+        ScalarB = Scalar2
+      Type Is (Real)
+        ScalarB = Scalar2
+      Type Is (Complex)
+        ScalarB = Scalar2
+      Type Is (MQC_Scalar)
+        ScalarB = Scalar2
+      Class Default
+        Call MQC_Error_I('Scalar2 type not defined in MQC_SCalar_Sign',6)
+      End Select
+
+      If(ScalarB.ge.0) then
+        Output = abs(ScalarA)
+      Else
+        Output = (-1)*abs(ScalarA)
+      EndIf
 
       Return
       End Function MQC_Scalar_Sign
@@ -8332,9 +8602,9 @@
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
         else
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
         endif
       endif
 
@@ -17695,6 +17965,7 @@
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
  2004 Format(1x,I7,10F20.12)
+ 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17732,7 +18003,15 @@
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              endIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
