@@ -76,11 +76,11 @@
         generic,public   ::put          => MQC_Variable_put_MQC,  &
                                            MQC_Variable_put_intrinsicInteger,  &
                                            MQC_Variable_put_intrinsicReal
-!        generic,public   ::getVal       => MQC_Variable_get_MQC
-        procedure,public::getRank       => MQC_Variable_getRank
-        procedure,public::getType       => MQC_Variable_getType
-        procedure,public::print         => MQC_Print_mqcVariable
-        procedure,public::isConformable => MQC_Variable_isConformable
+        procedure,public ::getVal        => MQC_Variable_get_MQC
+        procedure,public ::getRank       => MQC_Variable_getRank
+        procedure,public ::getType       => MQC_Variable_getType
+        procedure,public ::print         => MQC_Print_mqcVariable
+        procedure,public ::isConformable => MQC_Variable_isConformable
       end type MQC_Variable
 !
 !
