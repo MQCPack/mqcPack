@@ -6558,7 +6558,7 @@
       Type Is (MQC_Scalar)
         ScalarB = Scalar2
       Class Default
-        Call MQC_Error_I('Scalar2 type not defined in MQC_SCalar_Sign',6)
+        Call MQC_Error_I('Scalar2 type not defined in MQC_Scalar_Sign',6)
       End Select
 
       If(ScalarB.ge.0) then
