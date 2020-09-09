@@ -145,6 +145,7 @@
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+        module procedure MQC_Variable_setVal_intrinsicRank42mqcRank4_real
       end interface
 !
 !     Interface routines that fill specific elements of MQC variable objects.
@@ -185,6 +186,7 @@
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+        module procedure MQC_Variable_setVal_intrinsicRank42mqcRank4_real
         module procedure MQC_Variable_mqc2intrinsicIntegerScalar
         module procedure MQC_Variable_mqc2intrinsicRealScalar
         module procedure MQC_Variable_mqc2intrinsicReal1Array
@@ -812,7 +814,7 @@
 !
 !
 !     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2020.
 !
 !
 !     Variable Declarations.
@@ -915,9 +917,29 @@
           call mqc_error_a('MQC variable print requested for unknown type.', 6, &
                'mqcVariable%getType()', mqcVariable%getType())
         end select
+!
+!     Print rank-4 tensors...
+      case(4)
+        select case(mqcVariable%getType())
+        case('REAL')
+          if(PRESENT(header)) then
+            call mqc_print_rank4Tensor(myIOut,  &
+              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:4)),  &
+              Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          else
+            call mqc_print_rank4Tensor(myIOut,  &
+              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:4)),  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          endIf
+        case default
+          call mqc_error_a('MQC variable print requested for unknown type.', 6, &
+               'mqcVariable%getType()', mqcVariable%getType())
+        end select
+!
+!     Print requested for a general MQC variable with a rank not yet coded...
       case default
         call mqc_error_i('MQC variable print requested for unknown rank.', 6, &
-             'mqcVariable%getRank()', mqcVariable%getRank())
+          'mqcVariable%getRank()', mqcVariable%getRank())
       end select
 !
       return
@@ -1756,18 +1778,6 @@
  1000 format(1x,'Converting an intrinsic real matrix to an mqcVar.')
  1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8)
 !
-
-!hph+
-!      write(*,*)
-!      write(*,*)
-!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-!        ' DEBUG = ',DEBUG
-!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-!        ' MQC_Algebra2_DEBUG = ',MQC_Algebra2_DEBUG
-!      write(*,*)
-!      write(*,*)
-!hph-
-
       DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
 !
 !     Load the MQC variable.
@@ -1780,18 +1790,51 @@
         myDimensions(1),myDimensions(2)
       call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
         dimensions=myDimensions,DEBUGPRINT=DEBUG)
-
-      if(DEBUG) call mqc_error('Hrant - SUCCESS!!!')
-!hph+
-          if(DEBUG) then
-            call mqcVariable%print(header='mqcVar...')
-            call mqc_error('STOPa')
-          endIf
-!hph-
-
 !
       return
       end subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicRank42mqcRank4_real
+      subroutine MQC_Variable_setVal_intrinsicRank42mqcRank4_real(mqcVariable,intrinsicIn)
+!
+!     This subroutine is used to set an MQC Variable rank-4 tensor (full storage
+!     form) equal to an intrinsic real fortran rank-4 tensor.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      real(kind=real64),dimension(:,:,:,:),intent(in)::intrinsicIn
+      integer(kind=int64)::myLength
+      integer(kind=int64),dimension(4)::myDimensions
+      logical::DEBUG=.false.
+!
+ 1000 format(1x,'Converting an intrinsic real rank-4 tensor to an mqcVar.')
+ 1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8,  &
+        '   dim 3=',I8,'   dim 4=',I8)
+!
+      DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
+!
+!     Load the MQC variable.
+!
+      if(DEBUG) write(MQC_Algebra2_IOut,1000)
+      myLength = SIZE(intrinsicIn)
+      myDimensions(1) = SIZE(intrinsicIn,1)
+      myDimensions(2) = SIZE(intrinsicIn,2)
+      myDimensions(3) = SIZE(intrinsicIn,3)
+      myDimensions(4) = SIZE(intrinsicIn,4)
+      if(DEBUG) write(MQC_Algebra2_IOut,1100) myLength,  &
+        myDimensions(1),myDimensions(2),myDimensions(3),myDimensions(4)
+      call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
+        dimensions=myDimensions,DEBUGPRINT=DEBUG)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicRank42mqcRank4_real
 
 
 !

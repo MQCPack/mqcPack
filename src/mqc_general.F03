@@ -85,6 +85,7 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+        module procedure MQC_Print_Rank4Tensor_Array_Real
       end interface
 !
       interface mqc_print_scalar
@@ -102,6 +103,10 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+      end interface
+!
+      interface mqc_print_rank4Tensor
+        module procedure MQC_Print_Rank4Tensor_Array_Real
       end interface
 !
       interface mqc_packedDiagonalMatrix2FullMatrix
@@ -625,7 +630,54 @@
 !
       return
       end subroutine MQC_Print_Scalar_Real
-
+!
+!
+!PROCEDURE MQC_Print_Rank4Tensor_Array_Real
+      Subroutine MQC_Print_Rank4Tensor_Array_Real(IOut,Array,Header,  &
+        Blank_At_Top,Blank_At_Bottom)
+!
+!     This subroutine is used to print a real rank-4 tensor array.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
+!
+      NI = Size(Array,1)
+      NJ = Size(Array,2)
+      NK = Size(Array,3)
+      NL = Size(Array,4)
+!
+      if(PRESENT(Blank_At_Top)) then
+        if(Blank_At_Top) write(IOut,1020)
+      endIf
+      if(PRESENT(Header)) write(IOut,1000) TRIM(Header)
+      do i = 1,NI
+        do j = 1,NJ
+          do k = 1,NK
+            do l = 1,NL
+              write(iOut,2002) i,j,k,l,Array(i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+      if(PRESENT(Blank_At_Bottom)) then
+        if(Blank_At_Bottom) write(IOut,1020)
+      endIf
+!
+      return
+      end subroutine MQC_Print_Rank4Tensor_Array_Real
 
 !
 !PROCEDURE MQC_Print_Matrix_Array_Integer
@@ -1444,6 +1496,90 @@
 !
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_real
+
+
+
+
+
+
+!PROCEDURE mqc_packedSymmetricSymmetricR4Tensor2Full_real
+      subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real(r4TensorSymSym,  &
+        r4TensorFull)
+!
+!     This subroutine accepts a rank-4 array packed in symmetric-symmetric form
+!     and produces the corresponding fully un-packed rank-4 array. The tensor
+!     must have the same size for all four dimensions.
+!
+!     A symmetric-symmetric rank-4 tensor has the following 8-fold equivalences:
+!           (i,j,k,l) = (j,i,k,l)
+!                     = (i,j,l,k)
+!                     = (j,i,l,k)
+!                     = (k,l,i,j)
+!                     = (l,k,i,j)
+!                     = (k,l,j,i)
+!                     = (l,k,j,i)
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::r4TensorSymSym
+      real(kind=real64),dimension(:,:,:,:),intent(out)::r4TensorFull
+      integer(kind=int64)::i,j,k,l,ij,kl,ijkl,nDim,lenSymSym
+      real(kind=real64)::temp
+!
+!     Error traps...
+!
+      if(SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,2).or.  &
+        SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,3).or.   &
+        SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,4))      &
+        call mqc_error('mqc_packedSymmetricSymmetricR4Tensor2Full_real: Incorrect dimmensions!')
+!
+!     Do the work...
+!
+      nDim = SIZE(r4TensorFull,1)
+      i = (nDim*(nDim+1))/2
+      lenSymSym = (i*(i+1))/2
+
+!hph+
+      write(*,*)
+      write(*,*)' Hrant - R4SymSym --> R4:'
+      write(*,*)'         nDim      = ',nDim
+      write(*,*)'         lenSymSym = ',lenSymSym
+      write(*,*)
+!hph-
+
+      do i = 1,nDim
+        do j = 1,i
+          IJ = (i*(i-1))/2+j
+          do k = 1,nDim
+            do l = 1,k
+              KL = (k*(k-1))/2+l
+              if(IJ.ge.KL) then
+                IJKL = (IJ*(IJ-1))/2+KL
+                temp = r4TensorSymSym(IJKL)
+                r4TensorFull(i,j,k,l) = temp
+                r4TensorFull(j,i,k,l) = temp
+                r4TensorFull(i,j,l,k) = temp
+                r4TensorFull(j,i,l,k) = temp
+                r4TensorFull(k,l,i,j) = temp
+                r4TensorFull(l,k,i,j) = temp
+                r4TensorFull(k,l,j,i) = temp
+                r4TensorFull(l,k,j,i) = temp
+              endIf
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      return
+      end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
+
+
+
+
 
 
 !
