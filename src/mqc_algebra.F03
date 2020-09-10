@@ -531,6 +531,8 @@
         Module Procedure MQC_MatrixRealProduct
         Module Procedure MQC_ComplexMatrixProduct
         Module Procedure MQC_MatrixComplexProduct
+        Module Procedure MQC_ScalarR4TensorProduct
+        Module Procedure MQC_R4TensorScalarProduct
       End Interface
 !
 !>    \brief <b> Divides two variables</b>
@@ -544,6 +546,7 @@
         Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
         Module Procedure MQC_MatrixScalarDivide
+        Module Procedure MQC_R4TensorScalarDivide
       End Interface
 !
 !>    \brief <b> Exponentials a variable to the power of another</b>
@@ -6555,7 +6558,7 @@
       Type Is (MQC_Scalar)
         ScalarB = Scalar2
       Class Default
-        Call MQC_Error_I('Scalar2 type not defined in MQC_SCalar_Sign',6)
+        Call MQC_Error_I('Scalar2 type not defined in MQC_Scalar_Sign',6)
       End Select
 
       If(ScalarB.ge.0) then
@@ -13967,6 +13970,15 @@
 !>        The fourth index of the rank-4 tensor. This argument is
 !>        only required when taking hash of a rank-4 tensor.
 !>    \endverbatim
+!>    
+!>    \param[in] Order
+!>    \verbatim
+!>        Order is Character(Len=*),optional
+!>        The symmetry order for rank-4 tensors. Options are:
+!>        = '8-fold':  8-fold symmetry (default)
+!>        = '4-fold':  4-fold symmetry 
+!>       =  '2-fold':  2-fold symmetry
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -13974,32 +13986,69 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function symIndexHash(i,j,k,l) result(hash)
+      Function symIndexHash(i,j,k,l,orderIn) result(hash)
 
       implicit none
       integer(kind=int64),intent(in)::i,j
       integer(kind=int64),intent(in),optional::k,l
       integer(kind=int64)::ij,kl,ijkl,hash
+      character(Len=*),intent(in),optional::orderIn
+      character(Len=64)::order
 
-      if(i.gt.j) then
-        ij = i*(i-1)/2+j
-      else
-        ij = j*(j-1)/2+i
-      endif
-      if(present(k).and.present(l)) then
-        if(k.gt.l) then
-          kl = k*(k-1)/2+l 
+      if(.not.(present(k).and.present(l))) then
+
+        if(i.gt.j) then
+          ij = i*(i-1)/2+j
         else
-          kl = l*(l-1)/2+k
-        endIf
-        if(ij.gt.kl) then
-          ijkl = ij*(ij-1)/2+kl 
-        else
-          ijkl = kl*(kl-1)/2+ij 
-        endIf
-        hash = ijkl
-      else
+          ij = j*(j-1)/2+i
+        endif
         hash = ij
+
+      elseIf(present(k).and.present(l)) then
+
+        if(.not.present(orderIn)) then
+          order = '8-fold'
+        else
+          order = orderIn
+        endIf
+
+        if(order.eq.'8-fold') then
+          if(i.gt.j) then
+            ij = i*(i-1)/2+j
+          else
+            ij = j*(j-1)/2+i
+          endif
+          if(k.gt.l) then
+            kl = k*(k-1)/2+l 
+          else
+            kl = l*(l-1)/2+k
+          endIf
+          if(ij.gt.kl) then
+            ijkl = ij*(ij-1)/2+kl 
+          else
+            ijkl = kl*(kl-1)/2+ij 
+          endIf
+          hash = ijkl
+        elseIf(order.eq.'2-fold') then
+          if(i.gt.j) then
+            ij = (i-1)**2+j
+          else
+            ij = (j-1)**2+(j-1)+i
+          endif
+          if(k.gt.l) then
+            kl = (k-1)**2+l
+          else
+            kl = (l-1)**2+(l-1)+k
+          endif
+          if(ij.gt.kl) then
+            ijkl = ij*(ij-1)/2+kl 
+          else
+            ijkl = kl*(kl-1)/2+ij 
+          endIf
+          hash = ijkl
+        else
+          call mqc_error_A('Unrecognized order option in synIndexHash',6,'order',order)
+        endIf
       endif
 
       end function symIndexHash
@@ -27210,6 +27259,238 @@
 
       Return
       End Function MQC_R4Tensor_Test_Symmetric
+!
+!
+!     PROCEDURE MQC_R4TensorScalarDivide
+!
+!>    \brief <b> MQC_R4TensorScalarDivide is a function that returns a MQC R4 Tensor
+!>    divided by a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4TensorScalarDivide is a function that returns a MQC R4 tensor divided by a 
+!>    scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC_R4Tensor to divide.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4TensorScalarDivide(tensor,scalarIn) Result(tensor_res)
+!
+      implicit none
+      type(mqc_r4tensor),intent(in)::tensor
+      class(*),intent(in)::scalarIn
+      type(mqc_scalar)::scalar
+      type(mqc_r4tensor)::tensor_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarDivide')
+      end select
+
+      zero = 0.0
+      neg_one = -1.0
+
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
+
+      tensor_res = MQC_R4TensorScalarProduct(tensor,reciprocal)
+
+      End Function MQC_R4TensorScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarR4TensorProduct
+!
+!>    \brief <b> MQC_ScalarR4TensorProduct is a function that computes the product of
+!>    a MQC R4 tensor and a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarR4TensorProduct is a function that computes the product of a MQC R4 
+!>    tensor and a scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarR4TensorProduct(ScalarIn,Tensor) Result(Tensor_Res)
+!
+      Implicit None
+      class(*),intent(in)::scalarIn
+      Type(MQC_R4Tensor),Intent(In)::tensor
+      Type(MQC_Scalar)::Scalar
+      Type(MQC_R4Tensor)::Tensor_Res
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarProduct')
+      end select
+
+      Call MQC_Deallocate_R4Tensor(Tensor_Res)
+      If (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+          'Integer',Tensor%Storage)
+        Tensor_Res%ITen = Scalar%ScaI * Tensor%ITen
+      ElseIf (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaR * Tensor%ITen
+      ElseIf (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaI * Tensor%RTen
+      Else If (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaR * Tensor%RTen
+      ElseIf (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%ITen
+      Else If (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%RTen
+      ElseIf (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaI * Tensor%CTen
+      Else If (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaR * Tensor%CTen
+      Else If (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%CTen
+      Else
+        Call MQC_Error_A('unrecognised data type in mqc_scalarr4tensorproduct', 6, &
+             'Tensor%Data_Type', Tensor%Data_Type, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+
+      End Function MQC_ScalarR4TensorProduct
+!
+!
+!     PROCEDURE MQC_R4TensorScalarProduct
+!
+!>    \brief <b> MQC_R4TensorScalarProduct is a function that computes the product of
+!>    a MQC R4 tensor and a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4TensorScalarProduct is a function that computes the product of a MQC R4 
+!>    tensor and a scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4TensorScalarProduct(Tensor,ScalarIn) Result(Tensor_Res)
+!
+      Implicit None
+      class(*),intent(in)::scalarIn
+      Type(MQC_R4Tensor),Intent(In)::tensor
+      Type(MQC_Scalar)::Scalar
+      Type(MQC_R4Tensor)::Tensor_Res
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarProduct')
+      end select
+
+      Tensor_Res = MQC_ScalarR4TensorProduct(Scalar,Tensor)
+
+      End Function MQC_R4TensorScalarProduct
 !
 !
       End Module MQC_Algebra
