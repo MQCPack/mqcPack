@@ -2221,9 +2221,6 @@
         endif
 !
         end subroutine mqc_matrix_to_integral
-
-
-
 !
 !
 !     PROCEDURE MQC_Eigenvalues_Allocate

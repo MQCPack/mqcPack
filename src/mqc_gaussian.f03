@@ -95,6 +95,7 @@
         procedure,pass::get2ERIs         => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
         procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
         procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
+        procedure,pass::write2ERIs       => MQC_Gaussian_Unformatted_Matrix_Write_twoERIs
       End Type MQC_Gaussian_Unformatted_Matrix_File
 !
 !
@@ -1837,10 +1838,10 @@
           endIf
         else
           call mqc_error_l('MatrixIn type not recognised in &
-     &      MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
-     'mqc_matrix_haveReal(matrixInUse)', mqc_matrix_haveReal(matrixInUse), &
-     'mqc_matrix_haveInteger(matrixInUse)', mqc_matrix_haveInteger(matrixInUse), &
-     'mqc_matrix_haveComplex(matrixInUse)', mqc_matrix_haveComplex(matrixInUse) )
+            &MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+            'mqc_matrix_haveReal(matrixInUse)', mqc_matrix_haveReal(matrixInUse), &
+            'mqc_matrix_haveInteger(matrixInUse)', mqc_matrix_haveInteger(matrixInUse), &
+            'mqc_matrix_haveComplex(matrixInUse)', mqc_matrix_haveComplex(matrixInUse) )
         endIf
       elseIf(present(vectorIn)) then
         if(mqc_vector_haveReal(vectorIn)) then 
@@ -1860,10 +1861,10 @@
             0,0,0,0,.False.,compVectorTmp)
         else
           call mqc_error_l('VectorIn type not recognised in &
-     &      MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
-     'mqc_vector_haveReal(vectorIn)', mqc_vector_haveReal(vectorIn), &
-     'mqc_vector_haveInteger(vectorIn)', mqc_vector_haveInteger(vectorIn), &
-     'mqc_vector_haveComplex(vectorIn)', mqc_vector_haveComplex(vectorIn) )
+            &MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+            'mqc_vector_haveReal(vectorIn)', mqc_vector_haveReal(vectorIn), &
+            'mqc_vector_haveInteger(vectorIn)', mqc_vector_haveInteger(vectorIn), &
+            'mqc_vector_haveComplex(vectorIn)', mqc_vector_haveComplex(vectorIn) )
         endIf
       endIf
 !
@@ -4002,6 +4003,127 @@
       end subroutine MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
 
 
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_twoERIs   
+      subroutine mqc_gaussian_unformatted_matrix_write_twoERIs(fileinfo,label, &
+        ERIs,filename)
+!
+!     This subroutine writes two-electron resonance integrals to a 
+!     Gaussian unformatted matrix file sent in object <fileinfo>. The 
+!     relevant information will be loaded from output dummy mqc_twoERIs 
+!     argument <est_twoeris>.
+!
+!     Dummy argument <filename> is optional and is only used if fileinfo
+!     hasn't already been defined using Routine
+!     MQC_Gaussian_Unformatted_Matrix_Open or if it is determined that the
+!     filename sent is different from the filename associated with object
+!     fileinfo.
+!
+!     NOTE: The routine MQC_Gaussian_Unformatted_Matrix_Open is meant to be
+!     called before calling this routine. The expectation is that
+!     MQC_Gaussian_Unformatted_Matrix_Read_Header is also called before this
+!     routine. However, it is also OK to call this routine first. In that case,
+!     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
+!
+!     The recognized labels and their meaning include:
+!           'regular'            the array contains regular stored 2ERIs 
+!           'raffenetti'         the array contains raffenetti stored 2ERIs
+!           'molecular'          the array contains molecular orbital basis 2ERIs (NYI)
+
+!     L. M. Thompson, 2020.
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      type(mqc_twoERIs),dimension(:),allocatable::ERIs
+      character(len=*),intent(in),optional::filename
+      character(len=256)::my_filename
+      character(len=64)::myLabel
+      type(mqc_r4tensor)::tmpR4Tensor
+      real,dimension(:),allocatable::RvectorOut
+      real(kind=real64),dimension(:,:,:,:),allocatable::Rr4TenOut
+      integer,parameter::LenBuf=4000
+      integer::i
+      logical::ok
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+               'ok', ok )
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
+        else
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+            'ok', ok )
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'W' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
+        if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
+        call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
+          my_filename)
+      endIf
+      if(.not.fileinfo%header_written) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
+        call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
+          my_filename)
+      endIf
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('regular')
+        tmpR4Tensor = ERIs(1)
+        if(.not.MQC_R4Tensor_HaveSymmetric(tmpR4Tensor)) call MQC_R4Tensor_Full2Symm(tmpR4Tensor)
+        Rr4TenOut = tmpR4Tensor
+          if(.not.allocated(RvectorOut)) allocate(RvectorOut(size(Rr4TenOut,1)))
+        RvectorOut(:) = Rr4TenOut(:,1,1,1)
+        Call Wr_LAO2E(fileinfo%UnitNumber,'REGULAR 2E INTEGRALS',1,LenBuf,size(tmpR4Tensor,1),&
+          RvectorOut)
+      case('raffenetti')
+        do i = 1,size(ERIs)
+          tmpR4Tensor = ERIs(i)
+          if(.not.MQC_R4Tensor_HaveSymmetric(tmpR4Tensor)) call MQC_R4Tensor_Full2Symm(tmpR4Tensor)
+          Rr4TenOut = tmpR4Tensor
+          if(.not.allocated(RvectorOut)) allocate(RvectorOut(size(Rr4TenOut,1)*size(ERIs)))
+          RvectorOut((i-1)*size(Rr4TenOut,1)+1:) = Rr4TenOut(:,1,1,1)
+        endDo
+        Call Wr_LAO2E(fileinfo%UnitNumber,'RAFFENETTI 2E INTEGRALS',size(ERIs),LenBuf,size(tmpR4Tensor,1),&
+          RvectorOut)
+      case('molecular')
+        call mqc_error_A('Molecular integrals not yet implemented in %write2ERIs.', 6, &
+             'mylabel', mylabel )
+      case default
+        call mqc_error_A('Invalid label sent to %write2ERIs.', 6, &
+             'mylabel', mylabel )
+      end select
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Write_twoERIs    
+!
+!
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
