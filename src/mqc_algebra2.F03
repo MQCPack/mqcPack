@@ -475,7 +475,7 @@
       integer(kind=int64)::i,subLength
 !
 !
-!     Do the work...
+!  \   Do the work...
 !
       select case(TRIM(mqcVariable%storageFormat))
       case('FULL')
