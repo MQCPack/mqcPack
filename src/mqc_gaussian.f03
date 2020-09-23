@@ -3890,6 +3890,7 @@
           errorMsg = 'REGULAR 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3903,6 +3904,7 @@
           errorMsg = 'RAFFENETTI 1 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3917,6 +3919,7 @@
           errorMsg = 'RAFFENETTI 2 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3931,6 +3934,7 @@
           errorMsg = 'RAFFENETTI 3 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3945,6 +3949,7 @@
             errorMsg = 'AA MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3960,6 +3965,7 @@
             errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3980,6 +3986,7 @@
               &and/or BA MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
