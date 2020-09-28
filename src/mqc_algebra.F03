@@ -203,7 +203,7 @@
 !>      \brief <b> Returns the trace of the MQC Matrix</b>
         Procedure, Public::trace => mqc_matrix_trace
 !>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
-        Procedure, Public::pinv => mqc_matrix_MRInv
+        Procedure, Public::pinv => mqc_matrix_MPInv
 !>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
         Procedure, Public::diagonal => mqc_matrix_diagonal_elements
 !>      \brief <b> Returns the root mean square deviation and maximum
@@ -5298,7 +5298,7 @@
       Implicit None
       Type(MQC_Scalar),Intent(In)::ScalarIn
       Type(MQC_Scalar)::ScalarOut
-      Real::Zero=0.0d0
+      Real(kind=real64)::Zero=0.0d0
 !
       ScalarOut = zero
       If(ScalarIn%Data_Type.eq.'Complex') ScalarOut = aimag(ScalarIn%ScaC)
@@ -24258,7 +24258,7 @@
 !>    \author L. M. Thompson
 !>    \date 2020
 !
-      Function MQC_Matrix_MRInv(A) Result(PInv)
+      Function MQC_Matrix_MPInv(A,tol) Result(PInv)
 !
       Implicit None
       Class(MQC_Matrix)::A
@@ -24267,12 +24267,28 @@
       Type(MQC_Vector)::EVals
       Type(MQC_Matrix)::PInv
       Type(MQC_Scalar)::Thresh,Zero
+      class(*),optional::tol
       Integer(kind=int64)::I
 !
-      Thresh = 1.0e-14
-      Zero = 0.0e0
       call A%SVD(EVals,EUVecs,EVVecs)
-      call EVals%diag(SMat)
+      if(present(tol)) then
+        select type (tol)
+        type is (integer)
+          thresh = tol
+        type is (real)
+          thresh = tol
+        type is (complex)
+          thresh = tol
+        type is (mqc_scalar)
+          thresh = tol
+        class default
+          call mqc_error('Tolerance type not defined in MQC_Matrix_MPInv')
+        end select
+      else
+        thresh = 1.0e-15*evals%maxval()
+      endif
+      Zero = 0.0e0
+
       Do I = 1, Size(EVals)
         If(EVals%at(I).gt.Thresh) then
           call EVals%put(1.0/EVals%at(I),I)
@@ -24284,7 +24300,7 @@
       PInv = matmul(matmul(dagger(EVVecs),SMat),dagger(EUVecs))
 !      
       Return
-      End Function MQC_Matrix_MRInv
+      End Function MQC_Matrix_MPInv
 !
 !
 !     PROCEDURE MQC_Matrix_Sum
