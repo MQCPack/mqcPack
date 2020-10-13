@@ -97,6 +97,7 @@
       write(Iout,1000)' Resetting vec1 and printing again...'
       vec1 = [6,4,2,0,-2,-4]
       call vec1%print()
+      goto 999
 
       write(Iout,1010)
       write(Iout,1000)' Resetting vec1 as a real and printing again...'
@@ -198,4 +199,5 @@
       
       
 !
+ 999  continue
       end program algebra_fun

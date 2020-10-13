@@ -73,6 +73,7 @@
         procedure,private::MQC_Variable_put_MQC
         procedure,private::MQC_Variable_put_intrinsicInteger
         procedure,private::MQC_Variable_put_intrinsicReal
+        procedure,public ::putMQC       => MQC_Variable_put_MQC
         generic,public   ::put          => MQC_Variable_put_MQC,  &
                                            MQC_Variable_put_intrinsicInteger,  &
                                            MQC_Variable_put_intrinsicReal
@@ -1046,9 +1047,9 @@
            'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
-        mqcVariable%realArray(k) = INT(valueMQC)
+        mqcVariable%realArray(k) = Float(valueMQC)
       case('INTEGER')
-        mqcVariable%integerArray(k) = FLOAT(valueMQC)
+        mqcVariable%integerArray(k) = Int(valueMQC)
       case default
         call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
              'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
