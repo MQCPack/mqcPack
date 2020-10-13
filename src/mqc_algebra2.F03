@@ -457,7 +457,7 @@
 
 !
 !PROCEDURE MQC_Variable_getArrayPosition
-      function MQC_Variable_getArrayPosition(mqcVariable,arrayElement) result(k)
+      function MQC_Variable_getArrayPosition(mqcVariable,arrayElement,DEBUG) result(k)
 !
 !     This function returns an integer giving the position in the object data
 !     array for input MQC Variable object <mqcVariable> corresponding to the
@@ -473,16 +473,26 @@
       integer(kind=int64),dimension(:)::arrayElement
       integer(kind=int64)::k
       integer(kind=int64)::i,subLength
+      logical,optional::DEBUG
+      logical::DEBUG1
+!
+      DEBUG1 = .false.
+      if(Present(DEBUG)) DEBUG1 = DEBUG
 !
 !
-!  \   Do the work...
+!     Do the work...
 !
       select case(TRIM(mqcVariable%storageFormat))
       case('FULL')
         k = 0
+        subLength = 1
+        do i=1,mqcVariable%rank
+          subLength = subLength*mqcVariable%dimensions(i)
+        endDo
         do i=mqcVariable%rank,2,-1
-          subLength = SUM(mqcVariable%dimensions(1:i-1))
+          subLength = subLength/mqcVariable%dimensions(i)
           k = k + (arrayElement(i)-1)*subLength
+          if(DEBUG1) write(*,*) i,subLength,k
         endDo
         k = k + arrayElement(1)
       case default

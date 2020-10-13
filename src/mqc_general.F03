@@ -1616,4 +1616,7 @@
       end function mqc_isqrt
 !
 !
+INCLUDE 'mqc_general_lapack.F03'
+!
+!
       End Module MQC_General
