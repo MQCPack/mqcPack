@@ -42,8 +42,8 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-!PROCEDURE mqc_eigensystem_symmMatrixFull
-      subroutine mqc_eigensystem_symmMatrixFull(matrix,eigenValues,eigenVectors)
+!PROCEDURE mqc_eigensystem_symmFull
+      subroutine mqc_eigensystem_symmFull(matrix,eigenValues,eigenVectors)
 !
 !     This subroutine wraps the LAPACK eigensystem routines for a symmetric
 !     matrix in full/dense memory storage format.
@@ -55,7 +55,7 @@
       real(kind=real64),dimension(:),allocatable,intent(out)::eigenValues
       real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::eigenVectors
 !
-      integer::N,INFO,LWORK
+      integer::i,N,INFO,LWORK
       real(kind=real64),dimension(:,:),allocatable::matrixCopy
       real(kind=real64),dimension(:),allocatable::Work
       real(kind=real64),dimension(1)::WorkTmp
@@ -105,8 +105,14 @@
       call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,Work,LWork,INFO)    
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_symmMatrixFull: Failure in DSYEV diagonalizing matrix.')
-      if(PRESENT(eigenVectors)) eigenVectors = matrixCopy
+      if(PRESENT(eigenVectors)) then
+        eigenVectors = matrixCopy
+        do i = 1,N
+          call mqc_vectorPhase(eigenVectors(:,i),.true.)
+        endDo
+      endIf
+
       deAllocate(matrixCopy,Work)
 !
       return
-      end subroutine mqc_eigensystem_symmMatrixFull
+      end subroutine mqc_eigensystem_symmFull

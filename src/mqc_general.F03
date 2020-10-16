@@ -1139,15 +1139,78 @@
 !
       return
       end subroutine mqc_normalizeVector
-
-
+!
+!
+!PROCEDURE mqc_vectorTrimZero
+      Subroutine mqc_vectorTrimZero(vectorIn,vectorOut,small)
+!
+!     This subroutine accepts a vector, <vectorIn>, and sets all entries that
+!     have absolute values below a threshold to float(0).
+!
+!     If the optional dummy argument <vectorOut> is sent, then <vectorIn> is
+!     left unchanges and the zero-d version of the vector is returned in
+!     <vectorOut>. Otherwise, the zero-ing is done in place in <vectorIn>.
+!
+!     The optional dummy argument <small> may be sent with a user specified
+!     threshold. Otherwise, the threshold is set to the MQC system value of
+!     <MQC_small>.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vectorIn
+      real(kind=real64),dimension(:),allocatable,optional,intent(Out)::vectorOut
+      real(kind=real64),optional,,intent(in)::small
+      integer(kind=int64)::i
+      real(kind=real64)::mySmall,zero=0.
+!
+!
+!     Initial set-up code...
+!
+      mySmall = MQC_small
+      if(PRESENT(small)) mySmall = small
+      if(PRESENT(vectorOut)) then
+        if(Allocated(vectorOut)) then
+          if(SIZE(vectorOut).ne.SIZE(vectorIn)) then
+            DeAllocate(vectorOut)
+            Allocate(vectorout(size(vectorin)))
+          endIf
+        else
+          Allocate(vectorout(size(vectorin)))
+        endIf
+      endIf
+!
+!     Do trim work.
+!
+      if(PRESENT(vectorOut)) then
+        vectorOut = vectorIn
+        do i = 1,SIZE(vectorIn)
+          if(abs(vectorOut(i)).lt.mySmall) vectorOut(i) = zero
+        endDo
+      else
+        do i = 1,SIZE(vectorIn)
+          if(abs(vectorIn(i)).lt.mySmall) vectorIn(i) = zero
+        endDo
+      endIf
+!
+      return
+      end Subroutine mqc_vectorTrimZero
+!
+!
 !PROCEDURE mqc_vectorPhase
-      Subroutine mqc_vectorPhase(vector,largestPositive)
+      Subroutine mqc_vectorPhase(vector,largestPositive,trimZero)
 !
 !     This subroutine accepts a vector fixes the phase so that the largest
 !     magniture value is either positive (largestPostive=.TRUE.) or negative
 !     (largestPostive=.FALSE.). The vector phase is modified, as needed, in
-!     place. Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!     place.
+!
+!     Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!
+!     Dummy argument trimZero is OPTIONAL and defaults to TRUE.
 !
 !
 !     H. P. Hratchian, 2019.
@@ -1156,16 +1219,28 @@
 !     Variable Declarations.
       implicit none
       real(kind=real64),dimension(:),intent(inOut)::vector
-      logical,intent(in),optional::largestPositive
+      logical,intent(in),optional::largestPositive,trimZero
       integer(kind=int64)::i,largestMagnitudePosition
       real(kind=real64)::largestMagnitudeValue
-      logical::myLargestPositive
+      logical::myLargestPositive,myTrimZero
 !
-      myLargestPositive = .True.
+!
+!     Initial set-up code...
+!
+      myLargestPositive = .true.
       if(PRESENT(largestPositive)) myLargestPositive = largestPositive
+      myTrimZero = .true.
+      if(PRESENT(trimZero)) myTrimZero = trimZero
+!
+!     Do phase correction and trim work.
+!
+      if(myTrimZero.and.(abs(vector(1)).lt.MQC_small))  &
+        vector(1) = float(0)
       largestMagnitudeValue = abs(vector(1)) + MQC_small
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
+        if(myTrimZero.and.(abs(vector(i)).lt.MQC_small))  &
+          vector(i) = float(0)
         if(abs(vector(i)).gt.largestMagnitudeValue) then
           largestMagnitudeValue = abs(vector(i)) + MQC_small
           largestMagnitudePosition = i
@@ -1496,12 +1571,8 @@
 !
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_real
-
-
-
-
-
-
+!
+!
 !PROCEDURE mqc_packedSymmetricSymmetricR4Tensor2Full_real
       subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real(r4TensorSymSym,  &
         r4TensorFull)
@@ -1542,15 +1613,6 @@
       nDim = SIZE(r4TensorFull,1)
       i = (nDim*(nDim+1))/2
       lenSymSym = (i*(i+1))/2
-
-!hph+
-      write(*,*)
-      write(*,*)' Hrant - R4SymSym --> R4:'
-      write(*,*)'         nDim      = ',nDim
-      write(*,*)'         lenSymSym = ',lenSymSym
-      write(*,*)
-!hph-
-
       do i = 1,nDim
         do j = 1,i
           IJ = (i*(i-1))/2+j
@@ -1576,8 +1638,128 @@
 !
       return
       end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
-
-
+!
+!
+!PROCEDURE mqc_diagMatrixTimesFullMatrix
+      subroutine mqc_diagMatrixTimesFullMatrix(diagMatrix,fullMatrix,outputMatrix)
+!
+!     This subroutine computes the product of a diagonal packed matrix, <diagMatrix>,
+!     and a full matrix. The output is a full matrix with the same dimensions of
+!     <fullMatrix>, which is return in dummy argument <outputMatrix>.
+!     <outputMatrix> is an allocatable array.
+!
+!
+!     H. P. Hratchian, 2020
+!
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::diagMatrix
+      real(kind=real64),dimension(:,:),intent(in)::fullMatrix
+      real(kind=real64),dimension(:,:),allocatable,intent(out)::outputMatrix
+!
+      integer::i,M,N
+!
+!
+!     Do some initial checking of the input arguments to ensure comformability
+!     of <diagMatrix> and <fullMatrix>.
+!
+      M = SIZE(diagMatrix)
+      N = SIZE(fullMatrix,2)
+      if(SIZE(fullMatrix,1).ne.M) call mqc_error(  &
+        'mqc_diagMatrixTimesFullMatrix: Diagonal and full matrices are NOT conformable.')
+!
+!     Allocate <outputMatrix>.
+!
+      if(Allocated(outputMatrix)) then
+        if(SIZE(outputMatrix,1).ne.M.or.SIZE(outputMatrix,2).ne.N) then
+          DeAllocate(outputMatrix)
+          Allocate(outputMatrix(M,N))
+        endIf
+      else
+        Allocate(outputMatrix(M,N))
+      endIf
+!
+!     Do the matrix multiplication now...
+!
+      do i = 1,M
+        outputMatrix(i,:) = diagMatrix(i)*fullMatrix(i,:)
+      endDo
+!
+      return
+      end subroutine mqc_diagMatrixTimesFullMatrix
+!
+!
+!PROCEDURE mqc_matrixInverse_symmFull
+      subroutine mqc_matrixInverse_symmFull(matrix,matrixInverse,  &
+        eigenValues,eigenVectors)
+!
+!     This subroutine computes the inverse of input argument <matrix>, which is
+!     a symmetric matrix sent in full/dense memory storage format. The output is
+!     argument <matrixInverse>, which should be allocatable and will use
+!     full/dense memory storage format.
+!
+!     The dummy arguments <eigenValues> and <eigenVectors> are OPTIONAL. If they
+!     are sent, it is assumed they have already been formed. Otherwise, this
+!     routine begins by forming the eigen-values and eigen-vectors of <matrix>
+!     in scratch memory space.
+!     
+!
+!     H. P. Hratchian, 2020
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrix
+      real(kind=real64),dimension(:,:),allocatable,intent(out)::matrixInverse
+      real(kind=real64),dimension(:),allocatable,OPTIONAL,intent(in)::eigenValues
+      real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(in)::eigenVectors
+!
+      integer::i,N
+!
+!
+!     Do some initial checking of matrix to ensure it's square. Next, figure out
+!     the dimension of <matrix>, <N>. Then, allocate space for <matrixInverse>
+!     if needed.
+!
+      if(SIZE(matrix,1).ne.SIZE(matrix,2)) call mqc_error(  &
+        'mqc_matrixInverse_symmFull: Rectangular matrix sent.')
+      N = SIZE(matrix,1)
+      if(Allocated(matrixInverse)) then
+        if(SIZE(matrixInverse,1).ne.N.or.SIZE(matrixInverse,2).ne.N) then
+          DeAllocate(matrixInverse)
+          Allocate(matrixInverse(N,N))
+        endIf
+      else
+        Allocate(matrixInverse(N,N))
+      endIf
+!!
+!!    If <eigenValues> and <eigenVectors> have both been sent, form the
+!!    generalized inverse of <matrix>. If not, diagonalize <matrix> and then form
+!!    <matrixInverse>.
+!!
+!      If(PRESENT(eigenValues).and.PRESENT(eigenVectors)) then
+!        do i = 1,N
+!
+!!
+!!    Call LAPCK routine DSYEV. 
+!!
+!      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,WorkTmp,-1,INFO)    
+!      if(INFO.ne.0) call mqc_error(  &
+!        'mqc_eigensystem_symmMatrixFull: Failure in DSYEV getting WORK length.')
+!      LWork = WorkTmp(1)
+!      Allocate(Work(LWork))
+!      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,Work,LWork,INFO)    
+!      if(INFO.ne.0) call mqc_error(  &
+!        'mqc_eigensystem_symmMatrixFull: Failure in DSYEV diagonalizing matrix.')
+!      if(PRESENT(eigenVectors)) then
+!        eigenVectors = matrixCopy
+!        do i = 1,N
+!          call mqc_vectorPhase(eigenVectors(:,i),.true.)
+!        endDo
+!      endIf
+!
+!      deAllocate(matrixCopy,Work)
+!
+      return
+      end subroutine mqc_matrixInverse_symmFull
+!
 
 
 
