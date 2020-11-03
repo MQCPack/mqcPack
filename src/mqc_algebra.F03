@@ -137,9 +137,9 @@
 !>      \brief <b> Returns the maximum value in the MQC_Vector</b>
         Procedure, Public::maxval => MQC_Vector_MaxVal
 !>      \brief <b> Returns the minimum value in the MQC_Vector</b>
-        Procedure, Public::minval => MQC_Vector_MinLoc
+        Procedure, Public::minval => MQC_Vector_MinVal
 !>      \brief <b> Returns the location of the maximum value in the MQC_Vector</b>
-        Procedure, Public::maxloc => MQC_Vector_MaxVal
+        Procedure, Public::maxloc => MQC_Vector_MaxLoc
 !>      \brief <b> Returns the location of the minimum value in the MQC_Vector</b>
         Procedure, Public::minloc => MQC_Vector_MinLoc
 !>      \brief <b> Returns the indices of the MQC_Vector sorted from low to high</b>
@@ -1439,6 +1439,12 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] FormatStr
+!>    \verbatim
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -1446,7 +1452,7 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Scalar_Algebra1(Scalar,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     Variable Declarations.
       Implicit None
@@ -1454,26 +1460,44 @@
       Class(MQC_Scalar),Intent(In)::Scalar
       Character(Len=*),Intent(In)::Header
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Character(Len=*),Intent(In),Optional::FormatStr
+      Character(Len=256)::FormatLine
 !
  1001 Format(1x,A,1x,'=',1x,I14)
-! 1002 Format(1x,A,1x,'=',1x,F14.6)
- 1002 Format(1x,A,1x,'=',1x,F18.12)
+ 1002 Format(1x,A,1x,'=',1x,F14.6)
  1003 Format(1x,A,1x,'=',1x,F14.6,SP,F14.6,"i")
  1020 Format( " " )
 !
       If(PRESENT(Blank_At_Top)) then
         If(Blank_At_Top) Write(IOut,1020)
       EndIf
+
       If(Scalar%Data_type.eq.'Integer') then
-        Write(IOut,1001) TRIM(Header), Scalar%ScaI
+        If(present(FormatStr)) then
+          FormatLine = '(1x,A,1x,"=",1x,'//trim(FormatStr)//')'
+          Write(IOut,trim(FormatLine)) TRIM(Header), Scalar%ScaI
+        else
+          Write(IOut,1001) TRIM(Header), Scalar%ScaI
+        endIf
       ElseIf(Scalar%Data_type.eq.'Real') then
-        Write(IOut,1002) TRIM(Header), Scalar%ScaR
+        If(present(FormatStr)) then
+          FormatLine = '(1x,A,1x,"=",1x,'//trim(FormatStr)//')'
+          Write(IOut,trim(FormatLine)) TRIM(Header), Scalar%ScaR
+        else
+          Write(IOut,1002) TRIM(Header), Scalar%ScaR
+        endIf
       ElseIf(Scalar%Data_type.eq.'Complex') then
-        Write(IOut,1003) TRIM(Header), Scalar%ScaC
+        If(present(FormatStr)) then
+          FormatLine = '(1x,A,1x,"=",1x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
+          Write(IOut,trim(FormatLine)) TRIM(Header), Scalar%ScaC
+        else
+          Write(IOut,1003) TRIM(Header), Scalar%ScaC
+        endIf
       Else
         Call MQC_Error_A('Scalar type unspecified in MQC_Print_Scalar_Algebra1', 6, &
              'Scalar%Data_type', Scalar%Data_type )
       EndIf
+
       If(PRESENT(Blank_At_Bottom)) then
         If(Blank_At_Bottom) Write(IOut,1020)
       EndIf
@@ -13984,9 +14008,9 @@
 !>        only required when taking hash of a rank-4 tensor.
 !>    \endverbatim
 !>    
-!>    \param[in] Order
+!>    \param[in] OrderIn
 !>    \verbatim
-!>        Order is Character(Len=*),optional
+!>        OrderIn is Character(Len=*),optional
 !>        The symmetry order for rank-4 tensors. Options are:
 !>        = '8-fold':  8-fold symmetry (default)
 !>        = '4-fold':  4-fold symmetry 
@@ -24250,7 +24274,16 @@
 !>    \param[in] A 
 !>    \verbatim
 !>        A is Class(MQC_Matrix)
-!>        The MQC matrix to psuedoinvert
+!>        The MQC matrix to psuedoinvert.
+!>    \endverbatim
+!>
+!>    \param[in] tol
+!>    \verbatim
+!>        Tol is Class(*),Optional
+!>        Tolerance used for zero threshold. The default value is 
+!>        eps*max(size(A,1),size(A,2))*max(SMat) suggested in
+!>        Klimczak, M.; Cecot, W. Math. Probl. Eng. 2019, 2019(3), 
+!>        5060397. 
 !>    \endverbatim
 !
 !     Authors:
@@ -24285,7 +24318,7 @@
           call mqc_error('Tolerance type not defined in MQC_Matrix_MPInv')
         end select
       else
-        thresh = 1.0e-15*evals%maxval()
+        thresh = evals%maxval()*epsilon(1.0e0)*max(size(A,1),size(A,2))
       endif
       Zero = 0.0e0
 

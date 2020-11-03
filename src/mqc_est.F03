@@ -2119,7 +2119,7 @@
 !     PROCEDURE MQC_Matrix_To_Integral
 !
 !>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
-!>    MQC_SCF_Integral objects
+!>    MQC_SCF_Integral objects</b>
 !
 !>    \par Purpose:
 !     =============

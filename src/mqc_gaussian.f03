@@ -860,7 +860,7 @@
 !
 !     Local temp variables.
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.true.,ok,openbool
 !
 !
 !     Format statements.
@@ -891,6 +891,8 @@
           fileinfo%filename=trim(filename)
         endIf
       endIf
+      inquire(file=fileinfo%filename,number=fileinfo%unitNumber,opened=openbool)
+      if(openbool) close(fileInfo%unitNumber)
 !
 !     Check if all the required information is in fileinfo, and if no then
 !     initialize it.
