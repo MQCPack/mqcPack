@@ -5,11 +5,11 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
- 
+
  Full Configuration Interaction Energy Calculator
- 
+
  L. M. Thompson 2016
- 
+
  
  nBasis =              2
  
@@ -123,7 +123,7 @@ Complex   =          F
  (  2,  2|  2,  1) =      0.00002300
  (  2,  2|  2,  2) =      0.77460594
  found UHF wavefunction
- Nuclear Repulsion Energy (au) =     0.105835442184
+ Nuclear Repulsion Energy (au) =       0.105835
 Alpha Strings
        1                                                                10
        2                                                                 1

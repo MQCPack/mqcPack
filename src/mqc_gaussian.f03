@@ -860,7 +860,7 @@
 !
 !     Local temp variables.
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.true.,ok,openbool
 !
 !
 !     Format statements.
@@ -891,6 +891,8 @@
           fileinfo%filename=trim(filename)
         endIf
       endIf
+      inquire(file=fileinfo%filename,number=fileinfo%unitNumber,opened=openbool)
+      if(openbool) close(fileInfo%unitNumber)
 !
 !     Check if all the required information is in fileinfo, and if no then
 !     initialize it.
@@ -3890,6 +3892,7 @@
           errorMsg = 'REGULAR 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3903,6 +3906,7 @@
           errorMsg = 'RAFFENETTI 1 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3917,6 +3921,7 @@
           errorMsg = 'RAFFENETTI 2 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3931,6 +3936,7 @@
           errorMsg = 'RAFFENETTI 3 2E INTEGRALS not present on file'
           if(present(foundERI)) then
             write(6,'(A)') errorMsg
+            call fileinfo%load()
           else
             call mqc_error_l(trim(errorMsg),6,'found',found)
           endIf
@@ -3945,6 +3951,7 @@
             errorMsg = 'AA MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3960,6 +3967,7 @@
             errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
@@ -3980,6 +3988,7 @@
               &and/or BA MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
+              call fileinfo%load()
             else
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf

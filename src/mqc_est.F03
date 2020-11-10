@@ -2119,7 +2119,7 @@
 !     PROCEDURE MQC_Matrix_To_Integral
 !
 !>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
-!>    MQC_SCF_Integral objects
+!>    MQC_SCF_Integral objects</b>
 !
 !>    \par Purpose:
 !     =============
@@ -2495,8 +2495,8 @@
             j = ip - i*(i-1)/2
             l = kp - k*(k-1)/2
 
-            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) - &
-              twoERIs%at(i,k,l,j)
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,k,l,j) - &
+              twoERIs%at(i,l,k,j)
             if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
               0.5*aaaaLoc(symIndexHash(i,j,k,l))
 
@@ -7155,6 +7155,8 @@
           flag = flag + 40000
         endIf
       endIf
+      
+      if(debug) write(6,'(A,1x,I5)') 'Option flag:',flag
 
       nBasis = integral%blockSize('alpha')
       ntt = (nBasis*(nBasis+1))/2
@@ -7468,7 +7470,7 @@
           if (m.ne.n) then
             if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) then
               if(mod(flag,1000)/100.eq.1) then
-                raf3 = eris(1)%at(k,n,m,l) - eris(1)%at(k,m,n,l)
+                raf3 = eris(1)%at(k,m,n,l) - eris(1)%at(k,n,m,l) 
                 if(kp.eq.mp) raf3 = 0.5*raf3 
               elseIf(mod(flag,10000)/1000.eq.4) then
                 raf3 = eris(2)%at(k,l,m,n) 
@@ -7503,17 +7505,17 @@
             if(m.ne.n.and.mod(flag,100)/10.eq.1) then
               if(abs(raf3).gt.zero) then
                 if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
-                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) - &
                   raf3*aaHCden(symIndexHash(m,n))
                 if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
-                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) - &
                   raf3*aaHCden(symIndexHash(k,l))
                 if(mod(flag,10).gt.0) then
                   if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
-                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) - &
                     raf3*bbHCden(symIndexHash(m,n))
                   if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
-                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) - &
                     raf3*bbHCden(symIndexHash(k,l))
                 endIf
               endIf
@@ -7528,18 +7530,18 @@
                 raf2*abHHRden(symIndexHash(k,l))
               if(m.ne.n.and.mod(flag,100)/10.eq.1) then
                 if(abs(abHHCden(symIndexHash(m,n))).gt.zero) &
-                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) - &
+                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) + &
                   raf3*abHHCden(symIndexHash(m,n))
                 if(abs(abHHCden(symIndexHash(k,l))).gt.zero) &
-                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) - &
+                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) + &
                   raf3*abHHCden(symIndexHash(k,l))
               endIf
 !         AB Antihermitian Hermitian Fock
               if(m.ne.n.and.abs(abAHRden(symIndexHash(m,n))).gt.zero) &
-                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) - &
+                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) + &
                 raf3*abAHRden(symIndexHash(m,n))
               if(m.ne.n.and.abs(abAHRden(symIndexHash(k,l))).gt.zero) &
-                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) - &
+                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) + &
                 raf3*abAHRden(symIndexHash(k,l))
               if (mod(flag,100)/10.eq.1) then
                 if(abs(abAHCden(symIndexHash(m,n))).gt.zero) &
@@ -7554,10 +7556,10 @@
 !         AA Antihermitian Fock
           if(doAhrm) then
             if(m.ne.n.and.abs(aaARden(symIndexHash(m,n))).gt.zero) &
-              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) - &
+              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) + &
               raf3*aaARden(symIndexHash(m,n))
             if(m.ne.n.and.abs(aaARden(symIndexHash(k,l))).gt.zero) &
-              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) - &
+              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) + &
               raf3*aaARden(symIndexHash(k,l))
             if(mod(flag,100)/10.eq.1) then
               if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
@@ -7570,10 +7572,10 @@
             if(mod(flag,10).gt.0) then
 !         BB Antihermitian Fock
               if(m.ne.n.and.abs(bbARden(symIndexHash(m,n))).gt.zero) &
-                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) - &
+                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) + &
                 raf3*bbARden(symIndexHash(m,n))
               if(m.ne.n.and.abs(bbARden(symIndexHash(k,l))).gt.zero) &
-                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) - &
+                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) + &
                 raf3*bbARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
@@ -7594,18 +7596,18 @@
                 raf2*abHARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1.and.m.ne.n) then
                 if(abs(abHACden(symIndexHash(m,n))).gt.zero) &
-                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) - &
+                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) + &
                  raf3*abHACden(symIndexHash(m,n))
                 if(abs(abHACden(symIndexHash(k,l))).gt.zero) &
-                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) - &
+                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) + &
                  raf3*abHACden(symIndexHash(k,l))
              endIf
 !         AB Antihermitian Antihermitian Fock
               if(m.ne.n.and.abs(abAARden(symIndexHash(m,n))).gt.zero) &
-                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) - &
+                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) + &
                 raf3*abAARden(symIndexHash(m,n))
               if(m.ne.n.and.abs(abAARden(symIndexHash(k,l))).gt.zero) &
-                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) - &
+                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) + &
                 raf3*abAARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(abAACden(symIndexHash(m,n))).gt.zero) &

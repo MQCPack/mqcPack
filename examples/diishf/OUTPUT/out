@@ -5,11 +5,11 @@ Finished with tests designed to fail
 -------------
 MatFile test
 -------------
- 
+
  Hartree-Fock Density Matrix and Energy Calculator
- 
+
  L. M. Thompson 2018
- 
+
  
  nBasis =             17
  
@@ -83769,7 +83769,7 @@ Complex   =          F
      H      -0.504403     -0.873651     -0.356666
      H      -0.504403      0.873651     -0.356667
  -------------------------------------------------
- Nuclear Repulsion Energy (au) =    11.289257771617
+ Nuclear Repulsion Energy (au) =      11.289258
  Initial density matrix
  
    This is a diagonal matrix, so only diagonal elements are printed
