@@ -7177,23 +7177,27 @@
         if(hermden%norm('M').gt.zero) doHerm = .true.
         if(doHerm) then
           tmpMat = real(hermden%getblock('alpha'))
-          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
           temp = tmpMat
           aaHRden = temp(:,1)
           if(mod(flag,100)/10.eq.1) then
             tmpMat = aimag(hermden%getblock('alpha'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaHCden = temp(:,1)
           endIf
           if(mod(flag,10).gt.0) then
             tmpMat = real(hermden%getblock('beta'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             bbHRden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(hermden%getblock('beta'))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbHCden = temp(:,1)
             endIf
@@ -7201,23 +7205,27 @@
           if(mod(flag,10).eq.2) then
             tmpMat = real(half*(hermden%getblock('alpha-beta')+ &
               dagger(hermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abHHRden = temp(:,1)
             tmpMat = real(half*(hermden%getblock('alpha-beta')- &
               dagger(hermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAHRden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')+ &
                 dagger(hermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHHCden = temp(:,1)
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')- &
                 dagger(hermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abAHCden = temp(:,1)
             endIf
@@ -7228,23 +7236,27 @@
         if(ahermden%norm('M').gt.zero) doAhrm = .true.
         if(doAhrm) then
           tmpMat = real(ahermden%getblock('alpha'))
-          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
           temp = tmpMat
           aaARden = temp(:,1)
           if(mod(flag,100)/10.eq.1) then
             tmpMat = aimag(ahermden%getblock('alpha'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaACden = temp(:,1)
           endIf
           if((mod(flag,10).gt.0)) then
             tmpMat = real(ahermden%getblock('beta'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             bbARden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(ahermden%getblock('beta'))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbACden = temp(:,1)
             endIf
@@ -7252,23 +7264,27 @@
           if((mod(flag,10).eq.2)) then
             tmpMat = real(half*(ahermden%getblock('alpha-beta')+ &
               dagger(ahermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abHARden = temp(:,1)
             tmpMat = real(half*(ahermden%getblock('alpha-beta')- &
               dagger(ahermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAARden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')+ &
                 dagger(ahermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHACden = temp(:,1)
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')- &
                 dagger(ahermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abAACden = temp(:,1)
             endIf

@@ -1775,17 +1775,6 @@
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
               0,0,0,0,.False.,compVectorTmp)
-          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
-            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
-              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
-              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
-            endIf
-            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
-            allocate(compVectorTmp(size(compMatrixTmp,1)))
-            compMatrixTmp = matrixInUse
-            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
-            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
-              mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
           elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
               .or.(my_storage.eq.'symm')) then
 !           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
