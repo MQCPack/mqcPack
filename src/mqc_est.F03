@@ -3025,17 +3025,15 @@
 !>
 !>    1. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
-!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
-!>                   electrons unless specified in a length 1 vector in betaOrbsIn.
+!>                   alphaOrbsIn. Number of beta electrons should be specified in a 
+!>                   length 1 vector in betaOrbsIn.
 !>    2. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
-!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
-!>                   electrons unless specified in a length 1 vector in betaOrbsIn. 
-!>                   The dimension of the fixed length axis is assumed to be the 
-!>                   number of virtual orbitals.
+!>                   alphaOrbsIn. Number of beta electrons should be specified in a 
+!>                   length 1 vector in betaOrbsIn. The dimension of the fixed length 
+!>                   axis is assumed to be the number of virtual orbitals.
 !>    3. OrbString = 'useStrings' specifies that the vector subset will be specified
-!>                   in alphaOrbsIn. The beta vector subset is assumed to be the same
-!>                   as the alpha vector subset unless betaOrbsIn is specified. This
+!>                   in alphaOrbsIn and betaOrbsIn is specified. This
 !>                   is the default.
 !>    4. Axis =      1 specifies the row vector subset is selected. 
 !>    5. Axis =      2 specifies the column vector subset is selected (default). 
@@ -3320,10 +3318,7 @@
 !>    \verbatim
 !>
 !>    MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an MQC integral 
-!>    type variable. If integral is restricted type, only alphaOrbsIn need be 
-!>    specified and the restricted type is preserved. If integral is of unrestricted 
-!>    or general type, alphaOrbsIn will only act on the alpha space and betaOrbsIn 
-!>    will only act on the beta space. Optional argument axis specifies whether row 
+!>    type variable. Optional argument axis specifies whether row 
 !>    or column vectors are selected. The following options are available:
 !>
 !>    1. Axis =      1 specifies the row vector subset is selected. 
