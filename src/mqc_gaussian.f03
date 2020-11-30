@@ -96,6 +96,7 @@
         procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
         procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
         procedure,pass::write2ERIs       => MQC_Gaussian_Unformatted_Matrix_Write_twoERIs
+        procedure,pass::updateHeader     => MQC_Gaussian_Unformatted_Matrix_Update_Header_Info
       End Type MQC_Gaussian_Unformatted_Matrix_File
 !
 !
@@ -585,6 +586,35 @@
 
 !=====================================================================
 !
+!PROCEDURE MQC_Gaussian_Output_Molecule_Data
+      Subroutine MQC_Gaussian_Output_Molecule_Data(MoleculeData,NAtoms,  &
+        AtomicNumbers,AtomicMasses,NuclearCharges,Cartesians,  &
+        TotalCharge,Multiplicity)
+!
+!     This subroutine is used to output a MQC_Molecule_Data type variable.
+!
+      Implicit None
+      Class(MQC_Molecule_Data),Intent(In)::MoleculeData
+      Integer,Allocatable,Intent(InOut)::NAtoms
+      Integer,Dimension(:),Allocatable,Intent(InOut)::AtomicNumbers
+      Real,Dimension(:),Allocatable,Intent(InOut)::AtomicMasses,NuclearCharges,Cartesians
+      Real,Dimension(:,:),Allocatable::TmpCart
+      Integer,Optional,Intent(InOut)::TotalCharge,Multiplicity
+!
+      Call MQC_Molecule_Data_Output(MoleculeData,NAtoms,  &
+        AtomicNumbers,AtomicMasses,NuclearCharges,TmpCart)
+      Cartesians = reshape(TmpCart,[3*NAtoms])
+      Select Type(MoleculeData)
+      Type is(MQC_Gaussian_Molecule_Data)
+        TotalCharge = MoleculeData%Charge
+        Multiplicity = MoleculeData%Multiplicity
+      endSelect
+!
+      End Subroutine MQC_Gaussian_Output_Molecule_Data
+
+
+!=====================================================================
+!
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Open
       subroutine MQC_Gaussian_Unformatted_Matrix_Open(fileinfo,filename,unitnumber,ok)
 !
@@ -860,7 +890,7 @@
 !
 !     Local temp variables.
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok
+      logical::DEBUG=.true.,ok,openbool
 !
 !
 !     Format statements.
@@ -891,6 +921,8 @@
           fileinfo%filename=trim(filename)
         endIf
       endIf
+      inquire(file=fileinfo%filename,number=fileinfo%unitNumber,opened=openbool)
+      if(openbool) close(fileInfo%unitNumber)
 !
 !     Check if all the required information is in fileinfo, and if no then
 !     initialize it.
@@ -1773,17 +1805,6 @@
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
               0,0,0,0,.False.,compVectorTmp)
-          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
-            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
-              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
-              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
-            endIf
-            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
-            allocate(compVectorTmp(size(compMatrixTmp,1)))
-            compMatrixTmp = matrixInUse
-            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
-            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
-              mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
           elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
               .or.(my_storage.eq.'symm')) then
 !           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
@@ -2124,7 +2145,7 @@
       case('basis2atom')
         if(.not.allocated(fileinfo%basisFunction2Atom))  &
           call MQC_Error_L('Requested basis2Atom not possible.', 6, &
-'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
+          'allocated(fileinfo%basisFunction2Atom)', allocated(fileinfo%basisFunction2Atom) )
         if((element.le.0).or.(element.gt.fileinfo%nbasis))  &
           call MQC_Error_I('element to %getBasisInfo is invalid.', 6, &
           'element', element, &
@@ -2225,13 +2246,13 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
-      Subroutine MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data(fileinfo,moleculeData)
+      Subroutine MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data(fileinfo,moleculeData,fileName)
 !
 !     This function is used to obtain the molecule information object
 !     associated with the Gaussian unformatted matrix file sent in object
 !     fileinfo.
 !
-!     L. M. Thompson, 20178.
+!     L. M. Thompson, 2017.
 !
 !
 !     Variable Declarations.
@@ -2239,14 +2260,35 @@
       implicit none
       class(mqc_gaussian_unformatted_matrix_file),intent(inout)::fileinfo
       class(mqc_molecule_data),intent(out)::moleculeData
+      character(len=*),intent(in),optional::filename
       character(len=256)::my_filename
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
-      if(.not.fileinfo%isOpen())  &
-        call MQC_Error_L('Failed to retrieve basis info from Gaussian matrix file: File not open.', 6, &
-        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        else
+          call MQC_Error_L('Failed to retrieve geometry info from Gaussian matrix file: File not open.', 6, &
+            'fileinfo%isOpen()', fileinfo%isOpen() )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'R' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          filename)
+      endIf
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()
@@ -2261,6 +2303,174 @@
         fileInfo%multiplicity)
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Update_Header_Info
+      Subroutine MQC_Gaussian_Unformatted_Matrix_Update_Header_Info(fileinfo,label,moleculeData,&
+        integerIn,intVecIn,realVecIn)
+!
+!     This function is used to update data on an mqc_gaussian_unformatted matrix object. The 
+!     recognized labels and their meaning include:
+!           'molecule'          update the header with items stored in the molecule data object
+!           'natoms'            update the number of atoms
+!           'nbasis'            update the number of basis functions
+!           'nbasis used'       update the number of used basis functions
+!           'charge'            update the molecule charge
+!           'multiplicity'      update the multiplicity
+!           'nelectrons'        update the number of electrons
+!           'icgu'              update the icgu flag (1XX = real, 2XX = complex, 1X = alpha/beta spin,
+!                               2X = general spin, 1 = one spin block e.g. restricted or general, 
+!                               2 = two spin blocks e.g. unrestricted)
+!           'nfc'               update the NFC value
+!           'nfv'               update the NFV value
+!           'itran'             update the ITran value
+!           'idum9'             update the IDum9 value
+!           'nshlao'            update the NShlAO value
+!           'nprmao'            update the NPrmAO value
+!           'nshldb'            update the NShlDB value
+!           'nprmdb'            update the NPrmDB value
+!           'nbtot'             update the NBTot value
+!           'atomic numbers'    update the atomic numbers vector
+!           'atom types'        update the atom types vector
+!           'basis2atom map'    update the vector that maps basis functions to atoms
+!           'basis types'       update the vector of basis function types 
+!           'gaussian scalars'  update the list of Gaussian scalars (containing e.g. energy etc.)
+!           'atomic charges'    update the list of atomic charges
+!           'atomic weights'    update the list of atomic weights
+!           'cartesians'        update the list of cartesian coordinates
+!
+!     L. M. Thompson, 2020.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(mqc_gaussian_unformatted_matrix_file),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      class(mqc_molecule_data),optional,intent(in)::moleculeData
+      integer,optional,intent(in)::integerIn
+      integer,dimension(:),allocatable,optional,intent(in)::intVecIn
+      real,dimension(:),allocatable,optional,intent(in)::realVecIn
+      character(len=64)::myLabel
+      Integer::nInputArrays
+!
+      nInputArrays = 0
+      if(present(moleculeData)) nInputArrays = nInputArrays + 1
+      if(nInputArrays.ne.1) call mqc_error_i('Too many input values sent to mqc_update_header_info',&
+        6,'nInputArrays',nInputArrays)
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('molecule')
+        if(.not.present(moleculeData)) call mqc_error('Update molecule data requested in %updateHeader&
+          & but input data is not molecule data type')
+        call mqc_gaussian_output_molecule_data(moleculeData,fileInfo%nAtoms,fileInfo%atomicNumbers, &
+          fileInfo%atomicWeights,fileInfo%atomicCharges,fileInfo%cartesians,fileInfo%iCharge, &
+          fileInfo%multiplicity)
+      case('natoms')
+        if(.not.present(integerIn)) call mqc_error('Update atom number requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%nAtoms = integerIn
+      case('nbasis')
+        if(.not.present(integerIn)) call mqc_error('Update basis number requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%nBasis = integerIn
+      case('nbasis used')
+        if(.not.present(integerIn)) call mqc_error('Update used basis number requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%nBasisUse = integerIn
+      case('charge')
+        if(.not.present(integerIn)) call mqc_error('Update molecular charge requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%icharge = integerIn
+      case('multiplicity')
+        if(.not.present(integerIn)) call mqc_error('Update multiplicity requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%multiplicity = integerIn
+      case('nelectrons')
+        if(.not.present(integerIn)) call mqc_error('Update electron number requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%nElectrons = integerIn
+      case('icgu')
+        if(.not.present(integerIn)) call mqc_error('Update icgu flag requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%icgu = integerIn
+      case('nfc')
+        if(.not.present(integerIn)) call mqc_error('Update nfc parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NFC = integerIn
+      case('nfv')
+        if(.not.present(integerIn)) call mqc_error('Update nfv parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NFV = integerIn
+      case('itran')
+        if(.not.present(integerIn)) call mqc_error('Update itran parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%ITran = integerIn
+      case('idum9')
+        if(.not.present(integerIn)) call mqc_error('Update idum9 parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%IDum9 = integerIn
+      case('nshlao')
+        if(.not.present(integerIn)) call mqc_error('Update nshlao parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NShlAO = integerIn
+      case('nprmao')
+        if(.not.present(integerIn)) call mqc_error('Update nprmao parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NPrmAO = integerIn
+      case('nshldb')
+        if(.not.present(integerIn)) call mqc_error('Update nshldb parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NShlDB = integerIn
+      case('nprmdb')
+        if(.not.present(integerIn)) call mqc_error('Update nprmdb parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NPrmDB = integerIn
+      case('nbtot')
+        if(.not.present(integerIn)) call mqc_error('Update nbtot parameter requested in %updateHeader&
+          & but input data is not integer type')
+        fileInfo%NBTot = integerIn
+      case('atomic numbers')
+        if(.not.present(intVecIn)) call mqc_error('Update atomic numbers requested in %updateHeader&
+          & but input data is not integer vector type')
+        fileInfo%atomicNumbers = intVecIn
+      case('atom types')
+        if(.not.present(intVecIn)) call mqc_error('Update atom types requested in %updateHeader&
+          & but input data is not integer vector type')
+        fileInfo%atomTypes = intVecIn
+      case('basis2atom map')
+        if(.not.present(intVecIn)) call mqc_error('Update basis function to atom map requested in %updateHeader&
+          & but input data is not integer vector type')
+        fileInfo%basisFunction2Atom = intVecIn
+      case('basis types')
+        if(.not.present(intVecIn)) call mqc_error('Update basis types requested in %updateHeader&
+          & but input data is not integer vector type')
+        fileInfo%IbasisFunctionType = intVecIn
+      case('gaussian scalars')
+        if(.not.present(intVecIn)) call mqc_error('Update gaussian scalars requested in %updateHeader&
+          & but input data is not integer vector type')
+        fileInfo%IgaussianScalars = intVecIn
+      case('atomic charges')
+        if(.not.present(realVecIn)) call mqc_error('Update atomic charges requested in %updateHeader&
+          & but input data is not real vector type')
+        fileInfo%atomicCharges = realVecIn
+      case('atomic weights')
+        if(.not.present(realVecIn)) call mqc_error('Update atomic weights requested in %updateHeader&
+          & but input data is not real vector type')
+        fileInfo%atomicWeights = realVecIn
+      case('cartesians')
+        if(.not.present(realVecIn)) call mqc_error('Update Cartesian coordinates requested in %updateHeader&
+          & but input data is not real vector type')
+        fileInfo%cartesians = realVecIn
+      case default
+        call mqc_error_A('Invalid label sent to %updateHeader.',6,'mylabel',mylabel)
+      end select
+
+      return
+      end Subroutine MQC_Gaussian_Unformatted_Matrix_Update_Header_Info
 
 
 !=====================================================================
@@ -2338,7 +2548,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error writing EST object to Gaussian matrix file', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -4134,7 +4344,7 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
-      Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer(fileinfo,label)
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer(fileinfo,label,fileName)
 !
 !     This function is used to get an integer scalar value that is stored in a
 !     Gaussian matrix file object.
@@ -4147,6 +4357,7 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::label
+      character(len=*),intent(in),optional::filename
       integer::MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
       integer::value_out=0
       character(len=64)::myLabel
@@ -4155,9 +4366,29 @@
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
-      if(.not.fileinfo%isOpen())  &
-        call MQC_Error_L('Failed to retrieve value from Gaussian matrix file: File not open.', 6, &
-        'fileinfo%isOpen()', fileinfo%isOpen() )
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        else
+          call MQC_Error_L('Failed to retrieve value from Gaussian matrix file: File not open.', 6, &
+            'fileinfo%isOpen()', fileinfo%isOpen() )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'R' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          filename)
+      endIf
       if(.not.fileinfo%header_read) then
         my_filename = TRIM(fileinfo%filename)
         call fileinfo%CLOSEFILE()

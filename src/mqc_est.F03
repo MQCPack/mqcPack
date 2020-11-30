@@ -2119,7 +2119,7 @@
 !     PROCEDURE MQC_Matrix_To_Integral
 !
 !>    \brief <b> MQC_Matrix_To_Integral is used to transform MQC_Matrix objects into
-!>    MQC_SCF_Integral objects
+!>    MQC_SCF_Integral objects</b>
 !
 !>    \par Purpose:
 !     =============
@@ -2495,8 +2495,8 @@
             j = ip - i*(i-1)/2
             l = kp - k*(k-1)/2
 
-            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,l,k,j) - &
-              twoERIs%at(i,k,l,j)
+            aaaaLoc(symIndexHash(i,j,k,l)) = twoERIs%at(i,k,l,j) - &
+              twoERIs%at(i,l,k,j)
             if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
               0.5*aaaaLoc(symIndexHash(i,j,k,l))
 
@@ -3025,17 +3025,15 @@
 !>
 !>    1. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
-!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
-!>                   electrons unless specified in a length 1 vector in betaOrbsIn.
+!>                   alphaOrbsIn. Number of beta electrons should be specified in a 
+!>                   length 1 vector in betaOrbsIn.
 !>    2. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
-!>                   alphaOrbsIn. Number of beta electrons set to number of alpha
-!>                   electrons unless specified in a length 1 vector in betaOrbsIn. 
-!>                   The dimension of the fixed length axis is assumed to be the 
-!>                   number of virtual orbitals.
+!>                   alphaOrbsIn. Number of beta electrons should be specified in a 
+!>                   length 1 vector in betaOrbsIn. The dimension of the fixed length 
+!>                   axis is assumed to be the number of virtual orbitals.
 !>    3. OrbString = 'useStrings' specifies that the vector subset will be specified
-!>                   in alphaOrbsIn. The beta vector subset is assumed to be the same
-!>                   as the alpha vector subset unless betaOrbsIn is specified. This
+!>                   in alphaOrbsIn and betaOrbsIn is specified. This
 !>                   is the default.
 !>    4. Axis =      1 specifies the row vector subset is selected. 
 !>    5. Axis =      2 specifies the column vector subset is selected (default). 
@@ -3104,32 +3102,19 @@
 
       if(present(orbString)) then
         call string_change_case(orbString,'l',myOrbString)
-        if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared with &
-     &    number of alpha and/or beta electrons in string input',6,'present(orbString)', &
-          present(orbString),'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)', &
-          present(betaOrbsIn))
-        if(myOrbString.ne.'usestrings'.and.size(alphaOrbsIn).ne.1) call mqc_error_i('OrbString variable must be declared with &
-     &    number of alpha and/or beta electrons in string input',6,'size(alphaOrbsIn)', &
-          size(alphaOrbsIn))
-        if(myOrbString.ne.'usestrings'.and.present(betaOrbsIn).and.size(betaOrbsIn).ne.1) call mqc_error_i('OrbString variable &
-     &    must be declared with number of alpha and/or beta electrons in string input',6, &
-          'size(betaOrbsIn)',size(betaOrbsIn))
+        if(myOrbString.eq.'occupied'.or.myOrbString.eq.'virtual') then
+          if(.not.present(alphaOrbsIn).or..not.present(betaOrbsIn)) &
+            call mqc_error_l('OrbString variable must be declared with &
+            &number of alpha and/or beta electrons in string input',6,'present(orbString)', &
+            present(orbString),'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)', &
+            present(betaOrbsIn))
+          if(size(alphaOrbsIn).ne.1.or.size(betaOrbsIn).ne.1) &
+            call mqc_error_i('Only one integer can be declared when inputting number of alpha and beta orbitals',&
+            6,'size(alphaOrbsIn)',size(alphaOrbsIn),'size(betaOrbsIn)',size(betaOrbsIn))
+        endIf
         nAlpha = alphaOrbsIn(1)
-        if(present(betaOrbsIn)) then 
-          nBeta = betaOrbsIn(1) 
-        else
-          nBeta = nAlpha
-        endIf
+        nBeta = betaOrbsIn(1) 
       else
-        if(.not.present(alphaOrbsIn)) call mqc_error_l('OrbString variable must be declared &
-     &    if no alpha string',6,'present(orbString)',present(orbString),'present(alphaOrbsIn)', &
-          present(alphaOrbsIn))
-        alphaOrbs = alphaOrbsIn
-        if(.not.present(betaOrbsIn)) then
-          betaOrbs = alphaOrbsIn
-        else
-          betaOrbs = betaOrbsIn
-        endIf
         myOrbString = 'usestrings'
       endIf
 
@@ -3156,11 +3141,15 @@
           call mqc_error_I('Unknown array is in MQC_Integral_Output_Orbitals',6,'my_axis',my_axis)
         endIf
       case ('usestrings')
-        alphaOrbs = alphaOrbsIn
-        if(.not.present(betaOrbsIn)) then
-          betaOrbs = alphaOrbsIn
+        if(present(alphaOrbsIn)) then
+          alphaOrbs = alphaOrbsIn
         else
+          alphaOrbs = [integer(kind=int64)::]
+        endIf
+        if(present(betaOrbsIn)) then
           betaOrbs = betaOrbsIn
+        else
+          betaOrbs = [integer(kind=int64)::]
         endIf
       case default
         call mqc_error_a('Unrecognized orbital string definition in MQC_Integral_Output_Orbitals',&
@@ -3169,7 +3158,7 @@
 
       select case (integral%type())
       case('space')
-        if(all(alphaOrbs.eq.betaOrbs)) then
+        if(size(alphaOrbs).eq.size(betaOrbs).and.all(alphaOrbs.eq.betaOrbs)) then
           tmpMatrixAlpha = integral%getBlock('alpha')
           if(my_axis.eq.2) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
@@ -3329,10 +3318,7 @@
 !>    \verbatim
 !>
 !>    MQC_Integral_Swap_Orbitals is used to exchange a vector pair in an MQC integral 
-!>    type variable. If integral is restricted type, only alphaOrbsIn need be 
-!>    specified and the restricted type is preserved. If integral is of unrestricted 
-!>    or general type, alphaOrbsIn will only act on the alpha space and betaOrbsIn 
-!>    will only act on the beta space. Optional argument axis specifies whether row 
+!>    type variable. Optional argument axis specifies whether row 
 !>    or column vectors are selected. The following options are available:
 !>
 !>    1. Axis =      1 specifies the row vector subset is selected. 
@@ -3382,6 +3368,7 @@
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       type(mqc_matrix)::outMatrixAlpha,outMatrixBeta,outMatrixAlphaBeta,outMatrixBetaAlpha
+      integer(kind=int64),dimension(:),allocatable::alphaVector,betaVector
       integer(kind=int64)::nDimAlpha=0,nDimBeta=0,nAlpha=0,nBeta=0,i,my_axis
 
       if(present(axis)) then
@@ -3400,65 +3387,49 @@
         call mqc_error_I('Unknown array is in MQC_Integral_Swap_Orbitals',6,'my_axis',my_axis)
       endIf
 
-      select case (integral%type())
-      case('space')
-        if(.not.present(alphaOrbsIn)) call mqc_error_l('AlphaOrbsIn variable must be &
-     &    declared in mqc_integral_swap_orbitals',6,'present(alphaOrbsIn)',present(alphaOrbsIn))
+      if(.not.present(alphaOrbsIn).and..not.present(betaOrbsIn)) then
+        call mqc_error_l('Orbital variable must be declared in mqc_integral_swap_orbitals',&
+          6,'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)',present(betaOrbsIn))
+      elseIf(.not.present(alphaOrbsIn)) then
+        betaOrbs = betaOrbsIn
+        if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
+        alphaVector = [(i,i=1,NDimAlpha)]
+        if(betaOrbs(1).eq.betaOrbs(2)) then
+          betaVector = [(i,i=1,NDimBeta)]
+        else
+          betaVector = [(i,i=1,betaOrbs(1)-1),betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),&
+            betaOrbs(1),(i,i=betaOrbs(2)+1,NDimBeta)]
+        endIf
+      elseIf(.not.present(betaOrbsIn)) then
         alphaOrbs = alphaOrbsIn
         if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
-        if(.not.present(betaOrbsIn)) then
-          betaOrbs = alphaOrbsIn
+        if(alphaOrbs(1).eq.alphaOrbs(2)) then
+          alphaVector = [(i,i=1,NDimAlpha)]
         else
-          betaOrbs = betaOrbsIn
+          alphaVector = [(i,i=1,alphaOrbs(1)-1),alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),&
+            alphaOrbs(1),(i,i=alphaOrbs(2)+1,NDimAlpha)]
         endIf
+        betaVector = [(i,i=1,NDimBeta)]
+      else
+        alphaOrbs = alphaOrbsIn
+        betaOrbs = betaOrbsIn
+        if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
         if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
-
-        if(all(alphaOrbs.eq.betaOrbs)) then
-          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
-            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
-            (i,i=alphaOrbs(2)+1,NDimAlpha)],axis=my_axis)
+        if(alphaOrbs(1).eq.alphaOrbs(2)) then
+          alphaVector = [(i,i=1,NDimAlpha)]
         else
-          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
-            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
-            (i,i=alphaOrbs(2)+1,NDimAlpha)], betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
-            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
-            (i,i=betaOrbs(2)+1,NDimBeta)],axis=my_axis)
+          alphaVector = [(i,i=1,alphaOrbs(1)-1),alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),&
+            alphaOrbs(1),(i,i=alphaOrbs(2)+1,NDimAlpha)]
         endIf
-
-      case('spin','general')
-        if(.not.present(alphaOrbsIn).and..not.present(betaOrbsIn)) then
-          call mqc_error_l('Orbital variable must be declared in mqc_integral_swap_orbitals',&
-            6,'present(alphaOrbsIn)',present(alphaOrbsIn),'present(betaOrbsIn)',present(betaOrbsIn))
-        elseIf(.not.present(alphaOrbsIn)) then
-          betaOrbs = betaOrbsIn
-          if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
-          integralOut = integral%orbitals(betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
-            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
-            (i,i=betaOrbs(2)+1,NDimBeta)],axis=my_axis)
-          
-        elseIf(.not.present(betaOrbsIn)) then
-          alphaOrbs = alphaOrbsIn
-          if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
-          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
-            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
-            (i,i=alphaOrbs(2)+1,NDimAlpha)],axis=my_axis)
-
+        if(betaOrbs(1).eq.betaOrbs(2)) then
+          betaVector = [(i,i=1,NDimBeta)]
         else
-          alphaOrbs = alphaOrbsIn
-          betaOrbs = betaOrbsIn
-          if(alphaOrbs(1).gt.alphaOrbs(2)) alphaOrbs = [alphaOrbs(2),alphaOrbs(1)]
-          if(betaOrbs(1).gt.betaOrbs(2)) betaOrbs = [betaOrbs(2),betaOrbs(1)]
-          integralOut = integral%orbitals(alphaOrbsIn = [(i,i=1,alphaOrbs(1)-1), &
-            alphaOrbs(2),(i,i=alphaOrbs(1)+1,alphaOrbs(2)-1),alphaOrbs(1), &
-            (i,i=alphaOrbs(2)+1,NDimAlpha)], betaOrbsIn = [(i,i=1,betaOrbs(1)-1), &
-            betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),betaOrbs(1), &
-            (i,i=betaOrbs(2)+1,NDimBeta)],axis=my_axis)
+          betaVector = [(i,i=1,betaOrbs(1)-1),betaOrbs(2),(i,i=betaOrbs(1)+1,betaOrbs(2)-1),&
+            betaOrbs(1),(i,i=betaOrbs(2)+1,NDimBeta)]
         endIf
+      endIf
 
-      case default
-        call mqc_error_A('Unrecognised mqc scf integral type in mqc_integral_swap_orbitals',6, &
-          'integral%type()',integral%type())
-      end select
+      integralOut = integral%orbitals(alphaOrbsIn=alphaVector,betaOrbsIn=betaVector,axis=my_axis)
 !
       end function mqc_integral_swap_orbitals
 !
@@ -7155,6 +7126,8 @@
           flag = flag + 40000
         endIf
       endIf
+      
+      if(debug) write(6,'(A,1x,I5)') 'Option flag:',flag
 
       nBasis = integral%blockSize('alpha')
       ntt = (nBasis*(nBasis+1))/2
@@ -7175,23 +7148,27 @@
         if(hermden%norm('M').gt.zero) doHerm = .true.
         if(doHerm) then
           tmpMat = real(hermden%getblock('alpha'))
-          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
           temp = tmpMat
           aaHRden = temp(:,1)
           if(mod(flag,100)/10.eq.1) then
             tmpMat = aimag(hermden%getblock('alpha'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaHCden = temp(:,1)
           endIf
           if(mod(flag,10).gt.0) then
             tmpMat = real(hermden%getblock('beta'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             bbHRden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(hermden%getblock('beta'))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbHCden = temp(:,1)
             endIf
@@ -7199,23 +7176,27 @@
           if(mod(flag,10).eq.2) then
             tmpMat = real(half*(hermden%getblock('alpha-beta')+ &
               dagger(hermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abHHRden = temp(:,1)
             tmpMat = real(half*(hermden%getblock('alpha-beta')- &
               dagger(hermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAHRden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')+ &
                 dagger(hermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHHCden = temp(:,1)
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')- &
                 dagger(hermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abAHCden = temp(:,1)
             endIf
@@ -7226,23 +7207,27 @@
         if(ahermden%norm('M').gt.zero) doAhrm = .true.
         if(doAhrm) then
           tmpMat = real(ahermden%getblock('alpha'))
-          if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+          if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
           temp = tmpMat
           aaARden = temp(:,1)
           if(mod(flag,100)/10.eq.1) then
             tmpMat = aimag(ahermden%getblock('alpha'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaACden = temp(:,1)
           endIf
           if((mod(flag,10).gt.0)) then
             tmpMat = real(ahermden%getblock('beta'))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             bbARden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(ahermden%getblock('beta'))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbACden = temp(:,1)
             endIf
@@ -7250,23 +7235,27 @@
           if((mod(flag,10).eq.2)) then
             tmpMat = real(half*(ahermden%getblock('alpha-beta')+ &
               dagger(ahermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abHARden = temp(:,1)
             tmpMat = real(half*(ahermden%getblock('alpha-beta')- &
               dagger(ahermden%getblock('alpha-beta'))))
-            if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+            if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAARden = temp(:,1)
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')+ &
                 dagger(ahermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHACden = temp(:,1)
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')- &
                 dagger(ahermden%getblock('alpha-beta'))))
-              if(.not.mqc_matrix_haveSymmetric(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
+              if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abAACden = temp(:,1)
             endIf
@@ -7468,7 +7457,7 @@
           if (m.ne.n) then
             if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) then
               if(mod(flag,1000)/100.eq.1) then
-                raf3 = eris(1)%at(k,n,m,l) - eris(1)%at(k,m,n,l)
+                raf3 = eris(1)%at(k,m,n,l) - eris(1)%at(k,n,m,l) 
                 if(kp.eq.mp) raf3 = 0.5*raf3 
               elseIf(mod(flag,10000)/1000.eq.4) then
                 raf3 = eris(2)%at(k,l,m,n) 
@@ -7503,17 +7492,17 @@
             if(m.ne.n.and.mod(flag,100)/10.eq.1) then
               if(abs(raf3).gt.zero) then
                 if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
-                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) - &
                   raf3*aaHCden(symIndexHash(m,n))
                 if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
-                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) - &
                   raf3*aaHCden(symIndexHash(k,l))
                 if(mod(flag,10).gt.0) then
                   if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
-                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) - &
                     raf3*bbHCden(symIndexHash(m,n))
                   if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
-                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) - &
                     raf3*bbHCden(symIndexHash(k,l))
                 endIf
               endIf
@@ -7528,18 +7517,18 @@
                 raf2*abHHRden(symIndexHash(k,l))
               if(m.ne.n.and.mod(flag,100)/10.eq.1) then
                 if(abs(abHHCden(symIndexHash(m,n))).gt.zero) &
-                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) - &
+                  abHHCfoc(symIndexHash(k,l)) = abHHCfoc(symIndexHash(k,l)) + &
                   raf3*abHHCden(symIndexHash(m,n))
                 if(abs(abHHCden(symIndexHash(k,l))).gt.zero) &
-                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) - &
+                  abHHCfoc(symIndexHash(m,n)) = abHHCfoc(symIndexHash(m,n)) + &
                   raf3*abHHCden(symIndexHash(k,l))
               endIf
 !         AB Antihermitian Hermitian Fock
               if(m.ne.n.and.abs(abAHRden(symIndexHash(m,n))).gt.zero) &
-                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) - &
+                abAHRfoc(symIndexHash(k,l)) = abAHRfoc(symIndexHash(k,l)) + &
                 raf3*abAHRden(symIndexHash(m,n))
               if(m.ne.n.and.abs(abAHRden(symIndexHash(k,l))).gt.zero) &
-                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) - &
+                abAHRfoc(symIndexHash(m,n)) = abAHRfoc(symIndexHash(m,n)) + &
                 raf3*abAHRden(symIndexHash(k,l))
               if (mod(flag,100)/10.eq.1) then
                 if(abs(abAHCden(symIndexHash(m,n))).gt.zero) &
@@ -7554,10 +7543,10 @@
 !         AA Antihermitian Fock
           if(doAhrm) then
             if(m.ne.n.and.abs(aaARden(symIndexHash(m,n))).gt.zero) &
-              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) - &
+              aaARfoc(symIndexHash(k,l)) = aaARfoc(symIndexHash(k,l)) + &
               raf3*aaARden(symIndexHash(m,n))
             if(m.ne.n.and.abs(aaARden(symIndexHash(k,l))).gt.zero) &
-              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) - &
+              aaARfoc(symIndexHash(m,n)) = aaARfoc(symIndexHash(m,n)) + &
               raf3*aaARden(symIndexHash(k,l))
             if(mod(flag,100)/10.eq.1) then
               if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
@@ -7570,10 +7559,10 @@
             if(mod(flag,10).gt.0) then
 !         BB Antihermitian Fock
               if(m.ne.n.and.abs(bbARden(symIndexHash(m,n))).gt.zero) &
-                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) - &
+                bbARfoc(symIndexHash(k,l)) = bbARfoc(symIndexHash(k,l)) + &
                 raf3*bbARden(symIndexHash(m,n))
               if(m.ne.n.and.abs(bbARden(symIndexHash(k,l))).gt.zero) &
-                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) - &
+                bbARfoc(symIndexHash(m,n)) = bbARfoc(symIndexHash(m,n)) + &
                 raf3*bbARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
@@ -7594,18 +7583,18 @@
                 raf2*abHARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1.and.m.ne.n) then
                 if(abs(abHACden(symIndexHash(m,n))).gt.zero) &
-                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) - &
+                 abHACfoc(symIndexHash(k,l)) = abHACfoc(symIndexHash(k,l)) + &
                  raf3*abHACden(symIndexHash(m,n))
                 if(abs(abHACden(symIndexHash(k,l))).gt.zero) &
-                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) - &
+                 abHACfoc(symIndexHash(m,n)) = abHACfoc(symIndexHash(m,n)) + &
                  raf3*abHACden(symIndexHash(k,l))
              endIf
 !         AB Antihermitian Antihermitian Fock
               if(m.ne.n.and.abs(abAARden(symIndexHash(m,n))).gt.zero) &
-                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) - &
+                abAARfoc(symIndexHash(k,l)) = abAARfoc(symIndexHash(k,l)) + &
                 raf3*abAARden(symIndexHash(m,n))
               if(m.ne.n.and.abs(abAARden(symIndexHash(k,l))).gt.zero) &
-                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) - &
+                abAARfoc(symIndexHash(m,n)) = abAARfoc(symIndexHash(m,n)) + &
                 raf3*abAARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(abAACden(symIndexHash(m,n))).gt.zero) &

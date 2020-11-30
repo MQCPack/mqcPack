@@ -142,12 +142,15 @@
         Energy = contraction(wavefunc%core_hamiltonian,wavefunc%density_matrix)
         Energy = Energy + half*contraction(wavefunc%density_matrix,Gmat)
         Energy = Energy + Vnn
-        call Energy%print(iOut,'Energy')
+        call Energy%print(iOut,'Energy',FormatStr='F20.8')
 !
 !       test convergence and exit or iterate
         conver = mqc_integral_norm((wavefunc%density_matrix-old_density),'F')
-        call conver%print(iOut,'Convergence on density matrix')
-        if(conver.le.thresh) exit
+        call conver%print(iOut,'Convergence on density matrix',FormatStr='F20.8')
+        if(conver.le.thresh) then
+          write(iOut,'(1x,A,I5,1x,A)') 'Convergence achieved in',iter,'iterations'
+          exit
+        endIf
 !        
         iter = iter+1
       endDo
