@@ -11082,12 +11082,15 @@
 !     
 !     PROCEDURE TWOERI_TRANS
 ! 
-      Subroutine TwoERI_Trans(IOut,IPrint,MO_Coeff,ERIs,MO_ERIs,UHF)
+      Subroutine TwoERI_Trans(IOut,IPrint,MO_Coeff,ERIs,MO_ERIs,UHF,Right_MOs)
 !
 !     This subroutine transforms two-electron integrals to the MO basis 
 !     If the UHF flag is true it computes the set of MO integrals accounting
 !     for different spacial occupation of alpha and beta electrons. The order
-!     in the final MO ERI array is (aa|aa), (aa|bb), (bb|aa), (bb|bb).
+!     in the final MO ERI array is (aa|aa), (aa|bb), (bb|aa), (bb|bb). If the
+!     optional argument Right_MOs is present, then MOs in MO_Coeff are the MOs 
+!     of the bra determinant, and MOs in Right_MOs are the MOs of the ket 
+!     determinant, otherwise bra and ket MOs are considered equal.
 !
 !             |' (aa|aa) | (bb|aa) '| 
 !             |----------|----------|
@@ -11105,6 +11108,8 @@
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_TwoERIs),Intent(Out)::MO_ERIs
       Type(MQC_SCF_Integral),Intent(In)::MO_Coeff
+      Type(MQC_SCF_Integral),Optional,Intent(In)::Right_MOs
+      Type(MQC_SCF_Integral)::MO_Coeff_2
 !
  1000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
  2000 Format(1x,'Doing O(N**8) integral transformation algorithm')
@@ -11128,7 +11133,13 @@
       EndIf
       MO_ERIs%StorageType = 'Full'
       MO_ERIs%IntegralType = 'Regular'
-
+!
+      If(Present(Right_MOs)) then
+        MO_Coeff_2 = Right_MOs
+      Else
+        MO_Coeff_2 = MO_Coeff
+      EndIf
+!
       If(.not.DoON5) then
 
         If(IPrint.ge.2) Write(IOut,2000) 
@@ -11142,23 +11153,23 @@
                       Do Sigma = 1, NBasis
                         Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
                           MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
-                          ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * MO_Coeff%Alpha%at(Lambda,R) * &
-                          MO_Coeff%Alpha%at(Sigma,S),P,Q,R,S)
+                          ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * MO_Coeff_2%Alpha%at(Lambda,R) * &
+                          MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
                           If(UHF) then
                            Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
                              MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
-                             MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
+                             MO_Coeff_2%Beta%at(Lambda,R) * MO_Coeff_2%Beta%at(Sigma,S), &
                              P,Q,R,S)
                            Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
                              MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * & 
-                             MO_Coeff%Alpha%at(Lambda,R) * MO_Coeff%Alpha%at(Sigma,S), &
+                             MO_Coeff_2%Alpha%at(Lambda,R) * MO_Coeff_2%Alpha%at(Sigma,S), &
                              P+NBasis,Q+NBasis,R,S)
                            Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P+NBasis,Q+NBasis,R+NBasis,S+NBasis) + &
                              MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
-                             MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
+                             MO_Coeff_2%Beta%at(Lambda,R) * MO_Coeff_2%Beta%at(Sigma,S), &
                              P,Q,R,S)
                         EndIf
                       EndDo

@@ -6637,8 +6637,6 @@
 !
 !     PROCEDURE mqcscalar2character
 !
-      function mqcscalar2character(scalarIn,formatString) result(scalarString)
-!
 !>    \brief <b> MQCscalar2Character converts an mqc scalar variable into a character 
 !>    string</b>
 !
@@ -6664,7 +6662,7 @@
 !>
 !>    \param[in] formatString
 !>    \verbatim
-!>        FormatString is Character(*),Optional 
+!>        FormatString is Character(len=*),Optional 
 !>        The format statement for the output string.
 !>    \endverbatim
 !
@@ -6673,9 +6671,11 @@
 !>    \author L. M. Thompson
 !>    \date 2020
 !
+      function mqcscalar2character(scalarIn,formatString) result(scalarString)
+!
       implicit none
       type(mqc_scalar),intent(in)::scalarIn
-      character(*),intent(in),optional::formatString
+      character(len=*),intent(in),optional::formatString
       character(len=256)::myFormatString,inputString,scalarString
       class(*),allocatable::tempScalar
       integer::query,tempint
@@ -25621,12 +25621,12 @@
           Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
         ArrayOut = TensorIn%ITen
       ElseIf(MQC_R4Tensor_HaveReal(TensorIn)) then
-        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
-          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        allocate(ArrayOut(Size(TensorIn%RTen,1),Size(TensorIn%RTen,2),&
+          Size(TensorIn%RTen,3),Size(TensorIn%RTen,4)))
         ArrayOut = TensorIn%RTen
       ElseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
-        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
-          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        allocate(ArrayOut(Size(TensorIn%CTen,1),Size(TensorIn%CTen,2),&
+          Size(TensorIn%CTen,3),Size(TensorIn%CTen,4)))
         ArrayOut = TensorIn%CTen
       Else
         Call MQC_Error_A('TensorIn type unknown in MQC_Tensor2RealArray', 6, &
