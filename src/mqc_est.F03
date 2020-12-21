@@ -750,24 +750,24 @@
         call twoERIs%alpha%print(iout,'(aa|aa)')
         call twoERIs%beta%print(iout,'(bb|bb)')
         call twoERIs%alphaBeta%print(iout,'(aa|bb)')
-        call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
       elseIf(twoERIs%integralType.eq.'general') then
         write(iout,'(A)') 'General MO 2ERIs'
         call twoERIs%alpha%print(iout,'(aa|aa)')
         call twoERIs%beta%print(iout,'(bb|bb)')
         call twoERIs%alphaBeta%print(iout,'(aa|bb)')
-        call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
         call twoERIs%abab%print(iout,'(ab|ab)')
         call twoERIs%abba%print(iout,'(ab|ba)')
-        call twoERIs%baab%print(iout,'(ba|ab)')
-        call twoERIs%baba%print(iout,'(ba|ba)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%baab%print(iout,'(ba|ab)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%baba%print(iout,'(ba|ba)')
         call twoERIs%aaab%print(iout,'(aa|ab)')
-        call twoERIs%aaba%print(iout,'(aa|ba)')
-        call twoERIs%abaa%print(iout,'(ab|aa)')
-        call twoERIs%baaa%print(iout,'(ba|aa)')
-        call twoERIs%bbba%print(iout,'(bb|ba)')
-        call twoERIs%bbab%print(iout,'(bb|ab)')
-        call twoERIs%babb%print(iout,'(ba|bb)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%aaba%print(iout,'(aa|ba)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%abaa%print(iout,'(ab|aa)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%baaa%print(iout,'(ba|aa)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%bbba%print(iout,'(bb|ba)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%bbab%print(iout,'(bb|ab)')
+        if(twoERIs%storageType.eq.'symm') call twoERIs%babb%print(iout,'(ba|bb)')
         call twoERIs%abbb%print(iout,'(ab|bb)')
       else
         call mqc_error_A('Integral type unrecogised in mqc_print_twoERIs', 6, &
@@ -1213,6 +1213,8 @@
         if(MQC_R4Tensor_isAllocated(eris%babb)) hasBlock = .true. 
       elseIf(mylabel.eq.'abbb') then
         if(MQC_R4Tensor_isAllocated(eris%abbb)) hasBlock = .true. 
+      else
+        call mqc_error_a('Unrecognized block requested in mqc_eris_has_spinblock',6,'myLabel',myLabel)
       endIf
 !
       end function mqc_eris_has_spinBlock
@@ -1699,8 +1701,8 @@
 !>    The optional argument axis specifies which dimension is returned. The following 
 !>    options are available:
 !>
-!>    1. Label = 'alpha' returns the alpha spin block.
-!>    2. Label = 'beta' returns the beta spin block.
+!>    1. Label = 'alpha' returns the alpha spin block dimension.
+!>    2. Label = 'beta' returns the beta spin block dimension.
 !>    3. Axis  = '1' returns the first spin block dimension (default).
 !>    4. Axis  = '2' returns the second spin block dimension.
 !>    5. Axis  = '3' returns the third spin block dimension.
@@ -1720,6 +1722,8 @@
 !>    \verbatim
 !>        Label is Character(Len=*)
 !>        The spin block to query.
+!>        = 'alpha': alpha axis dimension.
+!>        = 'beta':  beta axis dimension.
 !>    \endverbatim
 !>
 !>    \param[in] Axis
@@ -1752,52 +1756,33 @@
       else
         my_axis = 1
       endIf
+      if(my_axis.le.0.or.my_axis.gt.4) &
+        call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
 
       call string_change_case(label,'l',myLabel)
+
       select case (myLabel)
       case('alpha') 
         if(.not.eris%hasSpinBlock('alpha')) then
           dimBlock = 0
-        elseIf(my_axis.eq.1) then
-          dimBlock = size(eris%alpha,1)
-        elseIf(my_axis.eq.2) then
-          dimBlock = size(eris%alpha,2)
-        elseIf(my_axis.eq.3) then
-          dimBlock = size(eris%alpha,3)
-        elseIf(my_axis.eq.4) then
-          dimBlock = size(eris%alpha,4)
         else
-          call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+          dimBlock = size(eris%alpha,my_axis)
         endIf
       case('beta')
+        if(eris%type().eq.'raffenetti1'.or.eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3') &
+          call mqc_error('Raffenetti types do not have spin blocks')
         if(.not.eris%hasSpinBlock('beta')) then
-          if(eris%type().eq.'space') then
+          if(eris%type().eq.'regular'.or.eris%type().eq.'space') then
             if(.not.eris%hasSpinBlock('alpha')) then
               dimBlock = 0
-            elseIf(my_axis.eq.1) then
-              dimBlock = size(eris%alpha,1)
-            elseIf(my_axis.eq.2) then
-              dimBlock = size(eris%alpha,2)
-            elseIf(my_axis.eq.3) then
-              dimBlock = size(eris%alpha,3)
-            elseIf(my_axis.eq.4) then
-              dimBlock = size(eris%alpha,4)
             else
-              call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+              dimBlock = size(eris%alpha,my_axis)
             endIf
           else
             dimBlock = 0
           endIf
-        elseIf(my_axis.eq.1) then
-          dimBlock = size(eris%beta,1)
-        elseIf(my_axis.eq.2) then
-          dimBlock = size(eris%beta,2)
-        elseIf(my_axis.eq.3) then
-          dimBlock = size(eris%beta,3)
-        elseIf(my_axis.eq.4) then
-          dimBlock = size(eris%beta,4)
         else
-          call mqc_error_I('Unknown axis specified in MQC_ERIs_Dimension',6,'my_axis',my_axis)
+          dimBlock = size(eris%beta,my_axis)
         endIf
       case default
         call mqc_error_A('label not valid in mqc_eris_dimension', 6, &
@@ -1851,8 +1836,19 @@
 !>    \verbatim
 !>        StorageType is Character(len=*)
 !>        = 'Full': the MQC_TwoERIs variable is upacked
-!>        = 'Symm': the MQC_TwoERIs variable is symmetric packed.
-!>        Note that symmetric packing is not fully implemented.  
+!>        = 'Symm': if the MQC_TwoERIs variable is AO (regular, raffenetti) 
+!>                  or space, then Symm=Full and the assignment is arbitrary,
+!>                  whereas, if the MQC_TwoERIs variable spin or general, 
+!>                  only unique spin blocks are stored (first given in 
+!>                  equality): 
+!> 
+!>                    spin: [aa|aa]=[bb|bb]=[aa|bb]=[bb|aa]
+!>                    space: [aa|aa], [bb|bb], [aa|bb]=[bb|aa]
+!>                    general: [aa|aa], [bb|bb], [aa|bb]=[bb|aa], 
+!>                      [abab]=[ba|ba]*, [ab|ba]=[ba|ab], 
+!>                      [aa|ab]=[ab|aa]=[aa|ba]*=[ba|aa]*,
+!>                      [ab|bb]=[bb|ab]=[bb|ba]*=[ba|bb]*
+!>
 !>    \endverbatim
 !>    
 !>    \param[in,out] IntegralType
@@ -2103,6 +2099,11 @@
       integral%array_type = arrayType 
       integral%array_name = arrayName 
 !
+      if(mqc_matrix_isallocated(integral%alpha)) call mqc_deallocate_matrix(integral%alpha)
+      if(mqc_matrix_isallocated(integral%beta)) call mqc_deallocate_matrix(integral%beta)
+      if(mqc_matrix_isallocated(integral%alphaBeta)) call mqc_deallocate_matrix(integral%alphaBeta)
+      if(mqc_matrix_isallocated(integral%betaAlpha)) call mqc_deallocate_matrix(integral%betaAlpha)
+!
       if(present(alpha)) integral%alpha = alpha
       if(arrayType.eq.'spin') then
         if(present(beta)) integral%beta = beta
@@ -2327,12 +2328,8 @@
 !>                      raffenetti type 2 atomic orbital 2ERIs. 
 !>    4. IntegralType = 'Raffenetti3' declares the MQC_TwoERIs variable contains 
 !>                      raffenetti type 3 atomic orbital 2ERIs. 
-!>    5. IntegralType = 'space' declares the MQC_TwoERIs variable contains restricted
-!>                      molecular orbital 2ERIs.
-!>    6. IntegralType = 'spin' declares the MQC_TwoERIs variable contains unrestricted
-!>                      molecular orbital 2ERIs.
-!>    7. IntegralType = 'general' declares the MQC_TwoERIs variable contains general
-!>                      molecular orbital 2ERIs.
+!>    5. IntegralType = 'Molecular' declares the MQC_TwoERIs variable 
+!>                      contains molecular orbital basis 2ERIs.
 !>
 !>    \endverbatim
 !
@@ -2347,30 +2344,33 @@
 !>    \param[in] IntegralType
 !>    \verbatim
 !>        IntegralType is Character(len=*)
-!>        = 'Regular':     the MQC_TwoERIs variable contains 
-!>                         regular atomic orbital 2ERIs.
+!>        = 'Regular':     the MQC_TwoERIs variable contains regular atomic orbital 
+!>                         2ERIs.
 !>                         R(i,j,k,l) = (ij|kl)
-!>        = 'Raffenetti1': the MQC_TwoERIs variable contains 
-!>                         raffenetti type 1 atomic orbital 2ERIs.
+!>        = 'Raffenetti1': the MQC_TwoERIs variable contains raffenetti type 1 atomic 
+!>                         orbital 2ERIs.
 !>                         R(i,j,k,l) = (ij|kl) - 1/4[(ik|jl)+(il|jk)]
-!>        = 'Raffenetti2': the MQC_TwoERIs variable contains 
-!>                         raffenetti type 2 atomic orbital 2ERIs.
+!>        = 'Raffenetti2': the MQC_TwoERIs variable contains raffenetti type 2 atomic 
+!>                         orbital 2ERIs.
 !>                         R(i,j,k,l) = (ik|jl) + (il|jk)  
-!>        = 'Raffenetti3': the MQC_TwoERIs variable contains 
-!>                         raffenetti type 3 atomic orbital 2ERIs.
+!>        = 'Raffenetti3': the MQC_TwoERIs variable contains raffenetti type 3 atomic 
+!>                         orbital 2ERIs.
 !>                         R(i,j,k,l) = (ik|jl) - (il|jk)
-!>        = 'space':       the MQC_TwoERIs variable contains 
-!>                         restricted molecular orbital 2ERIs.
-!>        = 'spin':        the MQC_TwoERIs variable contains 
-!>                         unrestricted molecular orbital 2ERIs.
-!>        = 'general':     the MQC_TwoERIs variable contains 
-!>                         general molecular orbital 2ERIs.
+!>        = 'Molecular':   the MQC_TwoERIs variable contains molecular orbital basis 
+!>                         2ERIs.
 !>    \endverbatim
 !>    
 !>    \param[in] mo_coefficients 
 !>    \verbatim
 !>        mo_coefficients is type(mqc_scf_integral),optional
 !>        MO coefficients required for AO -> MO transformations. 
+!>    \endverbatim
+!>    
+!>    \param[in] mo_coeff_2
+!>    \verbatim
+!>        mo_coeff_2 is type(mqc_scf_integral),optional
+!>        Ket MO coefficients required for AO -> MO transformations
+!>        if bra and ket orbitals are different. 
 !>    \endverbatim
 !
 !     Authors:
@@ -2379,12 +2379,12 @@
 !>    \date 2019
 !
 !
-      subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients)
+      subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients,mo_coeff_2)
 !
       implicit none
-      class(mqc_twoERIs)::twoERIs
+      type(mqc_twoERIs)::twoERIs
       character(len=*),intent(in)::integralType
-      type(mqc_scf_integral),optional,intent(in)::mo_coefficients
+      type(mqc_scf_integral),optional,intent(in)::mo_coefficients,mo_coeff_2
       character(len=64)::my_integralType
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
@@ -2505,18 +2505,16 @@
           call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
           call mqc_twoeris_allocate(twoERIs,'symm','raffenetti3',aaaa)
           return
-        elseIf(my_integralType.eq.'space') then
-          call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.false.)
-          call mqc_twoeris_allocate(twoERIs,'full','space',temp%getBlock('alpha'))
+        elseIf(my_integralType.eq.'molecular') then
+          if(.not.present(mo_coefficients)) call mqc_error_l('MO oefficients myst be present to&
+            & transform AO 2ERIs to MO 2ERIs',6,'present(mo_coefficients)',present(mo_coefficients))
+          if(present(mo_coeff_2)) then
+            call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,mo_coeff_2)
+          else
+            call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp)
+          endIf
+          twoERIs = temp
           return
-        elseIf(my_integralType.eq.'spin') then
-          call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,.true.)
-          call mqc_twoeris_allocate(twoERIs,'full','spin',temp%getBlock('alpha'), &
-            temp%getBlock('beta'),temp%getBlock('alphaBeta'),temp%getBlock('betaAlpha'))
-          return
-        elseIf(my_integralType.eq.'general') then
-          call mqc_error_a('Transformation of regular to general MO 2ERIs NYI in &
-            & mqc_twoeris_transform',6,'my_integralType',my_integralType)
         else
           call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
             'my_integralType',my_integralType)
@@ -3894,10 +3892,14 @@
 !>        = 'full':        outputs the full MQC_SCF_Integral. 
 !>        = 'alpha':       outputs the alpha-alpha spin block.
 !>        = 'alpha-alpha': outputs the alpha-alpha spin block. 
+!>        = 'aaaa':        outputs the alpha-alpha spin block. 
 !>        = 'beta':        outputs the beta-beta spin block. 
 !>        = 'beta-beta':   outputs the beta-beta spin block. 
+!>        = 'bbbb':        outputs the beta-beta spin block. 
 !>        = 'alpha-beta'   outputs the alpha-beta spin block. 
+!>        = 'aabb':        outputs the alpha-beta spin block. 
 !>        = 'beta-alpha'   outputs the beta-alpha spin block. 
+!>        = 'bbaa':        outputs the beta-alpha spin block. 
 !>        = 'abab':        outputs the (ab|ab) spin block. 
 !>        = 'abba':        outputs the (ab|ba) spin block. 
 !>        = 'baab':        outputs the (ba|ab) spin block. 
@@ -3955,178 +3957,110 @@
         if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
           eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
           eris%type().eq.'space') then
-          if (eris%hasSpinBlock('aaaa')) then
-            if(mqc_r4Tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
-            elseif(mqc_r4Tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
-            elseIf(mqc_r4Tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
-            else
-              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
-            endIf
-            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%alpha,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[nDimAlpha3+1,nDimTotal3], &
-              [nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%alpha,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [1,nDimAlpha3],[1,nDimAlpha4]) 
-          else
-            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
-          endIf
+          call r4tOut%init(nDimAlpha1,nDimAlpha2,nDimAlpha3,nDimAlpha4)
+          if(eris%hasSpinBlock('aaaa')) call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2], &
+            [1,nDimAlpha3],[1,nDimAlpha4]) 
         elseIf (eris%type().eq.'spin') then
-          if (eris%hasSpinBlock('aaaa').and.eris%hasSpinBlock('bbbb').and. &
-            eris%hasSpinBlock('aabb').and.eris%hasSpinBlock('bbaa')) then
-            if(mqc_r4tensor_haveComplex(eris%alpha).or.mqc_r4tensor_haveComplex(eris%beta).or.&
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or.mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or.mqc_r4tensor_haveReal(eris%beta).or.&
-              mqc_r4tensor_haveReal(eris%alphaBeta).or.mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
-            elseIf(mqc_r4tensor_haveInteger(eris%alpha).or.mqc_r4tensor_haveInteger(eris%beta).or.&
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or.mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
-            else
-              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
-            endIf
-            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3], &
-              [1,nDimAlpha4]) 
-            call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
+          call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4)
+          if(eris%hasSpinBlock('aaaa')) call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2], &
+            [1,nDimAlpha3],[1,nDimAlpha4]) 
+          if(eris%hasSpinBlock('bbbb')) call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],&
+            [nDimAlpha2+1,nDimTotal2],[nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+          if(eris%hasSpinBlock('aabb')) call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
+            [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('bbaa')) call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
               [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
           else
-            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa'), &
-              'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb'), &
-              'eris%hasSpinBlock(''aabb'')', eris%hasSpinBlock('aabb'), &
-              'eris%hasSpinBlock(''bbaa'')', eris%hasSpinBlock('bbaa'))
+            if(eris%hasSpinBlock('aabb')) call r4tOut%tput(eris%alphaBeta,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
           endIf
         elseIf (eris%type().eq.'general') then
-          if (eris%hasSpinBlock('aaaa').and.eris%hasSpinBlock('bbbb').and. &
-            eris%hasSpinBlock('aabb').and.eris%hasSpinBlock('bbaa').and. &
-            eris%hasSpinBlock('abab').and.eris%hasSpinBlock('abba').and. &
-            eris%hasSpinBlock('baab').and.eris%hasSpinBlock('baba').and. &
-            eris%hasSpinBlock('aaab').and.eris%hasSpinBlock('aaba').and. &
-            eris%hasSpinBlock('abaa').and.eris%hasSpinBlock('baaa').and. &
-            eris%hasSpinBlock('bbba').and.eris%hasSpinBlock('bbab').and. &
-            eris%hasSpinBlock('babb').and.eris%hasSpinBlock('abbb')) then
-            if(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha).or. &
-              mqc_r4tensor_haveComplex(eris%abab).or. &
-              mqc_r4tensor_haveComplex(eris%abba).or. &
-              mqc_r4tensor_haveComplex(eris%baab).or. &
-              mqc_r4tensor_haveComplex(eris%baba).or. &
-              mqc_r4tensor_haveComplex(eris%aaab).or. &
-              mqc_r4tensor_haveComplex(eris%aaba).or. &
-              mqc_r4tensor_haveComplex(eris%abaa).or. &
-              mqc_r4tensor_haveComplex(eris%baaa).or. &
-              mqc_r4tensor_haveComplex(eris%bbba).or. &
-              mqc_r4tensor_haveComplex(eris%bbab).or. &
-              mqc_r4tensor_haveComplex(eris%babb).or. &
-              mqc_r4tensor_haveComplex(eris%abbb)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroC)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha).or. &
-              mqc_r4tensor_haveReal(eris%abab).or. &
-              mqc_r4tensor_haveReal(eris%abba).or. &
-              mqc_r4tensor_haveReal(eris%baab).or. &
-              mqc_r4tensor_haveReal(eris%baba).or. &
-              mqc_r4tensor_haveReal(eris%aaab).or. &
-              mqc_r4tensor_haveReal(eris%aaba).or. &
-              mqc_r4tensor_haveReal(eris%abaa).or. &
-              mqc_r4tensor_haveReal(eris%baaa).or. &
-              mqc_r4tensor_haveReal(eris%bbba).or. &
-              mqc_r4tensor_haveReal(eris%bbab).or. &
-              mqc_r4tensor_haveReal(eris%babb).or. &
-              mqc_r4tensor_haveReal(eris%abbb)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroR)
-            elseif(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha).or. &
-              mqc_r4tensor_haveInteger(eris%abab).or. &
-              mqc_r4tensor_haveInteger(eris%abba).or. &
-              mqc_r4tensor_haveInteger(eris%baab).or. &
-              mqc_r4tensor_haveInteger(eris%baba).or. &
-              mqc_r4tensor_haveInteger(eris%aaab).or. &
-              mqc_r4tensor_haveInteger(eris%aaba).or. &
-              mqc_r4tensor_haveInteger(eris%abaa).or. &
-              mqc_r4tensor_haveInteger(eris%baaa).or. &
-              mqc_r4tensor_haveInteger(eris%bbba).or. &
-              mqc_r4tensor_haveInteger(eris%bbab).or. &
-              mqc_r4tensor_haveInteger(eris%babb).or. &
-              mqc_r4tensor_haveInteger(eris%abbb)) then
-              call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4,zeroI)
-            else
-              call mqc_error('unrecognized ERIs data type in mqc_2ERIs_output_block')
-            endIf
-            call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],[1,nDimAlpha3], &
-              [1,nDimAlpha4]) 
-            call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
+          call r4tOut%init(nDimTotal1,nDimTotal2,nDimTotal3,nDimTotal4)
+          if(eris%hasSpinBlock('aaaa')) call r4tOut%tput(eris%alpha,[1,nDimAlpha1],[1,nDimAlpha2],&
+            [1,nDimAlpha3],[1,nDimAlpha4]) 
+          if(eris%hasSpinBlock('bbbb')) call r4tOut%tput(eris%beta,[nDimAlpha1+1,nDimTotal1],&
+            [nDimAlpha2+1,nDimTotal2],[nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+          if(eris%hasSpinBlock('aabb')) call r4tOut%tput(eris%alphaBeta,[1,nDimAlpha1],[1,nDimAlpha2], &
+            [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('bbaa')) call r4tOut%tput(eris%betaAlpha,[nDimAlpha1+1,nDimTotal1], &
               [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%abab,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
-              [1,nDimAlpha3], [nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%abba,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%baab,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
-              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%baba,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
-              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%aaab,[1,nDimAlpha1],[1,nDimAlpha2], &
-              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%aaba,[1,nDimAlpha1],[1,nDimAlpha2], &
-              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%abaa,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
-              [1,nDimAlpha3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%baaa,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
-              [1,nDimAlpha3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%bbba,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4]) 
-            call r4tOut%tput(eris%bbab,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2], &
-              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%babb,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
-            call r4tOut%tput(eris%abbb,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
-              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4]) 
           else
-            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa'), &
-              'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb'), &
-              'eris%hasSpinBlock(''aabb'')', eris%hasSpinBlock('aabb'), &
-              'eris%hasSpinBlock(''bbaa'')', eris%hasSpinBlock('bbaa'), &
-              'eris%hasSpinBlock(''abab'')', eris%hasSpinBlock('abab'), &
-!              'eris%hasSpinBlock(''abba'')', eris%hasSpinBlock('abba'), &
-!              'eris%hasSpinBlock(''baab'')', eris%hasSpinBlock('baab'), &
-!              'eris%hasSpinBlock(''baba'')', eris%hasSpinBlock('baba'), &
-!              'eris%hasSpinBlock(''aaab'')', eris%hasSpinBlock('aaab'), &
-!              'eris%hasSpinBlock(''aaba'')', eris%hasSpinBlock('aaba'), &
-!              'eris%hasSpinBlock(''abaa'')', eris%hasSpinBlock('abaa'), &
-!              'eris%hasSpinBlock(''baaa'')', eris%hasSpinBlock('baaa'), &
-!              'eris%hasSpinBlock(''bbba'')', eris%hasSpinBlock('bbba'), &
-!              'eris%hasSpinBlock(''bbab'')', eris%hasSpinBlock('bbab'), &
-!              'eris%hasSpinBlock(''babb'')', eris%hasSpinBlock('babb'), &
-              'eris%hasSpinBlock(''abbb'')', eris%hasSpinBlock('abbb'))
+            if(eris%hasSpinBlock('aabb')) call r4tOut%tput(eris%alphaBeta,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[1,nDimAlpha4]) 
           endIf
+          if(eris%hasSpinBlock('abab')) call r4tOut%tput(eris%abab,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3], [nDimAlpha4+1,nDimTotal4])
+          if(eris%hasSpinBlock('abba')) call r4tOut%tput(eris%abba,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('baab')) call r4tOut%tput(eris%baab,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4])
+          else
+            if(eris%hasSpinBlock('abba')) call r4tOut%tput(eris%abba,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('baba')) call r4tOut%tput(eris%baba,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          else
+            if(eris%hasSpinBlock('abab')) call r4tOut%tput(conjg(eris%baba),[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          endIf
+
+          if(eris%hasSpinBlock('aaab')) call r4tOut%tput(eris%aaab,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4])
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('aaba')) call r4tOut%tput(eris%aaba,[1,nDimAlpha1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          else
+            if(eris%hasSpinBlock('aaab')) call r4tOut%tput(conjg(eris%aaba),[1,nDimAlpha1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('abaa')) call r4tOut%tput(eris%abaa,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3],[1,nDimAlpha4])
+          else
+            if(eris%hasSpinBlock('aaab')) call r4tOut%tput(eris%aaab,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+              [1,nDimAlpha3],[1,nDimAlpha4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('baaa')) call r4tOut%tput(eris%baaa,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[1,nDimAlpha4])
+          else
+            if(eris%hasSpinBlock('aaab')) call r4tOut%tput(conjg(eris%aaab),[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [1,nDimAlpha3],[1,nDimAlpha4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('bbba')) call r4tOut%tput(eris%bbba,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          else
+            if(eris%hasSpinBlock('abbb')) call r4tOut%tput(conjg(eris%abbb),[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[nDimAlpha3+1,nDimTotal3],[1,nDimAlpha4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('bbab')) call r4tOut%tput(eris%bbab,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4])
+          else
+            if(eris%hasSpinBlock('abbb')) call r4tOut%tput(eris%abbb,[nDimAlpha1+1,nDimTotal1], &
+              [nDimAlpha2+1,nDimTotal2],[1,nDimAlpha3],[nDimAlpha4+1,nDimTotal4])
+          endIf
+          if(eris%storageType.eq.'full') then
+            if(eris%hasSpinBlock('babb')) call r4tOut%tput(eris%babb,[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4])
+          else
+            if(eris%hasSpinBlock('abbb')) call r4tOut%tput(conjg(eris%abbb),[nDimAlpha1+1,nDimTotal1],[1,nDimAlpha2], &
+              [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4])
+          endIf
+          if(eris%hasSpinBlock('abbb')) call r4tOut%tput(eris%abbb,[1,nDimAlpha1],[nDimAlpha2+1,nDimTotal2], &
+            [nDimAlpha3+1,nDimTotal3],[nDimAlpha4+1,nDimTotal4])
         endIf
       case('alpha','aaaa','alpha-alpha')
         if (eris%hasSpinBlock('aaaa')) then
           r4tOut = eris%alpha
         else
-          call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-            'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
+          call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
         endIf
       case('beta','bbbb','beta-beta')
         if (eris%hasSpinBlock('bbbb')) then
@@ -4137,530 +4071,180 @@
           if (eris%hasSpinBlock('aaaa')) then
             r4tOut = eris%alpha
           else
-            call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-              'eris%hasSpinBlock(''aaaa'')', eris%hasSpinBlock('aaaa') )
+            call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
           endIf
         else
-          call mqc_error_L('block does not exist in mqc_2eris_output_block', 6, &
-            'eris%hasSpinBlock(''bbbb'')', eris%hasSpinBlock('bbbb') )
+          call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
         endIf
       case('alpha-beta','aabb')
         if (eris%hasSpinBlock('aabb')) then
           r4tOut = eris%alphaBeta
-        else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroC)
-            else 
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
-            endIf
+        elseIf (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+          eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+          eris%type().eq.'space') then
+          if (eris%hasSpinBlock('aaaa')) then
+            r4tOut = eris%alpha
+          else
+            call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
           endIf
+        else
+          call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
         endIf
       case('beta-alpha','bbaa')
         if (eris%hasSpinBlock('bbaa')) then
           r4tOut = eris%betaAlpha
-        else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroC)
-            else 
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
+        elseif (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
+          eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
+          eris%type().eq.'space') then
+          if (eris%hasSpinBlock('aaaa')) then
+            r4tOut = eris%alpha
+          else
+            call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
           endIf
+        elseIf((eris%type().eq.'spin'.or.eris%type().eq.'general').and.eris%storageType.eq.'symm') then
+          if (eris%hasSpinBlock('aabb')) then
+            r4tOut = eris%alphaBeta
+          else
+            call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
+          endIf
+        else
+          call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
         endIf
       case('abab')
         if (eris%hasSpinBlock('abab')) then
           r4tOut = eris%abab
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroC)
-            else 
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
-            endIf
-          endIf
+          call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
         endIf
       case('abba')
         if (eris%hasSpinBlock('abba')) then
           r4tOut = eris%abba
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroC)
-            else 
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
-            endIf
-          endIf
+          call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
         endIf
       case('baab')
         if (eris%hasSpinBlock('baab')) then
           r4tOut = eris%baab
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('abba')) then
+              r4tOut = eris%abba
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
+              call r4tOut%init(NDimbeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
             endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroC)
-            else 
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
-            endIf
+          else
+            call r4tOut%init(NDimbeta1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
           endIf
         endIf
       case('baba')
         if (eris%hasSpinBlock('baba')) then
           r4tOut = eris%baba
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('abab')) then
+              r4tOut = conjg(eris%abab)
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroC)
-            else 
               call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
           endIf
         endIf
       case('aaab')
         if (eris%hasSpinBlock('aaab')) then
           r4tOut = eris%aaab
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroC)
-            else 
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
-            endIf
-          endIf
+          call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimBeta4,zeroR)
         endIf
       case('aaba')
         if (eris%hasSpinBlock('aaba')) then
           r4tOut = eris%aaba
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('aaab')) then
+              r4tOut = conjg(eris%aaab)
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroC)
-            else 
               call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
           endIf
         endIf
       case('abaa')
         if (eris%hasSpinBlock('abaa')) then
           r4tOut = eris%abaa
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('aaab')) then
+              r4tOut = eris%aaab
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroC)
-            else 
               call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimAlpha4,zeroR)
           endIf
         endIf
       case('baaa')
         if (eris%hasSpinBlock('baaa')) then
           r4tOut = eris%baaa
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('aaab')) then
+              r4tOut = conjg(eris%aaab)
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else 
               call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimBeta1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
           endIf
         endIf
       case('bbba')
         if (eris%hasSpinBlock('bbba')) then
           r4tOut = eris%bbba
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('abbb')) then
+              r4tOut = conjg(eris%abbb)
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroC)
-            else 
               call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimBeta1,NDimBeta2,NDimBeta3,NDimAlpha4,zeroR)
           endIf
         endIf
       case('bbab')
         if (eris%hasSpinBlock('bbab')) then
           r4tOut = eris%bbab
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('abbb')) then
+              r4tOut = eris%abbb
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroC)
-            else 
               call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimBeta1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
           endIf
         endIf
       case('babb')
         if (eris%hasSpinBlock('babb')) then
           r4tOut = eris%babb
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
+          if(eris%type().eq.'general'.and.eris%storageType.eq.'symm') then
+            if (eris%hasSpinBlock('abbb')) then
+              r4tOut = conjg(eris%abbb)
             else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroC)
-            else 
               call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
             endIf
+          else
+            call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimBeta4,zeroR)
           endIf
         endIf
       case('abbb')
         if (eris%hasSpinBlock('abbb')) then
           r4tOut = eris%abbb
         else
-          if (eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or. &
-            eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3'.or. &
-            eris%type().eq.'space') then
-            if(mqc_r4tensor_haveInteger(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha)) then
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroC)
-            else
-              call r4tOut%init(NDimAlpha1,NDimAlpha2,NDimAlpha3,NDimAlpha4,zeroR)
-            endIf
-          elseIf (eris%type().eq.'spin') then
-            if(mqc_r4tensor_haveInteger(eris%alpha).or. &
-              mqc_r4tensor_haveInteger(eris%beta).or. &
-              mqc_r4tensor_haveInteger(eris%alphaBeta).or. &
-              mqc_r4tensor_haveInteger(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroI)
-            elseIf(mqc_r4tensor_haveReal(eris%alpha).or. &
-              mqc_r4tensor_haveReal(eris%beta).or. &
-              mqc_r4tensor_haveReal(eris%alphaBeta).or. &
-              mqc_r4tensor_haveReal(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
-            elseIf(mqc_r4tensor_haveComplex(eris%alpha).or. &
-              mqc_r4tensor_haveComplex(eris%beta).or. &
-              mqc_r4tensor_haveComplex(eris%alphaBeta).or. &
-              mqc_r4tensor_haveComplex(eris%betaAlpha)) then
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroC)
-            else 
-              call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
-            endIf
-          endIf
+          call r4tOut%init(NDimAlpha1,NDimBeta2,NDimBeta3,NDimBeta4,zeroR)
         endIf
       case default
         call mqc_error_A('unrecognised block name in mqc_eris_output_block', 6, &
@@ -4912,29 +4496,7 @@
       type(mqc_r4tensor),intent(inOut)::tensorOut
       integer(kind=int64)::nDim=0
 !
-!      nDim = size(twoERIsIn%alpha,1)
-
-      select case (TwoERIsIn%integralType)
-      case('regular','raffenetti1','raffenetti2','raffenetti3','space')
-!        if(mqc_have_complex(twoERIsIn%alpha)) then
-!          call tensorOut%init(nDim,nDim,nDim,nDim,cmplx(0.0,0.0))
-!        else
-!          call tensorOut%init(nDim,nDim,nDim,nDim)
-!        endIf
-        if (MQC_R4Tensor_isAllocated(twoERIsIn%alpha)) then
-          tensorOut = twoERIsIn%alpha
-        else
-          call mqc_error_L('block does not exist in mqc_twoERIs_output_array', 6, &
-               'MQC_R4Tensor_isAllocated(twoERIsIn%alpha)', MQC_R4Tensor_isAllocated(twoERIsIn%alpha))
-        endIf
-      case('spin','general')
-!       need tensor tensor put to implement this 
-        call mqc_error_A('Spin and general input in mqc_2ERIs_output_array is not yet implemented', &
-             6, 'TwoERIsIn%integralType', TwoERIsIn%integralType)
-      case default
-        call mqc_error_A('unrecognised integral type in mqc_2ERIs_output_array', 6, &
-             'TwoERIsIn%integralType', TwoERIsIn%integralType)
-      end select
+      tensorOut = twoERIsIn%getBlock('full')
 !
       end subroutine mqc_2ERIs_output_array  
 !
@@ -7095,6 +6657,8 @@
         flag = flag + 2
       endIf
       if(mqc_have_complex(integral%getBlock('full'))) flag = flag + 10
+      if(eris(1)%type().eq.'space'.or.eris(1)%type().eq.'spin'.or.eris(1)%type().eq.'general') &
+        call mqc_error_a('Trying to contract matrix with MO basis 2ERIs',6,'eris(1)%type()',eris(1)%type())
       if(eris(1)%type().eq.'regular') then
         flag = flag + 100
       elseif(eris(1)%type().eq.'raffenetti1') then
@@ -8754,8 +8318,8 @@
 !>    2ERIs if the contain MO integrals. If wavefunction is not restricted, the spin 
 !>    block must be specified. The following options are available:
 !>
-!>    1.  SpinBlock = 'aaaa' or 'alpha' uses the alpha spin block.
-!>    2.  SpinBlock = 'bbbb' or 'beta' uses the beta spin block.
+!>    1.  SpinBlock = 'aaaa' or 'alpha' or 'alpha-alpha' uses the alpha spin block.
+!>    2.  SpinBlock = 'bbbb' or 'beta' or 'beta-beta' uses the beta spin block.
 !>    3.  SpinBlock = 'aabb' or 'alphaBeta' uses the alpha-beta spin block.
 !>    4.  SpinBlock = 'bbaa' or 'betaAlpha' uses the beta-alpha spin block.
 !>    5.  SpinBlock = 'abab' uses the abab spin block.
@@ -8845,63 +8409,118 @@
       implicit none
       class(mqc_twoERIs)::twoERIs
       integer(kind=int64),intent(in)::i,j,k,l
+      integer(kind=int64)::myI,myJ,myK,myL
       type(mqc_scalar)::element
-      character(len=64),optional,intent(in)::spinBlockIn
+      character(len=*),optional,intent(in)::spinBlockIn
       character(len=64)::spinBlock
+
+      element = 0.0
+      myI = i
+      myJ = j
+      myK = k
+      myL = l
+      if(myI.gt.twoERIs%blockSize('alpha',1)+twoERIs%blockSize('beta',1)) &
+        call mqc_error('Requested I dimension out of bounds in MQC_twoERIs_At')
+      if(myJ.gt.twoERIs%blockSize('alpha',2)+twoERIs%blockSize('beta',2)) &
+        call mqc_error('Requested J dimension out of bounds in MQC_twoERIs_At')
+      if(myK.gt.twoERIs%blockSize('alpha',3)+twoERIs%blockSize('beta',3)) &
+        call mqc_error('Requested K dimension out of bounds in MQC_twoERIs_At')
+      if(myL.gt.twoERIs%blockSize('alpha',4)+twoERIs%blockSize('beta',4)) &
+        call mqc_error('Requested L dimension out of bounds in MQC_twoERIs_At')
 
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(twoERIs%integralType.eq.'space') then
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
-            element = twoERIs%alpha%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
         elseIf(twoERIs%integralType.eq.'spin') then
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
-            element = twoERIs%alpha%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
           elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
-            element = twoeris%beta%at(i,j,k,l)
-          elseif(spinblock.eq.'alphaBeta'.or.spinBlock.eq.'aabb') then
-            element = twoeris%alphaBeta%at(i,j,k,l)
-          elseif(spinblock.eq.'betaAlpha'.or.spinBlock.eq.'bbaa') then
-            element = twoeris%betaAlpha%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('bbbb')) element = twoeris%beta%at(i,j,k,l)
+          elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
+            if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(i,j,k,l)
+          elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(i,j,k,l)
+            else
+              if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(i,j,k,l)
+            endIf
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
         elseIf(twoERIs%integralType.eq.'general') then
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
-            element = twoERIs%alpha%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
           elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
-            element = twoeris%beta%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('bbbb')) element = twoeris%beta%at(i,j,k,l)
           elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
-            element = twoeris%alphaBeta%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(i,j,k,l)
           elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
-            element = twoeris%betaAlpha%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(i,j,k,l)
+            else
+              if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'abab') then
-            element = twoeris%abab%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('abab')) element = twoeris%abab%at(i,j,k,l)
           elseif(spinBlock.eq.'abba') then
-            element = twoeris%abba%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('abba'))  element = twoeris%abba%at(i,j,k,l)
           elseif(spinBlock.eq.'baab') then
-            element = twoeris%baab%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abba'))  element = twoeris%abba%at(i,j,k,l)
+            else
+              if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'baba') then
-            element = twoeris%baba%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abab')) element = conjg(twoeris%abab%at(i,j,k,l))
+            else
+              if(twoERIs%hasSpinBlock('baba')) element = twoeris%baba%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'aaab') then
-            element = twoeris%aaab%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(i,j,k,l)
           elseif(spinBlock.eq.'aaba') then
-            element = twoeris%aaba%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(i,j,k,l))
+            else
+              if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'abaa') then
-            element = twoeris%abaa%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(i,j,k,l)
+            else
+              if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'baaa') then
-            element = twoeris%baaa%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(i,j,k,l))
+            else
+              if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'bbba') then
-            element = twoeris%bbba%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(i,j,k,l))
+            else
+              if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'bbab') then
-            element = twoeris%bbab%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(i,j,k,l)
+            else
+              if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'babb') then
-            element = twoeris%babb%at(i,j,k,l)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(i,j,k,l))
+            else
+              if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(i,j,k,l)
+            endIf
           elseif(spinBlock.eq.'abbb') then
-            element = twoeris%abbb%at(i,j,k,l)
+            if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(i,j,k,l)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
@@ -8910,16 +8529,192 @@
         endIf
       else
         if(twoERIs%integralType.eq.'regular') then
-          element = twoERIs%alpha%at(i,j,k,l)
+          if(myI.gt.twoERIs%blockSize('alpha',1)) myI = myI - twoERIs%blockSize('alpha',1) 
+          if(myJ.gt.twoERIs%blockSize('alpha',2)) myJ = myJ - twoERIs%blockSize('alpha',2) 
+          if(myK.gt.twoERIs%blockSize('alpha',3)) myK = myK - twoERIs%blockSize('alpha',3) 
+          if(myL.gt.twoERIs%blockSize('alpha',4)) myL = myL - twoERIs%blockSize('alpha',4) 
+          if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
         elseIf(twoERIs%integralType.eq.'raffenetti1') then
-          element = twoERIs%alpha%at(i,j,k,l)
+          if(i.gt.twoERIs%blockSize('alpha',1).or.j.gt.twoERIs%blockSize('alpha',2).or. &
+            k.gt.twoERIs%blockSize('alpha',3).or.l.gt.twoERIs%blockSize('alpha',4)) &
+            call mqc_error('Requested position is out of bounds in Raffenetti 1 ERIs')
+          if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
         elseIf(twoERIs%integralType.eq.'raffenetti2') then
-          element = twoERIs%alpha%at(i,j,k,l)
+          if(i.gt.twoERIs%blockSize('alpha',1).or.j.gt.twoERIs%blockSize('alpha',2).or. &
+            k.gt.twoERIs%blockSize('alpha',3).or.l.gt.twoERIs%blockSize('alpha',4)) &
+            call mqc_error('Requested position is out of bounds in Raffenetti 2 ERIs')
+          if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
         elseIf(twoERIs%integralType.eq.'raffenetti3') then
-          element = twoERIs%alpha%at(i,j,k,l)
+          if(i.gt.twoERIs%blockSize('alpha',1).or.j.gt.twoERIs%blockSize('alpha',2).or. &
+            k.gt.twoERIs%blockSize('alpha',3).or.l.gt.twoERIs%blockSize('alpha',4)) &
+            call mqc_error('Requested position is out of bounds in Raffenetti 3 ERIs')
+          if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(i,j,k,l)
         elseIf(twoERIs%integralType.eq.'space') then
-!         need to implement accounting for NBas*2 dimensions
-          element = twoERIs%alpha%at(i,j,k,l)
+          if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          endIf
+        elseIf(twoERIs%integralType.eq.'spin') then
+          if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('bbbb')) element = twoERIs%beta%at(myI,myJ,myK,myL)
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+            else
+              if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+            endIf
+          endIf
+        elseIf(twoERIs%integralType.eq.'general') then
+          if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('bbbb')) element = twoERIs%beta%at(myI,myJ,myK,myL)
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+            else
+              if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myJ,myK,myL)
+            else
+              if(twoERIs%hasSpinBlock('baab')) element = twoERIs%baab%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('abab')) element = twoERIs%abab%at(myI,myJ,myK,myL)
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abab')) element = conjg(twoERIs%abab%at(myI,myJ,myK,myL))
+            else
+              if(twoERIs%hasSpinBlock('baba')) element = twoERIs%baba%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myI,myJ,myK,myL)
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
+            else
+              if(twoERIs%hasSpinBlock('aaba')) element = twoERIs%aaba%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myI,myJ,myK,myL)
+            else
+              if(twoERIs%hasSpinBlock('abaa')) element = twoERIs%abaa%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
+            else
+              if(twoERIs%hasSpinBlock('baaa')) element = twoERIs%baaa%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+            else
+              if(twoERIs%hasSpinBlock('bbba')) element = twoERIs%bbba%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myI,myJ,myK,myL)
+            else
+              if(twoERIs%hasSpinBlock('bbab')) element = twoERIs%bbab%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+            else
+              if(twoERIs%hasSpinBlock('babb')) element = twoERIs%babb%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myI,myJ,myK,myL)
+          endIf
         else
           call mqc_error_A('Integral type not valid in MQC_TwoERIs_At',6,'integralType',twoERIs%integralType)
         endIf
@@ -9780,1295 +9575,1295 @@
         MatEl = Zero 
         Return
 !
-        Case(2)
-!       I am going to comment the first logical block - the rest are different
-!       perutations
-!       First we need to determine the relevant orbital, spin and determinant
-          IDiff = 1
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-!            Write(IOut,*) 'Orbs:',IPos,' I:',I,' J:',J
-            If(BTest(Alpha_Diff(I),J)) then
-              Orbs(IDiff) = IPos+1
-              Spin(IDiff) = 0
-              If(BTest(Alpha_String_1(I),J)) then
-                Det(IDiff) = 1
-              Else 
-                Det(IDiff) = 2
-              EndIf
-              IDiff = IDiff + 1
-            EndIf
-            If(BTest(Beta_Diff(I),J)) then
-              Orbs(IDiff) = IPos+1
-              Spin(IDiff) = 1
-              If(BTest(Beta_String_1(I),J)) then
-                Det(IDiff) = 1
-              Else 
-                Det(IDiff) = 2
-              EndIf
-              IDiff = IDiff + 1
-            EndIf
-          EndDo
-!          Call Print_Vector(IOut,Orbs,'Orbs')
-!          Call Print_Vector(IOut,Spin,'Spin')
-!          Call Print_Vector(IOut,Det,'Det')
-
-          If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-!            Write(IOut,*) 'Entering case 1'
-!            
-!           This section computes the Coulomb contribution to the matrix
-!           element
-            If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-!              
-!             This section detemines number of permutations of creation
-!             operators and sets sign accordingly
-!             It got quite a bit longer after generalizing max number of
-!             orbitals
-!             Probably want to make some functions for these then later
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(2).eq.0) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-!              
-!             This section computes the value of the matrix element
-!
-              If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                ERI1 = ERIs%beta%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4))
-              EndIf
-!              
-!             This section changes sign accounting for the ordering of alpha and
-!             beta strings
-              If(Spin(1).gt.Spin(2)) ERI1 = -ERI1
-              If(Spin(3).gt.Spin(4)) ERI1 = -ERI1
-              If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!              Write(IOut,*) 'Setting ERI1 to',ERI1
-            Else
-!              
-!             Sets Coulomb contribution to zero if 2ERI is necessarily so by
-!             spin order in the integral
-!              Write(IOut,*) 'Setting ERI1 to zero'
-              ERI1 = Zero
-            EndIf
-            If(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(2).eq.0) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-!
-              If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-                ERI2 = ERIs%beta%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3))
-              EndIf
-!
-              If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
-              If(Spin(3).gt.Spin(4)) ERI2 = -ERI2
-              If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!              Write(IOut,*) 'Setting ERI2 to',ERI2
-            Else 
-!              Write(IOut,*) 'Setting ERI2 to zero'
-              ERI2 = Zero
-            EndIf
-!
-          ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
-!            Write(IOut,*) 'Entering case 2'
-            If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(3).eq.0) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-              If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
-              ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                ERI1 = ERIs%beta%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4))
-              EndIf
-              If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
-              If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
-              If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!              Write(IOut,*) 'Setting ERI1 to',ERI1
-            Else
-!              Write(IOut,*) 'Setting ERI1 to zero'
-              ERI1 = Zero
-            EndIf
-            If(Spin(1).eq.Spin(4).and.Spin(3).eq.Spin(2)) then
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(3).eq.0) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(4)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-              If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
-              ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-                ERI2 = ERIs%beta%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2))
-              EndIf
-              If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
-              If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
-              If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!              Write(IOut,*) 'Setting ERI2 to',ERI2
-            Else 
-!              Write(IOut,*) 'Setting ERI2 to zero'
-              ERI2 = Zero
-            EndIf
-!
-          ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
-!            Write(IOut,*) 'Entering case 3'
-            If(Spin(1).eq.Spin(2).and.Spin(4).eq.Spin(3)) then
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(4).eq.0) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                If(Orbs(4)-Orbs(3)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(2)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-!                    Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-              If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-                ERI1 = ERIs%alpha%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
-              ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                ERI1 = ERIs%alphaBeta%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                ERI1 = ERIs%betaAlpha%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                ERI1 = ERIs%beta%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3))
-              EndIf
-              If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
-              If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
-              If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!              Write(IOut,*) 'Setting ERI1 to',ERI1
-            Else
-!              Write(IOut,*) 'Setting ERI1 to zero'
-              ERI1 = Zero
-            EndIf
-            If(Spin(1).eq.Spin(3).and.Spin(4).eq.Spin(2)) then
-              ISgn = 0
-              If(Spin(1).eq.0.and.Spin(4).eq.0) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then 
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                If(Orbs(4)-Orbs(2)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-                If(Orbs(3)-Orbs(1)-1.gt.0) then
-                  I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                  J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                  Do K = I, J, -1
-                    If(I.ne.K) then 
-                      II = 1
-                    Else 
-                      II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                    EndIf
-                    If(J.ne.K) then 
-                      JJ = Bit_Size(0)
-                    Else
-                      JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                    EndIf
-                    ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                  EndDo
-                EndIf
-              EndIf
-              If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-                ERI2 = ERIs%alpha%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
-              ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-                ERI2 = ERIs%alphaBeta%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                ERI2 = ERIs%betaAlpha%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-                ERI2 = ERIs%beta%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2))
-              EndIf
-              If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
-              If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
-              If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!              Write(IOut,*) 'Setting ERI2 to',ERI2
-            Else 
-!              Write(IOut,*) 'Setting ERI2 to zero'
-              ERI2 = Zero
-            EndIf
-          Else
-            Write(IOut,1050) 'Slater Condon has been handed confusing determinant info'
-          EndIf
-!
-          MatEl = ERI1 - ERI2
-!          Write(IOut,*) 'Slater Condon Final:',MatEl
-!          Deallocate(Orbs,Spin,Det)
-          Return
-!
-        Case(1)
-          IDiff = 1
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            If(BTest(Alpha_Diff(I),J)) then
-              Orbs(IDiff) = IPos+1
-              Spin(IDiff) = 0
-              IDiff = IDiff + 1
-            EndIf
-            If(BTest(Beta_Diff(I),J)) then
-              Orbs(IDiff) = IPos+1
-              Spin(IDiff) = 1
-              IDiff = IDiff + 1
-            EndIf
-          EndDo
-!          Write(IOut,*)'Orb 1:',Orbs(1),' Orb 2:',Orbs(2)
-!          Write(IOut,*)'Spin 1:',Spin(1),' Spin 2:',Spin(2)
-!          Write(IOut,*)'Det 1:',Det(1),' Det 2:',Det(2)
-!
-          ISgn = 0
-          If(Spin(1).eq.0.and.Spin(2).eq.0) then
-            If(Orbs(2)-Orbs(1)-1.gt.0) then 
-              I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-              J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-              Do K = I, J, -1
-                If(I.ne.K) then 
-                  II = 1
-                Else 
-                  II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
-                EndIf
-                If(J.ne.K) then 
-                  JJ = Bit_Size(0) 
-                Else
-                  JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                EndIf
-                ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-              EndDo
-            EndIf
-          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-            If(Orbs(2)-Orbs(1)-1.gt.0) then
-              I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-              J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-              Do K = I, J, -1
-                If(I.ne.K) then 
-                  II = 1
-                Else 
-                  II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
-                EndIf
-                If(J.ne.K) then 
-                  JJ = Bit_Size(0) 
-                Else
-                  JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                EndIf
-                ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-              EndDo
-            EndIf
-          EndIf
-          Sgn = (-1)**ISgn
-!          Write(IOut,*)'ISgn:',ISgn
-!
-          MatEl = Zero
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-!            Write(IOut,*) 'Alpha IPos:', IPos
+      Case(2)
+!     I am going to comment the first logical block - the rest are different
+!     perutations
+!     First we need to determine the relevant orbital, spin and determinant
+        IDiff = 1
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+!          Write(IOut,*) 'Orbs:',IPos,' I:',I,' J:',J
+          If(BTest(Alpha_Diff(I),J)) then
+            Orbs(IDiff) = IPos+1
+            Spin(IDiff) = 0
             If(BTest(Alpha_String_1(I),J)) then
-              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
-!                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
-                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
-                If(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                  Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
-!                    'ALPHA: UHF False and 1 and 2 both alpha, subtracting:')
-                  MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
-!                  Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)), iOut, &
-!                  'ALPHA: UHF True and 1 and 2 both alpha, adding:')
-                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
-                  Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                Call MQC_Print(Sgn*ERIs%betaAlpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
-!                  'ALPHA: UHF True and 1 and 2 both beta, adding:')
-                MatEl = MatEl + Sgn*ERIs%betaAlpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
-              EndIf
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
             EndIf
-          EndDo
-!
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0))
+            IDiff = IDiff + 1
+          EndIf
+          If(BTest(Beta_Diff(I),J)) then
+            Orbs(IDiff) = IPos+1
+            Spin(IDiff) = 1
             If(BTest(Beta_String_1(I),J)) then
-              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
-!                  'BETA: UHF False and 1 and 2 same spin, adding:')
-                MatEl = MatEl + Sgn*ERIs%alpha%at(Orbs(1),Orbs(2),IPos+1,IPos+1)
-                If(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                  Call MQC_Print(Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
-!                    'BETA: UHF False and 1 and 2 both beta, subtracting:')
-                  MatEl = MatEl - Sgn*ERIs%alpha%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
-                EndIf
-              ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                Call MQC_Print(Sgn*ERIs%alphaBeta%at(Orbs(1),Orbs(2),IPos+1,IPos+1),iOut, &
-!                  'BETA: UHF True and 1 and 2 both alpha, adding:')
-                MatEl = MatEl + Sgn*ERIs%alphaBeta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) 
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                Call MQC_Print(Sgn*ERIs%beta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
-!                  Sgn*ERIs%beta%at(Orbs(1),IPos+1,IPos+1,Orbs(2)),iOut, &
-!                  'BETA: UHF True and 1 and 2 both beta, adding:')
-                MatEl = MatEl + Sgn*ERIs%beta%at(Orbs(1),Orbs(2),IPos+1,IPos+1) - &
-                  Sgn*ERIs%beta%at(Orbs(1),IPos+1,IPos+1,Orbs(2))
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
+            EndIf
+            IDiff = IDiff + 1
+          EndIf
+        EndDo
+!        Call Print_Vector(IOut,Orbs,'Orbs')
+!        Call Print_Vector(IOut,Spin,'Spin')
+!        Call Print_Vector(IOut,Det,'Det')
+
+        If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
+!          Write(IOut,*) 'Entering case 1'
+!          
+!         This section computes the Coulomb contribution to the matrix
+!         element
+          If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
+!            
+!           This section detemines number of permutations of creation
+!           operators and sets sign accordingly
+!           It got quite a bit longer after generalizing max number of
+!           orbitals
+!           Probably want to make some functions for these then later
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(2).eq.0) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
               EndIf
             EndIf
-          EndDo
+!            
+!           This section computes the value of the matrix element
 !
-          If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-!            Call MQC_Print(Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
-            MatEl = MatEl + Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)) 
-          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!            Call MQC_Print(Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
-            MatEl = MatEl + Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2))
+            If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
+            EndIf
+!            
+!           This section changes sign accounting for the ordering of alpha and
+!           beta strings
+            If(Spin(1).gt.Spin(2)) ERI1 = -ERI1
+            If(Spin(3).gt.Spin(4)) ERI1 = -ERI1
+            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
+!            Write(IOut,*) 'Setting ERI1 to',ERI1
+          Else
+!            
+!           Sets Coulomb contribution to zero if 2ERI is necessarily so by
+!           spin order in the integral
+!            Write(IOut,*) 'Setting ERI1 to zero'
+            ERI1 = Zero
           EndIf
-          
-!          Call MQC_Print(MatEl,IOut,'CI Matrix Element')
-
-          Return
+          If(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(2).eq.0) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            EndIf
 !
-        Case(0)
-          MatEl = Zero
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0))
-            If(BTest(Alpha_String_1(I),J)) then
-!              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
+            If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
+            EndIf
+!
+            If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
+            If(Spin(3).gt.Spin(4)) ERI2 = -ERI2
+            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
+!            Write(IOut,*) 'Setting ERI2 to',ERI2
+          Else 
+!            Write(IOut,*) 'Setting ERI2 to zero'
+            ERI2 = Zero
+          EndIf
+!
+        ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
+!          Write(IOut,*) 'Entering case 2'
+          If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(3).eq.0) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            EndIf
+            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
+            EndIf
+            If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
+            If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
+            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
+!            Write(IOut,*) 'Setting ERI1 to',ERI1
+          Else
+!            Write(IOut,*) 'Setting ERI1 to zero'
+            ERI1 = Zero
+          EndIf
+          If(Spin(1).eq.Spin(4).and.Spin(3).eq.Spin(2)) then
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(3).eq.0) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
+              If(Orbs(3)-Orbs(2)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(4)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            EndIf
+            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
+            EndIf
+            If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
+            If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
+            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
+!            Write(IOut,*) 'Setting ERI2 to',ERI2
+          Else 
+!            Write(IOut,*) 'Setting ERI2 to zero'
+            ERI2 = Zero
+          EndIf
+!
+        ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
+!          Write(IOut,*) 'Entering case 3'
+          If(Spin(1).eq.Spin(2).and.Spin(4).eq.Spin(3)) then
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(4).eq.0) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
+              If(Orbs(4)-Orbs(3)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(2)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            EndIf
+            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
+              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
+            EndIf
+            If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
+            If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
+            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
+!            Write(IOut,*) 'Setting ERI1 to',ERI1
+          Else
+!            Write(IOut,*) 'Setting ERI1 to zero'
+            ERI1 = Zero
+          EndIf
+          If(Spin(1).eq.Spin(3).and.Spin(4).eq.Spin(2)) then
+            ISgn = 0
+            If(Spin(1).eq.0.and.Spin(4).eq.0) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then 
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
+              If(Orbs(4)-Orbs(2)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+              If(Orbs(3)-Orbs(1)-1.gt.0) then
+                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                Do K = I, J, -1
+                  If(I.ne.K) then 
+                    II = 1
+                  Else 
+                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+                  EndIf
+                  If(J.ne.K) then 
+                    JJ = Bit_Size(0)
+                  Else
+                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+                  EndIf
+                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+                EndDo
+              EndIf
+            EndIf
+            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
+            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
+            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
+              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
+            EndIf
+            If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
+            If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
+            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
+!            Write(IOut,*) 'Setting ERI2 to',ERI2
+          Else 
+!            Write(IOut,*) 'Setting ERI2 to zero'
+            ERI2 = Zero
+          EndIf
+        Else
+          Write(IOut,1050) 'Slater Condon has been handed confusing determinant info'
+        EndIf
+!
+        MatEl = ERI1 - ERI2
+!        Write(IOut,*) 'Slater Condon Final:',MatEl
+!        Deallocate(Orbs,Spin,Det)
+        Return
+!
+      Case(1)
+        IDiff = 1
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+          If(BTest(Alpha_Diff(I),J)) then
+            Orbs(IDiff) = IPos+1
+            Spin(IDiff) = 0
+            IDiff = IDiff + 1
+          EndIf
+          If(BTest(Beta_Diff(I),J)) then
+            Orbs(IDiff) = IPos+1
+            Spin(IDiff) = 1
+            IDiff = IDiff + 1
+          EndIf
+        EndDo
+!        Write(IOut,*)'Orb 1:',Orbs(1),' Orb 2:',Orbs(2)
+!        Write(IOut,*)'Spin 1:',Spin(1),' Spin 2:',Spin(2)
+!        Write(IOut,*)'Det 1:',Det(1),' Det 2:',Det(2)
+!
+        ISgn = 0
+        If(Spin(1).eq.0.and.Spin(2).eq.0) then
+          If(Orbs(2)-Orbs(1)-1.gt.0) then 
+            I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+            J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+            Do K = I, J, -1
+              If(I.ne.K) then 
+                II = 1
+              Else 
+                II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
+              EndIf
+              If(J.ne.K) then 
+                JJ = Bit_Size(0) 
+              Else
+                JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+              EndIf
+              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
+            EndDo
+          EndIf
+        ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+          If(Orbs(2)-Orbs(1)-1.gt.0) then
+            I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
+            J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+            Do K = I, J, -1
+              If(I.ne.K) then 
+                II = 1
+              Else 
+                II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
+              EndIf
+              If(J.ne.K) then 
+                JJ = Bit_Size(0) 
+              Else
+                JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+              EndIf
+              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
+            EndDo
+          EndIf
+        EndIf
+        Sgn = (-1)**ISgn
+!        Write(IOut,*)'ISgn:',ISgn
+!
+        MatEl = Zero
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+!          Write(IOut,*) 'Alpha IPos:', IPos
+          If(BTest(Alpha_String_1(I),J)) then
+            If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+!              Call MQC_Print(Sgn*ERIs%%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                'ALPHA: UHF False and 1 and 2 same spin, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
+              If(Spin(1).eq.0.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
+!                  'ALPHA: UHF False and 1 and 2 both alpha, subtracting:')
+                MatEl = MatEl - Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
+!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
+!                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'), iOut, &
+!                'ALPHA: UHF True and 1 and 2 both alpha, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
+                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha'),iOut, &
+!                'ALPHA: UHF True and 1 and 2 both beta, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha')
+            EndIf
+          EndIf
+        EndDo
+!
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0))
+          If(BTest(Beta_String_1(I),J)) then
+            If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                'BETA: UHF False and 1 and 2 same spin, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
+              If(Spin(1).eq.1.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
+!                  'BETA: UHF False and 1 and 2 both beta, subtracting:')
+                MatEl = MatEl - Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+              EndIf
+            ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
+!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta'),iOut, &
+!                'BETA: UHF True and 1 and 2 both alpha, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta') 
+            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
+!                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta'),iOut, &
+!                'BETA: UHF True and 1 and 2 both beta, adding:')
+              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
+                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta')
+            EndIf
+          EndIf
+        EndDo
+!
+        If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+!          Call MQC_Print(Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
+          MatEl = MatEl + Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)) 
+        ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!          Call MQC_Print(Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
+          MatEl = MatEl + Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2))
+        EndIf
+        
+!        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
+
+        Return
+!
+      Case(0)
+        MatEl = Zero
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0))
+          If(BTest(Alpha_String_1(I),J)) then
+!            Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
+!            Call MQC_Print(Core_Hamiltonian%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
+            MatEl = MatEl + Core_Hamiltonian%Alpha%at(IPos+1,IPos+1)
+          EndIf
+          If(BTest(Beta_String_1(I),J)) then
+!            Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
+            If(UHF) then
+!              Call MQC_Print(Core_Hamiltonian%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
+              MatEl = MatEl + Core_Hamiltonian%Beta%at(IPos+1,IPos+1)
+            Else
 !              Call MQC_Print(Core_Hamiltonian%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
               MatEl = MatEl + Core_Hamiltonian%Alpha%at(IPos+1,IPos+1)
             EndIf
-            If(BTest(Beta_String_1(I),J)) then
-!              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-              If(UHF) then
-!                Call MQC_Print(Core_Hamiltonian%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
-                MatEl = MatEl + Core_Hamiltonian%Beta%at(IPos+1,IPos+1)
-              Else
-!                Call MQC_Print(Core_Hamiltonian%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
-                MatEl = MatEl + Core_Hamiltonian%Alpha%at(IPos+1,IPos+1)
+          EndIf
+        EndDo
+!
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+          Do JPos = IPos+1, NBasis-1
+            II = NBit_Ints - JPos/Bit_Size(0)
+            JJ = Mod(JPos,Bit_Size(0)) 
+            If(BTest(Alpha_String_1(I),J)) then
+              If(BTest(Alpha_String_1(II),JJ)) then 
+!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+!                Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+!                Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
+                MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
               EndIf
             EndIf
           EndDo
+        EndDo
 !
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            Do JPos = IPos+1, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
-              JJ = Mod(JPos,Bit_Size(0)) 
-              If(BTest(Alpha_String_1(I),J)) then
-                If(BTest(Alpha_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-!                  Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-!                  Call MQC_Print(ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
-                  MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1) - ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1)
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+          Do JPos = IPos+1, NBasis-1
+            II = NBit_Ints - JPos/Bit_Size(0)
+            JJ = Mod(JPos,Bit_Size(0))
+            If(BTest(Beta_String_1(I),J)) then
+              If(BTest(Beta_String_1(II),JJ)) then 
+!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                If(UHF) then
+!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
+!                  Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
+                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
+                    ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta')
+                Else
+!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+!                  Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
+                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - &
+                    ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
                 EndIf
               EndIf
-            EndDo
+            EndIf
           EndDo
+        EndDo
 !
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            Do JPos = IPos+1, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
-              JJ = Mod(JPos,Bit_Size(0))
-              If(BTest(Beta_String_1(I),J)) then
-                If(BTest(Beta_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(UHF) then
-!                    Call MQC_Print(ERIs%beta%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-!                    Call MQC_Print(ERIs%beta%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
-                    MatEl = MatEl + ERIs%beta%at(IPos+1,IPos+1,JPos+1,JPos+1) - & 
-                      ERIs%beta%at(IPos+1,JPos+1,JPos+1,IPos+1)
-                  Else
-!                    Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-!                    Call MQC_Print(ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1),IOut,'(IJ|JI)') 
-                    MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1) - &
-                      ERIs%alpha%at(IPos+1,JPos+1,JPos+1,IPos+1)
-                  EndIf
+        Do IPos = 0, NBasis-1
+          I = NBit_Ints - IPos/Bit_Size(0)
+          J = Mod(IPos,Bit_Size(0)) 
+          Do JPos = 0, NBasis-1
+            II = NBit_Ints - JPos/Bit_Size(0)
+            JJ = Mod(JPos,Bit_Size(0))
+            If(BTest(Alpha_String_1(I),J)) then
+              If(BTest(Beta_String_1(II),JJ)) then 
+!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                If(UHF) then
+!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
+                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
+                Else
+!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha')
                 EndIf
               EndIf
-            EndDo
+            EndIf
           EndDo
-!
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            Do JPos = 0, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
-              JJ = Mod(JPos,Bit_Size(0))
-              If(BTest(Alpha_String_1(I),J)) then
-                If(BTest(Beta_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(UHF) then
-!                    Call MQC_Print(ERIs%alphaBeta%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-                    MatEl = MatEl + ERIs%alphaBeta%at(IPos+1,IPos+1,JPos+1,JPos+1)
-                  Else
-!                    Call MQC_Print(ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1),IOut,'(II|JJ)')
-                    MatEl = MatEl + ERIs%alpha%at(IPos+1,IPos+1,JPos+1,JPos+1)
-                  EndIf
-                EndIf
-              EndIf
-            EndDo
-          EndDo
+        EndDo
 
-!          Call MQC_Print(MatEl,IOut,'CI Matrix Element')
+!        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
 
-          Return
-!        
+        Return
+!      
       Case Default
         Call MQC_Error_I('Slater_Condon is confused about number of different orbitals', 6, &
              'Det_Diff', Det_Diff )
@@ -11082,12 +10877,15 @@
 !     
 !     PROCEDURE TWOERI_TRANS
 ! 
-      Subroutine TwoERI_Trans(IOut,IPrint,MO_Coeff,ERIs,MO_ERIs,UHF)
+      Subroutine TwoERI_Trans(IOut,IPrint,MO_Coeff,ERIs,MO_ERIs,Right_MOs)
 !
 !     This subroutine transforms two-electron integrals to the MO basis 
 !     If the UHF flag is true it computes the set of MO integrals accounting
 !     for different spacial occupation of alpha and beta electrons. The order
-!     in the final MO ERI array is (aa|aa), (aa|bb), (bb|aa), (bb|bb).
+!     in the final MO ERI array is (aa|aa), (aa|bb), (bb|aa), (bb|bb). If the
+!     optional argument Right_MOs is present, then MOs in MO_Coeff are the MOs 
+!     of the bra determinant, and MOs in Right_MOs are the MOs of the ket 
+!     determinant, otherwise bra and ket MOs are considered equal.
 !
 !             |' (aa|aa) | (bb|aa) '| 
 !             |----------|----------|
@@ -11098,13 +10896,18 @@
       Implicit None
       Integer(kind=int64)::IOut,IPrint,NBasis,P,Q,R,S,Mu,Nu,Lambda,Sigma,IErr
       real(kind=real64)::Zero=0.0d0
-      Logical::DoON5,UHF
+      Logical::DoON5
       Type(MQC_Matrix)::X,Y
-      Type(MQC_R4Tensor) tmpR4TensorAlpha,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha, &
-        tmpR4TensorBeta
+      Type(MQC_R4Tensor)::tmpR4TensorAlpha,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha,tmpR4TensorBeta,&
+        tmpR4TensorABAB,tmpR4TensorBABA,tmpR4TensorABBA,tmpR4TensorBAAB,tmpR4TensorAAAB,tmpR4TensorAABA,&
+        tmpR4TensorABAA,tmpR4TensorBAAA,tmpR4TensorBBBA,tmpR4TensorBBAB,tmpR4TensorBABB,tmpR4TensorABBB
+      Type(MQC_R4Tensor)::tmpR4Tensor
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_TwoERIs),Intent(Out)::MO_ERIs
       Type(MQC_SCF_Integral),Intent(In)::MO_Coeff
+      Type(MQC_SCF_Integral),Optional,Intent(In)::Right_MOs
+      Type(MQC_SCF_Integral)::MO_Coeff_2
+      Character(len=15)::storage,intType
 !
  1000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
  2000 Format(1x,'Doing O(N**8) integral transformation algorithm')
@@ -11117,18 +10920,54 @@
       If(ERIs%type().ne.'regular') call mqc_error_A('Slater_Condon only implemented for &
         & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
 !
-      NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
-      If(.not.UHF) then
-        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
-      ElseIf(UHF) then
-        call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorAlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorBeta%init(NBasis,NBasis,NBasis,NBasis)
+      If(Present(Right_MOs)) then
+        MO_Coeff_2 = Right_MOs
+      Else
+        MO_Coeff_2 = MO_Coeff
       EndIf
-      MO_ERIs%StorageType = 'Full'
-      MO_ERIs%IntegralType = 'Regular'
+!
+      If(mqc_integral_norm(MO_Coeff-MO_Coeff_2).lt.1.0e-14) then
+        storage = 'symm'
+      Else
+        storage = 'full'
+      EndIf
+      If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general') then
+        intType = 'general'
+      ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin') then
+        intType = 'spin'
+      Else
+        intType = 'space'
+      EndIf
+      If(mqc_integral_norm(MO_Coeff-MO_Coeff_2).lt.1.0e-14) then
+        storage = 'symm'
+      Else
+        storage = 'full'
+      EndIf
+      If(intType.eq.'space') storage = 'full'
 
+      NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
+
+      call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
+      If(intType.eq.'spin'.or.intType.eq.'general') then
+        call tmpR4TensorBeta%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorAlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
+        If(storage.eq.'full') call tmpR4TensorBetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+      EndIf
+      If(intType.eq.'general') then
+        call tmpR4TensorABAB%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBABA%init(NBasis,NBasis,NBasis,NBasis) 
+        call tmpR4TensorABBA%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBAAB%init(NBasis,NBasis,NBasis,NBasis) 
+        call tmpR4TensorAAAB%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorAABA%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorABAA%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBAAA%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBBBA%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBBAB%init(NBasis,NBasis,NBasis,NBasis) 
+        If(storage.eq.'full') call tmpR4TensorBABB%init(NBasis,NBasis,NBasis,NBasis) 
+        call tmpR4TensorABBB%init(NBasis,NBasis,NBasis,NBasis) 
+      EndIf
+!
       If(.not.DoON5) then
 
         If(IPrint.ge.2) Write(IOut,2000) 
@@ -11141,25 +10980,302 @@
                     Do Lambda = 1, NBasis
                       Do Sigma = 1, NBasis
                         Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
-                          MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
-                          ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * MO_Coeff%Alpha%at(Lambda,R) * &
-                          MO_Coeff%Alpha%at(Sigma,S),P,Q,R,S)
-                          If(UHF) then
-                           Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
-                             MO_Coeff%Alpha%at(Mu,P) * MO_Coeff%Alpha%at(Nu,Q) * &
-                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
-                             MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
-                             P,Q,R,S)
-                           Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
-                             MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
-                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * & 
-                             MO_Coeff%Alpha%at(Lambda,R) * MO_Coeff%Alpha%at(Sigma,S), &
-                             P+NBasis,Q+NBasis,R,S)
-                           Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P+NBasis,Q+NBasis,R+NBasis,S+NBasis) + &
-                             MO_Coeff%Beta%at(Mu,P) * MO_Coeff%Beta%at(Nu,Q) * &
-                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
-                             MO_Coeff%Beta%at(Lambda,R) * MO_Coeff%Beta%at(Sigma,S), &
-                             P,Q,R,S)
+                          conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                          ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                          MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                        If(intType.eq.'spin'.or.intType.eq.'general') then
+                          Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S)+&
+                            conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
+                            conjg(MO_Coeff_2%Beta%at(Lambda,R)) * MO_Coeff_2%Beta%at(Sigma,S), &
+                            P,Q,R,S)
+                          Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
+                            conjg(MO_Coeff_2%Beta%at(Lambda,R)) * MO_Coeff_2%Beta%at(Sigma,S), &
+                            P,Q,R,S)
+                          If(storage.eq.'full'.or.intType.eq.'general') &
+                            Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * & 
+                            conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * MO_Coeff_2%Alpha%at(Sigma,S), &
+                            P,Q,R,S)
+                        EndIf
+                        If(intType.eq.'general') then
+                          !AAAA
+                          Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                            MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          !BBBB
+                          Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          !AABB
+                          Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAlphaBeta%put(tmpR4TensorAlphaBeta%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          !BBAA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !ABAB
+                          Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          !BABA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !ABBA
+                          Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          !BAAB
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !AAAB
+                          Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          !AABA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !ABAA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !BAAA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !BBBA
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%Alpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%AlphaBeta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !BBAB
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Alpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%AlphaBeta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !BABB
+                          If(storage.eq.'full') then
+                            Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%BetaAlpha%at(Mu,P)) * MO_Coeff%Alpha%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                              MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                            Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S) + &
+                              conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%AlphaBeta%at(Nu,Q) * &
+                              ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                              MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          endIf
+                          !ABBB
+                          Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%Alpha%at(Mu,P)) * MO_Coeff%BetaAlpha%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%BetaAlpha%at(Lambda,R)) * &
+                            MO_Coeff_2%BetaAlpha%at(Sigma,S),P,Q,R,S)
+                          Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S) + &
+                            conjg(MO_Coeff%AlphaBeta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
+                            ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * conjg(MO_Coeff_2%Beta%at(Lambda,R)) * &
+                            MO_Coeff_2%Beta%at(Sigma,S),P,Q,R,S)
                         EndIf
                       EndDo
                     EndDo
@@ -11184,8 +11300,8 @@
                 Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
               EndDo
             EndDo
-            Y = Transpose(MO_Coeff%Alpha).dot.X
-            X = Y.dot.MO_Coeff%Alpha
+            Y = Dagger(MO_Coeff_2%Alpha).dot.X
+            X = Y.dot.MO_Coeff_2%Alpha
             Do R = 1, NBasis
               Do S = 1, NBasis
                 Call tmpR4TensorAlpha%put(X%at(R,S),P,Q,R,S)
@@ -11201,7 +11317,7 @@
                 Call X%put(tmpR4TensorAlpha%at(P,Q,R,S),P,Q)
               EndDo
             EndDo
-            Y = Transpose(MO_Coeff%Alpha).dot.X
+            Y = Dagger(MO_Coeff%Alpha).dot.X
             X = Y.dot.MO_Coeff%Alpha
             Do P = 1, NBasis
               Do Q = 1, NBasis
@@ -11211,41 +11327,7 @@
           EndDo
         EndDo
 
-        If(UHF) then
-         
-          Do P = 1, NBasis
-            Do Q = 1, NBasis
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S)
-                EndDo
-              EndDo
-              Y = Transpose(MO_Coeff%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call tmpR4TensorAlphaBeta%put(X%at(R,S),P,Q,R,S)
-                EndDo
-              EndDo
-            EndDo
-          EndDo
-
-          Do R = 1, NBasis
-            Do S = 1, NBasis
-              Do P = 1, NBasis
-                Do Q = 1, NBasis 
-                  Call X%put(tmpR4TensorAlphaBeta%at(P,Q,R,S),P,Q)
-                EndDo
-              EndDo
-              Y = Transpose(MO_Coeff%Alpha).dot.X
-              X = Y.dot.MO_Coeff%Alpha
-              Do P = 1, NBasis
-                Do Q = 1, NBasis
-                  Call tmpR4TensorAlphaBeta%put(X%at(P,Q),P,Q,R,S)
-                EndDo
-              EndDo
-            EndDo
-          EndDo
+        If(intType.eq.'spin') then
 
           Do P = 1, NBasis
             Do Q = 1, NBasis
@@ -11254,42 +11336,8 @@
                   Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
                 EndDo
               EndDo
-              Y = Transpose(MO_Coeff%Alpha).dot.X
-              X = Y.dot.MO_Coeff%Alpha
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call tmpR4TensorBetaAlpha%put(X%at(R,S),P,Q,R,S)
-                EndDo
-              EndDo
-            EndDo
-          EndDo
-
-          Do R = 1, NBasis
-            Do S = 1, NBasis
-              Do P = 1, NBasis
-                Do Q = 1, NBasis 
-                  Call X%put(tmpR4TensorBetaAlpha%at(P,Q,R,S),P,Q)
-                EndDo
-              EndDo
-              Y = Transpose(MO_Coeff%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
-              Do P = 1, NBasis
-                Do Q = 1, NBasis
-                  Call tmpR4TensorBetaAlpha%put(X%at(P,Q),P,Q,R,S)
-                EndDo
-              EndDo
-            EndDo
-          EndDo
-
-          Do P = 1, NBasis
-            Do Q = 1, NBasis
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
-                EndDo
-              EndDo
-              Y = Transpose(MO_Coeff%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4TensorBeta%put(X%at(R,S),P,Q,R,S)
@@ -11305,11 +11353,2103 @@
                   Call X%put(tmpR4TensorBeta%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Transpose(MO_Coeff%Beta).dot.X
+              Y = Dagger(MO_Coeff%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
                   Call tmpR4TensorBeta%put(X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+         
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4TensorAlphaBeta%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4TensorAlphaBeta%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%Alpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAlphaBeta%put(X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          If(storage.eq.'full') then
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4TensorBetaAlpha%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4TensorBetaAlpha%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBetaAlpha%put(X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+          EndIf
+
+        EndIf
+
+        If(intType.eq.'general') then
+
+          call tmpR4Tensor%init(NBasis,NBasis,NBasis,NBasis)
+
+!         AAAA
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%alphaBeta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alpha).dot.X
+              X = Y.dot.MO_Coeff%alpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%alpha).dot.X
+              X = Y.dot.MO_Coeff_2%alpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%alphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%alphaBeta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%alphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAlpha%put(tmpR4TensorAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         BBBB
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Beta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%betaAlpha).dot.X
+              X = Y.dot.MO_Coeff%betaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%betaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%betaAlpha).dot.X
+              X = Y.dot.MO_Coeff%betaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorBeta%put(tmpR4TensorBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         AABB
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%betaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alpha).dot.X
+              X = Y.dot.MO_Coeff%alpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensoralphaBeta%put(tmpR4TensoralphaBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta 
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%alphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensoralphaBeta%put(tmpR4TensoralphaBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%betaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%alphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensoralphaBeta%put(tmpR4TensoralphaBeta%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         BBAA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%alphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%beta).dot.X
+                X = Y.dot.MO_Coeff%beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%alpha).dot.X
+                X = Y.dot.MO_Coeff_2%alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%betaAlpha).dot.X
+                X = Y.dot.MO_Coeff%betaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%alphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%betaAlpha).dot.X
+                X = Y.dot.MO_Coeff%betaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         ABAB
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABAB%put(tmpR4TensorABAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         BABA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABA%put(tmpR4TensorBABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         ABBA
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%Alpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%AlphaBeta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%Alpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%AlphaBeta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBA%put(tmpR4TensorABBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         BAAB
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAB%put(tmpR4TensorBAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         AAAB
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%Alpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%Alpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff%AlphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%alphaBeta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorAAAB%put(tmpR4TensorAAAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+!         AABA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Alpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Alpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%alphaBeta).dot.X
+                X = Y.dot.MO_Coeff%alphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorAABA%put(tmpR4TensorAABA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         ABAA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Alpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Alpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%alphaBeta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorABAA%put(tmpR4TensorABAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         BAAA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBAAA%put(tmpR4TensorBAAA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         BBBA
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%Alpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%AlphaBeta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBBA%put(tmpR4TensorBBBA%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         BBAB
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%BetaAlpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%Beta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBBAB%put(tmpR4TensorBBAB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         BABB
+          If(storage.eq.'full') then
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff%Alpha
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+                X = Y.dot.MO_Coeff_2%BetaAlpha
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+
+            Do P = 1, NBasis
+              Do Q = 1, NBasis
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
+                X = Y.dot.MO_Coeff_2%Beta
+                Do R = 1, NBasis
+                  Do S = 1, NBasis
+                    Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+            Do R = 1, NBasis
+              Do S = 1, NBasis
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis 
+                    Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                  EndDo
+                EndDo
+                Y = Dagger(MO_Coeff%Beta).dot.X
+                X = Y.dot.MO_Coeff%AlphaBeta
+                Do P = 1, NBasis
+                  Do Q = 1, NBasis
+                    Call tmpR4TensorBABB%put(tmpR4TensorBABB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndIf
+
+!         ABBB
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%Alpha).dot.X
+              X = Y.dot.MO_Coeff%BetaAlpha
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
+              X = Y.dot.MO_Coeff_2%BetaAlpha
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+
+          Do P = 1, NBasis
+            Do Q = 1, NBasis
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
+              X = Y.dot.MO_Coeff_2%Beta
+              Do R = 1, NBasis
+                Do S = 1, NBasis
+                  Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+          Do R = 1, NBasis
+            Do S = 1, NBasis
+              Do P = 1, NBasis
+                Do Q = 1, NBasis 
+                  Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
+                EndDo
+              EndDo
+              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              X = Y.dot.MO_Coeff%Beta
+              Do P = 1, NBasis
+                Do Q = 1, NBasis
+                  Call tmpR4TensorABBB%put(tmpR4TensorABBB%at(P,Q,R,S)+X%at(P,Q),P,Q,R,S)
                 EndDo
               EndDo
             EndDo
@@ -11319,19 +13459,48 @@
     
       EndIf
       
-      If(.not.UHF) then
+      If(intType.eq.'space') then
         call mqc_twoeris_allocate(mo_eris,'full','space',tmpR4TensorAlpha)
-      ElseIf(UHF) then
+      ElseIf(intType.eq.'spin'.and.storage.eq.'full') then
         call mqc_twoeris_allocate(mo_eris,'full','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
           tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
+      ElseIf(intType.eq.'spin'.and.storage.eq.'symm') then
+        call mqc_twoeris_allocate(mo_eris,'symm','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          tmpR4TensorAlphaBeta)
+      ElseIf(intType.eq.'general'.and.storage.eq.'full') then
+        call mqc_twoeris_allocate(mo_eris,'full','general',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha,tmpR4TensorABAB,tmpR4TensorABBA,tmpR4TensorBAAB, &
+          tmpR4TensorBABA,tmpR4TensorAAAB,tmpR4TensorAABA,tmpR4TensorABAA,tmpR4TensorBAAA,tmpR4TensorBBBA,&
+          tmpR4TensorBBAB,tmpR4TensorBABB,tmpR4TensorABBB)
+      ElseIf(intType.eq.'general'.and.storage.eq.'symm') then
+        call mqc_twoeris_allocate(mo_eris,'symm','general',tmpR4TensorAlpha,tmpR4TensorBeta, &
+          tmpR4TensorAlphaBeta,abab=tmpR4TensorABAB,abba=tmpR4TensorABBA,aaab=tmpR4TensorAAAB,&
+          abbb=tmpR4TensorABBB)
+      Else
+        call mqc_error_a('TwoERI_Trans is confused about ERI storage or spin symmetry',6,'storage',&
+          storage,'intType',intType)
       EndIf
 
       If(IPrint.ge.2) then
         Call MQC_Print(MO_ERIs%alpha,IOut,'Transformed MO 2ERIs (aa|aa)')
-        If(UHF) then
-          Call MQC_Print(MO_ERIs%alphaBeta,IOut,'Transformed MO 2ERIs (aa|bb)')
-          Call MQC_Print(MO_ERIs%BetaAlpha,IOut,'Transformed MO 2ERIs (bb|aa)')
+        If(intType.eq.'spin'.or.intType.eq.'general') then
           Call MQC_Print(MO_ERIs%beta,IOut,'Transformed MO 2ERIs (bb|bb)')
+          Call MQC_Print(MO_ERIs%alphaBeta,IOut,'Transformed MO 2ERIs (aa|bb)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%BetaAlpha,IOut,'Transformed MO 2ERIs (bb|aa)') 
+        EndIf
+        If(intType.eq.'general') then
+          Call MQC_Print(MO_ERIs%abab,IOut,'Transformed MO 2ERIs (ab|ab)') 
+          Call MQC_Print(MO_ERIs%abba,IOut,'Transformed MO 2ERIs (ab|ba)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%baab,IOut,'Transformed MO 2ERIs (ba|ab)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%baba,IOut,'Transformed MO 2ERIs (ba|ba)')
+          Call MQC_Print(MO_ERIs%aaab,IOut,'Transformed MO 2ERIs (aa|ab)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%aaba,IOut,'Transformed MO 2ERIs (aa|ba)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%abaa,IOut,'Transformed MO 2ERIs (ab|aa)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%baaa,IOut,'Transformed MO 2ERIs (ba|aa)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%bbba,IOut,'Transformed MO 2ERIs (bb|ba)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%bbab,IOut,'Transformed MO 2ERIs (bb|ab)')
+          If(storage.eq.'full') Call MQC_Print(MO_ERIs%babb,IOut,'Transformed MO 2ERIs (ba|bb)')
+          Call MQC_Print(MO_ERIs%abbb,IOut,'Transformed MO 2ERIs (ab|bb)')
         EndIf
       EndIf
 !
