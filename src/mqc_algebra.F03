@@ -299,6 +299,7 @@
         module procedure MQC_Scalar_Complex_Conjugate
         module procedure MQC_Vector_Complex_Conjugate
         module procedure MQC_Matrix_Complex_Conjugate
+        module procedure MQC_R4Tensor_Complex_Conjugate
       end interface
 !
 !>    \brief <b> Returns the object as a floating point intrinsic</b>
@@ -504,6 +505,14 @@
 !>    sign of another</b>
       interface Sign
         module procedure MQC_Scalar_Sign
+      end interface
+!
+!>    \brief <b> Returns whether object is allocated</b>
+      interface Allocated
+        module procedure MQC_Scalar_IsAllocated
+        module procedure MQC_Vector_IsAllocated
+        module procedure MQC_Matrix_IsAllocated
+        module procedure MQC_R4Tensor_IsAllocated
       end interface
 !
 !----------------------------------------------------------------
@@ -28738,5 +28747,48 @@
 
       End Function MQC_R4TensorScalarProduct
 !
+!
+!     PROCEDURE MQC_R4Tensor_Complex_Conjugate
+!
+!>    \brief <b> MQC_R4Tensor_Complex_Conjugate is a function that returns the complex conjugate 
+!>    of an MQC_R4Tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Complex_Conjugate is a function that returns the complex conjugate of an 
+!>    MQC_Matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4TensorIn
+!>    \verbatim
+!>        R4TensorIn is Type(MQC_R4Tensor)
+!>        The MQC_R4Tensor input variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4Tensor_Complex_Conjugate(R4TensorIn) Result(R4TensorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::R4TensorIn
+      Type(MQC_R4Tensor)::R4TensorOut
+!
+      R4TensorOut = R4TensorIn
+      If(R4TensorIn%Data_Type.eq.'Complex') then
+        R4TensorOut%CTen = conjg(R4TensorIn%CTen)
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_Complex_Conjugate
 !
       End Module MQC_Algebra
