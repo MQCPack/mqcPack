@@ -4164,15 +4164,20 @@
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
-            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha)
+            call mqc_twoeris_allocate(est_twoeris,'symm','space',tmpR4TensorAlpha)
           endIf
         elseIf(fileinfo%isUnrestricted()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
           if(present(foundERI)) foundERI = found
           call fileInfo%getArray('Write BB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBeta,foundOut=found)
           if(present(foundERI)) found = foundERI.and.found
+          call fileInfo%getArray('Write AB MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlphaBeta,foundOut=found)
+          if(present(foundERI)) foundERI = foundERI.and.found
+          call fileInfo%getArray('Write BA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorBetaAlpha,foundOut=found)
+          if(present(foundERI)) found = foundERI.and.found
           if(.not.found) then
-            errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS not present on file'
+            errorMsg = 'AA MO 2E INTEGRALS and/or BB MO 2E INTEGRALS and/or AB MO 2E INTEGRALS &
+              &and/or BA MO 2E INTEGRALS not present on file'
             if(present(foundERI)) then
               write(6,'(A)') errorMsg
               call fileinfo%load()
@@ -4180,7 +4185,8 @@
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
-            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta)
+            call mqc_twoeris_allocate(est_twoeris,'full','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
+              tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
           endIf
         elseIf(fileinfo%isGeneral()) then
           call fileInfo%getArray('Write AA MO 2E INTEGRALS',r4TensorOut=tmpR4TensorAlpha,foundOut=found)
@@ -4201,7 +4207,7 @@
               call mqc_error_l(trim(errorMsg),6,'found',found)
             endIf
           else
-            call mqc_twoeris_allocate(est_twoeris,'symm','molecular',tmpR4TensorAlpha,tmpR4TensorBeta, &
+            call mqc_twoeris_allocate(est_twoeris,'full','general',tmpR4TensorAlpha,tmpR4TensorBeta, &
               tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
           endIf
         else
