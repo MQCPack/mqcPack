@@ -750,24 +750,24 @@
         call twoERIs%alpha%print(iout,'(aa|aa)')
         call twoERIs%beta%print(iout,'(bb|bb)')
         call twoERIs%alphaBeta%print(iout,'(aa|bb)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
       elseIf(twoERIs%integralType.eq.'general') then
         write(iout,'(A)') 'General MO 2ERIs'
         call twoERIs%alpha%print(iout,'(aa|aa)')
         call twoERIs%beta%print(iout,'(bb|bb)')
         call twoERIs%alphaBeta%print(iout,'(aa|bb)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%betaAlpha%print(iout,'(bb|aa)')
         call twoERIs%abab%print(iout,'(ab|ab)')
         call twoERIs%abba%print(iout,'(ab|ba)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%baab%print(iout,'(ba|ab)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%baba%print(iout,'(ba|ba)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%baab%print(iout,'(ba|ab)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%baba%print(iout,'(ba|ba)')
         call twoERIs%aaab%print(iout,'(aa|ab)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%aaba%print(iout,'(aa|ba)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%abaa%print(iout,'(ab|aa)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%baaa%print(iout,'(ba|aa)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%bbba%print(iout,'(bb|ba)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%bbab%print(iout,'(bb|ab)')
-        if(twoERIs%storageType.eq.'symm') call twoERIs%babb%print(iout,'(ba|bb)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%aaba%print(iout,'(aa|ba)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%abaa%print(iout,'(ab|aa)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%baaa%print(iout,'(ba|aa)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%bbba%print(iout,'(bb|ba)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%bbab%print(iout,'(bb|ab)')
+        if(twoERIs%storageType.eq.'full') call twoERIs%babb%print(iout,'(ba|bb)')
         call twoERIs%abbb%print(iout,'(ab|bb)')
       else
         call mqc_error_A('Integral type unrecogised in mqc_print_twoERIs', 6, &
@@ -1769,10 +1769,9 @@
           dimBlock = size(eris%alpha,my_axis)
         endIf
       case('beta')
-        if(eris%type().eq.'raffenetti1'.or.eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3') &
-          call mqc_error('Raffenetti types do not have spin blocks')
         if(.not.eris%hasSpinBlock('beta')) then
-          if(eris%type().eq.'regular'.or.eris%type().eq.'space') then
+          if(eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or.eris%type().eq.'raffenetti2'.or.&
+            eris%type().eq.'raffenetti3'.or.eris%type().eq.'space') then
             if(.not.eris%hasSpinBlock('alpha')) then
               dimBlock = 0
             else
@@ -7594,6 +7593,139 @@
           endDo
           temp = temp2 - temp
           call mqc_twoeris_allocate(output,'full','regular',temp)
+        case default
+          call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
+            6,'myLabel',myLabel) 
+        end select
+      case ('space')
+        select case (myLabel)
+        case('coulomb')
+          output = eris
+        case('exchange')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),[0],[j,j],[0],[i,i])
+            endDo
+          endDo
+          call mqc_twoeris_allocate(output,'full','space',temp)
+        case('doublebar')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),[0],[j,j],[0],[i,i])
+            endDo
+          endDo
+          temp = temp2 - temp
+          call mqc_twoeris_allocate(output,'full','space',temp)
+        case default
+          call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
+            6,'myLabel',myLabel) 
+        end select
+      case ('spin')
+        select case (myLabel)
+        case('coulomb')
+          output = eris
+        case('exchange')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([1,nBasis],[i,i],[1,nBasis],[j,j]),[1,nBasis],[j,j],[1,nBasis],[i,i])
+              call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],&
+                [j+nBasis,j+nBasis]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[nBasis+1,2*nBasis],&
+                [i+nBasis,i+nBasis])
+              call temp%tput(temp2%tat([1,nBasis],[i,i],[nBasis+1,2*nBasis],[j+nBasis,j+nBasis]),&
+                [1,nBasis],[j,j],[nBasis+1,2*nBasis],[i+nBasis,i+nBasis])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],&
+                [1,nBasis],[j,j]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[1,nBasis],[i,i])
+            endDo
+          endDo
+          if(eris%storageType.eq.'full') then
+            call mqc_twoeris_allocate(output,'full','spin',temp%tat([1,nBasis],[1,nBasis],[1,nBasis],&
+              [1,nBasis]),temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],&
+              [nBasis+1,2*nBasis]),temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]))
+          else
+            call mqc_twoeris_allocate(output,'symm','spin',temp%tat([1,nBasis],[1,nBasis],[1,nBasis],&
+              [1,nBasis]),temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],&
+              [nBasis+1,2*nBasis]),temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          endIf
+        case('doublebar')
+          temp = eris
+          temp2 = eris
+          nBasis = eris%blockSize('alpha')
+          do i = 1, nBasis
+            do j = 1, nBasis
+              call temp%tput(temp2%tat([1,nBasis],[i,i],[1,nBasis],[j,j]),[1,nBasis],[j,j],[1,nBasis],[i,i])
+              call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],&
+                [j+nBasis,j+nBasis]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[nBasis+1,2*nBasis],&
+                [i+nBasis,i+nBasis])
+              call temp%tput(temp2%tat([1,nBasis],[i,i],[nBasis+1,2*nBasis],[j+nBasis,j+nBasis]),&
+                [1,nBasis],[j,j],[nBasis+1,2*nBasis],[i+nBasis,i+nBasis])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],&
+                [1,nBasis],[j,j]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[1,nBasis],[i,i])
+              call temp%tput(temp2%tat([1,nBasis],[i+nBasis,i+nBasis],[1,nBasis],[j+nBasis,j+nBasis]),&
+                [1,nBasis],[j+nBasis,j+nBasis],[1,nBasis],[i+nBasis,i+nBasis])
+              call temp%tput(temp2%tat([1,nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],[j,j]),[1,nBasis],&
+                [j+nBasis,j+nBasis],[nBasis+1,2*nBasis],[i,i])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i,i],[1,nBasis],&
+                [j+nBasis,j+nBasis]),[nBasis+1,2*nBasis],[j,j],[1,nBasis],[i+nBasis,i+nBasis])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i,i],&
+                [nBasis+1,2*nBasis],[j,j]),[nBasis+1,2*nBasis],[j,j],[nBasis+1,2*nBasis],[i,i])
+              call temp%tput(temp2%tat([1,nBasis],[i,i],[1,nBasis],[j+nBasis,j+nBasis]),[1,nBasis],[j,j],&
+                [1,nBasis],[i+nBasis,i+nBasis])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([1,nBasis],[i,i],[nBasis+1,2*nBasis],&
+                [j,j]),[1,nBasis],[j,j],[nBasis+1,2*nBasis],[i,i])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([1,nBasis],[i+nBasis,i+nBasis],[1,nBasis],&
+                [j,j]),[1,nBasis],[j+nBasis,j+nBasis],[1,nBasis],[i,i])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i,i],[1,nBasis],&
+                [j,j]),[nBasis+1,2*nBasis],[j,j],[1,nBasis],[i,i])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],&
+                [nBasis+1,2*nBasis],[j,j]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[nBasis+1,2*nBasis],[i,i])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i+nBasis,i+nBasis],&
+                [1,nBasis],[j+nBasis,j+nBasis]),[nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[1,nBasis],&
+                [i+nBasis,i+nBasis])
+              if(eris%storageType.eq.'full') call temp%tput(temp2%tat([nBasis+1,2*nBasis],[i,i],&
+                [nBasis+1,2*nBasis],[j+nBasis,j+nBasis]),[nBasis+1,2*nBasis],[j,j],[nBasis+1,2*nBasis],&
+                [i+nBasis,i+nBasis])
+              call temp%tput(temp2%tat([1,nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],[j+nBasis,j+nBasis]),&
+                [1,nBasis],[j+nBasis,j+nBasis],[nBasis+1,2*nBasis],[i+nBasis,i+nBasis])
+            endDo
+          endDo
+          if(eris%storageType.eq.'full') then
+            call mqc_twoeris_allocate(output,'full','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          else
+            call mqc_twoeris_allocate(output,'symm','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              abab=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abba=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          endIf
         case default
           call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
             6,'myLabel',myLabel) 
