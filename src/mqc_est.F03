@@ -221,7 +221,7 @@
         procedure, private::hasSpinBlock => mqc_eris_has_spinBlock
 !>      \brief <b> Return a spin block of MQC_TwoERIs object as an MQC rank-4 tensor</b>
         procedure, public:: getBlock => mqc_2eris_output_block
-        procedure, private::type => mqc_eris_array_type
+        procedure, public::type => mqc_eris_array_type
       end type mqc_twoERIs
 !
 !----------------------------------------------------------------
@@ -8712,9 +8712,9 @@
 !>          If L<0 row count is from last index.
 !>    \endverbatim
 !>    
-!>    \param[in,out] SpinBlockIn
+!>    \param[in] SpinBlockIn
 !>    \verbatim
-!>        SpinBlockIn is character(len=64),optional
+!>        SpinBlockIn is character(len=*),optional
 !>        = 'aaaa' or 'alpha':     alpha spin block
 !>        = 'bbbb' or 'beta':      beta spin block
 !>        = 'aabb' or 'alphaBeta': alpha-beta spin block
@@ -8732,21 +8732,29 @@
 !>        = 'babb':                babb spin block.
 !>        = 'abbb':                abbb spin block.
 !>    \endverbatim
+!>    
+!>    \param[in] InteractionIn
+!>    \verbatim
+!>        InteractionIn is character(len=*),optional
+!>        = 'coulomb':   returns (ij|kl)
+!>        = 'exchange':  returns (il|kj)
+!>        = 'doublebar': returns (ij|kl) - (il|kj).
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlockIn) result(element)
+      function MQC_twoERIs_At(twoERIs,i,j,k,l,spinBlockIn,interactionIn) result(element)
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
       class(*),intent(in)::i,j,k,l
       integer(kind=int64)::myI,myJ,myK,myL
       type(mqc_scalar)::element
-      character(len=*),optional,intent(in)::spinBlockIn
-      character(len=64)::spinBlock
+      character(len=*),optional,intent(in)::spinBlockIn,interactionIn
+      character(len=64)::spinBlock,interaction
       real(kind=real64)::zero=0.0d0
 
       element = zero
@@ -8792,108 +8800,412 @@
       if(myL.gt.twoERIs%blockSize('alpha',4)+twoERIs%blockSize('beta',4)) &
         call mqc_error('Requested L dimension out of bounds in MQC_twoERIs_At')
 
+      if(present(interactionIn)) then
+        call string_change_case(interactionIn,'L',interaction)
+      else
+        interaction = 'coulomb'
+      endIf
+      if(interaction.ne.'coulomb'.and.interaction.ne.'exchange'.and.interaction.ne.'doublebar') &
+        call mqc_error_a('Interaction type requested not recognized in mqc_twoERIs_at',6,&
+        'interaction',interaction)
+
       if(present(spinBlockIn)) then
+!       SPACE
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(twoERIs%integralType.eq.'space') then
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa'.or.&
-            spinBlock.eq.'beta'.or.spinBlock.eq.'bbbb'.or.&
-            spinBlock.eq.'alphabeta'.or.spinBlock.eq.'aabb'.or.&
+            spinBlock.eq.'beta'.or.spinBlock.eq.'bbbb') then
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseIf(spinBlock.eq.'alphabeta'.or.spinBlock.eq.'aabb'.or.&
             spinBlock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
-          elseIf(spinBlock.ne.'abab'.and.spinBlock.ne.'baba'.and.spinBlock.ne.'abba'.and.&
-              spinBlock.ne.'baab'.and.spinBlock.ne.'abbb'.and.spinBlock.ne.'babb'.and.&
-              spinBlock.ne.'bbab'.and.spinBlock.ne.'bbba'.and.spinBlock.ne.'aaab'.and.&
-              spinBlock.ne.'aaba'.and.spinBlock.ne.'abaa'.and.spinBlock.ne.'baaa') then
-            call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              endIf
+            endIf
+          elseIf(spinBlock.eq.'abba'.or.spinBlock.eq.'baab') then
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = (-1)*twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           endIf
+!       SPIN
         elseIf(twoERIs%integralType.eq.'spin') then
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
-            if(twoERIs%hasSpinBlock('bbbb')) element = twoeris%beta%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('bbbb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoeris%beta%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoERIs%beta%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL) - twoERIs%beta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
-            if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aabb')) then
+              if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+                element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+              endIf
+            endIf
           elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('aabb')) then
+                if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+!                  element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+                  element = twoeris%alphaBeta%at(myK,myL,myI,myJ)
+                endIf
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('bbaa')) then
+                if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+                  element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
+                endIf
+              endIf
             endIf
-          elseIf(spinBlock.ne.'abab'.and.spinBlock.ne.'baba'.and.spinBlock.ne.'abba'.and.&
-              spinBlock.ne.'baab'.and.spinBlock.ne.'abbb'.and.spinBlock.ne.'babb'.and.&
-              spinBlock.ne.'bbab'.and.spinBlock.ne.'bbba'.and.spinBlock.ne.'aaab'.and.&
-              spinBlock.ne.'aaba'.and.spinBlock.ne.'abaa'.and.spinBlock.ne.'baaa') then
-            call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
-          endIf
-        elseIf(twoERIs%integralType.eq.'general') then
-          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
-          elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
-            if(twoERIs%hasSpinBlock('bbbb')) element = twoeris%beta%at(myI,myJ,myK,myL)
-          elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
-            if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
-          elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
-            if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
-            else
-              if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
-            endIf
-          elseif(spinBlock.eq.'abab') then
-            if(twoERIs%hasSpinBlock('abab')) element = twoeris%abab%at(myI,myJ,myK,myL)
           elseif(spinBlock.eq.'abba') then
-            if(twoERIs%hasSpinBlock('abba'))  element = twoeris%abba%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aabb')) then
+              if(interaction.eq.'exchange') then
+                element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = (-1)*twoeris%alphaBeta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseif(spinBlock.eq.'baab') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abba'))  element = twoeris%abba%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('aabb')) then
+                if(interaction.eq.'exchange') then
+!                  element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+                  element = twoeris%alphaBeta%at(myK,myJ,myI,myL)
+                elseif(interaction.eq.'doublebar') then
+!                  element = (-1)*twoeris%alphaBeta%at(myI,myL,myK,myJ)
+                  element = (-1)*twoeris%alphaBeta%at(myK,myJ,myI,myL)
+                endIf
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('bbaa')) then
+                if(interaction.eq.'exchange') then
+                  element = twoeris%betaAlpha%at(myI,myL,myK,myJ)
+                elseif(interaction.eq.'doublebar') then
+                  element = (-1)*twoeris%betaAlpha%at(myI,myL,myK,myJ)
+                endIf
+              endIf
+            endIf
+          endIf
+!       GENERAL
+        elseIf(twoERIs%integralType.eq.'general') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'aaaa') then
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseif(spinblock.eq.'beta'.or.spinBlock.eq.'bbbb') then
+            if(twoERIs%hasSpinBlock('bbbb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoeris%beta%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoERIs%beta%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL) - twoERIs%beta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseif(spinblock.eq.'alphabeta'.or.spinBlock.eq.'aabb') then
+            if(interaction.eq.'coulomb') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myI,myL,myK,myJ)
+            endIf
+          elseif(spinblock.eq.'betaalpha'.or.spinBlock.eq.'bbaa') then
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+!                if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myK,myL,myI,myJ)
+                if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myK,myJ,myI,myL)
+              endIf
+            else
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('baab')) element = element - twoeris%baab%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseif(spinBlock.eq.'abab') then
+            if(twoERIs%hasSpinBlock('abab')) then
+              if(interaction.eq.'coulomb') then
+                element = twoeris%abab%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoeris%abab%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL) - twoERIs%abab%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseif(spinBlock.eq.'abba') then
+            if(interaction.eq.'coulomb') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myI,myL,myK,myJ)
+            endIf
+          elseif(spinBlock.eq.'baab') then
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+!                if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myK,myL,myI,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myK,myJ,myI,myL)
+              endIf
+            else
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('bbaa')) element = element - twoeris%betaAlpha%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'baba') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abab')) element = conjg(twoeris%abab%at(myI,myJ,myK,myL))
+              if(twoERIs%hasSpinBlock('abab')) then
+                if(interaction.eq.'coulomb') then
+!                  element = conjg(twoeris%abab%at(myI,myJ,myK,myL))
+                  element = conjg(twoeris%abab%at(myJ,myI,myL,myK))
+                elseIf(interaction.eq.'exchange') then
+!                  element = conjg(twoeris%abab%at(myI,myL,myK,myJ))
+                  element = conjg(twoeris%abab%at(myL,myI,myJ,myK))
+                elseIf(interaction.eq.'doublebar') then
+!                  element = conjg(twoERIs%abab%at(myI,myJ,myK,myL)) - conjg(twoERIs%abab%at(myI,myL,myK,myJ))
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK)) - conjg(twoERIs%abab%at(myL,myI,myJ,myK))
+                endIf
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baba')) element = twoeris%baba%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('baba')) then
+                if(interaction.eq.'coulomb') then
+                  element = twoeris%baba%at(myI,myJ,myK,myL)
+                elseIf(interaction.eq.'exchange') then
+                  element = twoeris%baba%at(myI,myL,myK,myJ)
+                elseIf(interaction.eq.'doublebar') then
+                  element = twoERIs%baba%at(myI,myJ,myK,myL) - twoERIs%baba%at(myI,myL,myK,myJ)
+                endIf
+              endIf
             endIf
           elseif(spinBlock.eq.'aaab') then
-            if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+            if(interaction.eq.'coulomb') then
+              if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%storageType.eq.'symm') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myK,myJ,myI,myL)
+              else
+                if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myL,myK,myJ)
+              endIf
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+              if(twoERIs%storageType.eq.'symm') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myK,myJ,myI,myL)
+              else
+                if(twoERIs%hasSpinBlock('abaa')) element = element - twoeris%abaa%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseif(spinBlock.eq.'aaba') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myL,myK))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myJ,myK))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myL,myK)) - &
+                  conjg(twoeris%aaab%at(myI,myL,myJ,myK))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myJ,myK,myL) - &
+                  twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'abaa') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL) - &
+!                  twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myK,myL,myI,myJ) - &
+                  twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myJ,myK,myL) 
+                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'baaa') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myL,myK,myI,myJ))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myJ,myK,myI,myL))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myL,myK,myI,myJ)) - &
+                  conjg(twoeris%aaab%at(myJ,myK,myI,myL))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myJ,myK,myL) - &
+                  twoeris%baaa%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'bbba') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myK,myL,myJ,myI))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myL,myI,myK,myJ))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myK,myL,myJ,myI)) - &
+                  conjg(twoeris%abbb%at(myL,myI,myK,myJ))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('babb')) element = element - twoeris%babb%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'bbab') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL) - &
+!                  twoeris%abbb%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myK,myL,myI,myJ) - &
+                  twoeris%abbb%at(myK,myJ,myI,myL)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myJ,myK,myL) - &
+                  twoeris%bbab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'babb') then
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myJ,myI,myK,myL))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myK,myJ,myL,myI))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myJ,myI,myK,myL)) - &
+                  conjg(twoeris%abbb%at(myK,myJ,myL,myI))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL) 
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseif(spinBlock.eq.'abbb') then
-            if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL)
+            if(interaction.eq.'coulomb') then
+              if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL) - &
+                twoeris%abbb%at(myI,myL,myK,myJ)
+            endIf
           else
             call mqc_error_A('SpinBlock type not valid in MQC_TwoERIs_At',6,'SpinBlock',SpinBlock)
           endIf
@@ -8906,7 +9218,15 @@
           if(myJ.gt.twoERIs%blockSize('alpha',2)) myJ = myJ - twoERIs%blockSize('alpha',2) 
           if(myK.gt.twoERIs%blockSize('alpha',3)) myK = myK - twoERIs%blockSize('alpha',3) 
           if(myL.gt.twoERIs%blockSize('alpha',4)) myL = myL - twoERIs%blockSize('alpha',4) 
-          if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+          if(twoERIs%hasSpinBlock('aaaa')) then
+            if(interaction.eq.'coulomb') then
+              element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              element = twoERIs%alpha%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+            endIf
+          endIf
         elseIf(twoERIs%integralType.eq.'raffenetti1') then
           if(myI.gt.twoERIs%blockSize('alpha',1).or.myJ.gt.twoERIs%blockSize('alpha',2).or. &
             myK.gt.twoERIs%blockSize('alpha',3).or.myL.gt.twoERIs%blockSize('alpha',4)) &
@@ -8925,131 +9245,383 @@
         elseIf(twoERIs%integralType.eq.'space') then
           if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myJ = myJ - twoERIs%blockSize('alpha',2)
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myL,myK,myJ)
+            elseIf(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = (-1)*twoERIs%alpha%at(myI,myL,myK,myJ)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myL,myK,myJ)
+            elseIf(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaaa')) element = (-1)*twoERIs%alpha%at(myI,myL,myK,myJ)
+            endIf
           endIf
         elseIf(twoERIs%integralType.eq.'spin') then
           if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('bbbb')) element = twoERIs%beta%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('bbbb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%beta%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL) - twoERIs%beta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+            if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myJ = myJ - twoERIs%blockSize('alpha',2)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myL,myI,myJ)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb'.or.interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+              endIf
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aabb')) element = (-1)*twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myJ,myI,myL)
+              elseIf(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = (-1)*twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = (-1)*twoERIs%alphaBeta%at(myK,myJ,myI,myL)
+              endIf
+            else
+              if(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = (-1)*twoERIs%betaAlpha%at(myI,myL,myK,myJ)
+              endIf
             endIf
           endIf
         elseIf(twoERIs%integralType.eq.'general') then
           if(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            if(twoERIs%hasSpinBlock('aaaa')) element = twoERIs%alpha%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('aaaa')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%alpha%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%alpha%at(myI,myJ,myK,myL) - twoERIs%alpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('bbbb')) element = twoERIs%beta%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('bbbb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%beta%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%beta%at(myI,myJ,myK,myL) - twoERIs%beta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
-          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
-            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            myI = myI - twoERIs%blockSize('alpha',1)
-            myJ = myJ - twoERIs%blockSize('alpha',2)
-            if(twoERIs%storageType.eq.'symm') then
+            if(interaction.eq.'coulomb') then
               if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myI,myL,myK,myJ)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+!                if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myK,myL,myI,myJ)
+                if(twoERIs%hasSpinBlock('abba')) element = element - twoeris%abba%at(myK,myJ,myI,myL)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('baab')) element = element - twoeris%baab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
-            if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myJ,myK,myL)
-          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
-            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
-            myI = myI - twoERIs%blockSize('alpha',1)
-            myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%storageType.eq.'symm') then
+            if(interaction.eq.'coulomb') then
               if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myI,myL,myK,myJ)
+            endIf
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('abba')) element = twoERIs%abba%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aabb')) element = twoeris%alphaBeta%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myK,myL,myI,myJ)
+!                if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myK,myJ,myI,myL)
+                if(twoERIs%hasSpinBlock('abba')) element = twoeris%abba%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aabb')) element = element - twoeris%alphaBeta%at(myI,myL,myK,myJ)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baab')) element = twoERIs%baab%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoERIs%baab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbaa')) element = twoeris%betaAlpha%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('baab')) element = twoeris%baab%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('bbaa')) element = element - twoeris%betaAlpha%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('abab')) element = twoERIs%abab%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('abab')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL)
+              elseIf(interaction.eq.'exchange') then
+                element = twoeris%abab%at(myI,myL,myK,myJ)
+              elseIf(interaction.eq.'doublebar') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL) - twoERIs%abab%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             myK = myK - twoERIs%blockSize('alpha',3)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abab')) element = conjg(twoERIs%abab%at(myI,myJ,myK,myL))
+              if(twoERIs%hasSpinBlock('abab')) then
+                if(interaction.eq.'coulomb') then
+!                  element = conjg(twoERIs%abab%at(myI,myJ,myK,myL))
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK))
+                elseIf(interaction.eq.'exchange') then
+!                  element = conjg(twoeris%abab%at(myI,myL,myK,myJ))
+                  element = conjg(twoeris%abab%at(myL,myI,myJ,myK))
+                elseIf(interaction.eq.'doublebar') then
+!                  element = conjg(twoERIs%abab%at(myI,myJ,myK,myL)) - conjg(twoERIs%abab%at(myI,myL,myK,myJ))
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK)) - conjg(twoERIs%abab%at(myL,myI,myJ,myK))
+                endIf
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baba')) element = twoERIs%baba%at(myI,myJ,myK,myL)
+              if(twoERIs%hasSpinBlock('baba')) then
+                if(interaction.eq.'coulomb') then
+                  element = twoERIs%baba%at(myI,myJ,myK,myL)
+                elseIf(interaction.eq.'exchange') then
+                  element = twoeris%baba%at(myI,myL,myK,myJ)
+                elseIf(interaction.eq.'doublebar') then
+                  element = twoERIs%baba%at(myI,myJ,myK,myL) - twoERIs%baba%at(myI,myL,myK,myJ)
+                endIf
+              endIf
             endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myI,myJ,myK,myL)
-          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
-            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            myK = myK - twoERIs%blockSize('alpha',3)
-            if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
-            else
-              if(twoERIs%hasSpinBlock('aaba')) element = twoERIs%aaba%at(myI,myJ,myK,myL)
-            endIf
-          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
-            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
-            myJ = myJ - twoERIs%blockSize('alpha',2)
-            if(twoERIs%storageType.eq.'symm') then
+            if(interaction.eq.'coulomb') then
               if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myI,myJ,myK,myL)
+            elseif(interaction.eq.'exchange') then
+              if(twoERIs%storageType.eq.'symm') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myK,myJ,myI,myL)
+              else
+                if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myL,myK,myJ)
+              endIf
+            elseif(interaction.eq.'doublebar') then
+              if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL)
+              if(twoERIs%storageType.eq.'symm') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myK,myJ,myI,myL)
+              else
+                if(twoERIs%hasSpinBlock('abaa')) element = element - twoeris%abaa%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myL,myK))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myJ,myK))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myL,myK)) - &
+                  conjg(twoeris%aaab%at(myI,myL,myJ,myK))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('abaa')) element = twoERIs%abaa%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoERIs%aaba%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('aaba')) element = twoeris%aaba%at(myI,myJ,myK,myL) - &
+                  twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            if(twoERIs%storageType.eq.'symm') then
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoERIs%aaab%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myJ,myK,myL) - &
+!                  twoeris%aaab%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myK,myL,myI,myJ) - &
+                  twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
+            else
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('abaa')) element = twoERIs%abaa%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aaab')) element = twoeris%aaab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('abaa')) element = twoeris%abaa%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('aaab')) element = element - twoeris%aaab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
             myI = myI - twoERIs%blockSize('alpha',1)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoERIs%aaab%at(myL,myK,myI,myJ))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myJ,myK,myI,myL))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%aaab%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('aaab')) element = conjg(twoeris%aaab%at(myL,myK,myI,myJ)) - &
+                  conjg(twoeris%aaab%at(myJ,myK,myI,myL))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('baaa')) element = twoERIs%baaa%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoERIs%baaa%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('baaa')) element = twoeris%baaa%at(myI,myJ,myK,myL) - &
+                  twoeris%baaa%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
@@ -9057,9 +9629,27 @@
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myK,myL,myJ,myI))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myL,myI,myK,myJ))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL)) - &
+                  conjg(twoeris%abbb%at(myL,myI,myK,myJ))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbba')) element = twoERIs%bbba%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoERIs%bbba%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('babb')) element = element - twoeris%babb%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
@@ -9067,9 +9657,27 @@
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myL = myL - twoERIs%blockSize('alpha',4)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myK,myL,myI,myJ)
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myK,myJ,myI,myL)
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myI,myJ,myK,myL) - &
+!                  twoeris%abbb%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('abbb')) element = twoeris%abbb%at(myK,myL,myI,myJ) - &
+                  twoeris%abbb%at(myK,myJ,myI,myL)
+              endIf
             else
-              if(twoERIs%hasSpinBlock('bbab')) element = twoERIs%bbab%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoERIs%bbab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('bbab')) element = twoeris%bbab%at(myI,myJ,myK,myL) - &
+                  twoeris%bbab%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
@@ -9077,16 +9685,42 @@
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
             if(twoERIs%storageType.eq.'symm') then
-              if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+              if(interaction.eq.'coulomb') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myI,myJ,myK,myL))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoERIs%abbb%at(myJ,myI,myK,myL))
+              elseif(interaction.eq.'exchange') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myK,myJ,myL,myI))
+              elseif(interaction.eq.'doublebar') then
+!                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myI,myJ,myK,myL)) - &
+!                  conjg(twoeris%abbb%at(myI,myL,myK,myJ))
+                if(twoERIs%hasSpinBlock('abbb')) element = conjg(twoeris%abbb%at(myJ,myI,myK,myL)) - &
+                  conjg(twoeris%abbb%at(myK,myJ,myL,myI))
+              endIf
             else
-              if(twoERIs%hasSpinBlock('babb')) element = twoERIs%babb%at(myI,myJ,myK,myL)
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoERIs%babb%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+              endIf
             endIf
           elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
             myK.gt.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
             myJ = myJ - twoERIs%blockSize('alpha',2)
             myK = myK - twoERIs%blockSize('alpha',3)
             myL = myL - twoERIs%blockSize('alpha',4)
-            if(twoERIs%hasSpinBlock('abbb')) element = twoERIs%abbb%at(myI,myJ,myK,myL)
+            if(twoERIs%hasSpinBlock('abbb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%abbb%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoeris%abbb%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%abbb%at(myI,myJ,myK,myL) - twoeris%abbb%at(myI,myL,myK,myJ)
+              endIf
+            endIf
           endIf
         else
           call mqc_error_A('Integral type not valid in MQC_TwoERIs_At',6,'integralType',twoERIs%integralType)
@@ -9226,7 +9860,7 @@
         endIf
       else 
         if(integral%array_type.eq.'space') then
-          if(myI.lt.integral%blockSize('alpha',1).and.myJ.lt.integral%blockSize('alpha',2)) then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
             if(integral%hasAlpha()) element = integral%alpha%at(myI,myJ)
           elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
             myI = myI - integral%blockSize('alpha',1)
@@ -9234,7 +9868,7 @@
             if(integral%hasAlpha()) element = integral%alpha%at(myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'spin') then
-          if(myI.lt.integral%blockSize('alpha',1).and.myJ.lt.integral%blockSize('alpha',2)) then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
             if(integral%hasAlpha()) element = integral%alpha%at(myI,myJ)
           elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
             myI = myI - integral%blockSize('alpha',1)
@@ -9242,7 +9876,7 @@
             if(integral%hasBeta()) element = integral%beta%at(myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'general') then
-          if(myI.lt.integral%blockSize('alpha',1).and.myJ.lt.integral%blockSize('alpha',2)) then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
             if(integral%hasBeta()) element = integral%beta%at(myI,myJ)
           elseIf(myI.le.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
             myJ = myJ - integral%blockSize('alpha',2)
@@ -11324,17 +11958,12 @@
       If(ERIs%type().ne.'regular') call mqc_error_A('TwoERI_trans only implemented for &
         & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
 !
-      If(Present(Right_MOs)) then
+      If(Present(Right_MOs))then
         MO_Coeff_2 = Right_MOs
       Else
         MO_Coeff_2 = MO_Coeff
       EndIf
 !
-      If(mqc_integral_norm(MO_Coeff-MO_Coeff_2).lt.1.0e-14) then
-        storage = 'symm'
-      Else
-        storage = 'full'
-      EndIf
       If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general') then
         intType = 'general'
       ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin') then
@@ -11398,7 +12027,7 @@
                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * &
                             conjg(MO_Coeff_2%Beta%at(Lambda,R)) * MO_Coeff_2%Beta%at(Sigma,S), &
                             P,Q,R,S)
-                          If(storage.eq.'full'.or.intType.eq.'general') &
+                          If(storage.eq.'full') &
                             Call tmpR4TensorBetaAlpha%put(tmpR4TensorBetaAlpha%at(P,Q,R,S) + &
                             conjg(MO_Coeff%Beta%at(Mu,P)) * MO_Coeff%Beta%at(Nu,Q) * &
                             ERIs%alpha%at(Mu,Nu,Lambda,Sigma) * & 
@@ -11705,7 +12334,7 @@
               EndDo
             EndDo
             Y = Dagger(MO_Coeff_2%Alpha).dot.X
-            X = Y.dot.MO_Coeff_2%Alpha
+            X = Y.dot.MO_Coeff%Alpha
             Do R = 1, NBasis
               Do S = 1, NBasis
                 Call tmpR4TensorAlpha%put(X%at(R,S),P,Q,R,S)
@@ -11721,7 +12350,7 @@
                 Call X%put(tmpR4TensorAlpha%at(P,Q,R,S),P,Q)
               EndDo
             EndDo
-            Y = Dagger(MO_Coeff%Alpha).dot.X
+            Y = Dagger(MO_Coeff_2%Alpha).dot.X
             X = Y.dot.MO_Coeff%Alpha
             Do P = 1, NBasis
               Do Q = 1, NBasis
@@ -11731,7 +12360,7 @@
           EndDo
         EndDo
 
-        If(intType.eq.'spin') then
+        If(intType.eq.'spin'.or.intType.eq.'general') then
 
           Do P = 1, NBasis
             Do Q = 1, NBasis
@@ -11741,7 +12370,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4TensorBeta%put(X%at(R,S),P,Q,R,S)
@@ -11757,7 +12386,7 @@
                   Call X%put(tmpR4TensorBeta%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Beta).dot.X
+              Y = Dagger(MO_Coeff_2%Beta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11775,7 +12404,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4TensorAlphaBeta%put(X%at(R,S),P,Q,R,S)
@@ -11791,7 +12420,7 @@
                   Call X%put(tmpR4TensorAlphaBeta%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%Alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11811,7 +12440,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4TensorBetaAlpha%put(X%at(R,S),P,Q,R,S)
@@ -11827,7 +12456,7 @@
                     Call X%put(tmpR4TensorBetaAlpha%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -11854,7 +12483,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%alphaBeta
+              X = Y.dot.MO_Coeff%alpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -11869,7 +12498,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alpha).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11887,7 +12516,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%alpha).dot.X
-              X = Y.dot.MO_Coeff_2%alpha
+              X = Y.dot.MO_Coeff%alphaBeta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -11902,7 +12531,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alpha).dot.X
               X = Y.dot.MO_Coeff%alphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11920,7 +12549,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%alphaBeta
+              X = Y.dot.MO_Coeff%alphaBeta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -11935,7 +12564,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%alphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11954,7 +12583,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -11969,7 +12598,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Beta).dot.X
+              Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -11987,7 +12616,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12002,7 +12631,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%betaAlpha).dot.X
+              Y = Dagger(MO_Coeff_2%beta).dot.X
               X = Y.dot.MO_Coeff%betaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12020,7 +12649,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%betaAlpha
+              X = Y.dot.MO_Coeff%betaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12035,7 +12664,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%betaAlpha).dot.X
+              Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
               X = Y.dot.MO_Coeff%betaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12054,7 +12683,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%betaAlpha
+              X = Y.dot.MO_Coeff%betaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12069,7 +12698,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alpha).dot.X
+              Y = Dagger(MO_Coeff_2%alpha).dot.X
               X = Y.dot.MO_Coeff%alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12087,7 +12716,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta 
+              X = Y.dot.MO_Coeff%Beta 
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12102,7 +12731,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%alphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12120,7 +12749,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%betaAlpha
+              X = Y.dot.MO_Coeff%betaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12135,7 +12764,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%alphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12155,7 +12784,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%alphaBeta
+                X = Y.dot.MO_Coeff%alphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12170,7 +12799,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%beta).dot.X
+                Y = Dagger(MO_Coeff_2%beta).dot.X
                 X = Y.dot.MO_Coeff%beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12188,7 +12817,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%alpha).dot.X
-                X = Y.dot.MO_Coeff_2%alpha
+                X = Y.dot.MO_Coeff%alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12203,7 +12832,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%betaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
                 X = Y.dot.MO_Coeff%betaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12221,7 +12850,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%alphaBeta
+                X = Y.dot.MO_Coeff%alphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12236,7 +12865,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%betaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%betaAlpha).dot.X
                 X = Y.dot.MO_Coeff%betaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12256,7 +12885,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Alpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12271,7 +12900,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12289,7 +12918,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12304,7 +12933,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12322,7 +12951,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Alpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12337,7 +12966,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12355,7 +12984,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12370,7 +12999,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12390,7 +13019,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12405,7 +13034,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12423,7 +13052,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12438,7 +13067,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12456,7 +13085,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12471,7 +13100,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12489,7 +13118,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12504,7 +13133,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12524,7 +13153,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%Alpha
+              X = Y.dot.MO_Coeff%Alpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12539,7 +13168,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12557,7 +13186,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%AlphaBeta
+              X = Y.dot.MO_Coeff%AlphaBeta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12572,7 +13201,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12590,7 +13219,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%Alpha
+              X = Y.dot.MO_Coeff%Alpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12605,7 +13234,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12623,7 +13252,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%AlphaBeta
+              X = Y.dot.MO_Coeff%AlphaBeta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12638,7 +13267,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12658,7 +13287,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12673,7 +13302,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12691,7 +13320,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12706,7 +13335,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12724,7 +13353,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12739,7 +13368,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12757,7 +13386,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12772,7 +13401,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12792,7 +13421,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Alpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12807,7 +13436,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%Alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12825,7 +13454,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12840,7 +13469,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%Alpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12858,7 +13487,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Alpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12873,7 +13502,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
               X = Y.dot.MO_Coeff%AlphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12891,7 +13520,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12906,7 +13535,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%alphaBeta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -12926,7 +13555,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12941,7 +13570,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Alpha).dot.X
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12959,7 +13588,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -12974,7 +13603,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Alpha).dot.X
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -12992,7 +13621,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13007,7 +13636,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13025,7 +13654,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13040,7 +13669,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%alphaBeta).dot.X
+                Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
                 X = Y.dot.MO_Coeff%alphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13061,7 +13690,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13076,7 +13705,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Alpha).dot.X
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13094,7 +13723,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13109,7 +13738,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Alpha).dot.X
+                Y = Dagger(MO_Coeff_2%Alpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13127,7 +13756,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13142,7 +13771,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+                Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13160,7 +13789,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13175,7 +13804,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%alphaBeta).dot.X
+                Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13196,7 +13825,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13211,7 +13840,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13229,7 +13858,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13244,7 +13873,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13262,7 +13891,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13277,7 +13906,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13295,7 +13924,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13310,7 +13939,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13331,7 +13960,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13346,7 +13975,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13364,7 +13993,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13379,7 +14008,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13397,7 +14026,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%Alpha
+                X = Y.dot.MO_Coeff%Alpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13412,7 +14041,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13430,7 +14059,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%AlphaBeta
+                X = Y.dot.MO_Coeff%AlphaBeta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13445,7 +14074,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13466,7 +14095,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13481,7 +14110,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13499,7 +14128,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13514,7 +14143,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%BetaAlpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13532,7 +14161,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13547,7 +14176,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13565,7 +14194,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13580,7 +14209,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%Beta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13601,7 +14230,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13616,7 +14245,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13634,7 +14263,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13649,7 +14278,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%BetaAlpha).dot.X
+                Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
                 X = Y.dot.MO_Coeff%Alpha
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13667,7 +14296,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-                X = Y.dot.MO_Coeff_2%BetaAlpha
+                X = Y.dot.MO_Coeff%BetaAlpha
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13682,7 +14311,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13700,7 +14329,7 @@
                   EndDo
                 EndDo
                 Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff_2%Beta
+                X = Y.dot.MO_Coeff%Beta
                 Do R = 1, NBasis
                   Do S = 1, NBasis
                     Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13715,7 +14344,7 @@
                     Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                   EndDo
                 EndDo
-                Y = Dagger(MO_Coeff%Beta).dot.X
+                Y = Dagger(MO_Coeff_2%Beta).dot.X
                 X = Y.dot.MO_Coeff%AlphaBeta
                 Do P = 1, NBasis
                   Do Q = 1, NBasis
@@ -13735,7 +14364,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13750,7 +14379,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -13768,7 +14397,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13783,7 +14412,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%Alpha).dot.X
+              Y = Dagger(MO_Coeff_2%Alpha).dot.X
               X = Y.dot.MO_Coeff%BetaAlpha
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -13801,7 +14430,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%BetaAlpha).dot.X
-              X = Y.dot.MO_Coeff_2%BetaAlpha
+              X = Y.dot.MO_Coeff%BetaAlpha
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13816,7 +14445,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%AlphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%AlphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
@@ -13834,7 +14463,7 @@
                 EndDo
               EndDo
               Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff_2%Beta
+              X = Y.dot.MO_Coeff%Beta
               Do R = 1, NBasis
                 Do S = 1, NBasis
                   Call tmpR4Tensor%put(X%at(R,S),P,Q,R,S)
@@ -13849,7 +14478,7 @@
                   Call X%put(tmpR4Tensor%at(P,Q,R,S),P,Q)
                 EndDo
               EndDo
-              Y = Dagger(MO_Coeff%alphaBeta).dot.X
+              Y = Dagger(MO_Coeff_2%alphaBeta).dot.X
               X = Y.dot.MO_Coeff%Beta
               Do P = 1, NBasis
                 Do Q = 1, NBasis
