@@ -8735,7 +8735,7 @@
       type(mqc_vector),intent(in)::VA,VB
       type(mqc_matrix)::M
       integer(kind=int64)::i,j
-      type(mqc_vector)::VC
+      type(mqc_vector)::VC,VD
 
       If (VA%Column.eqv.VB%Column) then
         Call MQC_Error_L('Vector orientations are the same in MQC_Outer', 6, &
@@ -8749,7 +8749,10 @@
       endif
       if (mqc_have_int(VA) .and. mqc_have_int(VB)) then
         call M%init(VA%length,VB%length,0)
-        call dger(VA%length,VB%length,1.0,VA%veci,1,VB%veci,1,M%mati,VA%length)
+        VC = mqc_cast_real(VA)
+        VD = mqc_cast_real(VB)
+        call dger(VA%length,VB%length,1.0,VC%vecr,1,VD%vecr,1,M%matr,VA%length)
+        M = mqc_cast_integer(M)
       elseif((mqc_have_int(VA).or.mqc_have_real(VA)).and.(mqc_have_int(VB).or.mqc_have_real(VB))) then
         call M%init(VA%length,VB%length)
         if (mqc_have_int(VA)) then
@@ -8768,7 +8771,7 @@
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
         elseif (mqc_have_int(VB)) then
           VC = mqc_cast_complex(VB)
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
         elseif (mqc_have_real(VA)) then
           VC = mqc_cast_complex(VA)
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
@@ -23192,7 +23195,8 @@
       Complex(Kind=real64),dimension(:,:),allocatable::tempC
       Complex(Kind=real64),dimension(:),allocatable::workc
       integer(kind=int64)::iError,nDim1,nDim2
-      integer(kind=int64),dimension(:),allocatable::iPiv,work
+      integer(kind=int32),dimension(:),allocatable::iPiv
+      real(kind=real64),dimension(:),allocatable::work
 !
 !     Inverse of matrix A.
 !
@@ -27636,7 +27640,7 @@
         call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
         & conform to a matrix')
 
-      if((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D2,1).eq.2.or.D2(1).eq.0)) then
+      if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),size(ItmpMatrix,2),1,1))
@@ -27645,7 +27649,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),size(RtmpMatrix,2),1,1))
-          RtmpTensor(:,:,1,1) = ItmpMatrix
+          RtmpTensor(:,:,1,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27654,7 +27658,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,D2,[D3(1),D3(1)],[D4(1),D4(1)])
-      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+      elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),1,size(ItmpMatrix,2),1))
@@ -27663,7 +27667,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),1,size(RtmpMatrix,2),1))
-          RtmpTensor(:,1,:,1) = ItmpMatrix
+          RtmpTensor(:,1,:,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27672,7 +27676,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,[D2(1),D2(1)],D3,[D4(1),D4(1)])
-      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),1,1,size(ItmpMatrix,2)))
@@ -27681,7 +27685,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),1,1,size(RtmpMatrix,2)))
-          RtmpTensor(:,1,1,:) = ItmpMatrix
+          RtmpTensor(:,1,1,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27690,7 +27694,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,[D2(1),D2(1)],[D3(1),D3(1)],D4)
-      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+      elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,size(ItmpMatrix,1),size(ItmpMatrix,2),1))
@@ -27699,7 +27703,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,size(RtmpMatrix,1),size(RtmpMatrix,2),1))
-          RtmpTensor(1,:,:,1) = ItmpMatrix
+          RtmpTensor(1,:,:,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27708,7 +27712,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,[D1(1),D1(1)],D2,D3,[D4(1),D4(1)])
-      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,size(ItmpMatrix,1),1,size(ItmpMatrix,2)))
@@ -27717,7 +27721,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,size(RtmpMatrix,1),1,size(RtmpMatrix,2)))
-          RtmpTensor(1,:,1,:) = ItmpMatrix
+          RtmpTensor(1,:,1,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27726,7 +27730,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,[D1(1),D1(1)],D2,[D3(1),D3(1)],D4)
-      elseIf((size(D3,1).eq.2.or.D3(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D3).eq.2.or.D3(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,1,size(ItmpMatrix,1),size(ItmpMatrix,2)))
@@ -27735,7 +27739,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,1,size(RtmpMatrix,1),size(RtmpMatrix,2)))
-          RtmpTensor(1,1,:,:) = ItmpMatrix
+          RtmpTensor(1,1,:,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
