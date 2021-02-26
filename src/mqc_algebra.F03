@@ -629,6 +629,8 @@
 !>    \brief <b> Determines if a variable is less than another</b>
       Interface Operator (.lt.)
         Module Procedure MQC_ScalarLT
+        Module Procedure MQC_ScalarLTInteger
+        Module Procedure MQC_IntegerLTScalar
         Module Procedure MQC_ScalarLTReal
         Module Procedure MQC_RealLTScalar
       End Interface
@@ -4066,6 +4068,144 @@
 !
       Return
       End Function MQC_ScalarLT
+!
+!
+!     PROCEDURE MQC_IntegerLTScalar
+!
+!>    \brief <b> MQC_IntegerLTScalar is a function that returns TRUE if an intrinsic 
+!>    integer is less than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_integerLTScalar is a function that returns TRUE if an intrinsic integer is 
+!>    less than a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic 
+!>    integer is less than the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    integer is greater than the real part of the MQC_Scalar. If the intrinsic 
+!>    integer is equal to the real part of the MQC_Scalar, the function returns TRUE 
+!>    if the imaginary part of MQC_Scalar is greater than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] integerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_IntegerLTScalar(IntegerIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerLTScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_IntegerLTScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntegerIn.lt.Scalar%scar) MQC_IntegerLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntegerIn.lt.Scalar%scai) MQC_IntegerLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntegerIn.eq.real(Scalar%scac)) then
+          If(Zero.lt.aimag(Scalar%scac)) MQC_IntegerLTScalar = .True.
+        ElseIf(IntegerIn.lt.real(Scalar%scac)) then
+          MQC_IntegerLTScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerLTScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerLTScalar
+!
+!
+!     PROCEDURE MQC_ScalarLTInteger
+!
+!>    \brief <b> MQC_ScalarLTInteger is a function that returns TRUE if a MQC_Scalar is less
+!>     than an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLTInteger is a function that returns TRUE if a MQC_Scalar is less than an 
+!>    intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic integer and FALSE if the real part of the MQC_Scalar
+!>    is greater than the intrinsic integer. If the real part of the MQC_Scalar is equal to the
+!>    intrinsic integer, the function returns TRUE if the imaginary part of MQC_Scalar is less 
+!>    than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_ScalarLTInteger(Scalar,integerIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarLTInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_ScalarLTInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.lt.IntegerIn) MQC_ScalarLTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.lt.IntegerIn) MQC_ScalarLTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.IntegerIn) then
+          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLTInteger = .True.
+        ElseIf(real(Scalar%scac).lt.integerIn) then
+          MQC_ScalarLTInteger = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLTInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarLTInteger
 !
 !
 !     PROCEDURE MQC_RealLTScalar
