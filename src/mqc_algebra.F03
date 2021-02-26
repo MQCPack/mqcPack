@@ -213,6 +213,8 @@
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::sum => MQC_Matrix_Sum
+!>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
+        Procedure, Public::power => MQC_Matrix_Power
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
         Procedure, Public::at => MQC_Matrix_Scalar_At
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
@@ -24698,6 +24700,72 @@
       endDo
 !
       end function mqc_matrix_sum
+!
+!
+!     PROCEDURE MQC_Matrix_Power
+!
+!>    \brief <b> MQC_Matrix_Power is a function that returns the value of a
+!>    MQC matrix raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Power is a function that returns the value of a MQC matrix raised
+!>    to a power. The power can be integer, real, complex or an MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_matrix_power(A,P)
+!
+      Implicit None
+      class(mqc_matrix),intent(inOut)::A
+      class(*)::P
+      type(mqc_vector)::sVals
+      type(mqc_matrix)::uMatrix
+      type(mqc_scalar)::scalar
+!
+!     Do the work.
+!
+      select type(P)
+      type is (integer)
+        scalar = P
+      type is (real)
+        scalar = P
+      type is (complex)
+        scalar = P
+      type is (mqc_scalar)
+        scalar = P
+      class default
+        call mqc_error_I('P type not defined in MQC_Vector_Power',6)
+      end select
+!
+      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+      call sVals%power(scalar)
+      call sVals%diag(A)
+      A = matmul(matmul(uMatrix,A),dagger(uMatrix))
+!
+      end subroutine mqc_matrix_power
 !
 !
 !----------------------------------------------------------------
