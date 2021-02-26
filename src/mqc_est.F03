@@ -11939,6 +11939,7 @@
       Type(MQC_R4Tensor)::tmpR4TensorAlpha,tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha,tmpR4TensorBeta,&
         tmpR4TensorABAB,tmpR4TensorBABA,tmpR4TensorABBA,tmpR4TensorBAAB,tmpR4TensorAAAB,tmpR4TensorAABA,&
         tmpR4TensorABAA,tmpR4TensorBAAA,tmpR4TensorBBBA,tmpR4TensorBBAB,tmpR4TensorBABB,tmpR4TensorABBB
+      Type(MQC_R4Tensor)::tmpR4TensorLoc,tmpR4TensorLoc2
       Type(MQC_R4Tensor)::tmpR4Tensor
       Type(MQC_TwoERIs),Intent(In)::ERIs
       Type(MQC_TwoERIs),Intent(Out)::MO_ERIs
@@ -12326,145 +12327,169 @@
         Call X%init(NBasis,NBasis)
         Call Y%init(NBasis,NBasis)
 
+        !$OMP PARALLEL DEFAULT(NONE), &
+        !$OMP SHARED(ERIs,tmpR4TensorAlpha,MO_Coeff,MO_Coeff_2,nBasis), &
+        !$OMP FIRSTPRIVATE(X), &
+        !$OMP PRIVATE(P,Q,tmpR4TensorLoc)
+        call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+        !$OMP DO COLLAPSE(2)
         Do P = 1, NBasis
           Do Q = 1, NBasis
-            Do R = 1, NBasis
-              Do S = 1, NBasis
-                Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
-              EndDo
-            EndDo
-            Y = Dagger(MO_Coeff_2%Alpha).dot.X
-            X = Y.dot.MO_Coeff%Alpha
-            Do R = 1, NBasis
-              Do S = 1, NBasis
-                Call tmpR4TensorAlpha%put(X%at(R,S),P,Q,R,S)
-              EndDo
-            EndDo
+            X = ERIs%alpha%mat([P],[Q],[0],[0]) 
+            X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+            Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
           EndDo
         EndDo
+        !$OMP END DO
+        !$OMP CRITICAL
+        tmpR4TensorAlpha = tmpR4TensorAlpha + tmpR4TensorLoc
+        !$OMP END CRITICAL
+        !$OMP END PARALLEL
 
+        tmpR4TensorLoc2 = tmpR4TensorAlpha
+        call tmpR4TensorAlpha%init(nBasis,nBasis,nBasis,nBasis)
+        !$OMP PARALLEL DEFAULT(NONE), &
+        !$OMP SHARED(tmpR4TensorAlpha,MO_Coeff,MO_Coeff_2,nBasis), &
+        !$OMP FIRSTPRIVATE(X,tmpR4TensorLoc2), &
+        !$OMP PRIVATE(R,S,tmpR4TensorLoc)
+        call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+        !$OMP DO COLLAPSE(2)
         Do R = 1, NBasis
           Do S = 1, NBasis
-            Do P = 1, NBasis
-              Do Q = 1, NBasis 
-                Call X%put(tmpR4TensorAlpha%at(P,Q,R,S),P,Q)
-              EndDo
-            EndDo
-            Y = Dagger(MO_Coeff_2%Alpha).dot.X
-            X = Y.dot.MO_Coeff%Alpha
-            Do P = 1, NBasis
-              Do Q = 1, NBasis
-                Call tmpR4TensorAlpha%put(X%at(P,Q),P,Q,R,S)
-              EndDo
-            EndDo
+            X = tmpR4TensorLoc2%mat([0],[0],[R],[S])
+            X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+            Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
           EndDo
         EndDo
+        !$OMP END DO
+        !$OMP CRITICAL
+        tmpR4TensorAlpha = tmpR4TensorAlpha + tmpR4TensorLoc
+        !$OMP END CRITICAL
+        !$OMP END PARALLEL
 
         If(intType.eq.'spin'.or.intType.eq.'general') then
 
+          !$OMP PARALLEL DEFAULT(NONE), &
+          !$OMP SHARED(ERIs,tmpR4TensorBeta,MO_Coeff,MO_Coeff_2,nBasis), &
+          !$OMP FIRSTPRIVATE(X), &
+          !$OMP PRIVATE(P,Q,tmpR4TensorLoc)
+          call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP DO COLLAPSE(2)
           Do P = 1, NBasis
             Do Q = 1, NBasis
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
-                EndDo
-              EndDo
-              Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call tmpR4TensorBeta%put(X%at(R,S),P,Q,R,S)
-                EndDo
-              EndDo
+              X = ERIs%alpha%mat([P],[Q],[0],[0]) 
+              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
+          !$OMP END DO
+          !$OMP CRITICAL
+          tmpR4TensorBeta = tmpR4TensorBeta + tmpR4TensorLoc
+          !$OMP END CRITICAL
+          !$OMP END PARALLEL
 
+          tmpR4TensorLoc2 = tmpR4TensorBeta
+          call tmpR4TensorBeta%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP PARALLEL DEFAULT(NONE), &
+          !$OMP SHARED(tmpR4TensorBeta,MO_Coeff,MO_Coeff_2,nBasis), &
+          !$OMP FIRSTPRIVATE(X,tmpR4TensorLoc2), &
+          !$OMP PRIVATE(R,S,tmpR4TensorLoc)
+          call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP DO COLLAPSE(2)
           Do R = 1, NBasis
             Do S = 1, NBasis
-              Do P = 1, NBasis
-                Do Q = 1, NBasis 
-                  Call X%put(tmpR4TensorBeta%at(P,Q,R,S),P,Q)
-                EndDo
-              EndDo
-              Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
-              Do P = 1, NBasis
-                Do Q = 1, NBasis
-                  Call tmpR4TensorBeta%put(X%at(P,Q),P,Q,R,S)
-                EndDo
-              EndDo
+              X = tmpR4TensorLoc2%mat([0],[0],[R],[S])
+              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
+          !$OMP END DO
+          !$OMP CRITICAL
+          tmpR4TensorBeta = tmpR4TensorBeta + tmpR4TensorLoc
+          !$OMP END CRITICAL
+          !$OMP END PARALLEL
          
+          !$OMP PARALLEL DEFAULT(NONE), &
+          !$OMP SHARED(ERIs,tmpR4TensorAlphaBeta,MO_Coeff,MO_Coeff_2,nBasis), &
+          !$OMP FIRSTPRIVATE(X), &
+          !$OMP PRIVATE(P,Q,tmpR4TensorLoc)
+          call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP DO COLLAPSE(2)
           Do P = 1, NBasis
             Do Q = 1, NBasis
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call X%put(ERIs%alpha%at(P,Q,R,S),R,S)
-                EndDo
-              EndDo
-              Y = Dagger(MO_Coeff_2%Beta).dot.X
-              X = Y.dot.MO_Coeff%Beta
-              Do R = 1, NBasis
-                Do S = 1, NBasis
-                  Call tmpR4TensorAlphaBeta%put(X%at(R,S),P,Q,R,S)
-                EndDo
-              EndDo
+              X = ERIs%alpha%mat([P],[Q],[0],[0])
+              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
+          !$OMP END DO
+          !$OMP CRITICAL
+          tmpR4TensorAlphaBeta = tmpR4TensorAlphaBeta + tmpR4TensorLoc
+          !$OMP END CRITICAL
+          !$OMP END PARALLEL
 
+          tmpR4TensorLoc2 = tmpR4TensorAlphaBeta
+          call tmpR4TensorAlphaBeta%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP PARALLEL DEFAULT(NONE), &
+          !$OMP SHARED(tmpR4TensorAlphaBeta,MO_Coeff,MO_Coeff_2,nBasis), &
+          !$OMP FIRSTPRIVATE(X,tmpR4TensorLoc2), &
+          !$OMP PRIVATE(R,S,tmpR4TensorLoc)
+          call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+          !$OMP DO COLLAPSE(2)
           Do R = 1, NBasis
             Do S = 1, NBasis
-              Do P = 1, NBasis
-                Do Q = 1, NBasis 
-                  Call X%put(tmpR4TensorAlphaBeta%at(P,Q,R,S),P,Q)
-                EndDo
-              EndDo
-              Y = Dagger(MO_Coeff_2%Alpha).dot.X
-              X = Y.dot.MO_Coeff%Alpha
-              Do P = 1, NBasis
-                Do Q = 1, NBasis
-                  Call tmpR4TensorAlphaBeta%put(X%at(P,Q),P,Q,R,S)
-                EndDo
-              EndDo
+              X = tmpR4TensorLoc2%mat([0],[0],[R],[S])
+              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+              Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
+          !$OMP END DO
+          !$OMP CRITICAL
+          tmpR4TensorAlphaBeta = tmpR4TensorAlphaBeta + tmpR4TensorLoc
+          !$OMP END CRITICAL
+          !$OMP END PARALLEL
 
           If(storage.eq.'full') then
 
+            !$OMP PARALLEL DEFAULT(NONE), &
+            !$OMP SHARED(ERIs,tmpR4TensorBetaAlpha,MO_Coeff,MO_Coeff_2,nBasis), &
+            !$OMP FIRSTPRIVATE(X), &
+            !$OMP PRIVATE(P,Q,tmpR4TensorLoc)
+            call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+            !$OMP DO COLLAPSE(2)
             Do P = 1, NBasis
               Do Q = 1, NBasis
-                Do R = 1, NBasis
-                  Do S = 1, NBasis
-                    Call X%put(ERIs%alpha%at(P,Q,R,S),R,S) 
-                  EndDo
-                EndDo
-                Y = Dagger(MO_Coeff_2%Alpha).dot.X
-                X = Y.dot.MO_Coeff%Alpha
-                Do R = 1, NBasis
-                  Do S = 1, NBasis
-                    Call tmpR4TensorBetaAlpha%put(X%at(R,S),P,Q,R,S)
-                  EndDo
-                EndDo
+                X = ERIs%alpha%mat([P],[Q],[0],[0])
+                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
+            !$OMP END DO
+            !$OMP CRITICAL
+            tmpR4TensorBetaAlpha = tmpR4TensorBetaAlpha + tmpR4TensorLoc
+            !$OMP END CRITICAL
+            !$OMP END PARALLEL
 
+            tmpR4TensorLoc2 = tmpR4TensorBetaAlpha
+            call tmpR4TensorBetaAlpha%init(nBasis,nBasis,nBasis,nBasis)
+            !$OMP PARALLEL DEFAULT(NONE), &
+            !$OMP SHARED(tmpR4TensorBetaAlpha,MO_Coeff,MO_Coeff_2,nBasis), &
+            !$OMP FIRSTPRIVATE(X,tmpR4TensorLoc2), &
+            !$OMP PRIVATE(R,S,tmpR4TensorLoc)
+            call tmpR4TensorLoc%init(nBasis,nBasis,nBasis,nBasis)
+            !$OMP DO COLLAPSE(2)
             Do R = 1, NBasis
               Do S = 1, NBasis
-                Do P = 1, NBasis
-                  Do Q = 1, NBasis 
-                    Call X%put(tmpR4TensorBetaAlpha%at(P,Q,R,S),P,Q)
-                  EndDo
-                EndDo
-                Y = Dagger(MO_Coeff_2%Beta).dot.X
-                X = Y.dot.MO_Coeff%Beta
-                Do P = 1, NBasis
-                  Do Q = 1, NBasis
-                    Call tmpR4TensorBetaAlpha%put(X%at(P,Q),P,Q,R,S)
-                  EndDo
-                EndDo
+                X = tmpR4TensorLoc2%mat([0],[0],[R],[S])
+                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
+            !$OMP END DO
+            !$OMP CRITICAL
+            tmpR4TensorBetaAlpha = tmpR4TensorBetaAlpha + tmpR4TensorLoc
+            !$OMP END CRITICAL
+            !$OMP END PARALLEL
 
           EndIf
 

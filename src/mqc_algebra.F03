@@ -213,6 +213,8 @@
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::sum => MQC_Matrix_Sum
+!>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
+        Procedure, Public::power => MQC_Matrix_Power
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
         Procedure, Public::at => MQC_Matrix_Scalar_At
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
@@ -629,6 +631,8 @@
 !>    \brief <b> Determines if a variable is less than another</b>
       Interface Operator (.lt.)
         Module Procedure MQC_ScalarLT
+        Module Procedure MQC_ScalarLTInteger
+        Module Procedure MQC_IntegerLTScalar
         Module Procedure MQC_ScalarLTReal
         Module Procedure MQC_RealLTScalar
       End Interface
@@ -4066,6 +4070,144 @@
 !
       Return
       End Function MQC_ScalarLT
+!
+!
+!     PROCEDURE MQC_IntegerLTScalar
+!
+!>    \brief <b> MQC_IntegerLTScalar is a function that returns TRUE if an intrinsic 
+!>    integer is less than a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_integerLTScalar is a function that returns TRUE if an intrinsic integer is 
+!>    less than a MQC_Scalar. 
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the intrinsic 
+!>    integer is less than the real part of the MQC_Scalar and FALSE if the intrinsic 
+!>    integer is greater than the real part of the MQC_Scalar. If the intrinsic 
+!>    integer is equal to the real part of the MQC_Scalar, the function returns TRUE 
+!>    if the imaginary part of MQC_Scalar is greater than zero and FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] integerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_IntegerLTScalar(IntegerIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerLTScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_IntegerLTScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntegerIn.lt.Scalar%scar) MQC_IntegerLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntegerIn.lt.Scalar%scai) MQC_IntegerLTScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntegerIn.eq.real(Scalar%scac)) then
+          If(Zero.lt.aimag(Scalar%scac)) MQC_IntegerLTScalar = .True.
+        ElseIf(IntegerIn.lt.real(Scalar%scac)) then
+          MQC_IntegerLTScalar = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerLTScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerLTScalar
+!
+!
+!     PROCEDURE MQC_ScalarLTInteger
+!
+!>    \brief <b> MQC_ScalarLTInteger is a function that returns TRUE if a MQC_Scalar is less
+!>     than an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLTInteger is a function that returns TRUE if a MQC_Scalar is less than an 
+!>    intrinsic integer.
+!>
+!>    When dealing with complex numbers, the function returns TRUE if the real part of the 
+!>    MQC_Scalar is less than the intrinsic integer and FALSE if the real part of the MQC_Scalar
+!>    is greater than the intrinsic integer. If the real part of the MQC_Scalar is equal to the
+!>    intrinsic integer, the function returns TRUE if the imaginary part of MQC_Scalar is less 
+!>    than zero and FALSE otherwise. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_ScalarLTInteger(Scalar,integerIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarLTInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_ScalarLTInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.lt.IntegerIn) MQC_ScalarLTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.lt.IntegerIn) MQC_ScalarLTInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(real(Scalar%scac).eq.IntegerIn) then
+          If(aimag(Scalar%scac).lt.Zero) MQC_ScalarLTInteger = .True.
+        ElseIf(real(Scalar%scac).lt.integerIn) then
+          MQC_ScalarLTInteger = .True.
+        EndIf
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarLTInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarLTInteger
 !
 !
 !     PROCEDURE MQC_RealLTScalar
@@ -24560,6 +24702,72 @@
       end function mqc_matrix_sum
 !
 !
+!     PROCEDURE MQC_Matrix_Power
+!
+!>    \brief <b> MQC_Matrix_Power is a function that returns the value of a
+!>    MQC matrix raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Power is a function that returns the value of a MQC matrix raised
+!>    to a power. The power can be integer, real, complex or an MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_matrix_power(A,P)
+!
+      Implicit None
+      class(mqc_matrix),intent(inOut)::A
+      class(*)::P
+      type(mqc_vector)::sVals
+      type(mqc_matrix)::uMatrix
+      type(mqc_scalar)::scalar
+!
+!     Do the work.
+!
+      select type(P)
+      type is (integer)
+        scalar = P
+      type is (real)
+        scalar = P
+      type is (complex)
+        scalar = P
+      type is (mqc_scalar)
+        scalar = P
+      class default
+        call mqc_error_I('P type not defined in MQC_Vector_Power',6)
+      end select
+!
+      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+      call sVals%power(scalar)
+      call sVals%diag(A)
+      A = matmul(matmul(uMatrix,A),dagger(uMatrix))
+!
+      end subroutine mqc_matrix_power
+!
+!
 !----------------------------------------------------------------
 !                                                               |
 !     R4TENSOR PROCEDURES                                       |
@@ -27640,7 +27848,7 @@
         call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
         & conform to a matrix')
 
-      if((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D2,1).eq.2.or.D2(1).eq.0)) then
+      if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),size(ItmpMatrix,2),1,1))
@@ -27649,7 +27857,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),size(RtmpMatrix,2),1,1))
-          RtmpTensor(:,:,1,1) = ItmpMatrix
+          RtmpTensor(:,:,1,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27658,7 +27866,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,D2,[D3(1),D3(1)],[D4(1),D4(1)])
-      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+      elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),1,size(ItmpMatrix,2),1))
@@ -27667,7 +27875,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),1,size(RtmpMatrix,2),1))
-          RtmpTensor(:,1,:,1) = ItmpMatrix
+          RtmpTensor(:,1,:,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27676,7 +27884,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,[D2(1),D2(1)],D3,[D4(1),D4(1)])
-      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(size(ItmpMatrix,1),1,1,size(ItmpMatrix,2)))
@@ -27685,7 +27893,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(size(RtmpMatrix,1),1,1,size(RtmpMatrix,2)))
-          RtmpTensor(:,1,1,:) = ItmpMatrix
+          RtmpTensor(:,1,1,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27694,7 +27902,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,D1,[D2(1),D2(1)],[D3(1),D3(1)],D4)
-      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+      elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,size(ItmpMatrix,1),size(ItmpMatrix,2),1))
@@ -27703,7 +27911,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,size(RtmpMatrix,1),size(RtmpMatrix,2),1))
-          RtmpTensor(1,:,:,1) = ItmpMatrix
+          RtmpTensor(1,:,:,1) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27712,7 +27920,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,[D1(1),D1(1)],D2,D3,[D4(1),D4(1)])
-      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,size(ItmpMatrix,1),1,size(ItmpMatrix,2)))
@@ -27721,7 +27929,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,size(RtmpMatrix,1),1,size(RtmpMatrix,2)))
-          RtmpTensor(1,:,1,:) = ItmpMatrix
+          RtmpTensor(1,:,1,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
@@ -27730,7 +27938,7 @@
           TensorIn = CtmpTensor
         endIf
         call Ten%tput(TensorIn,[D1(1),D1(1)],D2,[D3(1),D3(1)],D4)
-      elseIf((size(D3,1).eq.2.or.D3(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+      elseIf((size(D3).eq.2.or.D3(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
         if(MQC_Matrix_HaveInteger(MatrixIn)) then
           ItmpMatrix = MatrixIn
           allocate(ItmpTensor(1,1,size(ItmpMatrix,1),size(ItmpMatrix,2)))
@@ -27739,7 +27947,7 @@
         elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
           RtmpMatrix = MatrixIn
           allocate(RtmpTensor(1,1,size(RtmpMatrix,1),size(RtmpMatrix,2)))
-          RtmpTensor(1,1,:,:) = ItmpMatrix
+          RtmpTensor(1,1,:,:) = RtmpMatrix
           TensorIn = RtmpTensor
         elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
           CtmpMatrix = MatrixIn
