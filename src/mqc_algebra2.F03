@@ -934,11 +934,11 @@
         select case(mqcVariable%getType())
         case('REAL')
           if(PRESENT(header)) then
-            call mqc_print_rank4Tensor(myIOut,  &
+            call mqc_print_rank4Tensor_array_real(myIOut,  &
               RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:4)),  &
               Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_rank4Tensor(myIOut,  &
+            call mqc_print_rank4Tensor_array_real(myIOut,  &
               RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:4)),  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
