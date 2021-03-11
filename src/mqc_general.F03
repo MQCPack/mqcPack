@@ -47,7 +47,7 @@
 !
 !     Define Types and Classes.
 !
-      use iso_fortran_env
+      use iso_fortran_env, only: int64, real64
       implicit none
       real(kind=real64),public,parameter::angPBohr=0.52917706d0                                                          ! Angstom per Bohr
       real(kind=real64),public,parameter::kGPAMU=1.660538921d-27                                                         ! Kilograms per atomic mass unit
@@ -85,7 +85,9 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
-        module procedure MQC_Print_Rank4Tensor_Array_Real
+        module procedure MQC_Print_R4Tensor_Array_Integer
+        module procedure MQC_Print_R4Tensor_Array_Real
+        module procedure MQC_Print_R4Tensor_Array_Complex
       end interface
 !
       interface mqc_print_scalar
@@ -105,8 +107,10 @@
         module procedure MQC_Print_Matrix_Array_Complex
       end interface
 !
-      interface mqc_print_rank4Tensor
-        module procedure MQC_Print_Rank4Tensor_Array_Real
+      interface mqc_print_r4tensor
+        module procedure MQC_Print_R4Tensor_Array_Integer
+        module procedure MQC_Print_R4Tensor_Array_Real
+        module procedure MQC_Print_R4Tensor_Array_Complex
       end interface
 !
       interface mqc_packedDiagonalMatrix2FullMatrix
@@ -941,6 +945,150 @@
       Return
       End Subroutine MQC_Print_Vector_Array_Complex
 
+!
+!PROCEDURE MQC_Print_R4Tensor_Array_Integer
+      Subroutine MQC_Print_R4Tensor_Array_Integer(IOut,Array,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print an integer 4-dimensional array variable.
+!
+!     L. M. Thompson, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Integer(kind=int64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
+!
+!
+ 1000 Format(/,1x,A)
+ 1020 Format(" ")
+ 1100 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',I10)
+
+      D1 = size(Array,1)
+      D2 = size(Array,2)
+      D3 = size(Array,3)
+      D4 = size(Array,4)
+
+      If(Present(blank_at_top)) then
+        If(blank_at_top) Write(IOut,1020)
+      EndIf
+      If(Present(Header)) Write(IOut,1000) Trim(Header)
+      Do I = 1, D1
+        Do J = 1, D2 
+          Do K = 1, D3
+            Do l = 1, D4
+              Write(IOut,1100) I,J,K,L,Array(I,J,K,L)
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      If(present(blank_at_bottom)) then
+        If(blank_at_bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_R4Tensor_Array_Integer
+!
+!
+!PROCEDURE MQC_Print_R4Tensor_Array_Real
+      Subroutine MQC_Print_R4Tensor_Array_Real(IOut,Array,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a real 4-dimensional array variable.
+!
+!     L. M. Thompson, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
+!
+!
+ 1000 Format(/,1x,A)
+ 1020 Format(" ")
+ 1200 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
+
+      D1 = size(Array,1)
+      D2 = size(Array,2)
+      D3 = size(Array,3)
+      D4 = size(Array,4)
+
+      If(Present(blank_at_top)) then
+        If(blank_at_top) Write(IOut,1020)
+      EndIf
+      If(Present(Header)) Write(IOut,1000) Trim(Header)
+      Do I = 1, D1
+        Do J = 1, D2 
+          Do K = 1, D3
+            Do l = 1, D4
+              Write(IOut,1200) I,J,K,L,Array(I,J,K,L)
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      If(present(blank_at_bottom)) then
+        If(blank_at_bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_R4Tensor_Array_Real
+!
+!
+!PROCEDURE MQC_Print_R4Tensor_Array_Complex
+      Subroutine MQC_Print_R4Tensor_Array_Complex(IOut,Array,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a complex 4-dimensional array variable.
+!
+!     L. M. Thompson, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Complex(kind=real64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
+!
+!
+ 1000 Format(/,1x,A)
+ 1020 Format(" ")
+ 1300 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
+
+      D1 = size(Array,1)
+      D2 = size(Array,2)
+      D3 = size(Array,3)
+      D4 = size(Array,4)
+
+      If(Present(blank_at_top)) then
+        If(blank_at_top) Write(IOut,1020)
+      EndIf
+      If(Present(Header)) Write(IOut,1000) Trim(Header)
+      Do I = 1, D1
+        Do J = 1, D2 
+          Do K = 1, D3
+            Do l = 1, D4
+              Write(IOut,1300) I,J,K,L,Array(I,J,K,L)
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      If(present(blank_at_bottom)) then
+        If(blank_at_bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_R4Tensor_Array_Complex
+!
 !
 !----------------------------------------------------------------
 !                                                               |
