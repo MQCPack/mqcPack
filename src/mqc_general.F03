@@ -136,6 +136,28 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!PROCEDURE mqc_version
+      subroutine mqc_version(major,minor,revision,versionString)
+!
+!     This subroutine returns the current MQC version number. The full MQC
+!     version number is comprised of three components: major.minor.revision. The
+!     major version indicated is given by the last two digits of the versioning
+!     year; the minor label is two digits indicating a versioning month; and the
+!     last digit gives a revision number.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(out)::major,minor,revision
+      character(len=*),OPTIONAL,intent(out)::versionString
+!
+      if(PRESENT(major))         major         = 21
+      if(PRESENT(minor))         minor         = 3
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '21.03.1'
+!
+      return
+      end subroutine mqc_version
+!
 !PROCEDURE mqc_version_check
       function mqc_version_check(isMajor,isMinor,isRevision,  &
         olderThanMajor,olderThanMinor,olderThanRevision,  &
@@ -174,32 +196,6 @@
 !
       return
       end function mqc_version_check
-
-
-!
-!PROCEDURE mqc_version
-      subroutine mqc_version(major,minor,revision,versionString)
-!
-!     This subroutine returns the current MQC version number. The full MQC
-!     version number is comprised of three components: major.minor.revision. The
-!     major version indicated is given by the last two digits of the versioning
-!     year; the minor label is two digits indicating a versioning month; and the
-!     last digit gives a revision number.
-!
-!
-      implicit none
-      integer,OPTIONAL,intent(out)::major,minor,revision
-      character(len=*),OPTIONAL,intent(out)::versionString
-!
-      if(PRESENT(major))         major         = 20
-      if(PRESENT(minor))         minor         = 5
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '20.05.1'
-!
-      return
-      end subroutine mqc_version
-
-
 !
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
