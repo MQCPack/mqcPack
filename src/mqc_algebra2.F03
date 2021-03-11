@@ -73,14 +73,15 @@
         procedure,private::MQC_Variable_put_MQC
         procedure,private::MQC_Variable_put_intrinsicInteger
         procedure,private::MQC_Variable_put_intrinsicReal
+        procedure,public ::putMQC       => MQC_Variable_put_MQC
         generic,public   ::put          => MQC_Variable_put_MQC,  &
                                            MQC_Variable_put_intrinsicInteger,  &
                                            MQC_Variable_put_intrinsicReal
-!        generic,public   ::getVal       => MQC_Variable_get_MQC
-        procedure,public::getRank       => MQC_Variable_getRank
-        procedure,public::getType       => MQC_Variable_getType
-        procedure,public::print         => MQC_Print_mqcVariable
-        procedure,public::isConformable => MQC_Variable_isConformable
+        procedure,public ::getVal        => MQC_Variable_get_MQC
+        procedure,public ::getRank       => MQC_Variable_getRank
+        procedure,public ::getType       => MQC_Variable_getType
+        procedure,public ::print         => MQC_Print_mqcVariable
+        procedure,public ::isConformable => MQC_Variable_isConformable
       end type MQC_Variable
 !
 !
@@ -145,6 +146,7 @@
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+        module procedure MQC_Variable_setVal_intrinsicRank42mqcRank4_real
       end interface
 !
 !     Interface routines that fill specific elements of MQC variable objects.
@@ -185,6 +187,7 @@
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+        module procedure MQC_Variable_setVal_intrinsicRank42mqcRank4_real
         module procedure MQC_Variable_mqc2intrinsicIntegerScalar
         module procedure MQC_Variable_mqc2intrinsicRealScalar
         module procedure MQC_Variable_mqc2intrinsicReal1Array
@@ -324,7 +327,7 @@
 !
 !PROCEDURE MQC_Variable_initialize
       subroutine MQC_Variable_initialize(mqcVariable,dataType,dimensions,  &
-          rank,storageFormat,debug)
+        rank,storageFormat,debug)
 !
 !     This subroutine is used to initialize an MQC_Variable object.
 !
@@ -381,13 +384,6 @@
       endIf
       call string_change_case(myStorageFormat,'u')
       mqcVariable%storageFormat = TRIM(myStorageFormat)
-
-!hph+
-      if(myDebug) write(6,*)  &
-        ' initializing a mqcVar that current init=',  &
-        mqcVariable%initialized
-!hph-
-
 !
 !     Fill the dataType.
 !
@@ -427,37 +423,9 @@
 !
 !     Now, deallocate/reallocate the data arrays if necessary.
 !
-
-!hph+
-      if(myDebug) then
-!        if(myDebug) call mqc_error('Hrant - Wow2AA')
-       endIf
-!hph-
-
       myLength = MQC_Variable_getLength(mqcVariable)
-
-!hph+
-      if(myDebug) then
-        write(*,*)
-        write(*,*)' Hrant - myLength = ',myLength
-        write(*,*)' Hrant - mqcVariable%dataType = ',mqcVariable%dataType
-!        if(myDebug) call mqc_error('Hrant - Wow2A')
-       endIf
-!hph-
-
       select case(mqcVariable%dataType)
       case('REAL')
-
-!hph+
-      if(myDebug) then
-        write(*,*)' Allocated(mqcVariable%integerArray) = ',Allocated(mqcVariable%integerArray)
-        write(*,*)' Size(mqcVariable%integerArray)      = ',Size(mqcVariable%integerArray)
-        write(*,*)' initialized: ',mqcVariable%initialized
-!        deAllocate(mqcVariable%integerArray)
-        if(myDebug) call mqc_error('Hrant - Inside REAL - A')
-      endIf
-!hph-
-
         if(Allocated(mqcVariable%integerArray))  &
           DeAllocate(mqcVariable%integerArray)
         if(.not.Allocated(mqcVariable%realArray)) then
@@ -467,15 +435,6 @@
           Allocate(mqcVariable%realArray(myLength))
         endIf
       case('INTEGER')
-
-!hph+
-        if(MQC_Algebra2_DEBUG) then
-          write(*,*)
-          write(*,*)' Hrant - Allocating INTEGER: myLength = ',myLength
-          write(*,*)
-        endIf
-!hph-
-
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
         if(.not.Allocated(mqcVariable%integerArray)) then
           Allocate(mqcVariable%integerArray(myLength))
@@ -488,20 +447,10 @@
           'allocation block.',6,'mqcVariable%dataType',  &
           mqcVariable%dataType)
       end select
-
-!hph+
-      if(myDebug) call mqc_error('Hrant - Wow3')
-!hph-
-
 !
 !     Lastly, set the initialized flag.
 !
       mqcVariable%initialized = .True.
-
-!hph+
-!      if(myDebug) call mqc_error('STOP 9')
-!hph-
-
 !
       return
       end subroutine MQC_Variable_initialize
@@ -509,7 +458,7 @@
 
 !
 !PROCEDURE MQC_Variable_getArrayPosition
-      function MQC_Variable_getArrayPosition(mqcVariable,arrayElement) result(k)
+      function MQC_Variable_getArrayPosition(mqcVariable,arrayElement,DEBUG) result(k)
 !
 !     This function returns an integer giving the position in the object data
 !     array for input MQC Variable object <mqcVariable> corresponding to the
@@ -525,6 +474,11 @@
       integer(kind=int64),dimension(:)::arrayElement
       integer(kind=int64)::k
       integer(kind=int64)::i,subLength
+      logical,optional::DEBUG
+      logical::DEBUG1
+!
+      DEBUG1 = .false.
+      if(Present(DEBUG)) DEBUG1 = DEBUG
 !
 !
 !     Do the work...
@@ -532,9 +486,14 @@
       select case(TRIM(mqcVariable%storageFormat))
       case('FULL')
         k = 0
+        subLength = 1
+        do i=1,mqcVariable%rank
+          subLength = subLength*mqcVariable%dimensions(i)
+        endDo
         do i=mqcVariable%rank,2,-1
-          subLength = SUM(mqcVariable%dimensions(1:i-1))
+          subLength = subLength/mqcVariable%dimensions(i)
           k = k + (arrayElement(i)-1)*subLength
+          if(DEBUG1) write(*,*) i,subLength,k
         endDo
         k = k + arrayElement(1)
       case default
@@ -866,7 +825,7 @@
 !
 !
 !     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2020.
 !
 !
 !     Variable Declarations.
@@ -969,9 +928,29 @@
           call mqc_error_a('MQC variable print requested for unknown type.', 6, &
                'mqcVariable%getType()', mqcVariable%getType())
         end select
+!
+!     Print rank-4 tensors...
+      case(4)
+        select case(mqcVariable%getType())
+        case('REAL')
+          if(PRESENT(header)) then
+            call mqc_print_rank4Tensor(myIOut,  &
+              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:4)),  &
+              Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          else
+            call mqc_print_rank4Tensor(myIOut,  &
+              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:4)),  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          endIf
+        case default
+          call mqc_error_a('MQC variable print requested for unknown type.', 6, &
+               'mqcVariable%getType()', mqcVariable%getType())
+        end select
+!
+!     Print requested for a general MQC variable with a rank not yet coded...
       case default
         call mqc_error_i('MQC variable print requested for unknown rank.', 6, &
-             'mqcVariable%getRank()', mqcVariable%getRank())
+          'mqcVariable%getRank()', mqcVariable%getRank())
       end select
 !
       return
@@ -1068,9 +1047,9 @@
            'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
-        mqcVariable%realArray(k) = INT(valueMQC)
+        mqcVariable%realArray(k) = Float(valueMQC)
       case('INTEGER')
-        mqcVariable%integerArray(k) = FLOAT(valueMQC)
+        mqcVariable%integerArray(k) = Int(valueMQC)
       case default
         call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
              'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
@@ -1781,7 +1760,6 @@
       myLength = SIZE(intrinsicIn)
       myDimensions(1) = SIZE(intrinsicIn,1)
       myDimensions(2) = SIZE(intrinsicIn,2)
-      call mqc_print(6,myDimensions,'myDimensions:')
       call MQC_Variable_setVal(mqcVariable,arrayIntegerIn=RESHAPE(intrinsicIn,[myLength]),  &
         dimensions=myDimensions,DEBUGPRINT=.False.)
 !
@@ -1811,18 +1789,6 @@
  1000 format(1x,'Converting an intrinsic real matrix to an mqcVar.')
  1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8)
 !
-
-!hph+
-!      write(*,*)
-!      write(*,*)
-!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-!        ' DEBUG = ',DEBUG
-!      write(*,*)' MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real:', &
-!        ' MQC_Algebra2_DEBUG = ',MQC_Algebra2_DEBUG
-!      write(*,*)
-!      write(*,*)
-!hph-
-
       DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
 !
 !     Load the MQC variable.
@@ -1835,18 +1801,51 @@
         myDimensions(1),myDimensions(2)
       call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
         dimensions=myDimensions,DEBUGPRINT=DEBUG)
-
-      if(DEBUG) call mqc_error('Hrant - SUCCESS!!!')
-!hph+
-          if(DEBUG) then
-            call mqcVariable%print(header='mqcVar...')
-            call mqc_error('STOPa')
-          endIf
-!hph-
-
 !
       return
       end subroutine MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_real
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicRank42mqcRank4_real
+      subroutine MQC_Variable_setVal_intrinsicRank42mqcRank4_real(mqcVariable,intrinsicIn)
+!
+!     This subroutine is used to set an MQC Variable rank-4 tensor (full storage
+!     form) equal to an intrinsic real fortran rank-4 tensor.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      real(kind=real64),dimension(:,:,:,:),intent(in)::intrinsicIn
+      integer(kind=int64)::myLength
+      integer(kind=int64),dimension(4)::myDimensions
+      logical::DEBUG=.false.
+!
+ 1000 format(1x,'Converting an intrinsic real rank-4 tensor to an mqcVar.')
+ 1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8,  &
+        '   dim 3=',I8,'   dim 4=',I8)
+!
+      DEBUG = DEBUG.or.MQC_Algebra2_DEBUG
+!
+!     Load the MQC variable.
+!
+      if(DEBUG) write(MQC_Algebra2_IOut,1000)
+      myLength = SIZE(intrinsicIn)
+      myDimensions(1) = SIZE(intrinsicIn,1)
+      myDimensions(2) = SIZE(intrinsicIn,2)
+      myDimensions(3) = SIZE(intrinsicIn,3)
+      myDimensions(4) = SIZE(intrinsicIn,4)
+      if(DEBUG) write(MQC_Algebra2_IOut,1100) myLength,  &
+        myDimensions(1),myDimensions(2),myDimensions(3),myDimensions(4)
+      call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
+        dimensions=myDimensions,DEBUGPRINT=DEBUG)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicRank42mqcRank4_real
 
 
 !

@@ -75,11 +75,15 @@
 !     Scalars...
 !
 !>    \brief <b> Rank 0 array variable</b>
+
+!hph+
       Type MQC_Scalar
-        Real(kind=real64),Private,Allocatable::ScaR
-        Integer(kind=int64),Private,Allocatable::ScaI
-        Complex(Kind=real64),Private,Allocatable::ScaC
-        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+        Real(kind=real64),Public,Allocatable::ScaR
+        Integer(kind=int64),Public,Allocatable::ScaI
+        Complex(Kind=real64),Public,Allocatable::ScaC
+        Character(Len=64),Public::Data_Type ! Real,Integer,Complex
+!hph-
+
       Contains
 !>      \brief <b> Print the MQC Scalar</b>
         Procedure, Public::print => MQC_Print_Scalar_Algebra1
