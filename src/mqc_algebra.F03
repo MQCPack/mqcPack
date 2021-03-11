@@ -64,7 +64,7 @@
 !     **********************************************************************
 !
       Use MQC_General
-      use iso_fortran_env
+      use iso_fortran_env, only: int32, int64, real64
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -249,11 +249,21 @@
         Procedure, Public::print => MQC_Print_r4tensor_Algebra1
 !>      \brief <b> Return the specified element in the MQC R4Tensor</b>
         Procedure, Public::at => MQC_R4Tensor_At
+!>      \brief <b> Return the specified vector from MQC R4Tensor</b>
+        Procedure, Public::vat => MQC_R4Tensor_Vector_At
+!>      \brief <b> Return the specified vector from MQC R4Tensor</b>
+        Procedure, Public::mat => MQC_R4Tensor_Matrix_At
+!>      \brief <b> Return the specified rank-4 tensor from MQC R4Tensor</b>
+        Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Procedure, Public::put => MQC_R4Tensor_Put
-!>      \brief <b> Return the specified rank-4 tensor from MQC R4Tensor</b>
-        Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
+!>      \brief <b> Update the specified subvector of the MQC R4Tensor to the specified
+!>      vector</b>
+        Procedure, Public::vput => MQC_R4Tensor_Vector_Put
+!>      \brief <b> Update the specified submatrix of the MQC R4Tensor to the specified
+!>      matrix</b>
+        Procedure, Public::mput => MQC_R4Tensor_Matrix_Put
 !>      \brief <b> Updates the specified subarray of the MQC R4Tensor to the specified
 !>      rank-4 tensor</b>
         Procedure, Public::tput => MQC_R4Tensor_R4Tensor_Put
@@ -535,6 +545,8 @@
         Module Procedure MQC_MatrixRealProduct
         Module Procedure MQC_ComplexMatrixProduct
         Module Procedure MQC_MatrixComplexProduct
+        Module Procedure MQC_ScalarR4TensorProduct
+        Module Procedure MQC_R4TensorScalarProduct
       End Interface
 !
 !>    \brief <b> Divides two variables</b>
@@ -548,6 +560,7 @@
         Module Procedure MQC_ScalarComplexDivide
         Module Procedure MQC_VectorScalarDivide
         Module Procedure MQC_MatrixScalarDivide
+        Module Procedure MQC_R4TensorScalarDivide
       End Interface
 !
 !>    \brief <b> Exponentials a variable to the power of another</b>
@@ -572,8 +585,12 @@
 !>    \brief <b> Determines if two variables are equal</b>
       Interface Operator (.eq.)
         Module Procedure MQC_ScalarEQ
+        Module Procedure MQC_ScalarEQInteger
+        Module Procedure MQC_IntegerEQScalar
         Module Procedure MQC_ScalarEQReal
         Module Procedure MQC_RealEQScalar
+        Module Procedure MQC_ScalarEQComplex
+        Module Procedure MQC_ComplexEQScalar
       End Interface
 !
 !>    \brief <b> Determines if a variable is less than another</b>
@@ -723,6 +740,9 @@
         Module Procedure MQC_Set_IntegerArray2tensor
         Module Procedure MQC_Set_RealArray2tensor
         Module Procedure MQC_Set_ComplexArray2tensor
+        Module Procedure MQC_Set_Tensor2IntegerArray
+        Module Procedure MQC_Set_Tensor2RealArray
+        Module Procedure MQC_Set_Tensor2ComplexArray
       End Interface
 !
 !     Documentation in scalar operator section
@@ -3540,6 +3560,124 @@
       End Function MQC_ScalarEQ
 !
 !
+!     PROCEDURE MQC_IntegerEQScalar
+!
+!>    \brief <b> MQC_IntegerEQScalar is a function that returns TRUE if an intrinsic 
+!>    integer is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerEQScalar is a function that returns TRUE if an intrinsic integer is 
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_IntegerEQScalar(IntegerIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_IntegerEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_IntegerEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(IntegerIn.eq.Scalar%scar) MQC_IntegerEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(IntegerIn.eq.Scalar%scai) MQC_IntegerEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(IntegerIn.eq.Scalar%scac) MQC_IntegerEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_IntegerEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_IntegerEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQInteger
+!
+!>    \brief <b> MQC_ScalarEQInteger is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic integer</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQInteger is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic integer.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] IntegerIn
+!>    \verbatim
+!>        IntegerIn is Integer(kind=int64)
+!>        The intrinsic integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarEQInteger(Scalar,IntegerIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQInteger
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Integer(kind=int64),Intent(In)::IntegerIn
+      Integer(kind=int64)::Zero=0.0d0
+!
+      MQC_ScalarEQInteger = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.IntegerIn) MQC_ScalarEQInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.IntegerIn) MQC_ScalarEQInteger = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.integerIn) MQC_ScalarEQInteger = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQInteger', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQInteger
+!
+!
 !     PROCEDURE MQC_RealEQScalar
 !
 !>    \brief <b> MQC_RealEQScalar is a function that returns TRUE if an intrinsic real
@@ -3656,6 +3794,124 @@
 !
       Return
       End Function MQC_ScalarEQReal
+!
+!
+!     PROCEDURE MQC_ComplexEQScalar
+!
+!>    \brief <b> MQC_ComplexEQScalar is a function that returns TRUE if an intrinsic 
+!>    complex is equal to a MQC_Scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ComplexEQScalar is a function that returns TRUE if an intrinsic complex is 
+!>    equal to a MQC_Scalar. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ComplexEQScalar(ComplexIn,Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ComplexEQScalar
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Complex(kind=real64)::Zero=0.0d0
+!
+      MQC_ComplexEQScalar = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(ComplexIn.eq.Scalar%scar) MQC_ComplexEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(ComplexIn.eq.Scalar%scai) MQC_ComplexEQScalar = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(ComplexIn.eq.Scalar%scac) MQC_ComplexEQScalar = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ComplexEQScalar', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ComplexEQScalar
+!
+!
+!     PROCEDURE MQC_ScalarEQComplex
+!
+!>    \brief <b> MQC_ScalarEQComplex is a function that returns TRUE if a MQC_Scalar is
+!>    equal to an intrinsic complex</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQComplex is a function that returns TRUE if a MQC_Scalar is equal to an 
+!>    intrinsic complex.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] ComplexIn
+!>    \verbatim
+!>        ComplexIn is Complex(kind=real64)
+!>        The intrinsic complex that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarEQComplex(Scalar,ComplexIn)
+!
+!     Variable Declarations.
+      Implicit None
+      Logical::MQC_ScalarEQComplex
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Complex(kind=real64),Intent(In)::ComplexIn
+      Complex(kind=real64)::Zero=0.0d0
+!
+      MQC_ScalarEQComplex = .False.
+      If(Scalar%Data_type.eq.'Real') then
+        If(Scalar%scar.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Integer') then
+        If(Scalar%scai.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      ElseIf(Scalar%Data_type.eq.'Complex') then
+        If(Scalar%scac.eq.ComplexIn) MQC_ScalarEQComplex = .True.
+      Else
+        Call MQC_Error_A('Scalar types unspecified in MQC_ScalarEQComplex', 6, &
+             'Scalar%Data_type', Scalar%Data_type)
+      EndIf
+!
+      Return
+      End Function MQC_ScalarEQComplex
 !
 !
 !     PROCEDURE MQC_ScalarLT
@@ -6294,9 +6550,39 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar)::Output
-      Type(MQC_Scalar),Intent(In)::Scalar1,Scalar2
+      Class(*),Intent(In)::Scalar1,Scalar2
+      Type(MQC_Scalar)::ScalarA,ScalarB
 
-      Output = Sign(Scalar1%rval(),Scalar2%rval())
+      Select Type (Scalar1)
+      Type Is (Integer)
+        ScalarA = Scalar1
+      Type Is (Real)
+        ScalarA = Scalar1
+      Type Is (Complex)
+        ScalarA = Scalar1
+      Type Is (MQC_Scalar)
+        ScalarA = Scalar1
+      Class Default
+        Call MQC_Error_I('Scalar1 type not defined in MQC_Scalar_Sign',6)
+      End Select
+      Select Type (Scalar2)
+      Type Is (Integer)
+        ScalarB = Scalar2
+      Type Is (Real)
+        ScalarB = Scalar2
+      Type Is (Complex)
+        ScalarB = Scalar2
+      Type Is (MQC_Scalar)
+        ScalarB = Scalar2
+      Class Default
+        Call MQC_Error_I('Scalar2 type not defined in MQC_Scalar_Sign',6)
+      End Select
+
+      If(ScalarB.ge.0) then
+        Output = abs(ScalarA)
+      Else
+        Output = (-1)*abs(ScalarA)
+      EndIf
 
       Return
       End Function MQC_Scalar_Sign
@@ -8336,9 +8622,9 @@
           call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
         else
-          call dger(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
         endif
       endif
 
@@ -13701,6 +13987,15 @@
 !>        The fourth index of the rank-4 tensor. This argument is
 !>        only required when taking hash of a rank-4 tensor.
 !>    \endverbatim
+!>    
+!>    \param[in] Order
+!>    \verbatim
+!>        Order is Character(Len=*),optional
+!>        The symmetry order for rank-4 tensors. Options are:
+!>        = '8-fold':  8-fold symmetry (default)
+!>        = '4-fold':  4-fold symmetry 
+!>       =  '2-fold':  2-fold symmetry
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -13708,32 +14003,69 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function symIndexHash(i,j,k,l) result(hash)
+      Function symIndexHash(i,j,k,l,orderIn) result(hash)
 
       implicit none
       integer(kind=int64),intent(in)::i,j
       integer(kind=int64),intent(in),optional::k,l
       integer(kind=int64)::ij,kl,ijkl,hash
+      character(Len=*),intent(in),optional::orderIn
+      character(Len=64)::order
 
-      if(i.gt.j) then
-        ij = i*(i-1)/2+j
-      else
-        ij = j*(j-1)/2+i
-      endif
-      if(present(k).and.present(l)) then
-        if(k.gt.l) then
-          kl = k*(k-1)/2+l 
+      if(.not.(present(k).and.present(l))) then
+
+        if(i.gt.j) then
+          ij = i*(i-1)/2+j
         else
-          kl = l*(l-1)/2+k
-        endIf
-        if(ij.gt.kl) then
-          ijkl = ij*(ij-1)/2+kl 
-        else
-          ijkl = kl*(kl-1)/2+ij 
-        endIf
-        hash = ijkl
-      else
+          ij = j*(j-1)/2+i
+        endif
         hash = ij
+
+      elseIf(present(k).and.present(l)) then
+
+        if(.not.present(orderIn)) then
+          order = '8-fold'
+        else
+          order = orderIn
+        endIf
+
+        if(order.eq.'8-fold') then
+          if(i.gt.j) then
+            ij = i*(i-1)/2+j
+          else
+            ij = j*(j-1)/2+i
+          endif
+          if(k.gt.l) then
+            kl = k*(k-1)/2+l 
+          else
+            kl = l*(l-1)/2+k
+          endIf
+          if(ij.gt.kl) then
+            ijkl = ij*(ij-1)/2+kl 
+          else
+            ijkl = kl*(kl-1)/2+ij 
+          endIf
+          hash = ijkl
+        elseIf(order.eq.'2-fold') then
+          if(i.gt.j) then
+            ij = (i-1)**2+j
+          else
+            ij = (j-1)**2+(j-1)+i
+          endif
+          if(k.gt.l) then
+            kl = (k-1)**2+l
+          else
+            kl = (l-1)**2+(l-1)+k
+          endif
+          if(ij.gt.kl) then
+            ijkl = ij*(ij-1)/2+kl 
+          else
+            ijkl = kl*(kl-1)/2+ij 
+          endIf
+          hash = ijkl
+        else
+          call mqc_error_A('Unrecognized order option in synIndexHash',6,'order',order)
+        endIf
       endif
 
       end function symIndexHash
@@ -17699,6 +18031,7 @@
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
  2004 Format(1x,I7,10F20.12)
+ 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -17736,7 +18069,15 @@
               !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              if(present(high_precision)) then
+                if(high_precision) then
+                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                else
+                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+                endIf
+              else
+                Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
+              endIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
@@ -24897,6 +25238,192 @@
       End Subroutine MQC_Set_ComplexArray2Tensor
 !
 !
+!     PROCEDURE MQC_Set_Tensor2IntegerArray
+!
+!>    \brief <b> MQC_Set_Tensor2IntegerArray is a subroutine that outputs an MQC rank-4 
+!>    tensor to an intrinsic integer rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Tensor2IntegerArray is a subroutine that outputs an MQC rank-4 tensor to 
+!>    an intrinsic integer rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:,:,:,:)
+!>        The array to be set equal to TensorIn.
+!>    \endverbatim
+!>
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be output to the array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Subroutine MQC_Set_Tensor2IntegerArray(ArrayOut,TensorIn)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::TensorIn
+      Integer(kind=int64),Dimension(:,:,:,:),Allocatable,Intent(InOut)::ArrayOut
+
+      if(allocated(ArrayOut)) deallocate(ArrayOut)
+
+      If(MQC_R4Tensor_HaveInteger(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%ITen
+      ElseIf(MQC_R4Tensor_HaveReal(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%RTen
+      ElseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%CTen
+      Else
+        Call MQC_Error_A('TensorIn type unknown in MQC_Tensor2IntegerArray', 6, &
+             'TensorIn%Data_Type', TensorIn%Data_Type )
+      EndIf
+
+      End Subroutine MQC_Set_Tensor2IntegerArray
+!
+!
+!     PROCEDURE MQC_Set_Tensor2RealArray
+!
+!>    \brief <b> MQC_Set_Tensor2RealArray is a subroutine that outputs an MQC rank-4 
+!>    tensor to an intrinsic real rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Tensor2RealArray is a subroutine that outputs an MQC rank-4 tensor to 
+!>    an intrinsic real rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:,:,:,:)
+!>        The array to be set equal to TensorIn.
+!>    \endverbatim
+!>
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be output to the array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Subroutine MQC_Set_Tensor2RealArray(ArrayOut,TensorIn)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::TensorIn
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable,Intent(InOut)::ArrayOut
+
+      if(allocated(ArrayOut)) deallocate(ArrayOut)
+
+      If(MQC_R4Tensor_HaveInteger(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%ITen
+      ElseIf(MQC_R4Tensor_HaveReal(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%RTen
+      ElseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%CTen
+      Else
+        Call MQC_Error_A('TensorIn type unknown in MQC_Tensor2RealArray', 6, &
+             'TensorIn%Data_Type', TensorIn%Data_Type )
+      EndIf
+
+      End Subroutine MQC_Set_Tensor2RealArray
+!
+!
+!     PROCEDURE MQC_Set_Tensor2ComplexArray
+!
+!>    \brief <b> MQC_Set_Tensor2ComplexArray is a subroutine that outputs an MQC rank-4 
+!>    tensor to a complex real rank-4 array</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Tensor2ComplexArray is a subroutine that outputs an MQC rank-4 tensor to 
+!>    an intrinsic complex rank-4 array.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ArrayOut
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:,:,:,:)
+!>        The array to be set equal to TensorIn.
+!>    \endverbatim
+!>
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Type(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to be output to the array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Subroutine MQC_Set_Tensor2ComplexArray(ArrayOut,TensorIn)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::TensorIn
+      Complex(kind=real64),Dimension(:,:,:,:),Allocatable,Intent(InOut)::ArrayOut
+
+      if(allocated(ArrayOut)) deallocate(ArrayOut)
+
+      If(MQC_R4Tensor_HaveInteger(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%ITen
+      ElseIf(MQC_R4Tensor_HaveReal(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%RTen
+      ElseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
+        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
+          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        ArrayOut = TensorIn%CTen
+      Else
+        Call MQC_Error_A('TensorIn type unknown in MQC_Tensor2ComplexArray', 6, &
+             'TensorIn%Data_Type', TensorIn%Data_Type )
+      EndIf
+
+      End Subroutine MQC_Set_Tensor2ComplexArray
+!
+!
 !     PROCEDURE MQC_R4Tensor_Initialize
 !
 !>    \brief <b> MQC_R4Tensor_Initialize is a subroutine that initializes an MQC 
@@ -26171,18 +26698,787 @@
       End Function MQC_R4Tensor_R4Tensor_Difference
 !
 !
-!     PROCEDURE MQC_R4Tensor_R4Tensor_At
+!     PROCEDURE MQC_R4Tensor_Vector_At
 !
-!>    \brief <b> MQC_Matrix_Matrix_At is a function that returns a submatrix of the matrix</b>
+!>    \brief <b> MQC_R4Tensor_Vector_At is a function that returns a subvector of 
+!>    the r4 tensor</b>
 !
 !>    \par Purpose:
 !     =============
 !>    
 !>    \verbatim
 !>
-!>    MQC_Matrix_Matrix_At is a function that returns the matrix between rows (I,J) and 
-!>    columns (K,L) of an MQC_Matrix Mat as an MQC_Matrix Matrix. If I, J, K or L is 
-!>    negative, the (N-I+1)th index value is selected.
+!>    MQC_R4Tensor_R4Tensor_At is a function that returns the vector between indices 
+!>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
+!>    index is counted back from the final element. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4Tensor_Vector_At(TensorIn,D1,D2,D3,D4) Result(VectorOut)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::TensorIn
+      Type(MQC_Vector)::VectorOut
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::realR4Tensor
+      Integer(kind=int64),Dimension(:,:,:,:),Allocatable::intR4Tensor
+      Complex(kind=real64),Dimension(:,:,:,:),Allocatable::compR4Tensor
+      
+!     Check input indicies for consistency
+      if(size(D1)*size(D2)*size(D3)*size(D4).ne.1.and.size(D1)*size(D2)*size(D3)*size(D4).ne.2)&
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_vector_At does not&
+        & conform to a vector')
+      if((D1(1).eq.0.and.D2(1).eq.0).or.(D1(1).eq.0.and.D3(1).eq.0).or. &
+        (D1(1).eq.0.and.D4(1).eq.0).or.(D2(1).eq.0.and.D3(1).eq.0).or. &
+        (D2(1).eq.0.and.D4(1).eq.0).or.(D3(1).eq.0.and.D4(1).eq.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_vector_At does not&
+        & conform to a vector')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.1.and.D1(1)*D2(1)*D3(1)*D4(1).ne.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_vector_At does not&
+        & conform to a vector')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.2.and.D1(1)*D2(1)*D3(1)*D4(1).eq.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_vector_At does not&
+        & conform to a vector ')
+
+      if(MQC_R4Tensor_HaveReal(TensorIn)) then
+        if(size(D1).eq.2.or.D1(1).eq.0) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = RealR4Tensor(:,1,1,1)
+          vectorOut%Column = .True.
+        elseIf(size(D2).eq.2.or.D2(1).eq.0) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = RealR4Tensor(1,:,1,1)
+          vectorOut%Column = .False.
+        elseIf(size(D3).eq.2.or.D3(1).eq.0) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          vectorOut = RealR4Tensor(1,1,:,1)
+          vectorOut%Column = .False.
+        elseIf(size(D4).eq.2.or.D4(1).eq.0) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          vectorOut = RealR4Tensor(1,1,1,:)
+          vectorOut%Column = .True.
+        endIf
+      elseIf(MQC_R4Tensor_HaveInteger(TensorIn)) then
+        if(size(D1).eq.2.or.D1(1).eq.0) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = IntR4Tensor(:,1,1,1)
+          vectorOut%Column = .True.
+        elseIf(size(D2).eq.2.or.D2(1).eq.0) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = IntR4Tensor(1,:,1,1)
+          vectorOut%Column = .False.
+        elseIf(size(D3).eq.2.or.D3(1).eq.0) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          vectorOut = IntR4Tensor(1,1,:,1)
+          vectorOut%Column = .False.
+        elseIf(size(D4).eq.2.or.D4(1).eq.0) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          vectorOut = IntR4Tensor(1,1,1,:)
+          vectorOut%Column = .True.
+        endIf
+      elseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
+        if(size(D1).eq.2.or.D1(1).eq.0) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = CompR4Tensor(:,1,1,1)
+          vectorOut%Column = .True.
+        elseIf(size(D2).eq.2.or.D2(1).eq.0) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          vectorOut = CompR4Tensor(1,:,1,1)
+          vectorOut%Column = .False.
+        elseIf(size(D3).eq.2.or.D3(1).eq.0) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          vectorOut = CompR4Tensor(1,1,:,1)
+          vectorOut%Column = .False.
+        elseIf(size(D4).eq.2.or.D4(1).eq.0) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          vectorOut = CompR4Tensor(1,1,1,:)
+          vectorOut%Column = .True.
+        endIf
+      endIf
+
+      End Function MQC_R4Tensor_Vector_At
+!
+!
+!     PROCEDURE MQC_R4Tensor_Vector_Put
+!
+!>    \brief <b> MQC_R4Tensor_Vector_Put is a subroutine that updates an r4 tensor with
+!>    a vector at the specified inidices</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_Vector_Put is a subroutine that updates an r4 tensor with a vector
+!>    between inidices D1, D2, D3, D4. If the values in the index specification are 
+!>    negative, the index is counted back from the final element.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] Ten
+!>    \verbatim
+!>        Ten is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable to update with 
+!>        vector.
+!>    \endverbatim
+!>    
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The vector to overwrite at the specified elements of Ten.
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Subroutine MQC_R4Tensor_Vector_Put(Ten,VectorIn,D1,D2,D3,D4) 
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(InOut)::Ten
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Type(MQC_R4Tensor)::TensorIn
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::RtmpTensor
+      Integer(kind=int64),Dimension(:,:,:,:),Allocatable::ItmpTensor
+      Complex(kind=real64),Dimension(:,:,:,:),Allocatable::CtmpTensor
+      Real(kind=real64),Dimension(:),Allocatable::RtmpVector
+      Integer(kind=int64),Dimension(:),Allocatable::ItmpVector
+      Complex(kind=real64),Dimension(:),Allocatable::CtmpVector
+      
+!     Check input indicies for consistency
+      if(size(D1)*size(D2)*size(D3)*size(D4).ne.1.and.size(D1)*size(D2)*size(D3)*size(D4).ne.2)&
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Vector_Put does not&
+        & conform to a vector')
+      if((D1(1).eq.0.and.D2(1).eq.0).or.(D1(1).eq.0.and.D3(1).eq.0).or. &
+        (D1(1).eq.0.and.D4(1).eq.0).or.(D2(1).eq.0.and.D3(1).eq.0).or. &
+        (D2(1).eq.0.and.D4(1).eq.0).or.(D3(1).eq.0.and.D4(1).eq.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Vector_Put does not&
+        & conform to a vector')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.1.and.D1(1)*D2(1)*D3(1)*D4(1).ne.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Vector_Put does not&
+        & conform to a vector')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.2.and.D1(1)*D2(1)*D3(1)*D4(1).eq.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Vector_Put does not&
+        & conform to a vector ')
+
+      if(size(D1,1).eq.2.or.D1(1).eq.0) then
+        if(MQC_Vector_HaveInteger(VectorIn)) then
+          ItmpVector = VectorIn
+          allocate(ItmpTensor(size(ItmpVector),1,1,1))
+          ItmpTensor(:,1,1,1) = ItmpVector
+          TensorIn = ItmpTensor
+        elseIf(MQC_Vector_HaveReal(VectorIn)) then
+          RtmpVector = VectorIn
+          allocate(RtmpTensor(size(RtmpVector),1,1,1))
+          RtmpTensor(:,1,1,1) = RtmpVector
+          TensorIn = RtmpTensor
+        elseIf(MQC_Vector_HaveComplex(VectorIn)) then
+          CtmpVector = VectorIn
+          allocate(CtmpTensor(size(CtmpVector),1,1,1))
+          CtmpTensor(:,1,1,1) = CtmpVector
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,D1,[D2(1),D2(1)],[D3(1),D3(1)],[D4(1),D4(1)])
+      elseIf(size(D2,1).eq.2.or.D2(1).eq.0) then
+        if(MQC_Vector_HaveInteger(VectorIn)) then
+          ItmpVector = VectorIn
+          allocate(ItmpTensor(1,size(ItmpVector),1,1))
+          ItmpTensor(1,:,1,1) = ItmpVector
+          TensorIn = ItmpTensor
+        elseIf(MQC_Vector_HaveReal(VectorIn)) then
+          RtmpVector = VectorIn
+          allocate(RtmpTensor(1,size(RtmpVector),1,1))
+          RtmpTensor(1,:,1,1) = RtmpVector
+          TensorIn = RtmpTensor
+        elseIf(MQC_Vector_HaveComplex(VectorIn)) then
+          CtmpVector = VectorIn
+          allocate(CtmpTensor(1,size(CtmpVector),1,1))
+          CtmpTensor(1,:,1,1) = CtmpVector
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],D2,[D3(1),D3(1)],[D4(1),D4(1)])
+      elseIf(size(D3,1).eq.2.or.D3(1).eq.0) then
+        if(MQC_Vector_HaveInteger(VectorIn)) then
+          ItmpVector = VectorIn
+          allocate(ItmpTensor(1,1,size(ItmpVector),1))
+          ItmpTensor(1,1,:,1) = ItmpVector
+          TensorIn = ItmpTensor
+        elseIf(MQC_Vector_HaveReal(VectorIn)) then
+          RtmpVector = VectorIn
+          allocate(RtmpTensor(1,1,size(RtmpVector),1))
+          RtmpTensor(1,1,:,1) = RtmpVector
+          TensorIn = RtmpTensor
+        elseIf(MQC_Vector_HaveComplex(VectorIn)) then
+          CtmpVector = VectorIn
+          allocate(CtmpTensor(1,1,size(CtmpVector),1))
+          CtmpTensor(1,1,:,1) = CtmpVector
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)],D3,[D4(1),D4(1)])
+      elseIf(size(D4,1).eq.2.or.D4(1).eq.0) then
+        if(MQC_Vector_HaveInteger(VectorIn)) then
+          ItmpVector = VectorIn
+          allocate(ItmpTensor(1,1,1,size(ItmpVector)))
+          ItmpTensor(1,1,1,:) = ItmpVector
+          TensorIn = ItmpTensor
+        elseIf(MQC_Vector_HaveReal(VectorIn)) then
+          RtmpVector = VectorIn
+          allocate(RtmpTensor(1,1,1,size(RtmpVector)))
+          RtmpTensor(1,1,1,:) = RtmpVector
+          TensorIn = RtmpTensor
+        elseIf(MQC_Vector_HaveComplex(VectorIn)) then
+          CtmpVector = VectorIn
+          allocate(CtmpTensor(1,1,1,size(CtmpVector)))
+          CtmpTensor(1,1,1,:) = CtmpVector
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)],[D3(1),D3(1)],D4)
+      endIf
+
+      End Subroutine MQC_R4Tensor_Vector_Put
+!
+!
+!     PROCEDURE MQC_R4Tensor_Matrix_At
+!
+!>    \brief <b> MQC_R4Tensor_Matrix_At is a function that returns a submatrix of 
+!>    the r4 tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_Matrix_At is a function that returns the matrix between indices 
+!>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
+!>    index is counted back from the final element. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] TensorIn
+!>    \verbatim
+!>        TensorIn is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4Tensor_Matrix_At(TensorIn,D1,D2,D3,D4) Result(MatrixOut)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::TensorIn
+      Type(MQC_Matrix)::MatrixOut
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::realR4Tensor
+      Integer(kind=int64),Dimension(:,:,:,:),Allocatable::intR4Tensor
+      Complex(kind=real64),Dimension(:,:,:,:),Allocatable::compR4Tensor
+      
+!     Check input indicies for consistency
+      if(size(D1)*size(D2)*size(D3)*size(D4).ne.1.and. &
+        size(D1)*size(D2)*size(D3)*size(D4).ne.2.and. &
+        size(D1)*size(D2)*size(D3)*size(D4).ne.4) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_At does not&
+        & conform to a matrix')
+      if((D1(1).eq.0.and.D2(1).eq.0.and.D3(1).eq.0).or. &
+        (D1(1).eq.0.and.D2(1).eq.0.and.D4(1).eq.0).or. &
+        (D1(1).eq.0.and.D3(1).eq.0.and.D4(1).eq.0).or. &
+        (D2(1).eq.0.and.D3(1).eq.0.and.D4(1).eq.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_At does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.4.and.D1(1)*D2(1)*D3(1)*D4(1).eq.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_At does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.2.and. &
+        ((D1(1)*D2(1)*D3(1)*D4(1).ne.0).or. &
+        ((D1(1)*D2(1)*D3(1).eq.0).and.(D1(1)*D2(1)*D4(1).eq.0).and. &
+        (D1(1)*D3(1)*D4(1).eq.0).and.(D2(1)*D3(1)*D4(1).eq.0)))) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_At does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.1.and. &
+        (D1(1).ne.0.and.D2(1).ne.0).and. &
+        (D1(1).ne.0.and.D3(1).ne.0).and. &
+        (D1(1).ne.0.and.D4(1).ne.0).and. &
+        (D2(1).ne.0.and.D3(1).ne.0).and. &
+        (D2(1).ne.0.and.D4(1).ne.0).and. &
+        (D3(1).ne.0.and.D4(1).ne.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_At does not&
+        & conform to a matrix')
+
+      if(MQC_R4Tensor_HaveReal(TensorIn)) then
+        if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          matrixOut = RealR4Tensor(:,:,1,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          matrixOut = RealR4Tensor(:,1,:,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          matrixOut = RealR4Tensor(:,1,1,:)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            D3,[D4(1),D4(1)])
+          matrixOut = RealR4Tensor(1,:,:,1)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],D4)
+          matrixOut = RealR4Tensor(1,:,1,:)
+        elseIf((size(D3).eq.2.or.D3(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          RealR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,D4)
+          matrixOut = RealR4Tensor(1,1,:,:)
+        endIf
+      elseIf(MQC_R4Tensor_HaveInteger(TensorIn)) then
+        if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          matrixOut = IntR4Tensor(:,:,1,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          matrixOut = IntR4Tensor(:,1,:,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          matrixOut = IntR4Tensor(:,1,1,:)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            D3,[D4(1),D4(1)])
+          matrixOut = IntR4Tensor(1,:,:,1)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],D4)
+          matrixOut = IntR4Tensor(1,:,1,:)
+        elseIf((size(D3).eq.2.or.D3(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          IntR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,D4)
+          matrixOut = IntR4Tensor(1,1,:,:)
+        endIf
+      elseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
+        if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2, &
+            [D3(1),D3(1)],[D4(1),D4(1)])
+          matrixOut = CompR4Tensor(:,:,1,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            D3,[D4(1),D4(1)])
+          matrixOut = CompR4Tensor(:,1,:,1)
+        elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
+            [D3(1),D3(1)],D4)
+          matrixOut = CompR4Tensor(:,1,1,:)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            D3,[D4(1),D4(1)])
+          matrixOut = CompR4Tensor(1,:,:,1)
+        elseIf((size(D2).eq.2.or.D2(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],D2, &
+            [D3(1),D3(1)],D4)
+          matrixOut = CompR4Tensor(1,:,1,:)
+        elseIf((size(D3).eq.2.or.D3(1).eq.0).and.(size(D4).eq.2.or.D4(1).eq.0)) then
+          CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)], &
+            D3,D4)
+          matrixOut = CompR4Tensor(1,1,:,:)
+        endIf
+      endIf
+
+      End Function MQC_R4Tensor_Matrix_At
+!
+!
+!     PROCEDURE MQC_R4Tensor_Matrix_Put
+!
+!>    \brief <b> MQC_R4Tensor_Matrix_Put is a subroutine that updates an r4 tensor with
+!>    a matrix at the specified inidices</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_Matrix_Put is a subroutine that updates an r4 tensor with a matrix
+!>    between inidices D1, D2, D3, D4. If the values in the index specification are 
+!>    negative, the index is counted back from the final element.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] Ten
+!>    \verbatim
+!>        Ten is Class(MQC_R4Tensor)
+!>        Name of the input rank-4 tensor variable to update with 
+!>        vector.
+!>    \endverbatim
+!>    
+!>    \param[in] MatrixIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Matrix)
+!>        The matrix to overwrite at the specified elements of Ten.
+!>    \endverbatim
+!>
+!>    \param[in] D1 
+!>    \verbatim
+!>        D1 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 1 A to B
+!>          If (A,B)>0 dimension 1 count is from first index
+!>          If (A,B)<0 dimension 1 count is from last index
+!>        If = [0]: subarray of dimension 1 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D2
+!>    \verbatim
+!>        D2 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 2 A to B
+!>          If (A,B)>0 dimension 2 count is from first index
+!>          If (A,B)<0 dimension 2 count is from last index
+!>        If = [0]: subarray of dimension 2 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D3
+!>    \verbatim
+!>        D3 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 3 A to B
+!>          If (A,B)>0 dimension 3 count is from first index
+!>          If (A,B)<0 dimension 3 count is from last index
+!>        If = [0]: subarray of dimension 3 equivalent to [1,-1].
+!>    \endverbatim
+!>
+!>    \param[in] D4
+!>    \verbatim
+!>        D4 is Integer(kind=int64),Dimension(:)
+!>        If = [A,B]: output is subarray of dimension 4 A to B
+!>          If (A,B)>0 dimension 4 count is from first index
+!>          If (A,B)<0 dimension 4 count is from last index
+!>        If = [0]: subarray of dimension 4 equivalent to [1,-1].
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Subroutine MQC_R4Tensor_Matrix_Put(Ten,matrixIn,D1,D2,D3,D4) 
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(InOut)::Ten
+      Type(MQC_Matrix),Intent(In)::MatrixIn
+      Type(MQC_R4Tensor)::TensorIn
+      Integer(kind=int64),Dimension(:),Intent(In)::D1,D2,D3,D4
+      Real(kind=real64),Dimension(:,:,:,:),Allocatable::RtmpTensor
+      Integer(kind=int64),Dimension(:,:,:,:),Allocatable::ItmpTensor
+      Complex(kind=real64),Dimension(:,:,:,:),Allocatable::CtmpTensor
+      Real(kind=real64),Dimension(:,:),Allocatable::RtmpMatrix
+      Integer(kind=int64),Dimension(:,:),Allocatable::ItmpMatrix
+      Complex(kind=real64),Dimension(:,:),Allocatable::CtmpMatrix
+      
+!     Check input indicies for consistency
+      if(size(D1)*size(D2)*size(D3)*size(D4).ne.1.and. &
+        size(D1)*size(D2)*size(D3)*size(D4).ne.2.and. &
+        size(D1)*size(D2)*size(D3)*size(D4).ne.4) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
+        & conform to a matrix')
+      if((D1(1).eq.0.and.D2(1).eq.0.and.D3(1).eq.0).or. &
+        (D1(1).eq.0.and.D2(1).eq.0.and.D4(1).eq.0).or. &
+        (D1(1).eq.0.and.D3(1).eq.0.and.D4(1).eq.0).or. &
+        (D2(1).eq.0.and.D3(1).eq.0.and.D4(1).eq.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.4.and.D1(1)*D2(1)*D3(1)*D4(1).eq.0) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.2.and. &
+        ((D1(1)*D2(1)*D3(1)*D4(1).ne.0).or. &
+        ((D1(1)*D2(1)*D3(1).eq.0).and.(D1(1)*D2(1)*D4(1).eq.0).and. &
+        (D1(1)*D3(1)*D4(1).eq.0).and.(D2(1)*D3(1)*D4(1).eq.0)))) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
+        & conform to a matrix')
+      if(size(D1)*size(D2)*size(D3)*size(D4).eq.1.and. &
+        (D1(1).ne.0.and.D2(1).ne.0).and. &
+        (D1(1).ne.0.and.D3(1).ne.0).and. &
+        (D1(1).ne.0.and.D4(1).ne.0).and. &
+        (D2(1).ne.0.and.D3(1).ne.0).and. &
+        (D2(1).ne.0.and.D4(1).ne.0).and. &
+        (D3(1).ne.0.and.D4(1).ne.0)) &
+        call mqc_error('Dimension of slice requested in MQC_R4Tensor_Matrix_Put does not&
+        & conform to a matrix')
+
+      if((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D2,1).eq.2.or.D2(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(size(ItmpMatrix,1),size(ItmpMatrix,2),1,1))
+          ItmpTensor(:,:,1,1) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(size(RtmpMatrix,1),size(RtmpMatrix,2),1,1))
+          RtmpTensor(:,:,1,1) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(size(CtmpMatrix,1),size(CtmpMatrix,2),1,1))
+          CtmpTensor(:,:,1,1) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,D1,D2,[D3(1),D3(1)],[D4(1),D4(1)])
+      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(size(ItmpMatrix,1),1,size(ItmpMatrix,2),1))
+          ItmpTensor(:,1,:,1) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(size(RtmpMatrix,1),1,size(RtmpMatrix,2),1))
+          RtmpTensor(:,1,:,1) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(size(CtmpMatrix,1),1,size(CtmpMatrix,2),1))
+          CtmpTensor(:,1,:,1) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,D1,[D2(1),D2(1)],D3,[D4(1),D4(1)])
+      elseIf((size(D1,1).eq.2.or.D1(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(size(ItmpMatrix,1),1,1,size(ItmpMatrix,2)))
+          ItmpTensor(:,1,1,:) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(size(RtmpMatrix,1),1,1,size(RtmpMatrix,2)))
+          RtmpTensor(:,1,1,:) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(size(CtmpMatrix,1),1,1,size(CtmpMatrix,2)))
+          CtmpTensor(:,1,1,:) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,D1,[D2(1),D2(1)],[D3(1),D3(1)],D4)
+      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D3,1).eq.2.or.D3(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(1,size(ItmpMatrix,1),size(ItmpMatrix,2),1))
+          ItmpTensor(1,:,:,1) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(1,size(RtmpMatrix,1),size(RtmpMatrix,2),1))
+          RtmpTensor(1,:,:,1) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(1,size(CtmpMatrix,1),size(CtmpMatrix,2),1))
+          CtmpTensor(1,:,:,1) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],D2,D3,[D4(1),D4(1)])
+      elseIf((size(D2,1).eq.2.or.D2(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(1,size(ItmpMatrix,1),1,size(ItmpMatrix,2)))
+          ItmpTensor(1,:,1,:) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(1,size(RtmpMatrix,1),1,size(RtmpMatrix,2)))
+          RtmpTensor(1,:,1,:) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(1,size(CtmpMatrix,1),1,size(CtmpMatrix,2)))
+          CtmpTensor(1,:,1,:) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],D2,[D3(1),D3(1)],D4)
+      elseIf((size(D3,1).eq.2.or.D3(1).eq.0).and.(size(D4,1).eq.2.or.D4(1).eq.0)) then
+        if(MQC_Matrix_HaveInteger(MatrixIn)) then
+          ItmpMatrix = MatrixIn
+          allocate(ItmpTensor(1,1,size(ItmpMatrix,1),size(ItmpMatrix,2)))
+          ItmpTensor(1,1,:,:) = ItmpMatrix
+          TensorIn = ItmpTensor
+        elseIf(MQC_Matrix_HaveReal(MatrixIn)) then
+          RtmpMatrix = MatrixIn
+          allocate(RtmpTensor(1,1,size(RtmpMatrix,1),size(RtmpMatrix,2)))
+          RtmpTensor(1,1,:,:) = ItmpMatrix
+          TensorIn = RtmpTensor
+        elseIf(MQC_Matrix_HaveComplex(MatrixIn)) then
+          CtmpMatrix = MatrixIn
+          allocate(CtmpTensor(1,1,size(CtmpMatrix,1),size(CtmpMatrix,2)))
+          CtmpTensor(1,1,:,:) = CtmpMatrix
+          TensorIn = CtmpTensor
+        endIf
+        call Ten%tput(TensorIn,[D1(1),D1(1)],[D2(1),D2(1)],D3,D4)
+      endIf
+
+      End Subroutine MQC_R4Tensor_Matrix_Put
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_At
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_At is a function that returns a subtensor of 
+!>    the r4 tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_R4Tensor_At is a function that returns the r4 tensor between indices 
+!>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
+!>    index is counted back from the final element. 
 !>
 !>    \endverbatim
 !
@@ -26935,6 +28231,238 @@
 
       Return
       End Function MQC_R4Tensor_Test_Symmetric
+!
+!
+!     PROCEDURE MQC_R4TensorScalarDivide
+!
+!>    \brief <b> MQC_R4TensorScalarDivide is a function that returns a MQC R4 Tensor
+!>    divided by a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4TensorScalarDivide is a function that returns a MQC R4 tensor divided by a 
+!>    scalar.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC_R4Tensor to divide.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The scalar to divide by.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4TensorScalarDivide(tensor,scalarIn) Result(tensor_res)
+!
+      implicit none
+      type(mqc_r4tensor),intent(in)::tensor
+      class(*),intent(in)::scalarIn
+      type(mqc_scalar)::scalar
+      type(mqc_r4tensor)::tensor_res
+      type(mqc_scalar)::zero,neg_one,reciprocal
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarDivide')
+      end select
+
+      zero = 0.0
+      neg_one = -1.0
+
+      if(scalar%abs() .le. zero) then 
+        call mqc_error_a('Cannot divide by zero:', 6)
+      else
+        reciprocal = scalar
+        reciprocal = reciprocal ** neg_one
+      endif
+
+      tensor_res = MQC_R4TensorScalarProduct(tensor,reciprocal)
+
+      End Function MQC_R4TensorScalarDivide
+!
+!
+!     PROCEDURE MQC_ScalarR4TensorProduct
+!
+!>    \brief <b> MQC_ScalarR4TensorProduct is a function that computes the product of
+!>    a MQC R4 tensor and a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarR4TensorProduct is a function that computes the product of a MQC R4 
+!>    tensor and a scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_ScalarR4TensorProduct(ScalarIn,Tensor) Result(Tensor_Res)
+!
+      Implicit None
+      class(*),intent(in)::scalarIn
+      Type(MQC_R4Tensor),Intent(In)::tensor
+      Type(MQC_Scalar)::Scalar
+      Type(MQC_R4Tensor)::Tensor_Res
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarProduct')
+      end select
+
+      Call MQC_Deallocate_R4Tensor(Tensor_Res)
+      If (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+          'Integer',Tensor%Storage)
+        Tensor_Res%ITen = Scalar%ScaI * Tensor%ITen
+      ElseIf (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaR * Tensor%ITen
+      ElseIf (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaI * Tensor%RTen
+      Else If (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Real',Tensor%Storage)
+        Tensor_Res%RTen = Scalar%ScaR * Tensor%RTen
+      ElseIf (Tensor%Data_Type.eq.'Integer' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%ITen
+      Else If (Tensor%Data_Type.eq.'Real' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%RTen
+      ElseIf (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Integer') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaI * Tensor%CTen
+      Else If (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Real') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaR * Tensor%CTen
+      Else If (Tensor%Data_Type.eq.'Complex' .and. Scalar%Data_Type.eq.'Complex') then
+        Call MQC_Allocate_R4Tensor(Tensor%I,Tensor%J,Tensor%K,Tensor%L,Tensor_Res, &
+        'Complex',Tensor%Storage)
+        Tensor_Res%CTen = Scalar%ScaC * Tensor%CTen
+      Else
+        Call MQC_Error_A('unrecognised data type in mqc_scalarr4tensorproduct', 6, &
+             'Tensor%Data_Type', Tensor%Data_Type, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+
+      End Function MQC_ScalarR4TensorProduct
+!
+!
+!     PROCEDURE MQC_R4TensorScalarProduct
+!
+!>    \brief <b> MQC_R4TensorScalarProduct is a function that computes the product of
+!>    a MQC R4 tensor and a scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4TensorScalarProduct is a function that computes the product of a MQC R4 
+!>    tensor and a scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Type(MQC_R4Tensor)
+!>        The MQC matrix to multiply.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2020
+!
+      Function MQC_R4TensorScalarProduct(Tensor,ScalarIn) Result(Tensor_Res)
+!
+      Implicit None
+      class(*),intent(in)::scalarIn
+      Type(MQC_R4Tensor),Intent(In)::tensor
+      Type(MQC_Scalar)::Scalar
+      Type(MQC_R4Tensor)::Tensor_Res
+
+      select type (scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error('ScalarIn data type not recognized in MQC_R4TensorScalarProduct')
+      end select
+
+      Tensor_Res = MQC_ScalarR4TensorProduct(Scalar,Tensor)
+
+      End Function MQC_R4TensorScalarProduct
 !
 !
       End Module MQC_Algebra
