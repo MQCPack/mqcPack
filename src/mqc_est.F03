@@ -11205,8 +11205,10 @@
       EndIf
 !
       End Subroutine TwoERI_Trans
-!
-!=====================================================================
+
+!hph+
+!!
+!!=====================================================================
 !!
 !!     PROCEDURE S2_MAT_ELEM    
 !! 
@@ -11228,7 +11230,7 @@
 !      Integer(kind=int64),Dimension(:)::Alpha_String_1,Alpha_String_2,Beta_String_1, &
 !        Beta_String_2
 !      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
-!      Real(real=int64),Dimension(:,:),Allocatable::MO_Overlap
+!      Real(kind=real64),Dimension(:,:),Allocatable::MO_Overlap
 !!
 !!      Write(IOut,*) 'alpha 1:'
 !!      Write(IOut,'(B64)') Alpha_String_1
@@ -11277,7 +11279,7 @@
 !        Call Exit()
 !      EndIf
 !
-!!      Write(IOut,*) 'Det_Diff:',Det_Diff
+!      Write(IOut,*) 'Det_Diff:',Det_Diff
 !      Select Case (Det_Diff)
 !!
 !        Case(3:)
@@ -11610,6 +11612,8 @@
 !!
 !      End Function S2_Mat_Elem  
 !!
+!hph-
+
 !=====================================================================
 !     
 !     PROCEDURE MQC_BUILD_CI_HAMILTONIAN
