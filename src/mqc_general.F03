@@ -1163,9 +1163,9 @@
       implicit none
       real(kind=real64),dimension(:),intent(inOut)::vectorIn
       real(kind=real64),dimension(:),allocatable,optional,intent(Out)::vectorOut
-      real(kind=real64),optional,,intent(in)::small
+      real(kind=real64),optional,intent(in)::small
       integer(kind=int64)::i
-      real(kind=real64)::mySmall,zero=0.
+      real(kind=real64)::mySmall,zero=0.0
 !
 !
 !     Initial set-up code...
