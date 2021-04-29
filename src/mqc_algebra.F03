@@ -75,11 +75,15 @@
 !     Scalars...
 !
 !>    \brief <b> Rank 0 array variable</b>
+
+!hph+
       Type MQC_Scalar
-        Real(kind=real64),Private,Allocatable::ScaR
-        Integer(kind=int64),Private,Allocatable::ScaI
-        Complex(Kind=real64),Private,Allocatable::ScaC
-        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+        Real(kind=real64),Public,Allocatable::ScaR
+        Integer(kind=int64),Public,Allocatable::ScaI
+        Complex(Kind=real64),Public,Allocatable::ScaC
+        Character(Len=64),Public::Data_Type ! Real,Integer,Complex
+!hph-
+
       Contains
 !>      \brief <b> Print the MQC Scalar</b>
         Procedure, Public::print => MQC_Print_Scalar_Algebra1
@@ -209,7 +213,7 @@
 !>      \brief <b> Returns the root mean square deviation and maximum
 !>      deviation of elements of the MQC Matrix</b>
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
-!>      \brief <b> Returns the square root of the MQC Matrix elements</b>
+!>      \brief <b> Returns the square root of the MQC Matrix</b>
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::sum => MQC_Matrix_Sum
@@ -689,6 +693,11 @@
       End Interface
 !
 !     Documentation in scalar operator section
+      Interface Operator (**)
+        Module Procedure MQC_Vector_Power_func 
+      End Interface
+!
+!     Documentation in scalar operator section
       Interface Operator (/)
         Module Procedure MQC_VectorRealDivide
         Module Procedure MQC_VectorIntegerDivide
@@ -757,6 +766,11 @@
       Interface Operator (*)
 !        Module Procedure MQC_MatrixMatrixProduct
         Module Procedure MQC_ElementMatrixProduct
+      End Interface
+!
+!     Documentation in scalar operator section
+      Interface Operator (**)
+        Module Procedure MQC_ElementMatrixPower
       End Interface
 !
 !     Documentation in scalar operator section
@@ -11246,7 +11260,7 @@
 !
 !     PROCEDURE MQC_Vector_Power
 !
-!>    \brief <b> MQC_Vector_Power is a function that returns the value of all
+!>    \brief <b> MQC_Vector_Power is a subroutine that returns the value of all
 !>    elements of an MQC vector raised to a power</b>
 !
 !>    \par Purpose:
@@ -11254,7 +11268,7 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Power is a function that returns the value of all elements of an 
+!>    MQC_Vector_Power is a subroutine that returns the value of all elements of an 
 !>    MQC vector raised to a power. The power can be integer, real, complex or an
 !>    MQC scalar.
 !>
@@ -11310,6 +11324,76 @@
       endDo
 !
       end subroutine mqc_vector_power
+!
+!
+!     PROCEDURE MQC_Vector_Power_Func
+!
+!>    \brief <b> MQC_Vector_Power_Func is a function that returns the value of all
+!>    elements of an MQC vector raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Power_Func is a function that returns the value of all elements of 
+!>    an MQC vector raised to a power. The power can be integer, real, complex or an
+!>    MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2019
+!
+      function mqc_vector_power_func(A,P) result(AOut)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      class(*),intent(in)::P
+      type(mqc_vector)::AOut
+      integer(kind=int64)::i
+      character(len=64)::data_type
+      type(mqc_scalar)::scalar
+!
+!     Do the work.
+!
+      data_type = A%data_type
+
+      select type(P)
+      type is (integer)
+        scalar = P
+      type is (real)
+        scalar = P
+      type is (complex)
+        scalar = P
+      type is (mqc_scalar)
+        scalar = P
+      class default
+        call mqc_error_I('P type not defined in MQC_Vector_Power',6)
+      end select
+!
+      AOut = A
+      do i=1,MQC_Length_Vector(AOut)
+        call AOut%put(AOut%at(i)**scalar,i)
+      endDo
+!
+      end function mqc_vector_power_func
 !
 !
 !     PROCEDURE MQC_Vector_Complex_RealPart
@@ -16782,6 +16866,108 @@
 
       end function MQC_elementMatrixDivide
 !
+!
+!     PROCEDURE MQC_ElementMatrixPower
+!
+!>    \brief <b> MQC_ElementMatrixPower is a function that returns the matrix with
+!>    each element raised to the power specified</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ElementMatrixPower is a function that returns the matrix with each element 
+!>    raised to the power specified.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is type(mqc_matrix)
+!>        The matrix raised to be operated on.
+!>    \endverbatim
+!>    
+!>    \param[in] P
+!>    \verbatim
+!>        P is class(*)
+!>        The power to raise each element in the matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_ElementMatrixPower(A,P) Result(C)
+!
+      implicit none
+      type(mqc_matrix),intent(in)::A
+      class(*),intent(in)::P
+      type(mqc_matrix)::C
+      type(mqc_scalar)::Psca
+      integer(kind=int64)::i,j
+
+      select type(P)
+      type is (integer)
+        Psca = P
+      type is (real)
+        Psca = P
+      type is (complex)
+        Psca = P
+      type is (mqc_scalar)
+        Psca = P
+      class default
+        call mqc_error_I('P type not defined in MQC_ElementMatrixPower',6)
+      end select
+
+      C = A
+
+      select case (A%data_type)
+      case('Integer')
+        select case (Psca%data_type)
+        case('Integer')
+          C%MatI = C%MatI**Psca%ScaI
+        case('Real')
+          C%MatI = C%MatI**Psca%ScaR
+        case('Complex')
+          C%MatI = C%MatI**Psca%ScaC
+        case default
+          call mqc_error_a('Unrecognized data type of scalar Psca in MQC_ElementMatrixPower',6,'Psca%data_type',&
+            Psca%data_type)
+        end select
+      case('Real')
+        select case (Psca%data_type)
+        case('Integer')
+          C%MatR = C%MatR**Psca%ScaI
+        case('Real')
+          C%MatR = C%MatR**Psca%ScaR
+        case('Complex')
+          C%MatR = C%MatR**Psca%ScaC
+        case default
+          call mqc_error_a('Unrecognized data type of scalar Psca in MQC_ElementMatrixPower',6,'Psca%data_type',&
+            Psca%data_type)
+        end select
+      case('Complex')
+        select case (Psca%data_type)
+        case('Integer')
+          C%MatC = C%MatC**Psca%ScaI
+        case('Real')
+          C%MatC = C%MatC**Psca%ScaR
+        case('Complex')
+          C%MatC = C%MatC**Psca%ScaC
+        case default
+          call mqc_error_a('Unrecognized data type of scalar Psca in MQC_ElementMatrixPower',6,'Psca%data_type',&
+            Psca%data_type)
+        end select
+      case default
+        call mqc_error_a('Unrecognized data type of matrix A in MQC_ElementMatrixPower',6,'A%data_type',&
+          A%data_type)
+      end select
+
+      End Function MQC_ElementMatrixPower
 !
 !     PROCEDURE MQC_Matrix_Test_Symmetric
 !

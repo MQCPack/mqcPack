@@ -124,6 +124,7 @@
 !----------------------------------------------------------------
 !
       Logical,Private::MQC_Gaussian_DEBUG=.False.
+      Logical,Public::MQC_Gaussian_DEBUGHPH=.False.
 !
 !
 !     Subroutines/Functions...
@@ -776,6 +777,8 @@
         /,3x,' NAtoms=',I6,' NBasis=',I6,' NBsUse=',I6,' ICharg=',I6,  &
         ' Multip=',I6,' NElec=',I6,' Len12L=',I1,' Len4L=',I1,' IOpCl=',I6,  &
         ' ICGU=',I3)
+ 1020 format(3x,'BasisFunction2Atom Map:')
+ 1022 format(3x,10(2x,i5))
 !
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
@@ -846,11 +849,15 @@
         fileinfo%CurrentlyOpen = .true.
         fileinfo%header_read   = .true.
       endIf
-      if(DEBUG) write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
-        TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
-        fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
-        fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
-        IOpCl,fileinfo%ICGU
+      if(DEBUG.or.MQC_Gaussian_DEBUGHPH) then
+        write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
+          TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
+          fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
+          fileinfo%Multiplicity,fileinfo%nelectrons,Len12L,Len4L,  &
+          IOpCl,fileinfo%ICGU
+        write(iOut,1020)
+        write(iOut,1022) fileinfo%basisFunction2Atom
+      endIf
 !
 !     Load the Gaussian scalars arrays from the Matrix File.
 !
@@ -1119,6 +1126,8 @@
       complex(kind=8),allocatable,dimension(:)::complexTmp
       character(len=256)::my_filename,errorMsg
       logical::DEBUG=.false.,ok,found
+      integer::nBasis
+      real,allocatable,dimension(:,:,:,:)::arrayTmp2
 !
 !
 !     Format statements.
@@ -1202,15 +1211,6 @@
           N1,N2,N3,N4,N5,ASym,LR
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
-
-!hph+
-        if(DEBUG) then
-          write(IOut,*)
-          write(IOut,*)' Hrant - TEST: cBuffer = ',TRIM(cBuffer)
-          write(IOut,*)
-        endIf
-!hph-
-
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
             if(NR.ne.0.and.myArrayNum.gt.NR) then
               if(present(foundOut)) then
@@ -1468,31 +1468,54 @@
       'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
       MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
             case('2ERIS-SYMSYMR4TENSOR')
-              if(.not.Present(r4TensorOut)) &
-                call mqc_error_l('Reading r4 tensor from Gaussian matrix file, but required &
-                & variable R4TENSOR not sent to procedure.',6,'Present(r4TensorOut)', &
-                Present(r4TensorOut))
-              if(NRI.eq.1) then
-                allocate(arrayTmp(LR*NR))
-                call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
-                call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,&
-                  arrayTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
-                deallocate(arrayTmp)
-              elseIf(NRI.eq.2) then
-                allocate(arrayTmp(NR*LR*2))
-                call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,arrayTmp)
-                complexTmp = reshape(arrayTmp,shape(complexTmp))
-                call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut, &
-                  complexTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
-                deallocate(arrayTmp,complexTmp)
+              if(Present(r4TensorOut)) then
+                if(NRI.eq.1) then
+                  allocate(arrayTmp(LR*NR))
+                  call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
+                  call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,&
+                    arrayTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
+                  deallocate(arrayTmp)
+                elseIf(NRI.eq.2) then
+                  allocate(arrayTmp(NR*LR*2))
+                  call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,2*NTot,2*LenBuf,arrayTmp)
+                  complexTmp = reshape(arrayTmp,shape(complexTmp))
+                  call MQC_Matrix_SymmSymmR4Tensor_Put_Complex(r4TensorOut, &
+                    complexTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
+                  deallocate(arrayTmp,complexTmp)
+                endIf
+              elseIf(Present(mqcVarOut)) then
+                if(NRI.eq.1) then
+                  allocate(arrayTmp(LR*NR))
+                  call Rd_2EN(fileinfo%unitNumber,NR,LR,NR*LR,NTot,LenBuf,arrayTmp)
+                  nBasis = fileinfo%getVal('nbasis')
+                  allocate(arraytmp2(nBasis,nBasis,nBasis,nBasis))
+                  call mqc_packedSymmetricSymmetricR4Tensor2Full_real(  &
+                    arrayTmp,arraytmp2)
+                  if(MQC_Gaussian_DEBUGHPH) then
+                    write(*,*)
+                    write(*,*)' Hrant - Reading mat file for ERIs...'
+                    call mqc_print(6,arrayTmp,header='arrayTmp after reading integrals:')
+                    call mqc_print(6,arrayTmp2,header='arrayTmp2 after reading integrals:')
+                    write(*,*)
+                  endIf
+                  mqcVarOut = arraytmp2
+                  deAllocate(arraytmp2)
+                  deallocate(arrayTmp)
+                else
+                  call mqc_error('Attempted to read complex rank-4 tensor into MQCVar type.')
+                endIf
+              else
+                call mqc_error('Reading rank-4 tensor from Gaussian matrix file, but required &
+                  & variable R4TENSOR or mqcVarOut not sent to procedure.')
               endIf
+!
             case('SCALARS-VECTOR') 
 !             Just read Gaussian scalars into a real vector for now
               allocate(arrayTmp(LR))
               call Rd_RInd(fileinfo%unitNumber,NR,LR,NTot,LenBuf,LNZ,arrayTmp)
               vectorOut = arrayTmp
               deallocate(arrayTmp)
-
+!
             case default
               write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
               call mqc_error_A('Found strange matrix type in Gaussian matrix read routine.', 6, &
@@ -2125,6 +2148,8 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
 !
+ 1000 format(1x,'getBasisInfo: element,value=',I5,2x,I5)
+!
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
@@ -2151,6 +2176,7 @@
           'element', element, &
           'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%basisFunction2Atom(element)
+        if(MQC_Gaussian_DEBUGHPH) write(*,1000)element,value_out
       case('basis type')
         if(.not.allocated(fileinfo%IBasisFunctionType))  &
           call MQC_Error_l('Requested basis type not possible.', 6, &
@@ -4353,7 +4379,17 @@
       Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer(fileinfo,label,fileName)
 !
 !     This function is used to get an integer scalar value that is stored in a
-!     Gaussian matrix file object.
+!     Gaussian matrix file object. Available label values that can be sent here
+!     include:
+!       natoms
+!       nbasis
+!       nbasisuse
+!       charge
+!       multiplicity
+!       nelectrons
+!       nalpha
+!       nbeta
+!
 !
 !     H. P. Hratchian, 2017.
 !
