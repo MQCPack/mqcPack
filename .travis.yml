@@ -23,24 +23,24 @@ matrix:
             # other
             - doxygen
 
-    - os: linux
-      compiler: nvfortran
-      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=nvfortran C_COMPILER=pgcc TRAVIS_COMPILER=nvfortran
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-           # compilers
-            - cmake
-            # math libraries
-            - libblas-dev
-            - liblapack-dev
-            - libatlas-base-dev
-            - libopenblas-base
-            - libopenblas-dev
-            # other
-            - doxygen
+#    - os: linux
+#      compiler: pgfortran
+#      env: SOURCES=ubuntu-toolchain-r-test FORTRAN_COMPILER=pgfortran C_COMPILER=pgcc TRAVIS_COMPILER=pgfortran
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#           # compilers
+#            - cmake
+#            # math libraries
+#            - libblas-dev
+#            - liblapack-dev
+#            - libatlas-base-dev
+#            - libopenblas-base
+#            - libopenblas-dev
+#            # other
+#            - doxygen
 
     - os: osx
       osx_image: xcode10.2
@@ -63,7 +63,7 @@ before_install:
   - which automake
   - autoconf --version
   - automake --version
-  - if [ "${FORTRAN_COMPILER}" = "nvfortran" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
+    #  - if [ "${FORTRAN_COMPILER}" = "pgfortran" ]; then curl -s 'https://raw.githubusercontent.com/nemequ/pgi-travis/master/install-pgi.sh' | /bin/sh; fi
   - if [ "${FORTRAN_COMPILER}" = "gfortran-8" ]; then fc=`which gfortran`; sudo rm `which gfortran`; sudo ln -s `which gfortran-8` $fc; fi
   - if [ "${C_COMPILER}" = "gcc-8" ]; then gc=`which gcc`; sudo rm `which gcc`; sudo ln -s `which gcc-8` $gc; fi
   - if [ -n "${C_COMPILER}" ]; then export CC="${C_COMPILER}"; fi
@@ -73,8 +73,8 @@ install:
   - |
     if [[ "${TRAVIS_COMPILER}" == "gfortran" ]]; then
        echo -e "yG$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
-    elif [[ "${TRAVIS_COMPILER}" == "nvfortran" ]]; then
-       echo -e "yP$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
+#    elif [[ "${TRAVIS_COMPILER}" == "pgfortran" ]]; then
+#      echo -e "yP$TRAVIS_BUILD_DIR/mqc-install\n-lblas\n-llapack\n$TRAVIS_BUILD_DIR/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile 
     else 
       travis_terminate 1  
     fi
