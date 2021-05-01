@@ -538,6 +538,31 @@
       Return
       End Subroutine mqc_get_command_argument
 
+!
+!PROCEDURE mqc_get_command_argument_integer
+      Subroutine mqc_get_command_argument_integer(argNum,iArgument)
+!
+!     This subroutine is used to get an integer argument from the command line.
+!     The output dummy argument iArgument is returned with the integer found as
+!     command line arugment argNum. If this command line argument is NOT an
+!     integer, the program will SegFault.
+!     
+!     -H. P. Hratchian, 2021.
+!
+!
+      implicit none
+      integer(kind=int64),intent(in)::argNum
+      integer(kind=int64),intent(out)::iArgument
+      character(len=256)::argument
+!
+!     Do the work...
+!
+      call get_command_argument(argNum,argument)
+      read(argument,'(I)') iArgument
+!
+      Return
+      End Subroutine mqc_get_command_argument_integer
+
 
 !
 !----------------------------------------------------------------

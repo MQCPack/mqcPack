@@ -1011,6 +1011,73 @@
 
 
 !
+!PROCEDURE MQC_Variable_MatrixPermuteColumns
+      subroutine MQC_Variable_MatrixPermuteColumns(mqcVariable,columnI,columnJ)
+!
+!     This subroutine is used to permute 2 columns in a matrix. If this routine
+!     is called with an mqcVariable that isn't rank 2, it results in error.
+!
+!
+!     H. P. Hratchian, 2021.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      integer(kind=int64),intent(in)::columnI,columnJ
+      integer(kind=int64)::lenVector,iStart,jStart,iEnd,jEnd
+      integer(kind=int64),dimension(:),allocatable::tmpArrayI
+      real(kind=real64),dimension(:),allocatable::tmpArrayR
+      integer(kind=int64)::k
+!
+!
+!     Do the work...
+!
+      if(.not.mqcVariable%initialized) call mqc_error('Cannot use MQC_Variable_Get with uninitialized permuteColumns.')
+      if(mqcVariable%rank.ne.2)  &
+        call mqc_error('permuteColumns: Rank of variable must be 2.')
+      if(TRIM(mqcVariable%storageFormat).ne.'FULL')   &
+        call mqc_error_a('permuteColumns: Can only be used on FULL storage arrays.',  &
+        6,'Current storage form:',TRIM(mqcVariable%storageFormat))
+      lenVector = SIZE(mqcVariable,1)
+      iStart = MQC_Variable_getArrayPosition(mqcVariable,[ 1, columnI ])
+      jStart = MQC_Variable_getArrayPosition(mqcVariable,[ 1, columnJ ])
+      iEnd = iStart + lenVector - 1
+      jEnd = jStart + lenVector - 1
+
+      write(*,*)
+      write(*,*)' lenVector = ',lenVector
+      write(*,*)
+      write(*,*)' iStart = ',iStart
+      write(*,*)' iEnd   = ',iEnd
+      write(*,*)
+      write(*,*)' jStart = ',jStart
+      write(*,*)' jEnd   = ',jEnd
+      write(*,*)
+
+      select case(TRIM(MQC_Variable_getType(mqcVariable)))
+      case('REAL')
+        Allocate(tmpArrayR(lenVector))
+        tmpArrayR = mqcVariable%realArray(iStart:iEnd)
+        mqcVariable%realArray(iStart:iEnd) = mqcVariable%realArray(jStart:jEnd)
+        mqcVariable%realArray(jStart:jEnd) = tmpArrayR
+        DeAllocate(tmpArrayR)
+      case('INTEGER')
+        Allocate(tmpArrayI(lenVector))
+        tmpArrayI = mqcVariable%integerArray(iStart:iEnd)
+        mqcVariable%integerArray(iStart:iEnd) = mqcVariable%integerArray(jStart:jEnd)
+        mqcVariable%integerArray(jStart:jEnd) = tmpArrayI
+        DeAllocate(tmpArrayI)
+      case default
+        call mqc_error_a('permuteColumns: Unknown MQC variable type.', 6, &
+          'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
+      end select
+!
+      return
+      end subroutine MQC_Variable_MatrixPermuteColumns
+
+
+!
 !PROCEDURE MQC_Variable_put_MQC
       subroutine MQC_Variable_put_MQC(mqcVariable,valueMQC,arrayElement)
 !

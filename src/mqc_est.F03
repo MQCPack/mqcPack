@@ -9289,7 +9289,7 @@
 !>    The strings are also ordered in reverse lexical order where the right most 
 !>    path has index zero (in the case that the left-most bit corresponds to 
 !>    orbital 1 and the right-most bit corresponds to orbital NBasis - the HF 
-!>    determinant is the largest interger number)
+!>    determinant is the largest integer number)
 !>    Constructing the graph uses the following for the vertex and arc values:
 !>    Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
 !>
@@ -9402,8 +9402,10 @@
         Select Type (NCoreIn)
         Type Is (Integer)
           NCore = NCoreIn
+          write(*,*)' Hrant - Gen_Det_Str: Have NCoreIn as Integer.'
         Type Is (MQC_Scalar)
           NCore = NCoreIn
+          write(*,*)' Hrant - Gen_Det_Str: Have NCoreIn as MQC_Scalar.'
         Class Default
           Call MQC_Error('NCoreIn type is not integer or MQC scalar')
         End Select
