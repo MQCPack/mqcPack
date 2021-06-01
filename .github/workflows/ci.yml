@@ -20,7 +20,7 @@ jobs:
         run: sudo apt-get install doxygen
         if: matrix.os == 'ubuntu-latest'
       - name: Install Dependencies (macOS)
-        run: brew install ninja
+        run: brew install doxygen m4
         if: matrix.os == 'macos-latest'
       - name: Checkout
         uses: actions/checkout@v2.3.4
