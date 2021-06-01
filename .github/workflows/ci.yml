@@ -26,9 +26,10 @@ jobs:
           wget http://gaussian.com/g16/gauopen_v2.zip
           unzip gauopen_v2.zip
           cd ..
-      - name: install
-        run: |
-          echo -e "yG\./mqc-install\n-lblas\n-llapack\n\./gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+          pwd
+          #      - name: install
+          #        run: |
+          #          echo -e "yG\./mqc-install\n-lblas\n-llapack\n\./gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
         
 
 
