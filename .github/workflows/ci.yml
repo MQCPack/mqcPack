@@ -1,5 +1,5 @@
-name: continuous-integration
-on: [push]
+name: continuous integration
+on: push
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -7,15 +7,15 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest] 
     steps:
-      - name: get software
-        - os: ubuntu-latest 
-          run: |
-            sudo apt-get update
-            sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev libopenblas-base libopenblas-dev doxygen
-        - os: macos-latest
-          run: |
-            brew update
-            brew install m4 doxygen
+            #      - name: get software
+            #        - os: ubuntu-latest 
+            #          run: |
+            #            sudo apt-get update
+            #            sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev libopenblas-base libopenblas-dev doxygen
+            #        - os: macos-latest
+            #          run: |
+            #            brew update
+            #            brew install m4 doxygen
       - name: before install
         run: |
           mkdir gauopen
