@@ -1,0 +1,43 @@
+name: continuous-integration
+on: [push]
+jobs:
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - run: npm install -g bats
+      - run: bats -v
+
+
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] 
+    steps:
+      - name: get-software
+        - os: ubuntu-latest 
+          run: |
+            sudo apt-get update
+            sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev libopenblas-base libopenblas-dev doxygen
+        - os: macos-latest
+          run: |
+            brew update
+            brew install m4 doxygen
+      - name: before_install
+        run: |
+          mkdir gauopen
+          mkdir mqc-install
+          cd gauopen
+          wget http://gaussian.com/g16/gauopen_v2.zip
+          unzip gauopen_v2.zip
+          cd ..
+      - name: install
+        run: |
+          echo -e "yG./mqc-install\n-lblas\n-llapack\n./gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+        
+
+
+
+
