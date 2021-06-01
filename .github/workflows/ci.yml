@@ -28,7 +28,7 @@ jobs:
           cd ..
       - name: install
         run: |
-          echo -e "yG./mqc-install\n-lblas\n-llapack\n./gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+          echo -e "yG\./mqc-install\n-lblas\n-llapack\n\./gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
         
 
 
