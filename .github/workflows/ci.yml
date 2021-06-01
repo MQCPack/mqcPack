@@ -1,4 +1,4 @@
-name: continuous integration
+name: Continuous integration tasks
 on: push
 jobs:
   build:
@@ -16,6 +16,12 @@ jobs:
             #          run: |
             #            brew update
             #            brew install m4 doxygen
+      - name: Install Dependencies (Linux)
+        run: sudo apt-get install doxygen
+        if: matrix.os == 'ubuntu-latest'
+      - name: Install Dependencies (macOS)
+        run: brew install ninja
+        if: matrix.os == 'macos-latest'
       - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: before install
