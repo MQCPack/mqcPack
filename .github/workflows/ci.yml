@@ -16,6 +16,8 @@ jobs:
             #          run: |
             #            brew update
             #            brew install m4 doxygen
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
       - name: before install
         run: |
           mkdir gauopen
