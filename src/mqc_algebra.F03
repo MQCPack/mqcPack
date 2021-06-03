@@ -95,6 +95,10 @@
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
 !>      \brief <b> Take the absolute value of the MQC Scalar</b>
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+!>      \brief <b> Take the square root of the MQC Scalar</b>
+        Procedure, Public::sqrt => MQC_Scalar_Sqrt
+!>      \brief <b> Take the natural log of the MQC Scalar</b>
+        Procedure, Public::log => MQC_Scalar_Log
 !>      \brief <b> Return a random value to the MQC Scalar</b>
         Procedure, Public::random => MQC_Scalar_Get_Random_Value
       End Type MQC_Scalar
@@ -122,12 +126,16 @@
         Procedure, Public::transpose => MQC_Vector_Transpose
 !>      \brief <b> Returns the Hermitian conjugate of the MQC Vector</b>
         Procedure, Public::dagger => MQC_Vector_Conjugate_Transpose
+        Procedure, Private::at_sca => MQC_Vector_Scalar_At_Scalar
+        Procedure, Private::at_int => MQC_Vector_Scalar_At_Int
 !>      \brief <b> Returns the value at the specified element of the MQC Vector</b>
-        Procedure, Public::at => MQC_Vector_Scalar_At
+        Generic,   Public::at => at_sca, at_int
 !>      \brief <b> Returns the subvector between specified element of the MQC Vector</b>
         Procedure, Public::vat => MQC_Vector_Vector_At
+        Procedure, Private::put_sca => MQC_Vector_Scalar_Put_Scalar
+        Procedure, Private::put_int => MQC_Vector_Scalar_Put_Int
 !>      \brief <b> Updates the specified element of the MQC_Vector with the specified value</b>
-        Procedure, Public::put => MQC_Vector_Scalar_Put
+        Generic,   Public::put => put_sca, put_int
 !>      \brief <b> Updates the specified subvector of the MQC_Vector with the specified vector</b>
         Procedure, Public::vput => MQC_Vector_Vector_Put
 !>      \brief <b> Appends the specified value to the end of the MQC_Vector</b>
@@ -219,15 +227,19 @@
         Procedure, Public::sum => MQC_Matrix_Sum
 !>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
         Procedure, Public::power => MQC_Matrix_Power
+        Procedure, Private::at_sca => MQC_Matrix_Scalar_At_Scalar
+        Procedure, Private::at_int => MQC_Matrix_Scalar_At_Int
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
-        Procedure, Public::at => MQC_Matrix_Scalar_At
+        Generic,   Public::at => at_sca, at_int
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
         Procedure, Public::vat => MQC_Matrix_Vector_At
 !>      \brief <b> Returns the matrix of the specified submatrix of the MQC Matrix</b>
         Procedure, Public::mat => MQC_Matrix_Matrix_At
+        Procedure, Private::put_sca => MQC_Matrix_Scalar_Put_Scalar
+        Procedure, Private::put_int => MQC_Matrix_Scalar_Put_Int
 !>      \brief <b> Updates the specified element of the MQC Matrix to the specified
 !>      value</b>
-        Procedure, Public::put => MQC_Matrix_Scalar_Put
+        Generic,   Public::put => put_sca, put_int
 !>      \brief <b> Updates the specified subvector of the MQC Matrix to the specified
 !>      vector</b>
         Procedure, Public::vput => MQC_Matrix_Vector_Put
@@ -240,7 +252,7 @@
 !     
 !>    \brief <b> Rank 4 array variable</b>
       Type MQC_R4Tensor
-        Integer(kind=int64),Private::I,J,K,L
+        Integer(kind=int64),Private::I=0,J=0,K=0,L=0
         Character(Len=64),Private::Data_Type ! Real,Integer,Complex
         Character(Len=64),Private::Storage ! StorFull,StorSymm
         Real(kind=real64),Allocatable,Private::RTen(:,:,:,:)
@@ -249,17 +261,21 @@
       Contains
 !>      \brief <b> Print the MQC R4Tensor</b>
         Procedure, Public::print => MQC_Print_r4tensor_Algebra1
+        Procedure, Private::at_sca => MQC_R4Tensor_At_Scalar
+        Procedure, Private::at_int => MQC_R4Tensor_At_Int
 !>      \brief <b> Return the specified element in the MQC R4Tensor</b>
-        Procedure, Public::at => MQC_R4Tensor_At
+        Generic,   Public::at => at_sca, at_int
 !>      \brief <b> Return the specified vector from MQC R4Tensor</b>
         Procedure, Public::vat => MQC_R4Tensor_Vector_At
 !>      \brief <b> Return the specified vector from MQC R4Tensor</b>
         Procedure, Public::mat => MQC_R4Tensor_Matrix_At
 !>      \brief <b> Return the specified rank-4 tensor from MQC R4Tensor</b>
         Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
+        Procedure, Private::put_sca => MQC_R4Tensor_Put_Scalar
+        Procedure, Private::put_int => MQC_R4Tensor_Put_Int
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
-        Procedure, Public::put => MQC_R4Tensor_Put
+        Generic, Public::put => put_sca, put_int 
 !>      \brief <b> Update the specified subvector of the MQC R4Tensor to the specified
 !>      vector</b>
         Procedure, Public::vput => MQC_R4Tensor_Vector_Put
@@ -415,6 +431,11 @@
         Module Procedure MQC_Vector_Abs
       End Interface 
 !
+!>    \brief <b> Takes the natural log</b>
+      Interface log
+        Module Procedure MQC_Scalar_Log
+      End Interface 
+!
 !>    \brief <b> Returns the real part</b>
       Interface real
         Module Procedure MQC_Scalar_Complex_RealPart
@@ -519,6 +540,42 @@
         module procedure MQC_Vector_IsAllocated
         module procedure MQC_Matrix_IsAllocated
         module procedure MQC_R4Tensor_IsAllocated
+      end interface
+!
+!>    \brief <b> Returns the value of the vector at the specied index</b>
+      interface MQC_Vector_Scalar_At
+        module procedure MQC_Vector_Scalar_At_Scalar
+        module procedure MQC_Vector_Scalar_At_Int 
+      end interface
+!
+!>    \brief <b> Returns the value of the matrix at the specied index</b>
+      interface MQC_Matrix_Scalar_At
+        module procedure MQC_Matrix_Scalar_At_Scalar
+        module procedure MQC_Matrix_Scalar_At_Int 
+      end interface
+!
+!>    \brief <b> Returns the value of the R4tensor at the specied index</b>
+      interface MQC_R4Tensor_At
+        module procedure MQC_R4Tensor_At_Scalar
+        module procedure MQC_R4Tensor_At_Int 
+      end interface
+!
+!>    \brief <b> Puts a value in the vector at the specied index</b>
+      interface MQC_Vector_Scalar_Put
+        module procedure MQC_Vector_Scalar_Put_Scalar
+        module procedure MQC_Vector_Scalar_Put_Int 
+      end interface
+!
+!>    \brief <b> Puts a value in the matrix at the specied index</b>
+      interface MQC_Matrix_Scalar_Put
+        module procedure MQC_Matrix_Scalar_Put_Scalar
+        module procedure MQC_Matrix_Scalar_Put_Int 
+      end interface
+!
+!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+      interface MQC_R4Tensor_Put
+        module procedure MQC_R4Tensor_Put_Scalar
+        module procedure MQC_R4Tensor_Put_Int 
       end interface
 !
 !----------------------------------------------------------------
@@ -1682,7 +1739,7 @@
 !     Variable Declarations.
       Implicit None
       Type(MQC_Scalar)::MQC_Scalar_Sqrt
-      Type(MQC_Scalar),Intent(In)::Scalar
+      Class(MQC_Scalar),Intent(In)::Scalar
 !
       If(Scalar%Data_type.eq.'Real') then
         MQC_Scalar_Sqrt = Sqrt(Scalar%ScaR)
@@ -2396,6 +2453,56 @@
 !
       return
       END FUNCTION MQC_Scalar_Get_ABS_Value
+!
+!
+!     PROCEDURE MQC_Scalar_Log
+!
+!>    \brief <b> MQC_Scalar_Log is a function that returns the
+!>    natural log of MQC_scalar variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_GLog is a function that returns the natural log
+!>    of MQC_scalar variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson     
+!>    \date 2021
+!
+      Function MQC_Scalar_Log(Scalar) Result(Output)
+!
+!     Variable Declarations
+      Implicit None
+      Class(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Scalar)::Output
+
+      if(Scalar%Data_Type.eq.'Integer') then
+        output = log(real(Scalar%ScaI))
+      elseif(Scalar%Data_Type.eq.'Real') then
+        output = log(Scalar%ScaR)
+      elseif(Scalar%Data_Type.eq.'Complex') then
+        output = log(Scalar%ScaC)
+      else
+        call mqc_error_A('Data type unrecognized in MQC_Scalar_Log', 6, &
+          'Scalar%Data_Type', Scalar%Data_Type)
+      endif
+!
+      return
+      END FUNCTION MQC_Scalar_Log
 !
 !
 !     PROCEDURE MQC_Scalar_Get_Random_Value
@@ -7487,19 +7594,19 @@
       End Subroutine MQC_Vector_Copy_Complex2Real
 !
 !
-!     PROCEDURE MQC_Vector_Scalar_At
+!     PROCEDURE MQC_Vector_Scalar_At_Scalar
 !
-!>    \brief <b> MQC_Vector_Scalar_At is a function that returns the ith element of
-!>    a MQC vector as an MQC scalar</b>
+!>    \brief <b> MQC_Vector_Scalar_At_Scalar is a function that returns the ith 
+!>    element of a MQC vector as an MQC scalar using an MQC Scalar index</b>
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Vector_Scalar_At is a function that returns the ith element of a MQC vector 
-!>    as an MQC scalar. If the location of the element is negative the it is counted
-!>    from the end of MQC vector.
+!>    MQC_Vector_Scalar_At_Scalar is a function that returns the ith element of a MQC 
+!>    vector as an MQC scalar using an MQC Scalar index. If the location of the 
+!>    element is negative the it is counted from the end of MQC vector.
 !>
 !>    \endverbatim
 !
@@ -7513,10 +7620,59 @@
 !>
 !>    \param[in] I
 !>    \verbatim
-!>        I is Class(*)
+!>        I is Type(MQC_Scalar)
 !>        The location of the element in Vec to return. If I is 
 !>        negative it is counted from the last element of Vec.
-!>        Type should be either integer or mqc_scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Vector_Scalar_At_Scalar(Vec,I) Result(Element)
+!
+      Implicit None
+      Class(MQC_Vector)::Vec
+      Type(MQC_Scalar),Intent(In)::I
+      Type(MQC_Scalar)::Element
+      Integer(kind=int64)::IndI
+
+      IndI = I
+      Element = MQC_Vector_Scalar_At_Int(Vec,IndI) 
+
+      End Function MQC_Vector_Scalar_At_Scalar
+!
+!
+!     PROCEDURE MQC_Vector_Scalar_At_Int
+!
+!>    \brief <b> MQC_Vector_Scalar_At_Int is a function that returns the ith element 
+!>    of a MQC vector as an MQC scalar using an integer index</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_At_Int is a function that returns the ith element of a MQC 
+!>    vector as an MQC scalar using an integer index. If the location of the element 
+!>    is negative the it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer
+!>        The location of the element in Vec to return. If I is 
+!>        negative it is counted from the last element of Vec.
 !>    \endverbatim
 !
 !     Authors:
@@ -7524,22 +7680,15 @@
 !>    \author X. Sheng 
 !>    \date 2017
 !
-      Function MQC_Vector_Scalar_At(Vec,I) Result(Element)
+      Function MQC_Vector_Scalar_At_Int(Vec,I) Result(Element)
 !
       Implicit None
       Class(MQC_Vector)::Vec
-      Class(*),Intent(In)::I
+      Integer,Intent(In)::I
       Type(MQC_Scalar)::Element
       Integer(kind=int64)::IndI
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
 
       If(IndI.lt.0) IndI = Vec%Length + IndI + 1
       If (IndI.gt.Vec%Length.or.IndI.eq.0) Call MQC_Error_I('Index out of bounds in MQC_Vector_Scalar_At', 6, &
@@ -9378,19 +9527,19 @@
       end function MQC_vector_cast_complex
 !
 !
-!     PROCEDURE MQC_Vector_Scalar_Put
+!     PROCEDURE MQC_Vector_Scalar_Put_Scalar
 !
-!>    \brief <b> MQC_Vector_Scalar_Put is a subroutine that updates the value of the
-!>    ith element of a MQC vector with a value</b>
+!>    \brief <b> MQC_Vector_Scalar_Put_Scalar is a subroutine that updates the value 
+!>    of the ith element of a MQC vector with a value with MQC Scalar indices</b>
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Vector_Scalar_Put is a subroutine that updates the value of the ith element
-!>    of a MQC vector with a value. If the location of the element is negative then 
-!>    it is counted from the end of MQC vector.
+!>    MQC_Vector_Scalar_Put_Scalar is a subroutine that updates the value of the ith 
+!>    element of a MQC vector with a value with MQC Scalar indices. If the location 
+!>    of the element is negative then it is counted from the end of MQC vector.
 !>
 !>    \endverbatim
 !
@@ -9410,10 +9559,69 @@
 !>
 !>    \param[in] I
 !>    \verbatim
-!>        I is Class(*)
+!>        I is Type(MQC_Scalar)
 !>        The location of the element in Vector to update. If I
 !>        is negative it is counted from the last element of 
-!>        Vector. Type should be either integer or mqc_scalar.
+!>        Vector. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Subroutine MQC_Vector_Scalar_Put_Scalar(Vector,ScalarIn,I)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::I
+      Class(MQC_Vector),Intent(InOut)::Vector
+      Class(*),Intent(In)::ScalarIn
+      Integer(kind=int64)::IndI
+
+      IndI = I
+      Call MQC_Vector_Scalar_Put_Int(Vector,ScalarIn,IndI)
+
+      End Subroutine MQC_Vector_Scalar_Put_Scalar
+!
+!
+!     PROCEDURE MQC_Vector_Scalar_Put_Int
+!
+!>    \brief <b> MQC_Vector_Scalar_Put_Int is a subroutine that updates the value of 
+!>    the ith element of a MQC vector with a value with integer indices</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Scalar_Put_Int is a subroutine that updates the value of the ith 
+!>    element of a MQC vector with a value with integer indices. If the location of 
+!>    the element is negative then it is counted from the end of MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC_Vector to update at the Ith element.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update Vector at element I.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer
+!>        The location of the element in Vector to update. If I
+!>        is negative it is counted from the last element of 
+!>        Vector. 
 !>    \endverbatim
 !
 !     Authors:
@@ -9421,25 +9629,18 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Vector_Scalar_Put(Vector,ScalarIn,I)
+      Subroutine MQC_Vector_Scalar_Put_Int(Vector,ScalarIn,I)
 !
 !     Variable Declarations.
 !
       Implicit None
-      Class(*),Intent(In)::I
+      Integer,Intent(In)::I
       Class(MQC_Vector),Intent(InOut)::Vector
       Class(*),Intent(In)::ScalarIn
       Type(MQC_Scalar)::Scalar
       Integer(kind=int64)::IndI
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
 
       Select Type (ScalarIn)
       Type Is (Integer)
@@ -9500,7 +9701,7 @@
              'Vector%Data_Type', Vector%Data_Type )
       EndIf
 
-      End Subroutine MQC_Vector_Scalar_Put
+      End Subroutine MQC_Vector_Scalar_Put_Int
 !
 !
 !     PROCEDURE MQC_Vector_Scalar_Increment
@@ -12069,19 +12270,19 @@
       End Function MQC_Matrix_Cast_Complex
 !
 !
-!     PROCEDURE MQC_Matrix_Scalar_At
+!     PROCEDURE MQC_Matrix_Scalar_At_Scalar
 !
-!>    \brief <b> MQC_Matrix_Scalar_At is a function that returns the value of an  
-!>    element of a MQC matrix</b>
+!>    \brief <b> MQC_Matrix_Scalar_At_Scalar is a function that returns the value of 
+!>    an element of a MQC matrix</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Matrix_Scalar_At is a function that returns the value of (I,J)th element of 
-!>    a MQC matrix as an MQC scalar. If I or J is negative, the (N-I+1)th index is 
-!>    selected.
+!>    MQC_Matrix_Scalar_At_Scalar is a function that returns the value of (I,J)th 
+!>    element of a MQC matrix as an MQC scalar using scalar indices. If I or J is 
+!>    negative, the (N-I+1)th index is selected.
 !>
 !>    \endverbatim
 !
@@ -12096,20 +12297,79 @@
 !>    
 !>    \param[in] I  
 !>    \verbatim
-!>        I is Class(*)
+!>        I is Type(MQC_Scalar)
 !>        The row of the element in MQC matrix. 
 !>          If I>0 row count is from first index
 !>          If I<0 row count is from last index.
-!>        Type should be either integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] J  
 !>    \verbatim
-!>        J is Class(*)
+!>        J is Type(MQC_Scalar)
 !>        The column of the element in MQC matrix.
 !>          If J>0 row count is from first index
 !>          If J<0 row count is from last index.
-!>        Type should be either integer or mqc_scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Matrix_Scalar_At_Scalar(Mat,I,J) Result(Element)
+!
+      Implicit None
+      Class(MQC_Matrix),Intent(In)::Mat
+      Type(MQC_Scalar)::Element
+      Type(MQC_Scalar),Intent(In)::I,J
+      Integer(kind=int64)::IndI,IndJ
+
+      IndI=I
+      IndJ=J
+      Element = MQC_Matrix_Scalar_At_Int(Mat,IndI,IndJ)
+
+      End Function
+!
+!
+!     PROCEDURE MQC_Matrix_Scalar_At_Int
+!
+!>    \brief <b> MQC_Matrix_Scalar_At_Int is a function that returns the value of an  
+!>    element of a MQC matrix using integer indices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_At_Int is a function that returns the value of (I,J)th 
+!>    element of a MQC matrix as an MQC scalar using integer indices. If I or J is 
+!>    negative, the (N-I+1)th index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer
+!>        The row of the element in MQC matrix. 
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer
+!>        The column of the element in MQC matrix.
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
 !>    \endverbatim
 !
 !     Authors:
@@ -12118,30 +12378,16 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_Matrix_Scalar_At(Mat,I,J) Result(Element)
+      Function MQC_Matrix_Scalar_At_Int(Mat,I,J) Result(Element)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Mat
       Type(MQC_Scalar)::Element
-      Class(*),Intent(In)::I,J
+      Integer,Intent(In)::I,J
       Integer(kind=int64)::IndI,IndJ
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (J)
-      type is (mqc_scalar) 
-        IndJ = J 
-      type is (integer)
-        IndJ = J 
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
+      IndJ = J 
       
       If (IndI.lt.0) IndI = Mat%NRow + IndI + 1
       If (IndJ.lt.0) IndJ = Mat%NCol + IndJ + 1
@@ -12290,7 +12536,7 @@
              'Mat%Storage', Mat%Storage )
       EndIf
 
-      End Function MQC_Matrix_Scalar_At
+      End Function MQC_Matrix_Scalar_At_Int
 !
 !
 !     PROCEDURE MQC_Matrix_Vector_At
@@ -22703,20 +22949,21 @@
       End Function MQC_Matrix_Matrix_Contraction
 !
 !
-!     PROCEDURE MQC_Matrix_Scalar_Put
+!     PROCEDURE MQC_Matrix_Scalar_Put_Scalar
 !
-!>    \brief <b> MQC_Matrix_Scalar_Put is a subroutine that updates the value of the 
-!>    (i,j)th element of a MQC matrix</b>
+!>    \brief <b> MQC_Matrix_Scalar_Put_Scalar is a subroutine that updates the value 
+!>    of the (i,j)th element of a MQC matrix in which the indices are specified as
+!>    MQC Scalars</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_Matrix_Scalar_Put is a subroutine that updates the value of the (i,j)th 
-!>    element of a MQC matrix. If the location of an element is negative then it is 
-!>    counted from the end of the MQC matrix row/column. The following options are 
-!>    available: 
+!>    MQC_Matrix_Scalar_Put_Scalar is a subroutine that updates the value of the 
+!>    (i,j)th element of a MQC matrix in which the indices are specifed as MQC 
+!>    Scalars. If the location of an element is negative then it is counted from the 
+!>    end of the MQC matrix row/column. The following options are available: 
 !>
 !>    1. Option = 'element' adds scalar into specified element only (default).
 !>    2. Option = 'symmetric' adds scalar symmetrically.
@@ -22742,18 +22989,18 @@
 !>
 !>    \param[in] I
 !>    \verbatim
-!>        I is Class(*) 
+!>        I is Type(MQC_Scalar) 
 !>        The location of the row element in Matrix to update. If 
 !>        I is negative it is counted from the last element of 
-!>        Matrix. Type should be either integer or mqc_scalar.
+!>        Matrix. 
 !>    \endverbatim
 !>
 !>    \param[in] J
 !>    \verbatim
-!>        J is Class(*) 
+!>        J is Type(MQC_Scalar) 
 !>        The location of the column element in Matrix to update. 
 !>        If J is negative it is counted from the last element of 
-!>        Matrix. Type should be either integer or mqc_scalar.
+!>        Matrix.
 !>    \endverbatim
 !>    
 !>    \param[in] Option
@@ -22772,12 +23019,100 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Recursive Subroutine MQC_Matrix_Scalar_Put(Matrix,ScalarIn,I,J,Option)
+      Recursive Subroutine MQC_Matrix_Scalar_Put_Scalar(Matrix,ScalarIn,I,J,Option)
 !
 !     Variable Declarations.
 !
       Implicit None
-      Class(*),Intent(in)::I,J
+      Type(MQC_Scalar),Intent(in)::I,J
+      Class(MQC_Matrix),Intent(InOut)::Matrix
+      Class(*),Intent(In)::ScalarIn
+      Character(len=*),Optional,Intent(In)::Option
+      Integer(kind=int64)::IndI,IndJ
+      Character(len=64)::myOption
+
+      IndI = I
+      IndJ = J
+      Call MQC_Matrix_Scalar_Put_Int(Matrix,ScalarIn,IndI,IndJ,Option)
+
+      End Subroutine MQC_Matrix_Scalar_Put_Scalar
+!
+!
+!     PROCEDURE MQC_Matrix_Scalar_Put_Int
+!
+!>    \brief <b> MQC_Matrix_Scalar_Put_Int is a subroutine that updates the value of 
+!>    the (i,j)th element of a MQC matrix with indicies specified as integers</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_Put_Int is a subroutine that updates the value of the (i,j)th 
+!>    element of a MQC matrix with indicies specified as integers. If the location of 
+!>    an element is negative then it is counted from the end of the MQC matrix 
+!>    row/column. The following options are available: 
+!>
+!>    1. Option = 'element' adds scalar into specified element only (default).
+!>    2. Option = 'symmetric' adds scalar symmetrically.
+!>    3. Option = 'antisymmetric' adds scalar antisymmetrically.
+!>    4. Option = 'hermitian' adds scalar hermitianally.
+!>    5. Option = 'antihermitian' adds scalar antihermitianally.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to update at the (i,j)th element.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn 
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update the (i,j)th element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer
+!>        The location of the row element in Matrix to update. If 
+!>        I is negative it is counted from the last element of 
+!>        Matrix. 
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer
+!>        The location of the column element in Matrix to update. 
+!>        If J is negative it is counted from the last element of 
+!>        Matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'element':       add scalar into specified element 
+!>                           only (default)
+!>        = 'symmetric':     add scalar symmetrically
+!>        = 'antisymmetric': add scalar antisymmetrically
+!>        = 'hermitian':     add scalar hermitianally
+!>        = 'antihermitian': add scalar antihermitianally.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017
+!
+      Recursive Subroutine MQC_Matrix_Scalar_Put_Int(Matrix,ScalarIn,I,J,Option)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Integer,Intent(in)::I,J
       Class(MQC_Matrix),Intent(InOut)::Matrix
       Class(*),Intent(In)::ScalarIn
       Character(len=*),Optional,Intent(In)::Option
@@ -22794,23 +23129,8 @@
         myOption.ne.'hermitian'.and.myOption.ne.'antihermitian') call mqc_error_a('Unrecognized &
         & option in MQC_Matrix_Scalar_Put',6,'myOption',myOption)
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-
-      select type (J)
-      type is (mqc_scalar) 
-        IndJ = J
-      type is (integer)
-        IndJ = J
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
+      IndJ = J
 
       Select Type (ScalarIn)
       Type Is (Integer)
@@ -23009,7 +23329,7 @@
              'Matrix%Storage', Matrix%Storage )
       EndIf
 
-      End Subroutine MQC_Matrix_Scalar_Put
+      End Subroutine MQC_Matrix_Scalar_Put_Int
 !
 !
 !     PROCEDURE MQC_Matrix_Initialize
@@ -25143,19 +25463,19 @@
       End Subroutine MQC_Deallocate_R4Tensor
 !
 !
-!     PROCEDURE MQC_R4Tensor_At
+!     PROCEDURE MQC_R4Tensor_At_Scalar
 !
-!>    \brief <b> MQC_R4Tensor_At is a function that returns the value of an  
-!>    element of a MQC rank-4 tensor</b>
+!>    \brief <b> MQC_R4Tensor_At_Scalar is a function that returns the value of an  
+!>    element of a MQC rank-4 tensor using MQC Scalar indices</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_R4Tensor_At is a function that returns the value of (I,J,K,L)th element of 
-!>    a MQC rank-4 tensor as an MQC scalar. If I, J, K or L is negative, the (N-I+1)th 
-!>    index is selected.
+!>    MQC_R4Tensor_At_Scalar is a function that returns the value of (I,J,K,L)th 
+!>    element of a MQC rank-4 tensor as an MQC scalar using MQC Scalar indices. 
+!>    If I, J, K or L is negative, the (N-I+1)th index is selected.
 !>
 !>    \endverbatim
 !
@@ -25170,38 +25490,112 @@
 !>    
 !>    \param[in] I  
 !>    \verbatim
-!>        I is Class(*)
+!>        I is Type(MQC_Scalar)
 !>        The first dimension of the element in MQC rank-4 tensor
 !>          If I>0 row count is from first index
 !>          If I<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] J  
 !>    \verbatim
-!>        J is Class(*)
+!>        J is Type(MQC_Scalar)
 !>        The second dimension of the element in MQC rank-4 tensor
 !>          If J>0 row count is from first index
 !>          If J<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] K  
 !>    \verbatim
-!>        K is Class(*)
+!>        K is Type(MQC_Scalar)
 !>        The third dimension of the element in MQC rank-4 tensor
 !>          If K>0 row count is from first index
 !>          If K<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] L  
 !>    \verbatim
-!>        L is Class(*)
+!>        L is Type(MQC_Scalar)
 !>        The fourth dimension of the element in MQC rank-4 tensor
 !>          If L>0 row count is from first index
 !>          If L<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_R4Tensor_At_Scalar(Tensor,I,J,K,L) Result(Element)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Type(MQC_Scalar)::Element
+      Type(MQC_Scalar),Intent(In)::I,J,K,L
+      Integer(kind=int64)::IndI,IndJ,IndK,IndL
+
+      IndI = I
+      IndJ = J
+      IndK = K
+      IndL = L
+      Element = MQC_R4Tensor_At_Int(Tensor,IndI,IndJ,IndK,IndL) 
+
+      End Function MQC_R4Tensor_At_Scalar
+!
+!     PROCEDURE MQC_R4Tensor_At_Int
+!
+!>    \brief <b> MQC_R4Tensor_At_Int is a function that returns the value of an  
+!>    element of a MQC rank-4 tensor using integer indices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_At_Int is a function that returns the value of (I,J,K,L)th element 
+!>    of a MQC rank-4 tensor as an MQC scalar using integer indices. If I, J, K or L 
+!>    is negative, the (N-I+1)th index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to return the value of the 
+!>        (I,J,K,L)th element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
 !>    \endverbatim
 !
 !     Authors:
@@ -25209,46 +25603,18 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Function MQC_R4Tensor_At(Tensor,I,J,K,L) Result(Element)
+      Function MQC_R4Tensor_At_int(Tensor,I,J,K,L) Result(Element)
 !
       Implicit None
-      Class(*),Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(In)::Tensor
       Type(MQC_Scalar)::Element
+      Integer,Intent(In)::I,J,K,L
       Integer(kind=int64)::IndI,IndJ,IndK,IndL
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (J)
-      type is (mqc_scalar) 
-        IndJ = J
-      type is (integer)
-        IndJ = J
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (K)
-      type is (mqc_scalar) 
-        IndK = K
-      type is (integer)
-        IndK = K
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (L)
-      type is (mqc_scalar) 
-        IndL = L
-      type is (integer)
-        IndL = L
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
+      IndJ = J
+      IndK = K
+      IndL = L
 
       If (IndI.lt.0) IndI = Tensor%I + IndI + 1
       If (IndJ.lt.0) IndJ = Tensor%J + IndJ + 1
@@ -25295,22 +25661,22 @@
           'Tensor%Storage', Tensor%Storage )
       EndIf
 
-      End Function MQC_R4Tensor_At
+      End Function MQC_R4Tensor_At_Int
 !
 !
-!     PROCEDURE MQC_R4Tensor_Put
+!     PROCEDURE MQC_R4Tensor_Put_Scalar
 !
-!>    \brief <b> MQC_R4Tensor_Put is a subroutine that updates the value of an  
-!>    element of a MQC rank-4 tensor</b>
+!>    \brief <b> MQC_R4Tensor_Put_Scalar is a subroutine that updates the value of an  
+!>    element of a MQC rank-4 tensor using MQC Scalar indices</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_R4Tensor_Put is a subroutine that updates the value of (I,J,K,L)th element 
-!>    of a MQC rank-4 tensor. If I, J, K or L is negative, the (N-I+1)th index is 
-!>    selected.
+!>    MQC_R4Tensor_Put_Scalar is a subroutine that updates the value of (I,J,K,L)th 
+!>    element of a MQC rank-4 tensor using MQC_Scalar indices. If I, J, K or L is 
+!>    negative, the (N-I+1)th index is selected.
 !>
 !>    \endverbatim
 !
@@ -25331,38 +25697,128 @@
 !>    
 !>    \param[in] I  
 !>    \verbatim
-!>        I is Class(*)
+!>        I is Type(MQC_Scalar)
 !>        The first dimension of the element in MQC rank-4 tensor
 !>          If I>0 row count is from first index
 !>          If I<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] J  
 !>    \verbatim
-!>        J is Class(*)
+!>        J is Type(MQC_Scalar)
 !>        The second dimension of the element in MQC rank-4 tensor
 !>          If J>0 row count is from first index
 !>          If J<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] K  
 !>    \verbatim
-!>        K is Class(*)
+!>        K is Type(MQC_Scalar)
 !>        The third dimension of the element in MQC rank-4 tensor
 !>          If K>0 row count is from first index
 !>          If K<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
 !>    \endverbatim
 !>    
 !>    \param[in] L  
 !>    \verbatim
-!>        L is Class(*)
+!>        L is Type(MQC_Scalar)
 !>        The fourth dimension of the element in MQC rank-4 tensor
 !>          If L>0 row count is from first index
 !>          If L<0 row count is from last index.
-!>        Type should be integer or mqc_scalar.
+!>    \endverbatim
+!>    
+!>    \param[in] SymmFlag  
+!>    \verbatim
+!>        SymmFlag is Character(Len=*),Optional
+!>        Whether to add value to tensor symmetrically
+!>        = 'no symm': do not add symmetrically
+!>        = 'symm:' add value in 8-fold symmetry locations.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Subroutine MQC_R4Tensor_Put_Scalar(Tensor,ElementIn,I,J,K,L,SymmFlag)
+!
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::I,J,K,L
+      Class(MQC_R4Tensor),Intent(InOut)::Tensor
+      Class(*),Intent(In)::ElementIn
+      Integer(kind=int64)::IndI,IndJ,IndK,IndL
+      Character(Len=*),Intent(In),Optional::SymmFlag
+
+      IndI = I
+      IndJ = J
+      IndK = K
+      IndL = L
+      Call MQC_R4Tensor_Put_Int(Tensor,ElementIn,IndI,IndJ,IndK,IndL,SymmFlag)
+
+      End Subroutine MQC_R4Tensor_Put_Scalar
+!
+!
+!     PROCEDURE MQC_R4Tensor_Put_Int
+!
+!>    \brief <b> MQC_R4Tensor_Put_Int is a subroutine that updates the value of an  
+!>    element of a MQC rank-4 tensor unsing integer indices</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Put_Int is a subroutine that updates the value of (I,J,K,L)th 
+!>    element of a MQC rank-4 tensor using integer indices. If I, J, K or L is 
+!>    negative, the (N-I+1)th index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Tensor
+!>    \verbatim
+!>        Tensor is Class(MQC_R4Tensor)
+!>        The MQC rank-4 tensor to update at the (I,J,K,L)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] ElementIn
+!>    \verbatim
+!>        Element is Class(*)
+!>        The value to update the specified element of Tensor.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer
+!>        The first dimension of the element in MQC rank-4 tensor
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer
+!>        The second dimension of the element in MQC rank-4 tensor
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] K  
+!>    \verbatim
+!>        K is Integer
+!>        The third dimension of the element in MQC rank-4 tensor
+!>          If K>0 row count is from first index
+!>          If K<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] L  
+!>    \verbatim
+!>        L is Integer
+!>        The fourth dimension of the element in MQC rank-4 tensor
+!>          If L>0 row count is from first index
+!>          If L<0 row count is from last index.
 !>    \endverbatim
 !>    
 !>    \param[in] SymmFlag  
@@ -25378,10 +25834,10 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_R4Tensor_Put(Tensor,ElementIn,I,J,K,L,SymmFlag)
+      Subroutine MQC_R4Tensor_Put_Int(Tensor,ElementIn,I,J,K,L,SymmFlag)
 !
       Implicit None
-      Class(*),Intent(In)::I,J,K,L
+      Integer,Intent(In)::I,J,K,L
       Class(MQC_R4Tensor),Intent(InOut)::Tensor
       Class(*),Intent(In)::ElementIn
       Type(MQC_Scalar)::Element
@@ -25389,38 +25845,10 @@
       Character(Len=*),Intent(In),Optional::SymmFlag
       Character(Len=64)::my_SymmFlag
 
-      select type (I)
-      type is (mqc_scalar) 
-        IndI = I
-      type is (integer)
-        IndI = I
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (J)
-      type is (mqc_scalar) 
-        IndJ = J
-      type is (integer)
-        IndJ = J
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (K)
-      type is (mqc_scalar) 
-        IndK = K
-      type is (integer)
-        IndK = K
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
-      select type (L)
-      type is (mqc_scalar) 
-        IndL = L
-      type is (integer)
-        IndL = L
-      class default 
-        call mqc_error('Input element location must be integer or mqc scalar')
-      end select
+      IndI = I
+      IndJ = J
+      IndK = K
+      IndL = L
 
       Select Type (ElementIn)
       Type Is (Integer)
@@ -25655,7 +26083,7 @@
           6, 'Tensor%Storage', Tensor%Storage)
       EndIf
 
-      End Subroutine MQC_R4Tensor_Put
+      End Subroutine MQC_R4Tensor_Put_Int
 !
 !
 !     PROCEDURE MQC_Print_R4Tensor_Algebra1

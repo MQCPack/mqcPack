@@ -288,7 +288,7 @@
       integer::i,nAtoms
       character(len=2)::elem
       logical::myBohr
-      real::sca
+      real::sca,x,y,z
 !
  1000 Format(1x,'          NUCLEAR CARTESIAN COORDINATES          ')
  1001 Format(1x,'-------------------------------------------------')
@@ -318,10 +318,10 @@
       nAtoms = molecule_info%nAtoms
       do i = 1,nAtoms
         elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
-        write(iOut,1004) elem, &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+        x = sca*molecule_info%cartesian_coordinates%at(1,i)
+        y = sca*molecule_info%cartesian_coordinates%at(2,i)
+        z = sca*molecule_info%cartesian_coordinates%at(3,i)
+        write(iOut,1004) elem,x,y,z 
       endDo
 !
       write(iOut,1001)
