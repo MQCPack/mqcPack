@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/MQCPack/mqcPack.svg?branch=master)](https://travis-ci.com/MQCPack/mqcPack)
+[![CI](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml/badge.svg)](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml)
 <pre>
    **************************************************************************
    **************************************************************************

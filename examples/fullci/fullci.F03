@@ -69,7 +69,7 @@
       mo_core_ham = matmul(transpose(wavefunction%MO_Coefficients),matmul(wavefunction%core_Hamiltonian, &
           Wavefunction%MO_Coefficients))
       if(IPrint.ge.2) call mo_core_ham%print(iOut,'MO Basis Core Hamiltonian') 
-      call twoERI_trans(iOut,iPrint,wavefunction%MO_Coefficients,ERIs,mo_ERIs,UHF)
+      call twoERI_trans(iOut,iPrint,wavefunction%MO_Coefficients,ERIs,mo_ERIs)
 !
 !     Generate Hamiltonian Matrix
 !

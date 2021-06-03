@@ -2177,7 +2177,7 @@
            IU_4 = IU
            NTot_4 = NTot
            LenBuf_4 = LenBuf
-           call RdCBuf8(IU_4,NTot_4,LenBuf_4,Arr)
+           call RdCBuf4(IU_4,NTot_4,LenBuf_4,Arr)
         else
 ! File requires 64-bit integers, so no change
            call RdCBuf8(IU,NTot,LenBuf,Arr)
