@@ -123,6 +123,11 @@
         module procedure mqc_matrixSymm2Full_real
       end interface
 !
+      interface num2char
+        module procedure integer2character
+        module procedure real2character
+        module procedure complex2character
+      end interface
 !
 !
 !     Subroutines/Functions...
@@ -1236,6 +1241,33 @@
 !
       return
       end function real2character
+
+!PROCEDURE complex2character
+      function complex2character(complexIn,formatString) result(complexString)
+!
+!     This function converts a complex variable and returns a character string. The
+!     input dummy argument <formatString> is OPTIONAL and can be sent to specify
+!     the desired formatting of the complexIn. Note that <formatString> must
+!     conform to standard fortran requirements.
+!
+!     L. M. Thompson, 2020.
+!
+      implicit none
+      complex(kind=real64),intent(in)::complexIn
+      character(*),intent(in),optional::formatString
+      character(len=256)::myFormatString,complexString
+!
+      if(PRESENT(formatString)) then
+        myFormatString = formatString
+      else
+        myFormatString = 'f20.5'
+      endIf
+      myFormatString = '('//TRIM(myFormatString)//',SP,'//TRIM(myFormatString)//'"i")'
+      write(complexString,myFormatString) complexIn
+      complexString = ADJUSTL(complexString)
+!
+      return
+      end function complex2character
 
 
 !PROCEDURE Build_String_Add_Int
