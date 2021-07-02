@@ -123,6 +123,11 @@
         module procedure mqc_matrixSymm2Full_real
       end interface
 !
+      interface num2char
+        module procedure integer2character
+        module procedure real2character
+        module procedure complex2character
+      end interface
 !
 !
 !     Subroutines/Functions...
@@ -135,6 +140,28 @@
 !     MQC Suite Control and System Interaction                  |
 !                                                               |
 !----------------------------------------------------------------
+!
+!PROCEDURE mqc_version
+      subroutine mqc_version(major,minor,revision,versionString)
+!
+!     This subroutine returns the current MQC version number. The full MQC
+!     version number is comprised of three components: major.minor.revision. The
+!     major version indicated is given by the last two digits of the versioning
+!     year; the minor label is two digits indicating a versioning month; and the
+!     last digit gives a revision number.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(out)::major,minor,revision
+      character(len=*),OPTIONAL,intent(out)::versionString
+!
+      if(PRESENT(major))         major         = 21
+      if(PRESENT(minor))         minor         = 3
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '21.03.1'
+!
+      return
+      end subroutine mqc_version
 !
 !PROCEDURE mqc_version_check
       function mqc_version_check(isMajor,isMinor,isRevision,  &
@@ -174,32 +201,6 @@
 !
       return
       end function mqc_version_check
-
-
-!
-!PROCEDURE mqc_version
-      subroutine mqc_version(major,minor,revision,versionString)
-!
-!     This subroutine returns the current MQC version number. The full MQC
-!     version number is comprised of three components: major.minor.revision. The
-!     major version indicated is given by the last two digits of the versioning
-!     year; the minor label is two digits indicating a versioning month; and the
-!     last digit gives a revision number.
-!
-!
-      implicit none
-      integer,OPTIONAL,intent(out)::major,minor,revision
-      character(len=*),OPTIONAL,intent(out)::versionString
-!
-      if(PRESENT(major))         major         = 20
-      if(PRESENT(minor))         minor         = 5
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '20.05.1'
-!
-      return
-      end subroutine mqc_version
-
-
 !
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
@@ -541,6 +542,31 @@
 !
       Return
       End Subroutine mqc_get_command_argument
+
+!
+!PROCEDURE mqc_get_command_argument_integer
+      Subroutine mqc_get_command_argument_integer(argNum,iArgument)
+!
+!     This subroutine is used to get an integer argument from the command line.
+!     The output dummy argument iArgument is returned with the integer found as
+!     command line arugment argNum. If this command line argument is NOT an
+!     integer, the program will SegFault.
+!     
+!     -H. P. Hratchian, 2021.
+!
+!
+      implicit none
+      integer(kind=int64),intent(in)::argNum
+      integer(kind=int64),intent(out)::iArgument
+      character(len=256)::argument
+!
+!     Do the work...
+!
+      call get_command_argument(argNum,argument)
+      read(argument,'(I)') iArgument
+!
+      Return
+      End Subroutine mqc_get_command_argument_integer
 
 
 !
@@ -1215,6 +1241,33 @@
 !
       return
       end function real2character
+
+!PROCEDURE complex2character
+      function complex2character(complexIn,formatString) result(complexString)
+!
+!     This function converts a complex variable and returns a character string. The
+!     input dummy argument <formatString> is OPTIONAL and can be sent to specify
+!     the desired formatting of the complexIn. Note that <formatString> must
+!     conform to standard fortran requirements.
+!
+!     L. M. Thompson, 2020.
+!
+      implicit none
+      complex(kind=real64),intent(in)::complexIn
+      character(*),intent(in),optional::formatString
+      character(len=256)::myFormatString,complexString
+!
+      if(PRESENT(formatString)) then
+        myFormatString = formatString
+      else
+        myFormatString = 'f20.5'
+      endIf
+      myFormatString = '('//TRIM(myFormatString)//',SP,'//TRIM(myFormatString)//'"i")'
+      write(complexString,myFormatString) complexIn
+      complexString = ADJUSTL(complexString)
+!
+      return
+      end function complex2character
 
 
 !PROCEDURE Build_String_Add_Int

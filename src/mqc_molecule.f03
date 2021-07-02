@@ -44,6 +44,7 @@
         Procedure, Public::print => MQC_Print_Nuclear_Geometry
         Procedure, Public::getNucRep => MQC_Get_Nuclear_Repulsion
         Procedure, Public::getNumAtoms => MQC_Molecule_Data_GetNAtoms
+        Procedure, Public::updateMolData => MQC_Update_Mol_Data
       End Type MQC_Molecule_Data
 !
       Interface MQC_Print
@@ -209,6 +210,35 @@
       End Subroutine MQC_Molecule_Data_Fill
 !
 !
+!
+!     PROCEDURE MQC_Molecule_Data_Output
+      Subroutine MQC_Molecule_Data_Output(MQC_Molecule_Data_Object,  &
+        NAtoms,Atomic_Numbers,Atomic_Masses,Nuclear_Charges,  &
+        Cartesian_Coordinates)
+!
+!     This subroutine is used to output data from an MQC_Molecule_Data object.
+!     All dummy arguments, after the first, are optional.
+!
+!     L. M. Thompson, 2020
+!
+      Implicit None
+      Class(MQC_Molecule_Data),Intent(In)::MQC_Molecule_Data_Object
+      Integer(kind=int64),Optional,Allocatable,Intent(InOut)::NAtoms
+      Integer(kind=int64),Dimension(:),Optional,Allocatable,Intent(InOut)::Atomic_Numbers
+      Real(kind=int64),Dimension(:),Optional,Allocatable,Intent(InOut)::Atomic_Masses,  &
+        Nuclear_Charges
+      Real(kind=int64),Dimension(:,:),Optional,Allocatable,Intent(InOut)::Cartesian_Coordinates
+!
+      If(Present(NAtoms)) NAtoms = MQC_Molecule_Data_Object%NAtoms
+      If(Present(Atomic_Numbers)) Atomic_Numbers = MQC_Molecule_Data_Object%Atomic_Numbers 
+      If(Present(Atomic_Masses)) Atomic_Masses = MQC_Molecule_Data_Object%Atomic_Masses 
+      If(Present(Nuclear_Charges)) Nuclear_Charges = MQC_Molecule_Data_Object%Nuclear_Charges
+      If(Present(Cartesian_Coordinates)) Cartesian_Coordinates = &
+        MQC_Molecule_Data_Object%Cartesian_Coordinates
+!
+      End Subroutine MQC_Molecule_Data_Output
+!
+!
 !     PROCEDURE MQC_GET_NUCLEAR_REPULSION 
       Function MQC_Get_Nuclear_Repulsion(Molecule_Info) Result(Vnn)  
 !
@@ -258,7 +288,7 @@
       integer::i,nAtoms
       character(len=2)::elem
       logical::myBohr
-      real::sca
+      real::sca,x,y,z
 !
  1000 Format(1x,'          NUCLEAR CARTESIAN COORDINATES          ')
  1001 Format(1x,'-------------------------------------------------')
@@ -288,10 +318,10 @@
       nAtoms = molecule_info%nAtoms
       do i = 1,nAtoms
         elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
-        write(iOut,1004) elem, &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+        x = sca*molecule_info%cartesian_coordinates%at(1,i)
+        y = sca*molecule_info%cartesian_coordinates%at(2,i)
+        z = sca*molecule_info%cartesian_coordinates%at(3,i)
+        write(iOut,1004) elem,x,y,z 
       endDo
 !
       write(iOut,1001)
@@ -550,5 +580,309 @@
       end select
 !
       end function mqc_element_symbol
+!
+!
+!     PROCEDURE MQC_ATOMIC_NUMBER 
+      function mqc_atomic_number(element_symbol) result(atomic_number)  
+!
+!     This function returns the atomic number given the nuclear element string.
+!
+!     Lee M. Thompson, 2020.
+!
+!
+      implicit none
+      character(len=*),intent(in)::element_symbol
+      integer::atomic_number
+      character(len=2)::temp
+!
+      temp = trim(element_symbol)
+      call String_Change_Case(temp,'l')
+      select case (temp)
+      case ('h')
+        atomic_number = 1 
+      case ('he')
+        atomic_number = 2
+      case ('li')
+        atomic_number = 3
+      case ('be')
+        atomic_number = 4
+      case ('b')
+        atomic_number = 5
+      case ('c')
+        atomic_number = 6
+      case ('n')
+        atomic_number = 7
+      case ('o')
+        atomic_number = 8
+      case ('f')
+        atomic_number = 9
+      case ('ne')
+        atomic_number = 10
+      case ('na')
+        atomic_number = 11
+      case ('mg')
+        atomic_number = 12
+      case ('al')
+        atomic_number = 13
+      case ('si')
+        atomic_number = 14
+      case ('p')
+        atomic_number = 15
+      case ('s')
+        atomic_number = 16
+      case ('cl')
+        atomic_number = 17
+      case ('ar')
+        atomic_number = 18
+      case ('k')
+        atomic_number = 19
+      case ('ca')
+        atomic_number = 20
+      case ('sc')
+        atomic_number = 21
+      case ('ti')
+        atomic_number = 22
+      case ('v')
+        atomic_number = 23
+      case ('cr')
+        atomic_number = 24
+      case ('mn')
+        atomic_number = 25
+      case ('fe')
+        atomic_number = 26
+      case ('co')
+        atomic_number = 27
+      case ('ni')
+        atomic_number = 28
+      case ('cu')
+        atomic_number = 29
+      case ('zn')
+        atomic_number = 30
+      case ('ga')
+        atomic_number = 31
+      case ('ge')
+        atomic_number = 32
+      case ('as')
+        atomic_number = 33
+      case ('se')
+        atomic_number = 34
+      case ('br')
+        atomic_number = 35
+      case ('kr')
+        atomic_number = 36
+      case ('rb')
+        atomic_number = 37
+      case ('sr')
+        atomic_number = 38
+      case ('y')
+        atomic_number = 39
+      case ('zr')
+        atomic_number = 40
+      case ('nb')
+        atomic_number = 41
+      case ('mo')
+        atomic_number = 42
+      case ('tc')
+        atomic_number = 43
+      case ('ru')
+        atomic_number = 44
+      case ('rh')
+        atomic_number = 45
+      case ('pd')
+        atomic_number = 46
+      case ('ag')
+        atomic_number = 47
+      case ('cd')
+        atomic_number = 48
+      case ('in')
+        atomic_number = 49
+      case ('sn')
+        atomic_number = 50
+      case ('sb')
+        atomic_number = 51
+      case ('te')
+        atomic_number = 52
+      case ('i')
+        atomic_number = 53
+      case ('xe')
+        atomic_number = 54
+      case ('cs')
+        atomic_number = 55
+      case ('ba')
+        atomic_number = 56
+      case ('la')
+        atomic_number = 57
+      case ('ce')
+        atomic_number = 58
+      case ('pr')
+        atomic_number = 59
+      case ('nd')
+        atomic_number = 60
+      case ('pm')
+        atomic_number = 61
+      case ('sm')
+        atomic_number = 62
+      case ('eu')
+        atomic_number = 63
+      case ('gd')
+        atomic_number = 64
+      case ('tb')
+        atomic_number = 65
+      case ('dy')
+        atomic_number = 66
+      case ('ho')
+        atomic_number = 67
+      case ('er')
+        atomic_number = 68
+      case ('tm')
+        atomic_number = 69
+      case ('yb')
+        atomic_number = 70
+      case ('lu')
+        atomic_number = 71
+      case ('hf')
+        atomic_number = 72
+      case ('ta')
+        atomic_number = 73
+      case ('w')
+        atomic_number = 74
+      case ('re')
+        atomic_number = 75
+      case ('os')
+        atomic_number = 76
+      case ('ir')
+        atomic_number = 77
+      case ('pt')
+        atomic_number = 78
+      case ('au')
+        atomic_number = 79
+      case ('hg')
+        atomic_number = 80
+      case ('tl')
+        atomic_number = 81
+      case ('pb')
+        atomic_number = 82
+      case ('bi')
+        atomic_number = 83
+      case ('po')
+        atomic_number = 84
+      case ('at')
+        atomic_number = 85
+      case ('rn')
+        atomic_number = 86
+      case ('fr')
+        atomic_number = 87
+      case ('ra')
+        atomic_number = 88
+      case ('ac')
+        atomic_number = 89
+      case ('th')
+        atomic_number = 90
+      case ('pa')
+        atomic_number = 91
+      case ('u')
+        atomic_number = 92
+      case ('np')
+        atomic_number = 93
+      case ('pu')
+        atomic_number = 94
+      case ('am')
+        atomic_number = 95
+      case ('cm')
+        atomic_number = 96
+      case ('bk')
+        atomic_number = 97
+      case ('cf')
+        atomic_number = 98
+      case ('es')
+        atomic_number = 99
+      case ('fm')
+        atomic_number = 100
+      case ('md')
+        atomic_number = 101
+      case ('no')
+        atomic_number = 102
+      case ('lr')
+        atomic_number = 103
+      case ('rf')
+        atomic_number = 104
+      case ('db')
+        atomic_number = 105
+      case ('sg')
+        atomic_number = 106
+      case ('bh')
+        atomic_number = 107
+      case ('hs')
+        atomic_number = 108
+      case ('mt')
+        atomic_number = 109
+      case ('ds')
+        atomic_number = 110
+      case ('rg')
+        atomic_number = 111
+      case default
+        call mqc_error_a('Unknown element symbol in mqc_atomic_number',6,'temp',temp)
+      end select
+!
+      end function mqc_atomic_number 
+!
+!
+!     PROCEDURE MQC_UPDATE_MOL_DATA
+      Subroutine MQC_Update_Mol_Data(Molecule_Info,label,scalar,vector,matrix) 
+!
+!     This subroutine updates the molecule data object. The recognized labels and
+!     their meaning include:
+!           'natoms'          update the number of atoms.
+!           'atomic numbers'  update the atomic number vector.
+!           'atomic masses'   update the atomic mass vector.
+!           'nuclear charges' update the nuclear charge vector.
+!           'cartesians'      update the cartesian coordinate matrix.
+!
+!     Lee M. Thompson, 2020.
+!
+      Implicit None
+      Class(MQC_Molecule_Data),Intent(InOut)::Molecule_Info
+      character(len=*),intent(in)::label
+      Type(MQC_Scalar),optional::scalar
+      Type(MQC_Vector),optional::vector
+      Type(MQC_Matrix),optional::matrix
+      character(len=64)::myLabel
+      Integer::nInputArrays
+!
+      nInputArrays = 0
+      if(present(scalar)) nInputArrays = nInputArrays + 1
+      if(present(vector)) nInputArrays = nInputArrays + 1
+      if(present(matrix)) nInputArrays = nInputArrays + 1
+      if(nInputArrays.ne.1) call mqc_error_i('Too many input values sent to mqc_update_mol_data',&
+        6,'nInputArrays',nInputArrays)
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('natoms')
+        if(.not.present(scalar)) call mqc_error('Update natoms requested in mqc_update_mol_data&
+          & but input data is not scalar type')
+        molecule_info%natoms = scalar
+      case('atomic numbers')
+        if(.not.present(vector)) call mqc_error('Update atomic numbers requested in mqc_update_mol_data&
+          & but input data is not vector type')
+        molecule_info%atomic_numbers = vector
+      case('atomic masses')
+        if(.not.present(vector)) call mqc_error('Update atomic masses requested in mqc_update_mol_data&
+          & but input data is not vector type')
+        molecule_info%atomic_masses = vector
+      case('nuclear charges')
+        if(.not.present(vector)) call mqc_error('Update nuclear charges requested in mqc_update_mol_data&
+          & but input data is not vector type')
+        molecule_info%nuclear_charges = vector
+      case('cartesians')
+        if(.not.present(matrix)) call mqc_error('Update Cartesian matrix requested in mqc_update_mol_data&
+          & but input data is not matrix type')
+        molecule_info%cartesian_coordinates = matrix
+      case default
+        call mqc_error_A('Invalid label sent to mqc_update_mol_data.', 6, &
+             'mylabel', mylabel )
+      end select
+!
+      End Subroutine MQC_Update_Mol_Data
 !
       End Module MQC_Molecule
