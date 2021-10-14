@@ -10441,8 +10441,8 @@
 !     
 !     PROCEDURE SLATER_CONDON
 !
-!>    \brief <b> SLATER_CONDON is a subroutine that returns the list of binary 
-!>    strings corresponding to occupation number vectors</b>
+!>    \brief <b> SLATER_CONDON is a function that returns the CI Hamiltonian matrix 
+!>    element using Slater-Condon rules</b> 
 !>
 !>    \par Purpose:
 !     =============
@@ -14572,26 +14572,106 @@
 !
 !     PROCEDURE S2_MAT_ELEM    
 ! 
-      Function S2_Mat_Elem(IOut,IPrint,NBasis,Alpha_String_1,Beta_String_1, &
-      Alpha_String_2,Beta_String_2,MO_Overlap,nBit_IntsIn)
+!>    \brief <b> S2_Mat_Elem is a function returns the CI S**2 matrix elements</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    S2_Mat_Elem is a function returns the CI S**2 matrix elements used for computing 
+!>    S**2 values of CI vectors for a given alpha and beta string combination. The MO 
+!>    overlap matrix is required
+!>
+!>    \endverbatim
 !
-!     This function returns the CI S**2 matrix elements used for computing S**2
-!     values of CI vectors for a given alpha and beta string combination.
-!     The MO overlap matrix is required
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors.
+!>    \endverbatim
+!>    
+!>    \param[in] L_A_String
+!>    \verbatim
+!>        L_A_String is Integer(kind=int64)
+!>        The index of the left alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] L_B_String
+!>    \verbatim
+!>        L_B_String is Integer(kind=int64)
+!>        The index of the left beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_A_String
+!>    \verbatim
+!>        R_A_String is Integer(kind=int64)
+!>        The index of the right alpha string.
+!>    \endverbatim
+!>    
+!>    \param[in] R_B_String
+!>    \verbatim
+!>        R_B_String is Integer(kind=int64)
+!>        The index of the right beta string.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_Overlap
+!>    \verbatim
+!>        MO_Overlap is Type(MQC_SCF_Integral)
+!>        The MO basis core hamiltonian matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2016
+!
+      Function S2_Mat_Elem(IOut,IPrint,NBasisIn,Determinants,L_A_String, &
+        L_B_String,R_A_String,R_B_String,MO_Overlap)
 !
 !     Variable Declarations...
 !
       Implicit None
-      Integer(kind=int64),optional,intent(in)::NBit_IntsIn
-      Integer(kind=int64)::IOut,IPrint,NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
+      Integer(kind=int64),Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
+      Type(MQC_Scalar),Intent(In)::NBasisIn
+      Type(MQC_Determinant),Intent(In)::Determinants
+      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
+      Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
+        Beta_String_2,Alpha_Diff,Beta_Diff
+      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
         IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt,NBit_Ints, &
         I,J,II,JJ
-      real(kind=real64)::S2_Mat_Elem,Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
-      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
-      Integer(kind=int64),Dimension(:)::Alpha_String_1,Alpha_String_2,Beta_String_1, &
-        Beta_String_2
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
-      Real(kind=real64),Dimension(:,:),Allocatable::MO_Overlap
+      real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
+      type(mqc_scalar)::S2_Mat_Elem
+      Type(MQC_SCF_Integral),Intent(In)::MO_Overlap
+
+      NBasis = NBasisIn
+      NBit_Ints = (NBasis/Bit_Size(0))+1 
+      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
+      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
+      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
+      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
+      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
 !
 !      Write(IOut,*) 'alpha 1:'
 !      Write(IOut,'(B64)') Alpha_String_1
@@ -14610,11 +14690,6 @@
 !      Write(IOut,*) 'NDifb=', PopCnt(IEOR(Beta_String_1,Beta_String_2))
 !      Write(IOut,*)
 !
-      if(PRESENT(NBit_IntsIn)) then
-        NBit_Ints = NBit_IntsIn
-      else
-        NBit_Ints = (NBasis/Bit_Size(0))+1 
-      endIf
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
       Det_Diff = 0
       Alpha_Diff_Cnt = 0
@@ -14765,18 +14840,22 @@
           If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
             If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
               If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(4)+NBasis)*MO_Overlap(Orbs(2)+NBasis,Orbs(3))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(2),Orbs(3)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(4))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
               EndIf
             ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
               If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(3)+NBasis)*MO_Overlap(Orbs(2)+NBasis,Orbs(4))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(2),Orbs(4)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(3))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
@@ -14788,18 +14867,22 @@
           ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
             If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
               If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(4)+NBasis)*MO_Overlap(Orbs(3)+NBasis,Orbs(2))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(3),Orbs(2)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(4))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
               EndIf
             ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
               If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(2)+NBasis)*MO_Overlap(Orbs(3)+NBasis,Orbs(4))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))
               ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(3),Orbs(4)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(2))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
+                MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
@@ -14811,18 +14894,22 @@
           ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
             If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
               If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(3)+NBasis)*MO_Overlap(Orbs(4)+NBasis,Orbs(2))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(4),Orbs(2)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(3))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
               EndIf
             ElseIf(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
               If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(1),Orbs(2)+NBasis)*MO_Overlap(Orbs(4)+NBasis,Orbs(3))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))
               ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap(Orbs(4),Orbs(3)+NBasis)*MO_Overlap(Orbs(1)+NBasis,Orbs(2))
+                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
               Else
 !             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
                 S2_Mat_Elem = Zero
@@ -14900,7 +14987,8 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(BTest(Beta_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap(IPos+1+NBasis,Orbs(1)) * MO_Overlap(Orbs(2),IPos+1+NBasis)
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*& 
+                  MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
               EndIf
             EndDo
 !            S2_Mat_Elem = - S2_Mat_Elem
@@ -14938,7 +15026,8 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(BTest(Alpha_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap(IPos+1,Orbs(1)+NBasis) * MO_Overlap(Orbs(2)+NBasis,IPos+1)
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
               EndIf
             EndDo
 !            S2_Mat_Elem = - S2_Mat_Elem
@@ -14962,7 +15051,8 @@
               II = NBit_Ints - JPos/Bit_Size(0)
               JJ = Mod(JPos,Bit_Size(0)) 
               If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) then
-                ABTerm = ABTerm + MO_Overlap(IPos+1,JPos+1+NBasis)*MO_Overlap(JPos+1+NBasis,IPos+1) 
+                ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,IPos+1) 
               EndIf
             EndDo
           EndDo
