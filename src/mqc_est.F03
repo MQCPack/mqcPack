@@ -14638,11 +14638,11 @@
 !      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
       Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
 
-      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) then
-        Write(IOut,*) "ERROR: S2_Mat_Elem has been handed spin non-conserving &
-        determinants"
-        Call Exit()
-      EndIf
+      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) &
+        Call MQC_Error_I('S2_Mat_Elem has been handed spin non-conserving &
+        &determinants',6,'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+        'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+      
       Select Case (Det_Diff)
 !
         Case(3:)
@@ -14654,20 +14654,20 @@
           Do IPos = 0, NBasis-1
             I = NBit_Ints - IPos/Bit_Size(0)
             J = Mod(IPos,Bit_Size(0)) 
-            If(BTest(Alpha_Diff(I),J).eq..True.) then
+            If(BTest(Alpha_Diff(I),J)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 0
-              If(BTest(Alpha_String_1(I),J).eq..True.) then
+              If(BTest(Alpha_String_1(I),J)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
               EndIf
               IDiff = IDiff + 1
             EndIf
-            If(BTest(Beta_Diff(I),J).eq..True.) then
+            If(BTest(Beta_Diff(I),J)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 1
-              If(BTest(Beta_String_1(I),J).eq..True.) then
+              If(BTest(Beta_String_1(I),J)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
@@ -14685,15 +14685,15 @@
             J = Mod(IPos,Bit_Size(0)) 
             If(Spin(1).eq.0) then
               If(Det(1).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
               EndIf
             ElseIf(Spin(1).eq.1) then
               If(Det(1).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
               EndIf
             EndIf
           EndDo
@@ -14704,15 +14704,15 @@
             J = Mod(IPos,Bit_Size(0)) 
             If(Spin(2).eq.0) then
               If(Det(2).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
               EndIf
             ElseIf(Spin(2).eq.1) then
               If(Det(2).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
               EndIf
             EndIf
           EndDo
@@ -14723,15 +14723,15 @@
             J = Mod(IPos,Bit_Size(0)) 
             If(Spin(3).eq.0) then
               If(Det(3).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) KOcc = KOcc + 1
+                If(BTest(Alpha_String_1(I),J)) KOcc = KOcc + 1
               ElseIf(Det(3).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) KOcc = KOcc + 1
+                If(BTest(Alpha_String_2(I),J)) KOcc = KOcc + 1
               EndIf
             ElseIf(Spin(3).eq.1) then
               If(Det(3).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) KOcc = KOcc + 1
+                If(BTest(Beta_String_1(I),J)) KOcc = KOcc + 1
               ElseIf(Det(3).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) KOcc = KOcc + 1
+                If(BTest(Beta_String_2(I),J)) KOcc = KOcc + 1
               EndIf
             EndIf
           EndDo
@@ -14742,15 +14742,15 @@
             J = Mod(IPos,Bit_Size(0)) 
             If(Spin(4).eq.0) then
               If(Det(4).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) LOcc = LOcc + 1
+                If(BTest(Alpha_String_1(I),J)) LOcc = LOcc + 1
               ElseIf(Det(4).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) LOcc = LOcc + 1
+                If(BTest(Alpha_String_2(I),J)) LOcc = LOcc + 1
               EndIf
             ElseIf(Spin(4).eq.1) then
               If(Det(4).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) LOcc = LOcc + 1
+                If(BTest(Beta_String_1(I),J)) LOcc = LOcc + 1
               ElseIf(Det(4).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) LOcc = LOcc + 1
+                If(BTest(Beta_String_2(I),J)) LOcc = LOcc + 1
               EndIf
             EndIf
           EndDo
@@ -14842,20 +14842,20 @@
           Do IPos = 0, NBasis-1
             I = NBit_Ints - IPos/Bit_Size(0)
             J = Mod(IPos,Bit_Size(0)) 
-            If(BTest(Alpha_Diff(I),J).eq..True.) then
+            If(BTest(Alpha_Diff(I),J)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 0
-              If(BTest(Alpha_String_1(I),J).eq..True.) then
+              If(BTest(Alpha_String_1(I),J)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
               EndIf
               IDiff = IDiff + 1
             EndIf
-            If(BTest(Beta_Diff(I),J).eq..True.) then
+            If(BTest(Beta_Diff(I),J)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 1
-              If(BTest(Beta_String_1(I),J).eq..True.) then
+              If(BTest(Beta_String_1(I),J)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
@@ -14878,9 +14878,9 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(Det(1).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
               EndIf
             EndDo
 !            Write(IOut,*) 'IOcc:',IOcc
@@ -14889,9 +14889,9 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(Det(2).eq.1) then
-                If(BTest(Alpha_String_1(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Alpha_String_2(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
               EndIf
             EndDo
 !            Write(IOut,*) 'JOcc:',JOcc
@@ -14899,7 +14899,7 @@
             Do IPos = 0, NBasis-1
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
-              If(BTest(Beta_String_1(I),J).eq..True.) then
+              If(BTest(Beta_String_1(I),J)) then
                 S2_Mat_Elem = S2_Mat_Elem + MO_Overlap(IPos+1+NBasis,Orbs(1)) * MO_Overlap(Orbs(2),IPos+1+NBasis)
               EndIf
             EndDo
@@ -14916,9 +14916,9 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(Det(1).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) IOcc = IOcc + 1
+                If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
               EndIf
             EndDo
 !            Write(IOut,*) 'IOcc:',IOcc
@@ -14927,9 +14927,9 @@
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(Det(2).eq.1) then
-                If(BTest(Beta_String_1(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Beta_String_2(I),J).eq..True.) JOcc = JOcc + 1
+                If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
               EndIf
             EndDo
 !            Write(IOut,*) 'JOcc:',JOcc
@@ -14937,7 +14937,7 @@
             Do IPos = 0, NBasis-1
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
-              If(BTest(Alpha_String_1(I),J).eq..True.) then
+              If(BTest(Alpha_String_1(I),J)) then
                 S2_Mat_Elem = S2_Mat_Elem + MO_Overlap(IPos+1,Orbs(1)+NBasis) * MO_Overlap(Orbs(2)+NBasis,IPos+1)
               EndIf
             EndDo
@@ -14961,7 +14961,7 @@
             Do JPos = 0, NBasis-1
               II = NBit_Ints - JPos/Bit_Size(0)
               JJ = Mod(JPos,Bit_Size(0)) 
-              If((BTest(Alpha_String_2(I),J).eq..True.).and.(BTest(Beta_String_2(II),JJ).eq..True.)) then
+              If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) then
                 ABTerm = ABTerm + MO_Overlap(IPos+1,JPos+1+NBasis)*MO_Overlap(JPos+1+NBasis,IPos+1) 
               EndIf
             EndDo
