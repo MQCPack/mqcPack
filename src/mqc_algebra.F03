@@ -941,15 +941,15 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] N
+!>    \param[in] NIn
 !>    \verbatim
-!>        N is Integer(kind=int64)
+!>        N is Class(*)
 !>        The number of objects.
 !>    \endverbatim
 !>
-!>    \param[in] K
+!>    \param[in] KIn
 !>    \verbatim
-!>        K is Integer(kind=int64) 
+!>        K is Class(*)
 !>        The number of permutations.
 !>    \endverbatim
 !
@@ -958,13 +958,31 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function Bin_Coeff(N,K)
+      Function Bin_Coeff(NIn,KIn)
 !
 !     Variable Declarations...
       Implicit None
-      Integer(kind=int64),Intent(In)::N,K
-      Integer(kind=int64)::I,J,Ans,Bin_Coeff
+      Class(*),Intent(In)::NIn,KIn
+      Integer(kind=int64)::I,J,N,K,Ans,Bin_Coeff
 !
+      Select Type (NIn)
+      Type is (integer)
+        N = NIn
+      type is (mqc_scalar)
+        N = NIn
+      Class Default
+        Call MQC_Error('NIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (KIn)
+      Type is (integer)
+        K = KIn
+      type is (mqc_scalar)
+        K = KIn
+      Class Default
+        Call MQC_Error('KIn type is not integer or MQC scalar')
+      End Select
+
       If(K.lt.0.or.K.gt.N) then
         Ans = 0
       ElseIf(K.eq.0.or.K.eq.N) then
