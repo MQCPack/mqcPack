@@ -10166,7 +10166,7 @@
 !>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
-!
+!>
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
@@ -10224,10 +10224,8 @@
         Select Type (NCoreIn)
         Type Is (Integer)
           NCore = NCoreIn
-          write(*,*)' Hrant - Gen_Det_Str: Have NCoreIn as Integer.'
         Type Is (MQC_Scalar)
           NCore = NCoreIn
-          write(*,*)' Hrant - Gen_Det_Str: Have NCoreIn as MQC_Scalar.'
         Class Default
           Call MQC_Error('NCoreIn type is not integer or MQC scalar')
         End Select
@@ -10436,6 +10434,577 @@
       Deallocate(Alpha_Strings,Beta_Strings)
 
       End Subroutine Gen_Det_Str
+!
+!=====================================================================
+!     
+!     PROCEDURE TRCI_DETS_STRING
+!
+!>    \brief <b> TRCI_DETS_STRING is a subroutine that takes an integer array 
+!>    containing possible particle or hole indices for excitations from a reference 
+!>    determinant and converts them to alpha and beta strings in a determinant
+!>    object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    TRCI_DETS_STRING is a subroutine that takes an integer array containing 
+!>    possible particle or hole indices for excitations from a reference determinant 
+!>    and converts them to alpha and beta strings in a determinant object</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Class(*)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] NAlphaIn
+!>    \verbatim
+!>        NAlphaIn is Class(*)
+!>        The number of alpha electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] NBetaIn
+!>    \verbatim
+!>        NBetaIn is Class(*)
+!>        The number of beta electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] Substitutions
+!>    \verbatim
+!>        Substitutions is Type(MQC_Vector)
+!>        The substituion levels requested.
+!>    \endverbatim
+!>    
+!>    \param[out] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The output binary string occupation number vectors. 
+!>        Note the reference is returned followed by 
+!>        substitutions in increasing order.
+!>    \endverbatim
+!>    
+!>    \param[in] NCoreIn
+!>    \verbatim
+!>        NCoreIn is Class(*),optional
+!>        The number of core orbitals to consider always occupied.
+!>    \endverbatim
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine TRCI_DETS_STRING(iOut,iPrint,nBasisIn,nAlphaIn,nBetaIn,&
+          substitutions,determinants,nCoreIn)
+!
+      implicit none
+      integer(kind=int64)::iOut,iPrint
+      class(*),intent(in)::nBasisIn,nAlphaIn,nBetaIn
+      class(*),Optional::NCoreIn
+      integer(kind=int64)::NBasis,NAlpha,NBeta,NCore,NAlpha_Str,NBeta_Str,NBit_Ints,&
+        arrStart,arrEnd,holeStart,partStart,holeInd,partInd
+      integer(kind=int64),dimension(:,:),allocatable::Alpha_Strings,Beta_Strings
+      integer(kind=int64),dimension(:),intent(in)::substitutions
+      integer(kind=int64),dimension(:),allocatable::initstr
+      type(mqc_vector)::subs
+      type(mqc_matrix)::alpha_arr_hole,alpha_arr_part,beta_arr_hole,beta_arr_part
+      type(mqc_vector)::nums_alpha_hole,nums_alpha_part,nums_beta_hole,&
+        nums_beta_part,nah,nap,nbh,nbp
+      integer::i,j,k,l,m,alpha_elems,beta_elems,arrayind
+      type(mqc_determinant),intent(inOut)::determinants
+!
+ 1001 Format(1x,I7,2x,*(B64))
+ 1050 Format( A )
+!
+      select type (nBasisIn)
+      type is (integer)
+        nBasis = nBasisIn
+      type is (mqc_scalar)
+        nBasis = nBasisIn
+      class default
+        call mqc_error('NBasisIn type is not integer or MQC scalar')
+      end select
+
+      select type (nAlphaIn)
+      type is (integer)
+        nAlpha = nAlphaIn
+      type is (mqc_scalar)
+        nAlpha = nAlphaIn
+      class default
+        call mqc_error('NAlphaIn type is not integer or MQC scalar')
+      end select
+
+      select type (nBetaIn)
+      type is (integer)
+        nBeta = nBetaIn
+      type is (mqc_scalar)
+        nBeta = nBetaIn
+      class default
+        call mqc_error('NBetaIn type is not integer or MQC scalar')
+      end select
+
+      if(present(nCoreIn)) then
+        select type (nCoreIn)
+        type is (integer)
+          nCore = nCoreIn
+        type is (mqc_scalar)
+          nCore = nCoreIn
+        class default
+          call mqc_error('NCoreIn type is not integer or MQC scalar')
+        end Select
+        write(iOut,'(A,I4,A)') 'Adding ',nCore,' core orbitals to string'
+      else 
+        nCore = 0
+      endIf
+
+      call trci_dets_arr(nBasis,nAlpha,nBeta,substitutions,alpha_arr_hole, &
+        alpha_arr_part,beta_arr_hole,beta_arr_part,nah,nap,nbh,nbp)
+!
+!     Initialize Arrays
+!
+      nAlpha_Str = 1 
+      nBeta_Str = 1
+      do i = 1,size(nah)
+        nAlpha_Str = nAlpha_Str + nah%at(i)*nap%at(i)
+        nBeta_Str = nBeta_Str + nbh%at(i)*nbp%at(i)
+      endDo
+      if(allocated(alpha_strings)) deallocate(alpha_strings)
+      if(allocated(beta_strings)) deallocate(beta_strings)
+      nBit_Ints = ((nBasis+nCore)/(bit_size(0)-1))+1
+      allocate(alpha_strings(nAlpha_Str,nBit_Ints),beta_strings(nBeta_str,nBit_ints))
+      
+      alpha_strings = 0
+      beta_strings = 0
+      allocate(initstr(nBit_Ints))
+      initstr = 0
+      j = 0
+      do i = 0, nAlpha+nCore-1
+        if(mod(i,bit_size(0)).eq.0) j = j+1
+        initstr(j) = iBSet(initstr(j),mod(i,bit_size(0)))
+      endDo
+      do i = 1, nAlpha_Str
+        alpha_strings(i,:) = initstr
+      endDo
+      if(nAlpha.ne.nBeta) then
+        initstr = 0
+        j = 0
+        do i = 0, nBeta+nCore-1
+          if(mod(i,bit_size(0)).eq.0) j = j+1
+          initstr(j) = iBSet(initstr(j),mod(i,bit_size(0)))
+        endDo
+        do i = 1, nBeta_Str
+          beta_strings(i,:) = initstr
+        endDo
+      else
+        beta_strings = alpha_strings
+      endIf
+
+      arrstart = 2
+      holestart = 0
+      partstart = 0
+      do i = 1,size(nah)
+        if(i.ne.1) arrstart = arrstart + nah%at(i-1)*nap%at(i-1)
+        arrend = arrstart + nah%at(i)*nap%at(i) - 1
+        if(i.ne.1) holestart = nah%at(i-1)
+        if(i.ne.1) partstart = nap%at(i-1)
+        do j = arrstart, arrend 
+          holeInd = int((j-arrstart)/nap%at(i))+holestart+1
+          partInd = mod((j-arrstart),int(nap%at(i)))+partstart+1
+          do k = 1,size(alpha_arr_hole,2)
+            if(alpha_arr_hole%at(holeInd,k).ne.0) then
+              l = mod(int(alpha_arr_hole%at(holeInd,k))+nCore-1,bit_size(0))+1
+              m = (alpha_arr_hole%at(holeInd,k)+nCore)/(bit_size(0)+1)+1
+              alpha_strings(j,m) = iBClr(alpha_strings(j,m),l-1)
+            endIf
+          endDo
+          do k = 1,size(alpha_arr_part,2)
+            if(alpha_arr_part%at(partInd,k).ne.0) then
+              l = mod(int(alpha_arr_part%at(partInd,k))+nCore-1,bit_size(0))+1
+              m = (alpha_arr_part%at(partInd,k)+nCore)/(bit_size(0)+1)+1
+              alpha_strings(j,m) = iBSet(alpha_strings(j,m),l-1)
+            endIf
+          endDo
+        endDo
+      endDo
+
+      arrstart = 2
+      holestart = 0
+      partstart = 0
+      do i = 1,size(nbh)
+        if(i.ne.1) arrstart = arrstart + nbh%at(i-1)*nbp%at(i-1)
+        arrend = arrstart + nbh%at(i)*nbp%at(i) - 1
+        if(i.ne.1) holestart = nbh%at(i-1)
+        if(i.ne.1) partstart = nbp%at(i-1)
+        do j = arrstart, arrend 
+          holeInd = int((j-arrstart)/nbp%at(i))+holestart+1
+          partInd = mod((j-arrstart),int(nbp%at(i)))+partstart+1
+          do k = 1,size(beta_arr_hole,2)
+            if(beta_arr_hole%at(holeInd,k).ne.0) then
+              l = mod(int(beta_arr_hole%at(holeInd,k))+nCore-1,bit_size(0))+1
+              m = (beta_arr_hole%at(holeInd,k)+nCore)/(bit_size(0)+1)+1
+              beta_strings(j,m) = iBClr(beta_strings(j,m),l-1)
+            endIf
+          endDo
+          do k = 1,size(beta_arr_part,2)
+            if(beta_arr_part%at(partInd,k).ne.0) then
+              l = mod(int(beta_arr_part%at(partInd,k))+nCore-1,bit_size(0))+1
+              m = (beta_arr_part%at(partInd,k)+nCore)/(bit_size(0)+1)+1
+              beta_strings(j,m) = iBSet(beta_strings(j,m),l-1)
+            endIf
+          endDo
+        endDo
+      endDo
+
+      if(iPrint.ge.2) then
+        write(iOut,1050) "Alpha Strings"
+        do i = 1,nAlpha_Str
+          write(iOut,1001) i,(alpha_strings(i,j),j=1,nBit_Ints)
+        endDo
+        write(iOut,1050) "Beta Strings"
+        do i = 1,nBeta_Str
+          write(iOut,1001) i,(beta_strings(i,j),j=1,nBit_Ints)
+        endDo
+      endIf
+
+      Determinants%Strings%Alpha = Alpha_Strings
+      Determinants%Strings%Beta = Beta_Strings
+      Determinants%Order = 'Lexical'
+      Determinants%NDets = NAlpha_Str*NBeta_Str 
+      Determinants%NAlpStr = NAlpha_Str
+      Determinants%NBetStr = NBeta_Str 
+
+      Deallocate(Alpha_Strings,Beta_Strings)
+!
+      end subroutine TRCI_DETS_STRING
+!
+!=====================================================================
+!     
+!     PROCEDURE TRCI_DETS_ARR 
+!
+!>    \brief <b> TRCI_DETS_ARR is a subroutine that returns the integer array 
+!>    containing possible particle or hole indices for excitations from a reference 
+!>    determinant</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    TRCI_DETS_ARR is a subroutine that returns the integer arrary containing 
+!>    containing possible particle or hole labels for excitations from a reference 
+!>    determinant. Arrays are returned for both alpha and beta electrons for all
+!>    the substitution levels requested in order of substitution level (lowest to 
+!>    highest). The product of alpha and beta substitutions gives the total 
+!>    substitution level, which will be greater than the requested substitution 
+!>    level. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NBasisIn
+!>    \verbatim
+!>        NBasisIn is Class(*)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] NAlphaIn
+!>    \verbatim
+!>        NAlphaIn is Class(*)
+!>        The number of alpha electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] NBetaIn
+!>    \verbatim
+!>        NBetaIn is Class(*)
+!>        The number of beta electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] Substitutions
+!>    \verbatim
+!>        Substitutions is Type(MQC_Vector)
+!>        The number of beta electrons.
+!>    \endverbatim
+!>    
+!>    \param[out] Alpha_Arr_Hole
+!>    \verbatim
+!>        Alpha_Arr_Hole is Type(MQC_Matrix)
+!>        The output alpha hole index array.
+!>    \endverbatim
+!>    
+!>    \param[out] Alpha_Arr_Part
+!>    \verbatim
+!>        Alpha_Arr_Part is Type(MQC_Matrix)
+!>        The output alpha particle index array.
+!>    \endverbatim
+!>    
+!>    \param[out] Beta_Arr_Hole
+!>    \verbatim
+!>        Beta_Arr_Hole is Type(MQC_Matrix)
+!>        The output beta hole index array.
+!>    \endverbatim
+!>    
+!>    \param[out] Beta_Arr_Part
+!>    \verbatim
+!>        Beta_Arr_Part is Type(MQC_Matrix)
+!>        The output beta particle index array.
+!>    \endverbatim
+!>    
+!>    \param[out] Nums_Alpha_Hole_Out
+!>    \verbatim
+!>        Nums_Alpha_Hole_Out is Type(MQC_Vector),Optional
+!>        Optional array containing the number of alpha hole 
+!>        array elements at each substitution level.
+!>    \endverbatim
+!>    
+!>    \param[out] Nums_Alpha_Part_Out
+!>    \verbatim
+!>        Nums_Alpha_Part_Out is Type(MQC_Vector),Optional
+!>        Optional array containing the number of alpha particle 
+!>        array elements at each substitution level.
+!>    \endverbatim
+!>    
+!>    \param[out] Nums_Beta_Hole_Out
+!>    \verbatim
+!>        Nums_Beta_Hole_Out is Type(MQC_Vector),Optional
+!>        Optional array containing the number of beta hole 
+!>        array elements at each substitution level.
+!>    \endverbatim
+!>    
+!>    \param[out] Nums_Beta_Part_Out
+!>    \verbatim
+!>        Nums_Beta_Part_Out is Type(MQC_Vector),Optional
+!>        Optional array containing the number of beta particle
+!>        array elements at each substitution level.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine TRCI_DETS_ARR(nBasisIn,nAlphaIn,nBetaIn,substitutions,alpha_arr_hole,&
+          alpha_arr_part,beta_arr_hole,beta_arr_part,nums_alpha_hole_out,&
+          nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out)
+!
+      implicit none
+      class(*),intent(in)::nBasisIn,nAlphaIn,nBetaIn
+      integer(kind=int64)::NBasis,NAlpha,NBeta
+      integer(kind=int64),dimension(:),intent(in)::substitutions
+      type(mqc_vector)::subs
+      type(mqc_matrix),intent(inOut)::alpha_arr_hole,alpha_arr_part,beta_arr_hole,beta_arr_part
+      integer(kind=int64),dimension(:,:),allocatable::alpha,beta
+      type(mqc_vector)::nums_alpha_hole,nums_alpha_part,nums_beta_hole,nums_beta_part,tmpvec
+      type(mqc_vector),intent(inOut),optional::nums_alpha_hole_out,&
+        nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out
+      integer::i,alpha_elems,beta_elems,arrayind
+
+      select type (nBasisIn)
+      type is (integer)
+        nBasis = nBasisIn
+      type is (mqc_scalar)
+        nBasis = nBasisIn
+      class default
+        call mqc_error('NBasisIn type is not integer or MQC scalar')
+      end select
+
+      select type (nAlphaIn)
+      type is (integer)
+        nAlpha = nAlphaIn
+      type is (mqc_scalar)
+        nAlpha = nAlphaIn
+      class default
+        call mqc_error('NAlphaIn type is not integer or MQC scalar')
+      end select
+
+      select type (nBetaIn)
+      type is (integer)
+        nBeta = nBetaIn
+      type is (mqc_scalar)
+        nBeta = nBetaIn
+      class default
+        call mqc_error('NBetaIn type is not integer or MQC scalar')
+      end select
+
+      subs = substitutions
+      call subs%sort()
+      call nums_alpha_hole%init(size(subs),0)
+      call nums_alpha_part%init(size(subs),0)
+      if(nAlpha.ne.nBeta) then
+        call nums_beta_hole%init(size(subs),0)
+        call nums_beta_part%init(size(subs),0)
+      endIf
+      do i = 1, size(subs)
+        alpha_elems = bin_coeff(nalpha,subs%at(i))
+        call nums_alpha_hole%put(alpha_elems,i)
+        if (nAlpha.ne.nBeta) then
+          beta_elems = bin_coeff(nbeta,subs%at(i))
+          call nums_beta_hole%put(beta_elems,i)
+        else
+          nums_beta_hole = nums_alpha_hole
+        endIf
+        alpha_elems = bin_coeff(nbasis-nalpha,subs%at(i))
+        call nums_alpha_part%put(alpha_elems,i)
+        if (nAlpha.ne.nBeta) then
+          beta_elems = bin_coeff(nbasis-nbeta,subs%at(i))
+          call nums_beta_part%put(beta_elems,i)
+        else
+          nums_beta_part = nums_alpha_part
+        endIf
+      endDo
+
+      alpha_elems = int(nums_alpha_hole%sum())*int(nums_alpha_part%sum())
+      beta_elems = int(nums_beta_hole%sum())*int(nums_beta_part%sum())
+      call alpha_arr_hole%init(int(nums_alpha_hole%sum()),int(subs%maxval()),0)
+      call beta_arr_hole%init(int(nums_beta_hole%sum()),int(subs%maxval()),0)
+      call alpha_arr_part%init(int(nums_alpha_part%sum()),int(subs%maxval()),0)
+      call beta_arr_part%init(int(nums_beta_part%sum()),int(subs%maxval()),0)
+
+      arrayind=1
+      call tmpvec%init(size(subs),0)
+      do i = 1,size(subs)
+        call build_trci_ph_list(alpha_arr_hole,arrayind,1,nAlpha,1,int(subs%at(i)),tmpvec)
+      endDo
+      if(nAlpha.ne.nBeta) then
+        arrayind=1
+        call tmpvec%init(size(subs),0)
+        do i = 1,size(subs)
+          call build_trci_ph_list(beta_arr_hole,arrayind,1,nBeta,1,int(subs%at(i)),tmpvec)
+        endDo
+      else
+        beta_arr_hole = alpha_arr_hole
+      endIf
+      arrayind=1
+      call tmpvec%init(size(subs),0)
+      do i = 1,size(subs)
+        call build_trci_ph_list(alpha_arr_part,arrayind,NAlpha+1,nBasis,1,int(subs%at(i)),tmpvec)
+      endDo
+      if(nAlpha.ne.nBeta) then
+        arrayind=1
+        call tmpvec%init(size(subs),0)
+        do i = 1,size(subs)
+          call build_trci_ph_list(beta_arr_part,arrayind,NBeta+1,nBasis,1,int(subs%at(i)),tmpvec)
+        endDo
+      else
+        beta_arr_part = alpha_arr_part
+      endIf
+!
+      if(present(nums_alpha_hole_out)) nums_alpha_hole_out = nums_alpha_hole
+      if(present(nums_alpha_part_out)) nums_alpha_part_out = nums_alpha_part
+      if(present(nums_beta_hole_out)) nums_beta_hole_out = nums_beta_hole
+      if(present(nums_beta_part_out)) nums_beta_part_out = nums_beta_part
+!
+      end subroutine TRCI_DETS_ARR 
+!
+!=====================================================================
+!     
+!     PROCEDURE Build_TrCi_PH_List 
+!
+!>    \brief <b> Build_TrCi_PH_List is a recursive subroutine that builds an array 
+!>    containing the particle-hole indices for a requested substitution level from a 
+!>    reference determinant</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    Build_TrCi_PH_List is a recursive subroutine that builds an array containing 
+!>    the particle-hole indices for a requested substitution level from a reference 
+!>    determinant. If the looptotal is less than the length of store, the array is 
+!>    right-padded with zeros.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Array
+!>    \verbatim
+!>        Array is type(mqc_matrix)
+!>        The array to update with particle/hole indices. 
+!>    \endverbatim
+!>    
+!>    \param[in,out] ArrayInd 
+!>    \verbatim
+!>        ArrayInd is Integer
+!>        The row of array which is the number of particle/home
+!>        states.
+!>    \endverbatim
+!>    
+!>    \param[in] IndStart
+!>    \verbatim
+!>        IndStart is Integer
+!>        The initial index of the recursive loop.
+!>    \endverbatim
+!>    
+!>    \param[in] IndEnd
+!>    \verbatim
+!>        IndEnd is Integer 
+!>        The final index of the recursive loop.
+!>    \endverbatim
+!>    
+!>    \param[in] LoopNum
+!>    \verbatim
+!>        LoopNum is Integer
+!>        The current nested loop number.
+!>    \endverbatim
+!>    
+!>    \param[in] LoopTotal
+!>    \verbatim
+!>        LoopTotal is Integer
+!>        The total number of nested loops.
+!>    \endverbatim
+!>    
+!>    \param[in,out] Store
+!>    \verbatim
+!>        Store is Type(MQC_Vector)
+!>        Temporary vector that stores indices before writing to
+!>        Array.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      recursive subroutine build_trci_ph_list(array,arrayind,indstart,indend,loopnum,looptotal,store)
+!
+      implicit none
+      type(mqc_matrix),intent(inOut)::array
+      integer,intent(in)::looptotal,loopnum,indstart,indend
+      integer::i
+      integer,intent(inOut)::arrayind
+      type(mqc_vector)::store
+!
+      do i = indstart,indend
+        if(arrayind.gt.size(array,1)) return
+        call store%put(i,loopnum)
+        call array%vput(store,[arrayind],[0])
+        if(loopnum.lt.looptotal) then
+          call build_trci_ph_list(array,arrayind,i+1,indend,loopnum+1,looptotal,store)
+        else
+          arrayind = arrayind + 1
+        endIf
+      endDo
+
+      end subroutine build_trci_ph_list
 !
 !=====================================================================
 !     
