@@ -228,18 +228,22 @@
 !>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
         Procedure, Public::power => MQC_Matrix_Power
         Procedure, Private::at_sca => MQC_Matrix_Scalar_At_Scalar
+        Procedure, Private::at_scaint => MQC_Matrix_Scalar_At_ScaInt
+        Procedure, Private::at_intsca => MQC_Matrix_Scalar_At_IntSca
         Procedure, Private::at_int => MQC_Matrix_Scalar_At_Int
 !>      \brief <b> Returns the value of the specified element of the MQC Matrix</b>
-        Generic,   Public::at => at_sca, at_int
+        Generic,   Public::at => at_sca, at_int, at_scaint, at_intsca
 !>      \brief <b> Returns the vector of the specified subvector of the MQC Matrix</b>
         Procedure, Public::vat => MQC_Matrix_Vector_At
 !>      \brief <b> Returns the matrix of the specified submatrix of the MQC Matrix</b>
         Procedure, Public::mat => MQC_Matrix_Matrix_At
         Procedure, Private::put_sca => MQC_Matrix_Scalar_Put_Scalar
+        Procedure, Private::put_scaint => MQC_Matrix_Scalar_Put_ScaInt
+        Procedure, Private::put_intsca => MQC_Matrix_Scalar_Put_IntSca
         Procedure, Private::put_int => MQC_Matrix_Scalar_Put_Int
 !>      \brief <b> Updates the specified element of the MQC Matrix to the specified
 !>      value</b>
-        Generic,   Public::put => put_sca, put_int
+        Generic,   Public::put => put_sca, put_int, put_scaint, put_intsca
 !>      \brief <b> Updates the specified subvector of the MQC Matrix to the specified
 !>      vector</b>
         Procedure, Public::vput => MQC_Matrix_Vector_Put
@@ -551,6 +555,8 @@
 !>    \brief <b> Returns the value of the matrix at the specied index</b>
       interface MQC_Matrix_Scalar_At
         module procedure MQC_Matrix_Scalar_At_Scalar
+        module procedure MQC_Matrix_Scalar_At_ScaInt
+        module procedure MQC_Matrix_Scalar_At_IntSca
         module procedure MQC_Matrix_Scalar_At_Int 
       end interface
 !
@@ -569,6 +575,8 @@
 !>    \brief <b> Puts a value in the matrix at the specied index</b>
       interface MQC_Matrix_Scalar_Put
         module procedure MQC_Matrix_Scalar_Put_Scalar
+        module procedure MQC_Matrix_Scalar_Put_ScaInt
+        module procedure MQC_Matrix_Scalar_Put_IntSca
         module procedure MQC_Matrix_Scalar_Put_Int 
       end interface
 !
@@ -933,15 +941,15 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] N
+!>    \param[in] NIn
 !>    \verbatim
-!>        N is Integer(kind=int64)
+!>        N is Class(*)
 !>        The number of objects.
 !>    \endverbatim
 !>
-!>    \param[in] K
+!>    \param[in] KIn
 !>    \verbatim
-!>        K is Integer(kind=int64) 
+!>        K is Class(*)
 !>        The number of permutations.
 !>    \endverbatim
 !
@@ -950,13 +958,31 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function Bin_Coeff(N,K)
+      Function Bin_Coeff(NIn,KIn)
 !
 !     Variable Declarations...
       Implicit None
-      Integer(kind=int64),Intent(In)::N,K
-      Integer(kind=int64)::I,J,Ans,Bin_Coeff
+      Class(*),Intent(In)::NIn,KIn
+      Integer(kind=int64)::I,J,N,K,Ans,Bin_Coeff
 !
+      Select Type (NIn)
+      Type is (integer)
+        N = NIn
+      type is (mqc_scalar)
+        N = NIn
+      Class Default
+        Call MQC_Error('NIn type is not integer or MQC scalar')
+      End Select
+
+      Select Type (KIn)
+      Type is (integer)
+        K = KIn
+      type is (mqc_scalar)
+        K = KIn
+      Class Default
+        Call MQC_Error('KIn type is not integer or MQC scalar')
+      End Select
+
       If(K.lt.0.or.K.gt.N) then
         Ans = 0
       ElseIf(K.eq.0.or.K.eq.N) then
@@ -12331,6 +12357,130 @@
       End Function
 !
 !
+!     PROCEDURE MQC_Matrix_Scalar_At_ScaInt
+!
+!>    \brief <b> MQC_Matrix_Scalar_At_ScaInt is a function that returns the value of 
+!>    an element of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_At_ScaInt is a function that returns the value of (I,J)th 
+!>    element of a MQC matrix as an MQC scalar one scalar and one integer index. If 
+!>    I or J is negative, the (N-I+1)th index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Type(MQC_Scalar)
+!>        The row of the element in MQC matrix. 
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer
+!>        The column of the element in MQC matrix.
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Matrix_Scalar_At_ScaInt(Mat,I,J) Result(Element)
+!
+      Implicit None
+      Class(MQC_Matrix),Intent(In)::Mat
+      Type(MQC_Scalar)::Element
+      Type(MQC_Scalar),Intent(In)::I
+      Integer,Intent(In)::J
+      Integer(kind=int64)::IndI,IndJ
+
+      IndI=I
+      IndJ=J
+      Element = MQC_Matrix_Scalar_At_Int(Mat,IndI,IndJ)
+
+      End Function
+!
+!
+!     PROCEDURE MQC_Matrix_Scalar_At_IntSca
+!
+!>    \brief <b> MQC_Matrix_Scalar_At_IntSca is a function that returns the value of 
+!>    an element of a MQC matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_At_IntSca is a function that returns the value of (I,J)th 
+!>    element of a MQC matrix as an MQC scalar using an integer and a scalar index. 
+!>    If I or J is negative, the (N-I+1)th index is selected.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Mat
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer
+!>        The row of the element in MQC matrix. 
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Type(MQC_Scalar)
+!>        The column of the element in MQC matrix.
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Matrix_Scalar_At_IntSca(Mat,I,J) Result(Element)
+!
+      Implicit None
+      Class(MQC_Matrix),Intent(In)::Mat
+      Type(MQC_Scalar)::Element
+      Integer,Intent(In)::I
+      Type(MQC_Scalar),Intent(In)::J
+      Integer(kind=int64)::IndI,IndJ
+
+      IndI=I
+      IndJ=J
+      Element = MQC_Matrix_Scalar_At_Int(Mat,IndI,IndJ)
+
+      End Function
+!
+!
 !     PROCEDURE MQC_Matrix_Scalar_At_Int
 !
 !>    \brief <b> MQC_Matrix_Scalar_At_Int is a function that returns the value of an  
@@ -23036,6 +23186,187 @@
       Call MQC_Matrix_Scalar_Put_Int(Matrix,ScalarIn,IndI,IndJ,Option)
 
       End Subroutine MQC_Matrix_Scalar_Put_Scalar
+!
+!
+!     PROCEDURE MQC_Matrix_Scalar_Put_ScaInt
+!
+!>    \brief <b> MQC_Matrix_Scalar_Put_ScaInt is a subroutine that updates the value 
+!>    of the (i,j)th element of a MQC matrix in which the indices are specified as
+!>    a MQC Scalar and integer</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_Put_ScaInt is a subroutine that updates the value of the 
+!>    (i,j)th element of a MQC matrix in which the indices are specifed as a MQC 
+!>    Scalar and integer. If the location of an element is negative then it is 
+!>    counted from the end of the MQC matrix row/column. The following options are 
+!>    available: 
+!>
+!>    1. Option = 'element' adds scalar into specified element only (default).
+!>    2. Option = 'symmetric' adds scalar symmetrically.
+!>    3. Option = 'antisymmetric' adds scalar antisymmetrically.
+!>    4. Option = 'hermitian' adds scalar hermitianally.
+!>    5. Option = 'antihermitian' adds scalar antihermitianally.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to update at the (i,j)th element.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn 
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update the (i,j)th element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Type(MQC_Scalar) 
+!>        The location of the row element in Matrix to update. If 
+!>        I is negative it is counted from the last element of 
+!>        Matrix. 
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer
+!>        The location of the column element in Matrix to update. 
+!>        If J is negative it is counted from the last element of 
+!>        Matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'element':       add scalar into specified element 
+!>                           only (default)
+!>        = 'symmetric':     add scalar symmetrically
+!>        = 'antisymmetric': add scalar antisymmetrically
+!>        = 'hermitian':     add scalar hermitianally
+!>        = 'antihermitian': add scalar antihermitianally.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Recursive Subroutine MQC_Matrix_Scalar_Put_ScaInt(Matrix,ScalarIn,I,J,Option)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Type(MQC_Scalar),Intent(in)::I
+      Integer,Intent(in)::J
+      Class(MQC_Matrix),Intent(InOut)::Matrix
+      Class(*),Intent(In)::ScalarIn
+      Character(len=*),Optional,Intent(In)::Option
+      Integer(kind=int64)::IndI,IndJ
+      Character(len=64)::myOption
+
+      IndI = I
+      IndJ = J
+      Call MQC_Matrix_Scalar_Put_Int(Matrix,ScalarIn,IndI,IndJ,Option)
+
+      End Subroutine MQC_Matrix_Scalar_Put_ScaInt
+!
+!
+!     PROCEDURE MQC_Matrix_Scalar_Put_IntSca
+!
+!>    \brief <b> MQC_Matrix_Scalar_Put_IntSca is a subroutine that updates the value 
+!>    of the (i,j)th element of a MQC matrix in which the indices are specified as an
+!>    integer and a MQC Scalar</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Scalar_Put_IntSca is a subroutine that updates the value of the 
+!>    (i,j)th element of a MQC matrix in which the indices are specifed as an integer
+!>    and a MQC Scalar. If the location of an element is negative then it is counted 
+!>    from the end of the MQC matrix row/column. The following options are available: 
+!>
+!>    1. Option = 'element' adds scalar into specified element only (default).
+!>    2. Option = 'symmetric' adds scalar symmetrically.
+!>    3. Option = 'antisymmetric' adds scalar antisymmetrically.
+!>    4. Option = 'hermitian' adds scalar hermitianally.
+!>    5. Option = 'antihermitian' adds scalar antihermitianally.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix)
+!>        The MQC matrix to update at the (i,j)th element.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn 
+!>    \verbatim
+!>        ScalarIn is Class(*)
+!>        The value to update the (i,j)th element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer 
+!>        The location of the row element in Matrix to update. If 
+!>        I is negative it is counted from the last element of 
+!>        Matrix. 
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Type(MQC_Scalar) 
+!>        The location of the column element in Matrix to update. 
+!>        If J is negative it is counted from the last element of 
+!>        Matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] Option
+!>    \verbatim
+!>        Option is Character(len=*),Optional
+!>        = 'element':       add scalar into specified element 
+!>                           only (default)
+!>        = 'symmetric':     add scalar symmetrically
+!>        = 'antisymmetric': add scalar antisymmetrically
+!>        = 'hermitian':     add scalar hermitianally
+!>        = 'antihermitian': add scalar antihermitianally.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Recursive Subroutine MQC_Matrix_Scalar_Put_IntSca(Matrix,ScalarIn,I,J,Option)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Integer,Intent(in)::I
+      Type(MQC_Scalar),Intent(in)::J
+      Class(MQC_Matrix),Intent(InOut)::Matrix
+      Class(*),Intent(In)::ScalarIn
+      Character(len=*),Optional,Intent(In)::Option
+      Integer(kind=int64)::IndI,IndJ
+      Character(len=64)::myOption
+
+      IndI = I
+      IndJ = J
+      Call MQC_Matrix_Scalar_Put_Int(Matrix,ScalarIn,IndI,IndJ,Option)
+
+      End Subroutine MQC_Matrix_Scalar_Put_IntSca
 !
 !
 !     PROCEDURE MQC_Matrix_Scalar_Put_Int
