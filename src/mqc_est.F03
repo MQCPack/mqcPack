@@ -198,8 +198,9 @@
 !>    \brief <b> Binary strings reresenting occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
-        Character(Len=64)::Order
+        Character(Len=64)::Order !lexical,ci 
         Integer(kind=int64)::NDets,NAlpStr,NBetStr
+        Type(MQC_Vector)::NSubsAlpha,NSubsBeta
       End Type MQC_Determinant
 !
 !    
@@ -10115,11 +10116,13 @@
 !>    Constructing the graph uses the following for the vertex and arc values:
 !>    Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
 !>
-!>    While the routine is set up to deal with arbitrary number of orbitals, the 
-!>    maximum number of orbitals is currently limited to the machine word size.
+!>    The routine is set up to deal with arbitrary number of active orbitals, up to 
+!>    the machine word size. It is unlikley you will need  more than this, as your 
+!>    determinant expansion will be really large. 
 !>
 !>    Optional argument NCore allows inclusion of set of always occupied orbitals
-!>    in determinant string.
+!>    in determinant string. Note that there is no limit on the number of core +
+!>    active orbitals. 
 !>
 !>    \endverbatim
 !
@@ -10186,7 +10189,7 @@
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1,String_List_2,&
         String_Node_1,String_Node_2
-      Integer(kind=int64)::New_Value
+      Integer(kind=int64)::New_Value,SubNum,Scratch
       Integer(kind=int64),Allocatable::Returned_Value
       Logical::Last
 !      
@@ -10426,10 +10429,34 @@
 
       Determinants%Strings%Alpha = Alpha_Strings
       Determinants%Strings%Beta = Beta_Strings
-      Determinants%Order = 'Lexical'
+      Determinants%Order = 'lexical'
       Determinants%NDets = NAlpha_Str*NBeta_Str 
       Determinants%NAlpStr = NAlpha_Str
       Determinants%NBetStr = NBeta_Str 
+      subNum = 0
+      call mqc_deallocate_vector(determinants%nSubsAlpha)
+      do while (.true.)
+        call determinants%nSubsAlpha%push(int(bin_coeff(nAlpha,subNum)*&
+          bin_coeff(nBasis-nAlpha,subNum)))
+        if (determinants%nSubsAlpha%at(subNum+1).ne.0) then
+          subNum = subNum + 1
+        else
+          scratch = determinants%nSubsAlpha%pop()
+          exit
+        endIf
+      endDo
+      subNum = 0
+      call mqc_deallocate_vector(determinants%nSubsBeta)
+      do while (.true.)
+        call determinants%nSubsBeta%push(int(bin_coeff(nBeta,subNum)*&
+          bin_coeff(nBasis-nBeta,subNum)))
+        if (determinants%nSubsBeta%at(subNum+1).ne.0) then
+          subNum = subNum + 1
+        else
+          scratch = determinants%nSubsBeta%pop()
+          exit
+        endIf
+      endDo
 
       Deallocate(Alpha_Strings,Beta_Strings)
 
@@ -10452,6 +10479,10 @@
 !>    TRCI_DETS_STRING is a subroutine that takes an integer array containing 
 !>    possible particle or hole indices for excitations from a reference determinant 
 !>    and converts them to alpha and beta strings in a determinant object</b>
+!>
+!>    Optional argument NCore allows inclusion of set of always occupied (core) 
+!>    orbitals in determinant string. Note that there is no limit on the number of 
+!>    core, active, or core + active orbitals. 
 !>
 !>    \endverbatim
 !
@@ -10506,6 +10537,7 @@
 !>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
+!>
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
@@ -10683,14 +10715,24 @@
         endDo
       endIf
 
-      Determinants%Strings%Alpha = Alpha_Strings
-      Determinants%Strings%Beta = Beta_Strings
-      Determinants%Order = 'Lexical'
-      Determinants%NDets = NAlpha_Str*NBeta_Str 
-      Determinants%NAlpStr = NAlpha_Str
-      Determinants%NBetStr = NBeta_Str 
+      determinants%strings%alpha = alpha_strings
+      determinants%strings%beta = beta_strings
+      determinants%order = 'ci'
+      determinants%nDets = nAlpha_str*nBeta_str 
+      determinants%nAlpStr = nAlpha_str
+      determinants%nBetStr = nBeta_str 
+      call determinants%nSubsAlpha%init(maxval(substitutions)+1,0)
+      call determinants%nSubsAlpha%put(1,1)
+      do i = 1, size(substitutions)
+        call determinants%nSubsAlpha%put(nah%at(i)*nap%at(i),substitutions(i)+1)
+      endDo
+      call determinants%nSubsBeta%init(maxval(substitutions)+1,0)
+      call determinants%nSubsBeta%put(1,1)
+      do i = 1, size(substitutions)
+        call determinants%nSubsBeta%put(nbh%at(i)*nbp%at(i),substitutions(i)+1)
+      endDo
 
-      Deallocate(Alpha_Strings,Beta_Strings)
+      deallocate(alpha_strings,beta_strings)
 !
       end subroutine TRCI_DETS_STRING
 !
@@ -10878,13 +10920,13 @@
       call beta_arr_part%init(int(nums_beta_part%sum()),int(subs%maxval()),0)
 
       arrayind=1
-      call tmpvec%init(size(subs),0)
+      call tmpvec%init(int(subs%maxval()),0)
       do i = 1,size(subs)
         call build_trci_ph_list(alpha_arr_hole,arrayind,1,nAlpha,1,int(subs%at(i)),tmpvec)
       endDo
       if(nAlpha.ne.nBeta) then
         arrayind=1
-        call tmpvec%init(size(subs),0)
+        call tmpvec%init(int(subs%maxval()),0)
         do i = 1,size(subs)
           call build_trci_ph_list(beta_arr_hole,arrayind,1,nBeta,1,int(subs%at(i)),tmpvec)
         endDo
@@ -10892,13 +10934,13 @@
         beta_arr_hole = alpha_arr_hole
       endIf
       arrayind=1
-      call tmpvec%init(size(subs),0)
+      call tmpvec%init(int(subs%maxval()),0)
       do i = 1,size(subs)
         call build_trci_ph_list(alpha_arr_part,arrayind,NAlpha+1,nBasis,1,int(subs%at(i)),tmpvec)
       endDo
       if(nAlpha.ne.nBeta) then
         arrayind=1
-        call tmpvec%init(size(subs),0)
+        call tmpvec%init(int(subs%maxval()),0)
         do i = 1,size(subs)
           call build_trci_ph_list(beta_arr_part,arrayind,NBeta+1,nBasis,1,int(subs%at(i)),tmpvec)
         endDo
@@ -15701,14 +15743,21 @@
 !>        CI_Hamiltonian is Type(MQC_Matrix)
 !>        The CI hamiltonian returned.
 !>    \endverbatim
-!
+!>
+!>    \param[in] Subs
+!>    \verbatim
+!>        Subs is Integer(kind=int64),Optional
+!>        Permitted substitutions to include in the Hamiltonian.
+!>        If not present, all substitutions are included..
+!>    \endverbatim
+!>    
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
-        MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian)
+        MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian,Subs)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
@@ -15718,35 +15767,107 @@
       Type(MQC_SCF_Integral),Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
-      Integer(kind=int64)::NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
-        R_A_String,R_B_String,L_Index,R_Index
+      Integer(kind=int64)::I,J,K,NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
+        R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
+        R_A_Start,R_B_Start,R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub
+      Integer(kind=int64),Dimension(:),Optional::Subs
 !
       If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') &
         call mqc_error_A('MQC_Build_CI_Hamiltonian only implemented for spin or spatial 2ERIs', &
         6,'MO_ERIs%type()',MO_ERIs%type())
 
+!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
       NAlpha_Str = MQC_Matrix_Rows(Determinants%Strings%Alpha)
       NBeta_Str = MQC_Matrix_Rows(Determinants%Strings%Beta)
-      NDets = NAlpha_Str * NBeta_Str 
-!
-      Call CI_Hamiltonian%init(NDets,NDets)
-!
-      Do L_A_String = 1, NAlpha_Str  
-        Do L_B_String = 1, NBeta_Str  
-          Do R_A_String = 1, NAlpha_Str  
-            Do R_B_String = 1, NBeta_Str  
-              L_Index = 1+(L_B_String-1)*NAlpha_Str+(L_A_String-1) 
-              R_Index = 1+(R_B_String-1)*NAlpha_Str+(R_A_String-1) 
-!              write(*,*) '-------------------------------------------'
-!              write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
-!              write(*,*) '-------------------------------------------'
-              Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+      If(present(subs)) then
+        NDets = 0
+        Do I = 1, Size(Subs)
+          Do J = 1, Size(Determinants%NSubsAlpha)
+            Do K = 1, Size(Determinants%NSubsBeta)
+              If((J-1)+(K-1).eq.Subs(i)) then
+                NDets = NDets + Determinants%NSubsAlpha%at(J)*&
+                  Determinants%NSubsBeta%at(K)
+              EndIf
             EndDo
           EndDo
         EndDo
-      EndDo
+      Else
+        NDets = NAlpha_Str * NBeta_Str 
+      EndIf
+!
+      Call CI_Hamiltonian%init(NDets,NDets)
+!
+      select case (Determinants%order)
+      case ('lexical')
+        Do L_A_String = 1, NAlpha_Str  
+          Do L_B_String = 1, NBeta_Str  
+            Do R_A_String = 1, NAlpha_Str  
+              Do R_B_String = 1, NBeta_Str  
+                L_Index = 1+(L_B_String-1)*NAlpha_Str+(L_A_String-1) 
+                R_Index = 1+(R_B_String-1)*NAlpha_Str+(R_A_String-1) 
+                if(L_Index.lt.R_Index) cycle
+!                write(*,*) '-------------------------------------------'
+!                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!                write(*,*) '-------------------------------------------'
+                Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                  Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                  MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+                Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
+                  R_Index,L_Index)
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      case('ci') 
+        L_Index = 0
+        L_A_Start = 1
+        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
+          L_B_Start = 1
+          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
+            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
+            If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
+            If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
+            If((L_A_Start.gt.NAlpha_Str).or.(L_B_Start.gt.NBeta_Str)) cycle
+            L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
+            L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
+            Do L_A_String = L_A_Start, L_A_End
+              Do L_B_String = L_B_Start, L_B_End
+                L_Index = L_Index + 1
+                R_Index = 0
+                R_A_Start = 1
+                Do R_A_Sub = 0, size(Determinants%NSubsAlpha)-1
+                  R_B_Start = 1
+                  Do R_B_Sub = 0, size(Determinants%NSubsBeta)-1
+                    If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle 
+                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
+                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
+                    If((R_A_Start.gt.NAlpha_Str).or.(R_B_Start.gt.NBeta_Str)) cycle
+                    R_A_End = R_A_Start + Determinants%NSubsAlpha%at(R_A_Sub+1) - 1
+                    R_B_End = R_B_Start + Determinants%NSubsBeta%at(R_B_Sub+1) - 1
+                    Do R_A_String = R_A_Start, R_A_End
+                      Do R_B_String = R_B_Start, R_B_End
+                        R_Index = R_Index + 1
+                        if(L_Index.lt.R_Index) cycle
+!                        write(*,*) '-------------------------------------------'
+!                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!                        write(*,*) '-------------------------------------------'
+                        Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                          Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                          MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+                        Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
+                          R_Index,L_Index)
+                      EndDo
+                    EndDo
+                  EndDo
+                EndDo
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+          6,'Determinants%order',Determinants%order)
+      end select
 !
       If(IPrint.ge.2) Call MQC_Print(CI_Hamiltonian,IOut,'CI Hamiltonian')
 

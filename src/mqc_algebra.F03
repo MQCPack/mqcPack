@@ -519,6 +519,12 @@
         Module Procedure MQC_VectorVectorDotProduct
       End Interface
 !
+!>    \brief <b> Returns the sum of elements in an array</b>
+      Interface Sum
+        Module Procedure MQC_Vector_Sum
+        Module Procedure MQC_Matrix_Sum
+      End Interface
+!
 !>    \brief <b> Reshapes arrays</b>
       Interface Reshape
         Module Procedure MQC_Vector_Reshape_Matrix
@@ -7767,9 +7773,11 @@
 !>
 !>    \param[in] J
 !>    \verbatim
-!>        J is Integer(kind=int64)
+!>        J is Integer(kind=int64),Optional
 !>        The location of the last subvector element in Vec. If J 
 !>        is negative it is counted from the last element of Vec.
+!>        If J is not specified, it defaults to the last element
+!>        of the vector.
 !>    \endverbatim
 !
 !     Authors:
@@ -10907,7 +10915,7 @@
       else
         temp = vector
         call mqc_deallocate_vector(vector)
-        call vector%init(mqc_length_vector(temp)+1)
+        call vector%init(mqc_length_vector(temp)+1,scalar)
         call vector%vput(temp)
         call vector%put(scalar,-1)
         call mqc_deallocate_vector(temp)
@@ -10956,15 +10964,29 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(inOut)::vector
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalar
+      type(mqc_scalar)::my_scalar
       type(mqc_vector)::temp
 !
+      select type (scalar)
+      type is (integer)
+        my_scalar = scalar
+      type is (real)
+        my_scalar = scalar
+      type is (complex)
+        my_scalar = scalar
+      type is (mqc_scalar)
+        my_scalar = scalar
+      class default
+        call mqc_error('Scalar type not defined in mqc_vector_push',6)
+      end select
+      
       if(mqc_length_vector(vector).eq.0) then
         call vector%init(1,scalar)
       else
         temp = vector
         call mqc_deallocate_vector(vector)
-        call vector%init(mqc_length_vector(temp)+1)
+        call vector%init(mqc_length_vector(temp)+1,scalar)
         call vector%vput(temp,2)
         call vector%put(scalar,1)
         call mqc_deallocate_vector(temp)
@@ -11034,7 +11056,7 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Pop is a function that removes a value from the beginning of a MQC 
+!>    MQC_Vector_Shift is a function that removes a value from the beginning of a MQC 
 !>    vector and returns it.
 !>
 !>    \endverbatim
