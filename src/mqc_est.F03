@@ -15746,7 +15746,7 @@
 !>
 !>    \param[in] Subs
 !>    \verbatim
-!>        Subs is Integer(kind=int64),Optional
+!>        Subs is Integer(kind=int64),Dimension(:),Optional
 !>        Permitted substitutions to include in the Hamiltonian.
 !>        If not present, all substitutions are included..
 !>    \endverbatim
@@ -15769,8 +15769,9 @@
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
       Integer(kind=int64)::I,J,K,NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
-        R_A_Start,R_B_Start,R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub
+        R_A_Start,R_B_Start,R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,Counter
       Integer(kind=int64),Dimension(:),Optional::Subs
+      Character(len=44)::bar=" Build Progress: ???% |                    |"
 !
       If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') &
         call mqc_error_A('MQC_Build_CI_Hamiltonian only implemented for spin or spatial 2ERIs', &
@@ -15799,6 +15800,7 @@
 !
       select case (Determinants%order)
       case ('lexical')
+        Counter = 0
         Do L_A_String = 1, NAlpha_Str  
           Do L_B_String = 1, NBeta_Str  
             Do R_A_String = 1, NAlpha_Str  
@@ -15814,6 +15816,14 @@
                   MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
                 Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
                   R_Index,L_Index)
+                Counter = Counter + 1
+                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
+                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
+                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
+                    bar(23+i:23+i) = '#'
+                  endDo
+                  write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
+                EndIf
               EndDo
             EndDo
           EndDo
@@ -15821,6 +15831,7 @@
       case('ci') 
         L_Index = 0
         L_A_Start = 1
+        Counter = 0
         Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
           L_B_Start = 1
           Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
@@ -15839,6 +15850,7 @@
                   R_B_Start = 1
                   Do R_B_Sub = 0, size(Determinants%NSubsBeta)-1
                     If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle 
+                    If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle 
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
                     If((R_A_Start.gt.NAlpha_Str).or.(R_B_Start.gt.NBeta_Str)) cycle
@@ -15856,6 +15868,14 @@
                           MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
                         Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
                           R_Index,L_Index)
+                        Counter = Counter + 1
+                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
+                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
+                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
+                            bar(23+i:23+i) = '#'
+                          endDo
+                          write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
+                        EndIf
                       EndDo
                     EndDo
                   EndDo
@@ -15866,9 +15886,10 @@
         EndDo
       case default
         call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
-          6,'Determinants%order',Determinants%order)
+          iOut,'Determinants%order',Determinants%order)
       end select
 !
+      If(iPrint.ge.1) write(iOut,*) NEW_LINE('a')
       If(IPrint.ge.2) Call MQC_Print(CI_Hamiltonian,IOut,'CI Hamiltonian')
 
       End Subroutine MQC_Build_CI_Hamiltonian
