@@ -1212,7 +1212,11 @@
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
-            if(NR.ne.0.and.myArrayNum.gt.NR) then
+!           Dipole integral arrays are stored as a single rank 3 array, so 
+!           to output them to an MQC algebra 1 object, we read them as 3
+!           rank 2 arrays. This may cause unforeseen issues with outputting
+!           MQC algebra 2 arrays.
+            if((myArrayNum.gt.N3).and.(NR.ne.0.and.myArrayNum.gt.NR)) then
               if(present(foundOut)) then
                 exit outerLoop
               else
@@ -1320,56 +1324,10 @@
             case('REAL-SYMMATRIX')
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
-
-!hph+
-        if(DEBUG) then
-          write(IOut,*)
-          write(IOut,*)' Hrant - Read in the symmetric matrix...'
-          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
-            Header='arrayTmp of OVERLAP???')
-          write(IOut,*)
-        endIf
-!hph-
-
               if(Present(matrixOut)) then
-
-!hph+
-        if(DEBUG) then
-          write(IOut,*)
-          write(IOut,*)' Hrant - matrixOut is PRESENT!'
-          write(IOut,*)
-        endIf
-!hph-
-
                 call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp)
               elseIf(Present(mqcVarOut)) then
-
-!hph+
-        if(DEBUG) then
-          write(IOut,*)
-          write(IOut,*)' Hrant - mqcVarOut is PRESENT!'
-          write(IOut,*)
-          call MQC_Print_Vector_Array_Real(IOut,arrayTmp,  &
-            Header='arrayTmp of OVERLAP???')
-          write(IOut,*)
-          call mqc_print(IOut,mqc_matrixSymm2Full(arrayTmp,'U'),  &
-            Header='Overlap again!')
-          write(IOut,*)
-        endIf
-!hph-
-
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
-
-!hph+
-        if(DEBUG) then
-          write(IOut,*)
-          call mqcVarOut%print(  &
-            header='mqcVarOut version of the overlap...')
-          write(IOut,*)
-!hph          return
-        endIf
-!hph-
-
               else
                 call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
                   6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
@@ -1392,6 +1350,18 @@
               elseIf(Present(mqcVarOut)) then
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp,'U')
                 mqcVarOut = transpose(mqcVarOut)
+              else
+                call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
+                  6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
+              endIf
+              deallocate(arrayTmp)
+            case('REAL-SYMMATRIXN')
+              allocate(arrayTmp(LR))
+              call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+              if(Present(matrixOut)) then
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)))
+              elseIf(Present(mqcVarOut)) then
+                mqcVarOut = mqc_matrixSymm2Full(arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)),'U')
               else
                 call mqc_error_l('Reading matrix from Gaussian matrix file, but NO MATRIX SENT to procedure.',  &
                   6,'Present(mqcVarOut)',Present(mqcVarOut),'Present(matrixOut)',Present(matrixOut))
@@ -1453,6 +1423,12 @@
 !             file, where first index is the row. Therefore, we need to transpose matrix file
 !             storage to the MQC lower trangular matrix after reading for correct storage. 
 !             This is only an issue for nonsymmetric matrices stored in symmetric form.
+              matrixOut = transpose(matrixOut)
+              deallocate(complexTmp)
+            case('COMPLEX-SYMMATRIXN')
+              allocate(complexTmp(LR))
+              call Rd_CBuf(fileinfo%unitNumber,NTot,LenBuf,complexTmp)
+              call MQC_Matrix_SymmMatrix_Put(matrixOut,complexTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)),'hermitian')
               matrixOut = transpose(matrixOut)
               deallocate(complexTmp)
             case('MIXED')
@@ -2939,13 +2915,17 @@
 !           'mo coefficients'    return the molecular orbital coefficients.
 !           'mo energies'        return the molecular orbital energies.
 !           'mo symmetries'      return the irreducible representation associated 
-!                                  with each molecular orbital.*
+!                                with each molecular orbital.*
 !           'core hamiltonian'   return the core hamiltonian.
 !           'fock'               return the fock matrix.
 !           'density'            return the density matrix.
 !           'scf density'        return the SCF density matrix.
 !           'overlap'            return the overlap matrix.
-!           'wavefunction'       load the wavefunction object.
+!           'dipole x'           return the x dipole AO integrals. 
+!           'dipole y'           return the y dipole AO integrals. 
+!           'dipole z'           return the z dipole AO integrals.
+!           'wavefunction'       load the wavefunction object (does not contain 
+!                                dipoles.
 !
 !     * not yet implemented
 !
@@ -3563,6 +3543,213 @@
             tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
             tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
             call mqc_integral_allocate(est_integral,'overlap','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          endIf
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case('dipole x')
+        if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (x) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole x','space',tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (x) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole x','spin',tmpMatrixAlpha, &
+              tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (x) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'dipole x','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          endIf
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case('dipole y')
+        if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=2,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (y) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole y','space',tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=2,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (y) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole y','spin',tmpMatrixAlpha, &
+              tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=2,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (y) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'dipole y','general',tmpMatrixAlpha, &
+              tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          endIf
+        else
+          call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+               'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+               'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+               'fileinfo%isGeneral()', fileinfo%isGeneral() )
+        endIf
+      case('dipole z')
+        if(fileinfo%isRestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=3,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (z) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole z','space',tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isUnrestricted()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=3,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (z) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            call mqc_integral_allocate(est_integral,'dipole z','spin',tmpMatrixAlpha, &
+              tmpMatrixAlpha)
+          endIf
+        elseIf(fileinfo%isGeneral()) then
+          call fileInfo%getArray('DIPOLE INTEGRALS',tmpMatrixAlpha,arrayNum=3,foundOut=found)
+          if(present(foundObj)) foundObj = found
+          if(.not.found) then
+            errorMsg = 'DIPOLE INTEGRALS (z) not present on file'
+            if(present(foundObj)) then
+              write(6,'(A)') errorMsg
+              call fileinfo%load()
+            else
+              call mqc_error_l(trim(errorMsg),6,'found',found)
+            endIf
+          else
+!            if(MQC_Matrix_HaveComplex(tmpMatrixAlpha)) then
+!              call mqc_matrix_symm2full(tmpMatrixAlpha,'hermitian')
+!              tmpMatrixAlpha = transpose(tmpMatrixAlpha)
+!            endIf
+            nBasis = fileInfo%getVal('nBasis')
+            call mqc_matrix_spinBlockGHF(tmpMatrixAlpha)
+            tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+            tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+            tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+            tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+            call mqc_integral_allocate(est_integral,'dipole y','general',tmpMatrixAlpha, &
               tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
           endIf
         else
@@ -4484,6 +4671,7 @@
 !           "MATRIX"          A matrix that is allocated full (M x N).
 !           "SYMMATRIX"       A symmetric/hermitian matrix.
 !           "ASYMMATRIX"      An antisymmetric/antihermitian matrix.
+!           "SYMMATRIXN"      Multiple (N) symmetric/hermitian matrix.
 !
 !     If the input flags do not uniquely identify a known array type, then this
 !     function returns "UNKNOWN".
@@ -4538,6 +4726,9 @@
       elseIf(N1.le.-1.and.N2.le.-1.and.N3.le.-1.and.N4.gt.1.and.N5.eq.1) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = &
           TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-SYMSYMR4TENSOR"
+      elseIf(N1.le.-1.and.N2.gt.1.and.N3.ge.1.and.N4.eq.1.and.N5.eq.1.and..not.ASym) then
+        MQC_Gaussian_Unformatted_Matrix_Array_Type = &
+          TRIM(MQC_Gaussian_Unformatted_Matrix_Array_Type)//"-SYMMATRIXN"
       endIf
 !
       return

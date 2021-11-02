@@ -301,6 +301,7 @@
 !>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
         Module Procedure MQC_Integral_Difference
+        Module Procedure MQC_Matrix_Integral_Difference
       End Interface
 !
 !>    \brief <b> Multiplies two variables</b>
@@ -5062,6 +5063,122 @@
       end function mqc_integral_difference
 !
 !
+!     PROCEDURE MQC_Matrix_Integral_Difference
+!
+!>    \brief <b> MQC_Matrix_Integral_Difference is used to subtract an MQC integral type 
+!>    variable from an MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Integral_Difference is used to subtract an MQC integral type variable 
+!>    from an MQC variable.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatrixA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The MQC integral variable to subtract from.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The MQC integral variable to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_matrix_integral_difference(matrixA,integralB) result(integralOut)
+!
+      implicit none
+      type(mqc_matrix),intent(in)::matrixA
+      type(mqc_scf_integral),intent(in)::integralB
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+!
+      select case (integralB%array_type)
+      case('space')
+        if(size(matrixA,1).eq.integralB%blockSize('alpha',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('alpha',2)) then
+          tmpMatrixAlpha = matrixA-integralB%alpha
+          call mqc_integral_allocate(integralOut,'','space',tmpMatrixAlpha)
+        elseIf(size(matrixA,1).eq.2*integralB%blockSize('alpha',1).and.&
+          size(matrixA,2).eq.2*integralB%blockSize('alpha',2)) then
+          tmpMatrixAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[1,integralB%blockSize('alpha',2)])&
+            -integralB%alpha
+          tmpMatrixBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[integralB%blockSize('alpha',2)+1,-1])&
+            -integralB%alpha
+          tmpMatrixAlphaBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[1,integralB%blockSize('alpha',2)])
+          tmpMatrixBetaAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[integralB%blockSize('alpha',2)+1,-1])
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        else
+          call mqc_error('matrix A and integral B in mqc_matrix_integral_difference are not conformable')
+        endIf
+      case('spin')
+        if(size(matrixA,1).eq.integralB%blockSize('alpha',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('alpha',2).and.&
+          size(matrixA,1).eq.integralB%blockSize('beta',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('beta',2)) then
+          tmpMatrixAlpha = matrixA-integralB%alpha
+          tmpMatrixBeta = matrixA-integralB%beta
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        elseIf(size(matrixA,1).eq.integralB%blockSize('alpha',1)+integralB%blockSize('beta',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('alpha',2)+integralB%blockSize('beta',2)) then
+          tmpMatrixAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[1,integralB%blockSize('alpha',2)])&
+            -integralB%alpha
+          tmpMatrixBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[integralB%blockSize('alpha',2)+1,-1])&
+            -integralB%alpha
+          tmpMatrixAlphaBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[1,integralB%blockSize('alpha',2)])
+          tmpMatrixBetaAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[integralB%blockSize('alpha',2)+1,-1])
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        else
+          call mqc_error('matrix A and integral B in mqc_matrix_integral_difference are not conformable')
+        endIf
+      case('general')
+        if(size(matrixA,1).eq.integralB%blockSize('alpha',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('alpha',2).and.&
+          size(matrixA,1).eq.integralB%blockSize('beta',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('beta',2)) then
+          tmpMatrixAlpha = matrixA-integralB%alpha
+          tmpMatrixBeta = matrixA-integralB%beta
+          tmpMatrixAlphaBeta = (-1)*integralB%alphaBeta
+          tmpMatrixBetaAlpha = (-1)*integralB%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        elseIf(size(matrixA,1).eq.integralB%blockSize('alpha',1)+integralB%blockSize('beta',1).and.&
+          size(matrixA,2).eq.integralB%blockSize('alpha',2)+integralB%blockSize('beta',2)) then
+          tmpMatrixAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[1,integralB%blockSize('alpha',2)])&
+            -integralB%alpha
+          tmpMatrixBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[integralB%blockSize('alpha',2)+1,-1])&
+            -integralB%alpha
+          tmpMatrixAlphaBeta = matrixA%mat([integralB%blockSize('alpha',1)+1,-1],[1,integralB%blockSize('alpha',2)])&
+            -integralB%alphaBeta
+          tmpMatrixBetaAlpha = matrixA%mat([1,integralB%blockSize('alpha',1)],[integralB%blockSize('alpha',2)+1,-1])&
+            -integralB%betaAlpha
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        else
+          call mqc_error('matrix A and integral B in mqc_matrix_integral_difference are not conformable')
+        endIf
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+             'integralB%array_type', integralB%array_type )
+      end select
+
+      end function mqc_matrix_integral_difference
+!
+!
 !     PROCEDURE MQC_Integral_Integral_Multiply
 !
 !>    \brief <b> MQC_Integral_Integral_Multiply is used to multiply two MQC integral
@@ -6241,7 +6358,7 @@
             ENDIF
           END DO
 
-          if(mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
+          if(mqc_matrix_haveFull(array).and.mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
         else
           rows = mqc_matrix_rows(array)
           columns = mqc_matrix_columns(array)
@@ -6274,7 +6391,7 @@
                   'mod(i,2)', mod(i,2) )
             endIf
           endDo
-          if(mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
+          if(mqc_matrix_haveFull(array).and.mqc_matrix_test_symmetric(array)) call mqc_matrix_full2Symm(array)
         end if
       class default
         call mqc_error_I('unrecognised array type in mqc_matrix_spinBlockGHF', 6)
@@ -11052,7 +11169,7 @@
 !     
 !     PROCEDURE SLATER_CONDON
 !
-!>    \brief <b> SLATER_CONDON is a function that returns the CI Hamiltonian matrix 
+!>    \brief <b> SLATER_CONDON is a function that returns an operator matrix 
 !>    element using Slater-Condon rules</b> 
 !>
 !>    \par Purpose:
@@ -11060,10 +11177,12 @@
 !>
 !>    \verbatim
 !>       
-!>    SLATER_CONDON is a function that returns the CI Hamiltonian matrix element 
-!>    value using Slater-Condon rules for a given alpha and beta string combination.
+!>    SLATER_CONDON is a function that returns an operator matrix element value
+!>    using Slater-Condon rules for a given alpha and beta string combination.
 !>    If UHF flag is set to true then Slater Condon rules are returned accounting for 
-!>    different spatial occupation of alpha and beta orbitals.
+!>    different spatial occupation of alpha and beta orbitals. Only one set of 
+!>    integrals need be present so that just the one or two particle terms, or both
+!>    one and two particle terms, can be returned.
 !>
 !>    \endverbatim
 !
@@ -11117,16 +11236,16 @@
 !>        The index of the right beta string.
 !>    \endverbatim
 !>    
-!>    \param[in] Core_Hamiltonian
+!>    \param[in] OnePartInts
 !>    \verbatim
-!>        Core_Hamiltonian is Type(MQC_SCF_Integral)
-!>        The MO basis core hamiltonian matrix.
+!>        OnePartInts is Type(MQC_SCF_Integral),Optional
+!>        The MO basis one-particle integral matrix.
 !>    \endverbatim
 !>    
-!>    \param[in] ERIs
+!>    \param[in] TwoPartInts
 !>    \verbatim
-!>        ERIs is Type(MQC_TwoERIs) 
-!>        The MO basis two-electron intregrals.
+!>        TwoPartInts is Type(MQC_TwoERIs),Optional 
+!>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
 !>    \param[in] UHF
@@ -11141,7 +11260,7 @@
 !>    \date 2016
 !
       Function Slater_Condon(IOut,IPrint,NBasisIn,Determinants,L_A_String, &
-       L_B_String,R_A_String,R_B_String,Core_Hamiltonian,ERIs,UHF) &
+       L_B_String,R_A_String,R_B_String,OnePartInts,TwoPartInts,UHF) &
        Result(MatEl)
 !
 !
@@ -11151,9 +11270,9 @@
       Integer(kind=int64),Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_SCF_Integral),Intent(In)::Core_Hamiltonian
+      Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
       Type(MQC_Determinant),Intent(In)::Determinants
-      Type(MQC_TwoERIs),Intent(In)::ERIs
+      Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
       Type(MQC_Scalar)::MatEl,Sgn
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
         II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt
@@ -11162,8 +11281,16 @@
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
       
-      If(ERIs%type().ne.'space'.and.ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
-        & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
+      If(Present(OnePartInts)) then
+        If(OnePartInts%type().ne.'space'.and.OnePartInts%type().ne.'spin') &
+          call mqc_error_A('Slater_Condon only implemented for &
+          & spin or space one-particle integrals',6,'OnePartInts%type()',OnePartInts%type())
+      EndIf
+      If(Present(TwoPartInts)) then
+        If(TwoPartInts%type().ne.'space'.and.TwoPartInts%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
+          & spin or space two-particle integrals',6,'TwoPartInts%type()',TwoPartInts%type())
+      endIf
+      If(.not.present(OnePartInts).and..not.present(TwoPartInts)) call mqc_error('No integrals given to Slater_Condon')
 
  1050 Format( A )
       NBasis = NBasisIn
@@ -11227,6 +11354,11 @@
         Return
 !
       Case(2)
+!     If we are just doing a one-particle operator, case 2 is zero
+        If(.not.present(TwoPartInts)) then
+          MatEl = Zero
+          Return
+        EndIf
 !     I am going to comment the first logical block - the rest are different
 !     perutations
 !     First we need to determine the relevant orbital, spin and determinant
@@ -11426,13 +11558,13 @@
 !           This section computes the value of the matrix element
 !
             If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
             EndIf
 !            
 !           This section changes sign accounting for the ordering of alpha and
@@ -11601,13 +11733,13 @@
             EndIf
 !
             If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
             EndIf
 !
             If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
@@ -11773,13 +11905,13 @@
               EndIf
             EndIf
             If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
             EndIf
             If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
             If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
@@ -11941,13 +12073,13 @@
               EndIf
             EndIf
             If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
             EndIf
             If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
             If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
@@ -12112,13 +12244,13 @@
               EndIf
             EndIf
             If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI1 = ERIs%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
+              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
             EndIf
             If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
             If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
@@ -12272,13 +12404,13 @@
               EndIf
             EndIf
             If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI2 = ERIs%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
+              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
             EndIf
             If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
             If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
@@ -12359,67 +12491,71 @@
 !        Write(IOut,*)'ISgn:',ISgn
 !
         MatEl = Zero
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0)) 
-!          Write(IOut,*) 'Alpha IPos:', IPos
-          If(BTest(Alpha_String_1(I),J)) then
-            If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!              Call MQC_Print(Sgn*ERIs%%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
-!                'ALPHA: UHF False and 1 and 2 same spin, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
-              If(Spin(1).eq.0.and.Spin(2).eq.0) then
-!                Call MQC_Print(Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
-!                  'ALPHA: UHF False and 1 and 2 both alpha, subtracting:')
-                MatEl = MatEl - Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+        If(Present(TwoPartInts)) then
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0)) 
+!            Write(IOut,*) 'Alpha IPos:', IPos
+            If(BTest(Alpha_String_1(I),J)) then
+              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+!                Call MQC_Print(Sgn*TwoPartInts%%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
+                If(Spin(1).eq.0.and.Spin(2).eq.0) then
+!                  Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
+!                    'ALPHA: UHF False and 1 and 2 both alpha, subtracting:')
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+                EndIf
+              ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'), iOut, &
+!                  'ALPHA: UHF True and 1 and 2 both alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha'),iOut, &
+!                  'ALPHA: UHF True and 1 and 2 both beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha')
               EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
-!                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'), iOut, &
-!                'ALPHA: UHF True and 1 and 2 both alpha, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha') - &
-                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha'),iOut, &
-!                'ALPHA: UHF True and 1 and 2 both beta, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha')
             EndIf
-          EndIf
-        EndDo
+          EndDo
 !
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0))
-          If(BTest(Beta_String_1(I),J)) then
-            If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
-!                'BETA: UHF False and 1 and 2 same spin, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
-              If(Spin(1).eq.1.and.Spin(2).eq.1) then
-!                Call MQC_Print(Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
-!                  'BETA: UHF False and 1 and 2 both beta, subtracting:')
-                MatEl = MatEl - Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0))
+            If(BTest(Beta_String_1(I),J)) then
+              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                  'BETA: UHF False and 1 and 2 same spin, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
+                If(Spin(1).eq.1.and.Spin(2).eq.1) then
+!                  Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha'),iOut, &
+!                    'BETA: UHF False and 1 and 2 both beta, subtracting:')
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'alpha')
+                EndIf
+              ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta'),iOut, &
+!                  'BETA: UHF True and 1 and 2 both alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta') 
+              ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta'),iOut, &
+!                  'BETA: UHF True and 1 and 2 both beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta')
               EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.0) then
-!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta'),iOut, &
-!                'BETA: UHF True and 1 and 2 both alpha, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta') 
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!              Call MQC_Print(Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
-!                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta'),iOut, &
-!                'BETA: UHF True and 1 and 2 both beta, adding:')
-              MatEl = MatEl + Sgn*ERIs%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
-                Sgn*ERIs%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta')
             EndIf
-          EndIf
-        EndDo
+          EndDo
+        EndIf
 !
-        If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-!          Call MQC_Print(Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
-          MatEl = MatEl + Sgn*Core_Hamiltonian%Alpha%at(Orbs(1),Orbs(2)) 
-        ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-!          Call MQC_Print(Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
-          MatEl = MatEl + Sgn*Core_Hamiltonian%Beta%at(Orbs(1),Orbs(2))
+        If(Present(OnePartInts)) then
+          If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+!            Call MQC_Print(Sgn*OnePartInts%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%Alpha%at(Orbs(1),Orbs(2)) 
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
+!            Call MQC_Print(Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2))
+          EndIf
         EndIf
         
 !        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
@@ -12428,88 +12564,93 @@
 !
       Case(0)
         MatEl = Zero
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0))
-          If(BTest(Alpha_String_1(I),J)) then
-!            Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
-!            Call MQC_Print(Core_Hamiltonian%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
-            MatEl = MatEl + Core_Hamiltonian%Alpha%at(IPos+1,IPos+1)
-          EndIf
-          If(BTest(Beta_String_1(I),J)) then
-!            Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-            If(UHF) then
-!              Call MQC_Print(Core_Hamiltonian%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
-              MatEl = MatEl + Core_Hamiltonian%Beta%at(IPos+1,IPos+1)
-            Else
-!              Call MQC_Print(Core_Hamiltonian%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
-              MatEl = MatEl + Core_Hamiltonian%Alpha%at(IPos+1,IPos+1)
-            EndIf
-          EndIf
-        EndDo
-!
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0)) 
-          Do JPos = IPos+1, NBasis-1
-            II = NBit_Ints - JPos/Bit_Size(0)
-            JJ = Mod(JPos,Bit_Size(0)) 
+        If(Present(OnePartInts)) then
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0))
             If(BTest(Alpha_String_1(I),J)) then
-              If(BTest(Alpha_String_1(II),JJ)) then 
-!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-!                Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
-!                Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
-                MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
-              EndIf
+!              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
+!              Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
+              MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
             EndIf
-          EndDo
-        EndDo
-!
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0)) 
-          Do JPos = IPos+1, NBasis-1
-            II = NBit_Ints - JPos/Bit_Size(0)
-            JJ = Mod(JPos,Bit_Size(0))
             If(BTest(Beta_String_1(I),J)) then
-              If(BTest(Beta_String_1(II),JJ)) then 
-!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                If(UHF) then
-!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
-!                  Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
-                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
-                    ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta')
-                Else
-!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
-!                  Call MQC_Print(ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
-                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - &
-                    ERIs%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
-                EndIf
+!              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
+              If(UHF) then
+!                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
+                MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
+              Else
+!                Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
+                MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
               EndIf
             EndIf
           EndDo
-        EndDo
+        EndIf
 !
-        Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
-          J = Mod(IPos,Bit_Size(0)) 
-          Do JPos = 0, NBasis-1
-            II = NBit_Ints - JPos/Bit_Size(0)
-            JJ = Mod(JPos,Bit_Size(0))
-            If(BTest(Alpha_String_1(I),J)) then
-              If(BTest(Beta_String_1(II),JJ)) then 
-!                Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                If(UHF) then
-!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
-                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
-                Else
-!                  Call MQC_Print(ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
-                  MatEl = MatEl + ERIs%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha')
+        If(Present(TwoPartInts)) then
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0)) 
+            Do JPos = IPos+1, NBasis-1
+              II = NBit_Ints - JPos/Bit_Size(0)
+              JJ = Mod(JPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(BTest(Alpha_String_1(II),JJ)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+!                  Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+!                  Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
+                  MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - &
+                    TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
                 EndIf
               EndIf
-            EndIf
+            EndDo
           EndDo
-        EndDo
+!
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0)) 
+            Do JPos = IPos+1, NBasis-1
+              II = NBit_Ints - JPos/Bit_Size(0)
+              JJ = Mod(JPos,Bit_Size(0))
+              If(BTest(Beta_String_1(I),J)) then
+                If(BTest(Beta_String_1(II),JJ)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  If(UHF) then
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
+                    MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
+                      TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta')
+                  Else
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
+                    MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - &
+                      TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha')
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+          EndDo
+!
+          Do IPos = 0, NBasis-1
+            I = NBit_Ints - IPos/Bit_Size(0)
+            J = Mod(IPos,Bit_Size(0)) 
+            Do JPos = 0, NBasis-1
+              II = NBit_Ints - JPos/Bit_Size(0)
+              JJ = Mod(JPos,Bit_Size(0))
+              If(BTest(Alpha_String_1(I),J)) then
+                If(BTest(Beta_String_1(II),JJ)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+                  If(UHF) then
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
+                    MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
+                  Else
+!                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
+                    MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha')
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+          EndDo
+        EndIf
 
 !        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
 
@@ -15682,15 +15823,17 @@
 !     PROCEDURE MQC_BUILD_CI_HAMILTONIAN
 !
 !>    \brief <b> MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI 
-!>    hamiltonian given MO integrals and determinant strings</b>
+!>    operator matrix given MO integrals and determinant strings</b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>       
-!>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI hamiltonian given 
-!>    MO integrals and determinant strings.
+!>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI operator matrix 
+!>    given MO integrals and determinant strings. The name of the routine reflects
+!>    its original purpose of returning the CI Hamiltonian matrix, but in fact it
+!>    can be used for any one, two, or one and two particle operator.
 !>
 !>    \endverbatim
 !
@@ -15722,14 +15865,14 @@
 !>    
 !>    \param[in] MO_Core_Ham
 !>    \verbatim
-!>        MO_Core_Ham is Type(MQC_SCF_Integral)
-!>        The MO basis core hamiltonian.
+!>        MO_Core_Ham is Type(MQC_SCF_Integral),Optional
+!>        The MO basis one-particle integrals.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_ERIs
 !>    \verbatim
-!>        MO_ERIs is Type(MQC_TwoERIs) 
-!>        The MO basis two-electron intregrals.
+!>        MO_ERIs is Type(MQC_TwoERIs),Optional 
+!>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
 !>    \param[in] UHF
@@ -15754,7 +15897,7 @@
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2017
+!>    \date 2017,2021
 !
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
         MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian,Subs)
@@ -15763,8 +15906,8 @@
       Integer(kind=int64),Intent(In)::IOut,IPrint
       Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasis
-      Type(MQC_TwoERIs),Intent(In)::MO_ERIs
-      Type(MQC_SCF_Integral),Intent(In)::MO_Core_Ham
+      Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
+      Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
       Integer(kind=int64)::I,J,K,NAlpha_Str,NBeta_Str,NDets,L_A_String,L_B_String, &
@@ -15773,9 +15916,16 @@
       Integer(kind=int64),Dimension(:),Optional::Subs
       Character(len=44)::bar=" Build Progress: ???% |                    |"
 !
-      If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') &
-        call mqc_error_A('MQC_Build_CI_Hamiltonian only implemented for spin or spatial 2ERIs', &
-        6,'MO_ERIs%type()',MO_ERIs%type())
+      If(Present(MO_Core_Ham)) then
+        If(MO_Core_Ham%type().ne.'space'.and.MO_Core_Ham%type().ne.'spin') &
+          call mqc_error_A('Slater_Condon only implemented for &
+          & spin or space one-particle integrals',6,'MO_Core_Ham%type()',MO_Core_Ham%type())
+      EndIf
+      If(Present(MO_ERIs)) then
+        If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
+          & spin or space two-particle integrals',6,'MO_ERIs%type()',MO_ERIs%type())
+      endIf
+      If(.not.present(MO_Core_Ham).and..not.present(MO_ERIs)) call mqc_error('No integrals given to Slater_Condon')
 
 !     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
       NAlpha_Str = MQC_Matrix_Rows(Determinants%Strings%Alpha)
@@ -15796,7 +15946,7 @@
         NDets = NAlpha_Str * NBeta_Str 
       EndIf
 !
-      Call CI_Hamiltonian%init(NDets,NDets)
+      Call CI_Hamiltonian%init(NDets,NDets,Storage='StorHerm')
 !
       select case (Determinants%order)
       case ('lexical')
@@ -15811,9 +15961,21 @@
 !                write(*,*) '-------------------------------------------'
 !                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                write(*,*) '-------------------------------------------'
-                Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                  Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                  MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+                If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                  Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                    Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                    MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+                ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+                  Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                    Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                    MO_Core_Ham,UHF=UHF),L_Index,R_Index)
+                ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                  Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                    Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                    TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index)
+                Else
+                  Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
+                EndIf
                 Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
                   R_Index,L_Index)
                 Counter = Counter + 1
@@ -15863,11 +16025,23 @@
 !                        write(*,*) '-------------------------------------------'
 !                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                        write(*,*) '-------------------------------------------'
-                        Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                          Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                          MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
-                        Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
-                          R_Index,L_Index)
+                        If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                            Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                            MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index,'hermitian')
+                        ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                            Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                            MO_Core_Ham,UHF=UHF),L_Index,R_Index,'hermitian')
+                        ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                            Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
+                            TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index,'hermitian')
+                        Else
+                          Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
+                        EndIf
+!                        Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
+!                          R_Index,L_Index)
                         Counter = Counter + 1
                         If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
                           write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
@@ -15898,26 +16072,28 @@
 !=====================================================================
 !     
 !     PROCEDURE Get_One_Gamma_Matrix
-      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,nState,determinants,ci_amplitudes,nCoreIn,nOrbsIn) Result(onePDM)
+      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,nCoreIn,nOrbsIn,Subs) Result(onePDM)
 !
 !     This function returns the CI one-particle density matrix 
 !
 !     Variable Declarations...
 !
       Implicit None
-      integer(kind=int64),intent(in)::iOut,iPrint,nState
+      integer(kind=int64),intent(in)::iOut,iPrint
       Type(MQC_Scalar),Intent(In)::NBasisIn
       Type(MQC_Determinant),Intent(In)::Determinants
-      type(mqc_matrix),intent(in)::ci_amplitudes
+      type(mqc_vector),intent(in)::ci_amplitudes
       integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
       type(mqc_matrix)::onePDM
       integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
       Type(MQC_Scalar)::Sgn,two
       Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
-        Alpha_Diff_Cnt,Beta_Diff_Cnt
+        Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,R_A_End,&
+        R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End
       integer(kind=int64),dimension(2)::orb
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
+      Integer(kind=int64),Dimension(:),Optional::Subs
 
       nBasis = nBasisIn
       two = 2.0
@@ -15935,119 +16111,179 @@
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
       call onePDM%init(nOrbs,nOrbs)
-      Do L_A_String = 1, determinants%NAlpStr
-        Do L_B_String = 1, determinants%NBetStr
-          Do R_A_String = 1, determinants%NAlpStr
-            Do R_B_String = 1, determinants%NBetStr
-              ldet = 1+(L_B_String-1)*determinants%NAlpStr+(L_A_String-1)
-              rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
-              Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
-              Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
-              Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
-              Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
-              Det_Diff = 0
-              Alpha_Diff_Cnt = 0
-              Beta_Diff_Cnt = 0
-              Do m = 1,NBit_Ints
-                Alpha_Diff(m) = IEOR(Alpha_String_1(m),Alpha_String_2(m))
-                Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(m))
-                Beta_Diff(m) = IEOR(Beta_String_1(m),Beta_String_2(m))
-                Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(m))
-              endDo
-              Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
 
-              select case (det_diff)
-              case(0)
-                Do IPos = nCore, nCore+nOrbs-1
-                  m = NBit_Ints - IPos/Bit_Size(0)
-                  n = Mod(IPos,Bit_Size(0))
-                  If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
-                    call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+two* &
-                      ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
-                      iPos+1-nCore,iPos+1-nCore)
-                  elseIf(BTest(Alpha_String_1(m),n).or.BTest(Beta_String_1(m),n)) then
-                    call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+ &
-                      ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
-                      iPos+1-nCore,iPos+1-nCore)
-                  endIf
-                endDo
-              case(1)
-                Do IPos = nCore, nCore+nOrbs-1
-                  m = NBit_Ints - IPos/Bit_Size(0)
-                  n = Mod(IPos,Bit_Size(0))
-                  If(Alpha_Diff_Cnt.eq.0) then
-                    If(BTest(Beta_Diff(m),n)) then
-                      If(BTest(Beta_String_1(m),n)) then
-                        orb(1) = IPos+1-nCore
-                      endif
-                      If(BTest(Beta_String_2(m),n)) then
-                        orb(2) = IPos+1-nCore
-                      endif
-                    endIf
-                  elseIf(Beta_Diff_Cnt.eq.0) then
-                    If(BTest(Alpha_Diff(m),n)) then
-                      If(BTest(Alpha_String_1(m),n)) then
-                        orb(1) = IPos+1-nCore
-                      endif
-                      If(BTest(Alpha_String_2(m),n)) then
-                        orb(2) = IPos+1-nCore
-                      endif
-                    endIf
-                  endIf
-                endDo
-                ISgn = 0
-                If(Orb(2)-Orb(1)-1.gt.0) then
-                  m  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
-                  n  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
-                  Do o = m, n, -1
-                    If(m.ne.o) then
-                      mm = 1
-                    Else
-                      mm = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
-                    EndIf
-                    If(n.ne.o) then
-                      nn = Bit_Size(0)
-                    Else
-                      nn = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
-                    EndIf
-                    If(Beta_Diff_Cnt.eq.0) then
-                      ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
-                    elseIf(Alpha_Diff_Cnt.eq.0) then
-                      ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
-                    endIf
+      if(present(subs).and.determinants%order.ne.'ci') &
+        call mqc_error('Truncated CI only implemented for CI order determinant strings')
+
+      if(present(subs)) then
+        L_A_Sub_End = size(Determinants%NSubsAlpha)-1
+        L_B_Sub_End = size(Determinants%NSubsBeta)-1
+        R_A_Sub_End = size(Determinants%NSubsAlpha)-1
+        R_B_Sub_End = size(Determinants%NSubsBeta)-1
+      else
+        L_A_Sub_End = 0
+        L_B_Sub_End = 0
+        R_A_Sub_End = 0
+        R_B_Sub_End = 0
+      endIf
+      ldet = 0
+      L_A_Start = 1
+      do L_A_Sub = 0, L_A_Sub_End
+        L_B_Start =1
+        do L_B_Sub = 0, L_B_Sub_End
+          If(present(Subs)) then
+            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle
+            If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
+            If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
+            If((L_A_Start.gt.determinants%NAlpStr).or.(L_B_Start.gt.determinants%NBetStr)) cycle
+            L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
+            L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
+          Else
+            L_A_End = determinants%NAlpStr
+            L_B_End = determinants%NBetStr
+          EndIf
+          Do L_A_String = L_A_Start, L_A_End 
+            Do L_B_String = L_B_Start, L_B_End 
+              If(present(subs)) then
+                ldet = ldet + 1
+              else
+                ldet = 1+(L_B_String-1)*determinants%NAlpStr+(L_A_String-1)
+              endIf
+              rdet = 0
+              R_A_Start = 1
+              do R_A_Sub = 0, R_A_Sub_End
+                R_B_Start =1
+                do R_B_Sub = 0, R_B_Sub_End
+                  If(present(Subs)) then
+                    If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle
+                    If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle
+                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
+                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
+                    If((R_A_Start.gt.determinants%NAlpStr).or.(R_B_Start.gt.determinants%NBetStr)) cycle
+                    R_A_End = R_A_Start + Determinants%NSubsAlpha%at(R_A_Sub+1) - 1
+                    R_B_End = R_B_Start + Determinants%NSubsBeta%at(R_B_Sub+1) - 1
+                  Else
+                    R_A_End = determinants%NAlpStr
+                    R_B_End = determinants%NBetStr
+                  EndIf
+                  Do R_A_String = R_A_Start, R_A_End 
+                    Do R_B_String = R_B_Start, R_B_End 
+                      If(present(subs)) then
+                        rdet = rdet + 1
+                      else
+                        rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
+                      endIf
+                      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
+                      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
+                      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
+                      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
+                      Det_Diff = 0
+                      Alpha_Diff_Cnt = 0
+                      Beta_Diff_Cnt = 0
+                      Do m = 1,NBit_Ints
+                        Alpha_Diff(m) = IEOR(Alpha_String_1(m),Alpha_String_2(m))
+                        Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(m))
+                        Beta_Diff(m) = IEOR(Beta_String_1(m),Beta_String_2(m))
+                        Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(m))
+                      endDo
+                      Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
+
+                      select case (det_diff)
+                      case(0)
+                        Do IPos = nCore, nCore+nOrbs-1
+                          m = NBit_Ints - IPos/Bit_Size(0)
+                          n = Mod(IPos,Bit_Size(0))
+                          If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
+                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+two* &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          elseIf(BTest(Alpha_String_1(m),n).or.BTest(Beta_String_1(m),n)) then
+                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+ &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          endIf
+                        endDo
+                      case(1)
+                        Do IPos = nCore, nCore+nOrbs-1
+                          m = NBit_Ints - IPos/Bit_Size(0)
+                          n = Mod(IPos,Bit_Size(0))
+                          If(Alpha_Diff_Cnt.eq.0) then
+                            If(BTest(Beta_Diff(m),n)) then
+                              If(BTest(Beta_String_1(m),n)) then
+                                orb(1) = IPos+1-nCore
+                              endif
+                              If(BTest(Beta_String_2(m),n)) then
+                                orb(2) = IPos+1-nCore
+                              endif
+                            endIf
+                          elseIf(Beta_Diff_Cnt.eq.0) then
+                            If(BTest(Alpha_Diff(m),n)) then
+                              If(BTest(Alpha_String_1(m),n)) then
+                                orb(1) = IPos+1-nCore
+                              endif
+                              If(BTest(Alpha_String_2(m),n)) then
+                                orb(2) = IPos+1-nCore
+                              endif
+                            endIf
+                          endIf
+                        endDo
+                        ISgn = 0
+                        If(Orb(2)-Orb(1)-1.gt.0) then
+                          m  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
+                          n  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
+                          Do o = m, n, -1
+                            If(m.ne.o) then
+                              mm = 1
+                            Else
+                              mm = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
+                            EndIf
+                            If(n.ne.o) then
+                              nn = Bit_Size(0)
+                            Else
+                              nn = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
+                            EndIf
+                            If(Beta_Diff_Cnt.eq.0) then
+                              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
+                            elseIf(Alpha_Diff_Cnt.eq.0) then
+                              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
+                            endIf
+                          EndDo
+                        elseIf(Orb(1)-Orb(2)-1.gt.0) then
+                          m  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
+                          n  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
+                          Do o = m, n, -1
+                            If(m.ne.o) then
+                              mm = 1
+                            Else
+                              mm = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
+                            EndIf
+                            If(n.ne.o) then
+                              nn = Bit_Size(0)
+                            Else
+                              nn = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
+                            EndIf
+                            If(Beta_Diff_Cnt.eq.0) then
+                              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
+                            elseIf(Alpha_Diff_Cnt.eq.0) then
+                              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
+                            endIf
+                          EndDo
+                        EndIf
+                        Sgn = ((-1)**ISgn)*2
+
+                        call onePDM%put(onePDM%at(orb(1),orb(2))+sgn*&
+                          conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                          orb(1),orb(2))
+
+                      case(2:)
+                        cycle
+                      case default
+                        call mqc_error_i('Confused about string differences',iOut,'det_diff',det_diff)
+                      end select
+                    EndDo
                   EndDo
-                elseIf(Orb(1)-Orb(2)-1.gt.0) then
-                  m  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
-                  n  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
-                  Do o = m, n, -1
-                    If(m.ne.o) then
-                      mm = 1
-                    Else
-                      mm = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
-                    EndIf
-                    If(n.ne.o) then
-                      nn = Bit_Size(0)
-                    Else
-                      nn = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
-                    EndIf
-                    If(Beta_Diff_Cnt.eq.0) then
-                      ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
-                    elseIf(Alpha_Diff_Cnt.eq.0) then
-                      ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
-                    endIf
-                  EndDo
-                EndIf
-                Sgn = ((-1)**ISgn)*2
-
-                call onePDM%put(onePDM%at(orb(1),orb(2))+sgn*&
-                  ci_amplitudes%at(ldet,nState)*ci_amplitudes%at(rdet,nState), &
-                  orb(1),orb(2))
-
-              case(2:)
-                cycle
-              case default
-                call mqc_error_i('Confused about string differences',iOut,'det_diff',det_diff)
-              end select
+                EndDo
+              EndDo
             EndDo
           EndDo
         EndDo
