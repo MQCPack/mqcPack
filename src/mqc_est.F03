@@ -2390,7 +2390,7 @@
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=4
 
       call string_change_case(integralType,'l',my_integralType)
 
@@ -10533,7 +10533,7 @@
         EndDo
       endIf
 !
-      If(IPrint.ge.2) then
+      If(IPrint.ge.4) then
         Write(IOut,1050) "Alpha Strings"
         Do I = 1,NAlpha_Str
           Write(IOut,1001) I,(Alpha_Strings(I,J),J=1,NBit_Ints)
@@ -10821,7 +10821,7 @@
         endDo
       endDo
 
-      if(iPrint.ge.2) then
+      if(iPrint.ge.4) then
         write(iOut,1050) "Alpha Strings"
         do i = 1,nAlpha_Str
           write(iOut,1001) i,(alpha_strings(i,j),j=1,nBit_Ints)
@@ -12758,7 +12758,7 @@
 !
       If(.not.DoON5) then
 
-        If(IPrint.ge.2) Write(IOut,2000) 
+        If(IPrint.ge.4) Write(IOut,2000) 
         Do P = 1, NBasis
           Do Q = 1, NBasis
             Do R = 1, NBasis
@@ -13076,7 +13076,7 @@
 
       ElseIf(DoON5) then
 
-        If(IPrint.ge.2) Write(IOut,3000) 
+        If(IPrint.ge.4) Write(IOut,3000) 
 
         Call X%init(NBasis,NBasis)
         Call Y%init(NBasis,NBasis)
@@ -15293,7 +15293,7 @@
           storage,'intType',intType)
       EndIf
 
-      If(IPrint.ge.2) then
+      If(IPrint.ge.4) then
         Call MQC_Print(MO_ERIs%alpha,IOut,'Transformed MO 2ERIs (aa|aa)')
         If(intType.eq.'spin'.or.intType.eq.'general') then
           Call MQC_Print(MO_ERIs%beta,IOut,'Transformed MO 2ERIs (bb|bb)')
@@ -16064,7 +16064,6 @@
       end select
 !
       If(iPrint.ge.1) write(iOut,*) NEW_LINE('a')
-      If(IPrint.ge.2) Call MQC_Print(CI_Hamiltonian,IOut,'CI Hamiltonian')
 
       End Subroutine MQC_Build_CI_Hamiltonian
 !
@@ -16288,7 +16287,6 @@
           EndDo
         EndDo
       EndDo
-      if(iPrint.ge.2) call onePDM%print(iOut,'One particle density matrix')
 
       end function get_one_gamma_matrix
 !
