@@ -551,7 +551,7 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'')
+        if(integral%hasAlpha()) call mqc_print(integral%alpha*2.0,iout,'')
       elseif(integral%array_type.eq.'spin') then
         if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
         if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
@@ -5329,10 +5329,10 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is type(mqc_scalar)
-!>        The MQC scalar type variable to multiply.
+!>        ScalarIn class(*)
+!>        The variable to multiply.
 !>    \endverbatim
 !>    
 !>    \param[in] Integral
@@ -5346,14 +5346,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_scalar_integral_multiply(scalar,integral) result(integralOut)
+      function mqc_scalar_integral_multiply(scalarIn,integral) result(integralOut)
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalarIn
 !      Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_scalar)::scalar
       Character(Len=64)::myLabel
 !
 !      if(present(label)) then
@@ -5361,6 +5362,19 @@
 !      else
         myLabel = ''
 !      endIf
+
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_scalar_integral_multiply',6)
+      end select
 
       select case (integral%array_type)
       case('space')
@@ -5408,9 +5422,9 @@
 !>        The MQC integral variable to multiply.
 !>    \endverbatim
 !>    
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is type(mqc_scalar)
+!>        ScalarIn is class(*)
 !>        The MQC scalar type variable to multiply.
 !>    \endverbatim
 !
@@ -5419,14 +5433,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_integral_scalar_multiply(integral,scalar) result(integralOut)
+      function mqc_integral_scalar_multiply(integral,scalarIn) result(integralOut)
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalarIn
 !      Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_scalar)::scalar
       Character(Len=64)::myLabel
 !
 !      if(present(label)) then
@@ -5434,6 +5449,19 @@
 !      else
         myLabel = ''
 !      endIf
+
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_integral_scalar_multiply',6)
+      end select
 
       select case (integral%array_type)
       case('space')
@@ -6608,7 +6636,7 @@
       if(integral1%blockSize('alpha',1).ne.integral2%blockSize('alpha',1)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 alpha 1 block size:',integral1%blockSize('alpha',1), &
-        'integral 2 alpha 1 block size:',integral2%blockSize('alpha,',1))
+        'integral 2 alpha 1 block size:',integral2%blockSize('alpha',1))
       if(integral1%blockSize('beta',1).ne.integral2%blockSize('beta',1)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 beta 1 block size:',integral1%blockSize('beta',1), &
@@ -6616,7 +6644,7 @@
       if(integral1%blockSize('alpha',2).ne.integral2%blockSize('alpha',2)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 alpha 2 block size:',integral1%blockSize('alpha',2), &
-        'integral 2 alpha 2 block size:',integral2%blockSize('alpha,',2))
+        'integral 2 alpha 2 block size:',integral2%blockSize('alpha',2))
       if(integral1%blockSize('beta',2).ne.integral2%blockSize('beta',2)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 beta 2 block size:',integral1%blockSize('beta',2), &
@@ -6624,7 +6652,7 @@
       output = output + contraction(integral1%alpha,integral2%alpha)
       if(integral1%type().eq.'space') then
         if(integral2%type().eq.'space') then
-          output = output%rval()*2.0
+          output = output%rval()*4.0
         elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
               output = output + contraction(integral1%alpha,integral2%beta)
         endIf
@@ -16071,7 +16099,7 @@
 !=====================================================================
 !     
 !     PROCEDURE Get_One_Gamma_Matrix
-      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,nCoreIn,nOrbsIn,Subs) Result(onePDM)
+      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,UHF,nCoreIn,nOrbsIn,Subs) Result(onePDMint)
 !
 !     This function returns the CI one-particle density matrix 
 !
@@ -16082,8 +16110,11 @@
       Type(MQC_Scalar),Intent(In)::NBasisIn
       Type(MQC_Determinant),Intent(In)::Determinants
       type(mqc_vector),intent(in)::ci_amplitudes
+      logical,intent(in)::UHF
       integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
-      type(mqc_matrix)::onePDM
+      Integer(kind=int64),Dimension(:),Optional::Subs
+      type(mqc_scf_integral)::onePDMint
+      type(mqc_matrix)::onePDMalpha,onePDMbeta
       integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
       Type(MQC_Scalar)::Sgn,two
       Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
@@ -16092,7 +16123,6 @@
       integer(kind=int64),dimension(2)::orb
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
-      Integer(kind=int64),Dimension(:),Optional::Subs
 
       nBasis = nBasisIn
       two = 2.0
@@ -16109,7 +16139,8 @@
       nBit_Ints = (nBasis/(Bit_Size(0)-1))+1
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
-      call onePDM%init(nOrbs,nOrbs)
+      call onePDMalpha%init(nOrbs,nOrbs)
+      call onePDMbeta%init(nOrbs,nOrbs)
 
       if(present(subs).and.determinants%order.ne.'ci') &
         call mqc_error('Truncated CI only implemented for CI order determinant strings')
@@ -16193,11 +16224,18 @@
                           m = NBit_Ints - IPos/Bit_Size(0)
                           n = Mod(IPos,Bit_Size(0))
                           If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
-                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+two* &
+                            call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
-                          elseIf(BTest(Alpha_String_1(m),n).or.BTest(Beta_String_1(m),n)) then
-                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+ &
+                            call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          elseIf(BTest(Alpha_String_1(m),n)) then
+                            call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          elseIf(BTest(Beta_String_1(m),n)) then
+                            call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
                           endIf
@@ -16270,9 +16308,15 @@
                         EndIf
                         Sgn = ((-1)**ISgn)*2
 
-                        call onePDM%put(onePDM%at(orb(1),orb(2))+sgn*&
-                          conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
-                          orb(1),orb(2))
+                        if(Beta_Diff_Cnt.eq.0) then
+                          call onePDMalpha%put(onePDMalpha%at(orb(1),orb(2))+sgn*&
+                            conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                            orb(1),orb(2))
+                        elseIf(Alpha_Diff_Cnt.eq.0) then
+                          call onePDMbeta%put(onePDMbeta%at(orb(1),orb(2))+sgn*&
+                            conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                            orb(1),orb(2))
+                        endIf
 
                       case(2:)
                         cycle
@@ -16287,6 +16331,12 @@
           EndDo
         EndDo
       EndDo
+
+      If(.not.UHF) then
+        call mqc_integral_allocate(onePDMint,'mo density','space',onePDMalpha)  
+      else
+        call mqc_integral_allocate(onePDMint,'mo density','spin',onePDMalpha,onePDMbeta)
+      endIf
 
       end function get_one_gamma_matrix
 !

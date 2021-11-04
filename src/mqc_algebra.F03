@@ -7063,19 +7063,33 @@
         inputString = trim(integer2character(scalarIn%ival()))
         read(inputString,myformatstring,iostat=query) tempint
         if(query.ne.0) then
-          inputString = trim(real2character(scalarIn%rval()))
-          read(inputString,myformatstring,iostat=query) tempreal
-          if(query.ne.0) then
-            inputString = trim(complex2character(scalarIn%cval()))
-            read(inputString,myformatstring,iostat=query) tempcomp
+          if(mqc_have_int(scalarIn).or.mqc_have_real(scalarIn)) then
+            inputString = trim(real2character(scalarIn%rval()))
+            read(inputString,myformatstring,iostat=query) tempreal
             if(query.ne.0) then
               call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
                 'formatString',formatString)
             else
-              scalarString = complex2character(scalarIn%cval(),myformatstring)
+              scalarString = real2character(scalarIn%rval(),myformatstring)
+            endIf
+          elseIf(mqc_have_complex(scalarIn)) then
+            inputString = trim(real2character(real(scalarIn%cval())))
+            read(inputString,myformatstring,iostat=query) tempreal
+            if(query.ne.0) then
+              call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                'formatString',formatString)
+            else
+              inputString = trim(real2character(aimag(scalarIn%cval())))
+              read(inputString,myformatstring,iostat=query) tempreal
+              if(query.ne.0) then
+                call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                  'formatString',formatString)
+              else
+                scalarString = complex2character(scalarIn%cval(),myformatstring)
+              endIf
             endIf
           else
-            scalarString = real2character(scalarIn%rval(),myformatstring)
+            call mqc_error('Scalar type unrecognized in mqcscalar2character')
           endIf
         else
           scalarString = integer2character(scalarIn%ival(),myformatstring)
