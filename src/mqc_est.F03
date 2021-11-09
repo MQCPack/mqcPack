@@ -107,6 +107,8 @@
         Procedure, Public::init => mqc_integral_initialize 
 !>      \brief <b> Diagonalizes an MQC_SCF_Integral object</b>
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+!>      \brief <b> Performs SVD on an MQC_SCF_Integral object</b>
+        Procedure, Public::svd => mqc_scf_integral_svd
 !>      \brief <b> Solves a generalized eigenvalue problem involving an 
 !>      MQC_SCF_Integral object</b>
         Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
@@ -3800,9 +3802,9 @@
           if (eigenvalues%hasAlpha().and.eigenvalues%hasBeta()) then
             if(mqc_vector_haveInteger(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroI)
-            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveReal(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroR)
-            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveComplex(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroC)
             else
               call mqc_error('unrecognized integral data type in mqc_integral_output_block')
@@ -8428,6 +8430,215 @@
       endIf
 !
       end subroutine mqc_scf_integral_diagonalize
+!
+!
+!     PROCEDURE MQC_SCF_Integral_SVD
+!
+!>    \brief <b> MQC_SCF_Integral_SVD is a subroutine that performs singular value
+!>    decomposition on a MQC integral and returns singular values and vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_SVD is a subroutine that performs singular value decomposition 
+!>    on a MQC integral and returns singular values and vectors</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral to perform SVD on. 
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_SCF_Eigenvalues),Optional
+!>        Optional MQC eigenvalues variable containing the 
+!>        singular values.
+!>    \endverbatim
+!>
+!>    \param[in,out] EUVecs
+!>    \verbatim
+!>        EUVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the U vectors.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVVecs
+!>    \verbatim
+!>        EVVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the V vectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_scf_integral_svd(integral,eVals,eUVecs,eVVecs)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scf_eigenvalues),optional,intent(inOut)::eVals
+      type(mqc_scf_integral),optional,intent(inOut)::eUVecs,eVVecs
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4,tmpMat5,tmpMat6,tmpMat7,tmpMat8
+      type(mqc_vector)::tmpVec1,tmpVec2
+      integer(kind=int64)::nDimAlpha1=0,nDimAlpha2=0,nDimBeta1=0,nDimBeta2=0
+!
+      if(integral%type().eq.'space') then
+        tmpMat1 = integral%getblock('alpha')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2,tmpMat3)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat3)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat2,eVVecs=tmpMat3)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat3)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat2)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat2)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        endIf
+      elseIf(integral%type().eq.'spin') then
+        tmpMat1 = integral%getblock('alpha')
+        tmpMat2 = integral%getblock('beta')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat3,tmpMat5)
+          call tmpMat2%svd(tmpVec2,tmpMat4,tmpMat6)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat5,tmpMat6)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat3)
+          call tmpMat2%svd(tmpVec2,tmpMat4)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat3)
+          call tmpMat2%svd(tmpVec2,eVVecs=tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat3,eVVecs=tmpMat5)
+          call tmpMat2%svd(eUVecs=tmpMat4,eVVecs=tmpMat6)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat5,tmpMat6)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat3)
+          call tmpMat2%svd(EUVecs=tmpMat4)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat3)
+          call tmpMat2%svd(EVVecs=tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat3,tmpMat4)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          call tmpMat2%svd(tmpVec2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        endIf
+      elseIf(integral%type().eq.'general') then
+        nDimAlpha1 = integral%blockSize('alpha',1) 
+        nDimAlpha2 = integral%blockSize('alpha',2) 
+        nDimBeta1 = integral%blockSize('beta',1) 
+        nDimBeta2 = integral%blockSize('beta',2) 
+        tmpMat1 = integral%getblock('full')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2,tmpMat3)
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat5 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat6 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpMat7 = tmpMat3%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat8 = tmpMat3%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat3%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat3 = tmpMat3%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat4,&
+            tmpMat2,tmpMat5,tmpMat6)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','general',tmpMat7,&
+            tmpMat3,tmpMat8,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat4 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat4 = tmpMat2%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'right singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat2,eVVecs=tmpMat3)
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat5 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat6 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpMat7 = tmpMat3%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat8 = tmpMat3%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat3%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat3 = tmpMat3%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat4,&
+            tmpMat2,tmpMat5,tmpMat6)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','general',tmpMat7,&
+            tmpMat3,tmpMat8,tmpMat1)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat4 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat4 = tmpMat2%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          call mqc_integral_allocate(eUVecs,'right singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        endIf
+      endIf
+!
+      end subroutine mqc_scf_integral_svd
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Inverse    

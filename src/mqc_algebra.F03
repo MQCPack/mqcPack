@@ -24635,6 +24635,8 @@
         det = sgn*det%cval()
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(tempC)) deallocate(tempC)
+      else
+        call mqc_error_a('Unrecognized data type in mqc_matrix_determinant',6,'a%Data_Type',a%Data_Type)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
       if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or.&
