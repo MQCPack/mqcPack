@@ -6654,7 +6654,7 @@
       output = output + contraction(integral1%alpha,integral2%alpha)
       if(integral1%type().eq.'space') then
         if(integral2%type().eq.'space') then
-          output = output%rval()*4.0
+          output = output*2.0
         elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
               output = output + contraction(integral1%alpha,integral2%beta)
         endIf
