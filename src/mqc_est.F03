@@ -107,6 +107,8 @@
         Procedure, Public::init => mqc_integral_initialize 
 !>      \brief <b> Diagonalizes an MQC_SCF_Integral object</b>
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+!>      \brief <b> Performs SVD on an MQC_SCF_Integral object</b>
+        Procedure, Public::svd => mqc_scf_integral_svd
 !>      \brief <b> Solves a generalized eigenvalue problem involving an 
 !>      MQC_SCF_Integral object</b>
         Procedure, Public::eigensys => mqc_scf_integral_generalized_eigensystem
@@ -551,7 +553,7 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'')
+        if(integral%hasAlpha()) call mqc_print(integral%alpha*2.0,iout,'')
       elseif(integral%array_type.eq.'spin') then
         if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
         if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
@@ -2390,7 +2392,7 @@
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=4
 
       call string_change_case(integralType,'l',my_integralType)
 
@@ -3800,9 +3802,9 @@
           if (eigenvalues%hasAlpha().and.eigenvalues%hasBeta()) then
             if(mqc_vector_haveInteger(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroI)
-            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+            elseif(mqc_vector_haveReal(eigenvalues%alpha).or.mqc_vector_haveReal(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroR)
-            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveInteger(eigenvalues%beta)) then
+            elseIf(mqc_vector_haveComplex(eigenvalues%alpha).or.mqc_vector_haveComplex(eigenvalues%beta)) then
               call vectorOut%init(nDimTotal,zeroC)
             else
               call mqc_error('unrecognized integral data type in mqc_integral_output_block')
@@ -5329,10 +5331,10 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is type(mqc_scalar)
-!>        The MQC scalar type variable to multiply.
+!>        ScalarIn class(*)
+!>        The variable to multiply.
 !>    \endverbatim
 !>    
 !>    \param[in] Integral
@@ -5346,14 +5348,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_scalar_integral_multiply(scalar,integral) result(integralOut)
+      function mqc_scalar_integral_multiply(scalarIn,integral) result(integralOut)
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalarIn
 !      Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_scalar)::scalar
       Character(Len=64)::myLabel
 !
 !      if(present(label)) then
@@ -5361,6 +5364,19 @@
 !      else
         myLabel = ''
 !      endIf
+
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_scalar_integral_multiply',6)
+      end select
 
       select case (integral%array_type)
       case('space')
@@ -5408,9 +5424,9 @@
 !>        The MQC integral variable to multiply.
 !>    \endverbatim
 !>    
-!>    \param[in] Scalar
+!>    \param[in] ScalarIn
 !>    \verbatim
-!>        Scalar is type(mqc_scalar)
+!>        ScalarIn is class(*)
 !>        The MQC scalar type variable to multiply.
 !>    \endverbatim
 !
@@ -5419,14 +5435,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_integral_scalar_multiply(integral,scalar) result(integralOut)
+      function mqc_integral_scalar_multiply(integral,scalarIn) result(integralOut)
 !
       implicit none
       type(mqc_scf_integral),intent(in)::integral
-      type(mqc_scalar),intent(in)::scalar
+      class(*),intent(in)::scalarIn
 !      Character(Len=*),optional,intent(in)::label
       type(mqc_scf_integral)::integralOut
       type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_scalar)::scalar
       Character(Len=64)::myLabel
 !
 !      if(present(label)) then
@@ -5434,6 +5451,19 @@
 !      else
         myLabel = ''
 !      endIf
+
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_integral_scalar_multiply',6)
+      end select
 
       select case (integral%array_type)
       case('space')
@@ -6608,7 +6638,7 @@
       if(integral1%blockSize('alpha',1).ne.integral2%blockSize('alpha',1)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 alpha 1 block size:',integral1%blockSize('alpha',1), &
-        'integral 2 alpha 1 block size:',integral2%blockSize('alpha,',1))
+        'integral 2 alpha 1 block size:',integral2%blockSize('alpha',1))
       if(integral1%blockSize('beta',1).ne.integral2%blockSize('beta',1)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 beta 1 block size:',integral1%blockSize('beta',1), &
@@ -6616,7 +6646,7 @@
       if(integral1%blockSize('alpha',2).ne.integral2%blockSize('alpha',2)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 alpha 2 block size:',integral1%blockSize('alpha',2), &
-        'integral 2 alpha 2 block size:',integral2%blockSize('alpha,',2))
+        'integral 2 alpha 2 block size:',integral2%blockSize('alpha',2))
       if(integral1%blockSize('beta',2).ne.integral2%blockSize('beta',2)) &
         call mqc_error_I('MQC_SCF_Integral_Contraction has different size inputs',6, &
         'integral 1 beta 2 block size:',integral1%blockSize('beta',2), &
@@ -6624,7 +6654,7 @@
       output = output + contraction(integral1%alpha,integral2%alpha)
       if(integral1%type().eq.'space') then
         if(integral2%type().eq.'space') then
-          output = output%rval()*2.0
+          output = output*2.0
         elseIf(integral2%type().eq.'spin'.or.integral2%type().eq.'general') then
               output = output + contraction(integral1%alpha,integral2%beta)
         endIf
@@ -8400,6 +8430,215 @@
       endIf
 !
       end subroutine mqc_scf_integral_diagonalize
+!
+!
+!     PROCEDURE MQC_SCF_Integral_SVD
+!
+!>    \brief <b> MQC_SCF_Integral_SVD is a subroutine that performs singular value
+!>    decomposition on a MQC integral and returns singular values and vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_SVD is a subroutine that performs singular value decomposition 
+!>    on a MQC integral and returns singular values and vectors</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral to perform SVD on. 
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_SCF_Eigenvalues),Optional
+!>        Optional MQC eigenvalues variable containing the 
+!>        singular values.
+!>    \endverbatim
+!>
+!>    \param[in,out] EUVecs
+!>    \verbatim
+!>        EUVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the U vectors.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVVecs
+!>    \verbatim
+!>        EVVecs is Type(MQC_SCF_Integral),Optional
+!>        Optional MQC integral containing the V vectors.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_scf_integral_svd(integral,eVals,eUVecs,eVVecs)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scf_eigenvalues),optional,intent(inOut)::eVals
+      type(mqc_scf_integral),optional,intent(inOut)::eUVecs,eVVecs
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4,tmpMat5,tmpMat6,tmpMat7,tmpMat8
+      type(mqc_vector)::tmpVec1,tmpVec2
+      integer(kind=int64)::nDimAlpha1=0,nDimAlpha2=0,nDimBeta1=0,nDimBeta2=0
+!
+      if(integral%type().eq.'space') then
+        tmpMat1 = integral%getblock('alpha')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2,tmpMat3)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat3)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat2,eVVecs=tmpMat3)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat3)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat2)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','space',tmpMat2)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat2)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','space',tmpMat2)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','space',tmpVec1)
+        endIf
+      elseIf(integral%type().eq.'spin') then
+        tmpMat1 = integral%getblock('alpha')
+        tmpMat2 = integral%getblock('beta')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat3,tmpMat5)
+          call tmpMat2%svd(tmpVec2,tmpMat4,tmpMat6)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat5,tmpMat6)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat3)
+          call tmpMat2%svd(tmpVec2,tmpMat4)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat3)
+          call tmpMat2%svd(tmpVec2,eVVecs=tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat3,eVVecs=tmpMat5)
+          call tmpMat2%svd(eUVecs=tmpMat4,eVVecs=tmpMat6)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat5,tmpMat6)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat3)
+          call tmpMat2%svd(EUVecs=tmpMat4)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','spin',tmpMat3,tmpMat4)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat3)
+          call tmpMat2%svd(EVVecs=tmpMat4)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','spin',tmpMat3,tmpMat4)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          call tmpMat2%svd(tmpVec2)
+          call mqc_eigenvalues_allocate(eVals,'singular values','spin',tmpVec1,tmpVec2)
+        endIf
+      elseIf(integral%type().eq.'general') then
+        nDimAlpha1 = integral%blockSize('alpha',1) 
+        nDimAlpha2 = integral%blockSize('alpha',2) 
+        nDimBeta1 = integral%blockSize('beta',1) 
+        nDimBeta2 = integral%blockSize('beta',2) 
+        tmpMat1 = integral%getblock('full')
+        if(present(eVals).and.present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2,tmpMat3)
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat5 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat6 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpMat7 = tmpMat3%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat8 = tmpMat3%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat3%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat3 = tmpMat3%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat4,&
+            tmpMat2,tmpMat5,tmpMat6)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','general',tmpMat7,&
+            tmpMat3,tmpMat8,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eVals).and.present(eUVecs)) then
+          call tmpMat1%svd(tmpVec1,tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat4 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eVals).and.present(eVVecs)) then
+          call tmpMat1%svd(tmpVec1,eVVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat4 = tmpMat2%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_integral_allocate(eUVecs,'right singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        elseIf(present(eUVecs).and.present(eVVecs)) then
+          call tmpMat1%svd(eUVecs=tmpMat2,eVVecs=tmpMat3)
+          tmpMat4 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat5 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat6 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          tmpMat7 = tmpMat3%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat8 = tmpMat3%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat3%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat3 = tmpMat3%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat4,&
+            tmpMat2,tmpMat5,tmpMat6)
+          call mqc_integral_allocate(eVVecs,'right singular vectors','general',tmpMat7,&
+            tmpMat3,tmpMat8,tmpMat1)
+        elseIf(present(eUVecs)) then
+          call tmpMat1%svd(EUVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha1],[1,NDimAlpha1])
+          tmpMat4 = tmpMat2%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+          call mqc_integral_allocate(eUVecs,'left singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+        elseIf(present(eVVecs)) then
+          call tmpMat1%svd(EVVecs=tmpMat2)
+          tmpMat3 = tmpMat2%mat([1,NDimAlpha2],[1,NDimAlpha2])
+          tmpMat4 = tmpMat2%mat([NDimAlpha2+1,-1],[1,NDimAlpha2])
+          tmpMat1 = tmpMat2%mat([1,NDimAlpha2],[NDimAlpha2+1,-1])
+          tmpMat2 = tmpMat2%mat([NDimAlpha2+1,-1],[NDimAlpha2+1,-1])
+          call mqc_integral_allocate(eUVecs,'right singular vectors','general',tmpMat3,&
+            tmpMat2,tmpMat4,tmpMat1)
+        elseIf(present(eVals)) then
+          call tmpMat1%svd(tmpVec1)
+          tmpVec2 = tmpVec1%vat(1,min(NDimAlpha1,NDimAlpha2))
+          tmpVec1 = tmpVec1%vat(min(NDimAlpha1,NDimAlpha2)+1,-1)
+          call mqc_eigenvalues_allocate(eVals,'singular values','general',tmpVec2,tmpVec1)
+        endIf
+      endIf
+!
+      end subroutine mqc_scf_integral_svd
 !
 !
 !     PROCEDURE MQC_SCF_Integral_Inverse    
@@ -10533,7 +10772,7 @@
         EndDo
       endIf
 !
-      If(IPrint.ge.2) then
+      If(IPrint.ge.4) then
         Write(IOut,1050) "Alpha Strings"
         Do I = 1,NAlpha_Str
           Write(IOut,1001) I,(Alpha_Strings(I,J),J=1,NBit_Ints)
@@ -10821,7 +11060,7 @@
         endDo
       endDo
 
-      if(iPrint.ge.2) then
+      if(iPrint.ge.4) then
         write(iOut,1050) "Alpha Strings"
         do i = 1,nAlpha_Str
           write(iOut,1001) i,(alpha_strings(i,j),j=1,nBit_Ints)
@@ -12758,7 +12997,7 @@
 !
       If(.not.DoON5) then
 
-        If(IPrint.ge.2) Write(IOut,2000) 
+        If(IPrint.ge.4) Write(IOut,2000) 
         Do P = 1, NBasis
           Do Q = 1, NBasis
             Do R = 1, NBasis
@@ -13076,7 +13315,7 @@
 
       ElseIf(DoON5) then
 
-        If(IPrint.ge.2) Write(IOut,3000) 
+        If(IPrint.ge.4) Write(IOut,3000) 
 
         Call X%init(NBasis,NBasis)
         Call Y%init(NBasis,NBasis)
@@ -15293,7 +15532,7 @@
           storage,'intType',intType)
       EndIf
 
-      If(IPrint.ge.2) then
+      If(IPrint.ge.4) then
         Call MQC_Print(MO_ERIs%alpha,IOut,'Transformed MO 2ERIs (aa|aa)')
         If(intType.eq.'spin'.or.intType.eq.'general') then
           Call MQC_Print(MO_ERIs%beta,IOut,'Transformed MO 2ERIs (bb|bb)')
@@ -16064,7 +16303,6 @@
       end select
 !
       If(iPrint.ge.1) write(iOut,*) NEW_LINE('a')
-      If(IPrint.ge.2) Call MQC_Print(CI_Hamiltonian,IOut,'CI Hamiltonian')
 
       End Subroutine MQC_Build_CI_Hamiltonian
 !
@@ -16072,7 +16310,7 @@
 !=====================================================================
 !     
 !     PROCEDURE Get_One_Gamma_Matrix
-      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,nCoreIn,nOrbsIn,Subs) Result(onePDM)
+      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,UHF,nCoreIn,nOrbsIn,Subs) Result(onePDMint)
 !
 !     This function returns the CI one-particle density matrix 
 !
@@ -16083,8 +16321,11 @@
       Type(MQC_Scalar),Intent(In)::NBasisIn
       Type(MQC_Determinant),Intent(In)::Determinants
       type(mqc_vector),intent(in)::ci_amplitudes
+      logical,intent(in)::UHF
       integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
-      type(mqc_matrix)::onePDM
+      Integer(kind=int64),Dimension(:),Optional::Subs
+      type(mqc_scf_integral)::onePDMint
+      type(mqc_matrix)::onePDMalpha,onePDMbeta
       integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
       Type(MQC_Scalar)::Sgn,two
       Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
@@ -16093,7 +16334,6 @@
       integer(kind=int64),dimension(2)::orb
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
-      Integer(kind=int64),Dimension(:),Optional::Subs
 
       nBasis = nBasisIn
       two = 2.0
@@ -16110,7 +16350,8 @@
       nBit_Ints = (nBasis/(Bit_Size(0)-1))+1
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
-      call onePDM%init(nOrbs,nOrbs)
+      call onePDMalpha%init(nOrbs,nOrbs)
+      call onePDMbeta%init(nOrbs,nOrbs)
 
       if(present(subs).and.determinants%order.ne.'ci') &
         call mqc_error('Truncated CI only implemented for CI order determinant strings')
@@ -16194,11 +16435,18 @@
                           m = NBit_Ints - IPos/Bit_Size(0)
                           n = Mod(IPos,Bit_Size(0))
                           If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
-                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+two* &
+                            call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
-                          elseIf(BTest(Alpha_String_1(m),n).or.BTest(Beta_String_1(m),n)) then
-                            call onePDM%put(onePDM%at(iPos+1-nCore,iPos+1-nCore)+ &
+                            call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          elseIf(BTest(Alpha_String_1(m),n)) then
+                            call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
+                              conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                              iPos+1-nCore,iPos+1-nCore)
+                          elseIf(BTest(Beta_String_1(m),n)) then
+                            call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
                           endIf
@@ -16271,9 +16519,15 @@
                         EndIf
                         Sgn = ((-1)**ISgn)*2
 
-                        call onePDM%put(onePDM%at(orb(1),orb(2))+sgn*&
-                          conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
-                          orb(1),orb(2))
+                        if(Beta_Diff_Cnt.eq.0) then
+                          call onePDMalpha%put(onePDMalpha%at(orb(1),orb(2))+sgn*&
+                            conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                            orb(1),orb(2))
+                        elseIf(Alpha_Diff_Cnt.eq.0) then
+                          call onePDMbeta%put(onePDMbeta%at(orb(1),orb(2))+sgn*&
+                            conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
+                            orb(1),orb(2))
+                        endIf
 
                       case(2:)
                         cycle
@@ -16288,7 +16542,12 @@
           EndDo
         EndDo
       EndDo
-      if(iPrint.ge.2) call onePDM%print(iOut,'One particle density matrix')
+
+      If(.not.UHF) then
+        call mqc_integral_allocate(onePDMint,'mo density','space',onePDMalpha)  
+      else
+        call mqc_integral_allocate(onePDMint,'mo density','spin',onePDMalpha,onePDMbeta)
+      endIf
 
       end function get_one_gamma_matrix
 !

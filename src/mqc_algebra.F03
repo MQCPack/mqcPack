@@ -175,8 +175,10 @@
         Procedure, Public::product => MQC_Vector_Product
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
-!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
+!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (subroutine)</b>
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
+!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (function)</b>
+        Procedure, Public::diagf => MQC_Matrix_DiagMatrix_Put_Vector_func
       End Type MQC_Vector
 !
 !     Matrices...
@@ -7061,19 +7063,33 @@
         inputString = trim(integer2character(scalarIn%ival()))
         read(inputString,myformatstring,iostat=query) tempint
         if(query.ne.0) then
-          inputString = trim(real2character(scalarIn%rval()))
-          read(inputString,myformatstring,iostat=query) tempreal
-          if(query.ne.0) then
-            inputString = trim(complex2character(scalarIn%cval()))
-            read(inputString,myformatstring,iostat=query) tempcomp
+          if(mqc_have_int(scalarIn).or.mqc_have_real(scalarIn)) then
+            inputString = trim(real2character(scalarIn%rval()))
+            read(inputString,myformatstring,iostat=query) tempreal
             if(query.ne.0) then
               call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
                 'formatString',formatString)
             else
-              scalarString = complex2character(scalarIn%cval(),myformatstring)
+              scalarString = real2character(scalarIn%rval(),myformatstring)
+            endIf
+          elseIf(mqc_have_complex(scalarIn)) then
+            inputString = trim(real2character(real(scalarIn%cval())))
+            read(inputString,myformatstring,iostat=query) tempreal
+            if(query.ne.0) then
+              call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                'formatString',formatString)
+            else
+              inputString = trim(real2character(aimag(scalarIn%cval())))
+              read(inputString,myformatstring,iostat=query) tempreal
+              if(query.ne.0) then
+                call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                  'formatString',formatString)
+              else
+                scalarString = complex2character(scalarIn%cval(),myformatstring)
+              endIf
             endIf
           else
-            scalarString = real2character(scalarIn%rval(),myformatstring)
+            call mqc_error('Scalar type unrecognized in mqcscalar2character')
           endIf
         else
           scalarString = integer2character(scalarIn%ival(),myformatstring)
@@ -13947,6 +13963,63 @@
       EndIf
 
       End Function MQC_Matrix_Matrix_At
+!
+!
+!     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector_Func 
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_Vector_Func is a function that returns a 
+!>    diagonal MQC matrix with elements defined by values in a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_Vector_Func is a function that returns a diagonal MQC 
+!>    matrix with elements defined by values in a MQC vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] DiagVectorIn
+!>    \verbatim
+!>        DiagVectorIn is class(MQC_Vector)
+!>        Name of the MQC vector to write as diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Matrix_DiagMatrix_Put_Vector_Func(diagVectorIn) result(mat)
+!
+      implicit none
+      class(MQC_Vector),intent(in)::diagVectorIn
+        type(MQC_Matrix)::mat
+!
+      integer(kind=int64)::n
+      character(len=64)::data_type 
+!
+      n = diagVectorIn%length
+      data_type = diagVectorIn%data_type
+      call MQC_Allocate_Matrix(n,n,mat,data_type,'stordiag')
+      select case (data_type)
+      case ('Integer') 
+        mat%matI(:,1) = diagVectorIn%vecI(:)
+      case ('Real') 
+        mat%matR(:,1) = diagVectorIn%vecR(:)
+      case ('Complex') 
+        mat%matC(:,1) = diagVectorIn%vecC(:)
+      case default
+        call mqc_error_A('diagVectorIn has unrecognised data type:',6,'data_type',data_type)
+      end select
+!
+      return
+      end function MQC_Matrix_DiagMatrix_Put_Vector_Func 
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector 
@@ -21852,8 +21925,8 @@
           Call MQC_Matrix_Symm2Full(Tmp1)
           mc = matmul(Tmp1%MatR,MB%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
-            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. & 
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
             (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
             MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
@@ -24562,6 +24635,8 @@
         det = sgn*det%cval()
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(tempC)) deallocate(tempC)
+      else
+        call mqc_error_a('Unrecognized data type in mqc_matrix_determinant',6,'a%Data_Type',a%Data_Type)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
       if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or.&
