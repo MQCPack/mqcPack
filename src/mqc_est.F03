@@ -93,7 +93,7 @@
         Procedure, Private::hasBeta => mqc_integral_has_beta
         Procedure, Private::hasAlphaBeta => mqc_integral_has_alphabeta
         Procedure, Private::hasBetaAlpha => mqc_integral_has_betaalpha
-        Procedure, Private::type => mqc_integral_array_type
+        Procedure, Public::type => mqc_integral_array_type
         Procedure, Private::blockSize => mqc_integral_dimension 
 !>      \brief <b> Return the label of the MQC_SCF_Integral object</b>
         Procedure, Public::getLabel => mqc_integral_array_name
