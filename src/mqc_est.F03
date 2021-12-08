@@ -553,7 +553,7 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call mqc_print(integral%alpha*2.0,iout,'Restricted type integrals printed with factor of 2.0')
+        if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
       elseif(integral%array_type.eq.'spin') then
         if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
         if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')

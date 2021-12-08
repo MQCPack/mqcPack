@@ -132,18 +132,18 @@ Complex   =          F
  -------------------------------------------------
  Nuclear Repulsion Energy (au) =       0.105835
  Initial density matrix
- Restricted type integrals printed with factor of 2.0
+ 
                   1             2
        1      0.000000      0.000000
        2      0.000000      0.000000
  Orthogonalization matrix
- Restricted type integrals printed with factor of 2.0
+ 
                   1             2
-       1      1.414290      1.414137
-       2     -1.414290      1.414137
+       1      0.707145      0.707069
+       2     -0.707145      0.707069
 Iteration:   1
  G(P)
- Restricted type integrals printed with factor of 2.0
+ 
                   1             2
        1      0.000000      0.000000
        2      0.000000      0.000000

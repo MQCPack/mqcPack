@@ -2693,7 +2693,7 @@
              'Present(est_integral)', Present(est_integral) )
         if(my_integral_type.eq.'space') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
-            matrixIn=2*est_integral%getBlock('alpha'))
+            matrixIn=est_integral%getBlock('alpha'))
         elseIf(my_integral_type.eq.'spin') then
           call fileInfo%writeArray('ALPHA SCF DENSITY MATRIX', &
             matrixIn=est_integral%getBlock('alpha'))
@@ -2712,7 +2712,7 @@
               'Present(est_integral)', Present(est_integral) )
          if(my_integral_type.eq.'space') then
            call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
-             matrixIn=2*est_integral%getBlock('alpha'))
+             matrixIn=est_integral%getBlock('alpha'))
          elseIf(my_integral_type.eq.'spin') then
            call fileInfo%writeArray('ALPHA DENSITY MATRIX', &
              matrixIn=est_integral%getBlock('alpha'))
