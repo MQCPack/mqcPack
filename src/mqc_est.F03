@@ -93,7 +93,7 @@
         Procedure, Private::hasBeta => mqc_integral_has_beta
         Procedure, Private::hasAlphaBeta => mqc_integral_has_alphabeta
         Procedure, Private::hasBetaAlpha => mqc_integral_has_betaalpha
-        Procedure, Private::type => mqc_integral_array_type
+        Procedure, Public::type => mqc_integral_array_type
         Procedure, Private::blockSize => mqc_integral_dimension 
 !>      \brief <b> Return the label of the MQC_SCF_Integral object</b>
         Procedure, Public::getLabel => mqc_integral_array_name
@@ -553,7 +553,7 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call mqc_print(integral%alpha*2.0,iout,'')
+        if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
       elseif(integral%array_type.eq.'spin') then
         if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
         if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
@@ -16327,7 +16327,7 @@
       type(mqc_scf_integral)::onePDMint
       type(mqc_matrix)::onePDMalpha,onePDMbeta
       integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
-      Type(MQC_Scalar)::Sgn,two
+      Type(MQC_Scalar)::Sgn
       Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
         Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,R_A_End,&
         R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End
@@ -16336,7 +16336,6 @@
         Beta_String_2,Alpha_Diff,Beta_Diff
 
       nBasis = nBasisIn
-      two = 2.0
       if(present(nCoreIn)) then
         nCore = nCoreIn
       else
