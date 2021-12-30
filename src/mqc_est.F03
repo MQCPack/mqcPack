@@ -16203,20 +16203,20 @@
                 If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                   Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                     Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                    MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index)
+                    MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index,'hermitian')
                 ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
                   Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                     Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                    MO_Core_Ham,UHF=UHF),L_Index,R_Index)
+                    MO_Core_Ham,UHF=UHF),L_Index,R_Index,'hermitian')
                 ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                   Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                     Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
-                    TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index)
+                    TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index,'hermitian')
                 Else
                   Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                 EndIf
-                Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
-                  R_Index,L_Index)
+!                Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
+!                  R_Index,L_Index)
                 Counter = Counter + 1
                 If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
                   write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
@@ -16516,7 +16516,7 @@
                             endIf
                           EndDo
                         EndIf
-                        Sgn = ((-1)**ISgn)*2
+                        Sgn = (-1)**ISgn
 
                         if(Beta_Diff_Cnt.eq.0) then
                           call onePDMalpha%put(onePDMalpha%at(orb(1),orb(2))+sgn*&
