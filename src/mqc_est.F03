@@ -16516,7 +16516,7 @@
                             endIf
                           EndDo
                         EndIf
-                        Sgn = ((-1)**ISgn)*2
+                        Sgn = (-1)**ISgn
 
                         if(Beta_Diff_Cnt.eq.0) then
                           call onePDMalpha%put(onePDMalpha%at(orb(1),orb(2))+sgn*&
