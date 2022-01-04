@@ -97,6 +97,8 @@
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
 !>      \brief <b> Take the square root of the MQC Scalar</b>
         Procedure, Public::sqrt => MQC_Scalar_Sqrt
+!>      \brief <b> Take the exponential of the MQC Scalar</b>
+        Procedure, Public::exp => MQC_Scalar_Exp
 !>      \brief <b> Take the natural log of the MQC Scalar</b>
         Procedure, Public::log => MQC_Scalar_Log
 !>      \brief <b> Return a random value to the MQC Scalar</b>
@@ -120,6 +122,8 @@
         Procedure, Public::size => MQC_Length_Vector
 !>      \brief <b> Initilizes the MQC Vector</b>
         Procedure, Public::init => MQC_Vector_Initialize
+!>      \brief <b> Set all elements in the MQC Vector to a specified value</b>
+        Procedure, Public::set => MQC_Vector_Set
 !>      \brief <b> Returns the norm of the MQC Vector</b>
         Procedure, Public::norm => MQC_Vector_Norm
 !>      \brief <b> Returns the transpose of the MQC Vector</b>
@@ -161,6 +165,8 @@
         Procedure, Public::sort => MQC_Vector_sort
 !>      \brief <b> Returns the square root of each element in the MQC_Vector</b>
         Procedure, Public::sqrt => MQC_Vector_Sqrt
+!>      \brief <b> Returns the exponential of the MQC Vector</b>
+        Procedure, Public::exp => MQC_Vector_Exp
 !>      \brief <b> Returns the absolute value of each element in the MQC_Vector</b>
         Procedure, Public::abs => MQC_Vector_Abs
 !>      \brief <b> Returns the sum of elements in the MQC_Vector</b>
@@ -169,8 +175,10 @@
         Procedure, Public::product => MQC_Vector_Product
 !>      \brief <b> Returns each element in the MQC_Vector raised to a specified power</b>
         Procedure, Public::power => MQC_Vector_Power
-!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector</b>
+!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (subroutine)</b>
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
+!>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (function)</b>
+        Procedure, Public::diagf => MQC_Matrix_DiagMatrix_Put_Vector_func
       End Type MQC_Vector
 !
 !     Matrices...
@@ -223,6 +231,8 @@
         Procedure, Public::rmsmax => MQC_Matrix_RMS_Max
 !>      \brief <b> Returns the square root of the MQC Matrix</b>
         Procedure, Public::sqrt => MQC_Matrix_Sqrt
+!>      \brief <b> Returns the exponential of the MQC Matrix</b>
+        Procedure, Public::exp => MQC_Matrix_Exp
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::sum => MQC_Matrix_Sum
 !>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
@@ -427,12 +437,21 @@
 !>    \brief <b> Returns the square root</b>
       Interface Sqrt
         Module Procedure MQC_Scalar_Sqrt
+        Module Procedure MQC_Vector_Sqrt_Func 
+        Module Procedure MQC_Matrix_Sqrt_Func 
+      End Interface
+!
+!>    \brief <b> Returns the exponential</b>
+      Interface Exp 
+        Module Procedure MQC_Scalar_Exp 
+        Module Procedure MQC_Vector_Exp_Func 
+        Module Procedure MQC_Matrix_Exp_Func 
       End Interface
 !
 !>    \brief <b> Takes the absolute value</b>
       Interface abs
         Module Procedure MQC_Scalar_Get_ABS_Value
-        Module Procedure MQC_Vector_Abs
+        Module Procedure MQC_Vector_Abs_Func
       End Interface 
 !
 !>    \brief <b> Takes the natural log</b>
@@ -1790,6 +1809,59 @@
 !
       Return
       End Function MQC_Scalar_Sqrt
+!
+!
+!     PROCEDURE MQC_Scalar_Exp 
+!
+!>    \brief <b> MQC_Scalar_Exp is a function used to return the exponential of 
+!>    an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Exp is a function used to return the exponential of an MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Scalar_Exp(Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Exp
+      Class(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Exp = Exp(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Exp = Exp(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Exp = Exp(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Exp = Exp(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Exp', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Exp
 !
 !
 !     PROCEDURE MQC_Scalar_Sin
@@ -6991,19 +7063,33 @@
         inputString = trim(integer2character(scalarIn%ival()))
         read(inputString,myformatstring,iostat=query) tempint
         if(query.ne.0) then
-          inputString = trim(real2character(scalarIn%rval()))
-          read(inputString,myformatstring,iostat=query) tempreal
-          if(query.ne.0) then
-            inputString = trim(complex2character(scalarIn%cval()))
-            read(inputString,myformatstring,iostat=query) tempcomp
+          if(mqc_have_int(scalarIn).or.mqc_have_real(scalarIn)) then
+            inputString = trim(real2character(scalarIn%rval()))
+            read(inputString,myformatstring,iostat=query) tempreal
             if(query.ne.0) then
               call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
                 'formatString',formatString)
             else
-              scalarString = complex2character(scalarIn%cval(),myformatstring)
+              scalarString = real2character(scalarIn%rval(),myformatstring)
+            endIf
+          elseIf(mqc_have_complex(scalarIn)) then
+            inputString = trim(real2character(real(scalarIn%cval())))
+            read(inputString,myformatstring,iostat=query) tempreal
+            if(query.ne.0) then
+              call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                'formatString',formatString)
+            else
+              inputString = trim(real2character(aimag(scalarIn%cval())))
+              read(inputString,myformatstring,iostat=query) tempreal
+              if(query.ne.0) then
+                call mqc_error_a('Badly specified format statement in mqcscalar2character',6,&
+                  'formatString',formatString)
+              else
+                scalarString = complex2character(scalarIn%cval(),myformatstring)
+              endIf
             endIf
           else
-            scalarString = real2character(scalarIn%rval(),myformatstring)
+            call mqc_error('Scalar type unrecognized in mqcscalar2character')
           endIf
         else
           scalarString = integer2character(scalarIn%ival(),myformatstring)
@@ -9012,11 +9098,11 @@
         EndIf
       ElseIf(MQC_Vector_HaveComplex(Vector1)) then
         If(MQC_Vector_HaveReal(Vector2)) then
-          MQC_VectorVectorDotProduct = dot_product(Vector1%vecc,Vector2%vecr)
+          MQC_VectorVectorDotProduct = dot_product(conjg(Vector1%vecc),Vector2%vecr)
         ElseIf(MQC_Vector_HaveInteger(Vector2)) then
-          MQC_VectorVectorDotProduct = dot_product(Vector1%vecc,Vector2%veci)
+          MQC_VectorVectorDotProduct = dot_product(conjg(Vector1%vecc),Vector2%veci)
         ElseIf(MQC_Vector_HaveComplex(Vector2)) then
-          MQC_VectorVectorDotProduct = dot_product(Vector1%vecc,Vector2%vecc)
+          MQC_VectorVectorDotProduct = dot_product(conjg(Vector1%vecc),Vector2%vecc)
         Else
           Call MQC_Error_L('Vector2In type unspecified in MQC_VectorVectorDotProduct', 6, &
                'MQC_Vector_HaveReal(Vector2)', MQC_Vector_HaveReal(Vector2), &
@@ -10045,6 +10131,93 @@
       EndIf
 
       End Subroutine MQC_Vector_Initialize
+!
+!
+!     PROCEDURE MQC_Vector_Set
+!
+!>    \brief <b> MQC_Vector_Set is a subroutine that sets an MQC vector to a value
+!>    without resizing its dimensions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Set is a subroutine that sets an MQC vector to a value without
+!>    resizing its dimensions. Optional argument scalar specifies the value to set
+!>    each element of the vector, where the default value is 0.0. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The MQC vector to set values of elements.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Vector. The default
+!>        is 0.0.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine MQC_Vector_Set(vector,scalar)
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Vector),intent(inOut)::vector
+      class(*),optional::scalar
+      integer(kind=int64)::length
+      real(kind=real64)::zero=0.0d0
+!
+      length = size(vector) 
+      if(present(scalar)) then
+        select type (scalar)
+        type is (integer)
+          call mqc_allocate_vector(length,vector,'Integer')
+          Vector%VecI = scalar
+        type is (real)
+          Call mqc_allocate_vector(length,vector,'Real')
+            Vector%VecR = scalar
+        type is (complex(kind=real64))
+            call mqc_allocate_vector(length,vector,'Complex')
+            Vector%VecC = scalar
+        Type is (MQC_Scalar)
+          If(MQC_Scalar_HaveInteger(Scalar)) then
+            Call MQC_Allocate_Vector(length,vector,'Integer')
+            Vector%VecI = Scalar%ScaI
+          ElseIf(MQC_Scalar_HaveReal(Scalar)) then
+            Call MQC_Allocate_Vector(length,vector,'Real')
+            Vector%VecR = Scalar%ScaR
+          ElseIf(MQC_Scalar_HaveComplex(Scalar)) then
+            Call MQC_Allocate_Vector(length,Vector,'Complex')
+            Vector%VecC = Scalar%ScaC
+          Else
+            Call MQC_Error_I('Unrecognized MQC scalar Type in MQC_Vector_Set', 6)
+          EndIf
+        class default
+          call mqc_error_i('scalar type not defined in MQC_Vector_Set', 6)
+        end select
+      else
+        if(Vector%Data_Type.eq.'Integer') then 
+          vector%vecI = Zero
+        elseIf(Vector%Data_Type.eq.'Real') then 
+          vector%vecR = Zero
+        elseIf(vector%Data_Type.eq.'Complex') then 
+          vector%vecC = Zero
+        endIf
+      endIf
+
+      End Subroutine MQC_Vector_Set
 !
 !
 !     PROCEDURE MQC_ScalarVectorProduct
@@ -11421,7 +11594,7 @@
 !
 !     PROCEDURE MQC_Vector_Sqrt
 !
-!>    \brief <b> MQC_Vector_Sqrt is a function that returns the square root of all
+!>    \brief <b> MQC_Vector_Sqrt is a subroutine that returns the square root of all
 !>    elements of an MQC vector</b>
 !
 !>    \par Purpose:
@@ -11429,7 +11602,7 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Sqrt is a function that returns the square root of all elements of
+!>    MQC_Vector_Sqrt is a subroutine that returns the square root of all elements of
 !>    an MQC vector.
 !>
 !>    \endverbatim
@@ -11462,9 +11635,9 @@
       end subroutine mqc_vector_sqrt
 !
 !
-!     PROCEDURE MQC_Vector_Abs
+!     PROCEDURE MQC_Vector_Exp 
 !
-!>    \brief <b> MQC_Vector_Abs is a function that returns the absolute value of all
+!>    \brief <b> MQC_Vector_Exp is a subroutine that returns the exponential of all
 !>    elements of an MQC vector</b>
 !
 !>    \par Purpose:
@@ -11472,7 +11645,7 @@
 !>
 !>    \verbatim
 !>
-!>    MQC_Vector_Abs is a function that returns the absolute value of all elements of 
+!>    MQC_Vector_Exp is a subroutine that returns the exponential of all elements of
 !>    an MQC vector.
 !>
 !>    \endverbatim
@@ -11488,9 +11661,185 @@
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2019
+!>    \date 2021
 !
-      function mqc_vector_abs(A) result(output)
+      subroutine mqc_vector_exp(A)
+!
+      Implicit None
+      class(mqc_vector),intent(inOut)::A
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      do i=1,MQC_Length_Vector(A)
+        call A%put(exp(A%at(i)),i)
+      endDo
+!
+      end subroutine mqc_vector_exp
+!
+!
+!     PROCEDURE MQC_Vector_Abs
+!
+!>    \brief <b> MQC_Vector_Abs is a subroutine that returns the absolute value of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Abs is a subroutine that returns the absolute value of all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_vector_abs(A) 
+!
+      Implicit None
+      class(mqc_vector),intent(inOut)::A
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      do i=1,MQC_Length_Vector(A)
+        call A%put(abs(A%at(i)),i)
+      endDo
+!
+      end subroutine mqc_vector_abs
+!
+!
+!     PROCEDURE MQC_Vector_Sqrt_Func
+!
+!>    \brief <b> MQC_Vector_Sqrt_func is a function that returns the square root of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Sqrt_Func is a function that returns the square root of all elements of
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_vector_sqrt_func(A) result(sqrtA)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_vector)::sqrtA
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      sqrtA = A
+      do i=1,MQC_Length_Vector(A)
+        call sqrtA%put(sqrt(sqrtA%at(i)),i)
+      endDo
+!
+      end function mqc_vector_sqrt_func
+!
+!
+!     PROCEDURE MQC_Vector_Exp_Func 
+!
+!>    \brief <b> MQC_Vector_Exp_Func is a function that returns the exponential of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Exp_Func is a function that returns the exponential of all elements of
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_vector_exp_func(A) result(expA)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A
+      type(mqc_vector)::expA
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      expA = A
+      do i=1,MQC_Length_Vector(A)
+        call expA%put(exp(expA%at(i)),i)
+      endDo
+!
+      end function mqc_vector_exp_func
+!
+!
+!     PROCEDURE MQC_Vector_Abs_func
+!
+!>    \brief <b> MQC_Vector_Abs_func is a function that returns the absolute value of all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Abs_Func is a function that returns the absolute value of all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_vector_abs_func(A) result(output)
 !
       Implicit None
       class(mqc_vector),intent(in)::A
@@ -11504,7 +11853,7 @@
         call output%put(abs(A%at(i)),i)
       endDo
 !
-      end function mqc_vector_abs
+      end function mqc_vector_abs_func
 !
 !
 !     PROCEDURE MQC_Vector_Power
@@ -12086,6 +12435,7 @@
       Real(kind=real64),Dimension(:,:),allocatable::A_EVecs
       Complex(Kind=real64),Dimension(:,:),allocatable::AC_EVecs
       Real(kind=real64),Dimension(:),allocatable::A_EVals
+      Complex(kind=real64),Dimension(:),allocatable::AC_EVals
 !
       Integer(kind=int64)::NDim,i,j,k,IError=1
       Real(kind=real64),Dimension(:),Allocatable::A_Symm,Temp_Vector
@@ -12100,14 +12450,12 @@
                'mqc_matrix_test_symmetric(A)', mqc_matrix_test_symmetric(A) )
           if (A%NRow .eq. A%NCol) then
             Allocate(A_Symm((A%NRow*(A%NRow+1))/2),Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
-            k = 0
             Do i = 1,A%NRow
               Do j = 1,i
-                k = k+1
-                A_Symm(k) = A%matR(i,j)
+                A_Symm(i+(j-1)*(2*A%NRow-j)/2) = A%matR(i,j)
               EndDo
             EndDo
-            Call DSPEV('V','U',A%NRow,A_Symm,A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
+            Call DSPEV('V','L',A%NRow,A_Symm,A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
             If(IError.ne.0) then
               call mqc_error_i('Diagonalization error: the lapack routine DSPEV failed', 6, &
                  'IError', IError )
@@ -12118,21 +12466,32 @@
                  'A%NRow', A%NRow, &
                  'A%NCol', A%NCol )
           endif
-        else if (A%storage .eq. 'StorSymm') then
-          Allocate(Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
-          call DSPEV('V','U',A%NRow,A%matR(:,1),A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
+        else if (A%storage .eq. 'StorSymm' .or. A%storage .eq. 'StorHerm') then
+          Allocate(A_Symm((A%NRow*(A%NRow+1))/2),Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
+          A_Symm = A%matR(:,1)
+          call DSPEV('V','U',A%NRow,A_Symm,A_EVals,A_EVecs,A%NRow,Temp_Vector,IError)
           If(IError.ne.0) then
             call mqc_error_I('Diagonalization error: the lapack routine DSPEV failed', 6, &
                  'IError', IError )
           endif
+          DeAllocate(A_Symm)
+        elseIf (A%storage .eq. 'StorDiag') then
+          Allocate(A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
+          A_EVals = A%matR(:,1)
+          A_EVecs = 0.0
+          Do i = 1,A%NRow
+            A_EVecs(i,i) = 1.0
+          EndDo
+        else
+          call mqc_error_a('Storage type not compatible in mqc_matrix_diag',6,'A%storage',A%storage)
         endif
         if(typeFlag.eq.'Integer') Call MQC_Matrix_Copy_Real2Int(A)
       elseIf(A%data_type.eq.'Complex') then
 
-        if(.not.mqc_matrix_test_symmetric(A,'hermitian')) call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize', &
-             6, &
-        "mqc_matrix_test_symmetric(A,'hermitian')", mqc_matrix_test_symmetric(A,'hermitian') )
         if(A%storage.eq.'StorFull') then
+          if(.not.mqc_matrix_test_symmetric(A,'hermitian')) &
+            call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize',6, &
+            "mqc_matrix_test_symmetric(A,'hermitian')",mqc_matrix_test_symmetric(A,'hermitian'))
           if (A%NRow .eq. A%NCol) then
             allocate(AC_Symm((A%NRow*(A%NRow+1))/2),TempC_Vector(Max(1,2*A%NRow-1)),Temp_Vector(Max(1,3*A%NRow-2)), &
               AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
@@ -12155,12 +12514,28 @@
                  'A%NCol', A%NCol )
           endif
         elseIf (A%storage .eq. 'StorHerm' .or. A%storage .eq. 'StorSymm') then
-          allocate(TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
-          call ZHPEV('V','U',A%NRow,A%matC(:,1),A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
+          allocate(AC_Symm((A%NRow*(A%NRow+1))/2),TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),&
+            AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
+          do i = 1,A%NRow
+            do j = 1,i
+              AC_Symm(i+(j-1)*(2*A%NRow-j)/2) = A%matC(symIndexHash(i,j),1) 
+            endDo
+          endDo
+          call ZHPEV('V','L',A%NRow,AC_Symm,A_EVals,AC_EVecs,A%NRow,TempC_Vector,Temp_Vector,IError)
           if(IError.ne.0) then
             call mqc_error_i('Diagonalization error: the lapack routine ZHPEV failed', 6, &
                  'IError', IError )
           endIf
+          deallocate(AC_Symm)
+        elseIf (A%storage .eq. 'StorDiag') then
+          Allocate(AC_EVecs(A%NRow,A%NRow),AC_EVals(A%NRow))
+          AC_EVals = A%matC(:,1)
+          AC_EVecs = 0.0
+          Do i = 1,A%NRow
+            AC_EVecs(i,i) = 1.0
+          EndDo
+        else
+          call mqc_error_a('Storage type not compatible in mqc_matrix_diag',6,'A%storage',A%storage)
         endIf
       else
         call mqc_error_A('data type not recognsed in mqc_matrix_diagonalize', 6, &
@@ -12173,13 +12548,21 @@
             call mqc_vectorPhase(A_EVecs(:,i),.True.)
           endDo
           EVecs = A_EVecs
+        elseIf(allocated(AC_EVecs)) then
+          EVecs = AC_EVecs
         endIf
-        if(allocated(AC_EVecs)) EVecs = AC_EVecs
       endIf
-      if(present(EVals)) EVals = A_EVals
+      if(present(EVals)) then
+        if(allocated(A_EVals)) then
+          EVals = A_EVals
+        elseif(allocated(AC_EVals)) then
+          EVals = AC_EVals
+        endIf
+      endIf
       if(allocated(A_EVecs)) deallocate(A_EVecs)
       if(allocated(AC_EVecs)) deallocate(AC_EVecs)
       if(allocated(A_EVals)) deallocate(A_EVals)
+      if(allocated(AC_EVals)) deallocate(AC_EVals)
       if(allocated(Temp_Vector)) deallocate(Temp_Vector)
       if(allocated(TempC_Vector)) deallocate(TempC_Vector)
 !
@@ -12905,7 +13288,7 @@
         EndIf
         L = 1
         Do Cnt = IndI, IndJ
-          If (Cnt.gt.IndK) then
+          If (Cnt.ge.IndK) then
             If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
@@ -12929,7 +13312,7 @@
         EndIf
         L = 1
         Do Cnt = IndI, IndJ
-          If (Cnt.gt.IndK) then
+          If (Cnt.ge.IndK) then
             If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
@@ -12953,7 +13336,7 @@
         EndIf
         L = 1
         Do Cnt = IndI, IndJ
-          If (Cnt.gt.IndK) then
+          If (Cnt.ge.IndK) then
             If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
@@ -12977,7 +13360,7 @@
         EndIf
         L = 1
         Do Cnt = IndI, IndJ
-          If (Cnt.gt.IndK) then
+          If (Cnt.ge.IndK) then
             If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
@@ -13236,7 +13619,7 @@
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
         Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
-      ElseIf (Mat%Storage.eq.'StorASym') then
+      ElseIf (Mat%Storage.eq.'StorAsym') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
@@ -13580,6 +13963,63 @@
       EndIf
 
       End Function MQC_Matrix_Matrix_At
+!
+!
+!     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector_Func 
+!
+!>    \brief <b> MQC_Matrix_DiagMatrix_Put_Vector_Func is a function that returns a 
+!>    diagonal MQC matrix with elements defined by values in a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>    
+!>    \verbatim
+!>
+!>    MQC_Matrix_DiagMatrix_Put_Vector_Func is a function that returns a diagonal MQC 
+!>    matrix with elements defined by values in a MQC vector.    
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!     
+!>    \param[in] DiagVectorIn
+!>    \verbatim
+!>        DiagVectorIn is class(MQC_Vector)
+!>        Name of the MQC vector to write as diagonal matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      Function MQC_Matrix_DiagMatrix_Put_Vector_Func(diagVectorIn) result(mat)
+!
+      implicit none
+      class(MQC_Vector),intent(in)::diagVectorIn
+        type(MQC_Matrix)::mat
+!
+      integer(kind=int64)::n
+      character(len=64)::data_type 
+!
+      n = diagVectorIn%length
+      data_type = diagVectorIn%data_type
+      call MQC_Allocate_Matrix(n,n,mat,data_type,'stordiag')
+      select case (data_type)
+      case ('Integer') 
+        mat%matI(:,1) = diagVectorIn%vecI(:)
+      case ('Real') 
+        mat%matR(:,1) = diagVectorIn%vecR(:)
+      case ('Complex') 
+        mat%matC(:,1) = diagVectorIn%vecC(:)
+      case default
+        call mqc_error_A('diagVectorIn has unrecognised data type:',6,'data_type',data_type)
+      end select
+!
+      return
+      end function MQC_Matrix_DiagMatrix_Put_Vector_Func 
 !
 !
 !     PROCEDURE MQC_Matrix_DiagMatrix_Put_Vector 
@@ -18436,6 +18876,11 @@
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Integer', &
             'StorFull')
       MatrixOut%MatI = ArrayIn
+      if(MQC_Matrix_Test_Diagonal(MatrixOut)) then
+        call MQC_Matrix_Full2Diag(MatrixOut)
+      elseIf(MQC_Matrix_Test_Symmetric(MatrixOut)) then
+        call MQC_Matrix_Full2Symm(MatrixOut)
+      endIf
 !
       Return
       End Subroutine MQC_Set_IntegerArray2Matrix
@@ -18486,6 +18931,11 @@
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Real', &
         'StorFull')
       MatrixOut%MatR = ArrayIn
+      if(MQC_Matrix_Test_Diagonal(MatrixOut)) then
+        call MQC_Matrix_Full2Diag(MatrixOut)
+      elseIf(MQC_Matrix_Test_Symmetric(MatrixOut)) then
+        call MQC_Matrix_Full2Symm(MatrixOut)
+      endIf
 !
       Return
       End Subroutine MQC_Set_RealArray2Matrix
@@ -18536,6 +18986,11 @@
       Call MQC_Allocate_Matrix(Size(ArrayIn,1),Size(ArrayIn,2),MatrixOut,'Complex', &
         'StorFull')
       MatrixOut%MatC = ArrayIn
+      if(MQC_Matrix_Test_Diagonal(MatrixOut)) then
+        call MQC_Matrix_Full2Diag(MatrixOut)
+      elseIf(MQC_Matrix_Test_Symmetric(MatrixOut)) then
+        call MQC_Matrix_Full2Symm(MatrixOut)
+      endIf
 !
       Return
       End Subroutine MQC_Set_ComplexArray2Matrix
@@ -21470,8 +21925,8 @@
           Call MQC_Matrix_Symm2Full(Tmp1)
           mc = matmul(Tmp1%MatR,MB%MatR)
           Call MQC_Deallocate_Matrix(Tmp1)
-        ElseIf ((MA%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. & 
-            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm') .and. &
+        ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. & 
+            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
             (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
             MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
           Call MQC_Allocate_Matrix(MA%NRow,MB%NCol,MC,'Real','StorFull')
@@ -22072,32 +22527,36 @@
           Call MQC_Deallocate_Matrix(Tmp2)
         EndIf
       ElseIf (MQC_Matrix_HaveComplex(MA) .and. MQC_Matrix_HaveComplex(MB)) then
-        Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
         If (MA%Storage.eq.'StorFull' .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           MC%MatC = MatMul(MA%MatC,MB%MatC)
         ElseIf (MA%Storage.eq.'StorFull' .and. (MB%Storage.eq.'StorSymm' .or. &
-            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
-            MB%Storage.eq.'StorAhrm')) then
+          MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+          MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf (MA%Storage.eq.'StorFull'.and.MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(MA%MatC,Tmp1%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
-            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
-            MB%Storage.eq.'StorFull') then
+          MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+           MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MA
           Call MQC_Matrix_Symm2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
-            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
-            (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
-            MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+          (MB%Storage.eq.'StorSymm' .or. MB%Storage.eq.'StorAsym' .or. &
+          MB%Storage.eq.'StorHerm' .or. MB%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -22106,8 +22565,9 @@
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
         ElseIf ((MA%Storage.eq.'StorSymm' .or. MA%Storage.eq.'StorAsym' .or. &
-            MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
-            MB%Storage.eq.'StorDiag') then
+          MA%Storage.eq.'StorHerm' .or. MA%Storage.eq.'StorAhrm') .and. &
+           MB%Storage.eq.'StorDiag') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Symm2Full(Tmp1)
@@ -22116,13 +22576,15 @@
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorFull') then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MA
           Call MQC_Matrix_Diag2Full(Tmp1)
           MC%MatC = MatMul(Tmp1%MatC,MB%MatC)
           Call MQC_Deallocate_Matrix(Tmp1)
         ElseIf (MA%Storage.eq.'StorDiag' .and. (MB%Storage.eq.'StorSymm' .or. &
-            MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
-            MA%Storage.eq.'StorAhrm')) then
+          MB%Storage.eq.'StorAsym' .or. MB%Storage.eq.'StorHerm' .or. &
+          MA%Storage.eq.'StorAhrm')) then
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorFull')
           Tmp1 = MA
           Tmp2 = MB
           Call MQC_Matrix_Diag2Full(Tmp1)
@@ -22131,13 +22593,8 @@
           Call MQC_Deallocate_Matrix(Tmp1)
           Call MQC_Deallocate_Matrix(Tmp2)
         ElseIf (MA%Storage.eq.'StorDiag' .and. MB%Storage.eq.'StorDiag') then
-          Tmp1 = MA
-          Tmp2 = MB
-          Call MQC_Matrix_Diag2Full(Tmp1)
-          Call MQC_Matrix_Diag2Full(Tmp2)
-          MC%MatC = MatMul(Tmp1%MatC,Tmp2%MatC)
-          Call MQC_Deallocate_Matrix(Tmp1)
-          Call MQC_Deallocate_Matrix(Tmp2)
+          Call MQC_Allocate_Matrix(MA%nrow,MB%ncol,MC,'Complex','StorDiag')
+          MC%MatC = MA%matC * MB%matC 
         EndIf
       EndIf
 
@@ -22434,6 +22891,7 @@
         EndIf
       ElseIf (MQC_Vector_HaveInteger(VA) .and. MQC_Matrix_HaveComplex(MB)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
+        VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecI,MB%MatC)
         ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
@@ -22447,6 +22905,7 @@
         EndIf
       ElseIf (MQC_Vector_HaveReal(VA) .and. MQC_Matrix_HaveComplex(MB)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
+        VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecR,MB%MatC)
         ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
@@ -22460,6 +22919,7 @@
         EndIf
       ElseIf (MQC_Vector_HaveComplex(VA) .and. MQC_Matrix_HaveInteger(MB)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
+        VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatI)
         ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
@@ -22473,6 +22933,7 @@
         EndIf
       ElseIf (MQC_Vector_HaveComplex(VA) .and. MQC_Matrix_HaveReal(MB)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
+        VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatR)
         ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
@@ -22486,6 +22947,7 @@
         EndIf
       ElseIf (MQC_Vector_HaveComplex(VA) .and. MQC_Matrix_HaveComplex(MB)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Complex')
+        VC = MQC_Vector_Transpose(VC)
         If (MB%Storage.eq.'StorFull') then
           VC%VecC = MatMul(VA%VecC,MB%MatC)
         ElseIf (MB%Storage.eq.'StorSymm'.or.MB%Storage.eq.'StorAsym' .or. &
@@ -22927,10 +23389,10 @@
       Call MQC_Deallocate_Matrix(Matrix_Res)
       If (Matrix%Data_Type.eq.'Integer') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
-        Matrix_Res%MatR = Comp * Matrix%MatI
+        Matrix_Res%MatC = Comp * Matrix%MatI
       Else If (Matrix%Data_Type.eq.'Real') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
-        Matrix_Res%MatR = Comp * Matrix%MatR
+        Matrix_Res%MatC = Comp * Matrix%MatR
       Else If (Matrix%Data_Type.eq.'Complex') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
         Matrix_Res%MatC = Comp * Matrix%MatC
@@ -22983,10 +23445,10 @@
       Call MQC_Deallocate_Matrix(Matrix_Res)
       If (Matrix%Data_Type.eq.'Integer') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
-        Matrix_Res%MatR = Comp * Matrix%MatI
+        Matrix_Res%MatC = Comp * Matrix%MatI
       Else If (Matrix%Data_Type.eq.'Real') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
-        Matrix_Res%MatR = Comp * Matrix%MatR
+        Matrix_Res%MatC = Comp * Matrix%MatR
       Else If (Matrix%Data_Type.eq.'Complex') then
         Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
         Matrix_Res%MatC = Comp * Matrix%MatC
@@ -23828,22 +24290,45 @@
 !>        M is Integer(kind=int64)
 !>        The number of columns to initialize Matrix.
 !>    \endverbatim
-!
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set diagonal elements of Matrix. The 
+!>        default is 1.0.
+!>    \endverbatim
+!>
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Identity(matrix,n,m)
+      Subroutine MQC_Matrix_Identity(matrix,n,m,scalar)
 !
 !     Variable Declarations.
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::matrix
-      integer(kind=int64)::n,m,i
+      integer(kind=int64),intent(in)::n,m
+      class(*),optional,intent(in)::scalar
       type(MQC_Scalar)::one
 
-      one = 1.0
+      if(present(scalar)) then
+        select type (scalar)
+        type is (integer)
+          one = scalar
+        type is (real)
+          one = scalar
+        type is (complex(kind=real64))
+          one = scalar
+        type is (mqc_scalar)
+          one = scalar
+        class default
+          call mqc_error('unrecognized scalar type in mqc_matrix_identity')
+        end select
+      else
+        one = 1.0
+      endIf
       call matrix%init(n,m,one,'StorDiag')
 
       End Subroutine MQC_Matrix_Identity
@@ -24150,6 +24635,8 @@
         det = sgn*det%cval()
         if(allocated(iPiv)) deallocate(iPiv)
         if(allocated(tempC)) deallocate(tempC)
+      else
+        call mqc_error_a('Unrecognized data type in mqc_matrix_determinant',6,'a%Data_Type',a%Data_Type)
       endIf
       if(StorFlag.eq.'StorDiag') Call MQC_Matrix_Full2Diag(a)
       if(StorFlag.eq.'StorSymm'.or.StorFlag.eq.'StorAsym'.or.&
@@ -24927,6 +25414,169 @@
       A = matmul(matmul(tmpMat,A),transpose(tmpMat))
 !
       end subroutine mqc_matrix_sqrt
+!
+!
+!     PROCEDURE MQC_Matrix_Sqrt_Func
+!
+!>    \brief <b> MQC_Matrix_Sqrt_Func is a function that returns the square root of a 
+!>    MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Sqrt_Func is a function that returns the square root of a MQC matrix.
+!>    Note that the matrix has to be symmetric or hermitian. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_matrix_sqrt_func(A) result(sqrtA)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::sqrtA,tmpMat
+      type(mqc_vector)::tmpVec
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call A%diag(tmpVec,tmpMat)
+      sqrtA = A
+      call sqrtA%set()
+      do i=1,MQC_Length_Vector(tmpVec)
+        call sqrtA%put(sqrt(tmpVec%at(i)),i,i)
+      endDo
+      sqrtA = matmul(matmul(tmpMat,sqrtA),transpose(tmpMat))
+!
+      end function mqc_matrix_sqrt_func
+!
+!
+!     PROCEDURE MQC_Matrix_Exp 
+!
+!>    \brief <b> MQC_Matrix_Exp is a subroutine that returns the exponential of a 
+!>    MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Exp is a subroutine that returns the exponential of a MQC matrix.
+!>    Note that the matrix has to be symmetric or hermitian. Optionally, eigenvalues 
+!>    and/or eigenvectors are returned.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!>
+!>    \param[in,out] EVals
+!>    \verbatim
+!>        EVals is Type(MQC_Vector),Optional
+!>        The eigenvalues of matrix A.
+!>    \endverbatim
+!>
+!>    \param[out] EVecs
+!>    \verbatim
+!>        EVecs is Type(MQC_Matrix)
+!>        The eigenvectors of matrix A.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      subroutine mqc_matrix_exp(A,eVals,eVecs)
+!
+      Implicit None
+      class(mqc_matrix),intent(inOut)::A
+      type(mqc_matrix),optional,intent(inOut)::eVecs
+      type(mqc_vector),optional,intent(inOut)::eVals
+      type(mqc_matrix)::tmpMat
+      type(mqc_vector)::tmpVec
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call A%diag(tmpVec,tmpMat)
+      if(present(eVals)) eVals = tmpVec 
+      if(present(eVecs)) eVecs = tmpMat 
+      call A%set()
+      do i=1,MQC_Length_Vector(tmpVec)
+        call A%put(exp(tmpVec%at(i)),i,i)
+      endDo
+      A = matmul(matmul(tmpMat,A),transpose(tmpMat))
+!
+      end subroutine mqc_matrix_exp
+!
+!
+!     PROCEDURE MQC_Matrix_Exp_Func 
+!
+!>    \brief <b> MQC_Matrix_Exp is a function that returns the exponential of a 
+!>    MQC matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Exp is a function that returns the exponential of a MQC matrix.
+!>    Note that the matrix has to be symmetric or hermitian.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix to evaluate.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2021
+!
+      function mqc_matrix_exp_func(A) result(expA)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      type(mqc_matrix)::expA,tmpMat
+      type(mqc_vector)::tmpVec
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      call A%diag(tmpVec,tmpMat)
+      expA = A
+      call expA%set()
+      do i=1,MQC_Length_Vector(tmpVec)
+        call expA%put(exp(tmpVec%at(i)),i,i)
+      endDo
+      expA = matmul(matmul(tmpMat,expA),transpose(tmpMat))
+!
+      end function mqc_matrix_exp_func
 !
 !
 !     PROCEDURE MQC_Givens_Matrix

@@ -536,6 +536,7 @@
 !
 !     Do the work...
 !
+      if(allocated(argument)) deallocate(argument)
       call get_command_argument(argNum,length=argLen)
       allocate(character(len=argLen)::argument)
       call get_command_argument(argNum,argument)

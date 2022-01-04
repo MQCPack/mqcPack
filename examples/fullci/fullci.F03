@@ -12,7 +12,7 @@
       implicit none
       character(len=:),allocatable::fileName
       type(mqc_gaussian_unformatted_matrix_file)::fileInfo 
-      integer(kind=int64)::iOut=6,iPrint=2
+      integer(kind=int64)::iOut=6,iPrint=4
       logical::UHF
       type(mqc_pscf_wavefunction)::wavefunction
       type(mqc_molecule_data)::moleculeInfo
@@ -75,6 +75,7 @@
 !
       call mqc_build_ci_hamiltonian(iOut,iPrint,wavefunction%nBasis,determinants, &
         mo_core_ham,mo_ERIs,UHF,CI_Hamiltonian)
+      call CI_Hamiltonian%print(iOut,'CI Hamiltonian')
 !
 !     Diagonalize Hamiltonian
 !

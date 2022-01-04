@@ -191,13 +191,14 @@ Beta Strings
  (  2,  2|  1,  2) =      0.00000000
  (  2,  2|  2,  1) =      0.00000000
  (  2,  2|  2,  2) =      0.44026964
-+Build Progress:  10% |##                  |+Build Progress:  20% |####                |+Build Progress:  30% |######              |+Build Progress:  40% |########            |+Build Progress:  50% |##########          |+Build Progress:  60% |############        |+Build Progress:  70% |##############      |+Build Progress:  80% |################    |+Build Progress:  90% |##################  |+Build Progress: 100% |####################| 
++ Build Progress:  10% |##                  |+ Build Progress:  20% |####                |+ Build Progress:  30% |######              |+ Build Progress:  40% |########            |+ Build Progress:  50% |##########          |+ Build Progress:  60% |############        |+ Build Progress:  70% |##############      |+ Build Progress:  80% |################    |+ Build Progress:  90% |##################  |+ Build Progress: 100% |####################| 
 
  CI Hamiltonian
+   The matrix being printed is hermitian
                   1             2             3             4
-       1     -0.704367      0.000000      0.000000      0.334385
-       2      0.000000     -0.704614      0.334385      0.000000
-       3      0.000000      0.334385     -0.704614      0.000000
+       1     -0.704367
+       2      0.000000     -0.704614
+       3      0.000000      0.334385     -0.704614
        4      0.334385      0.000000      0.000000     -0.704860
  CI Eigenvectors
                   1             2             3             4
