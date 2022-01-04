@@ -11010,8 +11010,8 @@
       do i = 1,size(nah)
         if(i.ne.1) arrstart = arrstart + nah%at(i-1)*nap%at(i-1)
         arrend = arrstart + nah%at(i)*nap%at(i) - 1
-        if(i.ne.1) holestart = nah%at(i-1)
-        if(i.ne.1) partstart = nap%at(i-1)
+        if(i.ne.1) holestart = sum(nah%vat(1,i-1))
+        if(i.ne.1) partstart = sum(nap%vat(1,i-1))
         do j = arrstart, arrend 
           holeInd = int((j-arrstart)/nap%at(i))+holestart+1
           partInd = mod((j-arrstart),int(nap%at(i)))+partstart+1
@@ -11038,8 +11038,8 @@
       do i = 1,size(nbh)
         if(i.ne.1) arrstart = arrstart + nbh%at(i-1)*nbp%at(i-1)
         arrend = arrstart + nbh%at(i)*nbp%at(i) - 1
-        if(i.ne.1) holestart = nbh%at(i-1)
-        if(i.ne.1) partstart = nbp%at(i-1)
+        if(i.ne.1) holestart = sum(nbh%vat(1,i-1))
+        if(i.ne.1) partstart = sum(nbp%vat(1,i-1))
         do j = arrstart, arrend 
           holeInd = int((j-arrstart)/nbp%at(i))+holestart+1
           partInd = mod((j-arrstart),int(nbp%at(i)))+partstart+1
@@ -16251,7 +16251,6 @@
                   R_B_Start = 1
                   Do R_B_Sub = 0, size(Determinants%NSubsBeta)-1
                     If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle 
-                    If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle 
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
                     If((R_A_Start.gt.NAlpha_Str).or.(R_B_Start.gt.NBeta_Str)) cycle
@@ -16264,6 +16263,7 @@
 !                        write(*,*) '-------------------------------------------'
 !                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                        write(*,*) '-------------------------------------------'
+                        If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle 
                         If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                           Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                             Determinants,L_A_String,L_B_String,R_A_String,R_B_String, &
@@ -16282,13 +16282,13 @@
 !                        Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
 !                          R_Index,L_Index)
                         Counter = Counter + 1
-                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-                            bar(23+i:23+i) = '#'
-                          endDo
-                          write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-                        EndIf
+!                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
+!                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
+!                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
+!                            bar(23+i:23+i) = '#'
+!                          endDo
+!                          write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
+!                        EndIf
                       EndDo
                     EndDo
                   EndDo
