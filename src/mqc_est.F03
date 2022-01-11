@@ -16215,16 +16215,14 @@
                 Else
                   Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                 EndIf
-!                Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
-!                  R_Index,L_Index)
                 Counter = Counter + 1
-                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-                    bar(23+i:23+i) = '#'
-                  endDo
-                  write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-                EndIf
+!                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
+!                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
+!                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
+!                    bar(23+i:23+i) = '#'
+!                  endDo
+!                  write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
+!                EndIf
               EndDo
             EndDo
           EndDo
@@ -16279,8 +16277,6 @@
                         Else
                           Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
-!                        Call CI_Hamiltonian%put(conjg(CI_Hamiltonian%at(L_Index,R_Index)),&
-!                          R_Index,L_Index)
                         Counter = Counter + 1
 !                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
 !                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
@@ -16396,7 +16392,6 @@
                 do R_B_Sub = 0, R_B_Sub_End
                   If(present(Subs)) then
                     If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle
-                    If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
                     If((R_A_Start.gt.determinants%NAlpStr).or.(R_B_Start.gt.determinants%NBetStr)) cycle
