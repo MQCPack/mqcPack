@@ -46,7 +46,20 @@ sed -e 's/lind5/l4nd5/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/numnza/n4mnza/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/numnzr/n4mnzr/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/iclear/iclea4/g' < mqc_tmp1 > mqc_tmp2
-sed -e 's/qcmatrixio/qcmatrixi4/g' < mqc_tmp2 > qcmatrixio_4.F
+sed -e 's/clean_label/clean_label4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/close_faf/closematf4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_expao/qcm_expao4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_maxinzr/qcm_maxinzr4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/rd_chbuf/rd_chbuf4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/rd_chbufi/rd_chbufi4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/rd_spa/rd_spa4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/rd_spac/rd_spac4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/wr_chbuf/wr_chbuf4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/wr_spa/wr_spa4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_numnzt/qcm_numnzt4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_numnztp/qcm_numnztp4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/close_matf/closematf4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcmatrixio/qcmatrixi4/g' < mqc_tmp1 > qcmatrixio_4.F
 
 sed -e 's/wr_libuf/wrlibuf4/g' < qcmatrix.low > mqc_tmp1
 sed -e 's/wr_lrbuf/wrlrbuf4/g' < mqc_tmp1 > mqc_tmp2
@@ -88,6 +101,10 @@ sed -e 's/lind5/l4nd5/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/numnza/n4mnza/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/numnzr/n4mnzr/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/iclear/iclea4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/expd2e/expd2e4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/pr_spa/pr_spa4/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_numnzt/qcm_numnzt4/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_numnztp/qcm_numnztp4/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/qcmatrixio/qcmatrixi4/g' < mqc_tmp2 > qcmatrix_4.F
 
 sed -e 's/wr_libuf/wrlibuf8/g' < qcmatrixio.low > mqc_tmp1
@@ -130,6 +147,18 @@ sed -e 's/lind5/l8nd5/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/numnza/n8mnza/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/numnzr/n8mnzr/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/iclear/iclea8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/clean_label/clean_label8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/close_faf/closematf8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_expao/qcm_expao8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_maxinzr/qcm_maxinzr8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/rd_chbuf/rd_chbuf8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/rd_chbufi/rd_chbufi8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/rd_spa/rd_spa8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/rd_spac/rd_spac8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/wr_chbuf/wr_chbuf8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/wr_spa/wr_spa8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_numnzt/qcm_numnzt8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_numnztp/qcm_numnztp8/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/qcmatrixio/qcmatrixi8/g' < mqc_tmp2 > qcmatrixio_8.F
 
 sed -e 's/wr_libuf/wrlibuf8/g' < qcmatrix.low > mqc_tmp1
@@ -172,9 +201,12 @@ sed -e 's/lind5/l8nd5/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/numnza/n8mnza/g' < mqc_tmp1 > mqc_tmp2
 sed -e 's/numnzr/n8mnzr/g' < mqc_tmp2 > mqc_tmp1
 sed -e 's/iclear/iclea8/g' < mqc_tmp1 > mqc_tmp2
-sed -e 's/qcmatrixio/qcmatrixi8/g' < mqc_tmp2 > qcmatrix_8.F
+sed -e 's/expd2e/expd2e8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/pr_spa/pr_spa8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/qcm_numnzt/qcm_numnzt8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcm_numnztp/qcm_numnztp8/g' < mqc_tmp1 > mqc_tmp2
+sed -e 's/close_faf/closematf8/g' < mqc_tmp2 > mqc_tmp1
+sed -e 's/qcmatrixio/qcmatrixi8/g' < mqc_tmp1 > qcmatrix_8.F
 
 rm -f mqc_tmp1 mqc_tmp2
 rm -f qcmatrixio.low qcmatrix.low
-
-
