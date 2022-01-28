@@ -167,12 +167,14 @@ Iteration:   1
        2      0.000000     -0.572516
   Orthogonal MO coefficients
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.000000      1.000000
+       1      0.000000
        2      1.000000      0.000000
  Beta Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.000000      1.000000
+       1      0.000000
        2      1.000000      0.000000
  Orbital energies
  Alpha Array
@@ -235,12 +237,14 @@ Iteration:   2
        2      0.000000     -0.132344
   Orthogonal MO coefficients
  Alpha Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.000000      1.000000
+       1      0.000000
        2      1.000000      0.000000
  Beta Array
+   The matrix being printed is symmetric
                   1             2
-       1      0.000000      1.000000
+       1      0.000000
        2      1.000000      0.000000
  Orbital energies
  Alpha Array

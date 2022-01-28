@@ -536,6 +536,7 @@
 !
 !     Do the work...
 !
+      if(allocated(argument)) deallocate(argument)
       call get_command_argument(argNum,length=argLen)
       allocate(character(len=argLen)::argument)
       call get_command_argument(argNum,argument)
@@ -558,12 +559,12 @@
       implicit none
       integer(kind=int64),intent(in)::argNum
       integer(kind=int64),intent(out)::iArgument
-      character(len=256)::argument
+      character(len=:),allocatable::argument
 !
 !     Do the work...
 !
-      call get_command_argument(argNum,argument)
-      read(argument,'(I)') iArgument
+      call mqc_get_command_argument(argNum,argument)
+      read(argument,*) iArgument
 !
       Return
       End Subroutine mqc_get_command_argument_integer
