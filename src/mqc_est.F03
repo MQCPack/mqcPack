@@ -10432,7 +10432,10 @@
         endDo
       endIf
       call SVals%power(-0.5)
-      call SVals%diag(transform_matrix_tmp)
+!hph      call mqc_error('Hrant - STOP')
+!hph      call SVals%diag(transform_matrix_tmp)
+!hph      call SVals%hphdiag(transform_matrix_tmp)
+      call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
       call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
 !

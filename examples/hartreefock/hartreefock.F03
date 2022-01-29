@@ -67,6 +67,7 @@
       call wavefunc%density_matrix%print(iOut,'Initial density matrix')
 !
 !     determine orthogonalization matrix
+
       call mqc_scf_transformation_matrix(wavefunc%overlap_matrix,Xmat,nBasUse)
       call Xmat%print(iOut,'Orthogonalization matrix')
       if(nBasUse.ne.nBasis) call mqc_error('Linear dependencies not implemented')
