@@ -177,6 +177,7 @@
         Procedure, Public::power => MQC_Vector_Power
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (subroutine)</b>
         Procedure, Public::diag => MQC_Matrix_DiagMatrix_Put_Vector
+        Procedure, Public::hphdiag => MQC_Matrix_DiagMatrix_Put_Vector
 !>      \brief <b> Returns a diagonal MQC Matrix with values specified by the MQC_Vector (function)</b>
         Procedure, Public::diagf => MQC_Matrix_DiagMatrix_Put_Vector_func
       End Type MQC_Vector
@@ -14058,11 +14059,12 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat)
+      Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat,iprint)
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
       class(MQC_Vector),intent(in)::diagVectorIn
+      integer,optional::iprint
 !
       integer(kind=int64)::n
       character(len=64)::data_type 

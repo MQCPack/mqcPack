@@ -37,114 +37,116 @@ module MQC_FullWavefunction
       Use MQC_EST
       use mqc_gaussian
       use iso_fortran_env, only: int64, real64
-!                                                                    
-!----------------------------------------------------------------    
-!                                                               |    
-!     TYPE AND CLASS DEFINITIONS                                |    
-!                                                               |    
-!----------------------------------------------------------------    
-  implicit none
 
-  ! Linked list array data type
-  type :: mqc_array_link_list_node
-     character(Len=64) :: Data_Name
-     integer(kind=int64) :: NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf
-     Logical Asym
-     character(Len=64):: Data_Type,Shape
-     character(Len=1024):: Formula
-     Real(Kind=real64),contiguous,Pointer::ArrR(:) =>null()
-     Integer(kind=int64),contiguous,Pointer::ArrI(:) =>null()
-     Complex(Kind=real64),contiguous,Pointer::ArrC(:) =>null()
-     type(mqc_array_link_list_node),pointer :: next =>null()
-  end type mqc_array_link_list_node
-
-  type :: mqc_array_link_list
-     type(mqc_array_link_list_node),pointer :: first => null()
-     type(mqc_array_link_list_node),pointer :: last => null()
-     type(mqc_array_link_list_node),pointer :: current => null()
-     integer(kind=int64),private :: length = 0
-   contains
-     procedure :: start => mqc_array_link_list_start
-     procedure :: next => mqc_array_link_list_next
-  end type mqc_array_link_list
-
-! MQC_SCF_Integral substitute
-  Type MQC_Matrix_ptr
-     Integer(kind=int64),Private::NCol=0,NRow=0
-     Character(Len=64),Private::Data_Type ! Real,Integer,Complex
-     Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
-     Real(Kind=real64),contiguous,Pointer::MatR(:) =>null()
-     Integer(kind=int64),contiguous,Pointer::MatI(:) =>null()
-     Complex(Kind=real64),contiguous,Pointer::MatC(:) =>null()
-  end type MQC_Matrix_ptr
-  Type MQC_SCF_Integral_ptr
-     Type(MQC_Matrix_ptr),Private::Alpha,Beta,AlphaBeta,BetaAlpha
-     Character(Len=64),Private::Array_Name ! See below
-     Character(Len=64),Private::Array_Type ! Space,Spin,General
-  end Type MQC_SCF_Integral_ptr
-
-  Type MQC_ALL_Wavefunction
-     Character(Len=256)::FileName,Basis,Symmetry,WF_Type
-     Character(Len=64)::LabFil
-     Character(Len=64)::GVers
-     Character(Len=64)::Title
-     Character(Len=64)::SpinType
-
-     Integer(kind=int64)::UnitNumber,IVers,NLab,NAtoms,nbasisUse,Len12L,Len4L
-     Integer(kind=int64)::IOpCl,ICGU,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB
-     Integer(kind=int64)::NPrmDB,NBTot
-     Integer(kind=int64)::NAlpha,NBeta,NElectrons,NBasis,iCharge,Multiplicity
-     Integer(kind=int64)::NCore,NVal,NActive
-     Logical Empty
+!hph+      
+!!                                                                    
+!!----------------------------------------------------------------    
+!!                                                               |    
+!!     TYPE AND CLASS DEFINITIONS                                |    
+!!                                                               |    
+!!----------------------------------------------------------------    
+!  implicit none
 !
-! These Allocatable arrays are used when reading or writing the files.
+!  ! Linked list array data type
+!  type :: mqc_array_link_list_node
+!     character(Len=64) :: Data_Name
+!     integer(kind=int64) :: NR,NI,NRI,NTot,N1,N2,N3,N4,N5,LR,LenBuf
+!     Logical Asym
+!     character(Len=64):: Data_Type,Shape
+!     character(Len=1024):: Formula
+!     Real(Kind=real64),contiguous,Pointer::ArrR(:) =>null()
+!     Integer(kind=int64),contiguous,Pointer::ArrI(:) =>null()
+!     Complex(Kind=real64),contiguous,Pointer::ArrC(:) =>null()
+!     type(mqc_array_link_list_node),pointer :: next =>null()
+!  end type mqc_array_link_list_node
 !
-     Integer(kind=int64),contiguous,Pointer::atomicNumbers(:) =>null()
-     Integer(kind=int64),contiguous,Pointer::atomTypes(:) =>null()
-     Integer(kind=int64),contiguous,Pointer::basisFunction2Atom(:) =>null()
-     INTEGER(kind=int64),contiguous,Pointer::IBasisFunctionType(:) =>null()
-     Real(kind=real64),contiguous,Pointer::atomicCharges(:) =>null()
-     Real(kind=real64),contiguous,Pointer::atomicWeights(:) =>null()
-     Real(kind=real64),contiguous,Pointer::cartesians(:) =>null()
-
-     Type(mqc_wavefunction)::est_wavefunction
-     Type(mqc_array_link_list)::Array_Data
-  End Type MQC_ALL_Wavefunction
-
-   ! Linked list node data type
-  type mqc_link_list_node
-     type(MQC_ALL_Wavefunction) :: current_wavefunction
-     type(mqc_link_list_node),pointer :: next =>null()
-  end type mqc_link_list_node
-
-  type :: mqc_link_list
-     type(mqc_link_list_node),pointer :: first => null()
-     type(mqc_link_list_node),pointer :: last => null()
-     type(mqc_link_list_node),pointer :: current => null()
-     integer(kind=int64),private :: length = 0
-   contains
-     procedure :: start => mqc_link_list_start
-     procedure :: add => mqc_link_list_add
-     procedure :: next => mqc_link_list_next
-  end type mqc_link_list
-
-  ! Linked list READONLY data type
-  type :: mqc_READONLY_list_node
-     character(Len=64) :: Data_Name
-     type(mqc_READONLY_list_node),pointer :: next =>null()
-  end type mqc_READONLY_list_node
-
-  type :: mqc_READONLY_list
-     type(mqc_READONLY_list_node),pointer :: first => null()
-     type(mqc_READONLY_list_node),pointer :: last => null()
-     type(mqc_READONLY_list_node),pointer :: current => null()
-     integer(kind=int64),private :: length = 0
-   contains
-     procedure :: start => mqc_READONLY_list_start
-     procedure :: next => mqc_READONLY_list_next
-  end type mqc_READONLY_list
-
-CONTAINS
+!  type :: mqc_array_link_list
+!     type(mqc_array_link_list_node),pointer :: first => null()
+!     type(mqc_array_link_list_node),pointer :: last => null()
+!     type(mqc_array_link_list_node),pointer :: current => null()
+!     integer(kind=int64),private :: length = 0
+!   contains
+!     procedure :: start => mqc_array_link_list_start
+!     procedure :: next => mqc_array_link_list_next
+!  end type mqc_array_link_list
+!
+!! MQC_SCF_Integral substitute
+!  Type MQC_Matrix_ptr
+!     Integer(kind=int64),Private::NCol=0,NRow=0
+!     Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+!     Character(Len=64),Private::Storage ! StorFull,StorSymm,StorDiag,StorTriD
+!     Real(Kind=real64),contiguous,Pointer::MatR(:) =>null()
+!     Integer(kind=int64),contiguous,Pointer::MatI(:) =>null()
+!     Complex(Kind=real64),contiguous,Pointer::MatC(:) =>null()
+!  end type MQC_Matrix_ptr
+!  Type MQC_SCF_Integral_ptr
+!     Type(MQC_Matrix_ptr),Private::Alpha,Beta,AlphaBeta,BetaAlpha
+!     Character(Len=64),Private::Array_Name ! See below
+!     Character(Len=64),Private::Array_Type ! Space,Spin,General
+!  end Type MQC_SCF_Integral_ptr
+!
+!  Type MQC_ALL_Wavefunction
+!     Character(Len=256)::FileName,Basis,Symmetry,WF_Type
+!     Character(Len=64)::LabFil
+!     Character(Len=64)::GVers
+!     Character(Len=64)::Title
+!     Character(Len=64)::SpinType
+!
+!     Integer(kind=int64)::UnitNumber,IVers,NLab,NAtoms,nbasisUse,Len12L,Len4L
+!     Integer(kind=int64)::IOpCl,ICGU,NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB
+!     Integer(kind=int64)::NPrmDB,NBTot
+!     Integer(kind=int64)::NAlpha,NBeta,NElectrons,NBasis,iCharge,Multiplicity
+!     Integer(kind=int64)::NCore,NVal,NActive
+!     Logical Empty
+!!
+!! These Allocatable arrays are used when reading or writing the files.
+!!
+!     Integer(kind=int64),contiguous,Pointer::atomicNumbers(:) =>null()
+!     Integer(kind=int64),contiguous,Pointer::atomTypes(:) =>null()
+!     Integer(kind=int64),contiguous,Pointer::basisFunction2Atom(:) =>null()
+!     INTEGER(kind=int64),contiguous,Pointer::IBasisFunctionType(:) =>null()
+!     Real(kind=real64),contiguous,Pointer::atomicCharges(:) =>null()
+!     Real(kind=real64),contiguous,Pointer::atomicWeights(:) =>null()
+!     Real(kind=real64),contiguous,Pointer::cartesians(:) =>null()
+!
+!     Type(mqc_wavefunction)::est_wavefunction
+!     Type(mqc_array_link_list)::Array_Data
+!  End Type MQC_ALL_Wavefunction
+!
+!   ! Linked list node data type
+!  type mqc_link_list_node
+!     type(MQC_ALL_Wavefunction) :: current_wavefunction
+!     type(mqc_link_list_node),pointer :: next =>null()
+!  end type mqc_link_list_node
+!
+!  type :: mqc_link_list
+!     type(mqc_link_list_node),pointer :: first => null()
+!     type(mqc_link_list_node),pointer :: last => null()
+!     type(mqc_link_list_node),pointer :: current => null()
+!     integer(kind=int64),private :: length = 0
+!   contains
+!     procedure :: start => mqc_link_list_start
+!     procedure :: add => mqc_link_list_add
+!     procedure :: next => mqc_link_list_next
+!  end type mqc_link_list
+!
+!  ! Linked list READONLY data type
+!  type :: mqc_READONLY_list_node
+!     character(Len=64) :: Data_Name
+!     type(mqc_READONLY_list_node),pointer :: next =>null()
+!  end type mqc_READONLY_list_node
+!
+!  type :: mqc_READONLY_list
+!     type(mqc_READONLY_list_node),pointer :: first => null()
+!     type(mqc_READONLY_list_node),pointer :: last => null()
+!     type(mqc_READONLY_list_node),pointer :: current => null()
+!     integer(kind=int64),private :: length = 0
+!   contains
+!     procedure :: start => mqc_READONLY_list_start
+!     procedure :: next => mqc_READONLY_list_next
+!  end type mqc_READONLY_list
+!
+!CONTAINS
 !      subroutine mqc_read_all_wavefunction( current_wavefunction, &
 !           my_READONLY_list, Print_Options, Storage_Options, iout)
 !      implicit none
