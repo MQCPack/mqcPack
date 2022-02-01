@@ -680,6 +680,13 @@
 !
 !     Close the matrix file using the gauopen routines.
 !
+
+!hph+
+      write(*,*)
+      write(*,*)' CLOSING FILE: fileinfo%UnitNumber = ',fileinfo%UnitNumber
+      write(*,*)
+!hph-
+
       if(fileinfo%isOpen()) call Close_MatF(fileinfo%UnitNumber)
       fileinfo%filename       = ' '
       fileinfo%CurrentlyOpen  = .false.
