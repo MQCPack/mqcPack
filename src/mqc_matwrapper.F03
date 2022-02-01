@@ -215,22 +215,23 @@
 
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
-           call OpenRead4(Name,IU_4,LabFil,IVers_4,NLab_4,GVers,Title, &
+          call mqc_error('Open_Read: Attempt to use single precision.')
+          call OpenRead4(Name,IU_4,LabFil,IVers_4,NLab_4,GVers,Title, &
                 NAtoms_4,NBasis_4,NBsUse_4,ICharg_4,Multip_4,NE_4,Len12L_4, &
                 Len4L_4,IOpCl_4,ICGU_4)
-           IU = IU_4
-           IVers = IVers_4
-           NLab = NLab_4
-           NAtoms = NAtoms_4
-           NBasis = NBasis_4
-           NBsUse = NBsUse_4
-           ICharg = ICharg_4
-           Multip = Multip_4
-           NE = NE_4
-           Len12L = Len12L_4
-           Len4L = Len4L_4
-           IOpCl = IOpCl_4
-           ICGU = ICGU_4
+          IU = IU_4
+          IVers = IVers_4
+          NLab = NLab_4
+          NAtoms = NAtoms_4
+          NBasis = NBasis_4
+          NBsUse = NBsUse_4
+          ICharg = ICharg_4
+          Multip = Multip_4
+          NE = NE_4
+          Len12L = Len12L_4
+          Len4L = Len4L_4
+          IOpCl = IOpCl_4
+          ICGU = ICGU_4
         else if ( IntPrecision .eq. 8 ) then
 ! File requires 64-bit integers, so no change
            call OpenRead8(Name,IU,LabFil,IVers,NLab,GVers,Title,NAtoms,NBasis,NBsUse,ICharg,Multip,NE,Len12L,Len4L,IOpCl,ICGU)
@@ -294,16 +295,21 @@
       Return
       End Subroutine Open_Write
 
-!hph+
       Subroutine Close_MatF(IU)
         Implicit None
 !
 !     Close a matrix-element file.
 !
         Integer(kind=int64),Intent(In)::IU
+
+!hph+
         Call CloseMatF8(IU)
+!        Call CloseMatF8(.false.,IU)
+!hph-
+
       Return
       End Subroutine Close_MatF
+!hph+
 !
 !      Function AOInts(CBuf) result(aoint)
 !        Implicit None
