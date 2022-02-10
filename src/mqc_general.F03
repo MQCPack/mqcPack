@@ -1738,7 +1738,7 @@
 
 
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_real
-      Subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
+      subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
         matrixFull)
 !
 !     This subroutine accepts an input one-dimensional array of the diagonal
