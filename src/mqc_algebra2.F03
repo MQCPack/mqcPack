@@ -82,8 +82,8 @@
         procedure,public ::getType       => MQC_Variable_getType
         procedure,public ::print         => MQC_Print_mqcVariable
         procedure,public ::isConformable => MQC_Variable_isConformable
-        procedure,public ::integerPower  => MQC_Variable_integerPower
-        procedure,public ::realPower     => MQC_Variable_realPower
+        procedure,public ::iPower        => MQC_Variable_integerPower
+        procedure,public ::rPower        => MQC_Variable_realPower
         procedure,public ::eigen         => MQC_Variable_Matrix_Eigensystem
         procedure,public ::diag          => MQC_Variable_DiagonalMatrix2FullMatrix
       end type MQC_Variable
