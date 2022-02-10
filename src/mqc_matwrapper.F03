@@ -1,3 +1,4 @@
+!#define UCMGAUOPEN
       Module MQC_MatWrapper
 !
 !     **********************************************************************
@@ -302,10 +303,11 @@
 !
         Integer(kind=int64),Intent(In)::IU
 
-!hph+
+#ifdef UCMGAUOPEN
+        Call CloseMatF8(.false.,IU)
+#else
         Call CloseMatF8(IU)
-!        Call CloseMatF8(.false.,IU)
-!hph-
+#endif
 
       Return
       End Subroutine Close_MatF
