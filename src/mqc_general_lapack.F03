@@ -99,7 +99,6 @@
 !
       Info = 0
       call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,WorkTmp,-1,INFO)    
-      write(*,*)' Hrant - INFO = ',INFO
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_symmMatrixFull: Failure in DSYEV getting WORK length.')
       LWork = WorkTmp(1)
@@ -117,6 +116,153 @@
 !
       return
       end subroutine mqc_dsyev_eigensystem_symmFull
+
+
+!
+!PROCEDURE mqc_dgeev_eigensystem_Full
+      subroutine mqc_dgeev_eigensystem_Full(matrix,eigenValues,  &
+        leftEigenVectors,rightEigenVectors)
+!
+!     This subroutine wraps the LAPACK eigensystem routines for a general square
+!     matrix. 
+!
+!     H. P. Hratchian, 2022
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrix
+      real(kind=real64),dimension(:),allocatable,intent(out)::eigenValues
+      real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::leftEigenVectors,  &
+        rightEigenVectors
+!
+      integer::i,N,LDVL,LDVR,INFO,LWORK
+      real(kind=real64),dimension(:,:),allocatable::matrixCopy
+      real(kind=real64),dimension(:),allocatable::eigenValuesImaginary
+      real(kind=real64),dimension(:),allocatable::Work
+      real(kind=real64),dimension(1)::WorkTmp
+      character(len=1)::JOBVL,JOBVR
+!
+!
+!     Do some initial checking of matrix to ensure it's square. Next, figure out
+!     the dimension of <matrix>, <N>. Then, allocate space for <matrixCopy> and
+!     copy matrix into that space so that the LAPACK routine DSYEV can use this
+!     space as working memory. Finally, allocate space for <eigenValues> and, if
+!     sent, <eigenVectors>.
+!
+
+      write(*,*)
+      write(*,*)' Hrant - Enter DGEEV.'
+
+      if(SIZE(matrix,1).ne.SIZE(matrix,2)) call mqc_error(  &
+        'mqc_eigensystem_matrixFull: Rectangular matrix sent.')
+      N = SIZE(matrix,1)
+      Allocate(matrixCopy(N,N))
+      matrixCopy = matrix
+      if(Allocated(eigenValues)) then
+        if(SIZE(eigenValues).ne.N) then
+          DeAllocate(eigenValues)
+          Allocate(eigenValues(N))
+        endIf
+      else
+        Allocate(eigenValues(N))
+      endIf
+      Allocate(eigenValuesImaginary(N))
+      if(PRESENT(leftEigenVectors)) then
+        JOBVL = 'V'
+        LDVL = N
+        if(Allocated(leftEigenVectors)) then
+          if(SIZE(leftEigenVectors,1).ne.N.or.SIZE(leftEigenVectors,2).ne.N) then
+            DeAllocate(leftEigenVectors)
+            Allocate(leftEigenVectors(N,N))
+          endIf
+        else
+          Allocate(leftEigenVectors(N,N))
+        endIf
+      else
+        JOBVL = 'N'
+        LDVL = 1
+      endIf
+      if(PRESENT(rightEigenVectors)) then
+        JOBVR = 'V'
+        LDVR = N
+        if(Allocated(rightEigenVectors)) then
+          if(SIZE(rightEigenVectors,1).ne.N.or.SIZE(rightEigenVectors,2).ne.N) then
+            DeAllocate(rightEigenVectors)
+            Allocate(rightEigenVectors(N,N))
+          endIf
+        else
+          Allocate(rightEigenVectors(N,N))
+        endIf
+      else
+        JOBVR = 'N'
+        LDVR = 1
+      endIf
+
+      write(*,*)' Done with set-up'
+      write(*,*)'   JOBVL = ',TRIM(JOBVL)
+      write(*,*)'   JOBVR = ',TRIM(JOBVR)
+      write(*,*)'       N = ',N
+      write(*,*)'   LDVL  = ',LDVL
+      write(*,*)'   LDVR  = ',LDVR
+
+!
+!     Call LAPCK routine DSYEV. 
+!
+      Info = 0
+
+      write(*,*)' Calling DGGEEV the first time...'
+
+      call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
+        eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
+        WorkTmp,-1,INFO)
+
+      write(*,*)' Back from first dgeev call.'
+      write(*,*)' INFO = ',INFO
+      write(*,*)' WorkTmp(1) = ',WorkTmp(1)
+
+      if(INFO.ne.0) call mqc_error(  &
+        'mqc_eigensystem_MatrixFull: Failure in DGEEV getting WORK length.')
+      LWork = WorkTmp(1)
+
+      write(*,*)' LWork = ',LWork
+
+      Allocate(Work(LWork))
+
+!hph+
+      call mqc_print(6,matrixCopy,'matrix being sent to DGEEV')
+!hph-
+
+      call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
+        eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
+        Work,LWork,INFO)
+      if(INFO.ne.0) call mqc_error(  &
+        'mqc_eigensystem_MatrixFull: Failure in DGEEV diagonalizing matrix.')
+
+!hph+
+      write(*,*)
+      write(*,*)
+      write(*,*)' Hrant - real part of eigenvalues in DGEEV wrapper...'
+      call mqc_print(6,eigenValues,'real eigenvalues')
+      write(*,*)
+      write(*,*)' Hrant - imaginary part of eigenvalues in DGEEV wrapper...'
+      call mqc_print(6,eigenValuesImaginary,'imaginary eigenvalues')
+      write(*,*)
+      write(*,*)
+!hph-
+
+      if(PRESENT(leftEigenVectors)) then
+        do i = 1,N
+          call mqc_vectorPhase(leftEigenVectors(:,i),.true.)
+        endDo
+      endIf
+      if(PRESENT(rightEigenVectors)) then
+        do i = 1,N
+          call mqc_vectorPhase(rightEigenVectors(:,i),.true.)
+        endDo
+      endIf
+      deAllocate(matrixCopy,Work)
+!
+      return
+      end subroutine mqc_dgeev_eigensystem_Full
 
 !hph
 !!
