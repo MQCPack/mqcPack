@@ -4654,7 +4654,7 @@
         value_out = (fileinfo%nelectrons - fileinfo%multiplicity + 1)/2 
       case default
         call mqc_error_A('Failure finding requested integer value in Gaussian matrix file', 6, &
-             'mylabel', mylabel )
+          'mylabel', mylabel )
       endSelect
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer = value_out
