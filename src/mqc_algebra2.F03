@@ -84,6 +84,7 @@
         procedure,public ::isConformable => MQC_Variable_isConformable
         procedure,public ::iPower        => MQC_Variable_integerPower
         procedure,public ::rPower        => MQC_Variable_realPower
+        procedure,public ::column        => MQC_Variable_MatrixGetColumn
         procedure,public ::eigen         => MQC_Variable_Matrix_Eigensystem
         procedure,public ::diag          => MQC_Variable_DiagonalMatrix2FullMatrix
         procedure,public ::det           => MQC_Variable_Matrix_Determinant
@@ -1012,6 +1013,58 @@
 
 
 !
+!PROCEDURE MQC_Variable_MatrixGetColumn
+      function MQC_Variable_MatrixGetColumn(mqcVariable,iColumn)  &
+        result(columnVector)
+!
+!     This subroutine is used to cut out a single column from a matrix. The
+!     output is a real vector.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable)::mqcVariable
+      integer(kind=int64),intent(in)::iColumn
+      real(kind=real64),dimension(:),allocatable::columnVector
+!
+      integer(kind=int64)::nRows,nColumns
+      real(kind=real64),dimension(:,:),allocatable::tmpMatrix
+!
+!
+!     Ensure that <mqcVariable> is a matrix. Then allocate <columnVector> and
+!     fill it with the requested column.
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot use MQC_Variable_MatrixGetColumn with uninitialized permuteColumns.')
+      if(mqcVariable%rank.ne.2)  &
+        call mqc_error('MQC_Variable_MatrixGetColumn: Rank of variable must be 2.')
+      if(TRIM(mqcVariable%storageFormat).ne.'FULL')   &
+        call mqc_error_a('MQC_Variable_MatrixGetColumn: Can only be used on FULL storage arrays.',  &
+        6,'Current storage form:',TRIM(mqcVariable%storageFormat))
+      nRows = SIZE(mqcVariable,1)
+      nColumns = SIZE(mqcVariable,2)
+      Allocate(columnVector(nRows))
+      Allocate(tmpMatrix(nRows,nColumns))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        tmpMatrix = RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2))
+        columnVector = tmpMatrix(:,iColumn)
+      case(3)
+        tmpMatrix = RESHAPE(mqcVariable%integerArray(:),mqcVariable%dimensions(1:2))
+        columnVector = tmpMatrix(:,iColumn)
+      case default
+        call mqc_error('GetColumn: Erroneous typing found.')
+      end select
+      Deallocate(tmpMatrix)
+!
+      return
+      end function MQC_Variable_MatrixGetColumn
+
+
+!
 !PROCEDURE MQC_Variable_MatrixPermuteColumns
       subroutine MQC_Variable_MatrixPermuteColumns(mqcVariable,columnI,columnJ)
 !
@@ -1045,17 +1098,6 @@
       jStart = MQC_Variable_getArrayPosition(mqcVariable,[ 1, columnJ ])
       iEnd = iStart + lenVector - 1
       jEnd = jStart + lenVector - 1
-
-      write(*,*)
-      write(*,*)' lenVector = ',lenVector
-      write(*,*)
-      write(*,*)' iStart = ',iStart
-      write(*,*)' iEnd   = ',iEnd
-      write(*,*)
-      write(*,*)' jStart = ',jStart
-      write(*,*)' jEnd   = ',jEnd
-      write(*,*)
-
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
         Allocate(tmpArrayR(lenVector))
@@ -3178,6 +3220,95 @@
 
 
 !
+!PROCEDURE MQC_Variable_MatrixVector
+      function MQC_Variable_MatrixVector(mqcMatrix,mqcVector) result(mqcVariableOut)
+!
+!     This function carries out a matrix-vector product using two input
+!     MQC_Variables. The output is an MQC_Variable type.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcMatrix,mqcVector
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::productVectorInteger
+      real(kind=real64),dimension(:),allocatable::productVectorReal
+!
+!
+!     Start by ensuring we have a matrix and a vector. Then check that the two
+!     MQC Variables are conformable.
+!
+      if(Rank(mqcMatrix).ne.2) call mqc_error('MatrixVector: Matrix is NOT rank=2.')
+      if(Rank(mqcVector).ne.1) call mqc_error('MatrixVector: Vector is NOT rank=1.')
+
+!hph+
+!     write(*,*)
+!      write(*,*)' Size(mqcMatrix,2) = ',SIZE(mqcMatrix,2)
+!      write(*,*)' Size(mqcVector)   = ',SIZE(mqcVector)
+!hph-
+
+      if(Size(mqcMatrix,2).ne.Size(mqcVector))  &
+        call mqc_error('MatrixVector: Matrix/Vector not conformable.')
+!
+!     Get the type codes figured out.
+!
+      typeCode1 = MQC_Variable_getTypeCode(mqcMatrix)
+      typeCode2 = MQC_Variable_getTypeCode(mqcVector)
+      if(typeCode1.eq.0)  &
+        call mqc_error_I('MatrixVector: Matrix is of UNKONWN type.', 6, &
+        'typeCode1', typeCode1)
+      if(typeCode2.eq.0)  &
+        call mqc_error_I('MatrixVector: Vector is of UNKONWN type.', 6, &
+        'typeCode2' ,typeCode2);
+      select case(MIN(typeCode1,typeCode2))
+      case(2)
+        allocate(productVectorReal(SIZE(mqcMatrix,1)))
+      case(3)
+        allocate(productVectorInteger(SIZE(mqcMatrix,1)))
+      case default
+        call mqc_error_i('MatrixVector: Result is of UNKNOWN type.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
+      end select
+!
+!     Now, do the matrix-vector product and set the output function value
+!     accordingly.
+!
+      select case(typeCode1*10 + typeCode2)
+      case(22)
+        productVectorReal = MatMul(  &
+          RESHAPE(mqcMatrix%realArray(:),mqcMatrix%dimensions(1:2)),  &
+          mqcVector%realArray(:))
+        mqcVariableOut = productVectorReal
+      case(23)
+        productVectorReal = MatMul(  &
+          RESHAPE(mqcMatrix%realArray(:),mqcMatrix%dimensions(1:2)),  &
+          mqcVector%integerArray(:))
+        mqcVariableOut = productVectorReal
+      case(32)
+        productVectorReal = MatMul(  &
+          RESHAPE(mqcMatrix%integerArray(:),mqcMatrix%dimensions(1:2)),  &
+          mqcVector%realArray(:))
+        mqcVariableOut = productVectorReal
+      case(33)
+        productVectorInteger = MatMul(  &
+          RESHAPE(mqcMatrix%integerArray(:),mqcMatrix%dimensions(1:2)),  &
+          mqcVector%integerArray(:))
+        mqcVariableOut = productVectorInteger
+      case default
+        call mqc_error_I('MQC_MatrixVector: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1*10', typeCode1*10, &
+             'typeCode2', typeCode2 )
+      end select
+!
+      return
+      end function MQC_Variable_MatrixVector
+
+
+!
 !PROCEDURE MQC_Variable_Matrix_Multiplication
       function MQC_Variable_Matrix_Multiplication(mqcVariable1,mqcVariable2) result(mqcVariableOut)
 !
@@ -3239,8 +3370,6 @@
 !     Now, do the addition and set the output function value accordingly.
 !
       select case(typeCode1*10 + typeCode2)
-
-!hph+
       case(22)
         productMatrixReal = MatMul(  &
           RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
