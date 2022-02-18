@@ -82,6 +82,10 @@
         procedure,public ::getType       => MQC_Variable_getType
         procedure,public ::print         => MQC_Print_mqcVariable
         procedure,public ::isConformable => MQC_Variable_isConformable
+        procedure,public ::integerPower  => MQC_Variable_integerPower
+        procedure,public ::realPower     => MQC_Variable_realPower
+        procedure,public ::eigen         => MQC_Variable_Matrix_Eigensystem
+        procedure,public ::diag          => MQC_Variable_DiagonalMatrix2FullMatrix
       end type MQC_Variable
 !
 !
@@ -169,6 +173,12 @@
 !     Interface for MatMul.
       interface MatMul
         module procedure MQC_Variable_Matrix_Multiplication
+      end interface
+!
+!     Interface for MQC_Variable_Power.
+      interface MQC_Variable_Power
+        module procedure MQC_Variable_IntegerPower
+        module procedure MQC_Variable_RealPower
       end interface
 !
 !
@@ -300,7 +310,7 @@
 
 
 !
-!PROCEDURE MQC_Gaussian_SetDEBUG
+!PROCEDURE MQC_Algebra2_SetDEBUG
       subroutine MQC_Algebra2_SetDEBUG(setDebugValue)
 !
 !     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
@@ -777,18 +787,6 @@
 !
       myRank = RANK(mqcVariable)
       iShapeSize = SIZE(iShape)
-
-!hph+
-!      call mqc_error('Inside MQC_Variable_getShape')
-      write(*,*) '*** Inside MQC_Variable_getShape ***'
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - iShapeSize = ',iShapeSize
-      write(*,*)' Hrant - myRank     = ',myRank
-      write(*,*)
-      write(*,*)
-!hph-
-
       if(iShapeSize.lt.myRank)  &
         call mqc_error('getShape: iShape is too small.')
       if(iShapeSize.gt.myRank) iShape(:iShapeSize) = 0
@@ -2474,28 +2472,6 @@
              'typeCode1', typeCode1, &
              'typeCode2', typeCode2 )
       end select
-!
-!     Now, do the subtraction and set the output function value accordingly.
-!
-!hph+
-!      select case(typeCode1*10 + typeCode2)
-!      case(22)
-!        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%realArray
-!        mqcVariableOut = differenceVectorReal
-!      case(23)
-!        differenceVectorReal = mqcVariable1%realArray - mqcVariable2%integerArray
-!        mqcVariableOut = differenceVectorReal
-!      case(32)
-!        differenceVectorReal = mqcVariable1%integerArray(:) - mqcVariable2%realArray(:)
-!        mqcVariableOut = differenceVectorReal
-!      case(33)
-!        differenceVectorInteger = mqcVariable1%integerArray - mqcVariable2%integerArray
-!        mqcVariableOut = differenceVectorInteger
-!      case default
-!        call mqc_error_I('MQC_Variable_Subtraction: Combination of var1 and var 2 types is UNKNOWN.', 6, &
-!             'typeCode1*10', typeCode1*10, &
-!             'typeCode2', typeCode2 )
-!      end select
       select case(mqcVariable1%rank)
       case(0)
         select case(typeCode1*10 + typeCode2)
@@ -2737,6 +2713,136 @@
 !
       return
       end function MQC_Variable_Division
+
+
+!
+!PROCEDURE MQC_Variable_IntegerPower
+      function MQC_Variable_IntegerPower(mqcVariable,intPower) result(mqcVariableOut)
+!
+!     This function raises all elements of the array <mqcVariable> to the power
+!     <intPower>. Care is taken to leave zero values alone when <intPower> is
+!     negative.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      integer(kind=int64),intent(in)::intPower
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode,nDim,i
+!
+!     Get the type-code that indicates whether <mqcVariable> is real or integer.
+!
+      typeCode = MQC_Variable_getTypeCode(mqcVariable)
+      if(typeCode.eq.0)  &
+        call mqc_error_I('MQC_Variable_IntegerPower: mqcVariable is of UNKONWN type.',6, &
+        'typeCode',typeCode)
+!
+!     Based on the sign of <intPower>, we now do the work.
+!
+      mqcVariableOut = mqcVariable
+      if(intPower.ge.0) then
+        select case(typeCode)
+        case(2)
+          mqcVariableOut%realArray = mqcVariableOut%realArray**intPower
+        case(3)
+          mqcVariableOut%integerArray = mqcVariableOut%integerArray**intPower
+        case default
+          call mqc_error_I(  &
+          'MQC_Variable_IntPower: mqcVariable is of UNKNOWN type.',6, &
+          'typeCode',typeCode)
+        end select
+      else
+        select case(typeCode)
+        case(2)
+          nDim = SIZE(mqcVariableOut%realArray)
+          do i = 1,nDim
+            if(ABS(mqcVariableOut%realArray(i)).gt.MQC_small)  &
+              mqcVariableOut%realArray(i) = mqcVariableOut%realArray(i)**intPower
+          endDo
+        case(3)
+          nDim = SIZE(mqcVariableOut%integerArray)
+          do i = 1,nDim
+            if(ABS(mqcVariableOut%integerArray(i)).gt.MQC_small)  &
+              mqcVariableOut%integerArray(i) = mqcVariableOut%integerArray(i)**intPower
+          endDo
+        case default
+          call mqc_error_I(  &
+          'MQC_Variable_IntPower: mqcVariable is of UNKNOWN type.',6, &
+          'typeCode',typeCode)
+        end select
+      endIf
+!
+      return
+      end function MQC_Variable_IntegerPower
+
+
+!
+!PROCEDURE MQC_Variable_RealPower
+      function MQC_Variable_RealPower(mqcVariable,realPower) result(mqcVariableOut)
+!
+!     This function raises all elements of the array <mqcVariable> to the power
+!     <realPower>. Care is taken to leave zero values alone when <realPower> is
+!     negative.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      real(kind=real64),intent(in)::realPower
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode,nDim,i
+!
+!     Get the type-code that indicates whether <mqcVariable> is real or integer.
+!
+      typeCode = MQC_Variable_getTypeCode(mqcVariable)
+      if(typeCode.eq.0)  &
+        call mqc_error_I('MQC_Variable_realPower: mqcVariable is of UNKONWN type.',6, &
+        'typeCode',typeCode)
+!
+!     Based on the sign of <realPower>, we now do the work.
+!
+      mqcVariableOut = mqcVariable
+      if(realPower.ge.float(0)) then
+        select case(typeCode)
+        case(2)
+          mqcVariableOut%realArray = mqcVariableOut%realArray**realPower
+        case(3)
+          mqcVariableOut%integerArray = mqcVariableOut%integerArray**realPower
+        case default
+          call mqc_error_I(  &
+          'MQC_Variable_realPower: mqcVariableOut is of UNKNOWN type.',6, &
+          'typeCode',typeCode)
+        end select
+      else
+        select case(typeCode)
+        case(2)
+          nDim = SIZE(mqcVariableOut%realArray)
+          do i = 1,nDim
+            if(ABS(mqcVariableOut%realArray(i)).gt.MQC_small)  &
+              mqcVariableOut%realArray(i) = mqcVariableOut%realArray(i)**realPower
+          endDo
+        case(3)
+          nDim = SIZE(mqcVariableOut%integerArray)
+          do i = 1,nDim
+            if(ABS(mqcVariableOut%integerArray(i)).gt.MQC_small)  &
+              mqcVariableOut%integerArray(i) = mqcVariableOut%integerArray(i)**realPower
+          endDo
+        case default
+          call mqc_error_I(  &
+          'MQC_Variable_realPower: mqcVariable is of UNKNOWN type.',6, &
+          'typeCode',typeCode)
+        end select
+      endIf
+!
+      return
+      end function MQC_Variable_RealPower
 
 
 !
@@ -3171,22 +3277,6 @@
           RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
           RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
         mqcVariableOut = productMatrixInteger
-!
-!
-!      case(22)
-!        productMatrixReal = mqcVariable1%realArray * mqcVariable2%realArray
-!        mqcVariableOut = productMatrixReal
-!      case(23)
-!        productMatrixReal = mqcVariable1%realArray * mqcVariable2%integerArray
-!        mqcVariableOut = productMatrixReal
-!      case(32)
-!        productMatrixReal = mqcVariable1%integerArray(:) * mqcVariable2%realArray(:)
-!        mqcVariableOut = productMatrixReal
-!      case(33)
-!        productMatrixInteger = mqcVariable1%integerArray * mqcVariable2%integerArray
-!        mqcVariableOut = productMatrixInteger
-!hph-
-
       case default
         call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
              'typeCode1*10', typeCode1*10, &
@@ -3195,6 +3285,91 @@
 !
       return
       end function MQC_Variable_Matrix_Multiplication
+
+
+!
+!PROCEDURE MQC_Variable_DiagonalMatrix2FullMatrix
+      function MQC_Variable_DiagonalMatrix2FullMatrix(mqcVariable) result(mqcVariableOut)
+!
+!     This function converts a vector stored in an MQC_Variable argument
+!     <mqcVariable> into a diagonal matrix using full storage.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable)::mqcVariableOut
+      real(kind=real64),dimension(:,:),allocatable::matrixTmp
+!
+!
+!     Start by ensuring <mqcVariable> is a real vector.
+!
+      if(.not.RANK(mqcVariable).eq.1)  &
+        call mqc_error_i(  &
+        'MQC_Variable_DiagonalMatrix2FullMatrix: mqcVariable must be a vector.',  &
+        6,'Rank',RANK(mqcVariable))
+      if(MQC_Variable_getTypeCode(mqcVariable).ne.2)  &
+        call mqc_error_i(  &
+        'MQC_Variable_DiagonalMatrix2FullMatrix: mqcVariable must be a real vector.',  &
+        6,'TypeCode',MQC_Variable_getTypeCode(mqcVariable))
+!
+!     Convert the vector into a matrix.
+!
+      Allocate(matrixTmp(SIZE(mqcVariable),SIZE(mqcVariable)))
+      call mqc_packedDiagonalMatrix2FullMatrix_real(  &
+        mqcVariable%realArray(:),matrixTmp)
+      mqcVariableOut = matrixTmp
+      Deallocate(matrixTmp)
+!
+      return
+      end function MQC_Variable_DiagonalMatrix2FullMatrix
+
+
+!
+!PROCEDURE MQC_Variable_Matrix_Eigensystem
+      subroutine MQC_Variable_Matrix_Eigensystem(mqcVariable,eigenValues,eigenVectors)
+!
+!     This routine carries out eigen decomposision of a matrix stored in input
+!     argument <mqcVariable>.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable),intent(out)::eigenValues,eigenVectors
+      real(kind=real64),dimension(:),allocatable::eigenValuesTmp
+      real(kind=real64),dimension(:,:),allocatable::eigenVectorsTmp
+!
+!
+!     Start by ensuring <mqcVariable> is a real square matrix.
+!
+      if(.not.RANK(mqcVariable).eq.2)  &
+        call mqc_error_i('Eigensystem: mqcVariable must be a matrix.',  &
+        6,'Rank',RANK(mqcVariable))
+      if(SIZE(mqcVariable,1).ne.SIZE(mqcVariable,2))  &
+        call mqc_error_i('Eigensystem: mqcVariable must be a square matrix.',  &
+        6,'M',SIZE(mqcVariable,1),'N',SIZE(mqcVariable,2))
+      if(MQC_Variable_getTypeCode(mqcVariable).ne.2)  &
+        call mqc_error_i('Eigensystem: mqcVariable must be a real matrix.',  &
+        6,'TypeCode',MQC_Variable_getTypeCode(mqcVariable))
+!
+!     Call the LAPACK wrapper for eigen decomposition.
+!
+      call mqc_dsyev_eigensystem_symmFull(  &
+        RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
+        eigenValuesTmp,eigenVectorsTmp)
+      call mqc_print(6,eigenValuesTmp,'eVals')
+      call mqc_print(6,eigenVectorsTmp,'eVecs')
+      eigenValues  = eigenValuesTmp
+      eigenVectors = eigenVectorsTmp
+      Deallocate(eigenValuesTmp,eigenVectorsTmp)
+!
+      return
+      end subroutine MQC_Variable_Matrix_Eigensystem
 
 
 !

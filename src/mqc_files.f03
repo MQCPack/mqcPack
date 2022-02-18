@@ -44,28 +44,7 @@
         Integer::UnitNumber=0
       Contains
         Procedure,Pass::IsOpen=>MQC_File_IsOpen
-!hph        Procedure(MQC_Open_File),Pass,Deferred::OpenFile
-!hph        Procedure(MQC_Close_File),Pass,Deferred::CloseFile
       End Type MQC_FileInfo
-
-!hph+
-!      Abstract Interface
-!        Subroutine MQC_Open_File(FileInfo,FileName,UnitNumber,OK)
-!          Import MQC_FileInfo
-!          Class(MQC_FileInfo),Intent(InOut)::FileInfo
-!          Character(Len=*),Intent(In)::FileName
-!          Integer,Intent(In)::UnitNumber
-!          Logical,Intent(Out)::OK
-!        End Subroutine MQC_Open_File
-!      End Interface
-!      Abstract Interface
-!        Subroutine MQC_Close_File(FileInfo)
-!          Import MQC_FileInfo
-!          Class(MQC_FileInfo),Intent(InOut)::FileInfo
-!        End Subroutine MQC_Close_File
-!      End Interface
-!hph-
-
 !
 !     MQC_Text_FileInfo Type...
       Type,Extends(MQC_FileInfo)::MQC_Text_FileInfo
@@ -73,6 +52,7 @@
         Logical::buffer_loaded=.False.
         Integer::buffer_cursor=0
         Logical::Inside_Quotes=.False.
+        Logical::Skip_Multiple_Delimits=.True.
       Contains
         Procedure,Pass::OpenFile => MQC_Open_Text_File
         Procedure,Pass::CloseFile => MQC_Close_Text_File
@@ -80,55 +60,21 @@
         Procedure,Pass::LoadBuffer => MQC_Files_Load_Buffer
         Procedure,Pass::GetBuffer => MQC_Files_Text_File_Get_Buffer
         Procedure,Pass::GetNextString => MQC_Files_Text_File_Read_String
+        Procedure,Pass::GetNextInteger => MQC_Files_Text_File_Read_Int
         Procedure,Pass::WriteLine => MQC_Files_Text_File_Write_Line
       End Type MQC_Text_FileInfo
 !
 !     Module Variables/Constants.
-      Integer,Parameter::NDelimiters_Default=3
-      Character(Len=1),Dimension(NDelimiters_Default),Parameter::  &
-        Delimit_Default=(/ ' ',',',';' /)
+      integer,parameter,private::Max_NDelimiters_Default=10
+      integer,private::NDelimiters_Default=3
+      character(len=1),dimension(Max_NDelimiters_Default),private::  &
+        Delimit_Default=(/ ' ',',',';',' ',' ',' ',' ',' ',' ',' ' /)
+      logical::mqc_files_DEBUG=.false.
 !
 !
 !     Subroutines and Functions.
 !
       CONTAINS
-
-!hph+        
-!!
-!!
-!!     PROCEDURE Char_Change_Case
-!      Subroutine Char_Change_Case(ToUpper,Char)
-!!
-!!     This subroutine changes the case of all of the letters in Char.  If
-!!     ToUpper is sent as .TRUE., then all lower-case letters are made
-!!     upper-case.  If ToUpper is sent as .FALSE., then all upper-case
-!!     letters are made lower-case.
-!!
-!      implicit none
-!!     Dummy Variables
-!      character(len=*),intent(inout)::Char
-!      logical,intent(in)::ToUpper
-!!     Local Variables
-!      integer::N
-!!
-!!     Do the work...
-!!
-!      if(ToUpper) then
-!        do N = 1,Len(Trim(Char))
-!          if(LGE(Char(N:N),'a').and.LLE(Char(N:N),'z')) &
-!            Char(N:N) = achar(iachar(Char(N:N))-32)
-!        enddo
-!      else
-!        do N = 1,Len(Trim(Char))
-!          if(LGE(Char(N:N),'A').and.LLE(Char(N:N),'Z')) &
-!            Char(N:N) = achar(iachar(Char(N:N))+32)
-!        enddo
-!      endif
-!!
-!      Return
-!      End
-!hph-
-      
 !
 !
 !PROCEDURE MQC_IsOpen_File
@@ -272,6 +218,59 @@
 
 
 !
+!PROCEDURE MQC_Files_Text_Parse_Set_Delimiters
+      Subroutine MQC_Files_Text_Parse_Set_Delimiters(Delimiters)
+!
+!     This routine is used to change the default delimiters used in buffer
+!     parsing for text files.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      character(len=1),dimension(:),intent(in)::Delimiters
+!
+      integer::NDelimiters
+!
+!
+!     Do the work...
+!
+      NDelimiters = SIZE(Delimiters)
+      if(NDelimiters.gt.Max_NDelimiters_Default)  &
+        call mqc_error('MQC_Files_Text_Parse_Set_Delimiters: NDelimiters > Max')
+      NDelimiters_Default = NDelimiters
+      Delimit_Default = ' '
+      Delimit_Default(1:NDelimiters) = Delimiters
+!
+      Return
+      End Subroutine MQC_Files_Text_Parse_Set_Delimiters
+
+
+!
+!PROCEDURE MQC_Files_Text_Parse_Controls
+      Subroutine MQC_Files_Text_Parse_Controls(FileInfo,Do_Skip_Multiple_Delimits)
+!
+!     This routine is used to change the basic buffer parsing behavior for the
+!     file associated with object <FileInfo>.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      class(MQC_Text_FileInfo),intent(InOut)::FileInfo
+      logical,intent(in),optional::Do_Skip_Multiple_Delimits
+!
+!
+!     Do the work...
+!
+      if(PRESENT(Do_Skip_Multiple_Delimits))  &
+        FileInfo%Skip_Multiple_Delimits=Do_Skip_Multiple_Delimits
+!
+      Return
+      End Subroutine MQC_Files_Text_Parse_Controls
+
+
+!
 !PROCEDURE MQC_Files_Text_File_Get_Buffer
       Subroutine MQC_Files_Text_File_Get_Buffer(FileInfo,Char_Out,Caps)
 !
@@ -328,7 +327,8 @@
       Logical,Intent(Out)::EOF,OK
 !
       Real::Temp_Real
-      Character(Len=1)::Temp_Char,Type_Out
+      Character(Len=512)::Temp_Char
+      Character(Len=1)::Type_Out
       Logical::Found
 !
 !
@@ -338,6 +338,13 @@
       Call MQC_Files_Text_File_Read_Next(FileInfo,NDelimiters_Default,  &
         Delimit_Default,.True.,Int_Out,Temp_Real,Temp_Char,Type_Out,  &
         Found,EOF,OK)
+      if(mqc_files_DEBUG) then
+        write(*,*)' MQC_Files_Text_File_Read_Int: OK        = ',OK
+        write(*,*)'                               Found     = ',Found
+        write(*,*)'                               Type_Out  = ',TRIM(Type_Out)
+        write(*,*)'                               Temp_Char = ',TRIM(Temp_Char)
+        write(*,*)
+      endIf
       If(.not.EOF) OK = OK.and.Found.and.Type_Out.eq.'I'
 !
       Return
@@ -525,6 +532,15 @@
         Group_Double_Quotes,Int_Out,Real_Out,Char_Out,Type_Out,Found,  &
         EOF,OK,Cursor_Position)
 !
+!     This subroutine finds the next token between delimiters in <FileInfo>'s
+!     buffer. A string is always returned. If the read-in token is an integer or
+!     real, the appropriate dummy argument is also returned with the value. The
+!     argument <Type_Out> reports the type of token found.
+!
+!     When two or more delimiters are found next to each other, this routine
+!     moves through them under default behavior. A call to routine
+!     <MQC_Files_Text_Delimiter_Controls> can be used to change this behavior.
+!
       implicit none
       Class(MQC_Text_FileInfo),Intent(InOut)::FileInfo
       integer::i,NDelimiters,ICurStart
@@ -581,6 +597,9 @@
         Delimit,Group_Double_Quotes,Cursor_Position,String,  &
         Found,EOF,OK)
 !
+!     This subroutine walks through the buffer to find the next string of
+!     characters between delimiters.
+!
       implicit none
       Class(MQC_Text_FileInfo),Intent(InOut)::FileInfo
       integer::i,NDelimiters,ICurStart,ICurEnd
@@ -599,12 +618,15 @@
         ICurStart = FileInfo%buffer_cursor
       endIf
 !
-!     Make sure ICurStart is at a non-delimiter character, then find
-!     ICurEnd.
+!     Initialize defaults for MyFound, MyOK, and MyEOF.
 !
       MyFound = .False.
       MyOK = .True.
       MyEOF = .False.
+!
+!     Make sure ICurStart is at a non-delimiter character, then find
+!     ICurEnd.
+!
       i = 0
       Do While(.not.MyFound.and.MyOK.and..not.MyEOF.and.i.le.1)
         i = i+1
@@ -816,7 +838,6 @@
       Read(Unit=FileInfo%UnitNumber,fmt='(A)',iostat=ierror)  &
         FileInfo%buffer
       FileInfo%buffer_caps = FileInfo%buffer
-!hph      Call Char_Change_Case(.True.,FileInfo%buffer_caps)
       call String_Change_Case(FileInfo%buffer_caps,'U')
       If((ierror.ne.0).or.(Len(Trim(FileInfo%buffer)).eq.0)) then
         If(Present(EOF)) then
@@ -889,6 +910,9 @@
       Integer Function MQC_Files_Next_Delimiter(FileInfo,NDelimiters,  &
         Delimit,Group_Double_Quotes,Which_Delimiter,Cursor_Position)
 !
+!     This function locates the next delimiter in the buffer of the text file
+!     <FileInfo> starting at <Cursor_Position>.
+!
       implicit none
       Class(MQC_Text_FileInfo),Intent(InOut)::FileInfo
       integer::i,NDelimiters,ICur
@@ -906,7 +930,7 @@
         ICur = FileInfo%buffer_cursor
       endIf
 !
-!     March through the buffer undtil we find the next delimiter.
+!     March through the buffer until we find the next delimiter.
 !
       Done = .False.
       Do While(.not.Done.and.ICur.le.Len(Trim(FileInfo%buffer)))
