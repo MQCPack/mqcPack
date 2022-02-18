@@ -1,3 +1,4 @@
+!#define UCMGAUOPEN
       Module MQC_MatWrapper
 !
 !     **********************************************************************
@@ -72,32 +73,36 @@
         Character(len=LStr)::DataType
         logical I_OPENED
 
-        Len12D=4
-        Len4D=4
-        IU = IUUse
+!!!!!!!!!!!!!!!!!
+        IntPrecision = 8
+!!!!!!!!!!!!!!!!!
 !
-        Title = ' '
-        INQUIRE (IU, OPENED=I_OPENED )
-        if ( I_OPENED ) then
-           write(6, 1030) trim(MatFileName)
- 1030      format( "File was Open. Close then open ", a)
-           call Close_MatF(IU)
-        endif
-
-        LStr64 = LStr
-        call mqc_Matfile_Guide_F2C(MatFileName, DataType, LStr64, rec_len, bufsize)
-        if ( trim(DataType) .eq. "Long" ) then
-           IntPrecision = 8
-        else if ( trim(DataType) .eq. "Int" ) then
-           IntPrecision = 4
-        else if ( trim(DataType) .eq. "Raw" ) then
-           IntPrecision = 0
-        else if ( trim(DataType) .eq. "Could not open File" ) then
-           IntPrecision = -1
-        else
-           Iout = 6
-           call MQC_Error_A('Unknown DataType - should be Long, Int or Raw', Iout, 'trim(DataType)', trim(DataType))
-        endIf
+!        Len12D=4
+!        Len4D=4
+!        IU = IUUse
+!!
+!        Title = ' '
+!        INQUIRE (IU, OPENED=I_OPENED )
+!        if ( I_OPENED ) then
+!           write(6, 1030) trim(MatFileName)
+! 1030      format( "File was Open. Close then open ", a)
+!           call Close_MatF(IU)
+!        endif
+!
+!        LStr64 = LStr
+!        call mqc_Matfile_Guide_F2C(MatFileName, DataType, LStr64, rec_len, bufsize)
+!        if ( trim(DataType) .eq. "Long" ) then
+!           IntPrecision = 8
+!        else if ( trim(DataType) .eq. "Int" ) then
+!           IntPrecision = 4
+!        else if ( trim(DataType) .eq. "Raw" ) then
+!           IntPrecision = 0
+!        else if ( trim(DataType) .eq. "Could not open File" ) then
+!           IntPrecision = -1
+!        else
+!           Iout = 6
+!           call MQC_Error_A('Unknown DataType - should be Long, Int or Raw', Iout, 'trim(DataType)', trim(DataType))
+!        endIf
 
         Return
       end subroutine MQC_Read_Mat_Precision_Test
@@ -211,22 +216,23 @@
 
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
-           call OpenRead4(Name,IU_4,LabFil,IVers_4,NLab_4,GVers,Title, &
+          call mqc_error('Open_Read: Attempt to use single precision.')
+          call OpenRead4(Name,IU_4,LabFil,IVers_4,NLab_4,GVers,Title, &
                 NAtoms_4,NBasis_4,NBsUse_4,ICharg_4,Multip_4,NE_4,Len12L_4, &
                 Len4L_4,IOpCl_4,ICGU_4)
-           IU = IU_4
-           IVers = IVers_4
-           NLab = NLab_4
-           NAtoms = NAtoms_4
-           NBasis = NBasis_4
-           NBsUse = NBsUse_4
-           ICharg = ICharg_4
-           Multip = Multip_4
-           NE = NE_4
-           Len12L = Len12L_4
-           Len4L = Len4L_4
-           IOpCl = IOpCl_4
-           ICGU = ICGU_4
+          IU = IU_4
+          IVers = IVers_4
+          NLab = NLab_4
+          NAtoms = NAtoms_4
+          NBasis = NBasis_4
+          NBsUse = NBsUse_4
+          ICharg = ICharg_4
+          Multip = Multip_4
+          NE = NE_4
+          Len12L = Len12L_4
+          Len4L = Len4L_4
+          IOpCl = IOpCl_4
+          ICGU = ICGU_4
         else if ( IntPrecision .eq. 8 ) then
 ! File requires 64-bit integers, so no change
            call OpenRead8(Name,IU,LabFil,IVers,NLab,GVers,Title,NAtoms,NBasis,NBsUse,ICharg,Multip,NE,Len12L,Len4L,IOpCl,ICGU)
@@ -296,17 +302,26 @@
 !     Close a matrix-element file.
 !
         Integer(kind=int64),Intent(In)::IU
+
+#ifdef UCMGAUOPEN
+        Call CloseMatF8(.false.,IU)
+#else
         Call CloseMatF8(IU)
+#endif
+
       Return
       End Subroutine Close_MatF
-
-      Function AOInts(CBuf) result(aoint)
-        Implicit None
-        Character(Len=*),Intent(InOut)::CBuf
-        Logical aoint
-        Logical, external::a4ints
-        AOInt = A4Ints(CBuf)
-      End Function AOInts
+!hph+
+!
+!      Function AOInts(CBuf) result(aoint)
+!        Implicit None
+!        Character(Len=*),Intent(InOut)::CBuf
+!        Logical aoint
+!        Logical, external::a4ints
+!        AOInt = A4Ints(CBuf)
+!      End Function AOInts
+!
+!hph-
 
       Function LenArr(N1,N2,N3,N4,N5) result(LenAr)
         Implicit None
@@ -317,6 +332,8 @@
 
         LenAr = LenAr8(N1,N2,N3,N4,N5)
       End Function LenArr
+
+!hph+
 
       Function LInd2C(Check,N1,N2,ASym,I,J,Sign) result(Lind8)
         Implicit None
@@ -406,29 +423,33 @@
         Lind8 = L8nd5(Check,N1,N2,N3,N4,N5,ASym,I,J,K,L,M,Sign)
       End Function Lind5
 
-      Function NumNZA(NR,NTot,X) result(Numz)
-        Implicit None
+!hph+
+!      Function NumNZA(NR,NTot,X) result(Numz)
+!        Implicit None
+!
+!        Integer(kind=int64),Intent(InOUT)::NR,NTot
+!        Real(kind=real64),Dimension(:),Intent(InOut)::X
+!
+!        Integer(kind=int64), external::N8mNZA
+!        Integer(kind=int64)::Numz
+!
+!        Numz = N8mNZA(NR,NTot,X)
+!      End Function NumNZA
+!hph-
 
-        Integer(kind=int64),Intent(InOUT)::NR,NTot
-        Real(kind=real64),Dimension(:),Intent(InOut)::X
-
-        Integer(kind=int64), external::N8mNZA
-        Integer(kind=int64)::Numz
-
-        Numz = N8mNZA(NR,NTot,X)
-      End Function NumNZA
-
-      Function NumNZR(NR,NTot,X) result(Numz)
-        Implicit None
-
-        Integer(kind=int64),Intent(InOUT)::NR,NTot
-        Real(kind=real64),Dimension(:),Intent(InOut)::X
-
-        Integer(kind=int64), external::N8mNZr
-        Integer(kind=int64)::Numz
-
-        Numz = N8mNZR(NR,NTot,X)
-      End Function NumNZR
+!hph+
+!      Function NumNZR(NR,NTot,X) result(Numz)
+!        Implicit None
+!
+!        Integer(kind=int64),Intent(InOUT)::NR,NTot
+!        Real(kind=real64),Dimension(:),Intent(InOut)::X
+!
+!        Integer(kind=int64), external::N8mNZr
+!        Integer(kind=int64)::Numz
+!
+!        Numz = N8mNZR(NR,NTot,X)
+!      End Function NumNZR
+!hph-
 
       Subroutine Rd_2E1(IU,LR,NTot,LenBuf,RArr)
         Implicit None
@@ -753,6 +774,9 @@
       Return
       End Subroutine IClear
 
+!hph-
+
+!hph+
       Integer(kind=int64) Function mqc_LenArr(NR,NI,NRI,N1,N2,N3,N4,N5, &
            s_datatype, s_shape, s_formula )
       Implicit None
@@ -1062,6 +1086,9 @@
 
       Return
       End Function mqc_Lenarr
+!hph-
+
+!hph+
 
       Integer(kind=int64) Function mqc_Lind2(Check,N1,N2,ASym,I,J,Sign, &
            s_N1,s_N2,s_I,s_J,s_Lind2_result, s_Logic)
@@ -1576,6 +1603,8 @@
       Return
       End Function mqc_Lind5
 
+!hph-
+
       subroutine mqc_StripSpaces(string)
         character(len=*) :: string
         integer :: stringLen
@@ -1597,6 +1626,8 @@
            endif
         end do
       end subroutine mqc_StripSpaces
+
+!hph+
 
       Subroutine Rd_RMixed(IU,NTot,LenBuf,IArr,Arr)
         Implicit None
@@ -2210,5 +2241,6 @@
         endif
       Return
       End Subroutine Wr_CBuf
+!hph-
 
       End Module MQC_MatWrapper

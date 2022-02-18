@@ -10432,7 +10432,10 @@
         endDo
       endIf
       call SVals%power(-0.5)
-      call SVals%diag(transform_matrix_tmp)
+!hph      call mqc_error('Hrant - STOP')
+!hph      call SVals%diag(transform_matrix_tmp)
+!hph      call SVals%hphdiag(transform_matrix_tmp)
+      call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
       call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
 !
@@ -11603,7 +11606,7 @@
 !     First we need to determine the relevant orbital, spin and determinant
         IDiff = 1
         Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
+          I = IPos/Bit_Size(0)+1
           J = Mod(IPos,Bit_Size(0)) 
 !          Write(IOut,*) 'Orbs:',IPos,' I:',I,' J:',J
           If(BTest(Alpha_Diff(I),J)) then
@@ -11646,8 +11649,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(2).eq.0) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11664,8 +11667,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11683,8 +11686,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11701,8 +11704,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11720,8 +11723,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11738,8 +11741,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11757,8 +11760,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11775,8 +11778,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11823,8 +11826,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(2).eq.0) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11841,8 +11844,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11860,8 +11863,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11878,8 +11881,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11897,8 +11900,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11915,8 +11918,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11934,8 +11937,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11952,8 +11955,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -11996,8 +11999,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(3).eq.0) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12014,8 +12017,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12033,8 +12036,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12051,8 +12054,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12070,8 +12073,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12088,8 +12091,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12107,8 +12110,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12125,8 +12128,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12164,8 +12167,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(3).eq.0) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12182,8 +12185,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12201,8 +12204,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12219,8 +12222,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12238,8 +12241,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12256,8 +12259,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12275,8 +12278,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
               If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12293,8 +12296,8 @@
                 EndDo
               EndIf
               If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12335,8 +12338,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(4).eq.0) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12353,8 +12356,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12372,8 +12375,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12390,8 +12393,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12409,8 +12412,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12427,8 +12430,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12446,8 +12449,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
               If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(3)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12464,8 +12467,8 @@
                 EndDo
               EndIf
               If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(2)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12503,8 +12506,8 @@
             ISgn = 0
             If(Spin(1).eq.0.and.Spin(4).eq.0) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12520,8 +12523,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12538,8 +12541,8 @@
               EndIf
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12555,8 +12558,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12573,8 +12576,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12590,8 +12593,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then 
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12608,8 +12611,8 @@
               EndIf
             ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
               If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(4)-1)/Bit_Size(0)
+                I  = (Orbs(2)-1)/Bit_Size(0)+1
+                J  = (Orbs(4)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12625,8 +12628,8 @@
                 EndDo
               EndIf
               If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-                J  = NBit_Ints - (Orbs(3)-1)/Bit_Size(0)
+                I  = (Orbs(1)-1)/Bit_Size(0)+1
+                J  = (Orbs(3)-1)/Bit_Size(0)+1
                 Do K = I, J, -1
                   If(I.ne.K) then 
                     II = 1
@@ -12671,7 +12674,7 @@
       Case(1)
         IDiff = 1
         Do IPos = 0, NBasis-1
-          I = NBit_Ints - IPos/Bit_Size(0)
+          I = IPos/Bit_Size(0)+1
           J = Mod(IPos,Bit_Size(0)) 
           If(BTest(Alpha_Diff(I),J)) then
             Orbs(IDiff) = IPos+1
@@ -12691,8 +12694,8 @@
         ISgn = 0
         If(Spin(1).eq.0.and.Spin(2).eq.0) then
           If(Orbs(2)-Orbs(1)-1.gt.0) then 
-            I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-            J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+            I  = (Orbs(1)-1)/Bit_Size(0)+1
+            J  = (Orbs(2)-1)/Bit_Size(0)+1
             Do K = I, J, -1
               If(I.ne.K) then 
                 II = 1
@@ -12709,8 +12712,8 @@
           EndIf
         ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
           If(Orbs(2)-Orbs(1)-1.gt.0) then
-            I  = NBit_Ints - (Orbs(1)-1)/Bit_Size(0)
-            J  = NBit_Ints - (Orbs(2)-1)/Bit_Size(0)
+            I  = (Orbs(1)-1)/Bit_Size(0)+1
+            J  = (Orbs(2)-1)/Bit_Size(0)+1
             Do K = I, J, -1
               If(I.ne.K) then 
                 II = 1
@@ -12732,7 +12735,7 @@
         MatEl = Zero
         If(Present(TwoPartInts)) then
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0)) 
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
@@ -12760,7 +12763,7 @@
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0))
             If(BTest(Beta_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
@@ -12805,7 +12808,7 @@
         MatEl = Zero
         If(Present(OnePartInts)) then
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0))
             If(BTest(Alpha_String_1(I),J)) then
 !              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
@@ -12827,10 +12830,10 @@
 !
         If(Present(TwoPartInts)) then
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0)) 
             Do JPos = IPos+1, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
+              II = JPos/Bit_Size(0)+1
               JJ = Mod(JPos,Bit_Size(0)) 
               If(BTest(Alpha_String_1(I),J)) then
                 If(BTest(Alpha_String_1(II),JJ)) then 
@@ -12845,10 +12848,10 @@
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0)) 
             Do JPos = IPos+1, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
+              II = JPos/Bit_Size(0)+1
               JJ = Mod(JPos,Bit_Size(0))
               If(BTest(Beta_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
@@ -12870,10 +12873,10 @@
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
+            I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0)) 
             Do JPos = 0, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
+              II = JPos/Bit_Size(0)+1
               JJ = Mod(JPos,Bit_Size(0))
               If(BTest(Alpha_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
@@ -16426,7 +16429,7 @@
                       select case (det_diff)
                       case(0)
                         Do IPos = nCore, nCore+nOrbs-1
-                          m = NBit_Ints - IPos/Bit_Size(0)
+                          m = IPos/Bit_Size(0)+1
                           n = Mod(IPos,Bit_Size(0))
                           If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
                             call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
@@ -16447,7 +16450,7 @@
                         endDo
                       case(1)
                         Do IPos = nCore, nCore+nOrbs-1
-                          m = NBit_Ints - IPos/Bit_Size(0)
+                          m = IPos/Bit_Size(0)+1
                           n = Mod(IPos,Bit_Size(0))
                           If(Alpha_Diff_Cnt.eq.0) then
                             If(BTest(Beta_Diff(m),n)) then
@@ -16471,8 +16474,8 @@
                         endDo
                         ISgn = 0
                         If(Orb(2)-Orb(1)-1.gt.0) then
-                          m  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
-                          n  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
+                          m  = (Orb(1)-1+nCore)/Bit_Size(0)+1
+                          n  = (Orb(2)-1+nCore)/Bit_Size(0)+1
                           Do o = m, n, -1
                             If(m.ne.o) then
                               mm = 1
@@ -16491,8 +16494,8 @@
                             endIf
                           EndDo
                         elseIf(Orb(1)-Orb(2)-1.gt.0) then
-                          m  = NBit_Ints - (Orb(2)-1+nCore)/Bit_Size(0)
-                          n  = NBit_Ints - (Orb(1)-1+nCore)/Bit_Size(0)
+                          m  = (Orb(2)-1+nCore)/Bit_Size(0)+1
+                          n  = (Orb(1)-1+nCore)/Bit_Size(0)+1
                           Do o = m, n, -1
                             If(m.ne.o) then
                               mm = 1

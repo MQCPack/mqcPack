@@ -1,1 +1,17 @@
-out_runGau_v2
+-------------------------------------
+Failure Test: Only 1 input to program
+-------------------------------------
+  Hrant - This example program is obsolescent.
+------------------------------------
+Failure Test: Program is not in path
+------------------------------------
+  Hrant - This example program is obsolescent.
+---------------------------------------------------
+Failure Test: Test for when input file is not there
+---------------------------------------------------
+  Hrant - This example program is obsolescent.
+Finished with tests designed to fail
+-------------
+MatFile test
+-------------
+  Hrant - This example program is obsolescent.
