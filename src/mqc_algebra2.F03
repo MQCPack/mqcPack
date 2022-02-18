@@ -1469,13 +1469,6 @@
         Allocate(mqcVariable%realArray(SIZE(mqcIn%realArray(:))))
         mqcVariable%realArray = mqcIn%realArray
       case('INTEGER')
-
-!hph+
-        write(*,*)
-        write(*,*)' Hrant - In MQC2MQC, INTEGER length = ',SIZE(mqcIn%integerArray(:))
-        write(*,*)
-!hph-
-
         Allocate(mqcVariable%integerArray(SIZE(mqcIn%integerArray(:))))
         mqcVariable%integerArray = mqcIn%integerArray
       case default
@@ -3432,20 +3425,14 @@
 !     Form the eigensystem for the matrix and then form the determinant.
 !
       N = SIZE(mqcVariable,1)
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - determinant routine...'
-      write(*,*)'         N = ',N
       Allocate(eigenValuesTmp(N))
       Allocate(eigenVectorsLeftTmp(N,N),eigenVectorsRightTmp(N,N))
       call mqc_dgeev_eigensystem_Full(  &
         RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
         eigenValuesTmp,eigenVectorsLeftTmp,eigenVectorsRightTmp)
-!      call eigenValues%print(header='eigenvalues')
-!      det = PRODUCT(eigenValues%realArray)
+      if(MQC_Algebra2_DEBUG) call mqc_print(MQC_Algebra2_IOut,  &
+        eigenValuesTmp,header='determinant: eigenvalues=')
       det = PRODUCT(eigenValuesTmp)
-!      det = 0
-!
       return
       end function MQC_Variable_Matrix_Determinant
 

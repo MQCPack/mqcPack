@@ -148,10 +148,6 @@
 !     space as working memory. Finally, allocate space for <eigenValues> and, if
 !     sent, <eigenVectors>.
 !
-
-      write(*,*)
-      write(*,*)' Hrant - Enter DGEEV.'
-
       if(SIZE(matrix,1).ne.SIZE(matrix,2)) call mqc_error(  &
         'mqc_eigensystem_matrixFull: Rectangular matrix sent.')
       N = SIZE(matrix,1)
@@ -196,59 +192,22 @@
         JOBVR = 'N'
         LDVR = 1
       endIf
-
-      write(*,*)' Done with set-up'
-      write(*,*)'   JOBVL = ',TRIM(JOBVL)
-      write(*,*)'   JOBVR = ',TRIM(JOBVR)
-      write(*,*)'       N = ',N
-      write(*,*)'   LDVL  = ',LDVL
-      write(*,*)'   LDVR  = ',LDVR
-
 !
 !     Call LAPCK routine DSYEV. 
 !
       Info = 0
-
-      write(*,*)' Calling DGGEEV the first time...'
-
       call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
         eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
         WorkTmp,-1,INFO)
-
-      write(*,*)' Back from first dgeev call.'
-      write(*,*)' INFO = ',INFO
-      write(*,*)' WorkTmp(1) = ',WorkTmp(1)
-
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_MatrixFull: Failure in DGEEV getting WORK length.')
       LWork = WorkTmp(1)
-
-      write(*,*)' LWork = ',LWork
-
       Allocate(Work(LWork))
-
-!hph+
-      call mqc_print(6,matrixCopy,'matrix being sent to DGEEV')
-!hph-
-
       call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
         eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
         Work,LWork,INFO)
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_MatrixFull: Failure in DGEEV diagonalizing matrix.')
-
-!hph+
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - real part of eigenvalues in DGEEV wrapper...'
-      call mqc_print(6,eigenValues,'real eigenvalues')
-      write(*,*)
-      write(*,*)' Hrant - imaginary part of eigenvalues in DGEEV wrapper...'
-      call mqc_print(6,eigenValuesImaginary,'imaginary eigenvalues')
-      write(*,*)
-      write(*,*)
-!hph-
-
       if(PRESENT(leftEigenVectors)) then
         do i = 1,N
           call mqc_vectorPhase(leftEigenVectors(:,i),.true.)
