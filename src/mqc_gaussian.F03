@@ -680,13 +680,6 @@
 !
 !     Close the matrix file using the gauopen routines.
 !
-
-!hph+
-      write(*,*)
-      write(*,*)' CLOSING FILE: fileinfo%UnitNumber = ',fileinfo%UnitNumber
-      write(*,*)
-!hph-
-
       if(fileinfo%isOpen()) call Close_MatF(fileinfo%UnitNumber)
       fileinfo%filename       = ' '
       fileinfo%CurrentlyOpen  = .false.
@@ -1236,24 +1229,16 @@
 !           type (integer, real, etc.) and data structure (scalar, vector,
 !           matrix, etc.).
 !
-
-!hph+
             if(DEBUG) then
-              write(IOut,*)' Hrant - FOUND tmpLabel!!!'
+              write(IOut,*)' FOUND tmpLabel!!!'
               write(IOut,*)   &
                 ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
                 MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,  &
                 N2,N3,N4,N5,NRI,ASym)
-!hph              return
             endIf
-!hph-
-
-!hph+
             if(DEBUG) write(IOut,*)  &
               ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
               MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
-!hph-
-
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
@@ -1440,11 +1425,11 @@
               deallocate(complexTmp)
             case('MIXED')
               write(*,1020)
-              write(*,1040)' Hrant - LR   = ',LR
-              write(*,1040)' Hrant - NR   = ',NR
-              write(*,1040)' Hrant - NI   = ',NI
-              write(*,1040)' Hrant - NRI  = ',NRI
-              write(*,1040)' Hrant - NTot = ',NTot
+              write(*,1040)' LR   = ',LR
+              write(*,1040)' NR   = ',NR
+              write(*,1040)' NI   = ',NI
+              write(*,1040)' NRI  = ',NRI
+              write(*,1040)' NTot = ',NTot
               write(*,1020)
               call mqc_error_a('No general way to load mixed types as of yet &
       &         We are doing it case-by-case at the moment and this does not match.', 6, &
