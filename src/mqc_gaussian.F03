@@ -1586,15 +1586,6 @@
 !
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
         I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
-
-
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - inside the write array routine for mqc_variables.'
-      write(*,*)
-      write(*,*)
-      
-      
 !
 !
 !     Begin by seeing if a new file or filename has been sent by the calling
@@ -1607,7 +1598,6 @@
       else
         my_storage = ''
       endIf
-
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
@@ -1645,22 +1635,76 @@
         call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
           my_filename)
       endIf
+!
+!     Now that the prelim checks are done, write the array sent by the calling
+!     program unit to the matrix file.
+!
+      call String_Change_Case(label,'u',tmpLabel)
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+!
+!     Integer Array
+      case(3)
+        select case(RANK(mqcVariable))
+!
+!       vector...
+        case(1)
+          intVectorTmp = mqcVariable
+          call wr_LIBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+            SIZE(mqcVariable,1),0,0,0,0,.False.,intVectorTmp)
+          DeAllocate(intVectorTmp)
+!
+!       matrix...
+        case(2)
+          Allocate(intVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
+          intMatrixTmp = mqcVariable
+          intVectorTmp = RESHAPE(intMatrixTmp,[SIZE(intMatrixTmp)])
+          call wr_LIBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+            SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
+            intVectorTmp)
+          DeAllocate(intMatrixTmp)
+          DeAllocate(intVectorTmp)
+        case default
+          write(*,*)
+          write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
+          call mqc_error('Invalid mqcVariable rank sent to '//  &
+            'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
+        end select
+!
+!     Real Array
+      case(2)
+        select case(RANK(mqcVariable))
+!
+!       vector...
+        case(1)
+          realVectorTmp = mqcVariable
+          call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+            SIZE(mqcVariable,1),0,0,0,0,.False.,realVectorTmp)
+          DeAllocate(realVectorTmp)
+!
+!       matrix...
+        case(2)
+          Allocate(realVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
+          realMatrixTmp = mqcVariable
+          realVectorTmp = RESHAPE(realMatrixTmp,[SIZE(realMatrixTmp)])
+          call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+            SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
+            realVectorTmp)
+          DeAllocate(realMatrixTmp)
+          DeAllocate(realVectorTmp)
+        case default
+          write(*,*)
+          write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
+          call mqc_error('Invalid mqcVariable rank sent to '//  &
+            'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
+        end select
 
-      if(RANK(mqcVariable).eq.2) then      
-        Allocate(realMatrixTmp(SIZE(mqcVariable,1),SIZE(mqcVariable,2)))
-        Allocate(realVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
-        realMatrixTmp = mqcVariable
-        realVectorTmp = RESHAPE(realMatrixTmp,[SIZE(realMatrixTmp)])
-        call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
-          SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
-          realVectorTmp)
-      else
-        write(*,*)
-        write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
-        call mqc_error('Invalid mqcVariable rank sent to '//  &
+
+!
+!     Unknown Array Type
+      case default
+        call mqc_error('Invalid mqcVariable type code found in '//  &
           'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
-
-      endIf
+      end select
 
 
 
