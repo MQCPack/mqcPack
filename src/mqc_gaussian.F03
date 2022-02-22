@@ -93,6 +93,7 @@
         procedure,pass::getMolData       => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj        => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
         procedure,pass::get2ERIs         => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+        procedure,pass::writeArray2      => MQC_Gaussian_Unformatted_Matrix_Write_Array2
         procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
         procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
         procedure,pass::write2ERIs       => MQC_Gaussian_Unformatted_Matrix_Write_twoERIs
@@ -1525,6 +1526,399 @@
 
 !=====================================================================
 !
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_Array2
+      subroutine MQC_Gaussian_Unformatted_Matrix_Write_Array2(fileinfo,  &
+       label,mqcVariable,filename,storage)
+!
+!     This Routine is used to look-up a matrix in a unformatted matrix file and
+!     write that array into either (OPTIONAL) output dummy MQC_Matrix argument
+!     <matrixIn>, (OPTIONAL) output dummy MQC_Vector argument <vectorIn>, or
+!     (OPTIONAL) output dummy MQC_R4Tensor argument <r4TensorIn>. The character
+!     label for the array of interest is sent to this routine in dummy argument
+!     <label>.
+!
+!     Dummy argument <filename> is optional and is only used if fileinfo
+!     hasn't already been defined using Routine
+!     MQC_Gaussian_Unformatted_Matrix_Open or if it is determined that the
+!     filename sent is different from the filename associated with object
+!     fileinfo.
+!
+!     NOTE: The routine MQC_Gaussian_Unformatted_Matrix_Open is meant to be
+!     called before calling this routine. The expectation is that
+!     MQC_Gaussian_Unformatted_Matrix_Write_Header is also called before this
+!     routine. However, it is also OK to call this routine first. In that case,
+!     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
+!
+!     L. M. Thompson, 2017.
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      type(MQC_Variable),intent(in)::mqcVariable
+      character(len=*),intent(in),OPTIONAL::filename,storage
+!
+      integer::iout=6
+!
+!     Temporary local variables used when calling the gauopen routines.
+      integer::LenBuf
+      character(len=64)::tmpLabel
+!
+!     Local temp variables.
+      integer::i,nInputArrays
+      integer,parameter::IOne=1
+      real,allocatable,dimension(:,:)::realMatrixTmp
+      real,pointer,dimension(:)::realMatrixTmpV
+      integer,allocatable,dimension(:,:)::intMatrixTmp
+      complex(kind=real64),allocatable,dimension(:,:)::compMatrixTmp
+      real,allocatable,dimension(:)::realVectorTmp
+      integer,allocatable,dimension(:)::intVectorTmp
+      complex(kind=real64),allocatable,dimension(:)::compVectorTmp
+      type(MQC_Matrix)::matrixInUse 
+      character(len=256)::my_filename,my_storage
+      logical::DEBUG=.false.,ok
+      Parameter(LenBuf=4000)
+!
+!     Format statements.
+!
+ 1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
+        I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
+
+
+      write(*,*)
+      write(*,*)
+      write(*,*)' Hrant - inside the write array routine for mqc_variables.'
+      write(*,*)
+      write(*,*)
+      
+      
+!
+!
+!     Begin by seeing if a new file or filename has been sent by the calling
+!     program unit. If file has not been opened or there is no header data,
+!     read the header data. If file is not in write mode, write the header
+!     data and set to write mode
+!
+      if(present(storage)) then
+        call String_Change_Case(storage,'l',my_storage)
+      else
+        my_storage = ''
+      endIf
+
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+               'ok', ok )
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
+        else
+          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+               'PRESENT(filename)', PRESENT(filename) )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call fileinfo%OPENFILE(TRIM(filename),0,ok)
+          if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+            'ok', ok )
+          call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'W' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
+        if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
+             'ok', ok )
+        call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
+          my_filename)
+      endIf
+      if(.not.fileinfo%header_written) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call fileinfo%OPENFILE(TRIM(my_filename),0,ok)
+        call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,  &
+          my_filename)
+      endIf
+
+      if(RANK(mqcVariable).eq.2) then      
+        Allocate(realMatrixTmp(SIZE(mqcVariable,1),SIZE(mqcVariable,2)))
+        Allocate(realVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
+        realMatrixTmp = mqcVariable
+        realVectorTmp = RESHAPE(realMatrixTmp,[SIZE(realMatrixTmp)])
+        call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+          SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
+          realVectorTmp)
+      else
+        write(*,*)
+        write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
+        call mqc_error('Invalid mqcVariable rank sent to '//  &
+          'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
+
+      endIf
+
+
+
+
+
+!hph+
+!!
+!!     Ensure that one and only one input MQC-type array has been sent from the
+!!     calling program unit.
+!!
+!      nInputArrays = 0
+!      if(Present(matrixIn)) nInputArrays = nInputArrays+1
+!      if(Present(vectorIn)) nInputArrays = nInputArrays+1
+!      if(Present(r4TensorIn)) nInputArrays = nInputArrays+1
+!      if(nInputArrays.ne.1) call mqc_error_i('Too many input arrays sent to Gaussian matrix file writing procedure.', 6, &
+!           'nInputArrays', nInputArrays )
+!!
+!!     Load the MQC variable into a regular array and get the required dimensions
+!!     Some routines will change when we upgrade to algebra2
+!!
+!      Ione = 1
+!      call String_Change_Case(label,'u',tmpLabel)
+!      if(present(MQC_Variable)) then
+!        call mqc_error('MQC_Variable type sent to MQC_Gaussian_Unformatted_Matrix_Write_Array...NYI.')
+!      elseIf(present(matrixIn)) then
+!        matrixInUse = matrixIn
+!        if(mqc_matrix_haveReal(matrixInUse)) then 
+!          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
+!            if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
+!            endIf
+!            if(mqc_matrix_rows(matrixInUse).lt.mqc_matrix_columns(matrixInUse)) then
+!              allocate(realMatrixTmp(mqc_matrix_rows(matrixInUse),1))
+!            else
+!              allocate(realMatrixTmp(mqc_matrix_columns(matrixInUse),1))
+!            endIf
+!            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
+!            realMatrixTmp = matrixInUse
+!            realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
+!            call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(realMatrixTmp,1), &
+!              0,0,0,0,.False.,realVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(realVectorTmp(size(realMatrixTmp,1)))
+!            realMatrixTmp = matrixInUse
+!            realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
+!            call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,realVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
+!!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!!           where first index is the row. Therefore, we need to transpose the MQC lower
+!!           trangular matrix before writing for correct matrix file storage. This is only an
+!!           issue for nonsymmetric matrices stored in LT form.
+!            realMatrixTmp = transpose(matrixInUse)
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(realMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(realVectorTmp(size(realMatrixTmp,1)))
+!            realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
+!            call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.True.,realVectorTmp)
+!          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+!            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+!            endIf
+!            allocate(realMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+!            allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
+!            realMatrixTmp = matrixInUse
+!            realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
+!            call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,realVectorTmp)
+!          else
+!            call mqc_error_l('type not recognised', 6, &
+!                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+!                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+!                 "mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')", mqc_matrix_test_symmetric(matrixInUse,'antisymmetric'), &
+!                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
+!          endIf
+!        elseIf(mqc_matrix_haveInteger(matrixInUse)) then 
+!          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
+!            if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
+!            endIf
+!            if(mqc_matrix_rows(matrixInUse).lt.mqc_matrix_columns(matrixInUse)) then
+!              allocate(intMatrixTmp(mqc_matrix_rows(matrixInUse),1))
+!            else
+!              allocate(intMatrixTmp(mqc_matrix_columns(matrixInUse),1))
+!            endIf
+!            intMatrixTmp = matrixInUse
+!             allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
+!            intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
+!            call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(intMatrixTmp,1), &
+!              0,0,0,0,.False.,intVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(intVectorTmp(size(intMatrixTmp,1)))
+!            intMatrixTmp = matrixInUse
+!            intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
+!            call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antisymmetric').and.(my_storage.eq.'')).or.(my_storage.eq.'asymm')) then
+!!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!!           where first index is the row. Therefore, we need to transpose the MQC lower
+!!           trangular matrix before writing for correct matrix file storage. This is only an
+!!           issue for nonsymmetric matrices stored in LT form.
+!            intMatrixTmp = transpose(matrixInUse)
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(intMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(intVectorTmp(size(intMatrixTmp,1)))
+!            intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
+!            call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.True.,intVectorTmp)
+!          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+!            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+!            endIf
+!            allocate(intMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+!            intMatrixTmp = matrixInUse
+!            allocate(intVectorTmp(size(intMatrixTmp,1)*size(intMatrixTmp,2)))
+!            intVectorTmp = reshape(intMatrixTmp, shape(intVectorTmp))
+!            call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,intVectorTmp)
+!          else
+!            call mqc_error_l('type not recognised', 6, &
+!                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+!                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+!                 "mqc_matrix_test_symmetric(matrixInUse,'antisymmetric')", mqc_matrix_test_symmetric(matrixInUse,'antisymmetric'), &
+!                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
+!          endIf
+!        elseIf(mqc_matrix_haveComplex(matrixInUse)) then 
+!!       There is a bug in Wr_LCBuf in qcmatrix.F of gauopen if you want to write complex.
+!!       NR should only be negative in Wr_Labl and positive everywhere else.
+!!       Please recomplile MQC after making these changes.
+!          Ione = -1
+!          if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
+!            if(.not.mqc_matrix_haveDiagonal(matrixInUse)) then
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Diag(matrixInUse)
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Diag(matrixInUse)
+!            endIf
+!            if(mqc_matrix_rows(matrixInUse).lt.mqc_matrix_columns(matrixInUse)) then
+!              allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),1))
+!            else
+!              allocate(compMatrixTmp(mqc_matrix_columns(matrixInUse),1))
+!            endIf
+!            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
+!            compMatrixTmp = matrixInUse
+!            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
+!            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
+!              0,0,0,0,.False.,compVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
+!              .or.(my_storage.eq.'symm')) then
+!!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!!           where first index is the row. Therefore, we need to transpose the MQC lower
+!!           trangular matrix before writing for correct matrix file storage. This is only an
+!!           issue for nonsymmetric matrices stored in LT form.
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              matrixInUse = transpose(matrixInUse)
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(compVectorTmp(size(compMatrixTmp,1)))
+!            compMatrixTmp = matrixInUse
+!            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
+!            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
+!          elseIf((mqc_matrix_test_symmetric(matrixInUse,'antihermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'aher') &
+!              .or.(my_storage.eq.'asym')) then
+!!           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
+!!           where first index is the row. Therefore, we need to transpose the MQC lower
+!!           trangular matrix before writing for correct matrix file storage. This is only an
+!!           issue for nonsymmetric matrices stored in LT form.
+!            if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
+!              matrixInUse = transpose(matrixInUse)
+!              if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Symm(matrixInUse)
+!            endIf
+!            allocate(compMatrixTmp((mqc_matrix_rows(matrixInUse)*(mqc_matrix_rows(matrixInUse)+1))/2,1))
+!            allocate(compVectorTmp(size(compMatrixTmp,1)))
+!            compMatrixTmp = matrixInUse
+!            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
+!            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,-mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.True.,compVectorTmp)
+!          elseIf((mqc_matrix_haveFull(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'full')) then
+!            if(.not.mqc_matrix_haveFull(matrixInUse)) then
+!              if(mqc_matrix_haveSymmetric(matrixInUse)) call mqc_matrix_symm2Full(matrixInUse)
+!              if(mqc_matrix_haveDiagonal(matrixInUse)) call mqc_matrix_diag2Full(matrixInUse)
+!            endIf
+!            allocate(compMatrixTmp(mqc_matrix_rows(matrixInUse),mqc_matrix_columns(matrixInUse)))
+!            allocate(compVectorTmp(size(compMatrixTmp,1)*size(compMatrixTmp,2)))
+!            compMatrixTmp = matrixInUse
+!            compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
+!            call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_matrix_rows(matrixInUse), &
+!              mqc_matrix_columns(matrixInUse),0,0,0,.False.,compVectorTmp)
+!          else
+!            call mqc_error_l('type not recognised', 6, &
+!                 'mqc_matrix_test_diagonal(matrixInUse)', mqc_matrix_test_diagonal(matrixInUse), &
+!                 'mqc_matrix_test_symmetric(matrixInUse)', mqc_matrix_test_symmetric(matrixInUse), &
+!                 "mqc_matrix_test_symmetric(matrixInUse,'hermitian')", mqc_matrix_test_symmetric(matrixInUse,'hermitian'), &
+!                 'mqc_matrix_haveFull(matrixInUse)', mqc_matrix_haveFull(matrixInUse) )
+!          endIf
+!        else
+!          call mqc_error_l('MatrixIn type not recognised in &
+!            &MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+!            'mqc_matrix_haveReal(matrixInUse)', mqc_matrix_haveReal(matrixInUse), &
+!            'mqc_matrix_haveInteger(matrixInUse)', mqc_matrix_haveInteger(matrixInUse), &
+!            'mqc_matrix_haveComplex(matrixInUse)', mqc_matrix_haveComplex(matrixInUse) )
+!        endIf
+!      elseIf(present(vectorIn)) then
+!        if(mqc_vector_haveReal(vectorIn)) then 
+!          allocate(realVectorTmp(mqc_length_vector(vectorIn)))
+!          realVectorTmp = vectorIn
+!          call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_length_vector(vectorIn), &
+!            0,0,0,0,.False.,realVectorTmp)
+!        elseIf(mqc_vector_haveInteger(vectorIn)) then 
+!          allocate(intVectorTmp(mqc_length_vector(vectorIn)))
+!          intVectorTmp = vectorIn
+!          call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_length_vector(vectorIn), &
+!            0,0,0,0,.False.,intVectorTmp)
+!        elseIf(mqc_vector_haveComplex(vectorIn)) then 
+!          allocate(compVectorTmp(mqc_length_vector(vectorIn)))
+!          compVectorTmp = vectorIn
+!          call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_length_vector(vectorIn), &
+!            0,0,0,0,.False.,compVectorTmp)
+!        else
+!          call mqc_error_l('VectorIn type not recognised in &
+!            &MQC_Gaussian_Unformatted_Matrix_Write_Array', 6, &
+!            'mqc_vector_haveReal(vectorIn)', mqc_vector_haveReal(vectorIn), &
+!            'mqc_vector_haveInteger(vectorIn)', mqc_vector_haveInteger(vectorIn), &
+!            'mqc_vector_haveComplex(vectorIn)', mqc_vector_haveComplex(vectorIn) )
+!        endIf
+!      endIf
+!hph-
+
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Write_Array2
+
+
+!=====================================================================
+!
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_Array
       subroutine MQC_Gaussian_Unformatted_Matrix_Write_Array(fileinfo,  &
        label,matrixIn,vectorIn,r4TensorIn,filename,storage)
@@ -1598,16 +1992,15 @@
       else
         my_storage = ''
       endIf
-
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
           if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
-               'ok', ok )
+            'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
           call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
-               'PRESENT(filename)', PRESENT(filename) )
+            'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
       if(PRESENT(filename)) then
@@ -1652,7 +2045,7 @@
 !
       Ione = 1
       call String_Change_Case(label,'u',tmpLabel)
-      if(present(matrixIn)) then
+      If(present(matrixIn)) then
         matrixInUse = matrixIn
         if(mqc_matrix_haveReal(matrixInUse)) then 
           if((mqc_matrix_test_diagonal(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'diag')) then
@@ -1668,10 +2061,8 @@
             allocate(realVectorTmp(size(realMatrixTmp,1)*size(realMatrixTmp,2)))
             realMatrixTmp = matrixInUse
             realVectorTmp = reshape(realMatrixTmp, shape(realVectorTmp))
-
             call wr_LRBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(realMatrixTmp,1), &
               0,0,0,0,.False.,realVectorTmp)
-
           elseIf((mqc_matrix_test_symmetric(matrixInUse).and.(my_storage.eq.'')).or.(my_storage.eq.'symm')) then
             if(.not.mqc_matrix_haveSymmetric(matrixInUse)) then
               if(mqc_matrix_haveFull(matrixInUse)) call mqc_matrix_full2Symm(matrixInUse)
