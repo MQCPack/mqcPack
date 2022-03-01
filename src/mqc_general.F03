@@ -66,8 +66,7 @@
       real(kind=real64),public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
-      real(kind=real64),public,parameter::MQC_small = 1.0d-6
-                     ! 10^-6, used as a threshold for near zero.
+      real(kind=real64),public,parameter::MQC_small = 1.0d-6                                                             ! 10^-6, used as a threshold for near zero.
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -155,10 +154,10 @@
       integer,OPTIONAL,intent(out)::major,minor,revision
       character(len=*),OPTIONAL,intent(out)::versionString
 !
-      if(PRESENT(major))         major         = 21
-      if(PRESENT(minor))         minor         = 3
+      if(PRESENT(major))         major         = 22
+      if(PRESENT(minor))         minor         = 2
       if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '21.03.1'
+      if(PRESENT(versionString)) versionString = '22.02.1'
 !
       return
       end subroutine mqc_version
@@ -1452,6 +1451,11 @@
         if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
       else
         if(vector(largestMagnitudePosition).gt.float(0)) vector = -vector
+      endIf
+      if(myTrimZero) then
+        do i = 1,SIZE(vector)
+          if(abs(vector(i)).lt.MQC_small) vector(i) = float(0)
+        endDo
       endIf
 !
       return
