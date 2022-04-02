@@ -6575,9 +6575,10 @@
             endif
           END DO
         END DO
-      else if(integralIn%getLabel().eq.'mo coefficients') then
-        call mqc_error('Energy_List is not set in MQC_Integral object')
       else
+        if(integralIn%getLabel().eq.'mo coefficients') &
+          Write(6,'(A)') 'WARNING: Outputting general MO coefficients but Energy_List is not set. &
+            &Assuming alternating alpha and Beta orbitals.' 
         j = 1
         do i = 1,nAlpha2
           call matrixOut%vput(tmpMatrix%vat([0],[i]),[0],[j])
