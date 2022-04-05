@@ -1364,7 +1364,8 @@
               allocate(arrayTmp(LR))
               call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
               if(Present(matrixOut)) then
-                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)),'antisymmetric')
+!                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)),'antisymmetric')
+                call MQC_Matrix_SymmMatrix_Put(matrixOut,arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)))
               elseIf(Present(mqcVarOut)) then
                 mqcVarOut = mqc_matrixSymm2Full(arrayTmp((myArrayNum-1)*(LR/N3)+1:myArrayNum*(LR/N3)),'U')
               else
@@ -3304,8 +3305,43 @@
                mqc_integral_array_type(est_wavefunction%fock_matrix) )
         endIf
       case default
-        call mqc_error_A('Invalid label sent to %writeESTObj.', 6, &
-             'mylabel', mylabel )
+        call String_Change_Case(label,'u',myLabel)
+        If(present(est_eigenvalues)) then
+          if(my_integral_type.eq.'space') then
+            call fileInfo%writeArray('ALPHA '//trim(myLabel), &
+              vectorIn=est_eigenvalues%getBlock('alpha'))
+          elseIf(my_integral_type.eq.'spin') then
+            call fileInfo%writeArray('ALPHA '//trim(myLabel), &
+              vectorIn=est_eigenvalues%getBlock('alpha'))
+            call fileInfo%writeArray('BETA '//trim(myLabel), &
+              vectorIn=est_eigenvalues%getBlock('beta'))
+          elseIf(my_integral_type.eq.'general') then
+            call mqc_matrix_undoSpinBlockGHF(est_eigenvalues,tmpVector)
+            call fileInfo%writeArray('ALPHA '//trim(myLabel),vectorIn=tmpVector)
+          else
+            call mqc_error_a('Unknown wavefunction type in getESTObj', 6, &
+                 'my_integral_type', my_integral_type )
+          endIf
+        elseIf(present(est_integral)) then 
+          if(my_integral_type.eq.'space') then
+            call fileInfo%writeArray('ALPHA '//trim(myLabel), &
+              matrixIn=est_integral%getBlock('alpha'),storage='full')
+          elseIf(my_integral_type.eq.'spin') then
+            call fileInfo%writeArray('ALPHA '//trim(myLabel), &
+              matrixIn=est_integral%getBlock('alpha'),storage='full')
+            call fileInfo%writeArray('BETA '//trim(myLabel), &
+              matrixIn=est_integral%getBlock('beta'),storage='full')
+          elseIf(my_integral_type.eq.'general') then
+            call mqc_matrix_undoSpinBlockGHF(est_integral,tmpMatrix)
+            if(.not.mqc_matrix_haveComplex(tmpMatrix)) call MQC_Matrix_Copy_Real2Complex(tmpMatrix) 
+            call fileInfo%writeArray('ALPHA '//trim(myLabel),matrixIn=tmpMatrix,storage='full')
+          else
+            call mqc_error_a('Unknown wavefunction type in writeESTObj', 6, &
+                 'my_integral_type', my_integral_type )
+          endIf
+        else
+          call mqc_error('Unsuported open label EST object in writeESTObj')
+        endIf
       end select
 !
       return
@@ -4855,8 +4891,148 @@
                'fileinfo%isGeneral()', fileinfo%isGeneral() )
         endIf
       case default
-        call mqc_error_A('Invalid label sent to %getESTObj.', 6, &
-             'mylabel', mylabel )
+        call String_Change_Case(label,'u',myLabel)
+        If(present(est_eigenvalues)) then
+          if(fileinfo%isRestricted()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),vectorOut=tmpVectorAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              call mqc_eigenvalues_allocate(est_eigenvalues,'','space',tmpVectorAlpha)
+            endIf
+          elseIf(fileinfo%isUnrestricted()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),vectorOut=tmpVectorAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              call fileInfo%getArray('BETA '//trim(myLabel),vectorOut=tmpVectorBeta,foundOut=found)
+              if(present(foundObj)) foundObj = found
+              if(.not.found) then
+                errorMsg = 'BETA '//trim(myLabel)//' not present on file'
+                if(present(foundObj)) then
+                  write(6,'(A)') errorMsg
+                  call fileinfo%load()
+                else
+                  call mqc_error_l(trim(errorMsg),6,'found',found)
+                endIf
+              else
+                call mqc_eigenvalues_allocate(est_eigenvalues,'','spin',tmpVectorAlpha, &
+                  tmpVectorBeta)
+              endIf
+            endIf
+          elseIf(fileinfo%isGeneral()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),vectorOut=tmpVectorAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              nBasis = fileInfo%getVal('nBasis')
+              call mqc_matrix_spinBlockGHF(tmpVectorAlpha)
+              tmpVectorBeta = tmpVectorAlpha%vat(nBasis+1,-1)
+              tmpVectorAlpha = tmpVectorAlpha%vat(1,nBasis)
+              call mqc_eigenvalues_allocate(est_eigenvalues,'','general',tmpVectorAlpha, &
+                tmpVectorBeta)
+            endIf
+          else
+            call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+                 'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+                 'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+                 'fileinfo%isGeneral()', fileinfo%isGeneral() )
+          endIf
+        elseIf(present(est_integral)) then 
+          if(fileinfo%isRestricted()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),tmpMatrixAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              call mqc_integral_allocate(est_integral,'','space',tmpMatrixAlpha)
+            endIf
+          elseIf(fileinfo%isUnrestricted()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),tmpMatrixAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              call fileInfo%getArray('BETA '//trim(myLabel),tmpMatrixBeta,foundOut=found)
+              if(present(foundObj)) foundObj = found
+              if(.not.found) then
+                errorMsg = 'BETA '//trim(myLabel)//' not present on file'
+                if(present(foundObj)) then
+                  write(6,'(A)') errorMsg
+                  call fileinfo%load()
+                else
+                  call mqc_error_l(trim(errorMsg),6,'found',found)
+                endIf
+              else
+                call mqc_integral_allocate(est_integral,'','spin',tmpMatrixAlpha, &
+                  tmpMatrixBeta)
+              endIf
+            endIf
+          elseIf(fileinfo%isGeneral()) then
+            call fileInfo%getArray('ALPHA '//trim(myLabel),tmpMatrixAlpha,foundOut=found)
+            if(present(foundObj)) foundObj = found
+            if(.not.found) then
+              errorMsg = 'ALPHA '//trim(myLabel)//' not present on file'
+              if(present(foundObj)) then
+                write(6,'(A)') errorMsg
+                call fileinfo%load()
+              else
+                call mqc_error_l(trim(errorMsg),6,'found',found)
+              endIf
+            else
+              nBasis = fileInfo%getVal('nBasis')
+              call mqc_matrix_spinBlockGHF(tmpMatrixAlpha,fileInfo%getVal('nElectrons'), &
+                fileInfo%getVal('multiplicity'),elist)
+              tmpMatrixBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[nBasis+1,-1])
+              tmpMatrixBetaAlpha = tmpMatrixAlpha%mat([1,nBasis],[nBasis+1,-1])
+              tmpMatrixAlphaBeta = tmpMatrixAlpha%mat([nBasis+1,-1],[1,nBasis])
+              tmpMatrixAlpha = tmpMatrixAlpha%mat([1,nBasis],[1,nBasis])
+              call mqc_integral_allocate(est_integral,'','general',tmpMatrixAlpha, &
+                tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+              call est_integral%setEList(elist)
+            endIf
+          else
+            call mqc_error_L('Unknown wavefunction type in getESTObj', 6, &
+                 'fileinfo%isRestricted()', fileinfo%isRestricted(), &
+                 'fileinfo%isUnrestricted()', fileinfo%isUnrestricted(), &
+                 'fileinfo%isGeneral()', fileinfo%isGeneral() )
+          endIf
+        else
+          call mqc_error('Unsuported open label EST object in getESTObj')
+        endIf
       end select
 
       if(allocated(elist)) deallocate(elist)
