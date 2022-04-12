@@ -214,7 +214,7 @@
       integer::major,minor,revision
 !
  1000 format(/,1x,'This program uses the Merced Quantum Chemistry Package (MQCPack).',/,  &
-               1x,'MQCPack Version ',A,'.',A,'.'A/)
+               1x,'MQCPack Version ',A,'.',A,'.',A,/)
 !
 !
 !     Get the version information from routine mqc_version and then print it out
