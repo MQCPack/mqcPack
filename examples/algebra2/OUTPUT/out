@@ -11,8 +11,8 @@
         Len  =               1
  
  Hrant - Printing var1 and var2.
-var1 678
-var2 1024.50000
+ var1 678
+ var2 1024.50000
  intrinsicInt1(var1) =             678
  intrinsicInt1(var2) =            1024
  intrinsicInt1(var1), using assignment, =             678
