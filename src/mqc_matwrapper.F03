@@ -557,9 +557,17 @@
 
         Integer(kind=int32)::IntPrecision, Call_Test
         Character(Len=64)::Name
-
         Call_Test = 0
         call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+
+!hph+
+        write(*,*)
+        write(*,*)' Rd_RInd Wrapper.'
+        write(*,*)'    IntPrecision = ',IntPrecision
+        write(*,*)
+        write(*,*)
+!hph-
+
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
            IU_4 = IU
@@ -571,7 +579,21 @@
            LNZ = LNZ_4
         else
 ! File requires 64-bit integers, so no change
+
+!hph+
+      write(*,*)'   Calling RdRInd8'
+!hph-
+
+#ifdef UCMGAUOPEN
+           Call RdRInd8(IU,NR,LR,NR*LR,NTot,LenBuf,RArr)
+#else
            Call RdRInd8(IU,NR,LR,NTot,LenBuf,LNZ,RArr)
+#endif
+
+!hph+
+      write(*,*)'   Back From Calling RdRInd8'
+!hph-
+
         endif
       Return
       End Subroutine Rd_RInd

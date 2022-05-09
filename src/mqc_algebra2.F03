@@ -88,6 +88,7 @@
         procedure,public ::eigen         => MQC_Variable_Matrix_Eigensystem
         procedure,public ::diag          => MQC_Variable_DiagonalMatrix2FullMatrix
         procedure,public ::det           => MQC_Variable_Matrix_Determinant
+        procedure,public ::subMatrix     => MQC_Variable_SubMatrix
       end type MQC_Variable
 !
 !
@@ -737,7 +738,6 @@
       if(.not.conformable) return
       do i = 1,mqcVariable1%getRank()
         conformable = mqcVariable1%dimensions(i).eq.mqcVariable2%dimensions(i)
-        if(.not.conformable) return
       endDo
 !
       return
@@ -3243,13 +3243,6 @@
 !
       if(Rank(mqcMatrix).ne.2) call mqc_error('MatrixVector: Matrix is NOT rank=2.')
       if(Rank(mqcVector).ne.1) call mqc_error('MatrixVector: Vector is NOT rank=1.')
-
-!hph+
-!     write(*,*)
-!      write(*,*)' Size(mqcMatrix,2) = ',SIZE(mqcMatrix,2)
-!      write(*,*)' Size(mqcVector)   = ',SIZE(mqcVector)
-!hph-
-
       if(Size(mqcMatrix,2).ne.Size(mqcVector))  &
         call mqc_error('MatrixVector: Matrix/Vector not conformable.')
 !
@@ -3329,12 +3322,15 @@
       real(kind=real64),dimension(:,:),allocatable::productMatrixReal
 !
 !
-!     Start by ensuring the two MQC Variables are conformable.
+!     Start by ensuring the two MQC Variables are matrices and have conformable
+!     dimensions.
 !
-      if(.not.MQC_Variable_isConformable(TRANSPOSE(mqcVariable1),mqcVariable2))  &
-        call mqc_error_l('MQC Multiplication only allowed for conformable values.', 6, &
-        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
-        MQC_Variable_isConformable(TRANSPOSE(mqcVariable1),mqcVariable2))
+      if(.not.Rank(mqcVariable1).eq.2)  &
+        call mqc_error('MQC Matrix Multiplication: mqcVariable 1 is NOT a matrix.')
+      if(.not.Rank(mqcVariable2).eq.2)  &
+        call mqc_error('MQC Matrix Multiplication: mqcVariable 2 is NOT a matrix.')
+      if(Size(mqcVariable1,2).ne.Size(mqcVariable2,1))  &
+        call mqc_error('MQC Matrix Multiplication: Matrices do not have matching inner-dimensions.')
 !
 !     Get the right combination of integer/real and build a temporary result
 !     array. This will allow uses of this function to work for C = MatMul(A,B),
