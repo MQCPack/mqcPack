@@ -16330,7 +16330,8 @@
       Type(MQC_Scalar)::Sgn
       Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
         Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,R_A_End,&
-        R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End
+        R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End, &
+        string_bits
       integer(kind=int64),dimension(2)::orb
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
         Beta_String_2,Alpha_Diff,Beta_Diff
@@ -16347,8 +16348,9 @@
         nOrbs = nBasis
       endIf
       nBit_Ints = (nBasis/(Bit_Size(0)-1))+1
-      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-      Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
+      string_bits = ((nCore+nOrbs)/(Bit_Size(0)-1))+1
+      Allocate(Alpha_String_1(string_bits),Alpha_String_2(string_bits),Beta_String_1(string_bits),Beta_String_2(string_bits))
+      Allocate(Alpha_Diff(string_bits),Beta_Diff(string_bits))
       call onePDMalpha%init(nOrbs,nOrbs)
       call onePDMbeta%init(nOrbs,nOrbs)
 
@@ -16412,14 +16414,17 @@
                       else
                         rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
                       endIf
-                      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
-                      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
-                      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
-                      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
-                      Det_Diff = 0
+                      Alpha_String_1 = 0
+                      Alpha_String_2 = 0
+                      Beta_String_1 = 0
+                      Beta_String_2 = 0
                       Alpha_Diff_Cnt = 0
                       Beta_Diff_Cnt = 0
                       Do m = 1,NBit_Ints
+                        Alpha_String_1(m) = Determinants%Strings%Alpha%at(L_A_String,m)
+                        Alpha_String_2(m) = Determinants%Strings%Alpha%at(R_A_String,m)
+                        Beta_String_1(m) = Determinants%Strings%Beta%at(L_B_String,m)
+                        Beta_String_2(m) = Determinants%Strings%Beta%at(R_B_String,m)
                         Alpha_Diff(m) = IEOR(Alpha_String_1(m),Alpha_String_2(m))
                         Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(m))
                         Beta_Diff(m) = IEOR(Beta_String_1(m),Beta_String_2(m))

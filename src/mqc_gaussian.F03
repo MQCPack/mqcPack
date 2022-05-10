@@ -72,7 +72,7 @@
           NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
         integer,dimension(:),allocatable::atomicNumbers,atomTypes,basisFunction2Atom, &
           IBasisFunctionType,IgaussianScalars
-        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians   !hph,gaussianScalarsR
+        real,dimension(:),allocatable::atomicCharges,atomicWeights,cartesians,gaussianScalars
       Contains
         procedure,pass::OpenFile         => MQC_Gaussian_Unformatted_Matrix_Open
         procedure,pass::CloseFile        => MQC_Gaussian_Unformatted_Matrix_Close
@@ -717,8 +717,7 @@
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
 
 !hph+
-!      if(allocated(fileinfo%gaussianScalarsI)) deallocate(fileinfo%gaussianScalarsI)
-!      if(allocated(fileinfo%gaussianScalarsR)) deallocate(fileinfo%gaussianScalarsR)
+      if(allocated(fileinfo%gaussianScalars)) deallocate(fileinfo%gaussianScalars)
 !hph-
 
 !
@@ -1495,9 +1494,22 @@
 !
             case('SCALARS-VECTOR') 
 !             Just read Gaussian scalars into a real vector for now
-              allocate(arrayTmp(LR))
+              write(*,*)
+              write(*,*)' Hrant -- read from SCALARS-VECTOR'
+              allocate(arrayTmp(NR*LR))
+              write(*,*)'          calling Rd_RInd'
+              write(*,*)'          NR   = ',NR
+              write(*,*)'          LR   = ',LR
+              write(*,*)'          NTOT = ',NTot
               call Rd_RInd(fileinfo%unitNumber,NR,LR,NTot,LenBuf,LNZ,arrayTmp)
-              vectorOut = arrayTmp
+              write(*,*)'          back from calling Rd_RInd'
+              if(PRESENT(vectorOut)) then
+                vectorOut = arrayTmp
+              elseIf(PRESENT(mqcVarOut)) then
+                mqcVarOut = arrayTmp
+              else
+                call mqc_error('SCALARS-VECTOR found in GMatrix array read without a vector to return it in.')
+              endIf
               deallocate(arrayTmp)
 !
             case default
@@ -5385,8 +5397,8 @@
 !
       return
       end subroutine MQC_Gaussian_Unformatted_Matrix_Write_twoERIs    
-!
-!
+
+
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
@@ -5480,6 +5492,122 @@
       MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer = value_out
       return
       end Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_Value_Real
+      Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Real(fileinfo,label,fileName)
+!
+!     This function is used to get an integer scalar value that is stored in a
+!     Gaussian matrix file object. Available label values that can be sent here
+!     include:
+!       natoms
+!       nbasis
+!       nbasisuse
+!       charge
+!       multiplicity
+!       nelectrons
+!       nalpha
+!       nbeta
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      character(len=*),intent(in),optional::filename
+      real(kind=real64)::MQC_Gaussian_Unformatted_Matrix_Get_Value_Real
+      integer::value_out=0
+      integer,dimension(:),allocatable::GScalars_IPositions
+      real,dimension(:),allocatable::GScalars_Reals
+      character(len=64)::myLabel
+      character(len=256)::my_filename
+      type(MQC_Variable)::mqcTmp
+!
+!
+!     Ensure the matrix file has already been opened and the header read.
+!
+      if(.not.fileinfo%isOpen()) then
+        if(PRESENT(filename)) then
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        else
+          call MQC_Error_L('Failed to retrieve value from Gaussian matrix file: File not open.', 6, &
+            'fileinfo%isOpen()', fileinfo%isOpen() )
+        endIf
+      endIf
+      if(PRESENT(filename)) then
+        if(TRIM(filename)/=TRIM(fileinfo%filename)) then
+          call fileinfo%CLOSEFILE()
+          call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+            filename)
+        endIf
+      endIf
+      if(.not.(fileinfo%readWriteMode .eq. 'R' .or.  &
+        fileinfo%readWriteMode .eq. ' ')) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          filename)
+      endIf
+      if(.not.fileinfo%header_read) then
+        my_filename = TRIM(fileinfo%filename)
+        call fileinfo%CLOSEFILE()
+        call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
+          my_filename)
+      endIf
+
+!hph+
+!!
+!!     Do the work...
+!!
+!      call String_Change_Case(label,'l',myLabel)
+!      select case (mylabel)
+!      case('natoms')
+!        value_out = fileinfo%natoms
+!      case('nbasis')
+!        value_out = fileinfo%nbasis
+!      case('nbasisuse')
+!        value_out = fileinfo%nbasisUse
+!      case('charge')
+!        value_out = fileinfo%icharge
+!      case('multiplicity')
+!        value_out = fileinfo%multiplicity
+!      case('nelectrons')
+!        value_out = fileinfo%nelectrons
+!      case('nalpha')
+!        value_out = (fileinfo%nelectrons + fileinfo%multiplicity - 1)/2 
+!      case('nbeta')
+!        value_out = (fileinfo%nelectrons - fileinfo%multiplicity + 1)/2 
+!      case default
+!        call mqc_error_A('Failure finding requested integer value in Gaussian matrix file', 6, &
+!          'mylabel', mylabel )
+!      endSelect
+!hph-
+
+      write(*,*)
+      write(*,*)
+      write(*,*)
+      write(*,*)
+      write(*,*)' Hrant - Setting MQC_Gaussian DEBUG to TRUE.'
+      write(*,*)' Calling to load up the Gaussian Scalars.'
+      write(*,*)
+      call MQC_Gaussian_SetDEBUG(.true.)
+      call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
+        'gaussian scalars',mqcVarOut=mqcTmp)
+      call mqcTmp%print(header='Gaussian Scalars')
+      call mqc_error('STOP')
+
+
+!
+      MQC_Gaussian_Unformatted_Matrix_Get_Value_Real = value_out
+      return
+      end Function MQC_Gaussian_Unformatted_Matrix_Get_Value_Real
 
       
 !=====================================================================
