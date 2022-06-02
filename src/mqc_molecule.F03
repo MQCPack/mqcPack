@@ -271,6 +271,28 @@
       End Function MQC_Get_Nuclear_Repulsion
 !
 !
+!     PROCEDURE MQC_GET_NUCLEAR_SYMBOLS
+      Function MQC_Get_Nuclear_Symbols(Molecule_Info) Result(Symbols)  
+!
+!     This function returns the nuclear repulsion energy given the 
+!     molecular data object.
+!
+!     Lee M. Thompson, 2017.
+!
+!
+      Implicit None
+      Class(MQC_Molecule_Data),Intent(In)::Molecule_Info
+      Character(len=2),Dimension(:),allocatable::Symbols
+      Integer::I
+!
+      Allocate(Symbols(int(Molecule_Info%NAtoms)))
+      Do I = 1,int(Molecule_Info%NAtoms)
+        Symbols(I) = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
+      EndDo
+!
+      End Function MQC_Get_Nuclear_Symbols
+!
+!
 !     PROCEDURE MQC_PRINT_NUCLEAR_GEOMETRY
       subroutine mqc_print_nuclear_geometry(molecule_info,iOut,bohr) 
 !
