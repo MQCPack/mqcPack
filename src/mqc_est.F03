@@ -279,6 +279,11 @@
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Integral
       End Interface
 !
+!>    \brief <b> Returns the complex conjugate<\b>
+      Interface Conjg
+        Module Procedure mqc_scf_integral_conjg
+      End Interface
+!
 !----------------------------------------------------------------
 !                                                               |
 !     OPERATOR INTERFACES                                       |
@@ -8790,6 +8795,67 @@
       determinant = tmpMat1%det()
 !
       end function mqc_scf_integral_determinant
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Conjg
+!
+!>    \brief <b> MQC_SCF_Integral_Conjg is a function that returns the complex conjugate 
+!>    of an MQC SCF integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Conjg is a function that returns the complex conjugate of an  MQC SCF 
+!>    integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral which will be evaluated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      function mqc_scf_integral_conjg(integral,label) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      if(integral%type().eq.'space') then
+        tmpMat1 = conjg(integral%getblock('alpha'))
+        call mqc_integral_allocate(integralOut,myLabel,'space',tmpMat1)
+      elseIf(integral%type().eq.'spin') then
+        tmpMat1 = conjg(integral%getblock('alpha'))
+        tmpMat2 = conjg(integral%getblock('beta'))
+        call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMat1,tmpMat2)
+      elseIf(integral%type().eq.'general') then
+        tmpMat1 = conjg(integral%getblock('alpha'))
+        tmpMat2 = conjg(integral%getblock('beta'))
+        tmpMat3 = conjg(integral%getblock('alpha-beta'))
+        tmpMat4 = conjg(integral%getblock('beta-alpha'))
+        call mqc_integral_allocate(integralOut,myLabel,'general',tmpMat1,tmpMat2,tmpMat3,tmpMat4)
+      endIf
+!
+      end function mqc_scf_integral_conjg
 !
 !
 !     PROCEDURE MQC_Integral_Set_Energy_List
