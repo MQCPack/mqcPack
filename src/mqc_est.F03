@@ -120,6 +120,8 @@
         Procedure, Public::det => mqc_scf_integral_determinant
 !>      \brief <b> Returns the norm of an MQC_SCF_Integral object</b>
         Procedure, Public::norm => mqc_integral_norm
+!>      \brief <b> Returns an MQC_SCF_Integral object raised to a power</b>
+        Procedure, Public::power => mqc_scf_integral_power
         Procedure, Public::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
@@ -279,7 +281,7 @@
         Module Procedure MQC_Matrix_UndoSpinBlockGHF_Integral
       End Interface
 !
-!>    \brief <b> Returns the complex conjugate<\b>
+!>    \brief <b> Returns the complex conjugate</b>
       Interface Conjg
         Module Procedure mqc_scf_integral_conjg
       End Interface
@@ -8819,6 +8821,12 @@
 !>        Integral is Class(MQC_SCF_Integral)
 !>        The MQC integral which will be evaluated.
 !>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Label for the output SCF integral.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -9058,6 +9066,100 @@
       endIf
 !
       end subroutine mqc_scf_eigenvalues_power   
+!
+!
+!     PROCEDURE MQC_SCF_Integral_Power
+!
+!>    \brief <b> MQC_SCF_Integral_Power is a function that returns the value of 
+!>    an MQC integral variable raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Integral_Power is a function that returns an MQC
+!>    integral variable raised to a power.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] Power
+!>    \verbatim
+!>        Power is Class(*)
+!>        The power to raise the MQC integral.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Label for the output SCF integral.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      subroutine mqc_scf_integral_power(integral,power,label)
+!
+      implicit none
+      class(mqc_scf_integral),intent(inOut)::integral
+      class(*)::power
+      type(mqc_scalar)::scalar
+      type(mqc_matrix)::tmpMat1,tmpMat2,tmpMat3,tmpMat4
+      integer(kind=int64)::nDimAlpha=0
+      Character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+!
+      select type(power)
+      type is (integer)
+        scalar = power
+      type is (real)
+        scalar = power
+      type is (complex)
+        scalar = power
+      type is (mqc_scalar)
+        scalar = power
+      class default
+        call mqc_error_I('power type not defined in MQC_SCF_Integral_Power',6)
+      end select
+
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      if(integral%type().eq.'space') then
+        tmpMat1 = integral%getblock('alpha')
+        call tmpMat1%power(scalar)
+        call mqc_integral_allocate(integral,myLabel,'space',tmpMat1)
+      elseIf(integral%type().eq.'spin') then
+        tmpMat1 = integral%getblock('alpha')
+        tmpMat2 = integral%getblock('beta')
+        call tmpMat1%power(scalar)
+        call tmpMat2%power(scalar)
+        call mqc_integral_allocate(integral,myLabel,'spin',tmpMat1,tmpMat2)
+      elseIf(integral%type().eq.'general') then
+        nDimAlpha = integral%blockSize('alpha') 
+        tmpMat1 = integral%getblock('full')
+        call tmpMat1%power(scalar)
+        tmpMat2 = tmpMat1%mat([NDimAlpha+1,-1],[NDimAlpha+1,-1])
+        tmpMat3 = tmpMat1%mat([NDimAlpha+1,-1],[1,NDimAlpha])
+        tmpMat4 = tmpMat1%mat([1,NDimAlpha],[NDimAlpha+1,-1])
+        tmpMat1 = tmpMat1%mat([1,NDimAlpha],[1,NDimAlpha])
+        call mqc_integral_allocate(integral,myLabel,'general',tmpMat1,tmpMat2,tmpMat3,tmpMat4)
+      endIf
+!
+      end subroutine mqc_scf_integral_power   
 !
 !
 !     PROCEDURE MQC_twoERIs_At
