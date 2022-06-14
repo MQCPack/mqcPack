@@ -801,6 +801,7 @@
       Interface Operator (+)
         Module Procedure MQC_VectorVectorSum
         Module Procedure MQC_ScalarVectorSum
+        Module Procedure MQC_VectorScalarSum
       End Interface
 !
 !     Documentation in scalar operator section
@@ -8700,6 +8701,110 @@
 
       Return
       End Function MQC_ScalarVectorSum
+!
+!
+!     PROCEDURE MQC_VectorScalarSum
+!
+!>    \brief <b> MQC_VectorScalarSum is a function that adds an MQC scalar to all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarSum is a function that adds an MQC scalar to all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements to sum with ScalarIn.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to add to the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2022
+!
+      Function MQC_VectorScalarSum(VectorIn,ScalarIn)
+!
+      Implicit None
+      Type(MQC_Vector)::MQC_VectorScalarSum
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Integer(kind=int64) :: VectorLen
+
+      VectorLen = MQC_Length_Vector(VectorIn)
+
+      If(VectorIn%Data_type.eq.'Real') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%vecr + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%vecr + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecr + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6,&
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      ElseIf(VectorIn%Data_type.eq.'Integer') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%veci + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Integer')
+          MQC_VectorScalarSum%veci = VectorIn%veci + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%veci + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      ElseIf(VectorIn%Data_type.eq.'Complex') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      Else
+        Call MQC_Error_A('VectorIn type unspecified in MQC_VectorScalarSum', 6, &
+             'VectorIn%Data_type', VectorIn%Data_type )
+      EndIf
+
+      Return
+      End Function MQC_VectorScalarSum
 !
 !
 !     PROCEDURE MQC_ScalarVectorDifference
@@ -26272,7 +26377,8 @@
         call mqc_error_I('P type not defined in MQC_Vector_Power',6)
       end select
 !
-      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+!      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+      call A%diag(evals=sVals,evecs=uMatrix)
       call sVals%power(scalar)
       call sVals%diag(A)
       A = matmul(matmul(uMatrix,A),dagger(uMatrix))
