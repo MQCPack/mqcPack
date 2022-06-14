@@ -15,17 +15,14 @@
    **                                                                      **
    **                   The Merced Quantum Chemistry Package               **
    **                                (MQCPack)                             **
-   **                           Development Version                        **
-   **                                Based On:                             **
-   **                         Development Version 0.1                      **
+   **                             Version 22.06.1                          **
+   **                         Released: June 14, 2022                      **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
    **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave Mullally  **
    **    and Hrant P. Hratchian                                            **
    **                                                                      **
-   **                         Version 20.05.1 Completed                    **
-   **                               May 22, 2020                           **
    **                                                                      **
    **************************************************************************
    **************************************************************************
