@@ -155,9 +155,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 22
-      if(PRESENT(minor))         minor         = 2
+      if(PRESENT(minor))         minor         = 4
       if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '22.02.1'
+      if(PRESENT(versionString)) versionString = '22.04.1'
 !
       return
       end subroutine mqc_version
@@ -200,6 +200,31 @@
 !
       return
       end function mqc_version_check
+!
+!PROCEDURE mqc_version_print
+      subroutine mqc_version_print(iUnit)
+!
+!     This subroutine prints the MQCPack version. Input dummy argument <iUnit>
+!     is an integer giving the unit number of the file where the version
+!     information should be printed.
+!
+!
+      implicit none
+      integer,intent(in)::iUnit
+      integer::major,minor,revision
+!
+ 1000 format(/,1x,'This program uses the Merced Quantum Chemistry Package (MQCPack).',/,  &
+               1x,'MQCPack Version ',A,'.',A,'.',A,/)
+!
+!
+!     Get the version information from routine mqc_version and then print it out
+!     to file iUnit.
+!
+      call mqc_version(major,minor,revision)
+      write(iUnit,1000) TRIM(num2char(major)),TRIM(num2char(minor)),TRIM(num2char(revision))
+!
+      return
+      end subroutine mqc_version_print
 !
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
@@ -610,7 +635,7 @@
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(integer2character(scalar))
       endIf
       lineToPrint = ADJUSTL(lineToPrint)
-      write(iOut,'(A)') TRIM(lineToPrint)
+      write(iOut,'(1x,A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
         if(Blank_At_Bottom) write(iOut,1020)
       endIf
@@ -653,7 +678,7 @@
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(real2character(scalar))
       endIf
       lineToPrint = ADJUSTL(lineToPrint)
-      write(iOut,'(A)') TRIM(lineToPrint)
+      write(iOut,'(1x,A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
         if(Blank_At_Bottom) write(iOut,1020)
       endIf
