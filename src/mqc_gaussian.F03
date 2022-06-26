@@ -2329,6 +2329,7 @@
           call wr_LIBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_length_vector(vectorIn), &
             0,0,0,0,.False.,intVectorTmp)
         elseIf(mqc_vector_haveComplex(vectorIn)) then 
+          IOne = -1
           allocate(compVectorTmp(mqc_length_vector(vectorIn)))
           compVectorTmp = vectorIn
           call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,mqc_length_vector(vectorIn), &
