@@ -11030,7 +11030,7 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in,out] Vector
+!>    \param[in] Vector
 !>    \verbatim
 !>        Vector is Class(MQC_Vector)
 !>        The name of the MQC_Vector variable.
@@ -11055,7 +11055,7 @@
 !     Variable Declarations.
 !
       implicit none
-      class(MQC_Vector),intent(inOut)::vector
+      class(MQC_Vector),intent(in)::vector
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::TypeFlag
