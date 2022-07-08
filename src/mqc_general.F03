@@ -1503,7 +1503,7 @@
       implicit none
       real(kind=real64),dimension(:),intent(in)::vector1,vector2
       real(kind=real64),OPTIONAL,intent(in)::scalar
-      real(kind=real64),allocatable,dimension(:,:),intent(out)::matrixOut
+      real(kind=real64),allocatable,dimension(:,:)::matrixOut
 !
       integer(kind=int64)::n1,n2,i,j
 !
