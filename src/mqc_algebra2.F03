@@ -3518,8 +3518,8 @@
 !PROCEDURE MQC_Variable_Matrix_Determinant
       function MQC_Variable_Matrix_Determinant(mqcVariable) result(det)
 !
-!     This routine carries out eigen decomposision of a matrix stored in input
-!     argument <mqcVariable>.
+!     This routine determines the determinant of a matrix of a matrix stored in
+!     input argument <mqcVariable>.
 !
 !
 !     H. P. Hratchian, 2022.
