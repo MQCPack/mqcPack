@@ -465,6 +465,7 @@
         Module Procedure MQC_Scalar_Complex_RealPart
         Module Procedure MQC_Vector_Complex_RealPart
         Module Procedure MQC_Matrix_Complex_RealPart
+        Module Procedure MQC_R4Tensor_Complex_RealPart
       End Interface
 !
 !>    \brief <b> Returns the imaginary part</b>
@@ -472,6 +473,7 @@
         Module Procedure MQC_Scalar_Complex_ImagPart
         Module Procedure MQC_Vector_Complex_ImagPart
         Module Procedure MQC_Matrix_Complex_ImagPart
+        Module Procedure MQC_R4Tensor_Complex_ImagPart
       End Interface
 !
 !>    \brief <b> Returns the sine</b>
@@ -799,6 +801,7 @@
       Interface Operator (+)
         Module Procedure MQC_VectorVectorSum
         Module Procedure MQC_ScalarVectorSum
+        Module Procedure MQC_VectorScalarSum
       End Interface
 !
 !     Documentation in scalar operator section
@@ -8700,6 +8703,110 @@
       End Function MQC_ScalarVectorSum
 !
 !
+!     PROCEDURE MQC_VectorScalarSum
+!
+!>    \brief <b> MQC_VectorScalarSum is a function that adds an MQC scalar to all
+!>    elements of an MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorScalarSum is a function that adds an MQC scalar to all elements of 
+!>    an MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC vector with elements to sum with ScalarIn.
+!>    \endverbatim
+!>
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is Type(MQC_Scalar)
+!>        The MQC scalar to add to the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2022
+!
+      Function MQC_VectorScalarSum(VectorIn,ScalarIn)
+!
+      Implicit None
+      Type(MQC_Vector)::MQC_VectorScalarSum
+      Type(MQC_Vector),Intent(In)::VectorIn
+      Type(MQC_Scalar),Intent(In)::ScalarIn
+      Integer(kind=int64) :: VectorLen
+
+      VectorLen = MQC_Length_Vector(VectorIn)
+
+      If(VectorIn%Data_type.eq.'Real') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%vecr + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%vecr + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecr + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6,&
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      ElseIf(VectorIn%Data_type.eq.'Integer') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Real')
+          MQC_VectorScalarSum%vecr = VectorIn%veci + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Integer')
+          MQC_VectorScalarSum%veci = VectorIn%veci + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%veci + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      ElseIf(VectorIn%Data_type.eq.'Complex') then
+        If(ScalarIn%Data_type.eq.'Real') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scar
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Integer') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scai
+          MQC_VectorScalarSum%column = VectorIn%column
+        ElseIf(ScalarIn%Data_type.eq.'Complex') then
+          Call MQC_Allocate_Vector(VectorLen,MQC_VectorScalarSum,'Complex')
+          MQC_VectorScalarSum%vecc = VectorIn%vecc + ScalarIn%scac
+          MQC_VectorScalarSum%column = VectorIn%column
+        Else
+          Call MQC_Error_A('ScalarIn type unspecified in MQC_VectorScalarSum', 6, &
+               'ScalarIn%Data_type', ScalarIn%Data_type )
+        EndIf
+      Else
+        Call MQC_Error_A('VectorIn type unspecified in MQC_VectorScalarSum', 6, &
+             'VectorIn%Data_type', VectorIn%Data_type )
+      EndIf
+
+      Return
+      End Function MQC_VectorScalarSum
+!
+!
 !     PROCEDURE MQC_ScalarVectorDifference
 !
 !>    \brief <b> MQC_ScalarVectorDifference is a function that subtracts an MQC 
@@ -14059,12 +14166,11 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat,iprint)
+      Subroutine MQC_Matrix_DiagMatrix_Put_Vector(diagVectorIn,mat)
 !
       implicit none
       class(MQC_Matrix),intent(inOut)::mat
       class(MQC_Vector),intent(in)::diagVectorIn
-      integer,optional::iprint
 !
       integer(kind=int64)::n
       character(len=64)::data_type 
@@ -14723,8 +14829,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14732,8 +14838,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
+                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14767,8 +14873,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14776,8 +14882,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14811,8 +14917,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14820,8 +14926,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14829,8 +14935,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -14838,8 +14944,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatI(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -14877,8 +14983,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14886,8 +14992,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14920,8 +15026,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14929,8 +15035,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14964,8 +15070,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14973,8 +15079,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14982,8 +15088,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -14991,8 +15097,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -15030,8 +15136,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15039,8 +15145,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatI(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15073,8 +15179,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15082,8 +15188,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15116,8 +15222,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15125,8 +15231,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15134,8 +15240,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -15143,8 +15249,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
-                  Mat%MatC(IndK+M-1,IndI+N-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
                   L = L + 1
                 endDo
               endDo
@@ -26271,7 +26377,8 @@
         call mqc_error_I('P type not defined in MQC_Vector_Power',6)
       end select
 !
-      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+!      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+      call A%diag(evals=sVals,evecs=uMatrix)
       call sVals%power(scalar)
       call sVals%diag(A)
       A = matmul(matmul(uMatrix,A),dagger(uMatrix))
@@ -27523,12 +27630,12 @@
           Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
         ArrayOut = TensorIn%ITen
       ElseIf(MQC_R4Tensor_HaveReal(TensorIn)) then
-        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
-          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        allocate(ArrayOut(Size(TensorIn%RTen,1),Size(TensorIn%RTen,2),&
+          Size(TensorIn%RTen,3),Size(TensorIn%RTen,4)))
         ArrayOut = TensorIn%RTen
       ElseIf(MQC_R4Tensor_HaveComplex(TensorIn)) then
-        allocate(ArrayOut(Size(TensorIn%ITen,1),Size(TensorIn%ITen,2),&
-          Size(TensorIn%ITen,3),Size(TensorIn%ITen,4)))
+        allocate(ArrayOut(Size(TensorIn%CTen,1),Size(TensorIn%CTen,2),&
+          Size(TensorIn%CTen,3),Size(TensorIn%CTen,4)))
         ArrayOut = TensorIn%CTen
       Else
         Call MQC_Error_A('TensorIn type unknown in MQC_Tensor2ComplexArray', 6, &
@@ -29321,6 +29428,7 @@
         if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
           CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2, &
             [D3(1),D3(1)],[D4(1),D4(1)])
+      flush(6)
           matrixOut = CompR4Tensor(:,:,1,1)
         elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
           CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
@@ -29937,7 +30045,7 @@
       Len1 = IndJ-IndI+1
       If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
         Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1) )
+        6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1),'Size(Ten,1)',Size(Ten,1))
       If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
         'Len1', Len1 )
@@ -30621,5 +30729,105 @@
 !
       Return
       End Function MQC_R4Tensor_Complex_Conjugate
+!
+!
+!     PROCEDURE MQC_R4Tensor_Complex_RealPart
+!
+!>    \brief <b> MQC_R4Tensor_Complex_RealPart is a function that returns a MQC R4Tensor
+!>    with elements containing the real part of elements of another MQC R4Tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_Complex_RealPart is a function that returns a MQC R4Tensor with 
+!>    elements containing the real part of elements of another MQC R4Tensor.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_R4Tensor)
+!>        The name of the MQC_R4Tensor variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      function mqc_R4Tensor_complex_realPart(A) result(output)
+!
+      Implicit None
+      class(mqc_R4Tensor),intent(in)::A
+      type(mqc_R4Tensor)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      if(A%Data_Type.eq.'Complex') then
+        call MQC_R4Tensor_Copy_Complex2Real(output)
+      endIf
+!
+      end function mqc_R4Tensor_complex_realPart
+!
+!
+!     PROCEDURE MQC_R4Tensor_Complex_ImagPart
+!
+!>    \brief <b> MQC_R4Tensor_Complex_ImagPart is a function that returns a MQC R4Tensor
+!>    with elements containing the imaginary part of elements of another MQC R4Tensor</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_R4Tensor_Complex_ImagPart is a function that returns a MQC R4Tensor with 
+!>    elements containing the imaginary part of elements of another MQC R4Tensor.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_R4Tensor)
+!>        The name of the MQC_R4Tensor variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      function mqc_R4Tensor_complex_imagPart(A) result(output)
+!
+      Implicit None
+      class(mqc_R4Tensor),intent(in)::A
+      type(mqc_R4Tensor)::output
+      integer(kind=int64)::i
+!
+!     Do the work.
+!
+      output = A
+      select case (A%Data_Type)
+      case('Integer')
+        output%ITen = 0
+      case('Real')
+        output%RTen = 0.0
+      case('Complex')
+        call MQC_R4Tensor_Copy_Complex2Real(output)
+        output%RTen = aimag(A%CTen)
+      case default
+        call mqc_error_a('Unrecognized MQC_R4Tensor data type in mqc_matrix_complex_realPart',&
+          6,'A%Data_Type',A%Data_Type)
+      end select
+!
+      end function mqc_R4Tensor_complex_imagPart
+!
 !
       End Module MQC_Algebra
