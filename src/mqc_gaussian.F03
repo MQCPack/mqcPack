@@ -2934,7 +2934,7 @@
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
       subroutine mqc_gaussian_unformatted_matrix_write_EST_object(fileinfo,label, &
-        est_wavefunction,est_integral,est_eigenvalues,filename,override)
+        est_wavefunction,est_integral,est_eigenvalues,filename,override,imagORide)
 !
 !     THIS SHOULD BE GAU_GET_EST_OBJ AND WE SHOULD HAVE A GENERAL ROUTINE IN EST OBJ
 !     THAT CALLS THIS IF WE HAVE A GAUSSIAN FILE
@@ -2989,9 +2989,9 @@
       type(mqc_wavefunction),optional::est_wavefunction
       type(mqc_scf_integral),optional::est_integral
       type(mqc_scf_eigenvalues),optional::est_eigenvalues
-      character(len=*),intent(in),optional::filename,override
+      character(len=*),intent(in),optional::filename,override,imagORide
       character(len=64)::myLabel
-      character(len=256)::my_filename,my_override,my_integral_type
+      character(len=256)::my_filename,my_override,my_integral_type,my_imagORide
       integer::nInputArrays,nBasis,nAlpha,nBeta
       type(mqc_matrix)::tmpMatrix
       type(mqc_vector)::tmpVector
@@ -3063,6 +3063,24 @@
           my_integral_type = mqc_eigenvalues_array_type(est_eigenvalues)
         endIf
       endIf
+
+      if(present(imagORide)) then
+        call String_Change_Case(imagORide,'l',my_imagORide)
+        if(present(est_wavefunction)) call mqc_error_l('Overriding wavefunction types not implemented', 6, &
+          'present(est_wavefunction)', present(est_wavefunction) )
+        if(present(est_eigenvalues)) call mqc_error_l('Overriding eigenvalue real/complex not implemented', 6, &
+          'present(est_eigenvalues)', present(est_eigenvalues) )
+        if(my_imagORide.eq.'real') then
+          if(present(est_integral)) then
+            est_integral = est_integral%orbitals('real') 
+          endIf
+        elseif(my_imagORide.eq.'complex') then
+          if(present(est_integral)) then
+            est_integral = est_integral%orbitals('complex') 
+          endIf
+        endIf
+      endIf
+
 !
 !     Do the work...
 !
