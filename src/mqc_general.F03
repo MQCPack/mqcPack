@@ -1487,6 +1487,49 @@
       end subroutine mqc_vectorPhase
 
 
+!PROCEDURE mqc_outerProduct_real
+      Function mqc_outerProduct_real(vector1,vector2,scalar) result(matrixOut)
+!
+!     This function forms the outer product of two vectors -- vector1 and
+!     vector2. The result is a matrix that is returned in matrixOut, which is
+!     assumed to be allocatable. Optionally, a scalar <scalar> can be sent to
+!     multiply the outer product.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::vector1,vector2
+      real(kind=real64),OPTIONAL,intent(in)::scalar
+      real(kind=real64),allocatable,dimension(:,:)::matrixOut
+!
+      integer(kind=int64)::n1,n2,i,j
+!
+!     Do the work...
+!
+      n1 = SIZE(vector1)
+      n2 = SIZE(vector2)
+      Allocate(matrixOut(n1,n2))
+      if(PRESENT(scalar)) then
+        do i = 1,n1
+          do j = 1,n2
+            matrixOut(i,j) = scalar*vector1(i)*vector2(j)
+          endDo
+        endDo
+      else
+        do i = 1,n1
+          do j = 1,n2
+            matrixOut(i,j) = vector1(i)*vector2(j)
+          endDo
+        endDo
+      endIf
+!
+      return
+      end function mqc_outerProduct_real
+
+
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,upperLower)
