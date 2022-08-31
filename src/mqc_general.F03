@@ -66,8 +66,7 @@
       real(kind=real64),public,parameter::fineSC = 1.0d0/137.035999074d0                                                 ! Fine structure constant
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
-      real(kind=real64),public,parameter::MQC_small = 1.0d-6
-                     ! 10^-6, used as a threshold for near zero.
+      real(kind=real64),public,parameter::MQC_small = 1.0d-6                                                             ! 10^-6, used as a threshold for near zero.
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -141,6 +140,28 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!PROCEDURE mqc_version
+      subroutine mqc_version(major,minor,revision,versionString)
+!
+!     This subroutine returns the current MQC version number. The full MQC
+!     version number is comprised of three components: major.minor.revision. The
+!     major version indicated is given by the last two digits of the versioning
+!     year; the minor label is two digits indicating a versioning month; and the
+!     last digit gives a revision number.
+!
+!
+      implicit none
+      integer,OPTIONAL,intent(out)::major,minor,revision
+      character(len=*),OPTIONAL,intent(out)::versionString
+!
+      if(PRESENT(major))         major         = 22
+      if(PRESENT(minor))         minor         = 6
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '22.06.1'
+!
+      return
+      end subroutine mqc_version
+!
 !PROCEDURE mqc_version_check
       function mqc_version_check(isMajor,isMinor,isRevision,  &
         olderThanMajor,olderThanMinor,olderThanRevision,  &
@@ -179,32 +200,31 @@
 !
       return
       end function mqc_version_check
-
-
 !
-!PROCEDURE mqc_version
-      subroutine mqc_version(major,minor,revision,versionString)
+!PROCEDURE mqc_version_print
+      subroutine mqc_version_print(iUnit)
 !
-!     This subroutine returns the current MQC version number. The full MQC
-!     version number is comprised of three components: major.minor.revision. The
-!     major version indicated is given by the last two digits of the versioning
-!     year; the minor label is two digits indicating a versioning month; and the
-!     last digit gives a revision number.
+!     This subroutine prints the MQCPack version. Input dummy argument <iUnit>
+!     is an integer giving the unit number of the file where the version
+!     information should be printed.
 !
 !
       implicit none
-      integer,OPTIONAL,intent(out)::major,minor,revision
-      character(len=*),OPTIONAL,intent(out)::versionString
+      integer,intent(in)::iUnit
+      integer::major,minor,revision
 !
-      if(PRESENT(major))         major         = 20
-      if(PRESENT(minor))         minor         = 5
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '20.05.1'
+ 1000 format(/,1x,'This program uses the Merced Quantum Chemistry Package (MQCPack).',/,  &
+               1x,'MQCPack Version ',A,'.',A,'.',A,/)
+!
+!
+!     Get the version information from routine mqc_version and then print it out
+!     to file iUnit.
+!
+      call mqc_version(major,minor,revision)
+      write(iUnit,1000) TRIM(num2char(major)),TRIM(num2char(minor)),TRIM(num2char(revision))
 !
       return
-      end subroutine mqc_version
-
-
+      end subroutine mqc_version_print
 !
 !PROCEDURE mqc_error
       Subroutine mqc_error(Message,IOut)
@@ -223,18 +243,15 @@
       implicit none
       character(LEN=*),intent(in),OPTIONAL::Message
       integer(kind=int64),intent(in),OPTIONAL::IOut
-      integer(kind=int64)::IJunk
+      integer(kind=int64)::myIOut,IJunk
 !
  1000 Format(/,1x,'MQC ERROR: ',A,/)
 !
-      If(Present(Message)) then
-        If(Present(IOut)) then
-          Write(IOut,1000) TRIM(Message)
-        else
-          Write(6,1000) TRIM(Message)
-        endIf
-      endIf
-      Stop 999
+      myIOut = 6
+      If(Present(IOut)) myIOut = IOut
+      If(Present(Message)) Write(myIOut,1000) TRIM(Message)
+      flush(myIOut)
+      call mqc_abort()
 !
       Return
       End Subroutine MQC_Error
@@ -543,12 +560,38 @@
 !
 !     Do the work...
 !
+      if(allocated(argument)) deallocate(argument)
       call get_command_argument(argNum,length=argLen)
       allocate(character(len=argLen)::argument)
       call get_command_argument(argNum,argument)
 !
       Return
       End Subroutine mqc_get_command_argument
+
+!
+!PROCEDURE mqc_get_command_argument_integer
+      Subroutine mqc_get_command_argument_integer(argNum,iArgument)
+!
+!     This subroutine is used to get an integer argument from the command line.
+!     The output dummy argument iArgument is returned with the integer found as
+!     command line arugment argNum. If this command line argument is NOT an
+!     integer, the program will SegFault.
+!     
+!     -H. P. Hratchian, 2021.
+!
+!
+      implicit none
+      integer(kind=int64),intent(in)::argNum
+      integer(kind=int64),intent(out)::iArgument
+      character(len=:),allocatable::argument
+!
+!     Do the work...
+!
+      call mqc_get_command_argument(argNum,argument)
+      read(argument,*) iArgument
+!
+      Return
+      End Subroutine mqc_get_command_argument_integer
 
 
 !
@@ -592,7 +635,7 @@
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(integer2character(scalar))
       endIf
       lineToPrint = ADJUSTL(lineToPrint)
-      write(iOut,'(A)') TRIM(lineToPrint)
+      write(iOut,'(1x,A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
         if(Blank_At_Bottom) write(iOut,1020)
       endIf
@@ -635,14 +678,61 @@
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(real2character(scalar))
       endIf
       lineToPrint = ADJUSTL(lineToPrint)
-      write(iOut,'(A)') TRIM(lineToPrint)
+      write(iOut,'(1x,A)') TRIM(lineToPrint)
       if(PRESENT(Blank_At_Bottom)) then
         if(Blank_At_Bottom) write(iOut,1020)
       endIf
 !
       return
       end subroutine MQC_Print_Scalar_Real
-
+!
+!
+!PROCEDURE MQC_Print_Rank4Tensor_Array_Real
+      Subroutine MQC_Print_Rank4Tensor_Array_Real(IOut,Array,Header,  &
+        Blank_At_Top,Blank_At_Bottom)
+!
+!     This subroutine is used to print a real rank-4 tensor array.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
+!
+ 1000 Format(/,1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
+!
+      NI = Size(Array,1)
+      NJ = Size(Array,2)
+      NK = Size(Array,3)
+      NL = Size(Array,4)
+!
+      if(PRESENT(Blank_At_Top)) then
+        if(Blank_At_Top) write(IOut,1020)
+      endIf
+      if(PRESENT(Header)) write(IOut,1000) TRIM(Header)
+      do i = 1,NI
+        do j = 1,NJ
+          do k = 1,NK
+            do l = 1,NL
+              write(iOut,2002) i,j,k,l,Array(i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+      if(PRESENT(Blank_At_Bottom)) then
+        if(Blank_At_Bottom) write(IOut,1020)
+      endIf
+!
+      return
+      end subroutine MQC_Print_Rank4Tensor_Array_Real
 
 !
 !PROCEDURE MQC_Print_Matrix_Array_Integer
@@ -1275,15 +1365,78 @@
 !
       return
       end subroutine mqc_normalizeVector
-
-
+!
+!
+!PROCEDURE mqc_vectorTrimZero
+      Subroutine mqc_vectorTrimZero(vectorIn,vectorOut,small)
+!
+!     This subroutine accepts a vector, <vectorIn>, and sets all entries that
+!     have absolute values below a threshold to float(0).
+!
+!     If the optional dummy argument <vectorOut> is sent, then <vectorIn> is
+!     left unchanges and the zero-d version of the vector is returned in
+!     <vectorOut>. Otherwise, the zero-ing is done in place in <vectorIn>.
+!
+!     The optional dummy argument <small> may be sent with a user specified
+!     threshold. Otherwise, the threshold is set to the MQC system value of
+!     <MQC_small>.
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(inOut)::vectorIn
+      real(kind=real64),dimension(:),allocatable,optional,intent(Out)::vectorOut
+      real(kind=real64),optional,intent(in)::small
+      integer(kind=int64)::i
+      real(kind=real64)::mySmall,zero=0.0
+!
+!
+!     Initial set-up code...
+!
+      mySmall = MQC_small
+      if(PRESENT(small)) mySmall = small
+      if(PRESENT(vectorOut)) then
+        if(Allocated(vectorOut)) then
+          if(SIZE(vectorOut).ne.SIZE(vectorIn)) then
+            DeAllocate(vectorOut)
+            Allocate(vectorout(size(vectorin)))
+          endIf
+        else
+          Allocate(vectorout(size(vectorin)))
+        endIf
+      endIf
+!
+!     Do trim work.
+!
+      if(PRESENT(vectorOut)) then
+        vectorOut = vectorIn
+        do i = 1,SIZE(vectorIn)
+          if(abs(vectorOut(i)).lt.mySmall) vectorOut(i) = zero
+        endDo
+      else
+        do i = 1,SIZE(vectorIn)
+          if(abs(vectorIn(i)).lt.mySmall) vectorIn(i) = zero
+        endDo
+      endIf
+!
+      return
+      end Subroutine mqc_vectorTrimZero
+!
+!
 !PROCEDURE mqc_vectorPhase
-      Subroutine mqc_vectorPhase(vector,largestPositive)
+      Subroutine mqc_vectorPhase(vector,largestPositive,trimZero)
 !
 !     This subroutine accepts a vector fixes the phase so that the largest
 !     magniture value is either positive (largestPostive=.TRUE.) or negative
 !     (largestPostive=.FALSE.). The vector phase is modified, as needed, in
-!     place. Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!     place.
+!
+!     Dummy argument largestPostive is OPTIONAL and defaults to TRUE.
+!
+!     Dummy argument trimZero is OPTIONAL and defaults to TRUE.
 !
 !
 !     H. P. Hratchian, 2019.
@@ -1292,16 +1445,28 @@
 !     Variable Declarations.
       implicit none
       real(kind=real64),dimension(:),intent(inOut)::vector
-      logical,intent(in),optional::largestPositive
+      logical,intent(in),optional::largestPositive,trimZero
       integer(kind=int64)::i,largestMagnitudePosition
       real(kind=real64)::largestMagnitudeValue
-      logical::myLargestPositive
+      logical::myLargestPositive,myTrimZero
 !
-      myLargestPositive = .True.
+!
+!     Initial set-up code...
+!
+      myLargestPositive = .true.
       if(PRESENT(largestPositive)) myLargestPositive = largestPositive
+      myTrimZero = .true.
+      if(PRESENT(trimZero)) myTrimZero = trimZero
+!
+!     Do phase correction and trim work.
+!
+      if(myTrimZero.and.(abs(vector(1)).lt.MQC_small))  &
+        vector(1) = float(0)
       largestMagnitudeValue = abs(vector(1)) + MQC_small
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
+        if(myTrimZero.and.(abs(vector(i)).lt.MQC_small))  &
+          vector(i) = float(0)
         if(abs(vector(i)).gt.largestMagnitudeValue) then
           largestMagnitudeValue = abs(vector(i)) + MQC_small
           largestMagnitudePosition = i
@@ -1312,9 +1477,57 @@
       else
         if(vector(largestMagnitudePosition).gt.float(0)) vector = -vector
       endIf
+      if(myTrimZero) then
+        do i = 1,SIZE(vector)
+          if(abs(vector(i)).lt.MQC_small) vector(i) = float(0)
+        endDo
+      endIf
 !
       return
       end subroutine mqc_vectorPhase
+
+
+!PROCEDURE mqc_outerProduct_real
+      Function mqc_outerProduct_real(vector1,vector2,scalar) result(matrixOut)
+!
+!     This function forms the outer product of two vectors -- vector1 and
+!     vector2. The result is a matrix that is returned in matrixOut, which is
+!     assumed to be allocatable. Optionally, a scalar <scalar> can be sent to
+!     multiply the outer product.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::vector1,vector2
+      real(kind=real64),OPTIONAL,intent(in)::scalar
+      real(kind=real64),allocatable,dimension(:,:)::matrixOut
+!
+      integer(kind=int64)::n1,n2,i,j
+!
+!     Do the work...
+!
+      n1 = SIZE(vector1)
+      n2 = SIZE(vector2)
+      Allocate(matrixOut(n1,n2))
+      if(PRESENT(scalar)) then
+        do i = 1,n1
+          do j = 1,n2
+            matrixOut(i,j) = scalar*vector1(i)*vector2(j)
+          endDo
+        endDo
+      else
+        do i = 1,n1
+          do j = 1,n2
+            matrixOut(i,j) = vector1(i)*vector2(j)
+          endDo
+        endDo
+      endIf
+!
+      return
+      end function mqc_outerProduct_real
 
 
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
@@ -1597,7 +1810,7 @@
 
 
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_real
-      Subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
+      subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
         matrixFull)
 !
 !     This subroutine accepts an input one-dimensional array of the diagonal
@@ -1632,6 +1845,197 @@
 !
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_real
+!
+!
+!PROCEDURE mqc_packedSymmetricSymmetricR4Tensor2Full_real
+      subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real(r4TensorSymSym,  &
+        r4TensorFull)
+!
+!     This subroutine accepts a rank-4 array packed in symmetric-symmetric form
+!     and produces the corresponding fully un-packed rank-4 array. The tensor
+!     must have the same size for all four dimensions.
+!
+!     A symmetric-symmetric rank-4 tensor has the following 8-fold equivalences:
+!           (i,j,k,l) = (j,i,k,l)
+!                     = (i,j,l,k)
+!                     = (j,i,l,k)
+!                     = (k,l,i,j)
+!                     = (l,k,i,j)
+!                     = (k,l,j,i)
+!                     = (l,k,j,i)
+!
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::r4TensorSymSym
+      real(kind=real64),dimension(:,:,:,:),intent(out)::r4TensorFull
+      integer(kind=int64)::i,j,k,l,ij,kl,ijkl,nDim,lenSymSym
+      real(kind=real64)::temp
+!
+!     Error traps...
+!
+      if(SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,2).or.  &
+        SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,3).or.   &
+        SIZE(r4TensorFull,1).ne.SIZE(r4TensorFull,4))      &
+        call mqc_error('mqc_packedSymmetricSymmetricR4Tensor2Full_real: Incorrect dimmensions!')
+!
+!     Do the work...
+!
+      nDim = SIZE(r4TensorFull,1)
+      i = (nDim*(nDim+1))/2
+      lenSymSym = (i*(i+1))/2
+      do i = 1,nDim
+        do j = 1,i
+          IJ = (i*(i-1))/2+j
+          do k = 1,nDim
+            do l = 1,k
+              KL = (k*(k-1))/2+l
+              if(IJ.ge.KL) then
+                IJKL = (IJ*(IJ-1))/2+KL
+                temp = r4TensorSymSym(IJKL)
+                r4TensorFull(i,j,k,l) = temp
+                r4TensorFull(j,i,k,l) = temp
+                r4TensorFull(i,j,l,k) = temp
+                r4TensorFull(j,i,l,k) = temp
+                r4TensorFull(k,l,i,j) = temp
+                r4TensorFull(l,k,i,j) = temp
+                r4TensorFull(k,l,j,i) = temp
+                r4TensorFull(l,k,j,i) = temp
+              endIf
+            endDo
+          endDo
+        endDo
+      endDo
+!
+      return
+      end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
+!
+!
+!PROCEDURE mqc_diagMatrixTimesFullMatrix
+      subroutine mqc_diagMatrixTimesFullMatrix(diagMatrix,fullMatrix,outputMatrix)
+!
+!     This subroutine computes the product of a diagonal packed matrix, <diagMatrix>,
+!     and a full matrix. The output is a full matrix with the same dimensions of
+!     <fullMatrix>, which is return in dummy argument <outputMatrix>.
+!     <outputMatrix> is an allocatable array.
+!
+!
+!     H. P. Hratchian, 2020
+!
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::diagMatrix
+      real(kind=real64),dimension(:,:),intent(in)::fullMatrix
+      real(kind=real64),dimension(:,:),allocatable,intent(out)::outputMatrix
+!
+      integer::i,M,N
+!
+!
+!     Do some initial checking of the input arguments to ensure comformability
+!     of <diagMatrix> and <fullMatrix>.
+!
+      M = SIZE(diagMatrix)
+      N = SIZE(fullMatrix,2)
+      if(SIZE(fullMatrix,1).ne.M) call mqc_error(  &
+        'mqc_diagMatrixTimesFullMatrix: Diagonal and full matrices are NOT conformable.')
+!
+!     Allocate <outputMatrix>.
+!
+      if(Allocated(outputMatrix)) then
+        if(SIZE(outputMatrix,1).ne.M.or.SIZE(outputMatrix,2).ne.N) then
+          DeAllocate(outputMatrix)
+          Allocate(outputMatrix(M,N))
+        endIf
+      else
+        Allocate(outputMatrix(M,N))
+      endIf
+!
+!     Do the matrix multiplication now...
+!
+      do i = 1,M
+        outputMatrix(i,:) = diagMatrix(i)*fullMatrix(i,:)
+      endDo
+!
+      return
+      end subroutine mqc_diagMatrixTimesFullMatrix
+!
+!
+!PROCEDURE mqc_matrixInverse_symmFull
+      subroutine mqc_matrixInverse_symmFull(matrix,matrixInverse,  &
+        eigenValues,eigenVectors)
+!
+!     This subroutine computes the inverse of input argument <matrix>, which is
+!     a symmetric matrix sent in full/dense memory storage format. The output is
+!     argument <matrixInverse>, which should be allocatable and will use
+!     full/dense memory storage format.
+!
+!     The dummy arguments <eigenValues> and <eigenVectors> are OPTIONAL. If they
+!     are sent, it is assumed they have already been formed. Otherwise, this
+!     routine begins by forming the eigen-values and eigen-vectors of <matrix>
+!     in scratch memory space.
+!     
+!
+!     H. P. Hratchian, 2020
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrix
+      real(kind=real64),dimension(:,:),allocatable,intent(out)::matrixInverse
+      real(kind=real64),dimension(:),allocatable,OPTIONAL,intent(in)::eigenValues
+      real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(in)::eigenVectors
+!
+      integer::i,N
+!
+!
+!     Do some initial checking of matrix to ensure it's square. Next, figure out
+!     the dimension of <matrix>, <N>. Then, allocate space for <matrixInverse>
+!     if needed.
+!
+      if(SIZE(matrix,1).ne.SIZE(matrix,2)) call mqc_error(  &
+        'mqc_matrixInverse_symmFull: Rectangular matrix sent.')
+      N = SIZE(matrix,1)
+      if(Allocated(matrixInverse)) then
+        if(SIZE(matrixInverse,1).ne.N.or.SIZE(matrixInverse,2).ne.N) then
+          DeAllocate(matrixInverse)
+          Allocate(matrixInverse(N,N))
+        endIf
+      else
+        Allocate(matrixInverse(N,N))
+      endIf
+!!
+!!    If <eigenValues> and <eigenVectors> have both been sent, form the
+!!    generalized inverse of <matrix>. If not, diagonalize <matrix> and then form
+!!    <matrixInverse>.
+!!
+!      If(PRESENT(eigenValues).and.PRESENT(eigenVectors)) then
+!        do i = 1,N
+!
+!!
+!!    Call LAPCK routine DSYEV. 
+!!
+!      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,WorkTmp,-1,INFO)    
+!      if(INFO.ne.0) call mqc_error(  &
+!        'mqc_eigensystem_symmMatrixFull: Failure in DSYEV getting WORK length.')
+!      LWork = WorkTmp(1)
+!      Allocate(Work(LWork))
+!      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,Work,LWork,INFO)    
+!      if(INFO.ne.0) call mqc_error(  &
+!        'mqc_eigensystem_symmMatrixFull: Failure in DSYEV diagonalizing matrix.')
+!      if(PRESENT(eigenVectors)) then
+!        eigenVectors = matrixCopy
+!        do i = 1,N
+!          call mqc_vectorPhase(eigenVectors(:,i),.true.)
+!        endDo
+!      endIf
+!
+!      deAllocate(matrixCopy,Work)
+!
+      return
+      end subroutine mqc_matrixInverse_symmFull
+!
+
+
 
 
 !
@@ -1666,6 +2070,9 @@
 !
       return
       end function mqc_isqrt
+!
+!
+INCLUDE 'mqc_general_lapack.F03'
 !
 !
       End Module MQC_General

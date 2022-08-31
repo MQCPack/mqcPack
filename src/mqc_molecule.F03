@@ -271,6 +271,28 @@
       End Function MQC_Get_Nuclear_Repulsion
 !
 !
+!     PROCEDURE MQC_GET_NUCLEAR_SYMBOLS
+      Function MQC_Get_Nuclear_Symbols(Molecule_Info) Result(Symbols)  
+!
+!     This function returns the nuclear repulsion energy given the 
+!     molecular data object.
+!
+!     Lee M. Thompson, 2017.
+!
+!
+      Implicit None
+      Class(MQC_Molecule_Data),Intent(In)::Molecule_Info
+      Character(len=2),Dimension(:),allocatable::Symbols
+      Integer::I
+!
+      Allocate(Symbols(int(Molecule_Info%NAtoms)))
+      Do I = 1,int(Molecule_Info%NAtoms)
+        Symbols(I) = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
+      EndDo
+!
+      End Function MQC_Get_Nuclear_Symbols
+!
+!
 !     PROCEDURE MQC_PRINT_NUCLEAR_GEOMETRY
       subroutine mqc_print_nuclear_geometry(molecule_info,iOut,bohr) 
 !
@@ -288,7 +310,7 @@
       integer::i,nAtoms
       character(len=2)::elem
       logical::myBohr
-      real::sca
+      real::sca,x,y,z
 !
  1000 Format(1x,'          NUCLEAR CARTESIAN COORDINATES          ')
  1001 Format(1x,'-------------------------------------------------')
@@ -318,10 +340,10 @@
       nAtoms = molecule_info%nAtoms
       do i = 1,nAtoms
         elem = mqc_element_symbol(molecule_info%atomic_numbers%at(i)) 
-        write(iOut,1004) elem, &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(1,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(2,i)), &
-          sca*MQC_Scalar_Get_Intrinsic_Real(molecule_info%cartesian_coordinates%at(3,i))
+        x = sca*molecule_info%cartesian_coordinates%at(1,i)
+        y = sca*molecule_info%cartesian_coordinates%at(2,i)
+        z = sca*molecule_info%cartesian_coordinates%at(3,i)
+        write(iOut,1004) elem,x,y,z 
       endDo
 !
       write(iOut,1001)
