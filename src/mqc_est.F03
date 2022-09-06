@@ -16806,6 +16806,13 @@
                 L_Index = 1+(L_B_String-1)*NAlpha_Str+(L_A_String-1) 
                 R_Index = 1+(R_B_String-1)*NAlpha_Str+(R_A_String-1) 
                 if(L_Index.lt.R_Index) cycle
+                if(iPrint.ge.2.and.R_Index.eq.1) then
+                  Counter = Counter + 1
+                  if(L_Index.eq.1) write(iOut,'(A)') NEW_LINE('A')//'CI determinant index'//NEW_LINE('A')
+                  write(iOut,'(I6,A)') Counter, & 
+                  ' = '//mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                    Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis))
+                endIf
 !                write(*,*) '-------------------------------------------'
 !                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                write(*,*) '-------------------------------------------'
@@ -16824,7 +16831,7 @@
                 Else
                   Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                 EndIf
-                Counter = Counter + 1
+!                Counter = Counter + 1
 !                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
 !                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
 !                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
@@ -16867,6 +16874,13 @@
                       Do R_B_String = R_B_Start, R_B_End
                         R_Index = R_Index + 1
                         if(L_Index.lt.R_Index) cycle
+                        if(iPrint.ge.2.and.R_Index.eq.1) then
+                          Counter = Counter + 1
+                          if(L_Index.eq.1) write(iOut,'(A)') NEW_LINE('A')//'CI determinant index'//NEW_LINE('A')
+                          write(iOut,'(I6,A)') Counter, & 
+                          ' = '//mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                            Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis))
+                        endIf
 !                        write(*,*) '-------------------------------------------'
 !                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                        write(*,*) '-------------------------------------------'
@@ -16886,7 +16900,7 @@
                         Else
                           Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
-                        Counter = Counter + 1
+!                        Counter = Counter + 1
 !                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
 !                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
 !                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
