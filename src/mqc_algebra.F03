@@ -13177,7 +13177,7 @@
           ElseIf (Mat%Data_Type.eq.'Real') then
             Element = (Mat%MatR(IndI,1))
           ElseIf (Mat%Data_Type.eq.'Complex') then
-            Element = (Mat%MatR(IndI,1))
+            Element = (Mat%MatC(IndI,1))
           Else
             Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
                  'Mat%Data_Type', Mat%Data_Type )
