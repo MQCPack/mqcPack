@@ -155,9 +155,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 22
-      if(PRESENT(minor))         minor         = 4
+      if(PRESENT(minor))         minor         = 6
       if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '22.04.1'
+      if(PRESENT(versionString)) versionString = '22.06.1'
 !
       return
       end subroutine mqc_version
@@ -1503,7 +1503,7 @@
       implicit none
       real(kind=real64),dimension(:),intent(in)::vector1,vector2
       real(kind=real64),OPTIONAL,intent(in)::scalar
-      real(kind=real64),allocatable,dimension(:,:),intent(out)::matrixOut
+      real(kind=real64),allocatable,dimension(:,:)::matrixOut
 !
       integer(kind=int64)::n1,n2,i,j
 !
