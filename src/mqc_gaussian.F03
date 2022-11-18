@@ -1235,10 +1235,10 @@
                 ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
                 MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,  &
                 N2,N3,N4,N5,NRI,ASym)
+              write(IOut,*)  &
+                ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
+                MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
             endIf
-            if(DEBUG) write(IOut,*)  &
-              ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
-              MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
             select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
@@ -1459,13 +1459,36 @@
                   allocate(arraytmp2(nBasis,nBasis,nBasis,nBasis))
                   call mqc_packedSymmetricSymmetricR4Tensor2Full_real(  &
                     arrayTmp,arraytmp2)
-                  if(MQC_Gaussian_DEBUGHPH) then
-                    write(*,*)
-                    write(*,*)' Hrant - Reading mat file for ERIs...'
-                    call mqc_print(6,arrayTmp,header='arrayTmp after reading integrals:')
-                    call mqc_print(6,arrayTmp2,header='arrayTmp2 after reading integrals:')
-                    write(*,*)
-                  endIf
+                  mqcVarOut = arraytmp2
+                  deAllocate(arraytmp2)
+                  deallocate(arrayTmp)
+                else
+                  call mqc_error('Attempted to read complex rank-4 tensor into MQCVar type.')
+                endIf
+              else
+                call mqc_error('Reading rank-4 tensor from Gaussian matrix file, but required &
+                  & variable R4TENSOR or mqcVarOut not sent to procedure.')
+              endIf
+!
+            case('REAL-SYMSYMR4TENSOR')
+              if(Present(r4TensorOut)) then
+                if(NRI.eq.1) then
+                  allocate(arrayTmp(LR*NR))
+                  call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+                  call MQC_Matrix_SymmSymmR4Tensor_Put_Real(r4TensorOut,&
+                    arrayTmp((myArrayNum-1)*LR+1:myArrayNum*LR))
+                  deallocate(arrayTmp)
+                else
+                  call mqc_error('Attempted to read complex rank-4 tensor into MQC Rank4 type.')
+                endIf
+              elseIf(Present(mqcVarOut)) then
+                if(NRI.eq.1) then
+                  allocate(arrayTmp(LR*NR))
+                  call Rd_RBuf(fileinfo%unitNumber,NTot,LenBuf,arrayTmp)
+                  nBasis = ABS(N1)
+                  allocate(arraytmp2(nBasis,nBasis,nBasis,nBasis))
+                  call mqc_packedSymmetricSymmetricR4Tensor2Full_real(  &
+                    arrayTmp,arraytmp2)
                   mqcVarOut = arraytmp2
                   deAllocate(arraytmp2)
                   deallocate(arrayTmp)
