@@ -3031,20 +3031,27 @@
 !>    Optional argument axis specifies whether row or column vectors are selected. 
 !>    The following options are available:
 !>
-!>    1. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
+!>    1. OrbString = 'useStrings' specifies that the vector subset will be specified
+!>                   in alphaOrbsIn and betaOrbsIn is specified. This
+!>                   is the default.
+!>    2. OrbString = 'occupied' selects the set of occupied orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
 !>                   alphaOrbsIn. Number of beta electrons should be specified in a 
 !>                   length 1 vector in betaOrbsIn.
-!>    2. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
+!>    3. OrbString = 'virtual' selects the set of virtual orbitals. Number of alpha 
 !>                   electrons should be specified in a length 1 vector in 
 !>                   alphaOrbsIn. Number of beta electrons should be specified in a 
 !>                   length 1 vector in betaOrbsIn. The dimension of the fixed length 
 !>                   axis is assumed to be the number of virtual orbitals.
-!>    3. OrbString = 'useStrings' specifies that the vector subset will be specified
-!>                   in alphaOrbsIn and betaOrbsIn is specified. This
-!>                   is the default.
-!>    4. Axis =      1 specifies the row vector subset is selected. 
-!>    5. Axis =      2 specifies the column vector subset is selected (default). 
+!>    4. OrbString = 'real' selects the real part of input orbitals. A subset will be 
+!>                   returned if specified in alphaOrbsIn and betaOrbsIn.
+!>    5. OrbString = 'imaginary' selects the imaginary part of input orbitals. A subset 
+!>                   will be returned if specified in alphaOrbsIn and betaOrbsIn.
+!>    6. OrbString = 'complex' returns the input orbitals as complex, regardless of 
+!>                   whether the imaginary part is zero. A subset will be returned if 
+!>                   specified in alphaOrbsIn and betaOrbsIn.
+!>    7. Axis =      1 specifies the row vector subset is selected. 
+!>    8. Axis =      2 specifies the column vector subset is selected (default). 
 !>
 !>    \endverbatim
 !
@@ -3059,9 +3066,12 @@
 !>    \param[in] OrbString 
 !>    \verbatim
 !>        OrbString is character(len=*),optional
+!>        = 'useStrings': selects orbitals from strings.
 !>        = 'occupied':   selects occupied orbitals.
 !>        = 'virtual':    selects virtual orbitals.
-!>        = 'useStrings': selects orbitals from strings.
+!>        = 'real':       selects real part of orbitals.
+!>        = 'imaginary':  selects imaginary part of orbitals.
+!>        = 'complex':    returns complex orbitals.
 !>    \endverbatim
 !>    
 !>    \param[in] AlphaOrbsIn
@@ -3119,9 +3129,9 @@
           if(size(alphaOrbsIn).ne.1.or.size(betaOrbsIn).ne.1) &
             call mqc_error_i('Only one integer can be declared when inputting number of alpha and beta orbitals',&
             6,'size(alphaOrbsIn)',size(alphaOrbsIn),'size(betaOrbsIn)',size(betaOrbsIn))
+          nAlpha = alphaOrbsIn(1)
+          nBeta = betaOrbsIn(1) 
         endIf
-        nAlpha = alphaOrbsIn(1)
-        nBeta = betaOrbsIn(1) 
       else
         myOrbString = 'usestrings'
       endIf
@@ -3159,6 +3169,21 @@
         else
           betaOrbs = [integer(kind=int64)::]
         endIf
+      case ('real','imaginary','complex')
+        if(present(alphaOrbsIn)) then
+          alphaOrbs = alphaOrbsIn
+        elseif(my_axis.eq.2) then
+          alphaOrbs = [(i,i=1,nDimAlpha1)]
+        elseIf(my_axis.eq.1) then
+          alphaOrbs = [(i,i=1,nDimAlpha2)]
+        endIf
+        if(present(betaOrbsIn)) then
+          betaOrbs = betaOrbsIn
+        elseif(my_axis.eq.2) then
+          betaOrbs = [(i,i=1,nDimBeta1)]
+        elseIf(my_axis.eq.1) then
+          betaOrbs = [(i,i=1,nDimBeta2)]
+        endIf
       case default
         call mqc_error_a('Unrecognized orbital string definition in MQC_Integral_Output_Orbitals',&
           6,'myOrbString',myOrbString)
@@ -3168,6 +3193,9 @@
       case('space')
         if(size(alphaOrbs).eq.size(betaOrbs).and.all(alphaOrbs.eq.betaOrbs)) then
           tmpMatrixAlpha = integral%getBlock('alpha')
+          if(myOrbString.eq.'real') tmpMatrixAlpha = real(tmpMatrixAlpha)
+          if(myOrbString.eq.'imaginary') tmpMatrixAlpha = aimag(tmpMatrixAlpha)
+          if(myOrbString.eq.'complex') tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
           if(my_axis.eq.2) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
             do i = 1,size(alphaOrbs)
@@ -3185,6 +3213,18 @@
         else
           tmpMatrixAlpha = integral%getBlock('alpha')
           tmpMatrixBeta = integral%getBlock('beta')
+          if(myOrbString.eq.'real') then
+            tmpMatrixAlpha = real(tmpMatrixAlpha)
+            tmpMatrixBeta = real(tmpMatrixBeta)
+          endIf
+          if(myOrbString.eq.'imaginary') then
+            tmpMatrixAlpha = aimag(tmpMatrixAlpha)
+            tmpMatrixBeta = aimag(tmpMatrixBeta)
+          endIf
+          if(myOrbString.eq.'complex') then
+            tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+            tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+          endIf
           if(my_axis.eq.2) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
             call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
@@ -3212,6 +3252,18 @@
       case('spin')
         tmpMatrixAlpha = integral%getBlock('alpha')
         tmpMatrixBeta = integral%getBlock('beta')
+        if(myOrbString.eq.'real') then
+          tmpMatrixAlpha = real(tmpMatrixAlpha)
+          tmpMatrixBeta = real(tmpMatrixBeta)
+        endIf
+        if(myOrbString.eq.'imaginary') then
+          tmpMatrixAlpha = aimag(tmpMatrixAlpha)
+          tmpMatrixBeta = aimag(tmpMatrixBeta)
+        endIf
+        if(myOrbString.eq.'complex') then
+          tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+          tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+        endIf
         if(my_axis.eq.2) then
           call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
           call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
@@ -3256,6 +3308,24 @@
         tmpMatrixBeta = integral%getBlock('beta')
         tmpMatrixAlphaBeta = integral%getBlock('alpha-beta')
         tmpMatrixBetaAlpha = integral%getBlock('beta-alpha')
+        if(myOrbString.eq.'real') then
+          tmpMatrixAlpha = real(tmpMatrixAlpha)
+          tmpMatrixBeta = real(tmpMatrixBeta)
+          tmpMatrixAlphaBeta = real(tmpMatrixAlphaBeta)
+          tmpMatrixBetaAlpha = real(tmpMatrixBetaAlpha)
+        endIf
+        if(myOrbString.eq.'imaginary') then
+          tmpMatrixAlpha = aimag(tmpMatrixAlpha)
+          tmpMatrixBeta = aimag(tmpMatrixBeta)
+          tmpMatrixAlphaBeta = aimag(tmpMatrixAlphaBeta)
+          tmpMatrixBetaAlpha = aimag(tmpMatrixBetaAlpha)
+        endIf
+        if(myOrbString.eq.'complex') then
+          tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+          tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+          tmpMatrixAlphaBeta = cmplx(real(tmpMatrixAlphaBeta),aimag(tmpMatrixAlphaBeta))
+          tmpMatrixBetaAlpha = cmplx(real(tmpMatrixBetaAlpha),aimag(tmpMatrixBetaAlpha))
+        endIf
         if(my_axis.eq.2) then
           call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
           call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
@@ -3722,6 +3792,164 @@
 !
       end subroutine mqc_integral_combine_orbitals
 !
+!
+!     PROCEDURE MQC_Bit2Num_String
+!
+!>    \brief <b> MQC_Bit2Num_String is used to convert a bit string implying occupied
+!>    and virtual orbitals, and convert it to an integer vector with the numbers of 
+!>    occupied orbitals</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Bit2Num_String is used to convert a bit string implying occupied
+!>    and virtual orbitals, and convert it to an integer vector with the numbers of 
+!>    occupied orbitals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] BitString
+!>    \verbatim
+!>        BitString is Type(MQC_Vector)
+!>        The bit string to be converted.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      function mqc_bit2num_string(bitString) result(numString)
+
+      implicit none
+      type(mqc_vector),intent(in)::bitString
+      integer(kind=int64),dimension(:),allocatable::numString
+
+      integer::nBitInts,temp_int,i,j
+      type(mqc_vector)::temp_vec
+
+      nBitInts = size(bitString)
+      do i = 1, nBitInts
+        temp_int = bitString%at(i)
+        do j = 0, Bit_Size(0)-1
+          if(btest(temp_int,j)) then
+            call temp_vec%push((i-1)*Bit_Size(0)+j+1)
+          endIf
+        endDo
+      endDo
+      numString = temp_vec
+
+      end function mqc_bit2num_string
+!
+!
+!     PROCEDURE MQC_DetString_Print
+!
+!>    \brief <b> MQC_DetString_Print takes as an argument an alpha bit string and a 
+!>    beta bit string and returns a string for printing</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_DetString_Print takes as an argument an alpha bit string and a 
+!>    beta bit string and returns a string for printing.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] AlphaString
+!>    \verbatim
+!>        AlphaString is Type(MQC_Vector)
+!>        The alpha bit string to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] BetaString
+!>    \verbatim
+!>        BetaString is Type(MQC_Vector)
+!>        The beta bit string to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] nBasisIn
+!>    \verbatim
+!>        nBasisIn is Integer, optional
+!>        Number of basis functions.
+!>    \endverbatim
+!>
+!>    \param[in] nCoreIn
+!>    \verbatim
+!>        nCoreIn is Integer, optional
+!>        Number of low index orbitals to 
+!>        exclude from printing.
+!>    \endverbatim
+!>
+!>    \param[in] nVirtIn
+!>    \verbatim
+!>        nVirtIn is Integer, optional
+!>        Number of high index orbitals to 
+!>        exclude from printing.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2022
+!
+      function mqc_detString_print(alphaString,betaString,nBasisIn,nCoreIn,nVirtIn) result(returnString)
+
+      implicit none
+      type(mqc_vector),intent(in)::alphaString,betaString
+      integer,optional,intent(in)::nBasisIn,nCoreIn,nVirtIn
+      character(:),allocatable::returnString
+
+      integer::nBitInts,temp_alpha_int,temp_beta_int,i,j,nBasis,nCore,nVirt
+
+      if(size(alphaString).ne.size(betaString)) call mqc_error_i('Alpha and beta strings are different&
+        & lengths in mqc_detString_print',6,'size(alphaString)',size(alphaString),'size(betaString)',&
+        size(betaString))
+      nBitInts = size(alphaString)
+
+      if(present(nBasisIn)) then
+        nBasis = nBasisIn
+      else
+        nBasis = nBitInts*Bit_Size(0)
+      endIf
+      if(present(nCoreIn)) then
+        nCore = nCoreIn
+      else
+        nCore = 0
+      endIf
+      if(present(nVirtIn)) then
+        nVirt = nVirtIn
+      else
+        nVirt = 0
+      endIf
+
+      returnString = '|'
+      do i = 1, nBitInts
+        temp_alpha_int = alphaString%at(i)
+        temp_beta_int = betaString%at(i)
+        do j = 0, Bit_Size(0)-1
+          if((i-1)*Bit_Size(0)+(j+1).le.nCore.or.(i-1)*Bit_Size(0)+(j+1).gt.nBasis-nVirt) cycle
+          if(btest(temp_alpha_int,j).and.btest(temp_beta_int,j)) then
+            returnString = trim(returnString)//'1'
+          elseIf(btest(temp_alpha_int,j)) then
+            returnString = trim(returnString)//'a'
+          elseIf(btest(temp_beta_int,j)) then
+            returnString = trim(returnString)//'b'
+          else
+            returnString = trim(returnString)//'0'
+          endIf
+        endDo
+      endDo
+      returnString = trim(returnString)//'>'
+
+      end function mqc_detstring_print
 !
 !     PROCEDURE MQC_Eigenvalues_Output_Block
 !
@@ -16578,6 +16806,13 @@
                 L_Index = 1+(L_B_String-1)*NAlpha_Str+(L_A_String-1) 
                 R_Index = 1+(R_B_String-1)*NAlpha_Str+(R_A_String-1) 
                 if(L_Index.lt.R_Index) cycle
+                if(iPrint.ge.2.and.R_Index.eq.1) then
+                  Counter = Counter + 1
+                  if(L_Index.eq.1) write(iOut,'(A)') NEW_LINE('A')//'CI determinant index'//NEW_LINE('A')
+                  write(iOut,'(I6,A)') Counter, & 
+                  ' = '//mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                    Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis))
+                endIf
 !                write(*,*) '-------------------------------------------'
 !                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                write(*,*) '-------------------------------------------'
@@ -16596,7 +16831,7 @@
                 Else
                   Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                 EndIf
-                Counter = Counter + 1
+!                Counter = Counter + 1
 !                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
 !                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
 !                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
@@ -16639,6 +16874,13 @@
                       Do R_B_String = R_B_Start, R_B_End
                         R_Index = R_Index + 1
                         if(L_Index.lt.R_Index) cycle
+                        if(iPrint.ge.2.and.R_Index.eq.1) then
+                          Counter = Counter + 1
+                          if(L_Index.eq.1) write(iOut,'(A)') NEW_LINE('A')//'CI determinant index'//NEW_LINE('A')
+                          write(iOut,'(I6,A)') Counter, & 
+                          ' = '//mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                            Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis))
+                        endIf
 !                        write(*,*) '-------------------------------------------'
 !                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                        write(*,*) '-------------------------------------------'
@@ -16658,7 +16900,7 @@
                         Else
                           Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
-                        Counter = Counter + 1
+!                        Counter = Counter + 1
 !                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
 !                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
 !                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
