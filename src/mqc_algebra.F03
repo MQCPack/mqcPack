@@ -11030,7 +11030,7 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in,out] Vector
+!>    \param[in] Vector
 !>    \verbatim
 !>        Vector is Class(MQC_Vector)
 !>        The name of the MQC_Vector variable.
@@ -11055,7 +11055,7 @@
 !     Variable Declarations.
 !
       implicit none
-      class(MQC_Vector),intent(inOut)::vector
+      class(MQC_Vector),intent(in)::vector
       character(len=1),optional,intent(in)::methodIn
       character(len=1)::method
       character(len=64)::TypeFlag
@@ -13177,7 +13177,7 @@
           ElseIf (Mat%Data_Type.eq.'Real') then
             Element = (Mat%MatR(IndI,1))
           ElseIf (Mat%Data_Type.eq.'Complex') then
-            Element = (Mat%MatR(IndI,1))
+            Element = (Mat%MatC(IndI,1))
           Else
             Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Scalar_At', 6, &
                  'Mat%Data_Type', Mat%Data_Type )
