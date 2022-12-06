@@ -128,6 +128,10 @@
         module procedure complex2character
       end interface
 !
+      interface flatten
+        module procedure mqc_flattenR4Real
+      end interface
+!
 !
 !     Subroutines/Functions...
 !
@@ -2045,6 +2049,30 @@
 !     Other                                                     |
 !                                                               |
 !----------------------------------------------------------------
+!
+!PROCEDURE mqc_flatten
+      function mqc_flattenR4Real(inArray) result(outArray)
+!
+!     This function flattens a rank-4 real array.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:,:,:)::inArray
+      integer(kind=int64)::length
+      real(kind=real64),dimension(:),allocatable::outArray
+!
+      length = SIZE(inArray)
+      allocate(outArray(length))
+      outArray = TRANSFER(inArray,inArray)
+!
+      return
+      end function mqc_flattenR4Real
+
+
 !
 !PROCEDURE mqc_isqrt
       function mqc_isqrt(iArg) result(iResult)

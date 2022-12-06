@@ -1517,15 +1517,8 @@
 !
             case('SCALARS-VECTOR') 
 !             Just read Gaussian scalars into a real vector for now
-              write(*,*)
-              write(*,*)' Hrant -- read from SCALARS-VECTOR'
               allocate(arrayTmp(NR*LR))
-              write(*,*)'          calling Rd_RInd'
-              write(*,*)'          NR   = ',NR
-              write(*,*)'          LR   = ',LR
-              write(*,*)'          NTOT = ',NTot
               call Rd_RInd(fileinfo%unitNumber,NR,LR,NTot,LenBuf,LNZ,arrayTmp)
-              write(*,*)'          back from calling Rd_RInd'
               if(PRESENT(vectorOut)) then
                 vectorOut = arrayTmp
               elseIf(PRESENT(mqcVarOut)) then
@@ -1714,8 +1707,6 @@
           DeAllocate(intMatrixTmp)
           DeAllocate(intVectorTmp)
         case default
-          write(*,*)
-          write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
           call mqc_error('Invalid mqcVariable rank sent to '//  &
             'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
         end select
@@ -1742,13 +1733,9 @@
           DeAllocate(realMatrixTmp)
           DeAllocate(realVectorTmp)
         case default
-          write(*,*)
-          write(*,*)' Hrant - RANK = ',RANK(mqcVariable)
           call mqc_error('Invalid mqcVariable rank sent to '//  &
             'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
         end select
-
-
 !
 !     Unknown Array Type
       case default
@@ -5613,20 +5600,9 @@
 !      endSelect
 !hph-
 
-      write(*,*)
-      write(*,*)
-      write(*,*)
-      write(*,*)
-      write(*,*)' Hrant - Setting MQC_Gaussian DEBUG to TRUE.'
-      write(*,*)' Calling to load up the Gaussian Scalars.'
-      write(*,*)
-      call MQC_Gaussian_SetDEBUG(.true.)
       call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
         'gaussian scalars',mqcVarOut=mqcTmp)
       call mqcTmp%print(header='Gaussian Scalars')
-      call mqc_error('STOP')
-
-
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Value_Real = value_out
       return
