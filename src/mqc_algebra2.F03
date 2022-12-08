@@ -59,7 +59,8 @@
         integer(kind=int64),private::rank=-1
         character(len=64),private::dataType,storageFormat
         integer(kind=int64),dimension(10),private::dimensions=0
-        real(kind=real64),dimension(:),allocatable,private::realArray
+!hph        real(kind=real64),dimension(:),allocatable,private::realArray
+        real(kind=real64),dimension(:),allocatable::realArray
         integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
       Contains
@@ -207,6 +208,7 @@
         module procedure MQC_Variable_mqc2intrinsicReal1Array
         module procedure MQC_Variable_mqc2intrinsicInteger2Array
         module procedure MQC_Variable_mqc2intrinsicReal2Array
+        module procedure MQC_Variable_mqc2intrinsicReal4Array
       end interface
 !
 !     Whole-array addition (+).
@@ -296,7 +298,7 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-!PROCEDURE MQC_Gaussian_SetDEBUG
+!PROCEDURE MQC_Algebra2_SetIOut
       subroutine MQC_Algebra2_SetIOut(setIOutValue)
 !
 !     This subroutine is called to set a Module-Wide default output unit number.
@@ -439,6 +441,13 @@
 !     Now, deallocate/reallocate the data arrays if necessary.
 !
       myLength = MQC_Variable_getLength(mqcVariable)
+
+      if(myDebug) then
+        write(*,*)
+        write(*,*)' in Init: myLength = ',myLength
+        write(*,*)
+      endIf
+
       select case(mqcVariable%dataType)
       case('REAL')
         if(Allocated(mqcVariable%integerArray))  &
@@ -1597,6 +1606,7 @@
         write(*,*)'   PRESENT(arrayRealIn)     = ',PRESENT(arrayRealIn)
         write(*,*)'   PRESENT(dimensions)      = ',PRESENT(dimensions)
         write(*,*)
+        flush(MQC_Algebra2_IOut)
       endIf
       nInputs = 0
       if(Present(scalarIntegerIn)) nInputs = nInputs+1
@@ -1618,6 +1628,7 @@
         write(*,*)'   fillReal   =',fillReal
         write(*,*)'   fillScalar =',fillScalar
         write(*,*)'   fillArray  =',fillArray
+        flush(MQC_Algebra2_IOut)
       endIf
 !
 !     Set myDataType and myRank.
@@ -1654,6 +1665,10 @@
             myDimensions(1) = SIZE(arrayIntegerIn)
           elseIf(fillReal) then
             myDimensions(1) = SIZE(arrayRealIn)
+
+            write(*,*)'    myRank = ',myRank
+            write(*,*)'    myDimensions(1) = ',myDimensions(1)
+
           else
             call mqc_error_l(  &
               'MQC_Variable_setVal: Confused setting myDimensions.', 6, &
@@ -1688,8 +1703,16 @@
         write(*,*)'   ALLOCATED(integerArray) ? = ',ALLOCATED(mqcVariable%integerArray)
         if(Allocated(mqcVariable%realArray)) write(*,*)'   SIZE(realArray) = ',SIZE(mqcVariable%realArray)
         if(Allocated(mqcVariable%integerArray)) write(*,*)'   SIZE(integerArray) = ',SIZE(mqcVariable%integerArray)
-        call mqc_error('StopIt - 123D')
+        flush(MQC_Algebra2_IOut)
       endIf
+
+      if(DEBUG) then
+        write(*,*)
+        write(*,*)' fillScalar = ',fillScalar
+        write(*,*)' fillReal   = ',fillReal
+        write(*,*)
+      endIf
+
       if(fillScalar) then
         if(fillInteger) then
           mqcVariable%integerArray(1) = scalarIntegerIn
@@ -1706,7 +1729,18 @@
         if(fillInteger) then
           mqcVariable%integerArray(:) = arrayIntegerIn
         elseIf(fillReal) then
-          mqcVariable%realArray(:) = arrayRealIn
+
+          if(DEBUG) then
+            write(*,*)'   arrayRealIn(1) = ',arrayRealIn(1)
+            write(*,*)'   length(arrayRealIn) = ',Size(arrayRealIn)
+            write(*,*)'   length(mqcVariable%realArray(:)) = ',Size(mqcVariable%realArray(:))
+            write(*,*)
+          endIf
+          mqcVariable%realArray(1:Size(arrayRealIn)) = arrayRealIn(1:Size(arrayRealIn))
+          if(DEBUG) then
+            write(*,*)' mqcVariable%realArray(1) = ',mqcVariable%realArray(1)
+            write(*,*)
+          endIf
         else
           call MQC_Error_L(  &
             'MQC_Variable_setVal: Confused filling array values.', 6, &
@@ -1916,6 +1950,8 @@
       integer(kind=int64)::myLength
       integer(kind=int64),dimension(4)::myDimensions
       logical::DEBUG=.false.
+      integer(kind=int64),dimension(:),allocatable::tmpDimensions
+      real(kind=real64),dimension(:),allocatable::tmpArray
 !
  1000 format(1x,'Converting an intrinsic real rank-4 tensor to an mqcVar.')
  1100 format(3x,'myLength=',I8,'   dim 1=',I8,'   dim 2=',I8,  &
@@ -1925,7 +1961,10 @@
 !
 !     Load the MQC variable.
 !
-      if(DEBUG) write(MQC_Algebra2_IOut,1000)
+      if(DEBUG) then
+        write(MQC_Algebra2_IOut,1000)
+        flush(MQC_Algebra2_IOut)
+      endIf
       myLength = SIZE(intrinsicIn)
       myDimensions(1) = SIZE(intrinsicIn,1)
       myDimensions(2) = SIZE(intrinsicIn,2)
@@ -1933,7 +1972,7 @@
       myDimensions(4) = SIZE(intrinsicIn,4)
       if(DEBUG) write(MQC_Algebra2_IOut,1100) myLength,  &
         myDimensions(1),myDimensions(2),myDimensions(3),myDimensions(4)
-      call MQC_Variable_setVal(mqcVariable,arrayRealIn=RESHAPE(intrinsicIn,[myLength]),  &
+      call MQC_Variable_setVal(mqcVariable,arrayRealIn=flatten(intrinsicIn),  &
         dimensions=myDimensions,DEBUGPRINT=DEBUG)
 !
       return
@@ -2175,6 +2214,50 @@
 !
       return
       end subroutine MQC_Variable_mqc2intrinsicReal2Array
+
+
+!
+!PROCEDURE MQC_Variable_mqc2intrinsicReal4Array
+      subroutine MQC_Variable_mqc2intrinsicReal4Array(intrinsicOut,mqcVariable)
+!
+!     This subroutine is used to set an (output) intrinsic real rank-4 array equal to
+!     an (input) MQC Variable.
+!
+!
+!     H. P. Hratchian, 2022.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:,:,:),allocatable,intent(out)::intrinsicOut
+      type(MQC_Variable),intent(in)::mqcVariable
+      real(kind=real64),dimension(:),allocatable::tmpArray
+!
+!
+!     Do the work...
+!
+      if(Rank(mqcVariable).ne.4)  &
+        call mqc_error_I('Attemp to convert MQC_Variable array to '//  &
+          'intrinsic array with rank != 4 not allowed.',6,'Rank(mqcVariable)',  &
+          Rank(mqcVariable))
+      allocate(intrinsicOut(SIZE(mqcVariable,1),SIZE(mqcVariable,2),  &
+        SIZE(mqcVariable,3),SIZE(mqcVariable,4)))
+      select case(MQC_Variable_getTypeCode(mqcVariable))
+      case(2)
+        intrinsicOut = RESHAPE(mqcVariable%realArray(:),  &
+          mqcVariable%dimensions(1:4))
+      case(3)
+        intrinsicOut = RESHAPE(mqcVariable%integerArray(:),  &
+          mqcVariable%dimensions(1:4))
+      case default
+        call mqc_error_I('MQC_Variable_mqc2intrinsicReal4Array: '// &
+          'Unknown MQC_Variable type found.',6, &
+          'MQC_Variable_getTypeCode(mqcVariable)',  &
+          MQC_Variable_getTypeCode(mqcVariable))
+      end select
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicReal4Array
 
 
 !
