@@ -13586,7 +13586,6 @@
       Integer(kind=int64)::Length,IndI,IndJ,IndK,I,J,K
       Logical::Column
 
- 1020 Format( " " )
       If(Size(Rows).gt.1.and.Size(Cols).gt.1) then
         Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_put', 6, &
              'Size(Rows)', Size(Rows), &
@@ -13730,25 +13729,21 @@
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAsym') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antisymmetric')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorHerm') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'hermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAhrm') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antihermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
