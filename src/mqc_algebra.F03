@@ -9543,13 +9543,10 @@
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !>
-!>    \param[in] high_precision
+!>    \param[in] FormatStr
 !>    \verbatim
-!>        high_precision is Logical,Optional
-!>        Temporary hack to print high precision reals. To be
-!>        replaced with a proper option soon.
-!>        = .True.:  print high precision (reals only) 
-!>        = .False.: print normal precision (default)
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
 !>    \endverbatim
 !
 !     Authors:
@@ -9558,21 +9555,22 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
-        Blank_At_Bottom,high_precision)
+        Blank_At_Bottom,FormatStr)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Vector),Intent(In)::Vector
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose,high_precision
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose
       Integer(kind=int64)::I,Length
+      Character(Len=*),Intent(In),Optional::FormatStr
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
- 1003 Format(1x,I7,2X,F12.5,F11.5,"i")
- 1004 Format(1x,I7,2X,F20.12)
+ 1003 Format(1x,I7,2X,F14.6,SP,F14.6,"i")
  1020 Format( " " )
  1030 Format( A )
 !
@@ -9590,24 +9588,31 @@
         endif
       endIf
       If(Vector%Data_type.eq.'Integer') then
-          Do I = 1,Length
+        Do I = 1,Length
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, Vector%veci(I)
+          Else
             Write(IOut,1001) I, Vector%veci(I)
-          EndDo
+          EndIf
+        EndDo
       ElseIf(Vector%Data_type.eq.'Real') then
         Do I = 1,Length
-          if(present(high_precision)) then
-            if(high_precision) then 
-              Write(IOut,1004) I, Vector%vecr(I)
-            else
-              Write(IOut,1002) I, Vector%vecr(I)
-            endIf
-          else
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, Vector%vecr(I)
+          Else
             Write(IOut,1002) I, Vector%vecr(I)
           endIf
         EndDo
       ElseIf(Vector%Data_type.eq.'Complex') then
         Do I = 1,Length
-          Write(IOut,1003) I, Vector%vecc(I)
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
+            Write(IOut,trim(FormatLine)) I, Vector%vecc(I)
+          Else
+            Write(IOut,1003) I, Vector%vecc(I)
+          EndIf
         EndDo
       Else
         Call MQC_Error_A('Vector type unspecified in MQC_Print_Vector_Algebra1', 6, &
