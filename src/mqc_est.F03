@@ -534,6 +534,12 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] FormatStr
+!>    \verbatim
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -541,7 +547,7 @@
 !>    \date 2016
 !
       subroutine mqc_print_integral(integral,iOut,header, &
-          blank_at_top,blank_at_bottom)
+          blank_at_top,blank_at_bottom,formatStr)
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -549,6 +555,7 @@
       character(len=*),intent(in)::header
       character(len=64)::arrayType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
+      character(len=*),intent(in),optional::formatStr
 !
  1000 Format(1x,A)
  1020 Format( " " )
@@ -560,15 +567,31 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
+        endIf
       elseif(integral%array_type.eq.'spin') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
-        if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array',formatStr=formatStr)
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
+        endIf
       elseif(integral%array_type.eq.'general') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block')
-        if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block')
-        if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
-        if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block',formatStr=formatStr)
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block',formatStr=formatStr)
+          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block',formatStr=formatStr)
+          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block')
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block')
+          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
+          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
+        endIf
       else
         call mqc_error_A('Array type unrecogised in mqc_print_integral', 6, &
              'integral%array_type', integral%array_type )
@@ -630,6 +653,12 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] FormatStr
+!>    \verbatim
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -637,7 +666,7 @@
 !>    \date 2016
 !
       subroutine mqc_print_eigenvalues(eigenvalues,iOut,header, &
-          blank_at_top,blank_at_bottom)
+          blank_at_top,blank_at_bottom,formatstr)
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
@@ -645,6 +674,7 @@
       character(len=*),intent(in)::header
       character(len=64)::integralType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
+      character(len=*),intent(in),optional::formatStr
 !
  1000 Format(1x,A)
  1020 Format( " " )
@@ -656,10 +686,19 @@
       
       call string_change_case(eigenvalues%array_type,'L')
       if(eigenvalues%array_type.eq.'space') then
-        if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'')
+        if(present(formatStr)) then
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'',formatStr=formatStr)
+        else
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'')
+        endIf
       elseif(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
-        if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array')
-        if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array')
+        if(present(formatStr)) then
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array',formatStr=formatStr)
+          if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array',formatStr=formatStr)
+        else
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array')
+          if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array')
+        endIf
       else
         call mqc_error_A('Array type unrecogised in mqc_print_eigenvalues', 6, &
              'eigenvalues%array_type', eigenvalues%array_type )

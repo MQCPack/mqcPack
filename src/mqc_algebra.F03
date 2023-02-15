@@ -19484,13 +19484,10 @@
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !>
-!>    \param[in] high_precision
+!>    \param[in] FormatStr
 !>    \verbatim
-!>        high_precision is Logical,Optional
-!>        Temporary hack to print high precision reals. To be
-!>        replaced with a proper option soon.
-!>        = .True.:  print high precision (reals only) 
-!>        = .False.: print normal precision (default)
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
 !>    \endverbatim
 !
 !     Authors:
@@ -19499,16 +19496,18 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,high_precision)
+        Blank_At_Bottom,FormatStr)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,high_precision
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,II,ILim,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Character(Len=*),Intent(In),Optional::FormatStr
+      Integer(kind=int64),Parameter::ColWidth=10 
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -19519,8 +19518,6 @@
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
- 2004 Format(1x,I7,10F20.12)
- 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -19542,28 +19539,23 @@
           EndIf
           Do I = 1,NRows
             If(Matrix%Data_Type.eq.'Integer') then
-              Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
-              !If(Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
-              !If(.not.Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(J,I),J=IFirst,ILast)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatI(I,J),J=IFirst,ILast)
+              Else
+                Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              if(present(high_precision)) then
-                if(high_precision) then
-                  Write(IOut,2004) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-                else
-                  Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-                endIf
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               else
                 Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               endIf
-              !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-              !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              if(present(high_precision)) then
-                if(high_precision) then
-                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
-                else
-                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
-                endIf
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatC(I,J),J=IFirst,ILast)
               else
                 Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
               endIf
@@ -19592,13 +19584,27 @@
             If(IFirst.gt.I) Cycle
             ILim = Min(I-IFirst+1,ColWidth)
             II = (I*(I-1))/2 + IFirst
-!            Do J = 1,ILim
             If(Matrix%Data_Type.eq.'Integer') then
-              Write(IOut,2001) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2001) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              Write(IOut,2002) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2002) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              EndIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
@@ -19611,11 +19617,26 @@
         Write(IOut,1002)
         Do I = 1,Min(NRows,NCols)
           If(Matrix%Data_Type.eq.'Integer') then
-            Write(IOut,2001) I, Matrix%MatI(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatI(I,1)
+            Else
+              Write(IOut,2001) I, Matrix%MatI(I,1)
+            EndIf
           ElseIf(Matrix%Data_Type.eq.'Real') then
-            Write(IOut,2002) I, Matrix%MatR(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatR(I,1)
+            Else
+              Write(IOut,2002) I, Matrix%MatR(I,1)
+            EndIf
           ElseIf(Matrix%Data_Type.eq.'Complex') then
-            Write(IOut,2003) I, Matrix%MatC(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatC(I,1)
+            Else
+              Write(IOut,2003) I, Matrix%MatC(I,1)
+            EndIf
           Else
             Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
