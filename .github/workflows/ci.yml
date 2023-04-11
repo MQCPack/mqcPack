@@ -9,6 +9,7 @@ jobs:
     steps:
       - name: Install dependencies (Linux)
         run: sudo apt-get install doxygen
+             sudo apt install libopenblas-dev
         if: matrix.os == 'ubuntu-latest'
       - name: Install dependencies (macOS)
         run: |
