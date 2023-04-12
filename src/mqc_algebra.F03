@@ -614,6 +614,16 @@
         module procedure MQC_R4Tensor_Put_Int 
       end interface
 !
+!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+      interface identity
+        module procedure MQC_Matrix_Identity_Func
+      end interface
+!
+!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+      interface init
+        module procedure MQC_Matrix_Initialize_Func
+      end interface
+!
 !----------------------------------------------------------------
 !                                                               |
 !     OPERATOR INTERFACES                                       |
@@ -24384,6 +24394,108 @@
       End Subroutine MQC_Matrix_Initialize
 !
 !
+!     PROCEDURE MQC_Matrix_Initialize_Func
+!
+!>    \brief <b> MQC_Matrix_Initialize_Func is a function that returns an MQC matrix
+!>    with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Initialize_Func is a function that retuns an MQC matrix with each 
+!>    element equal to a chosen value. Optional argument Scalar determines the value
+!>    of each element, with the default equal to zero. Optional argument Storage 
+!>    determines the initial packing of MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Rows 
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Columns
+!>    \verbatim
+!>        Columns is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(Len=*),Optional
+!>        The initial packing of Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Matrix_Initialize_Func(Rows,Columns,Scalar,Storage) Result(Matrix)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Real(kind=real64)::Zero=0.0d0
+      Integer(kind=int64),Intent(in)::Rows,Columns
+      Class(*),Optional::Scalar
+      Character(Len=*),Intent(in),OPTIONAL::Storage
+      Type(MQC_Matrix)::Matrix
+      Character(Len=64)::myStorage
+!
+      if(Present(Storage)) then
+        myStorage = TRIM(Storage)
+      else
+        myStorage = 'StorFull'
+      endIf
+!
+      If(Present(Scalar)) then
+        Select Type (Scalar)
+        Type is (Integer)
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar
+        Type is (Real)
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar
+        Type is (Complex(Kind=real64))
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar
+        Type is (MQC_Scalar)
+          If(MQC_Scalar_HaveInteger(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar%ScaI
+          ElseIf(MQC_Scalar_HaveReal(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar%ScaR
+          ElseIf(MQC_Scalar_HaveComplex(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar%ScaC
+          Else
+            Call MQC_Error_I('Unrecognized MQC scalar Type in MQC_Matrix_Initialize', 6)
+          EndIf
+        Class Default
+          Call MQC_Error_I('Scalar Type not defined in MQC_Matrix_Initialize', 6)
+        End Select
+      Else
+        Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+        Matrix%MatR = Zero
+      EndIf
+!
+      Return
+      End Function MQC_Matrix_Initialize_Func
+!
+!
 !     PROCEDURE MQC_Matrix_Identity
 !
 !>    \brief <b> MQC_Matrix_Identity is a subroutine that initializes an MQC matrix
@@ -24461,6 +24573,78 @@
       call matrix%init(n,m,one,'StorDiag')
 
       End Subroutine MQC_Matrix_Identity
+!
+!
+!     PROCEDURE MQC_Matrix_Identity_Func
+!
+!>    \brief <b> MQC_Matrix_Identity_Func is a function that returns an MQC matrix
+!>    as an identity matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Identity_Func is a function that returns an MQC matrix as an  
+!>    identity matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] M
+!>    \verbatim
+!>        M is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set diagonal elements of Matrix. The 
+!>        default is 1.0.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Matrix_Identity_Func(n,m,scalar) result(matrix)
+!
+!     Variable Declarations.
+!
+      implicit none
+      type(MQC_Matrix)::matrix
+      integer(kind=int64),intent(in)::n,m
+      class(*),optional,intent(in)::scalar
+      type(MQC_Scalar)::one
+
+      if(present(scalar)) then
+        select type (scalar)
+        type is (integer)
+          one = scalar
+        type is (real)
+          one = scalar
+        type is (complex(kind=real64))
+          one = scalar
+        type is (mqc_scalar)
+          one = scalar
+        class default
+          call mqc_error('unrecognized scalar type in mqc_matrix_identity')
+        end select
+      else
+        one = 1.0
+      endIf
+      call matrix%identity(n,m,one)
+
+      End Function MQC_Matrix_Identity_Func
 !
 !
 !     PROCEDURE MQC_Matrix_Set

@@ -12021,7 +12021,7 @@
           Return
         EndIf
 !     I am going to comment the first logical block - the rest are different
-!     perutations
+!     permutations
 !     First we need to determine the relevant orbital, spin and determinant
         IDiff = 1
         Do IPos = 0, NBasis-1
@@ -12049,9 +12049,9 @@
             IDiff = IDiff + 1
           EndIf
         EndDo
-!        Call Print_Vector(IOut,Orbs,'Orbs')
-!        Call Print_Vector(IOut,Spin,'Spin')
-!        Call Print_Vector(IOut,Det,'Det')
+!        Call MQC_Print(IOut,Orbs,'Orbs')
+!        Call MQC_Print(IOut,Spin,'Spin')
+!        Call MQC_Print(IOut,Det,'Det')
 
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
 !          Write(IOut,*) 'Entering case 1'
@@ -13086,7 +13086,7 @@
         EndIf
 !
         MatEl = ERI1 - ERI2
-!        Write(IOut,*) 'Slater Condon Final:',MatEl
+!        Write(IOut,*) 'Slater Condon Final:',float(MatEl)
 !        Deallocate(Orbs,Spin,Det)
         Return
 !
@@ -13159,7 +13159,7 @@
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Call MQC_Print(Sgn*TwoPartInts%%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
                 If(Spin(1).eq.0.and.Spin(2).eq.0) then
