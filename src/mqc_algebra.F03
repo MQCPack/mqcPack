@@ -2703,16 +2703,13 @@
       endIf
 !
       call random_seed(size=n) 
+      allocate(my_seed(n))
       if(present(seed)) then
-        allocate(my_seed(n))
         my_seed(:) = seed(:)
+        call random_seed(put=my_seed)
       else
-        call random_seed(size=n) 
-        allocate(my_seed(n))
-        call system_clock(count=clock)
-        my_seed = clock + 37 * [(i-1,i = 1, n)]
+        call random_seed(get=my_seed)
       endIf
-      call random_seed(put=my_seed)
 !
       select case (my_distribution)
       case('uniform')
