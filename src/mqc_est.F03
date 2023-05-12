@@ -179,6 +179,18 @@
         Procedure, Public::print => mqc_print_wavefunction
       End Type MQC_Wavefunction
 !
+!>    \brief <b> EST intermediates of one-electron basis</b>
+!     MQC_Basis_Set
+      Type MQC_Basis_Set
+        Type(MQC_Matrix)::sh2AtMp
+        Type(MQC_Matrix)::shlTyp
+        Type(MQC_Matrix)::nPrmSh
+        Type(MQC_Matrix)::prmExp
+        Type(MQC_Matrix)::conCoef
+        Type(MQC_Matrix)::conCoTwo
+        Type(MQC_Matrix)::shCoor
+      End Type MQC_Basis_Set
+!
 !
 !     Post-SCF Wavefunctions...
 !
