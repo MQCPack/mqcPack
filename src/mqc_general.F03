@@ -39,8 +39,9 @@
 !           (1)  MQC suite control;
 !           (2)  Printing;
 !           (3)  Character conversion and manipulation;
-!           (4)  Algebra; and
-!           (5)  Other.
+!           (4)  Algebra;
+!           (5)  Other; and
+!           (6)  BLAS and LAPACK wrappers.
 !
 !
 !
@@ -2040,8 +2041,6 @@
 !
 
 
-
-
 !
 !
 !----------------------------------------------------------------
@@ -2049,6 +2048,63 @@
 !     Other                                                     |
 !                                                               |
 !----------------------------------------------------------------
+!
+!PROCEDURE mqc_bubbleSort
+      subroutine mqc_bubbleSort(listIn,listOut,listMap)
+!
+!     This subroutine carries out a simple bubble sort algorithm to order the
+!     values in the array <listIn>. The sorted list is returned in the optional
+!     argument <listOut> if it is sent. The mapping of the unsorted list to the
+!     sorted list is returned in the optional argument <listMap>. If neither
+!     <listOut> or <listMap> is sent, then the sorted list will overwrite the
+!     input data in listIn. If <listOut> and/or <listMap> are sent, it should
+!     already be appropriately allocated.
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variabile Declarations
+      implicit none
+      integer,dimension(:)::listIn
+      integer,dimension(:),optional::listOut,listMap
+      integer::i,j,nDim,nSwaps,valueTemp
+      integer,dimension(:),allocatable::listTemp,listMapTemp
+!
+!     Allocate listTemp and copy listIn into it.
+!
+      nDim = Size(listIn)
+      Allocate(listTemp(nDim),listMapTemp(nDim))
+      listTemp = listIn
+      call mqc_seq(listMapTemp)
+!
+!     Carry out the bubble sort algorithm on listTemp.
+!
+      do i = 1,nDim
+        nSwaps = 0
+        do j = 1,nDim-i
+          if(listTemp(j).gt.listTemp(j+1)) then
+            nSwaps = nSwaps + 1
+            valueTemp = listTemp(j)
+            listTemp(j) = listTemp(j+1)
+            listTemp(j+1) = valueTemp
+            valueTemp = listMapTemp(j)
+            listMapTemp(j) = listMapTemp(j+1)
+            listMapTemp(j+1) = valueTemp
+          endIf
+        endDo
+        if(nSwaps.eq.0) exit
+      endDo
+!
+!     Put the sorted list into listOut or back into listIn.
+!
+      if(PRESENT(listOut)) listOut = listTemp
+      if(PRESENT(listMap)) listMap = listMapTemp
+      if(.not.(PRESENT(listOut).or.PRESENT(listMap))) listIn = listTemp
+!
+      return
+      end
+
+
 !
 !PROCEDURE mqc_flatten
       function mqc_flattenR4Real(inArray) result(outArray)
@@ -2098,6 +2154,50 @@
 !
       return
       end function mqc_isqrt
+
+!
+!PROCEDURE mqc_seq
+      subroutine mqc_seq(list,start,step)
+!
+!     This subroutine fills <list> with a sequence of integers that start at
+!     <start> and increment by <step>. The dummy arguments <start> and <step>
+!     are optional. If <start> is not sent, it is set to 1. If <step> is not
+!     sent, it is set to 1.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations
+      implicit none
+      integer(kind=int64),dimension(:)::list
+      integer(kind=int64),optional::start,step
+      integer(kind=int64)::i,nDim,myStart,myStep
+!
+!     Do the work.
+!
+      nDim = SIZE(list)
+      myStart = 1
+      myStep  = 1
+      if(PRESENT(start)) myStart = start
+      if(PRESENT(step))  myStep  = step
+      list(1) = myStart
+      do i = 2,nDim
+        list(i) = list(i-1) + myStep
+      endDo
+!
+      return
+      end subroutine mqc_seq
+
+
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     BLAS AND LAPACK WRAPPERS                                  |
+!                                                               |
+!----------------------------------------------------------------
+!
 !
 !
 INCLUDE 'mqc_general_lapack.F03'
