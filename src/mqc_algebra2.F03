@@ -595,7 +595,6 @@
 !PROCEDURE MQC_Variable_getSize
       function MQC_Variable_getSize(mqcVariable,iDimension) result(mySize)
 !
-!     This function operates on MQC_Variable opjects in an analogous manner to
 !     the fortran intrinsic funciotn SIZE. When called, this function will
 !     return an integer corresponding to the size of dimension iDimension. If
 !     iDimension is NOT sent or is sent <= 0, this function returns the full
