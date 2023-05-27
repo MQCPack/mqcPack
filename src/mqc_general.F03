@@ -134,6 +134,11 @@
         module procedure mqc_bubbleSort_real
       end interface
 !
+      interface matrixOrderedColumns
+        module procedure mqc_matrixOrderedColumns_integer
+        module procedure mqc_matrixOrderedColumns_real
+      end interface
+!
       interface flatten
         module procedure mqc_flattenR4Real
       end interface
@@ -2055,7 +2060,7 @@
 !----------------------------------------------------------------
 !
 !PROCEDURE mqc_bubbleSort_integer
-      subroutine mqc_bubbleSort_integer(listIn,listOut,map,sortListIn)
+      subroutine mqc_bubbleSort_integer(listIn,listOut,map,sortListIn,reverse)
 !
 !     This subroutine carries out a simple bubble sort algorithm to order the
 !     values in the array <listIn>. The sorted list is returned in the optional
@@ -2064,7 +2069,9 @@
 !     <listOut> or <map> is sent, then the sorted list will overwrite the input
 !     data in listIn. If <listOut> and/or <map> are sent, it should already be
 !     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
-!     is always returned with the sorted values.
+!     is always returned with the sorted values. Optional argument <reverse> is
+!     sent as TRUE if the list should be sorted from largest to smallest value.
+!     The default value of <reverse> is FALSE.
 !
 !     H. P. Hratchian, 2023.
 !
@@ -2073,18 +2080,25 @@
       implicit none
       integer(kind=int64),dimension(:)::listIn
       integer(kind=int64),dimension(:),optional::listOut,map
-      logical,optional::sortListIn
+      logical,optional::sortListIn,reverse
       integer(kind=int64)::i,j,nDim,nSwaps,valueTemp
       integer(kind=int64),dimension(:),allocatable::listTemp,listMapTemp
-      logical::overwriteListIn
+      logical::overwriteListIn,doReverse
 !
-!     Allocate listTemp and copy listIn into it.
+!     Set up overwriteListIn and doReverse based on whether the related optional
+!     dummy arguments have been sent by the calling program unit.
 !
       overwriteListIn = .false.
       if(PRESENT(sortListIn)) overwriteListIn = sortListIn
+      doReverse = .false.
+      if(PRESENT(reverse)) doReverse = reverse
+!
+!     Allocate listTemp and copy listIn into it.
+!
       nDim = Size(listIn)
       Allocate(listTemp(nDim),listMapTemp(nDim))
       listTemp = listIn
+      if(doReverse) listTemp = -listTemp
       call mqc_seq(listMapTemp)
 !
 !     Carry out the bubble sort algorithm on listTemp.
@@ -2107,6 +2121,7 @@
 !
 !     Put the sorted list into listOut or back into listIn.
 !
+      if(doReverse) listTemp = -listTemp
       if(PRESENT(listOut)) listOut = listTemp
       if(PRESENT(map)) map = listMapTemp
       if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
@@ -2118,7 +2133,7 @@
 
 !
 !PROCEDURE mqc_bubbleSort_real
-      subroutine mqc_bubbleSort_real(listIn,listOut,map,sortListIn)
+      subroutine mqc_bubbleSort_real(listIn,listOut,map,sortListIn,reverse)
 !
 !     This subroutine carries out a simple bubble sort algorithm to order the
 !     values in the array <listIn>. The sorted list is returned in the optional
@@ -2127,7 +2142,10 @@
 !     <listOut> or <map> is sent, then the sorted list will overwrite the input
 !     data in listIn. If <listOut> and/or <map> are sent, it should already be
 !     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
-!     is always returned with the sorted values.
+!     is always returned with the sorted values. Optional argument <reverse> is
+!     sent as TRUE if the list should be sorted from largest to smallest value.
+!     The default value of <reverse> is FALSE.
+!
 !
 !     H. P. Hratchian, 2023.
 !
@@ -2137,20 +2155,27 @@
       real(kind=real64),dimension(:)::listIn
       real(kind=real64),dimension(:),optional::listOut
       integer(kind=int64),dimension(:),optional::map
-      logical,optional::sortListIn
+      logical,optional::sortListIn,reverse
       integer(kind=int64)::i,j,nDim,nSwaps
       integer(kind=int64),dimension(:),allocatable::listMapTemp
       real(kind=real64)::valueTemp
       real(kind=real64),dimension(:),allocatable::listTemp
-      logical::overwriteListIn
+      logical::overwriteListIn,doReverse
 !
-!     Allocate listTemp and copy listIn into it.
+!     Set up overwriteListIn and doReverse based on whether the related optional
+!     dummy arguments have been sent by the calling program unit.
 !
       overwriteListIn = .false.
       if(PRESENT(sortListIn)) overwriteListIn = sortListIn
+      doReverse = .false.
+      if(PRESENT(reverse)) doReverse = reverse
+!
+!     Allocate listTemp and copy listIn into it.
+!
       nDim = Size(listIn)
       Allocate(listTemp(nDim),listMapTemp(nDim))
       listTemp = listIn
+      if(doReverse) listTemp = -listTemp
       call mqc_seq(listMapTemp)
 !
 !     Carry out the bubble sort algorithm on listTemp.
@@ -2173,6 +2198,7 @@
 !
 !     Put the sorted list into listOut or back into listIn.
 !
+      if(doReverse) listTemp = -listTemp
       if(PRESENT(listOut)) listOut = listTemp
       if(PRESENT(map)) map = listMapTemp
       if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
@@ -2180,6 +2206,80 @@
 !
       return
       end subroutine mqc_bubbleSort_real
+
+
+!
+!PROCEDURE mqc_matrixOrderedColumns_integer
+      subroutine mqc_matrixOrderedColumns_integer(matrix,map)
+!
+!     This routine reordered the columns of the matrix <matrix> according to the
+!     mapping array <map>.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),dimension(:,:)::matrix
+      integer(kind=int64),dimension(:)::map
+      integer(kind=int64)::i
+      integer(kind=int64),dimension(:,:),allocatable::tempMatrix
+      
+!
+!     Begin by ensuring map is the same length as the number of columns in
+!     matrix.
+!
+      if(SIZE(matrix,2).ne.SIZE(map))  &
+        call mqc_error('mqc_matrixOrderedColumns: map is wrong length!')
+!
+!     Do the work.
+!
+      Allocate(tempMatrix(Size(matrix,1),Size(matrix,2)))
+      do i = 1,Size(matrix,2)
+        tempMatrix(:,i) = matrix(:,map(i))
+      endDo
+      matrix = tempMatrix
+!
+      return
+      end subroutine mqc_matrixOrderedColumns_integer
+
+
+!
+!PROCEDURE mqc_matrixOrderedColumns_real
+      subroutine mqc_matrixOrderedColumns_real(matrix,map)
+!
+!     This routine reordered the columns of the matrix <matrix> according to the
+!     mapping array <map>.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:)::matrix
+      integer(kind=int64),dimension(:)::map
+      integer(kind=int64)::i
+      real(kind=real64),dimension(:,:),allocatable::tempMatrix
+      
+!
+!     Begin by ensuring map is the same length as the number of columns in
+!     matrix.
+!
+      if(SIZE(matrix,2).ne.SIZE(map))  &
+        call mqc_error('mqc_matrixOrderedColumns: map is wrong length!')
+!
+!     Do the work.
+!
+      Allocate(tempMatrix(Size(matrix,1),Size(matrix,2)))
+      do i = 1,Size(matrix,2)
+        tempMatrix(:,i) = matrix(:,map(i))
+      endDo
+      matrix = tempMatrix
+!
+      return
+      end subroutine mqc_matrixOrderedColumns_real
 
 
 !
