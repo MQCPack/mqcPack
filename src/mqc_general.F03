@@ -129,6 +129,11 @@
         module procedure complex2character
       end interface
 !
+      interface sort
+        module procedure mqc_bubbleSort_integer
+        module procedure mqc_bubbleSort_real
+      end interface
+!
       interface flatten
         module procedure mqc_flattenR4Real
       end interface
@@ -2104,7 +2109,6 @@
 !
       if(PRESENT(listOut)) listOut = listTemp
       if(PRESENT(map)) map = listMapTemp
-!hph      if(.not.(PRESENT(listOut).or.PRESENT(map))) listIn = listTemp
       if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
         listIn = listTemp
 !
