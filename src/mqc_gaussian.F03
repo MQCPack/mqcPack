@@ -791,7 +791,7 @@
           if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
              'ok', ok )
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (1): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -919,7 +919,7 @@
           if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
                'ok', ok )
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (2): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -1152,7 +1152,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_l('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_l('Error reading Gaussian matrix file header (3): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -1648,7 +1648,7 @@
                'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (4): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -2080,7 +2080,7 @@
             'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (5): Must include a filename.', 6, &
             'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -3486,7 +3486,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (6): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -5145,7 +5145,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (7): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -5363,7 +5363,7 @@
                'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (8): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
