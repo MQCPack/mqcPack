@@ -164,10 +164,10 @@
       integer,OPTIONAL,intent(out)::major,minor,revision
       character(len=*),OPTIONAL,intent(out)::versionString
 !
-      if(PRESENT(major))         major         = 22
-      if(PRESENT(minor))         minor         = 12
+      if(PRESENT(major))         major         = 23
+      if(PRESENT(minor))         minor         = 5
       if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '22.12.1'
+      if(PRESENT(versionString)) versionString = '23.05.1'
 !
       return
       end subroutine mqc_version
