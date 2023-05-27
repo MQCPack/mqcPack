@@ -2049,29 +2049,34 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-!PROCEDURE mqc_bubbleSort
-      subroutine mqc_bubbleSort(listIn,listOut,listMap)
+!PROCEDURE mqc_bubbleSort_integer
+      subroutine mqc_bubbleSort_integer(listIn,listOut,map,sortListIn)
 !
 !     This subroutine carries out a simple bubble sort algorithm to order the
 !     values in the array <listIn>. The sorted list is returned in the optional
 !     argument <listOut> if it is sent. The mapping of the unsorted list to the
-!     sorted list is returned in the optional argument <listMap>. If neither
-!     <listOut> or <listMap> is sent, then the sorted list will overwrite the
-!     input data in listIn. If <listOut> and/or <listMap> are sent, it should
-!     already be appropriately allocated.
+!     sorted list is returned in the optional argument <map>. If neither
+!     <listOut> or <map> is sent, then the sorted list will overwrite the input
+!     data in listIn. If <listOut> and/or <map> are sent, it should already be
+!     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
+!     is always returned with the sorted values.
 !
 !     H. P. Hratchian, 2023.
 !
 !
 !     Variabile Declarations
       implicit none
-      integer,dimension(:)::listIn
-      integer,dimension(:),optional::listOut,listMap
-      integer::i,j,nDim,nSwaps,valueTemp
-      integer,dimension(:),allocatable::listTemp,listMapTemp
+      integer(kind=int64),dimension(:)::listIn
+      integer(kind=int64),dimension(:),optional::listOut,map
+      logical,optional::sortListIn
+      integer(kind=int64)::i,j,nDim,nSwaps,valueTemp
+      integer(kind=int64),dimension(:),allocatable::listTemp,listMapTemp
+      logical::overwriteListIn
 !
 !     Allocate listTemp and copy listIn into it.
 !
+      overwriteListIn = .false.
+      if(PRESENT(sortListIn)) overwriteListIn = sortListIn
       nDim = Size(listIn)
       Allocate(listTemp(nDim),listMapTemp(nDim))
       listTemp = listIn
@@ -2098,11 +2103,79 @@
 !     Put the sorted list into listOut or back into listIn.
 !
       if(PRESENT(listOut)) listOut = listTemp
-      if(PRESENT(listMap)) listMap = listMapTemp
-      if(.not.(PRESENT(listOut).or.PRESENT(listMap))) listIn = listTemp
+      if(PRESENT(map)) map = listMapTemp
+!hph      if(.not.(PRESENT(listOut).or.PRESENT(map))) listIn = listTemp
+      if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
+        listIn = listTemp
 !
       return
-      end
+      end subroutine mqc_bubbleSort_integer
+
+
+!
+!PROCEDURE mqc_bubbleSort_real
+      subroutine mqc_bubbleSort_real(listIn,listOut,map,sortListIn)
+!
+!     This subroutine carries out a simple bubble sort algorithm to order the
+!     values in the array <listIn>. The sorted list is returned in the optional
+!     argument <listOut> if it is sent. The mapping of the unsorted list to the
+!     sorted list is returned in the optional argument <map>. If neither
+!     <listOut> or <map> is sent, then the sorted list will overwrite the input
+!     data in listIn. If <listOut> and/or <map> are sent, it should already be
+!     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
+!     is always returned with the sorted values.
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variabile Declarations
+      implicit none
+      real(kind=real64),dimension(:)::listIn
+      real(kind=real64),dimension(:),optional::listOut
+      integer(kind=int64),dimension(:),optional::map
+      logical,optional::sortListIn
+      integer(kind=int64)::i,j,nDim,nSwaps
+      integer(kind=int64),dimension(:),allocatable::listMapTemp
+      real(kind=real64)::valueTemp
+      real(kind=real64),dimension(:),allocatable::listTemp
+      logical::overwriteListIn
+!
+!     Allocate listTemp and copy listIn into it.
+!
+      overwriteListIn = .false.
+      if(PRESENT(sortListIn)) overwriteListIn = sortListIn
+      nDim = Size(listIn)
+      Allocate(listTemp(nDim),listMapTemp(nDim))
+      listTemp = listIn
+      call mqc_seq(listMapTemp)
+!
+!     Carry out the bubble sort algorithm on listTemp.
+!
+      do i = 1,nDim
+        nSwaps = 0
+        do j = 1,nDim-i
+          if(listTemp(j).gt.listTemp(j+1)) then
+            nSwaps = nSwaps + 1
+            valueTemp = listTemp(j)
+            listTemp(j) = listTemp(j+1)
+            listTemp(j+1) = valueTemp
+            valueTemp = listMapTemp(j)
+            listMapTemp(j) = listMapTemp(j+1)
+            listMapTemp(j+1) = valueTemp
+          endIf
+        endDo
+        if(nSwaps.eq.0) exit
+      endDo
+!
+!     Put the sorted list into listOut or back into listIn.
+!
+      if(PRESENT(listOut)) listOut = listTemp
+      if(PRESENT(map)) map = listMapTemp
+      if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
+        listIn = listTemp
+!
+      return
+      end subroutine mqc_bubbleSort_real
 
 
 !
