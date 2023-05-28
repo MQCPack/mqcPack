@@ -2167,7 +2167,14 @@
         call mqc_error_I('Attemp to convert MQC_Variable array to '//  &
           'intrinsic SCALAR not allowed.',6,'Rank(mqcVariable)',  &
           Rank(mqcVariable))
-      allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      if(allocated(intrinsicOut)) then
+        if(SIZE(mqcVariable,1).ne.SIZE(intrinsicOut,1)) then
+          deallocate(intrinsicOut)
+          allocate(intrinsicOut(SIZE(mqcVariable,1)))
+        endIf
+      else
+        allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      endIf
       select case(MQC_Variable_getTypeCode(mqcVariable))
       case(2)
         intrinsicOut = mqcVariable%realArray(:)
