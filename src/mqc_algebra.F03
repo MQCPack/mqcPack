@@ -184,8 +184,10 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
-!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
-!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. StorHerm, StorASymm 
+!     and StorAHerm are also available but note these are not necessarily true to the mathematical
+!     definition because any diagonal elements are permitted to make these definitions more useful
+!     for storage..
 !     
 !>    \brief <b> Rank 2 array variable</b>
       Type MQC_Matrix
@@ -13395,7 +13397,8 @@
           Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
-      ElseIf (Mat%Storage.eq.'StorSymm') then
+      ElseIf (Mat%Storage.eq.'StorSymm'.or.Mat%Storage.eq.'StorAsym'.or.Mat%Storage.eq.'StorHerm'.or.&
+          Mat%Storage.eq.'StorAhrm') then
         If (Mat%Data_Type.eq.'Integer') then
           Call MQC_Allocate_Vector(Length,Vector,'Integer')
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -13417,77 +13420,30 @@
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
           EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorAsym') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
-          EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorHerm') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
-          EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorAhrm') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
+          If(Column.and.Cnt.lt.IndK) then
+            If(Mat%Storage.eq.'StorAsym') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*Vector%VecC(L)
+            ElseIf(Mat%Storage.eq.'StorHerm') then
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Vector%VecC(L))
+            ElseIf(Mat%Storage.eq.'StorAhrm') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Vector%VecC(L))
+            EndIf
+          ElseIf(.not.Column.and.Cnt.gt.IndK) then
+            If(Mat%Storage.eq.'StorAsym') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*Vector%VecC(L)
+            ElseIf(Mat%Storage.eq.'StorHerm') then
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Vector%VecC(L))
+            ElseIf(Mat%Storage.eq.'StorAhrm') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Vector%VecC(L))
+            EndIf
           EndIf
           L = L + 1
         EndDo
@@ -13938,7 +13894,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -13968,7 +13924,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -13998,7 +13954,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -14028,7 +13984,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -17955,7 +17911,12 @@
 !>    MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry 
 !>    specified by optional argument, with the default test being for a symmetric
 !>    matrix. Note that this function differs from haveSymmetric subroutine which
-!>    tests how a matrix is packed. The following options are available: 
+!>    tests how a matrix is packed. The optional logical argument Math can be used
+!>    to test the diagonal elements and so return true/false based on the 
+!>    mathematical definition rather that the default, which returns true if the 
+!>    matrix can be stored in the specified lower-triangular packing format (i.e.
+!>    without any constraints on the form of diagonal elements). The following 
+!>    options are available: 
 !>
 !>    1. Option = 'any' tests all matrix symmetries (default).
 !>    2. Option = 'symmetric' tests for a symmetric matrix.
@@ -17977,10 +17938,17 @@
 !>    \verbatim
 !>        Option is Character(len=*),Optional
 !>        = 'any':           test all matrix symmetries
-!>        = 'symmetric':     symmetric matrix test
+!>        = 'symmetric':     symmetric matrix test (default)
 !>        = 'antisymmetric': antisymmetric matrix test
 !>        = 'hermitian':     hermitian matrix test
 !>        = 'antihermitian': antihermitian matrix test.
+!>    \endverbatim
+!>
+!>    \param[in] Math
+!>    \verbatim
+!>        Math is Logical,Optional 
+!>        If true, do additional tests on diagonal elements  
+!>        for mathematical definition. The default is false.
 !>    \endverbatim
 !
 !     Authors:
@@ -17988,12 +17956,13 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
+      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option,Math) Result(Symmetric)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(len=*),Optional,Intent(In)::Option
-      Logical::Symmetric
+      Logical,Optional,Intent(In)::Math
+      Logical::Symmetric,myMath
       Integer(kind=int64)::I,J,K
       Real(kind=real64)::Thresh=1e-10
       Character(len=64)::myOption
@@ -18002,6 +17971,12 @@
         call string_change_case(Option,'l',myOption)
       else
         myOption = 'any'
+      endIf
+
+      If(Present(Math)) then
+        myMath = Math
+      else
+        myMath = .false.
       endIf
 
       Symmetric = .True.
@@ -18112,6 +18087,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(Matrix%diagonal()).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               If(Matrix%Data_Type.eq.'Integer') then
@@ -18275,6 +18256,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(aimag(Matrix%diagonal())).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
               return
@@ -18422,6 +18409,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(real(Matrix%diagonal())).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               If(Matrix%Data_Type.eq.'Integer') then
@@ -18583,10 +18576,10 @@
           EndIf
         EndIf
       Case ('any')
-        if(mqc_matrix_test_symmetric(matrix,'symmetric').or. &
-          mqc_matrix_test_symmetric(matrix,'antisymmetric').or. &
-          mqc_matrix_test_symmetric(matrix,'hermitian').or. &
-          mqc_matrix_test_symmetric(matrix,'antihermitian')) then
+        if(mqc_matrix_test_symmetric(matrix,'symmetric',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'antisymmetric',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'hermitian',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'antihermitian',myMath)) then
           return
         else
           Symmetric = .False.

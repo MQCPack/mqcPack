@@ -109,7 +109,7 @@
 !
 !       compute energy at iteration
         Energy = contraction(wavefunc%core_hamiltonian,wavefunc%density_matrix)
-        Energy = Energy + half*contraction(wavefunc%density_matrix,Gmat)
+        Energy = Energy + half*contraction(wavefunc%density_matrix%swapODB(),Gmat)
         Energy = Energy + Vnn
         call Energy%print(iOut,'Energy')
 !
