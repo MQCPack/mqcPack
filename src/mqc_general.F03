@@ -39,8 +39,9 @@
 !           (1)  MQC suite control;
 !           (2)  Printing;
 !           (3)  Character conversion and manipulation;
-!           (4)  Algebra; and
-!           (5)  Other.
+!           (4)  Algebra;
+!           (5)  Other; and
+!           (6)  BLAS and LAPACK wrappers.
 !
 !
 !
@@ -55,6 +56,9 @@
       real(kind=real64),public,parameter::avogadro=6.02214129d+23                                                        ! Avogadro's number
       real(kind=real64),public,parameter::jPCal=4.184d00                                                                 ! Joules per calorie
       real(kind=real64),public,parameter::jPHartree=4.35974434d-18                                                       ! Joules per Hartree
+      real(kind=real64),public,parameter::evPHartree=27.211399d0                                                         ! eV per Hartree
+      real(kind=real64),public,parameter::cmM1PHartree=219474.63d0                                                       ! cm^-1 per Hartree
+      real(kind=real64),public,parameter::nmPev=1239.831765d0                                                            ! nm per eV
       real(kind=real64),public,parameter::sLight=2.99792458d10                                                           ! Speed of light
       real(kind=real64),public,parameter::boltzman=1.3806488d-23                                                         ! Boltzman Constant
       real(kind=real64),public,parameter::molVol=22.4139679d-3                                                           ! Molar volume of ideal gass in m**3 at 273.15 K 
@@ -128,6 +132,16 @@
         module procedure complex2character
       end interface
 !
+      interface sort
+        module procedure mqc_bubbleSort_integer
+        module procedure mqc_bubbleSort_real
+      end interface
+!
+      interface matrixOrderedColumns
+        module procedure mqc_matrixOrderedColumns_integer
+        module procedure mqc_matrixOrderedColumns_real
+      end interface
+!
       interface flatten
         module procedure mqc_flattenR4Real
       end interface
@@ -158,10 +172,10 @@
       integer,OPTIONAL,intent(out)::major,minor,revision
       character(len=*),OPTIONAL,intent(out)::versionString
 !
-      if(PRESENT(major))         major         = 22
-      if(PRESENT(minor))         minor         = 12
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '22.12.1'
+      if(PRESENT(major))         major         = 23
+      if(PRESENT(minor))         minor         = 5
+      if(PRESENT(revision))      revision      = 3
+      if(PRESENT(versionString)) versionString = '23.05.3'
 !
       return
       end subroutine mqc_version
@@ -2040,8 +2054,6 @@
 !
 
 
-
-
 !
 !
 !----------------------------------------------------------------
@@ -2049,6 +2061,230 @@
 !     Other                                                     |
 !                                                               |
 !----------------------------------------------------------------
+!
+!PROCEDURE mqc_bubbleSort_integer
+      subroutine mqc_bubbleSort_integer(listIn,listOut,map,sortListIn,reverse)
+!
+!     This subroutine carries out a simple bubble sort algorithm to order the
+!     values in the array <listIn>. The sorted list is returned in the optional
+!     argument <listOut> if it is sent. The mapping of the unsorted list to the
+!     sorted list is returned in the optional argument <map>. If neither
+!     <listOut> or <map> is sent, then the sorted list will overwrite the input
+!     data in listIn. If <listOut> and/or <map> are sent, it should already be
+!     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
+!     is always returned with the sorted values. Optional argument <reverse> is
+!     sent as TRUE if the list should be sorted from largest to smallest value.
+!     The default value of <reverse> is FALSE.
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variabile Declarations
+      implicit none
+      integer(kind=int64),dimension(:)::listIn
+      integer(kind=int64),dimension(:),optional::listOut,map
+      logical,optional::sortListIn,reverse
+      integer(kind=int64)::i,j,nDim,nSwaps,valueTemp
+      integer(kind=int64),dimension(:),allocatable::listTemp,listMapTemp
+      logical::overwriteListIn,doReverse
+!
+!     Set up overwriteListIn and doReverse based on whether the related optional
+!     dummy arguments have been sent by the calling program unit.
+!
+      overwriteListIn = .false.
+      if(PRESENT(sortListIn)) overwriteListIn = sortListIn
+      doReverse = .false.
+      if(PRESENT(reverse)) doReverse = reverse
+!
+!     Allocate listTemp and copy listIn into it.
+!
+      nDim = Size(listIn)
+      Allocate(listTemp(nDim),listMapTemp(nDim))
+      listTemp = listIn
+      if(doReverse) listTemp = -listTemp
+      call mqc_seq(listMapTemp)
+!
+!     Carry out the bubble sort algorithm on listTemp.
+!
+      do i = 1,nDim
+        nSwaps = 0
+        do j = 1,nDim-i
+          if(listTemp(j).gt.listTemp(j+1)) then
+            nSwaps = nSwaps + 1
+            valueTemp = listTemp(j)
+            listTemp(j) = listTemp(j+1)
+            listTemp(j+1) = valueTemp
+            valueTemp = listMapTemp(j)
+            listMapTemp(j) = listMapTemp(j+1)
+            listMapTemp(j+1) = valueTemp
+          endIf
+        endDo
+        if(nSwaps.eq.0) exit
+      endDo
+!
+!     Put the sorted list into listOut or back into listIn.
+!
+      if(doReverse) listTemp = -listTemp
+      if(PRESENT(listOut)) listOut = listTemp
+      if(PRESENT(map)) map = listMapTemp
+      if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
+        listIn = listTemp
+!
+      return
+      end subroutine mqc_bubbleSort_integer
+
+
+!
+!PROCEDURE mqc_bubbleSort_real
+      subroutine mqc_bubbleSort_real(listIn,listOut,map,sortListIn,reverse)
+!
+!     This subroutine carries out a simple bubble sort algorithm to order the
+!     values in the array <listIn>. The sorted list is returned in the optional
+!     argument <listOut> if it is sent. The mapping of the unsorted list to the
+!     sorted list is returned in the optional argument <map>. If neither
+!     <listOut> or <map> is sent, then the sorted list will overwrite the input
+!     data in listIn. If <listOut> and/or <map> are sent, it should already be
+!     appropriately allocated. If <sortListIn> is sent and is TRUE, then listIn
+!     is always returned with the sorted values. Optional argument <reverse> is
+!     sent as TRUE if the list should be sorted from largest to smallest value.
+!     The default value of <reverse> is FALSE.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variabile Declarations
+      implicit none
+      real(kind=real64),dimension(:)::listIn
+      real(kind=real64),dimension(:),optional::listOut
+      integer(kind=int64),dimension(:),optional::map
+      logical,optional::sortListIn,reverse
+      integer(kind=int64)::i,j,nDim,nSwaps
+      integer(kind=int64),dimension(:),allocatable::listMapTemp
+      real(kind=real64)::valueTemp
+      real(kind=real64),dimension(:),allocatable::listTemp
+      logical::overwriteListIn,doReverse
+!
+!     Set up overwriteListIn and doReverse based on whether the related optional
+!     dummy arguments have been sent by the calling program unit.
+!
+      overwriteListIn = .false.
+      if(PRESENT(sortListIn)) overwriteListIn = sortListIn
+      doReverse = .false.
+      if(PRESENT(reverse)) doReverse = reverse
+!
+!     Allocate listTemp and copy listIn into it.
+!
+      nDim = Size(listIn)
+      Allocate(listTemp(nDim),listMapTemp(nDim))
+      listTemp = listIn
+      if(doReverse) listTemp = -listTemp
+      call mqc_seq(listMapTemp)
+!
+!     Carry out the bubble sort algorithm on listTemp.
+!
+      do i = 1,nDim
+        nSwaps = 0
+        do j = 1,nDim-i
+          if(listTemp(j).gt.listTemp(j+1)) then
+            nSwaps = nSwaps + 1
+            valueTemp = listTemp(j)
+            listTemp(j) = listTemp(j+1)
+            listTemp(j+1) = valueTemp
+            valueTemp = listMapTemp(j)
+            listMapTemp(j) = listMapTemp(j+1)
+            listMapTemp(j+1) = valueTemp
+          endIf
+        endDo
+        if(nSwaps.eq.0) exit
+      endDo
+!
+!     Put the sorted list into listOut or back into listIn.
+!
+      if(doReverse) listTemp = -listTemp
+      if(PRESENT(listOut)) listOut = listTemp
+      if(PRESENT(map)) map = listMapTemp
+      if(overwriteListIn.or.(.not.(PRESENT(listOut).or.PRESENT(map))))  &
+        listIn = listTemp
+!
+      return
+      end subroutine mqc_bubbleSort_real
+
+
+!
+!PROCEDURE mqc_matrixOrderedColumns_integer
+      subroutine mqc_matrixOrderedColumns_integer(matrix,map)
+!
+!     This routine reordered the columns of the matrix <matrix> according to the
+!     mapping array <map>.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),dimension(:,:)::matrix
+      integer(kind=int64),dimension(:)::map
+      integer(kind=int64)::i
+      integer(kind=int64),dimension(:,:),allocatable::tempMatrix
+      
+!
+!     Begin by ensuring map is the same length as the number of columns in
+!     matrix.
+!
+      if(SIZE(matrix,2).ne.SIZE(map))  &
+        call mqc_error('mqc_matrixOrderedColumns: map is wrong length!')
+!
+!     Do the work.
+!
+      Allocate(tempMatrix(Size(matrix,1),Size(matrix,2)))
+      do i = 1,Size(matrix,2)
+        tempMatrix(:,i) = matrix(:,map(i))
+      endDo
+      matrix = tempMatrix
+!
+      return
+      end subroutine mqc_matrixOrderedColumns_integer
+
+
+!
+!PROCEDURE mqc_matrixOrderedColumns_real
+      subroutine mqc_matrixOrderedColumns_real(matrix,map)
+!
+!     This routine reordered the columns of the matrix <matrix> according to the
+!     mapping array <map>.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:)::matrix
+      integer(kind=int64),dimension(:)::map
+      integer(kind=int64)::i
+      real(kind=real64),dimension(:,:),allocatable::tempMatrix
+      
+!
+!     Begin by ensuring map is the same length as the number of columns in
+!     matrix.
+!
+      if(SIZE(matrix,2).ne.SIZE(map))  &
+        call mqc_error('mqc_matrixOrderedColumns: map is wrong length!')
+!
+!     Do the work.
+!
+      Allocate(tempMatrix(Size(matrix,1),Size(matrix,2)))
+      do i = 1,Size(matrix,2)
+        tempMatrix(:,i) = matrix(:,map(i))
+      endDo
+      matrix = tempMatrix
+!
+      return
+      end subroutine mqc_matrixOrderedColumns_real
+
+
 !
 !PROCEDURE mqc_flatten
       function mqc_flattenR4Real(inArray) result(outArray)
@@ -2098,6 +2334,50 @@
 !
       return
       end function mqc_isqrt
+
+!
+!PROCEDURE mqc_seq
+      subroutine mqc_seq(list,start,step)
+!
+!     This subroutine fills <list> with a sequence of integers that start at
+!     <start> and increment by <step>. The dummy arguments <start> and <step>
+!     are optional. If <start> is not sent, it is set to 1. If <step> is not
+!     sent, it is set to 1.
+!
+!
+!     H. P. Hratchian, 2023.
+!
+!
+!     Variable Declarations
+      implicit none
+      integer(kind=int64),dimension(:)::list
+      integer(kind=int64),optional::start,step
+      integer(kind=int64)::i,nDim,myStart,myStep
+!
+!     Do the work.
+!
+      nDim = SIZE(list)
+      myStart = 1
+      myStep  = 1
+      if(PRESENT(start)) myStart = start
+      if(PRESENT(step))  myStep  = step
+      list(1) = myStart
+      do i = 2,nDim
+        list(i) = list(i-1) + myStep
+      endDo
+!
+      return
+      end subroutine mqc_seq
+
+
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     BLAS AND LAPACK WRAPPERS                                  |
+!                                                               |
+!----------------------------------------------------------------
+!
 !
 !
 INCLUDE 'mqc_general_lapack.F03'

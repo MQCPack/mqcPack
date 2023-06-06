@@ -59,7 +59,6 @@
         integer(kind=int64),private::rank=-1
         character(len=64),private::dataType,storageFormat
         integer(kind=int64),dimension(10),private::dimensions=0
-!hph        real(kind=real64),dimension(:),allocatable,private::realArray
         real(kind=real64),dimension(:),allocatable::realArray
         integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
@@ -595,7 +594,6 @@
 !PROCEDURE MQC_Variable_getSize
       function MQC_Variable_getSize(mqcVariable,iDimension) result(mySize)
 !
-!     This function operates on MQC_Variable opjects in an analogous manner to
 !     the fortran intrinsic funciotn SIZE. When called, this function will
 !     return an integer corresponding to the size of dimension iDimension. If
 !     iDimension is NOT sent or is sent <= 0, this function returns the full
@@ -1127,6 +1125,65 @@
 !
       return
       end subroutine MQC_Variable_MatrixPermuteColumns
+
+
+!hph+
+!!
+!!PROCEDURE MQC_Variable_MatrixOrderedColumns
+!      subroutine MQC_Variable_MatrixOrderedColumns(mqcVariable,map)
+!!
+!!     This subroutine is used to order the columns of a matrix according to the
+!!     array map. If this routine is called with an mqcVariable that isn't rank
+!!     2, it results in error.
+!!
+!!
+!!     H. P. Hratchian, 2023.
+!!
+!!
+!!     Variable Declarations.
+!      implicit none
+!      class(MQC_Variable)::mqcVariable
+!      integer(kind=int64),intent(in)::columnI,columnJ
+!      integer(kind=int64)::lenVector,iStart,jStart,iEnd,jEnd
+!      integer(kind=int64),dimension(:),allocatable::tmpArrayI
+!      real(kind=real64),dimension(:),allocatable::tmpArrayR
+!      integer(kind=int64)::k
+!!
+!!
+!!     Do the work...
+!!
+!      if(.not.mqcVariable%initialized) call mqc_error('Cannot use MQC_Variable_Get with uninitialized permuteColumns.')
+!      if(mqcVariable%rank.ne.2)  &
+!        call mqc_error('permuteColumns: Rank of variable must be 2.')
+!      if(TRIM(mqcVariable%storageFormat).ne.'FULL')   &
+!        call mqc_error_a('permuteColumns: Can only be used on FULL storage arrays.',  &
+!        6,'Current storage form:',TRIM(mqcVariable%storageFormat))
+!      lenVector = SIZE(mqcVariable,1)
+!      iStart = MQC_Variable_getArrayPosition(mqcVariable,[ 1, columnI ])
+!      jStart = MQC_Variable_getArrayPosition(mqcVariable,[ 1, columnJ ])
+!      iEnd = iStart + lenVector - 1
+!      jEnd = jStart + lenVector - 1
+!      select case(TRIM(MQC_Variable_getType(mqcVariable)))
+!      case('REAL')
+!        Allocate(tmpArrayR(lenVector))
+!        tmpArrayR = mqcVariable%realArray(iStart:iEnd)
+!        mqcVariable%realArray(iStart:iEnd) = mqcVariable%realArray(jStart:jEnd)
+!        mqcVariable%realArray(jStart:jEnd) = tmpArrayR
+!        DeAllocate(tmpArrayR)
+!      case('INTEGER')
+!        Allocate(tmpArrayI(lenVector))
+!        tmpArrayI = mqcVariable%integerArray(iStart:iEnd)
+!        mqcVariable%integerArray(iStart:iEnd) = mqcVariable%integerArray(jStart:jEnd)
+!        mqcVariable%integerArray(jStart:jEnd) = tmpArrayI
+!        DeAllocate(tmpArrayI)
+!      case default
+!        call mqc_error_a('permuteColumns: Unknown MQC variable type.', 6, &
+!          'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
+!      end select
+!!
+!      return
+!      end subroutine MQC_Variable_MatrixPermuteColumns
+!hph-
 
 
 !
@@ -1665,10 +1722,6 @@
             myDimensions(1) = SIZE(arrayIntegerIn)
           elseIf(fillReal) then
             myDimensions(1) = SIZE(arrayRealIn)
-
-            write(*,*)'    myRank = ',myRank
-            write(*,*)'    myDimensions(1) = ',myDimensions(1)
-
           else
             call mqc_error_l(  &
               'MQC_Variable_setVal: Confused setting myDimensions.', 6, &
@@ -1684,7 +1737,6 @@
             'fillArray', fillArray )
         endIf
       endIf
-      if(DEBUG) write(*,*)'   myRank = ',myRank
 !
 !     Initialize mqcVariable and then set the value appropriately.
 !
@@ -2082,7 +2134,7 @@
       case(3)
         intrinsicOut = mqcVariable%integerArray(:)
       case default
-        call mqc_error_I('MQC_Variable_mqc2intrinsicReal1Array: '// &
+        call mqc_error_I('MQC_Variable_mqc2intrinsicInteger1Array: '// &
           'Unknown MQC_Variable type found.',6, &
           'MQC_Variable_getTypeCode(mqcVariable)',  &
           MQC_Variable_getTypeCode(mqcVariable))
@@ -2115,7 +2167,14 @@
         call mqc_error_I('Attemp to convert MQC_Variable array to '//  &
           'intrinsic SCALAR not allowed.',6,'Rank(mqcVariable)',  &
           Rank(mqcVariable))
-      allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      if(allocated(intrinsicOut)) then
+        if(SIZE(mqcVariable,1).ne.SIZE(intrinsicOut,1)) then
+          deallocate(intrinsicOut)
+          allocate(intrinsicOut(SIZE(mqcVariable,1)))
+        endIf
+      else
+        allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      endIf
       select case(MQC_Variable_getTypeCode(mqcVariable))
       case(2)
         intrinsicOut = mqcVariable%realArray(:)
