@@ -1079,11 +1079,10 @@
 !     output dummy MQC_Variable argument <mqcVarOut>. The character label for
 !     the array of interest is sent to this routine in dummy argument <label>.
 !
-!     Dummy argument <filename> is optional and is only used if fileinfo
-!     hasn't already been defined using Routine
-!     MQC_Gaussian_Unformatted_Matrix_Open or if it is determined that the
-!     filename sent is different from the filename associated with object
-!     fileinfo.
+!     Dummy argument <filename> is optional and is only used if fileinfo hasn't
+!     already been defined using Routine MQC_Gaussian_Unformatted_Matrix_Open or
+!     if it is determined that the filename sent is different from the filename
+!     associated with object fileinfo.
 !
 !     NOTE: The routine MQC_Gaussian_Unformatted_Matrix_Open is meant to be
 !     called before calling this routine. The expectation is that
@@ -1091,10 +1090,10 @@
 !     routine. However, it is also OK to call this routine first. In that case,
 !     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
-!     Optional argument <arraynum> allows the user to specify a specific array in
-!     the case that the matrix file has several arrays under a specific label. 
-!     Currently only implemented for the case '2ERIS-SYMSYMR4TENSOR' so that we 
-!     can access Raffenetti 2 and Raffenetti 3 integrals.
+!     Optional argument <arraynum> allows the user to specify a specific array
+!     in the case that the matrix file has several arrays under a specific
+!     label. Currently only implemented for the case '2ERIS-SYMSYMR4TENSOR' so
+!     that we can access Raffenetti 2 and Raffenetti 3 integrals.
 !
 !     H. P. Hratchian, 2017, 2018.
 !     L. M. Thompson, 2017, 2020

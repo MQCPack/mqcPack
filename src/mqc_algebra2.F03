@@ -867,18 +867,18 @@
         select case(mqcVariable%getType())
         case('REAL')
           if(PRESENT(header)) then
-            call mqc_print_scalar(myIOut,mqcVariable%realArray(1),Header,  &
+            call mqc_print_scalar(mqcVariable%realArray(1),myIOut,Header,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_scalar(myIOut,mqcVariable%realArray(1),  &
+            call mqc_print_scalar(mqcVariable%realArray(1),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case('INTEGER')
           if(PRESENT(header)) then
-            call mqc_print_scalar(myIOut,mqcVariable%integerArray(1),Header,  &
+            call mqc_print_scalar(mqcVariable%integerArray(1),myIOut,Header,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_scalar(myIOut,mqcVariable%integerArray(1),  &
+            call mqc_print_scalar(mqcVariable%integerArray(1),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
@@ -891,18 +891,18 @@
         select case(mqcVariable%getType())
         case('REAL')
           if(PRESENT(header)) then
-            call mqc_print_vector(myIOut,mqcVariable%realArray(:),Header,  &
+            call mqc_print_vector(mqcVariable%realArray(:),myIOut,Header,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_vector(myIOut,mqcVariable%realArray(:),  &
+            call mqc_print_vector(mqcVariable%realArray(:),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case('INTEGER')
           if(PRESENT(header)) then
-            call mqc_print_vector(myIOut,mqcVariable%integerArray(:),Header,  &
+            call mqc_print_vector(mqcVariable%integerArray(:),myIOut,Header,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_vector(myIOut,mqcVariable%integerArray(:),  &
+            call mqc_print_vector(mqcVariable%integerArray(:),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
@@ -915,22 +915,22 @@
         select case(mqcVariable%getType())
         case('REAL')
           if(PRESENT(header)) then
-            call mqc_print_matrix(myIOut,  &
-              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
+            call mqc_print_matrix(  &
+              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),myIOut,  &
               Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_matrix(myIOut,  &
-              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:2)),  &
+            call mqc_print_matrix(  &
+              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:2)),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case('INTEGER')
           if(PRESENT(header)) then
-            call mqc_print_matrix(myIOut,  &
-              RESHAPE(mqcVariable%integerArray,mqcVariable%dimensions(1:2)),  &
+            call mqc_print_matrix(  &
+              RESHAPE(mqcVariable%integerArray,mqcVariable%dimensions(1:2)),myIOut,  &
               Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_matrix(myIOut,  &
-              RESHAPE(mqcVariable%integerArray,mqcVariable%dimensions(1:2)),  &
+            call mqc_print_matrix(  &
+              RESHAPE(mqcVariable%integerArray,mqcVariable%dimensions(1:2)),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
@@ -943,12 +943,12 @@
         select case(mqcVariable%getType())
         case('REAL')
           if(PRESENT(header)) then
-            call mqc_print_rank4Tensor_array_real(myIOut,  &
-              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:4)),  &
+            call mqc_print_rank4Tensor_array_real(  &
+              RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:4)),myIOut,  &
               Header,Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
-            call mqc_print_rank4Tensor_array_real(myIOut,  &
-              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:4)),  &
+            call mqc_print_rank4Tensor_array_real(  &
+              RESHAPE(mqcVariable%realArray,mqcVariable%dimensions(1:4)),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
@@ -3697,8 +3697,8 @@
       call mqc_dgeev_eigensystem_Full(  &
         RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
         eigenValuesTmp,eigenVectorsLeftTmp,eigenVectorsRightTmp)
-      if(MQC_Algebra2_DEBUG) call mqc_print(MQC_Algebra2_IOut,  &
-        eigenValuesTmp,header='determinant: eigenvalues=')
+      if(MQC_Algebra2_DEBUG) call mqc_print(eigenValuesTmp,  &
+        MQC_Algebra2_IOut,header='determinant: eigenvalues=')
       det = PRODUCT(eigenValuesTmp)
       return
       end function MQC_Variable_Matrix_Determinant
