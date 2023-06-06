@@ -173,9 +173,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 23
-      if(PRESENT(minor))         minor         = 5
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '23.05.3'
+      if(PRESENT(minor))         minor         = 6
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '23.06.1'
 !
       return
       end subroutine mqc_version
@@ -621,7 +621,7 @@
 !
 !
 !PROCEDURE MQC_Print_Scalar_Integer
-      Subroutine MQC_Print_Scalar_Integer(iOut,scalar,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Scalar_Integer(scalar,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,formatString)
 !
 !     This subroutine is used to print an integer scalar.
@@ -664,7 +664,7 @@
 
 !
 !PROCEDURE MQC_Print_Scalar_Real
-      Subroutine MQC_Print_Scalar_Real(iOut,scalar,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Scalar_Real(scalar,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,formatString)
 !
 !     This subroutine is used to print an real scalar.
@@ -706,7 +706,7 @@
 !
 !
 !PROCEDURE MQC_Print_Rank4Tensor_Array_Real
-      Subroutine MQC_Print_Rank4Tensor_Array_Real(IOut,Array,Header,  &
+      Subroutine MQC_Print_Rank4Tensor_Array_Real(Array,iOut,Header,  &
         Blank_At_Top,Blank_At_Bottom)
 !
 !     This subroutine is used to print a real rank-4 tensor array.
@@ -754,7 +754,7 @@
 
 !
 !PROCEDURE MQC_Print_Matrix_Array_Integer
-      Subroutine MQC_Print_Matrix_Array_Integer(IOut,Array,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Matrix_Array_Integer(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print an integer Matrix array variable.
@@ -803,7 +803,7 @@
 !
 !
 !PROCEDURE MQC_Print_Matrix_Array_Real
-      Subroutine MQC_Print_Matrix_Array_Real(IOut,Array,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Matrix_Array_Real(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a real Matrix array variable.
@@ -898,7 +898,7 @@
 
 
 !PROCEDURE MQC_Print_Vector_Array_Integer
-      subroutine MQC_Print_Vector_Array_Integer(IOut,Vector,Header,Blank_At_Top, &
+      subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a Vector array type variable.
@@ -938,7 +938,7 @@
 
 
 !PROCEDURE MQC_Print_Vector_Array_Real
-      Subroutine MQC_Print_Vector_Array_Real(IOut,Vector,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a Vector array type variable.
@@ -977,7 +977,7 @@
 
 
 !PROCEDURE MQC_Print_Vector_Array_Complex
-      Subroutine MQC_Print_Vector_Array_Complex(IOut,Vector,Header,Blank_At_Top, &
+      Subroutine MQC_Print_Vector_Array_Complex(vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a Vector array type variable.
@@ -1016,7 +1016,7 @@
 
 !
 !PROCEDURE MQC_Print_R4Tensor_Array_Integer
-      Subroutine MQC_Print_R4Tensor_Array_Integer(IOut,Array,Header,Blank_At_Top, &
+      Subroutine MQC_Print_R4Tensor_Array_Integer(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print an integer 4-dimensional array variable.
@@ -1064,7 +1064,7 @@
 !
 !
 !PROCEDURE MQC_Print_R4Tensor_Array_Real
-      Subroutine MQC_Print_R4Tensor_Array_Real(IOut,Array,Header,Blank_At_Top, &
+      Subroutine MQC_Print_R4Tensor_Array_Real(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a real 4-dimensional array variable.
@@ -1112,7 +1112,7 @@
 !
 !
 !PROCEDURE MQC_Print_R4Tensor_Array_Complex
-      Subroutine MQC_Print_R4Tensor_Array_Complex(IOut,Array,Header,Blank_At_Top, &
+      Subroutine MQC_Print_R4Tensor_Array_Complex(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
 !
 !     This subroutine is used to print a complex 4-dimensional array variable.

@@ -7320,38 +7320,38 @@
 
         if(DEBUG) then
           if(doHerm) then 
-            call mqc_print(6,aaHRden,'Alpha-Alpha hermitian real density')
+            call mqc_print(aaHRden,6,'Alpha-Alpha hermitian real density')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print(6,aaHCden,'Alpha-Alpha hermitian complex density')
+              call mqc_print(aaHCden,6,'Alpha-Alpha hermitian complex density')
             if (mod(flag,10).gt.0) then
-              call mqc_print(6,bbHRden,'Beta-Beta hermitian real density')
+              call mqc_print(bbHRden,6,'Beta-Beta hermitian real density')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print(6,bbHCden,'Beta-Beta hermitian complex density')
+                call mqc_print(bbHCden,6,'Beta-Beta hermitian complex density')
             endIf
             if (mod(flag,10).eq.2) then
-              call mqc_print(6,abHHRden,'Alpha-Beta hermitian hermitian real density')
-              call mqc_print(6,abAHRden,'Alpha-Beta hermitian antihermitian real density')
+              call mqc_print(abHHRden,6,'Alpha-Beta hermitian hermitian real density')
+              call mqc_print(abAHRden,6,'Alpha-Beta hermitian antihermitian real density')
               if(mod(flag,100)/10.eq.1) then
-                call mqc_print(6,abHHCden,'Alpha-Beta hermitian hermitian complex density')
-                call mqc_print(6,abAHCden,'Alpha-Beta hermitian antihermitian complex density')
+                call mqc_print(abHHCden,6,'Alpha-Beta hermitian hermitian complex density')
+                call mqc_print(abAHCden,6,'Alpha-Beta hermitian antihermitian complex density')
               endIf
             endIf
           endIf
           if(doAhrm) then 
-            call mqc_print(6,aaARden,'Alpha-Alpha antihermitian real density')
+            call mqc_print(aaARden,6,'Alpha-Alpha antihermitian real density')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print(6,aaACden,'Alpha-Alpha antihermitian complex density')
+              call mqc_print(aaACden,6,'Alpha-Alpha antihermitian complex density')
             if (mod(flag,10).gt.0) then
-              call mqc_print(6,bbARden,'Beta-Beta antihermitian real density')
+              call mqc_print(bbARden,6,'Beta-Beta antihermitian real density')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print(6,bbACden,'Beta-Beta antihermitian complex density')
+                call mqc_print(bbACden,6,'Beta-Beta antihermitian complex density')
             endIf
             if (mod(flag,10).eq.2) then
-              call mqc_print(6,abHARden,'Alpha-Beta hermitian antihermitian real density')
-              call mqc_print(6,abAARden,'Alpha-Beta antihermitian antihermitian real density')
+              call mqc_print(abHARden,6,'Alpha-Beta hermitian antihermitian real density')
+              call mqc_print(abAARden,6,'Alpha-Beta antihermitian antihermitian real density')
               if(mod(flag,100)/10.eq.1) then
-                call mqc_print(6,abHACden,'Alpha-Beta hermitian antihermitian complex density')
-                call mqc_print(6,abAACden,'Alpha-Beta antihermitian antihermitian complex density')
+                call mqc_print(abHACden,6,'Alpha-Beta hermitian antihermitian complex density')
+                call mqc_print(abAACden,6,'Alpha-Beta antihermitian antihermitian complex density')
               endIf
             endIf
           endIf
@@ -7671,38 +7671,38 @@
 
         if(DEBUG) then
           if(doHerm) then
-            call mqc_print(6,aaHRfoc,'Alpha-Alpha hermitian real Fock')
+            call mqc_print(aaHRfoc,6,'Alpha-Alpha hermitian real Fock')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print(6,aaHCfoc,'Alpha-Alpha hermitian complex Fock')
+              call mqc_print(aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
             if(mod(flag,10).gt.0) then
-              call mqc_print(6,bbHRfoc,'Beta-Beta hermitian real Fock')
+              call mqc_print(bbHRfoc,6,'Beta-Beta hermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print(6,bbHCfoc,'Beta-Beta hermitian complex Fock')
+                call mqc_print(bbHCfoc,6,'Beta-Beta hermitian complex Fock')
               if(mod(flag,10).eq.2) then
-                call mqc_print(6,abHHRfoc,'Alpha-Beta hermitian hermitian real Fock')
+                call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
                 if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(6,abHHCfoc,'Alpha-Beta hermitian hermitian complex Fock')
-                call mqc_print(6,abAHRfoc,'Alpha-Beta hermitian antihermitian real Fock')
+                  call mqc_print(abHHCfoc,6,'Alpha-Beta hermitian hermitian complex Fock')
+                call mqc_print(abAHRfoc,6,'Alpha-Beta hermitian antihermitian real Fock')
                 if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(6,abAHCfoc,'Alpha-Beta hermitian antihermitian complex Fock')
+                  call mqc_print(abAHCfoc,6,'Alpha-Beta hermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
           if(doAhrm) then
-            call mqc_print(6,aaARfoc,'Alpha-Alpha antihermitian real Fock')
+            call mqc_print(aaARfoc,6,'Alpha-Alpha antihermitian real Fock')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print(6,aaACfoc,'Alpha-Alpha antihermitian complex Fock')
+              call mqc_print(aaACfoc,6,'Alpha-Alpha antihermitian complex Fock')
             if(mod(flag,10).gt.0) then
-              call mqc_print(6,bbARfoc,'Beta-Beta antihermitian real Fock')
+              call mqc_print(bbARfoc,6,'Beta-Beta antihermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print(6,bbACfoc,'Beta-Beta antihermitian complex Fock')
+                call mqc_print(bbACfoc,6,'Beta-Beta antihermitian complex Fock')
               if(mod(flag,10).eq.2) then
-                call mqc_print(6,abHARfoc,'Alpha-Beta antihermitian hermitian real Fock')
+                call mqc_print(abHARfoc,6,'Alpha-Beta antihermitian hermitian real Fock')
                 if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(6,abHACfoc,'Alpha-Beta antihermitian hermitian complex Fock')
-                call mqc_print(6,abAARfoc,'Alpha-Beta antihermitian antihermitian real Fock')
+                  call mqc_print(abHACfoc,6,'Alpha-Beta antihermitian hermitian complex Fock')
+                call mqc_print(abAARfoc,6,'Alpha-Beta antihermitian antihermitian real Fock')
                 if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(6,abAACfoc,'Alpha-Beta antihermitian antihermitian complex Fock')
+                  call mqc_print(abAACfoc,6,'Alpha-Beta antihermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
