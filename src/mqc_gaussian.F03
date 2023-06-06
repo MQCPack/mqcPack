@@ -1807,6 +1807,7 @@
       character(len=256)::my_filename,my_storage
       logical::DEBUG=.false.,ok
       Parameter(LenBuf=4000)
+      Real(kind=real64)::Thresh=1e-10
 !
 !     Format statements.
 !
@@ -2019,7 +2020,8 @@
             compVectorTmp = reshape(compMatrixTmp, shape(compVectorTmp))
             call wr_LCBuf(fileinfo%UnitNumber,tmpLabel,Ione,LenBuf,size(compMatrixTmp,1), &
               0,0,0,0,.False.,compVectorTmp)
-          elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian').and.(my_storage.eq.'')).or.(my_storage.eq.'herm') &
+          elseIf((mqc_matrix_test_symmetric(matrixInUse,'hermitian',.true.).and.(my_storage.eq.'')).or.&
+              (my_storage.eq.'herm'.and.MQC_Vector_Norm(matrixInUse%diagonal()).gt.Thresh) &
               .or.(my_storage.eq.'symm')) then
 !           We store triangular matrices in the order (A(J,I),J=1,I),I=1,N) on the matrix file,
 !           where first index is the row. Therefore, we need to transpose the MQC lower

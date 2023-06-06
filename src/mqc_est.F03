@@ -132,6 +132,8 @@
         Procedure, Public::swap => mqc_integral_swap_orbitals
 !>      \brief <b> Combines virtual and occupied MQC_SCF_Integral objects</b>
         Procedure, Public::combine => mqc_integral_combine_orbitals
+!>      \brief <b> Swaps ab and ba blocks of an MQC_SCF_Integral objects</b>
+        Procedure, Public::swapODB => mqc_integral_swap_offDiagBlocks
       End Type
 !
 !>    \brief <b> EST intermediate diagonal matrix variable</b>
@@ -3844,6 +3846,56 @@
       end subroutine mqc_integral_combine_orbitals
 !
 !
+!     PROCEDURE MQC_Integral_Swap_OffDiagBlocks
+!
+!>    \brief <b> MQC_Integral_Swap_OffDiagBlocks is used to exchange the alpha-beta and 
+!>    beta-alpha blocks of an MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Swap_OffDiagBlocks is used to exchange the alpha-beta and 
+!>    beta-alpha blocks of an MQC integral type variable. This is required for performing
+!>    the PG(P) contraction with non-symmetric GHF densities (most commonly with complex GHF
+!>    or transition density matrices).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to swap blocks.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      function mqc_integral_swap_offDiagBlocks(integral) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmat1,tmat2,tmat3,tmat4
+
+      if(integral%array_type.eq.'general') then
+        tmat1 = integral%getBlock('alpha-alpha') 
+        tmat2 = integral%getBlock('beta-beta')
+        tmat3 = integral%getBlock('alpha-beta')
+        tmat4 = integral%getBlock('beta-alpha')
+        call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmat1,tmat2,tmat4,tmat3)
+      else
+        integralOut = integral
+      endIf
+!
+      end function mqc_integral_swap_offDiagBlocks
+!
+!
 !     PROCEDURE MQC_Bit2Num_String
 !
 !>    \brief <b> MQC_Bit2Num_String is used to convert a bit string implying occupied
@@ -5112,7 +5164,7 @@
         endIf
       case default
         call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
-'integralB%array_type', integralB%array_type )
+          'integralB%array_type', integralB%array_type )
       end select
 !
       end function mqc_matrix_integral_multiply
@@ -7329,6 +7381,8 @@
         endIf
 
         if(doAhrm) then
+          aaACden = 2*(aaACden + bbACden) 
+          bbACden = 2*(aaACden/2.0 - 2*bbACden) 
           do i = 1,nBasis
             if(mod(flag,10).eq.2) &
               abHARden(symIndexHash(i,i)) = abHARden(symIndexHash(i,i))/2.0
@@ -7548,11 +7602,11 @@
               raf3*aaARden(symIndexHash(k,l))
             if(mod(flag,100)/10.eq.1) then
               if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
-                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) - &
-                raf2*aaACden(symIndexHash(m,n))
+                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) + &
+                raf1*aaACden(symIndexHash(m,n))
               if(abs(aaACden(symIndexHash(k,l))).gt.zero) &
-                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) - &
-                raf2*aaACden(symIndexHash(k,l))
+                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) + &
+                raf1*aaACden(symIndexHash(k,l))
             endIf
             if(mod(flag,10).gt.0) then
 !         BB Antihermitian Fock
@@ -7564,10 +7618,10 @@
                 raf3*bbARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
-                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) - &
+                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) + &
                   raf2*bbACden(symIndexHash(m,n))
                 if(abs(bbACden(symIndexHash(k,l))).gt.zero) &
-                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) - &
+                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) + &
                   raf2*bbACden(symIndexHash(k,l))
               endIf
             endIf
@@ -7611,6 +7665,8 @@
         if(mod(flag,10).gt.0) then
           aaHRfoc = aaHRfoc - 0.25*bbHRfoc
           bbHRfoc = aaHRfoc + 0.5*bbHRfoc
+          aaACfoc = aaACfoc - 0.25*bbACfoc
+          bbACfoc = aaACfoc + 0.5*bbACfoc
         endIf
 
         if(DEBUG) then
@@ -7673,10 +7729,12 @@
           elseIf(mod(flag,100)/10.eq.1) then
             call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
             call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
+            alpha = transpose(alpha)
             alpha = alpha + tmpMat
             if(mod(flag,10).gt.0) then
               call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
               call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
+              beta = transpose(beta)
               beta = beta + tmpMat
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
@@ -7702,8 +7760,10 @@
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
             call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian') 
+            alpha = transpose(alpha)
             if(mod(flag,10).gt.0) then
                call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian') 
+               beta = transpose(beta)
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
@@ -10665,7 +10725,7 @@
           endIf
         elseIf(integral%array_type.eq.'general') then
           if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
-            if(integral%hasBeta()) element = integral%beta%at(myI,myJ)
+            if(integral%hasAlpha()) element = integral%alpha%at(myI,myJ)
           elseIf(myI.le.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
             myJ = myJ - integral%blockSize('alpha',2)
             if(integral%hasAlphaBeta()) element = integral%alphaBeta%at(myI,myJ)
