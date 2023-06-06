@@ -65,7 +65,8 @@
 !       Specifically, it is intended for use with Gaussian unformatted
 !       matrix files.
       Type,Extends(MQC_FileInfo)::MQC_Gaussian_Unformatted_Matrix_File
-        logical::declared=.false.,header_read=.false.,header_written=.false.
+        logical::declared=.false.,header_read=.false.,header_written=.false.,  &
+          gaussianScalars_read=.false.
         character(len=1)::readWriteMode=' '
         character(len=64)::LabFil=' ',GVers=' ',Title=' '
         integer,allocatable::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
@@ -86,6 +87,7 @@
         procedure,pass::getAtomCarts     => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Carts
         procedure,pass::getAtomWeights   => MQC_Gaussian_Unformatted_Matrix_Get_Atomic_Weights
         procedure,pass::getVal           => MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
+        procedure,pass::getValReal       => MQC_Gaussian_Unformatted_Matrix_Get_Value_Real
         procedure,pass::getArray         => MQC_Gaussian_Unformatted_Matrix_Read_Array
         procedure,pass::getAtomInfo      => MQC_Gaussian_Unformatted_Matrix_Get_Atom_Info
         procedure,pass::getBasisInfo     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
@@ -116,7 +118,6 @@
 !     PROCEDURE INTERFACES                                      |
 !                                                               |
 !----------------------------------------------------------------
-!
 !
 !
 !
@@ -793,7 +794,7 @@
           if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
              'ok', ok )
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (1): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -921,7 +922,7 @@
           if(.not.ok) Call MQC_Error_L('Error opening Gaussian matrix file.', 6, &
                'ok', ok )
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (2): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -1154,7 +1155,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_l('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_l('Error reading Gaussian matrix file header (3): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -1650,7 +1651,7 @@
                'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (4): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -1832,7 +1833,7 @@
             'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (5): Must include a filename.', 6, &
             'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -3371,7 +3372,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (6): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -5030,7 +5031,7 @@
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (7): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -5248,7 +5249,7 @@
                'ok', ok )
           call MQC_Gaussian_Unformatted_Matrix_Write_Header(fileinfo,filename)
         else
-          call MQC_Error_L('Error reading Gaussian matrix file header: Must include a filename.', 6, &
+          call MQC_Error_L('Error reading Gaussian matrix file header (8): Must include a filename.', 6, &
                'PRESENT(filename)', PRESENT(filename) )
         endIf
       endIf
@@ -5340,10 +5341,11 @@
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::label
       character(len=*),intent(in),optional::filename
-      integer::MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
-      integer::value_out=0
+      integer(kind=int64)::MQC_Gaussian_Unformatted_Matrix_Get_Value_Integer
+      integer(kind=int64)::value_out=0
       character(len=64)::myLabel
       character(len=256)::my_filename
+      type(MQC_Variable)::mqcTmp
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
@@ -5376,6 +5378,13 @@
         call fileinfo%CLOSEFILE()
         call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
           my_filename)
+      endIf
+      if(.not.fileinfo%gaussianScalars_read) then
+        call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
+          'gaussian scalars',mqcVarOut=mqcTmp)
+        if(Allocated(fileinfo%gaussianScalars))  &
+          call MQC_Error('Logic error loading gaussianScalars.')
+        fileinfo%gaussianScalars = mqcTmp
       endIf
 !
 !     Do the work...
@@ -5416,17 +5425,11 @@
 !     This function is used to get an integer scalar value that is stored in a
 !     Gaussian matrix file object. Available label values that can be sent here
 !     include:
-!       natoms
-!       nbasis
-!       nbasisuse
-!       charge
-!       multiplicity
-!       nelectrons
-!       nalpha
-!       nbeta
+!       energy
+!       scfenergy
 !
 !
-!     H. P. Hratchian, 2022.
+!     H. P. Hratchian, 2023.
 !
 !
 !     Variable Declarations.
@@ -5436,7 +5439,7 @@
       character(len=*),intent(in)::label
       character(len=*),intent(in),optional::filename
       real(kind=real64)::MQC_Gaussian_Unformatted_Matrix_Get_Value_Real
-      integer::value_out=0
+      real(kind=real64)::value_out=0.0
       integer,dimension(:),allocatable::GScalars_IPositions
       real,dimension(:),allocatable::GScalars_Reals
       character(len=64)::myLabel
@@ -5475,38 +5478,26 @@
         call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
           my_filename)
       endIf
-
-!hph+
-!!
-!!     Do the work...
-!!
-!      call String_Change_Case(label,'l',myLabel)
-!      select case (mylabel)
-!      case('natoms')
-!        value_out = fileinfo%natoms
-!      case('nbasis')
-!        value_out = fileinfo%nbasis
-!      case('nbasisuse')
-!        value_out = fileinfo%nbasisUse
-!      case('charge')
-!        value_out = fileinfo%icharge
-!      case('multiplicity')
-!        value_out = fileinfo%multiplicity
-!      case('nelectrons')
-!        value_out = fileinfo%nelectrons
-!      case('nalpha')
-!        value_out = (fileinfo%nelectrons + fileinfo%multiplicity - 1)/2 
-!      case('nbeta')
-!        value_out = (fileinfo%nelectrons - fileinfo%multiplicity + 1)/2 
-!      case default
-!        call mqc_error_A('Failure finding requested integer value in Gaussian matrix file', 6, &
-!          'mylabel', mylabel )
-!      endSelect
-!hph-
-
-      call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
-        'gaussian scalars',mqcVarOut=mqcTmp)
-      call mqcTmp%print(header='Gaussian Scalars')
+      if(.not.fileinfo%gaussianScalars_read) then
+        call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
+          'gaussian scalars',mqcVarOut=mqcTmp)
+        if(Allocated(fileinfo%gaussianScalars))  &
+          call MQC_Error('Logic error loading gaussianScalars.')
+        fileinfo%gaussianScalars = mqcTmp
+      endIf
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('energy')
+        value_out = fileinfo%gaussianScalars(43)
+      case('scfenergy')
+        value_out = fileinfo%gaussianScalars(32)
+      case default
+        call mqc_error_A('Failure finding requested real value in Gaussian matrix file', 6, &
+          'mylabel', mylabel )
+      endSelect
 !
       MQC_Gaussian_Unformatted_Matrix_Get_Value_Real = value_out
       return
