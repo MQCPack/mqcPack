@@ -132,6 +132,8 @@
         Procedure, Public::swap => mqc_integral_swap_orbitals
 !>      \brief <b> Combines virtual and occupied MQC_SCF_Integral objects</b>
         Procedure, Public::combine => mqc_integral_combine_orbitals
+!>      \brief <b> Swaps ab and ba blocks of an MQC_SCF_Integral objects</b>
+        Procedure, Public::swapODB => mqc_integral_swap_offDiagBlocks
       End Type
 !
 !>    \brief <b> EST intermediate diagonal matrix variable</b>
@@ -178,6 +180,18 @@
 !>      \brief <b> Print the MQC_Wavefunction object</b>
         Procedure, Public::print => mqc_print_wavefunction
       End Type MQC_Wavefunction
+!
+!>    \brief <b> EST intermediates of one-electron basis</b>
+!     MQC_Basis_Set
+      Type MQC_Basis_Set
+        Type(MQC_Matrix)::sh2AtMp
+        Type(MQC_Matrix)::shlTyp
+        Type(MQC_Matrix)::nPrmSh
+        Type(MQC_Matrix)::prmExp
+        Type(MQC_Matrix)::conCoef
+        Type(MQC_Matrix)::conCoTwo
+        Type(MQC_Matrix)::shCoor
+      End Type MQC_Basis_Set
 !
 !
 !     Post-SCF Wavefunctions...
@@ -534,6 +548,12 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] FormatStr
+!>    \verbatim
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -541,7 +561,7 @@
 !>    \date 2016
 !
       subroutine mqc_print_integral(integral,iOut,header, &
-          blank_at_top,blank_at_bottom)
+          blank_at_top,blank_at_bottom,formatStr)
 !
       implicit none
       class(mqc_scf_integral)::integral
@@ -549,6 +569,7 @@
       character(len=*),intent(in)::header
       character(len=64)::arrayType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
+      character(len=*),intent(in),optional::formatStr
 !
  1000 Format(1x,A)
  1020 Format( " " )
@@ -560,15 +581,31 @@
       
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
-        if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
+        endIf
       elseif(integral%array_type.eq.'spin') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
-        if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array',formatStr=formatStr)
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
+        endIf
       elseif(integral%array_type.eq.'general') then
-        if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block')
-        if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block')
-        if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
-        if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
+        if(present(formatStr)) then
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block',formatStr=formatStr)
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block',formatStr=formatStr)
+          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block',formatStr=formatStr)
+          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block',formatStr=formatStr)
+        else
+          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block')
+          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block')
+          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
+          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
+        endIf
       else
         call mqc_error_A('Array type unrecogised in mqc_print_integral', 6, &
              'integral%array_type', integral%array_type )
@@ -630,6 +667,12 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] FormatStr
+!>    \verbatim
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -637,7 +680,7 @@
 !>    \date 2016
 !
       subroutine mqc_print_eigenvalues(eigenvalues,iOut,header, &
-          blank_at_top,blank_at_bottom)
+          blank_at_top,blank_at_bottom,formatstr)
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
@@ -645,6 +688,7 @@
       character(len=*),intent(in)::header
       character(len=64)::integralType
       logical,intent(In),optional::blank_at_top,blank_at_bottom
+      character(len=*),intent(in),optional::formatStr
 !
  1000 Format(1x,A)
  1020 Format( " " )
@@ -656,10 +700,19 @@
       
       call string_change_case(eigenvalues%array_type,'L')
       if(eigenvalues%array_type.eq.'space') then
-        if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'')
+        if(present(formatStr)) then
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'',formatStr=formatStr)
+        else
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'')
+        endIf
       elseif(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
-        if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array')
-        if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array')
+        if(present(formatStr)) then
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array',formatStr=formatStr)
+          if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array',formatStr=formatStr)
+        else
+          if(eigenvalues%hasAlpha()) call eigenvalues%alpha%print(iout,'Alpha Array')
+          if(eigenvalues%hasBeta()) call eigenvalues%beta%print(iout,'Beta Array')
+        endIf
       else
         call mqc_error_A('Array type unrecogised in mqc_print_eigenvalues', 6, &
              'eigenvalues%array_type', eigenvalues%array_type )
@@ -3793,6 +3846,56 @@
       end subroutine mqc_integral_combine_orbitals
 !
 !
+!     PROCEDURE MQC_Integral_Swap_OffDiagBlocks
+!
+!>    \brief <b> MQC_Integral_Swap_OffDiagBlocks is used to exchange the alpha-beta and 
+!>    beta-alpha blocks of an MQC integral type variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Swap_OffDiagBlocks is used to exchange the alpha-beta and 
+!>    beta-alpha blocks of an MQC integral type variable. This is required for performing
+!>    the PG(P) contraction with non-symmetric GHF densities (most commonly with complex GHF
+!>    or transition density matrices).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        integral is class(mqc_scf_integral)
+!>        The MQC_SCF_integrals variable to swap blocks.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      function mqc_integral_swap_offDiagBlocks(integral) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmat1,tmat2,tmat3,tmat4
+
+      if(integral%array_type.eq.'general') then
+        tmat1 = integral%getBlock('alpha-alpha') 
+        tmat2 = integral%getBlock('beta-beta')
+        tmat3 = integral%getBlock('alpha-beta')
+        tmat4 = integral%getBlock('beta-alpha')
+        call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmat1,tmat2,tmat4,tmat3)
+      else
+        integralOut = integral
+      endIf
+!
+      end function mqc_integral_swap_offDiagBlocks
+!
+!
 !     PROCEDURE MQC_Bit2Num_String
 !
 !>    \brief <b> MQC_Bit2Num_String is used to convert a bit string implying occupied
@@ -5061,7 +5164,7 @@
         endIf
       case default
         call mqc_error_A('Unknown integral type in mqc_integral_matrix_multiply', 6, &
-'integralB%array_type', integralB%array_type )
+          'integralB%array_type', integralB%array_type )
       end select
 !
       end function mqc_matrix_integral_multiply
@@ -7278,6 +7381,8 @@
         endIf
 
         if(doAhrm) then
+          aaACden = 2*(aaACden + bbACden) 
+          bbACden = 2*(aaACden/2.0 - 2*bbACden) 
           do i = 1,nBasis
             if(mod(flag,10).eq.2) &
               abHARden(symIndexHash(i,i)) = abHARden(symIndexHash(i,i))/2.0
@@ -7497,11 +7602,11 @@
               raf3*aaARden(symIndexHash(k,l))
             if(mod(flag,100)/10.eq.1) then
               if(abs(aaACden(symIndexHash(m,n))).gt.zero) &
-                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) - &
-                raf2*aaACden(symIndexHash(m,n))
+                aaACfoc(symIndexHash(k,l)) = aaACfoc(symIndexHash(k,l)) + &
+                raf1*aaACden(symIndexHash(m,n))
               if(abs(aaACden(symIndexHash(k,l))).gt.zero) &
-                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) - &
-                raf2*aaACden(symIndexHash(k,l))
+                aaACfoc(symIndexHash(m,n)) = aaACfoc(symIndexHash(m,n)) + &
+                raf1*aaACden(symIndexHash(k,l))
             endIf
             if(mod(flag,10).gt.0) then
 !         BB Antihermitian Fock
@@ -7513,10 +7618,10 @@
                 raf3*bbARden(symIndexHash(k,l))
               if(mod(flag,100)/10.eq.1) then
                 if(abs(bbACden(symIndexHash(m,n))).gt.zero) &
-                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) - &
+                  bbACfoc(symIndexHash(k,l)) = bbACfoc(symIndexHash(k,l)) + &
                   raf2*bbACden(symIndexHash(m,n))
                 if(abs(bbACden(symIndexHash(k,l))).gt.zero) &
-                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) - &
+                  bbACfoc(symIndexHash(m,n)) = bbACfoc(symIndexHash(m,n)) + &
                   raf2*bbACden(symIndexHash(k,l))
               endIf
             endIf
@@ -7560,6 +7665,8 @@
         if(mod(flag,10).gt.0) then
           aaHRfoc = aaHRfoc - 0.25*bbHRfoc
           bbHRfoc = aaHRfoc + 0.5*bbHRfoc
+          aaACfoc = aaACfoc - 0.25*bbACfoc
+          bbACfoc = aaACfoc + 0.5*bbACfoc
         endIf
 
         if(DEBUG) then
@@ -7622,10 +7729,12 @@
           elseIf(mod(flag,100)/10.eq.1) then
             call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
             call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
+            alpha = transpose(alpha)
             alpha = alpha + tmpMat
             if(mod(flag,10).gt.0) then
               call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
               call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
+              beta = transpose(beta)
               beta = beta + tmpMat
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
@@ -7651,8 +7760,10 @@
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
             call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian') 
+            alpha = transpose(alpha)
             if(mod(flag,10).gt.0) then
                call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian') 
+               beta = transpose(beta)
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
@@ -10614,7 +10725,7 @@
           endIf
         elseIf(integral%array_type.eq.'general') then
           if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
-            if(integral%hasBeta()) element = integral%beta%at(myI,myJ)
+            if(integral%hasAlpha()) element = integral%alpha%at(myI,myJ)
           elseIf(myI.le.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
             myJ = myJ - integral%blockSize('alpha',2)
             if(integral%hasAlphaBeta()) element = integral%alphaBeta%at(myI,myJ)
@@ -11982,7 +12093,7 @@
           Return
         EndIf
 !     I am going to comment the first logical block - the rest are different
-!     perutations
+!     permutations
 !     First we need to determine the relevant orbital, spin and determinant
         IDiff = 1
         Do IPos = 0, NBasis-1
@@ -12010,9 +12121,9 @@
             IDiff = IDiff + 1
           EndIf
         EndDo
-!        Call Print_Vector(IOut,Orbs,'Orbs')
-!        Call Print_Vector(IOut,Spin,'Spin')
-!        Call Print_Vector(IOut,Det,'Det')
+!        Call MQC_Print(IOut,Orbs,'Orbs')
+!        Call MQC_Print(IOut,Spin,'Spin')
+!        Call MQC_Print(IOut,Det,'Det')
 
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
 !          Write(IOut,*) 'Entering case 1'
@@ -13047,7 +13158,7 @@
         EndIf
 !
         MatEl = ERI1 - ERI2
-!        Write(IOut,*) 'Slater Condon Final:',MatEl
+!        Write(IOut,*) 'Slater Condon Final:',float(MatEl)
 !        Deallocate(Orbs,Spin,Det)
         Return
 !
@@ -13120,7 +13231,7 @@
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
               If(.not.UHF.and.Spin(1).eq.Spin(2)) then
-!                Call MQC_Print(Sgn*TwoPartInts%%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
                 If(Spin(1).eq.0.and.Spin(2).eq.0) then

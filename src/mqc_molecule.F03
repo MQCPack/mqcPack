@@ -375,6 +375,8 @@
       end select
 !
       select case (temp)
+      case (0)
+        element = 'Bq'
       case (1)
         element = 'H '
       case (2)
@@ -620,6 +622,8 @@
       temp = trim(element_symbol)
       call String_Change_Case(temp,'l')
       select case (temp)
+      case ('bq')
+        atomic_number = 0 
       case ('h')
         atomic_number = 1 
       case ('he')

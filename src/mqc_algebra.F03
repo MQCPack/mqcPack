@@ -184,8 +184,10 @@
 !
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
-!     Matrices with StorSymm flag are symmetric for both real and complex parts. 
-!     In future it may be worth having StorHerm, StorASymm and StorAHerm
+!     Matrices with StorSymm flag are symmetric for both real and complex parts. StorHerm, StorASymm 
+!     and StorAHerm are also available but note these are not necessarily true to the mathematical
+!     definition because any diagonal elements are permitted to make these definitions more useful
+!     for storage..
 !     
 !>    \brief <b> Rank 2 array variable</b>
       Type MQC_Matrix
@@ -612,6 +614,16 @@
       interface MQC_R4Tensor_Put
         module procedure MQC_R4Tensor_Put_Scalar
         module procedure MQC_R4Tensor_Put_Int 
+      end interface
+!
+!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+      interface identity
+        module procedure MQC_Matrix_Identity_Func
+      end interface
+!
+!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+      interface init
+        module procedure MQC_Matrix_Initialize_Func
       end interface
 !
 !----------------------------------------------------------------
@@ -2693,16 +2705,13 @@
       endIf
 !
       call random_seed(size=n) 
+      allocate(my_seed(n))
       if(present(seed)) then
-        allocate(my_seed(n))
         my_seed(:) = seed(:)
+        call random_seed(put=my_seed)
       else
-        call random_seed(size=n) 
-        allocate(my_seed(n))
-        call system_clock(count=clock)
-        my_seed = clock + 37 * [(i-1,i = 1, n)]
+        call random_seed(get=my_seed)
       endIf
-      call random_seed(put=my_seed)
 !
       select case (my_distribution)
       case('uniform')
@@ -9543,13 +9552,10 @@
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !>
-!>    \param[in] high_precision
+!>    \param[in] FormatStr
 !>    \verbatim
-!>        high_precision is Logical,Optional
-!>        Temporary hack to print high precision reals. To be
-!>        replaced with a proper option soon.
-!>        = .True.:  print high precision (reals only) 
-!>        = .False.: print normal precision (default)
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
 !>    \endverbatim
 !
 !     Authors:
@@ -9558,21 +9564,22 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Vector_Algebra1(Vector,IOut,Header,Verbose,Blank_At_Top, &
-        Blank_At_Bottom,high_precision)
+        Blank_At_Bottom,FormatStr)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Vector),Intent(In)::Vector
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose,high_precision
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,Verbose
       Integer(kind=int64)::I,Length
+      Character(Len=*),Intent(In),Optional::FormatStr
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
- 1003 Format(1x,I7,2X,F12.5,F11.5,"i")
- 1004 Format(1x,I7,2X,F20.12)
+ 1003 Format(1x,I7,2X,F14.6,SP,F14.6,"i")
  1020 Format( " " )
  1030 Format( A )
 !
@@ -9590,24 +9597,31 @@
         endif
       endIf
       If(Vector%Data_type.eq.'Integer') then
-          Do I = 1,Length
+        Do I = 1,Length
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, Vector%veci(I)
+          Else
             Write(IOut,1001) I, Vector%veci(I)
-          EndDo
+          EndIf
+        EndDo
       ElseIf(Vector%Data_type.eq.'Real') then
         Do I = 1,Length
-          if(present(high_precision)) then
-            if(high_precision) then 
-              Write(IOut,1004) I, Vector%vecr(I)
-            else
-              Write(IOut,1002) I, Vector%vecr(I)
-            endIf
-          else
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, Vector%vecr(I)
+          Else
             Write(IOut,1002) I, Vector%vecr(I)
           endIf
         EndDo
       ElseIf(Vector%Data_type.eq.'Complex') then
         Do I = 1,Length
-          Write(IOut,1003) I, Vector%vecc(I)
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
+            Write(IOut,trim(FormatLine)) I, Vector%vecc(I)
+          Else
+            Write(IOut,1003) I, Vector%vecc(I)
+          EndIf
         EndDo
       Else
         Call MQC_Error_A('Vector type unspecified in MQC_Print_Vector_Algebra1', 6, &
@@ -13383,7 +13397,8 @@
           Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
-      ElseIf (Mat%Storage.eq.'StorSymm') then
+      ElseIf (Mat%Storage.eq.'StorSymm'.or.Mat%Storage.eq.'StorAsym'.or.Mat%Storage.eq.'StorHerm'.or.&
+          Mat%Storage.eq.'StorAhrm') then
         If (Mat%Data_Type.eq.'Integer') then
           Call MQC_Allocate_Vector(Length,Vector,'Integer')
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -13405,77 +13420,30 @@
             If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
             If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
           EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorAsym') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
-          EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorHerm') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
-          EndIf
-          L = L + 1
-        EndDo
-      ElseIf (Mat%Storage.eq.'StorAhrm') then
-        If (Mat%Data_Type.eq.'Integer') then
-          Call MQC_Allocate_Vector(Length,Vector,'Integer')
-        ElseIf (Mat%Data_Type.eq.'Real') then
-          Call MQC_Allocate_Vector(Length,Vector,'Real')
-        ElseIf (Mat%Data_Type.eq.'Complex') then
-          Call MQC_Allocate_Vector(Length,Vector,'Complex')
-        Else
-          Call MQC_Error_A('Matrix type not defined in MQC_Matrix_Vector_At', 6, &
-               'Mat%Data_Type', Mat%Data_Type )
-        EndIf
-        L = 1
-        Do Cnt = IndI, IndJ
-          If (Cnt.ge.IndK) then
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (Mat%MatI(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (Mat%MatR(Cnt*(Cnt-1)/2+IndK,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (Mat%MatC(Cnt*(Cnt-1)/2+IndK,1))
-          Else
-            If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*(Mat%MatI(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*(Mat%MatR(IndK*(IndK-1)/2+Cnt,1))
-            If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Mat%MatC(IndK*(IndK-1)/2+Cnt,1))
+          If(Column.and.Cnt.lt.IndK) then
+            If(Mat%Storage.eq.'StorAsym') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*Vector%VecC(L)
+            ElseIf(Mat%Storage.eq.'StorHerm') then
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Vector%VecC(L))
+            ElseIf(Mat%Storage.eq.'StorAhrm') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Vector%VecC(L))
+            EndIf
+          ElseIf(.not.Column.and.Cnt.gt.IndK) then
+            If(Mat%Storage.eq.'StorAsym') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*Vector%VecC(L)
+            ElseIf(Mat%Storage.eq.'StorHerm') then
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = conjg(Vector%VecC(L))
+            ElseIf(Mat%Storage.eq.'StorAhrm') then
+              If (Mat%Data_Type.eq.'Integer') Vector%VecI(L) = (-1)*Vector%VecI(L)
+              If (Mat%Data_Type.eq.'Real') Vector%VecR(L) = (-1)*Vector%VecR(L)
+              If (Mat%Data_Type.eq.'Complex') Vector%VecC(L) = (-1)*conjg(Vector%VecC(L))
+            EndIf
           EndIf
           L = L + 1
         EndDo
@@ -13581,7 +13549,6 @@
       Integer(kind=int64)::Length,IndI,IndJ,IndK,I,J,K
       Logical::Column
 
- 1020 Format( " " )
       If(Size(Rows).gt.1.and.Size(Cols).gt.1) then
         Call MQC_Error_I('Vector bounds badly specified in mqc_matrix_vector_put', 6, &
              'Size(Rows)', Size(Rows), &
@@ -13725,25 +13692,21 @@
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat)) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAsym') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antisymmetric')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorHerm') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'hermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorAhrm') then
         Call MQC_Matrix_Symm2Full(Mat)
         If(Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndI,IndJ],[IndK])
         If(.not.Column) Call MQC_Matrix_Vector_Put(Mat,VectorIn,[IndK],[IndI,IndJ])
-        Write(*,1020)
         If(MQC_Matrix_Test_Symmetric(Mat,'antihermitian')) Call MQC_Matrix_Full2Symm(Mat)
       ElseIf (Mat%Storage.eq.'StorDiag') then
         Call MQC_Matrix_Diag2Full(Mat)
@@ -13931,7 +13894,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -13961,7 +13924,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -13991,7 +13954,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -14021,7 +13984,7 @@
         N = 1
         Do Cnt1 = IndI, IndJ
           Do Cnt2 = IndK, IndL
-            If (Cnt1.gt.Cnt2) then
+            If (Cnt1.ge.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = (Mat%MatI(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Real') Matrix%MatR(M,N) = (Mat%MatR(Cnt1*(Cnt1-1)/2+Cnt2,1))
               If (Mat%Data_Type.eq.'Complex') Matrix%MatC(M,N) = (Mat%MatC(Cnt1*(Cnt1-1)/2+Cnt2,1))
@@ -17948,7 +17911,12 @@
 !>    MQC_Matrix_Test_Symmetric is a function that tests a MQC matrix for symmetry 
 !>    specified by optional argument, with the default test being for a symmetric
 !>    matrix. Note that this function differs from haveSymmetric subroutine which
-!>    tests how a matrix is packed. The following options are available: 
+!>    tests how a matrix is packed. The optional logical argument Math can be used
+!>    to test the diagonal elements and so return true/false based on the 
+!>    mathematical definition rather that the default, which returns true if the 
+!>    matrix can be stored in the specified lower-triangular packing format (i.e.
+!>    without any constraints on the form of diagonal elements). The following 
+!>    options are available: 
 !>
 !>    1. Option = 'any' tests all matrix symmetries (default).
 !>    2. Option = 'symmetric' tests for a symmetric matrix.
@@ -17970,10 +17938,17 @@
 !>    \verbatim
 !>        Option is Character(len=*),Optional
 !>        = 'any':           test all matrix symmetries
-!>        = 'symmetric':     symmetric matrix test
+!>        = 'symmetric':     symmetric matrix test (default)
 !>        = 'antisymmetric': antisymmetric matrix test
 !>        = 'hermitian':     hermitian matrix test
 !>        = 'antihermitian': antihermitian matrix test.
+!>    \endverbatim
+!>
+!>    \param[in] Math
+!>    \verbatim
+!>        Math is Logical,Optional 
+!>        If true, do additional tests on diagonal elements  
+!>        for mathematical definition. The default is false.
 !>    \endverbatim
 !
 !     Authors:
@@ -17981,12 +17956,13 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option) Result(Symmetric)
+      recursive Function MQC_Matrix_Test_Symmetric(Matrix,Option,Math) Result(Symmetric)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(len=*),Optional,Intent(In)::Option
-      Logical::Symmetric
+      Logical,Optional,Intent(In)::Math
+      Logical::Symmetric,myMath
       Integer(kind=int64)::I,J,K
       Real(kind=real64)::Thresh=1e-10
       Character(len=64)::myOption
@@ -17995,6 +17971,12 @@
         call string_change_case(Option,'l',myOption)
       else
         myOption = 'any'
+      endIf
+
+      If(Present(Math)) then
+        myMath = Math
+      else
+        myMath = .false.
       endIf
 
       Symmetric = .True.
@@ -18105,6 +18087,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(Matrix%diagonal()).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               If(Matrix%Data_Type.eq.'Integer') then
@@ -18268,6 +18256,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(aimag(Matrix%diagonal())).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             If(Matrix%Data_Type.eq.'Integer'.or.Matrix%Data_Type.eq.'Real') then
               return
@@ -18415,6 +18409,12 @@
         If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
           Symmetric = .False.
         Else
+          If(myMath) then
+            If (MQC_Vector_Norm(real(Matrix%diagonal())).gt.Thresh) then
+              Symmetric = .False.
+              Return
+            EndIf
+          EndIf
           If(Matrix%Storage.eq.'StorDiag') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
               If(Matrix%Data_Type.eq.'Integer') then
@@ -18576,10 +18576,10 @@
           EndIf
         EndIf
       Case ('any')
-        if(mqc_matrix_test_symmetric(matrix,'symmetric').or. &
-          mqc_matrix_test_symmetric(matrix,'antisymmetric').or. &
-          mqc_matrix_test_symmetric(matrix,'hermitian').or. &
-          mqc_matrix_test_symmetric(matrix,'antihermitian')) then
+        if(mqc_matrix_test_symmetric(matrix,'symmetric',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'antisymmetric',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'hermitian',myMath).or. &
+          mqc_matrix_test_symmetric(matrix,'antihermitian',myMath)) then
           return
         else
           Symmetric = .False.
@@ -19484,13 +19484,10 @@
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
 !>
-!>    \param[in] high_precision
+!>    \param[in] FormatStr
 !>    \verbatim
-!>        high_precision is Logical,Optional
-!>        Temporary hack to print high precision reals. To be
-!>        replaced with a proper option soon.
-!>        = .True.:  print high precision (reals only) 
-!>        = .False.: print normal precision (default)
+!>        FormatStr is Character(Len=*),Optional
+!>        Formatting statement for printing.
 !>    \endverbatim
 !
 !     Authors:
@@ -19499,16 +19496,18 @@
 !>    \date 2016
 !
       Subroutine MQC_Print_Matrix_Algebra1(Matrix,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,high_precision)
+        Blank_At_Bottom,FormatStr)
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_Matrix),Intent(In)::Matrix
       Character(Len=*),Intent(In)::Header
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom,high_precision
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,II,ILim,NCols,NRows,IFirst,ILast
-      Integer(kind=int64),Parameter::ColWidth=10 ! Xianghai: can we make it bigger?
+      Character(Len=*),Intent(In),Optional::FormatStr
+      Integer(kind=int64),Parameter::ColWidth=10 
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -19519,8 +19518,6 @@
  2001 Format(1x,I7,10I14)
  2002 Format(1x,I7,10F14.6)
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
- 2004 Format(1x,I7,10F20.12)
- 2005 Format(1x,I7,10(F20.12,SP,F20.12,"i"))
 !
 !     Output will depend on matrix packing type (assumed full) or column/row
       NCols = MQC_Matrix_Columns(Matrix)
@@ -19542,28 +19539,23 @@
           EndIf
           Do I = 1,NRows
             If(Matrix%Data_Type.eq.'Integer') then
-              Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
-              !If(Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
-              !If(.not.Matrix%Column) Write(IOut,2001) I, (Matrix%MatI(J,I),J=IFirst,ILast)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatI(I,J),J=IFirst,ILast)
+              Else
+                Write(IOut,2001) I, (Matrix%MatI(I,J),J=IFirst,ILast)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              if(present(high_precision)) then
-                if(high_precision) then
-                  Write(IOut,2004) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-                else
-                  Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-                endIf
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               else
                 Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
               endIf
-              !If(Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(I,J),J=IFirst,ILast)
-              !If(.not.Matrix%Column) Write(IOut,2002) I, (Matrix%MatR(J,I),J=IFirst,ILast)
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              if(present(high_precision)) then
-                if(high_precision) then
-                  Write(IOut,2005) I, (Matrix%MatC(I,J),J=IFirst,ILast)
-                else
-                  Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
-                endIf
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatC(I,J),J=IFirst,ILast)
               else
                 Write(IOut,2003) I, (Matrix%MatC(I,J),J=IFirst,ILast)
               endIf
@@ -19592,13 +19584,27 @@
             If(IFirst.gt.I) Cycle
             ILim = Min(I-IFirst+1,ColWidth)
             II = (I*(I-1))/2 + IFirst
-!            Do J = 1,ILim
             If(Matrix%Data_Type.eq.'Integer') then
-              Write(IOut,2001) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2001) I, (Matrix%MatI(II+J-1,1),J=1,ILim)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Real') then
-              Write(IOut,2002) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2002) I, (Matrix%MatR(II+J-1,1),J=1,ILim)
+              EndIf
             ElseIf(Matrix%Data_Type.eq.'Complex') then
-              Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              If(present(FormatStr)) then
+                FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+                Write(IOut,trim(FormatLine)) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              Else
+                Write(IOut,2003) I, (Matrix%MatC(II+J-1,1),J=1,ILim)
+              EndIf
             Else
               Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
@@ -19611,11 +19617,26 @@
         Write(IOut,1002)
         Do I = 1,Min(NRows,NCols)
           If(Matrix%Data_Type.eq.'Integer') then
-            Write(IOut,2001) I, Matrix%MatI(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatI(I,1)
+            Else
+              Write(IOut,2001) I, Matrix%MatI(I,1)
+            EndIf
           ElseIf(Matrix%Data_Type.eq.'Real') then
-            Write(IOut,2002) I, Matrix%MatR(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatR(I,1)
+            Else
+              Write(IOut,2002) I, Matrix%MatR(I,1)
+            EndIf
           ElseIf(Matrix%Data_Type.eq.'Complex') then
-            Write(IOut,2003) I, Matrix%MatC(I,1)
+            If(present(FormatStr)) then
+              FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+              Write(IOut,trim(FormatLine)) I, Matrix%MatC(I,1)
+            Else
+              Write(IOut,2003) I, Matrix%MatC(I,1)
+            EndIf
           Else
             Call MQC_Error_A('Matrix data type unspecified in MQC_Print_Matrix_Algebra1', 6, &
                  'Matrix%Data_Type', Matrix%Data_Type )
@@ -24363,6 +24384,108 @@
       End Subroutine MQC_Matrix_Initialize
 !
 !
+!     PROCEDURE MQC_Matrix_Initialize_Func
+!
+!>    \brief <b> MQC_Matrix_Initialize_Func is a function that returns an MQC matrix
+!>    with each element equal to a chosen value</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Initialize_Func is a function that retuns an MQC matrix with each 
+!>    element equal to a chosen value. Optional argument Scalar determines the value
+!>    of each element, with the default equal to zero. Optional argument Storage 
+!>    determines the initial packing of MQC matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Rows 
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Columns
+!>    \verbatim
+!>        Columns is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set each element of Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Storage
+!>    \verbatim
+!>        Storage is Character(Len=*),Optional
+!>        The initial packing of Matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Matrix_Initialize_Func(Rows,Columns,Scalar,Storage) Result(Matrix)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Real(kind=real64)::Zero=0.0d0
+      Integer(kind=int64),Intent(in)::Rows,Columns
+      Class(*),Optional::Scalar
+      Character(Len=*),Intent(in),OPTIONAL::Storage
+      Type(MQC_Matrix)::Matrix
+      Character(Len=64)::myStorage
+!
+      if(Present(Storage)) then
+        myStorage = TRIM(Storage)
+      else
+        myStorage = 'StorFull'
+      endIf
+!
+      If(Present(Scalar)) then
+        Select Type (Scalar)
+        Type is (Integer)
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar
+        Type is (Real)
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar
+        Type is (Complex(Kind=real64))
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar
+        Type is (MQC_Scalar)
+          If(MQC_Scalar_HaveInteger(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Integer',TRIM(myStorage))
+            Matrix%MatI = Scalar%ScaI
+          ElseIf(MQC_Scalar_HaveReal(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+            Matrix%MatR = Scalar%ScaR
+          ElseIf(MQC_Scalar_HaveComplex(Scalar)) then
+            Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Complex',TRIM(myStorage))
+            Matrix%MatC = Scalar%ScaC
+          Else
+            Call MQC_Error_I('Unrecognized MQC scalar Type in MQC_Matrix_Initialize', 6)
+          EndIf
+        Class Default
+          Call MQC_Error_I('Scalar Type not defined in MQC_Matrix_Initialize', 6)
+        End Select
+      Else
+        Call MQC_Allocate_Matrix(Rows,Columns,Matrix,'Real',TRIM(myStorage))
+        Matrix%MatR = Zero
+      EndIf
+!
+      Return
+      End Function MQC_Matrix_Initialize_Func
+!
+!
 !     PROCEDURE MQC_Matrix_Identity
 !
 !>    \brief <b> MQC_Matrix_Identity is a subroutine that initializes an MQC matrix
@@ -24440,6 +24563,78 @@
       call matrix%init(n,m,one,'StorDiag')
 
       End Subroutine MQC_Matrix_Identity
+!
+!
+!     PROCEDURE MQC_Matrix_Identity_Func
+!
+!>    \brief <b> MQC_Matrix_Identity_Func is a function that returns an MQC matrix
+!>    as an identity matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Identity_Func is a function that returns an MQC matrix as an  
+!>    identity matrix. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] N 
+!>    \verbatim
+!>        N is Integer(kind=int64)
+!>        The number of rows to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] M
+!>    \verbatim
+!>        M is Integer(kind=int64)
+!>        The number of columns to initialize Matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        The value to set diagonal elements of Matrix. The 
+!>        default is 1.0.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Matrix_Identity_Func(n,m,scalar) result(matrix)
+!
+!     Variable Declarations.
+!
+      implicit none
+      type(MQC_Matrix)::matrix
+      integer(kind=int64),intent(in)::n,m
+      class(*),optional,intent(in)::scalar
+      type(MQC_Scalar)::one
+
+      if(present(scalar)) then
+        select type (scalar)
+        type is (integer)
+          one = scalar
+        type is (real)
+          one = scalar
+        type is (complex(kind=real64))
+          one = scalar
+        type is (mqc_scalar)
+          one = scalar
+        class default
+          call mqc_error('unrecognized scalar type in mqc_matrix_identity')
+        end select
+      else
+        one = 1.0
+      endIf
+      call matrix%identity(n,m,one)
+
+      End Function MQC_Matrix_Identity_Func
 !
 !
 !     PROCEDURE MQC_Matrix_Set
