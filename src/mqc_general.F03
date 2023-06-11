@@ -200,21 +200,74 @@
       integer,OPTIONAL,intent(in)::isMajor,isMinor,isRevision
       integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
       integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
+      integer::versionRequested,versionCurrent
       logical::ok
       integer::major,minor,revision
 !
       ok = .true.
       call mqc_version(major,minor,revision)
 !
-      if(PRESENT(isMajor))           ok = ok.and.major.eq.isMajor
-      if(PRESENT(isMinor))           ok = ok.and.minor.eq.isMinor
-      if(PRESENT(isRevision))        ok = ok.and.revision.eq.isRevision
-      if(PRESENT(olderThanMajor))    ok = ok.and.major.le.olderThanMajor
-      if(PRESENT(olderThanMinor))    ok = ok.and.minor.le.olderThanMinor
-      if(PRESENT(olderThanRevision)) ok = ok.and.revision.le.olderThanRevision
-      if(PRESENT(newerThanMajor))    ok = ok.and.major.ge.newerThanMajor
-      if(PRESENT(newerThanMinor))    ok = ok.and.minor.ge.newerThanMinor
-      if(PRESENT(newerThanRevision)) ok = ok.and.revision.ge.newerThanRevision
+!     If requested, do the test of match of requested and actual version.
+!
+      if(PRESENT(isMajor).or.PRESENT(isMinor).or.PRESENT(isRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(isMajor)) then
+          versionRequested = 10000*isMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(isMinor)) then
+          versionRequested = versionRequested + 100*isMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(isRevision)) then
+          versionRequested = versionRequested + isRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = (versionCurrent.eq.versionRequested)
+      endIf
+!
+!     If requested, do an "older than" test.
+!
+      if(PRESENT(olderThanMajor).or.PRESENT(olderThanMinor).or.  &
+        PRESENT(olderThanRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(olderThanMajor)) then
+          versionRequested = 10000*olderThanMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(olderThanMinor)) then
+          versionRequested = versionRequested + 100*olderThanMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(olderThanRevision)) then
+          versionRequested = versionRequested + olderThanRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = (versionCurrent.le.versionRequested)
+      endIf
+!
+!     If requested, do a "newer than" test.
+!
+      if(PRESENT(newerThanMajor).or.PRESENT(newerThanMinor).or.  &
+        PRESENT(newerThanRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(newerThanMajor)) then
+          versionRequested = 10000*newerThanMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(newerThanMinor)) then
+          versionRequested = versionRequested + 100*newerThanMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(newerThanRevision)) then
+          versionRequested = versionRequested + newerThanRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = ok.and.(versionCurrent.ge.versionRequested)
+      endIf
 !
       return
       end function mqc_version_check
