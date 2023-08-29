@@ -71,6 +71,7 @@
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
       real(kind=real64),public,parameter::MQC_small = 1.0d-6                                                             ! 10^-6, used as a threshold for near zero.
+      complex(kind=real64),public,parameter::im = cmplx(0.0,1.0)                                                         ! Imaginary number.
 !
 !----------------------------------------------------------------
 !                                                               |

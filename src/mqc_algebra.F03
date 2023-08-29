@@ -513,6 +513,16 @@
         Module Procedure MQC_Scalar_ATan2
       End Interface
 !
+!>    \brief <b> Returns the hyperbolic sine</b>
+      Interface Sinh
+        Module Procedure MQC_Scalar_Sinh
+      End Interface
+!
+!>    \brief <b> Returns the hyperbolic cosine</b>
+      Interface Cosh
+        Module Procedure MQC_Scalar_Cosh
+      End Interface
+!
 !>    \brief <b> Sets an intrinsic array as an MQC Algebra object</b>
       Interface MQC_Set_Array2Vector
         Module Procedure MQC_Set_Array2Vector_Integer
@@ -2250,6 +2260,114 @@
 !
       Return
       End Function MQC_Scalar_ATan2
+!
+!
+!     PROCEDURE MQC_Scalar_Sinh
+!
+!>    \brief <b> MQC_Scalar_Sinh is a function used to return the hyperbolic 
+!>    sine of an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Sinh is a function used to return the hyperbolic sine of an 
+!>    MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Scalar_Sinh(Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Sinh
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Sinh = Sinh(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Sinh = Sinh(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Sinh = Sinh(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Sinh = Sinh(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Sinh', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Sinh
+!
+!
+!     PROCEDURE MQC_Scalar_Cosh
+!
+!>    \brief <b> MQC_Scalar_Cosh is a function used to return the hyperbolic
+!>    cosine of an MQC_scalar</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Scalar_Cosh is a function used to return the hyperbolic sine of an 
+!>    MQC_scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The argument of the function.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2023
+!
+      Function MQC_Scalar_Cosh(Scalar)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar)::MQC_Scalar_Cosh
+      Type(MQC_Scalar),Intent(In)::Scalar
+!
+      If(Scalar%Data_type.eq.'Real') then
+        MQC_Scalar_Cosh = Cosh(Scalar%ScaR)
+      ElseIf(Scalar%Data_Type.eq.'Integer') then
+#ifdef PGI
+        MQC_Scalar_Cosh = Cosh(dFloat(Scalar%ScaI))
+#else
+        MQC_Scalar_Cosh = Cosh(Float(Scalar%ScaI))
+#endif
+      ElseIf(Scalar%Data_Type.eq.'Complex') then
+        MQC_Scalar_Cosh = Cosh(Scalar%ScaC)
+      Else
+        Call MQC_Error_A('Scalar type unspecified in MQC_Scalar_Cosh', 6, &
+             'Scalar%Data_Type', Scalar%Data_Type )
+      EndIf
+!
+      Return
+      End Function MQC_Scalar_Cosh
 !
 !
 !     PROCEDURE MQC_Scalar_HaveReal
@@ -12507,17 +12625,18 @@
 !
 !     PROCEDURE MQC_Matrix_Diagonalize
 !
-!>    \brief <b> MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or 
-!>    hermitian MQC matrix and returns eigenvalues and eigenvectors</b>
+!>    \brief <b> MQC_Matrix_Diagonalize is a subroutine that takes a symmetric, 
+!>    hermitian, antisymmetric or antihermitian MQC matrix and returns eigenvalues 
+!>    and eigenvectors</b>
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>
-!>    MQC_Matrix_Diagonalize is a subroutine that takes a symmetric or hermitian MQC 
-!>    matrix and optionally returns eigenvalues to a MQC vector and/or eigenvectors 
-!>    to a MQC matrix.
+!>    MQC_Matrix_Diagonalize is a subroutine that takes a symmetric, hermitian, 
+!>    antisymmetric or antihermitian MQC matrix and optionally returns eigenvalues 
+!>    to a MQC vector and/or eigenvectors to a MQC matrix.
 !>
 !>    \endverbatim
 !
@@ -12547,7 +12666,7 @@
 !>    \author L. M. Thompson
 !>    \date 2017
 !
-      Subroutine MQC_Matrix_Diagonalize(A,EVals,EVecs)
+      recursive Subroutine MQC_Matrix_Diagonalize(A,EVals,EVecs)
 !
       Implicit None
       Class(MQC_Matrix),Intent(In)::A
@@ -12564,12 +12683,19 @@
       Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
 !
+      if(mqc_matrix_test_symmetric(A,'antihermitian',.true.)) then
+        call MQC_Matrix_Diagonalize(im*A,EVals,EVecs)
+        EVals = (-1)*im*EVals
+        return
+      endIf
+!
       typeFlag = a%Data_Type
       if (A%data_type.eq.'Real'.or.A%data_type.eq.'Integer') then
         if(A%data_type.eq.'Integer') call mqc_matrix_copy_int2Real(A)
         if (A%storage .eq. 'StorFull') then
-          if(.not.mqc_matrix_test_symmetric(A)) call mqc_error_l('Input matrix not symmetric in MQC_Matrix_Diagonalize', 6, &
-               'mqc_matrix_test_symmetric(A)', mqc_matrix_test_symmetric(A) )
+          if(.not.mqc_matrix_test_symmetric(A,'symmetric',.true.)) &
+            call mqc_error_l('Input matrix not symmetric in MQC_Matrix_Diagonalize', 6, &
+            'mqc_matrix_test_symmetric(A)', mqc_matrix_test_symmetric(A) )
           if (A%NRow .eq. A%NCol) then
             Allocate(A_Symm((A%NRow*(A%NRow+1))/2),Temp_Vector(3*A%NRow),A_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
             Do i = 1,A%NRow
@@ -12611,9 +12737,9 @@
       elseIf(A%data_type.eq.'Complex') then
 
         if(A%storage.eq.'StorFull') then
-          if(.not.mqc_matrix_test_symmetric(A,'hermitian')) &
+          if(.not.mqc_matrix_test_symmetric(A,'hermitian',.true.)) &
             call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize',6, &
-            "mqc_matrix_test_symmetric(A,'hermitian')",mqc_matrix_test_symmetric(A,'hermitian'))
+            "mqc_matrix_test_symmetric(A,'hermitian',.true.)",mqc_matrix_test_symmetric(A,'hermitian',.true.))
           if (A%NRow .eq. A%NCol) then
             allocate(AC_Symm((A%NRow*(A%NRow+1))/2),TempC_Vector(Max(1,2*A%NRow-1)),Temp_Vector(Max(1,3*A%NRow-2)), &
               AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
@@ -12636,6 +12762,9 @@
                  'A%NCol', A%NCol )
           endif
         elseIf (A%storage .eq. 'StorHerm' .or. A%storage .eq. 'StorSymm') then
+          if(.not.mqc_matrix_test_symmetric(A,'hermitian',.true.)) &
+            call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize',6, &
+            "mqc_matrix_test_symmetric(A,'hermitian',.true.)",mqc_matrix_test_symmetric(A,'hermitian',.true.))
           allocate(AC_Symm((A%NRow*(A%NRow+1))/2),TempC_Vector(max(1,2*A%NRow-1)),Temp_Vector(max(1,3*A%NRow-2)),&
             AC_EVecs(A%NRow,A%NRow),A_EVals(A%NRow))
           do i = 1,A%NRow
@@ -12650,6 +12779,9 @@
           endIf
           deallocate(AC_Symm)
         elseIf (A%storage .eq. 'StorDiag') then
+          if(.not.mqc_matrix_test_symmetric(A,'hermitian',.true.)) &
+            call mqc_error_L('Input matrix not Hermitian in MQC_Matrix_Diagonalize',6, &
+            "mqc_matrix_test_symmetric(A,'hermitian',.true.)",mqc_matrix_test_symmetric(A,'hermitian',.true.))
           Allocate(AC_EVecs(A%NRow,A%NRow),AC_EVals(A%NRow))
           AC_EVals = A%matC(:,1)
           AC_EVecs = 0.0
@@ -14801,8 +14933,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14845,8 +14977,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14889,8 +15021,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14898,8 +15030,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14907,8 +15039,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14955,8 +15087,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -14998,8 +15130,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15033,8 +15165,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15042,8 +15174,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15051,8 +15183,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15060,8 +15192,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
-                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15108,8 +15240,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatI(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatI(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15151,8 +15283,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15194,8 +15326,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatC(L,1)
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15203,8 +15335,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15212,8 +15344,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   Mat%MatC(IndI+N-1,IndK+M-1) = (-1)*conjg(MatrixIn%MatC(L,1))
+                  Mat%MatC(IndI+M-1,IndK+N-1) = MatrixIn%MatC(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -18166,32 +18298,27 @@
             EndDo
           ElseIf(Matrix%Storage.eq.'StorHerm') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
-              If(Matrix%Data_Type.eq.'Integer') then
-                If(Matrix%MatI(symIndexHash(I,I),1).ne.0) then
-                  Symmetric = .False.
-                  Return
-                EndIf
-              ElseIf(Matrix%Data_Type.eq.'Real') then
-                If(Matrix%MatR(symIndexHash(I,I),1).gt.Thresh) then
-                  Symmetric = .False.
-                  Return
-                EndIf
-              ElseIf(Matrix%Data_Type.eq.'Complex') then
-                If((abs(Real(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh) .or. &
-                  (abs(Aimag(Matrix%MatC(symIndexHash(I,I),1))).gt.Thresh)) then
-                  Symmetric = .False.
-                  Return
-                EndIf
-                Do J = 1, I-1
-                  If(abs(Aimag(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+              Do J = 1, I-1
+                If(Matrix%Data_Type.eq.'Integer') then
+                  If(Matrix%MatI(symIndexHash(I,J),1).ne.0) then
                     Symmetric = .False.
                     Return
                   EndIf
-                EndDo
-              Else
-                Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
-                     'Matrix%Data_Type', Matrix%Data_Type )
-              EndIf
+                ElseIf(Matrix%Data_Type.eq.'Real') then
+                  If(Matrix%MatR(symIndexHash(I,J),1).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                ElseIf(Matrix%Data_Type.eq.'Complex') then
+                  If(abs(real(Matrix%MatC(symIndexHash(I,J),1))).gt.Thresh) then
+                    Symmetric = .False.
+                    Return
+                  EndIf
+                Else
+                  Call MQC_Error_A('Unrecognised data type in mqc_matrix_test_symmetric', 6, &
+                    'Matrix%Data_Type', Matrix%Data_Type )
+                EndIf
+              EndDo
             EndDo
           ElseIf(Matrix%Storage.eq.'StorAhrm') then
             Do I = 1, MQC_Matrix_Rows(Matrix)
@@ -25828,7 +25955,7 @@
       do i=1,MQC_Length_Vector(tmpVec)
         call A%put(exp(tmpVec%at(i)),i,i)
       endDo
-      A = matmul(matmul(tmpMat,A),transpose(tmpMat))
+      A = matmul(matmul(tmpMat,A),dagger(tmpMat))
 !
       end subroutine mqc_matrix_exp
 !
@@ -25877,7 +26004,7 @@
       do i=1,MQC_Length_Vector(tmpVec)
         call expA%put(exp(tmpVec%at(i)),i,i)
       endDo
-      expA = matmul(matmul(tmpMat,expA),transpose(tmpMat))
+      expA = matmul(matmul(tmpMat,expA),dagger(tmpMat))
 !
       end function mqc_matrix_exp_func
 !
@@ -26308,11 +26435,8 @@
       Type(MQC_Matrix),Intent(In)::MatrixIn
       Type(MQC_Matrix)::MatrixOut
 !
-      If(MatrixIn%Data_Type.eq.'Complex') then
-        MatrixOut = conjg(MatrixIn%MatC)
-      Else
-        MatrixOut = MatrixIn
-      EndIf
+      MatrixOut = MatrixIn
+      If(MatrixIn%Data_Type.eq.'Complex') MatrixOut%MatC = conjg(MatrixIn%MatC)
 !
       Return
       End Function MQC_Matrix_Complex_Conjugate

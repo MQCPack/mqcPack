@@ -1,4 +1,3 @@
-!TODO:1. Continue developing 2ERIs type as the rank-4 tensor EST object 
 !>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
 !>    electronic structure theory </b>
 !
