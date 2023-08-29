@@ -178,7 +178,7 @@
 !
 !     Test out printing...
 !
-      call mqc_print_Vector_Array_Integer(6,aaa)
+      call mqc_print_Vector_Array_Integer(aaa,6)
 !
 !     Test int2char routine...
 !
@@ -192,9 +192,9 @@
       write(Iout,1000)' Hrant - This is a test of the real -> char function...'
       write(Iout,1050)'    here is the number 1.2345 --->',TRIM(real2character(1.2345e-6,'d50.15')),'<-----'
       write(Iout,1010)
-      call MQC_Print_Scalar_Integer(6,98765,'This is my INTEGER number:',.true., &
+      call MQC_Print_Scalar_Integer(98765,6,'This is my INTEGER number:',.true., &
         .true.)
-      call MQC_Print_Scalar_Real(6,9.8765,'This is my REAL number:',.true., &
+      call MQC_Print_Scalar_Real(9.8765,6,'This is my REAL number:',.true., &
         .true.)
       
       
