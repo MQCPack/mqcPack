@@ -71,6 +71,7 @@
       real(kind=real64),public,parameter::eMPKG = 4.35974434d-18*10000.0d0/(2.99792458d10*1.0d0/137.035999074d0)**2      ! Electron mass in Kg
       real(kind=real64),public,parameter::pi = 4.0d0 * ATan(1.0)                                                         ! Pi
       real(kind=real64),public,parameter::MQC_small = 1.0d-6                                                             ! 10^-6, used as a threshold for near zero.
+      complex(kind=real64),public,parameter::im = cmplx(0.0,1.0)                                                         ! Imaginary number.
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -82,6 +83,7 @@
       interface mqc_print
         module procedure MQC_Print_Scalar_Integer
         module procedure MQC_Print_Scalar_Real
+        module procedure MQC_Print_Scalar_Complex
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Vector_Array_Complex
@@ -96,6 +98,7 @@
       interface mqc_print_scalar
         module procedure MQC_Print_Scalar_Integer
         module procedure MQC_Print_Scalar_Real
+        module procedure MQC_Print_Scalar_Complex
       end interface
 !
       interface mqc_print_vector
@@ -174,8 +177,8 @@
 !
       if(PRESENT(major))         major         = 23
       if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '23.06.1'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '23.06.2'
 !
       return
       end subroutine mqc_version
@@ -200,21 +203,74 @@
       integer,OPTIONAL,intent(in)::isMajor,isMinor,isRevision
       integer,OPTIONAL,intent(in)::olderThanMajor,olderThanMinor,olderThanRevision
       integer,OPTIONAL,intent(in)::newerThanMajor,newerThanMinor,newerThanRevision
+      integer::versionRequested,versionCurrent
       logical::ok
       integer::major,minor,revision
 !
       ok = .true.
       call mqc_version(major,minor,revision)
 !
-      if(PRESENT(isMajor))           ok = ok.and.major.eq.isMajor
-      if(PRESENT(isMinor))           ok = ok.and.minor.eq.isMinor
-      if(PRESENT(isRevision))        ok = ok.and.revision.eq.isRevision
-      if(PRESENT(olderThanMajor))    ok = ok.and.major.le.olderThanMajor
-      if(PRESENT(olderThanMinor))    ok = ok.and.minor.le.olderThanMinor
-      if(PRESENT(olderThanRevision)) ok = ok.and.revision.le.olderThanRevision
-      if(PRESENT(newerThanMajor))    ok = ok.and.major.ge.newerThanMajor
-      if(PRESENT(newerThanMinor))    ok = ok.and.minor.ge.newerThanMinor
-      if(PRESENT(newerThanRevision)) ok = ok.and.revision.ge.newerThanRevision
+!     If requested, do the test of match of requested and actual version.
+!
+      if(PRESENT(isMajor).or.PRESENT(isMinor).or.PRESENT(isRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(isMajor)) then
+          versionRequested = 10000*isMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(isMinor)) then
+          versionRequested = versionRequested + 100*isMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(isRevision)) then
+          versionRequested = versionRequested + isRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = (versionCurrent.eq.versionRequested)
+      endIf
+!
+!     If requested, do an "older than" test.
+!
+      if(PRESENT(olderThanMajor).or.PRESENT(olderThanMinor).or.  &
+        PRESENT(olderThanRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(olderThanMajor)) then
+          versionRequested = 10000*olderThanMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(olderThanMinor)) then
+          versionRequested = versionRequested + 100*olderThanMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(olderThanRevision)) then
+          versionRequested = versionRequested + olderThanRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = (versionCurrent.le.versionRequested)
+      endIf
+!
+!     If requested, do a "newer than" test.
+!
+      if(PRESENT(newerThanMajor).or.PRESENT(newerThanMinor).or.  &
+        PRESENT(newerThanRevision)) then
+        versionRequested = 0
+        versionCurrent   = 0
+        if(PRESENT(newerThanMajor)) then
+          versionRequested = 10000*newerThanMajor
+          versionCurrent   = 10000*major
+        endIf
+        if(PRESENT(newerThanMinor)) then
+          versionRequested = versionRequested + 100*newerThanMinor
+          versionCurrent   = versionCurrent   + 100*minor
+        endIf
+        if(PRESENT(newerThanRevision)) then
+          versionRequested = versionRequested + newerThanRevision
+          versionCurrent   = versionCurrent   + revision
+        endIf
+        ok = ok.and.(versionCurrent.ge.versionRequested)
+      endIf
 !
       return
       end function mqc_version_check
@@ -703,6 +759,47 @@
 !
       return
       end subroutine MQC_Print_Scalar_Real
+!
+!
+!PROCEDURE MQC_Print_Scalar_Complex
+      Subroutine MQC_Print_Scalar_Complex(scalar,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom,formatString)
+!
+!     This subroutine is used to print complex scalar.
+!
+!     L. M. Thompson, 2023.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::iOut
+      Complex(kind=real64),Intent(In)::scalar
+      Character(Len=*),Intent(In),optional::Header,formatString
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      character(len=256)::lineToPrint,FormatLine
+!
+ 1020 Format(" ")
+      if(PRESENT(Blank_At_Top)) then
+        if(Blank_At_Top) write(iOut,1020)
+      endIf
+      if(PRESENT(header)) then
+        lineToPrint = TRIM(header)
+      else
+        lineToPrint = ' '
+      endIf
+      if(PRESENT(formatString)) then
+        FormatLine = '(1X,A,1X,"=",1X,'//trim(FormatString)//',SP,'//trim(FormatString)//',"i")'
+      else
+        FormatLine = '(1x,A,1x,"=",1x,F14.6,SP,F14.6,"i")'
+      endIf
+      lineToPrint = ADJUSTL(lineToPrint)
+      write(iOut,trim(FormatLine)) TRIM(lineToPrint), scalar
+      if(PRESENT(Blank_At_Bottom)) then
+        if(Blank_At_Bottom) write(iOut,1020)
+      endIf
+!
+      return
+      end subroutine MQC_Print_Scalar_Complex
 !
 !
 !PROCEDURE MQC_Print_Rank4Tensor_Array_Real

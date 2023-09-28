@@ -1,4 +1,3 @@
-!TODO:1. Continue developing 2ERIs type as the rank-4 tensor EST object 
 !>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
 !>    electronic structure theory </b>
 !
@@ -7208,6 +7207,7 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaHCden = temp(:,1)
+            aaHCden = (-1)*aaHCden
           endIf
           if(mod(flag,10).gt.0) then
             tmpMat = real(hermden%getblock('beta'))
@@ -7221,6 +7221,7 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbHCden = temp(:,1)
+              bbHCden = (-1)*bbHCden
             endIf
           endIf
           if(mod(flag,10).eq.2) then
@@ -7243,6 +7244,7 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHHCden = temp(:,1)
+              abHHCden = (-1)*abHHCden
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')- &
                 dagger(hermden%getblock('alpha-beta'))))
               if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
@@ -7673,11 +7675,11 @@
           if(doHerm) then
             call mqc_print(aaHRfoc,6,'Alpha-Alpha hermitian real Fock')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print(aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
+              call mqc_print((-1)*aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
             if(mod(flag,10).gt.0) then
               call mqc_print(bbHRfoc,6,'Beta-Beta hermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print(bbHCfoc,6,'Beta-Beta hermitian complex Fock')
+                call mqc_print((-1)*bbHCfoc,6,'Beta-Beta hermitian complex Fock')
               if(mod(flag,10).eq.2) then
                 call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
                 if(mod(flag,100)/10.eq.1) &
@@ -7722,27 +7724,25 @@
                 call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat2,abHARfoc,'symmetric')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat3,abAARfoc,'antisymmetric')
-                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3
-                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3
+                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3
+                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3
               endIf
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
-            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,(-1)*aaHCfoc),'hermitian')
             call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
-            alpha = transpose(alpha)
             alpha = alpha + tmpMat
             if(mod(flag,10).gt.0) then
-              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
+              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,(-1)*bbHCfoc),'hermitian')
               call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
-              beta = transpose(beta)
               beta = beta + tmpMat
               if(mod(flag,10).eq.2) then
-                call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
+                call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,(-1)*abHHCfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,(-1)*abAHCfoc),'antihermitian')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,abHACfoc),'hermitian')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx(abAARfoc,abAACfoc),'antihermitian')
-                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3 
-                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3 
+                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3 
+                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3 
               endIf
             endIf
           endIf
@@ -7754,8 +7754,8 @@
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHHRfoc,'symmetric')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
-                betaAlpha = alphaBeta - tmpMat
-                alphaBeta = alphaBeta + tmpMat
+                betaAlpha = alphaBeta + tmpMat
+                alphaBeta = alphaBeta - tmpMat
               endIf
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
@@ -7766,9 +7766,9 @@
                beta = transpose(beta)
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,abHHCfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,abAHCfoc),'antihermitian')
-                betaAlpha = alphaBeta - tmpMat
-                alphaBeta = alphaBeta + tmpMat
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,(-1)*abAHCfoc),'antihermitian')
+                betaAlpha = alphaBeta + tmpMat
+                alphaBeta = alphaBeta - tmpMat
               endIf
             endIf
           endIf
