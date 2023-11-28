@@ -173,9 +173,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 23
-      if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 2
-      if(PRESENT(versionString)) versionString = '23.06.2'
+      if(PRESENT(minor))         minor         = 11
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '23.11.0'
 !
       return
       end subroutine mqc_version
