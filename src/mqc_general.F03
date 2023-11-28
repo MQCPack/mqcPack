@@ -174,8 +174,8 @@
 !
       if(PRESENT(major))         major         = 23
       if(PRESENT(minor))         minor         = 11
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '23.11.0'
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '23.11.1'
 !
       return
       end subroutine mqc_version

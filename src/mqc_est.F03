@@ -11451,11 +11451,10 @@
         class default
           call mqc_error('NCoreIn type is not integer or MQC scalar')
         end Select
-        write(iOut,'(A,I4,A)') 'Adding ',nCore,' core orbitals to string'
+        write(iOut,'(A,I4,A)') 'Adding ',nCore,' core orbitals to string.'
       else 
         nCore = 0
       endIf
-
       call trci_dets_arr(nBasis,nAlpha,nBeta,substitutions,alpha_arr_hole, &
         alpha_arr_part,beta_arr_hole,beta_arr_part,nah,nap,nbh,nbp)
 !
@@ -11707,7 +11706,6 @@
       type(mqc_vector),intent(inOut),optional::nums_alpha_hole_out,&
         nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out
       integer::i,alpha_elems,beta_elems,arrayind
-
       select type (nBasisIn)
       type is (integer)
         nBasis = nBasisIn
@@ -11734,7 +11732,6 @@
       class default
         call mqc_error('NBetaIn type is not integer or MQC scalar')
       end select
-
       subs = substitutions
       call subs%sort()
       call nums_alpha_hole%init(size(subs),0)
@@ -11761,22 +11758,20 @@
           nums_beta_part = nums_alpha_part
         endIf
       endDo
-
-      alpha_elems = int(nums_alpha_hole%sum())*int(nums_alpha_part%sum())
-      beta_elems = int(nums_beta_hole%sum())*int(nums_beta_part%sum())
-      call alpha_arr_hole%init(int(nums_alpha_hole%sum()),int(subs%maxval()),0)
-      call beta_arr_hole%init(int(nums_beta_hole%sum()),int(subs%maxval()),0)
-      call alpha_arr_part%init(int(nums_alpha_part%sum()),int(subs%maxval()),0)
-      call beta_arr_part%init(int(nums_beta_part%sum()),int(subs%maxval()),0)
-
+      alpha_elems = int(sum(nums_alpha_hole))*int(sum(nums_alpha_part))
+      beta_elems = int(sum(nums_beta_hole))*int(sum(nums_beta_part))
+      call alpha_arr_hole%init(int(sum(nums_alpha_hole)),int(maxval(subs)),0)
+      call beta_arr_hole%init(int(sum(nums_beta_hole)),int(maxval(subs)),0)
+      call alpha_arr_part%init(int(sum(nums_alpha_part)),int(maxval(subs)),0)
+      call beta_arr_part%init(int(sum(nums_beta_part)),int(maxval(subs)),0)
       arrayind=1
-      call tmpvec%init(int(subs%maxval()),0)
+      call tmpvec%init(int(maxval(subs)),0)
       do i = 1,size(subs)
         call build_trci_ph_list(alpha_arr_hole,arrayind,1,nAlpha,1,int(subs%at(i)),tmpvec)
       endDo
       if(nAlpha.ne.nBeta) then
         arrayind=1
-        call tmpvec%init(int(subs%maxval()),0)
+        call tmpvec%init(int(maxval(subs)),0)
         do i = 1,size(subs)
           call build_trci_ph_list(beta_arr_hole,arrayind,1,nBeta,1,int(subs%at(i)),tmpvec)
         endDo
@@ -11784,13 +11779,13 @@
         beta_arr_hole = alpha_arr_hole
       endIf
       arrayind=1
-      call tmpvec%init(int(subs%maxval()),0)
+      call tmpvec%init(int(maxval(subs)),0)
       do i = 1,size(subs)
         call build_trci_ph_list(alpha_arr_part,arrayind,NAlpha+1,nBasis,1,int(subs%at(i)),tmpvec)
       endDo
       if(nAlpha.ne.nBeta) then
         arrayind=1
-        call tmpvec%init(int(subs%maxval()),0)
+        call tmpvec%init(int(maxval(subs)),0)
         do i = 1,size(subs)
           call build_trci_ph_list(beta_arr_part,arrayind,NBeta+1,nBasis,1,int(subs%at(i)),tmpvec)
         endDo
