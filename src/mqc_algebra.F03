@@ -12683,7 +12683,8 @@
       Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
 !
-      if(mqc_matrix_test_symmetric(A,'antihermitian',.true.)) then
+      if(mqc_matrix_test_symmetric(A,'antihermitian',.true.).and.&
+        A%norm().gt.0.0) then
         call MQC_Matrix_Diagonalize(im*A,EVals,EVecs)
         EVals = (-1)*im*EVals
         return
@@ -29747,7 +29748,6 @@
         if((size(D1).eq.2.or.D1(1).eq.0).and.(size(D2).eq.2.or.D2(1).eq.0)) then
           CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2, &
             [D3(1),D3(1)],[D4(1),D4(1)])
-      flush(6)
           matrixOut = CompR4Tensor(:,:,1,1)
         elseIf((size(D1).eq.2.or.D1(1).eq.0).and.(size(D3).eq.2.or.D3(1).eq.0)) then
           CompR4Tensor = MQC_R4Tensor_R4Tensor_At(TensorIn,D1,[D2(1),D2(1)], &
