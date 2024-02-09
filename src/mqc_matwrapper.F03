@@ -32,14 +32,6 @@
 !     **********************************************************************
 !                                                                         
 !                                                                           
-!                                                                           
-!                                                                           
-!     This module includes procedures that provide a variety of general purpose
-!     utilities. The subroutines and functions provided by this module are 
-!     grouped into the following sections:  
-!
-! C to Fortran 2003 Interface
-!
         use mqc_general
         use iso_fortran_env, only: int32, int64, real64
 !
@@ -422,34 +414,6 @@
 
         Lind8 = L8nd5(Check,N1,N2,N3,N4,N5,ASym,I,J,K,L,M,Sign)
       End Function Lind5
-
-!hph+
-!      Function NumNZA(NR,NTot,X) result(Numz)
-!        Implicit None
-!
-!        Integer(kind=int64),Intent(InOUT)::NR,NTot
-!        Real(kind=real64),Dimension(:),Intent(InOut)::X
-!
-!        Integer(kind=int64), external::N8mNZA
-!        Integer(kind=int64)::Numz
-!
-!        Numz = N8mNZA(NR,NTot,X)
-!      End Function NumNZA
-!hph-
-
-!hph+
-!      Function NumNZR(NR,NTot,X) result(Numz)
-!        Implicit None
-!
-!        Integer(kind=int64),Intent(InOUT)::NR,NTot
-!        Real(kind=real64),Dimension(:),Intent(InOut)::X
-!
-!        Integer(kind=int64), external::N8mNZr
-!        Integer(kind=int64)::Numz
-!
-!        Numz = N8mNZR(NR,NTot,X)
-!      End Function NumNZR
-!hph-
 
       Subroutine Rd_2E1(IU,LR,NTot,LenBuf,RArr)
         Implicit None
