@@ -3247,7 +3247,7 @@
           tmpMatrixAlpha = integral%getBlock('alpha')
           if(myOrbString.eq.'real') tmpMatrixAlpha = real(tmpMatrixAlpha)
           if(myOrbString.eq.'imaginary') tmpMatrixAlpha = aimag(tmpMatrixAlpha)
-          if(myOrbString.eq.'complex') tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+          if(myOrbString.eq.'complex') tmpMatrixAlpha = MQC_Matrix_Cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
           if(my_axis.eq.2) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
             do i = 1,size(alphaOrbs)
@@ -3274,8 +3274,8 @@
             tmpMatrixBeta = aimag(tmpMatrixBeta)
           endIf
           if(myOrbString.eq.'complex') then
-            tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
-            tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+            tmpMatrixAlpha = MQC_Matrix_Cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+            tmpMatrixBeta = MQC_Matrix_Cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
           endIf
           if(my_axis.eq.2) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
@@ -3313,8 +3313,8 @@
           tmpMatrixBeta = aimag(tmpMatrixBeta)
         endIf
         if(myOrbString.eq.'complex') then
-          tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
-          tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+          tmpMatrixAlpha = MQC_Matrix_Cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+          tmpMatrixBeta = MQC_Matrix_Cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
         endIf
         if(my_axis.eq.2) then
           call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
@@ -3373,10 +3373,10 @@
           tmpMatrixBetaAlpha = aimag(tmpMatrixBetaAlpha)
         endIf
         if(myOrbString.eq.'complex') then
-          tmpMatrixAlpha = cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
-          tmpMatrixBeta = cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
-          tmpMatrixAlphaBeta = cmplx(real(tmpMatrixAlphaBeta),aimag(tmpMatrixAlphaBeta))
-          tmpMatrixBetaAlpha = cmplx(real(tmpMatrixBetaAlpha),aimag(tmpMatrixBetaAlpha))
+          tmpMatrixAlpha = MQC_Matrix_Cmplx(real(tmpMatrixAlpha),aimag(tmpMatrixAlpha))
+          tmpMatrixBeta = MQC_Matrix_Cmplx(real(tmpMatrixBeta),aimag(tmpMatrixBeta))
+          tmpMatrixAlphaBeta = MQC_Matrix_Cmplx(real(tmpMatrixAlphaBeta),aimag(tmpMatrixAlphaBeta))
+          tmpMatrixBetaAlpha = MQC_Matrix_Cmplx(real(tmpMatrixBetaAlpha),aimag(tmpMatrixBetaAlpha))
         endIf
         if(my_axis.eq.2) then
           call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
