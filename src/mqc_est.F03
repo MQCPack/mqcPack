@@ -11946,34 +11946,28 @@
 !>        The number of basis functions. 
 !>    \endverbatim
 !>    
-!>    \param[in] Determinants
+!>    \param[in] Alpha_String_1
 !>    \verbatim
-!>        Determinants is Type(MQC_Determinant)
-!>        The binary string occupation number vectors.
+!>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The left alpha string.
 !>    \endverbatim
 !>    
-!>    \param[in] L_A_String
+!>    \param[in] Beta_String_1
 !>    \verbatim
-!>        L_A_String is Integer(kind=int64)
-!>        The index of the left alpha string.
+!>        Beta_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The left beta string.
 !>    \endverbatim
 !>    
-!>    \param[in] L_B_String
+!>    \param[in] Alpha_String_2
 !>    \verbatim
-!>        L_B_String is Integer(kind=int64)
-!>        The index of the left beta string.
+!>        Alpha_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The right alpha string.
 !>    \endverbatim
 !>    
-!>    \param[in] R_A_String
+!>    \param[in] Beta_String_2
 !>    \verbatim
-!>        R_A_String is Integer(kind=int64)
-!>        The index of the right alpha string.
-!>    \endverbatim
-!>    
-!>    \param[in] R_B_String
-!>    \verbatim
-!>        R_B_String is Integer(kind=int64)
-!>        The index of the right beta string.
+!>        Beta_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The right beta string.
 !>    \endverbatim
 !>    
 !>    \param[in] OnePartInts
@@ -16325,34 +16319,28 @@
 !>        The number of basis functions. 
 !>    \endverbatim
 !>    
-!>    \param[in] Determinants
+!>    \param[in] Alpha_String_1
 !>    \verbatim
-!>        Determinants is Type(MQC_Determinant)
-!>        The binary string occupation number vectors.
+!>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The left alpha string.
 !>    \endverbatim
 !>    
-!>    \param[in] L_A_String
+!>    \param[in] Beta_String_1
 !>    \verbatim
-!>        L_A_String is Integer(kind=int64)
-!>        The index of the left alpha string.
+!>        Beta_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The left beta string.
 !>    \endverbatim
 !>    
-!>    \param[in] L_B_String
+!>    \param[in] Alpha_String_2
 !>    \verbatim
-!>        L_B_String is Integer(kind=int64)
-!>        The index of the left beta string.
+!>        Alpha_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The right alpha string.
 !>    \endverbatim
 !>    
-!>    \param[in] R_A_String
+!>    \param[in] Beta_String_2
 !>    \verbatim
-!>        R_A_String is Integer(kind=int64)
-!>        The index of the right alpha string.
-!>    \endverbatim
-!>    
-!>    \param[in] R_B_String
-!>    \verbatim
-!>        R_B_String is Integer(kind=int64)
-!>        The index of the right beta string.
+!>        Beta_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        The right beta string.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_Overlap
@@ -16829,7 +16817,9 @@
 !>    \param[in] Determinants
 !>    \verbatim
 !>        Determinants is Type(MQC_Determinant)
-!>        The binary string occupation number vectors.
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_Core_Ham
@@ -16860,13 +16850,42 @@
 !>    \verbatim
 !>        Subs is Integer(kind=int64),Dimension(:),Optional
 !>        Permitted substitutions to include in the Hamiltonian.
-!>        If not present, all substitutions are included..
+!>        If not present, all substitutions are included.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2
+!>    \verbatim
+!>        Subs2 is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. If not present, 
+!>        column basis substitutions are equal to row basis 
+!>        substitutions provided by variable Subs.
+!>    \endverbatim
+!>    
+!>    \param[in] doS2
+!>    \verbatim
+!>        DoS2 is Logical,Optional
+!>        Logical flag to build the S^2 matrix instead of using 
+!>        Slater Condon rules. The spatial molecular orbital basis
+!>        overlap (i.e. do not multiply by spin overlap which 
+!>        always leads to zero alpha-beta blocks) must be provided
+!>        in MO_Core_Ham argument if this option is used) must be provided
+!>        in MO_Core_Ham argument if this option is used..
 !>    \endverbatim
 !>    
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2017,2021
+!>    \date 2017,2021,2024
 !
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
           MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian,Subs,Dets2,Subs2,doS2)
@@ -17048,8 +17067,10 @@
             EndDo
           EndDo
         EndDo
-        write(6,'(A)') trim(detIndex1)
-        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
+        if(iPrint.ge.2) then
+          write(6,'(A)') trim(detIndex1)
+          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
+        endIf
       case('ci') 
         L_Index = 0
         L_A_Start = 1
@@ -17147,8 +17168,10 @@
             EndDo
           EndDo
         EndDo
-        write(6,'(A)') trim(detIndex1)
-        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
+        if(iPrint.ge.2) then
+          write(6,'(A)') trim(detIndex1)
+          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
+        endIf
       case default
         call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
           iOut,'Determinants%order',Determinants%order)
