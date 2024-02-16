@@ -75,15 +75,11 @@
 !     Scalars...
 !
 !>    \brief <b> Rank 0 array variable</b>
-
-!hph+
       Type MQC_Scalar
         Real(kind=real64),Public,Allocatable::ScaR
         Integer(kind=int64),Public,Allocatable::ScaI
         Complex(Kind=real64),Public,Allocatable::ScaC
         Character(Len=64),Public::Data_Type ! Real,Integer,Complex
-!hph-
-
       Contains
 !>      \brief <b> Print the MQC Scalar</b>
         Procedure, Public::print => MQC_Print_Scalar_Algebra1
@@ -111,7 +107,7 @@
       Type MQC_Vector
         Integer(kind=int64),Private::Length=0
         Logical,Private::Column=.True.
-        Character(Len=64),Private::Data_Type ! Real,Integer,Complex
+        Character(Len=64),Public::Data_Type ! Real,Integer,Complex
         Real(kind=real64),Private,Dimension(:),Allocatable::VecR
         Integer(kind=int64),Private,Dimension(:),Allocatable::VecI
         Complex(Kind=real64),Private,Dimension(:),Allocatable::VecC
@@ -305,6 +301,10 @@
 !>      \brief <b> Initialize the MQC R4Tensor</b>
         Procedure, Public::init => MQC_R4Tensor_Initialize
       End Type MQC_R4Tensor
+!
+!
+      logical::MQC_Algebra_DEBUG=.false.
+
 !
 !
 !----------------------------------------------------------------
@@ -931,6 +931,25 @@
 !
 !
       CONTAINS
+!
+!
+!     PROCEDURE MQC_Algebra_SetDEBUG
+!
+      subroutine MQC_Algebra_SetDEBUG(setDebugValue)
+!
+!     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
+!     .FALSE.
+!
+!     H. P. Hratchian, 2023.
+!
+!
+      implicit none
+      logical,intent(IN)::setDebugValue
+!
+      MQC_Algebra_DEBUG = setDebugValue
+!
+      return
+      end subroutine MQC_Algebra_SetDEBUG
 !
 !
 !     PROCEDURE Factorial
@@ -7315,6 +7334,8 @@
         Vector%Data_Type = 'Complex'
         If(Allocated(Vector%vecc)) DeAllocate(Vector%vecc)
         Allocate(Vector%vecc(N))
+      else
+        call MQC_Error('Unknown Data_Type sent to MQC_Allocate_Vector.')
       EndIf
       Vector%Length = N
       Vector%Column = .True.
@@ -11697,8 +11718,8 @@
 !     Variable Declarations.
       implicit none
       class(mqc_vector),intent(in)::vector
-      integer,dimension(:),allocatable::tmpvec
-      integer::i,output
+      integer(kind=int64),dimension(1)::tmpvec
+      integer(kind=int64)::output
 !
       if(mqc_length_vector(vector).eq.0) then
         return
@@ -11752,7 +11773,7 @@
       class(mqc_vector),intent(in)::vector
       type(mqc_vector)::output,tmpvec
       type(mqc_scalar)::one,ilowsca
-      integer::i,ilow
+      integer(kind=int64)::i,ilow
 !
       one = 1.0
       if(mqc_length_vector(vector).eq.0) then
@@ -11761,7 +11782,7 @@
         tmpvec = vector
         call output%init(vector%size(),0)
         do i = 1, vector%size()
-          ilow = tmpvec%minloc()
+          ilow = minloc(tmpvec)
           ilowsca = ilow
           call output%put(ilowsca,i)
           call tmpvec%put(vector%maxval()+one,ilow)
