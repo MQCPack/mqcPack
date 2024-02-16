@@ -192,12 +192,12 @@ Beta Strings
  (  2,  2|  2,  1) =      0.00000000
  (  2,  2|  2,  2) =      0.44026964
 
-CI determinant index
+ CI determinant index
 
-     1 = |01>
-     2 = |ba>
-     3 = |ab>
-     4 = |10>
+ 1 = |01>
+ 2 = |ba>
+ 3 = |ab>
+ 4 = |10>
  
 
  CI Hamiltonian

@@ -5378,13 +5378,13 @@
         call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
           my_filename)
       endIf
-      if(.not.fileinfo%gaussianScalars_read) then
-        call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
-          'gaussian scalars',mqcVarOut=mqcTmp)
-        if(Allocated(fileinfo%gaussianScalars))  &
-          call MQC_Error('Logic error loading gaussianScalars.')
-        fileinfo%gaussianScalars = mqcTmp
-      endIf
+!      if(.not.fileinfo%gaussianScalars_read) then
+!        call MQC_Gaussian_Unformatted_Matrix_Read_Array(fileinfo,  &
+!          'gaussian scalars',mqcVarOut=mqcTmp)
+!        if(Allocated(fileinfo%gaussianScalars))  &
+!          call MQC_Error('Logic error loading gaussianScalars.')
+!        fileinfo%gaussianScalars = mqcTmp
+!      endIf
 !
 !     Do the work...
 !
