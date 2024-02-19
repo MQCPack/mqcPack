@@ -1,0 +1,23 @@
+Release Notes for MQCPack
+
+This file is meant to document key functionality changes developers
+implement within MQCPack and push into our public repositories. Whenever
+the list of new/modified/changes features/options becomes meaningful, Hrant
+(hhratchian@ucmerced.edu) will update the version numbers. Such version
+number updates will be documented here. Note that the minor version number
+will often be updated near the start of the month and the revision number
+in that case will be set to 0.
+
+
+February 19, 2024
+* MQCPack version set to 24.2.1.
+* Top-of-file version text has been updated in all source files.
+* LT has added new functionality to the CI matrix element building
+procedures.
+
+
+February 8, 2024
+* MQCPack version set to 24.2.0.
+* HPH qdded the binary object module, mqc_binary.F03, to the src directory. It
+is not yet implemented with the build scripts or other code. That will come
+soon.
