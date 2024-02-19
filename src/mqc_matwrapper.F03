@@ -6,17 +6,13 @@
 !     **                                                                  **
 !     **               The Merced Quantum Chemistry Package               **
 !     **                            (MQCPack)                             **
-!     **                       Development Version                        **
-!     **                            Based On:                             **
-!     **                     Development Version 0.1                      **
-!     **                                                                  **
 !     **                                                                  **
 !     ** Written By:                                                      **
-!     **    Dave Mullally                                                 **
+!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
+!     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                                                                  **
-!     **                      Version 1.0 Completed                       **
-!     **                           May 1, 2017                            **
+!     **                         Version 24.02.1                          **
+!     **                        Feburary 19, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
