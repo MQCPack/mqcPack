@@ -9,6 +9,13 @@ will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
 
+February 19, 2024
+* MQCPack version set to 24.2.1.
+* Top-of-file version text has been updated in all source files.
+* LT has added new functionality to the CI matrix element building
+procedures.
+
+
 February 8, 2024
 * MQCPack version set to 24.2.0.
 * HPH qdded the binary object module, mqc_binary.F03, to the src directory. It

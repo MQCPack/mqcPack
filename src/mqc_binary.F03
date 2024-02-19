@@ -1,5 +1,31 @@
       module MQC_Binary
 !
+!     **********************************************************************
+!     **********************************************************************
+!     **                                                                  **
+!     **               The Merced Quantum Chemistry Package               **
+!     **                            (MQCPack)                             **
+!     **                                                                  **
+!     ** Written By:                                                      **
+!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
+!     **    Hratchian                                                     **
+!     **                                                                  **
+!     **                         Version 24.02.1                          **
+!     **                        Feburary 19, 2024                         **
+!     **                                                                  **
+!     **                                                                  **
+!     ** Modules beloning to MQCPack:                                     **
+!     **    1. MQC_General                                                **
+!     **    2. MQC_DataStructures                                         **
+!     **    3. MQC_Algebra                                                **
+!     **    4. MQC_Files                                                  **
+!     **    5. MQC_Molecule                                               **
+!     **    6. MQC_EST                                                    **
+!     **    7. MQC_Gaussian                                               **
+!     **                                                                  **
+!     **********************************************************************
+!     **********************************************************************
+!
 !     NEED TO ADD COMMENTS
 !
 !
