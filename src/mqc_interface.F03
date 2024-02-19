@@ -4,17 +4,13 @@
 !     **                                                                  **
 !     **               The Merced Quantum Chemistry Package               **
 !     **                            (MQCPack)                             **
-!     **                       Development Version                        **
-!     **                            Based On:                             **
-!     **                     Development Version 0.1                      **
-!     **                                                                  **
 !     **                                                                  **
 !     ** Written By:                                                      **
-!     **    Lee M. Thompson, Xianghai Sheng, and Hrant P. Hratchian       **
+!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
+!     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                                                                  **
-!     **                      Version 1.0 Completed                       **
-!     **                           May 1, 2017                            **
+!     **                         Version 24.02.1                          **
+!     **                        Feburary 19, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -28,13 +24,9 @@
 !     **                                                                  **
 !     **********************************************************************
 !     **********************************************************************
-!                                                                         
 !                                                                           
 !                                                                           
 !                                                                           
-!     This module includes procedures that provide a variety of general purpose
-!     utilities. The subroutines and functions provided by this module are 
-!     grouped into the following sections:  
 !
 ! C to Fortran 2003 Interface
 !
