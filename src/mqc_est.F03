@@ -11903,6 +11903,62 @@
 !
 !=====================================================================
 !     
+!     PROCEDURE MQC_DetString_to_OccArray
+!
+!>    \brief <b> MQC_DetString_to_OccArray takes as an argument a bit string
+!>    and returns an integer array with locations of occupied orbitals</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_DetString_to_OccArray is a function that takes as an argument a 
+!>    bit string array and returns an integer array with locations where 
+!>    bits are set equal to one. The value of the routine is that it can 
+!>    be used in conjuction with mqc_integral_output_orbitals to return
+!>    an mqc_scf_integral object containing the set of occupied orbitals.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] String
+!>    \verbatim
+!>        String is Type(MQC_Vector)
+!>        The bit string to be analyzed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function mqc_detString_to_occArray(string) result(arrayOut)
+
+      implicit none
+      type(mqc_vector),intent(in)::string
+      integer(kind=int64),dimension(:),allocatable::arrayOut
+
+      integer::nBitInts,temp_int,i,j,nBasis
+      type(mqc_vector)::tmpArray
+
+      nBitInts = size(string)
+      nBasis = nBitInts*Bit_Size(0)
+
+      do i = 1, nBitInts
+        temp_int = string%at(i)
+        do j = 0, Bit_Size(0)-1
+          if(btest(temp_int,j)) call tmpArray%push((i-1)*(Bit_Size(0)-1)+(j+1))
+        endDo
+      endDo
+      allocate(arrayOut(size(tmpArray)))
+      arrayOut = tmpArray
+
+      end function mqc_detstring_to_occArray
+!
+!=====================================================================
+!     
 !     PROCEDURE SLATER_CONDON
 !
 !>    \brief <b> SLATER_CONDON is a function that returns an operator matrix 
