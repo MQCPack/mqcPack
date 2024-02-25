@@ -13,7 +13,6 @@
       character(len=:),allocatable::fileName
       type(mqc_gaussian_unformatted_matrix_file)::fileInfo 
       integer(kind=int64)::iOut=6,iPrint=4
-      logical::UHF
       type(mqc_pscf_wavefunction)::wavefunction
       type(mqc_molecule_data)::moleculeInfo
       type(mqc_twoERIs)::eris,mo_ERIs
@@ -41,10 +40,8 @@
       call eris%print(iOut,'AO 2ERIs')
 !
       if(wavefunction%wf_type.eq.'U') then
-        UHF = .true.
         write(iOut,*) 'found UHF wavefunction'
       elseIf(wavefunction%wf_type.eq.'R') then
-        UHF = .False.
         write(iOut,*) 'found RHF wavefunction'
       else
         call mqc_error_A('Unsupported wavefunction type in fullci',iOut, &
@@ -74,7 +71,7 @@
 !     Generate Hamiltonian Matrix
 !
       call mqc_build_ci_hamiltonian(iOut,iPrint,wavefunction%nBasis,determinants, &
-        mo_core_ham,mo_ERIs,UHF,CI_Hamiltonian)
+        mo_core_ham,mo_ERIs,CI_Hamiltonian)
       call CI_Hamiltonian%print(iOut,'CI Hamiltonian')
 !
 !     Diagonalize Hamiltonian
