@@ -12033,12 +12033,6 @@
 !>        TwoPartInts is Type(MQC_TwoERIs),Optional 
 !>        The MO basis two-particle integrals.
 !>    \endverbatim
-!>    
-!>    \param[in] UHF
-!>    \verbatim
-!>        UHF is Logical
-!>        Whether alpha and beta orbitals are restricted.
-!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -12046,19 +12040,16 @@
 !>    \date 2016
 !
       Function Slater_Condon(IOut,IPrint,NBasisIn,Alpha_String_1,Beta_String_1, &
-       Alpha_String_2,Beta_String_2,OnePartInts,TwoPartInts,UHF) &
+       Alpha_String_2,Beta_String_2,OnePartInts,TwoPartInts) &
        Result(MatEl)
 !
 !
 !     Variable Declarations...
 !
       Implicit None
-!      Integer(kind=int64),Intent(In)::IOut,IPrint,L_A_String,L_B_String,R_A_String,R_B_String
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasisIn
       Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
-!      Type(MQC_Determinant),Intent(In)::Determinants
       Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::Alpha_String_1,Alpha_String_2,&
         Beta_String_1,Beta_String_2
       Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
@@ -12083,11 +12074,6 @@
  1050 Format( A )
       NBasis = NBasisIn
       NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
-!      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-!      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-!      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
-!      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-!      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
 !
 !     Initialize Arrays
 !
@@ -12345,7 +12331,7 @@
 !            
 !           This section computes the value of the matrix element
 !
-            If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
@@ -12520,7 +12506,7 @@
               EndIf
             EndIf
 !
-            If((.not.UHF).or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
@@ -12692,7 +12678,7 @@
                 EndDo
               EndIf
             EndIf
-            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
@@ -12860,7 +12846,7 @@
                 EndDo
               EndIf
             EndIf
-            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
@@ -13031,7 +13017,7 @@
                 EndDo
               EndIf
             EndIf
-            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
               ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
@@ -13191,7 +13177,7 @@
                 EndDo
               EndIf
             EndIf
-            If(.not.UHF.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
+            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
             ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
               ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
@@ -13285,7 +13271,7 @@
             J = Mod(IPos,Bit_Size(0)) 
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
-              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+              If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
@@ -13312,7 +13298,7 @@
             I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0))
             If(BTest(Beta_String_1(I),J)) then
-              If(.not.UHF.and.Spin(1).eq.Spin(2)) then
+              If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'BETA: UHF False and 1 and 2 same spin, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha')
@@ -13337,7 +13323,7 @@
         EndIf
 !
         If(Present(OnePartInts)) then
-          If(.not.UHF.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
+          If(OnePartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
 !            Call MQC_Print(Sgn*OnePartInts%Alpha%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both alpha, adding core:')
             MatEl = MatEl + Sgn*OnePartInts%Alpha%at(Orbs(1),Orbs(2)) 
           ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
@@ -13363,7 +13349,7 @@
             EndIf
             If(BTest(Beta_String_1(I),J)) then
 !              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-              If(UHF) then
+              If(TwoPartInts%type().eq.'spin') then
 !                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
               Else
@@ -13402,7 +13388,7 @@
               If(BTest(Beta_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(UHF) then
+                  If(TwoPartInts%type().eq.'spin') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
@@ -13427,7 +13413,7 @@
               If(BTest(Alpha_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(UHF) then
+                  If(TwoPartInts%type().eq.'spin') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
                   Else
@@ -16886,12 +16872,6 @@
 !>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
-!>    \param[in] UHF
-!>    \verbatim
-!>        UHF is Logical
-!>        Whether alpha and beta orbitals are restricted.
-!>    \endverbatim
-!>    
 !>    \param[out] CI_Hamiltonian
 !>    \verbatim
 !>        CI_Hamiltonian is Type(MQC_Matrix)
@@ -16940,11 +16920,10 @@
 !>    \date 2017,2021,2024
 !
       Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
-          MO_Core_Ham,MO_ERIs,UHF,CI_Hamiltonian,Subs,Dets2,Subs2,doS2)
+          MO_Core_Ham,MO_ERIs,CI_Hamiltonian,Subs,Dets2,Subs2,doS2)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Logical,Intent(In)::UHF
       Type(MQC_Scalar),Intent(In)::NBasis
       Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
       Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
@@ -17013,6 +16992,7 @@
       NBeta_Str2 = MQC_Matrix_Rows(Determinants2%Strings%Beta)
       If(present(subs2)) then
         rightSubs = subs2
+        SymmFlag = .False.
       elseIf(present(subs)) then
         rightSubs = subs
       endIf
@@ -17093,15 +17073,15 @@
                   If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                     Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                       Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index,SymmStr)
+                      MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
                   ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
                     Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                       Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham,UHF=UHF),L_Index,R_Index,SymmStr)
+                      MO_Core_Ham),L_Index,R_Index,SymmStr)
                   ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                     Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                       Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index,SymmStr)
+                      TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
                   Else
                     Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                   EndIf
@@ -17191,15 +17171,15 @@
                           If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                             Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                               Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham,MO_ERIs,UHF),L_Index,R_Index,SymmStr)
+                              MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
                           ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
                             Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                               Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham,UHF=UHF),L_Index,R_Index,SymmStr)
+                              MO_Core_Ham),L_Index,R_Index,SymmStr)
                           ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
                             Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                               Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              TwoPartInts=MO_ERIs,UHF=UHF),L_Index,R_Index,SymmStr)
+                              TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
                           Else
                             Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                           EndIf
