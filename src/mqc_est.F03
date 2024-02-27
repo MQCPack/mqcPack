@@ -16811,8 +16811,8 @@
       End Select
 !
       End Function S2_Mat_Elem  
-
-
+!
+!
 !=====================================================================
 !     
 !     PROCEDURE MQC_BUILD_CI_HAMILTONIAN
@@ -16828,7 +16828,8 @@
 !>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI operator matrix 
 !>    given MO integrals and determinant strings. The name of the routine reflects
 !>    its original purpose of returning the CI Hamiltonian matrix, but in fact it
-!>    can be used for any one, two, or one and two particle operator.
+!>    can be used for any one, two, or one and two particle operator. The routine
+!>    can also be used to build the S^2 operator matrix in the CI basis.
 !>
 !>    \endverbatim
 !
@@ -17209,9 +17210,182 @@
           iOut,'Determinants%order',Determinants%order)
       end select
 !
-      If(iPrint.ge.1) write(iOut,*) NEW_LINE('a')
+      If(iPrint.ge.2) write(iOut,*) NEW_LINE('a')
 
       End Subroutine MQC_Build_CI_Hamiltonian
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_STRINGS_AT_INDEX
+!
+!>    \brief <b> MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings
+!>    corresponding to the index of matrices built by MQC_Build_CI_Hamiltonian</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
+!>    to the index of matrices built by MQC_Build_CI_Hamiltonian.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] Ind
+!>    \verbatim
+!>        Ind is Integer(kind=int64)
+!>        The index from which determinant strings will be
+!>        returned. If Ind is negative, the index will be
+!>        counted from the end.
+!>    \endverbatim
+!>    
+!>    \param[out] aString
+!>    \verbatim
+!>        aString is Integer(kind=int64),Dimension(:),Allocatable
+!>        The alpha string at index Ind.
+!>    \endverbatim
+!>    
+!>    \param[in] bString
+!>    \verbatim
+!>        bString is Integer(kind=int64),Dimension(:),Allocatable
+!>        The beta string at index Ind.
+!>    \endverbatim
+!>    
+!>    \param[in] NBasis
+!>    \verbatim
+!>        NBasis is Type(MQC_Scalar)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings.
+!>    \endverbatim
+!>
+!>    \param[in] Subs
+!>    \verbatim
+!>        Subs is Integer(kind=int64),Dimension(:),Optional
+!>        Permitted substitutions to include in the Hamiltonian.
+!>        If not present, all substitutions are included.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Subroutine MQC_Get_Strings_At_Index(IOut,IPrint,Ind,aString,bString,NBasis,Determinants, &
+        Subs)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,Ind
+      Type(MQC_Scalar),Intent(In)::NBasis
+      Type(MQC_Determinant),Intent(In)::Determinants
+      Integer(kind=int64),Dimension(:),Intent(In),Optional::Subs
+      Type(MQC_Vector),Intent(Out)::aString,bString
+
+      Integer(kind=int64)::IndIn,I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
+        L_Index,L_A_Start,L_B_Start,L_A_End,L_B_End,L_A_Sub,L_B_Sub,NBit_Ints
+!
+!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
+      NAlpha_Str1 = MQC_Matrix_Rows(Determinants%Strings%Alpha)
+      NBeta_Str1 = MQC_Matrix_Rows(Determinants%Strings%Beta)
+      If(present(subs)) then
+        NDets1 = 0
+        Do I = 1, Size(Subs)
+          Do J = 1, Size(Determinants%NSubsAlpha)
+            Do K = 1, Size(Determinants%NSubsBeta)
+              If((J-1)+(K-1).eq.Subs(i)) then
+                NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
+                  Determinants%NSubsBeta%at(K)
+              EndIf
+            EndDo
+          EndDo
+        EndDo
+      Else
+        NDets1 = NAlpha_Str1 * NBeta_Str1
+      EndIf
+      If(Ind.gt.NDets1) call mqc_error_i('Index requested is larger than dimension of matrix in &
+        &MQC_Get_String_At_Index',6,'Ind',Ind,'NDets1',NDets1)
+      If(Ind.eq.0) call mqc_error_i('Index zero requested in MQC_Get_String_At_Index',6,'Ind',Ind)
+      If(Ind.lt.0) then
+        IndIn = NDets1+Ind+1
+      Else
+        IndIn = Ind
+      EndIf
+!
+      NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
+!
+      select case (Determinants%order)
+      case ('lexical')
+        Do L_A_String = 1, NAlpha_Str1  
+          Do L_B_String = 1, NBeta_Str1  
+            L_Index = 1+(L_B_String-1)*NAlpha_Str1+(L_A_String-1) 
+            If(L_Index.eq.IndIn) then
+              aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
+              bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
+              If(iPrint.ge.3) then
+                write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
+                  trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                  Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
+              EndIf
+              Return
+            EndIf
+          EndDo
+        EndDo
+      case('ci') 
+        L_Index = 0
+        L_A_Start = 1
+        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
+          L_B_Start = 1
+          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
+            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
+            If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
+            If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
+            If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
+            L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
+            L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
+            Do L_A_String = L_A_Start, L_A_End
+              Do L_B_String = L_B_Start, L_B_End
+                L_Index = L_Index + 1
+                If(L_Index.eq.IndIn) then
+                  aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
+                  bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
+                  If(iPrint.ge.3) then
+                    write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
+                      trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+                      Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
+                  EndIf
+                  Return
+                EndIf
+              EndDo
+            EndDo
+          EndDo
+        EndDo
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_get_strings_at_index',&
+          iOut,'Determinants%order',Determinants%order)
+      end select
+!
+      End Subroutine MQC_Get_Strings_At_Index 
 !
 !
 !=====================================================================
