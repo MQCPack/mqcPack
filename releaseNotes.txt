@@ -8,6 +8,11 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+February 26, 2024
+* MQCPack version set to 24.2.2.
+* CI basis index to string subroutine implemented.
+* UHF logical option has been removed from mqc_build_ci_hamiltonian and 
+slater_condon.
 
 February 19, 2024
 * MQCPack version set to 24.2.1.
