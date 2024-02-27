@@ -12,7 +12,7 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.02.1                          **
+!     **                         Version 24.2.2                           **
 !     **                        Feburary 19, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
