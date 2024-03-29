@@ -215,6 +215,10 @@
         Procedure, Public::inv => MQC_Matrix_Inverse
 !>      \brief <b> Returns the determinant of the MQC Matrix</b>
         Procedure, Public::det => mqc_matrix_determinant
+!>      \brief <b> Returns the minor of the MQC Matrix</b>
+        Procedure, Public::minor => mqc_matrix_minor
+!>      \brief <b> Returns the cofactor of the MQC Matrix</b>
+        Procedure, Public::cofactor => mqc_matrix_cofactor
 !>      \brief <b> Returns the trace of the MQC Matrix</b>
         Procedure, Public::trace => mqc_matrix_trace
 !>      \brief <b> Returns a vector of diagonal elements of the MQC Matrix</b>
@@ -25092,6 +25096,169 @@
         Call MQC_Matrix_Full2Symm(a)
 
       end function mqc_matrix_determinant
+!
+!
+!     PROCEDURE mqc_matrix_minor
+!
+!>    \brief <b> MQC_Matrix_Minor is a function that returns the minor of 
+!>    an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Minor is a function that returns the minor of an MQC 
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The row index of the minor. A negative
+!>        number evaluates from the last index of 
+!>        the matrix.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The column index of the minor. A negative
+!>        number evaluates from the last index of 
+!>        the matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function mqc_matrix_minor(a,i,j) result(minor)
+!
+      implicit none
+      class(mqc_matrix),intent(in)::a
+      integer(kind=int64),intent(in)::i,j
+      type(mqc_scalar)::minor
+!
+      integer(kind=int64)::iUse,jUse
+      type(mqc_matrix)::tmp
+!
+      if(abs(i).gt.mqc_matrix_rows(a)) &
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+      if(abs(j).gt.mqc_matrix_columns(a)) &
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+      if(i.lt.0) then
+        iUse = mqc_matrix_rows(a)+i+1
+      elseif(i.gt.0) then
+        iUse = i
+      else
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+      endIf
+      if(j.lt.0) then
+        jUse = mqc_matrix_columns(a)+j+1
+      elseif(i.gt.0) then
+        jUse = j
+      else
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+      endIf
+
+      call tmp%init(mqc_matrix_rows(a)-1,mqc_matrix_columns(a)-1)
+      if(iUse.gt.1.and.jUse.gt.1) call tmp%mput(a%mat([1,iUse-1],[1,jUse-1]),[1,iUse-1],[1,jUse-1])
+      if(iUse.gt.1.and.jUse.lt.mqc_matrix_columns(a)) &
+        call tmp%mput(a%mat([1,iUse-1],[jUse+1,-1]),[1,iUse-1],[jUse,-1])
+      if(iUse.lt.mqc_matrix_rows(a).and.jUse.gt.1) &
+        call tmp%mput(a%mat([iUse+1,-1],[1,jUse-1]),[iUse,-1],[1,jUse-1])
+      if(iUse.lt.mqc_matrix_rows(a).and.jUse.lt.mqc_matrix_columns(a)) &
+        call tmp%mput(a%mat([iUse+1,-1],[jUse+1,-1]),[iUse,-1],[jUse,-1])
+      minor = tmp%det()
+
+      end function mqc_matrix_minor
+!
+!
+!     PROCEDURE mqc_matrix_cofactor
+!
+!>    \brief <b> MQC_Matrix_Cofactor is a function that returns the cofactor of 
+!>    an MQC matrix</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Cofactor is a function that returns the cofactor of an MQC 
+!>    matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The MQC matrix which will be evaluated.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The row index of the cofactor. A negative
+!>        number evaluates from the last index of 
+!>        the matrix.
+!>    \endverbatim
+!>
+!>    \param[in] J
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The column index of the cofactor. A negative
+!>        number evaluates from the last index of 
+!>        the matrix.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function mqc_matrix_cofactor(a,i,j) result(cofactor)
+!
+      implicit none
+      class(mqc_matrix),intent(in)::a
+      integer(kind=int64),intent(in)::i,j
+      type(mqc_scalar)::cofactor
+!
+      integer(kind=int64)::iUse,jUse
+!
+      if(abs(i).gt.mqc_matrix_rows(a)) &
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+      if(abs(j).gt.mqc_matrix_columns(a)) &
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+      if(i.lt.0) then
+        iUse = mqc_matrix_rows(a)+i+1
+      elseif(i.gt.0) then
+        iUse = i
+      else
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+      endIf
+      if(j.lt.0) then
+        jUse = mqc_matrix_columns(a)+j+1
+      elseif(i.gt.0) then
+        jUse = j
+      else
+        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+      endIf
+
+      cofactor = (-1)**(iUse+jUse)*a%minor(iUse,jUse)
+
+      end function mqc_matrix_cofactor
 !
 !
 !     PROCEDURE mqc_matrix_inverse
