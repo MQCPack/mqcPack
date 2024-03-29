@@ -15,8 +15,8 @@
    **                                                                      **
    **                   The Merced Quantum Chemistry Package               **
    **                                (MQCPack)                             **
-   **                             Version 22.06.1                          **
-   **                         Released: June 14, 2022                      **
+   **                             Version 24.2.2                           **
+   **                            Feburary 19, 2024                         **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
