@@ -13618,7 +13618,7 @@
             EndIf
             If(BTest(Beta_String_1(I),J)) then
 !              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-              If(TwoPartInts%type().eq.'spin') then
+              If(OnePartInts%type().eq.'spin') then
 !                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
               Else
