@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.0                          **
+!     **                          March 29, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **

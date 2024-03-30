@@ -13,10 +13,10 @@
    **  |__/     |__/\____ $$$\______/|__/     \_______/\_______|__/  \__/  **
    **          \__/                                                        **
    **                                                                      **
-   **                   The Merced Quantum Chemistry Package               **
-   **                                (MQCPack)                             **
-   **                             Version 24.2.2                           **
-   **                            Feburary 19, 2024                         **
+   **                The Merced Quantum Chemistry Package                  **
+   **                              (MQCPack)                               **
+   **                            Version 24.3.0                            **
+   **                            March 29, 2024                            **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
