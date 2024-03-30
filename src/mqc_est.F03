@@ -38,8 +38,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                          Version 24.3.0                          **
-!     **                          March 29, 2024                          **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -210,7 +210,7 @@
       End Type MQC_Determinant_String
 !
 !     Parent Type
-!>    \brief <b> Binary strings reresenting occupation number vectors</b>
+!>    \brief <b> Binary strings representing occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
@@ -11983,6 +11983,8 @@
       type(mqc_vector),intent(inOut),optional::nums_alpha_hole_out,&
         nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out
       integer::i,alpha_elems,beta_elems,arrayind
+!
+!
       select type (nBasisIn)
       type is (integer)
         nBasis = nBasisIn
@@ -12009,8 +12011,10 @@
       class default
         call mqc_error('NBetaIn type is not integer or MQC scalar')
       end select
+!
       subs = substitutions
-      call subs%sort()
+!hph      call subs%sort()
+      call MQC_Vector_Sort(subs)
       call nums_alpha_hole%init(size(subs),0)
       call nums_alpha_part%init(size(subs),0)
       if(nAlpha.ne.nBeta) then
