@@ -11188,6 +11188,7 @@
       integer(kind=int64),optional,intent(out)::nBasUse
       type(mqc_matrix)::transform_matrix_tmp,SVecs
       type(mqc_vector)::SVals
+      type(mqc_scalar)::negHalf
       integer(kind=int64)::i
       real(kind=real64)::thresh=1.0d-4
 !
@@ -11199,14 +11200,13 @@
           if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
         endDo
       endIf
-      call SVals%power(-0.5)
-!hph      call mqc_error('Hrant - STOP')
-!hph      call SVals%diag(transform_matrix_tmp)
-!hph      call SVals%hphdiag(transform_matrix_tmp)
+      negHalf = -(float(1)/float(2))
+      call mqc_vector_power(SVals,negHalf)
       call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
       call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
 !
+      return
       end subroutine mqc_scf_transformation_matrix
 !
 !

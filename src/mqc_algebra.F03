@@ -12163,8 +12163,6 @@
 !
 !     Do the work.
 !
-      data_type = A%data_type
-
       select type(P)
       type is (integer)
         scalar = P
