@@ -8,6 +8,11 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+March 30, 2024
+* MQCPack version set to 24.3.1.
+* Multiple bug fixes between prior version and this one.
+* Additional functionality added to CI Hamiltonian building procedures.
+
 February 26, 2024
 * MQCPack version set to 24.2.2.
 * CI basis index to string subroutine implemented.
