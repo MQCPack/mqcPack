@@ -38,8 +38,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -210,7 +210,7 @@
       End Type MQC_Determinant_String
 !
 !     Parent Type
-!>    \brief <b> Binary strings reresenting occupation number vectors</b>
+!>    \brief <b> Binary strings representing occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
@@ -11188,6 +11188,7 @@
       integer(kind=int64),optional,intent(out)::nBasUse
       type(mqc_matrix)::transform_matrix_tmp,SVecs
       type(mqc_vector)::SVals
+      type(mqc_scalar)::negHalf
       integer(kind=int64)::i
       real(kind=real64)::thresh=1.0d-4
 !
@@ -11199,14 +11200,13 @@
           if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
         endDo
       endIf
-      call SVals%power(-0.5)
-!hph      call mqc_error('Hrant - STOP')
-!hph      call SVals%diag(transform_matrix_tmp)
-!hph      call SVals%hphdiag(transform_matrix_tmp)
+      negHalf = -(float(1)/float(2))
+      call mqc_vector_power(SVals,negHalf)
       call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
       call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
 !
+      return
       end subroutine mqc_scf_transformation_matrix
 !
 !
@@ -11983,6 +11983,8 @@
       type(mqc_vector),intent(inOut),optional::nums_alpha_hole_out,&
         nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out
       integer::i,alpha_elems,beta_elems,arrayind
+!
+!
       select type (nBasisIn)
       type is (integer)
         nBasis = nBasisIn
@@ -12009,8 +12011,10 @@
       class default
         call mqc_error('NBetaIn type is not integer or MQC scalar')
       end select
+!
       subs = substitutions
-      call subs%sort()
+!hph      call subs%sort()
+      call MQC_Vector_Sort(subs)
       call nums_alpha_hole%init(size(subs),0)
       call nums_alpha_part%init(size(subs),0)
       if(nAlpha.ne.nBeta) then

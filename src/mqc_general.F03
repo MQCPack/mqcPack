@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -172,9 +172,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 24
-      if(PRESENT(minor))         minor         = 2
-      if(PRESENT(revision))      revision      = 2
-      if(PRESENT(versionString)) versionString = '24.2.2'
+      if(PRESENT(minor))         minor         = 3
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '24.3.0'
 !
       return
       end subroutine mqc_version

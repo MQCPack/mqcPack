@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -12163,8 +12163,6 @@
 !
 !     Do the work.
 !
-      data_type = A%data_type
-
       select type(P)
       type is (integer)
         scalar = P
