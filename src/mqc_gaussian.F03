@@ -116,6 +116,11 @@
 !----------------------------------------------------------------
 !
 !
+!     Interface BasisType2FunctionInfo...
+      interface basisType2FunctionInfo
+        module procedure MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+      end interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -2457,6 +2462,50 @@
 !
       return
       end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+
+      
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+      Subroutine MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info(basisType,  &
+        angularMomentum,component,isCartesian)
+!
+!     This routine is used to interpret an element of the basis function type
+!     list. The basis type value is the only input argument (see functions
+!     MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element and
+!     MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array to get the basis type
+!     value for a basis function) The output of this routine is the angular
+!     momentum of the basis function, the component (x, y, z for l=1, for
+!     example), and a logical that is TRUE for Cartesian basis functions and
+!     FALSE for pure basis functions.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+
+      integer(kind=int64),intent(in)::basisType
+      integer,intent(out),optional::angularMomentum,component
+      logical,intent(out),optional::isCartesian
+      integer::myBasisType,myAngularMomentum,myComponent
+!
+!     Decode the basisType number...
+!
+      myBasisType = ABS(basisType)
+      myAngularMomentum = myBasisType/1000
+      myComponent = mod(myBasisType,1000)
+!
+      if(PRESENT(angularMomentum)) angularMomentum = myAngularMomentum
+      if(PRESENT(component)) component = myComponent
+      if(PRESENT(isCartesian)) isCartesian = basisType.gt.0
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+
+
 
 
 !=====================================================================

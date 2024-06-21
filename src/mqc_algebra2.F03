@@ -129,6 +129,11 @@
         module procedure MQC_Variable_dot_product
       end interface
 !
+!     Interface MQC Varaiable vector-vector outer product --> outer_product.
+      interface outer_product
+        module procedure MQC_Variable_outer_product
+      end interface
+!
 !     Interface MQC Varaiable full SUM.
       interface sum
         module procedure MQC_Variable_Array_Sum
@@ -3344,10 +3349,6 @@
         call mqc_error_i('dot_product must be between two vectors.',6, &
         'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
         'RANK(mqcVariable2)',mqcVariable2%getRank())
-      if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error_l('MQC Division only allowed for conformable values.',6, &
-        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
-        MQC_Variable_isConformable(mqcVariable1,mqcVariable2))
 !
 !     Calculate the dot product.
 !
@@ -3355,6 +3356,87 @@
 !
       return
       end function MQC_Variable_dot_product
+
+
+!
+!PROCEDURE MQC_Variable_outer_product
+      function MQC_Variable_outer_product(mqcVariable1,mqcVariable2) result(mqcVariableOut)
+!
+!     This function solves the outer product of two vectors stored in the input
+!     dummy MQC_Variables arguments <mqcVariable1> and <mqcVariable2>. If these
+!     two arguments do not correspond to vectors, this function fails.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode1,typeCode2,len1,len2
+      integer(kind=int64),dimension(:),allocatable::vectorInteger1,  &
+        vectorInteger2
+      integer(kind=int64),dimension(:,:),allocatable::matrixInteger
+      real(kind=real64),dimension(:),allocatable::vectorReal1,  &
+        vectorReal2
+      real(kind=real64),dimension(:,:),allocatable::matrixReal
+!
+!
+!     Start by ensuring the two MQC Variables are vectors and are conformable.
+!
+      if(mqcVariable1%getRank().ne.1.or.mqcVariable2%getRank().ne.1)  &
+        call mqc_error_i('outer_product must be between two vectors.',6, &
+        'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
+        'RANK(mqcVariable2)',mqcVariable2%getRank())
+!
+!     Determine the type codes for the two vectors and ensure they're allowable.
+!
+      typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
+      typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
+      if(typeCode1.eq.0)  &
+        call mqc_error_I('Outer product: Var1 is of UNKONWN type.', 6, &
+          'typeCode1', typeCode1)
+      if(typeCode2.eq.0)  &
+        call mqc_error_I('Outer product: Var2 is of UNKONWN type.', 6, &
+          'typeCode2', typeCode2)
+!
+!     Now, do the outer product and set the output function value accordingly.
+!
+      len1 = SIZE(mqcVariable1)
+      len2 = SIZE(mqcVariable2)
+      select case(typeCode1*10 + typeCode2)
+      case(22)
+        vectorReal1 = mqcVariable1
+        vectorReal2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorReal1,[ len1,1 ]),  &
+          RESHAPE(vectorReal2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(23)
+        vectorReal1 = mqcVariable1
+        vectorInteger2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorReal1,[ len1,1 ]),  &
+          RESHAPE(vectorInteger2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(32)
+        vectorInteger1 = mqcVariable1
+        vectorReal2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorInteger1,[ len1,1 ]),  &
+          RESHAPE(vectorReal2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(33)
+        vectorInteger1 = mqcVariable1
+        vectorInteger2 = mqcVariable2
+        matrixInteger = matmul(RESHAPE(vectorInteger1,[ len1,1 ]),  &
+          RESHAPE(vectorInteger2,[ 1,len2 ]))
+        mqcVariableOut = matrixInteger
+      case default
+        call mqc_error_I('Outer product: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
+      end select
+!
+      return
+      end function MQC_Variable_outer_product
 
 
 !
