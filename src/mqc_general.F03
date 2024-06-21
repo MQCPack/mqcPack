@@ -663,6 +663,31 @@
       Return
       End Subroutine mqc_get_command_argument_integer
 
+!
+!PROCEDURE mqc_get_command_argument_real
+      Subroutine mqc_get_command_argument_real(argNum,rArgument)
+!
+!     This subroutine is used to get a real argument from the command line. The
+!     output dummy argument rArgument is returned with the real number found as
+!     command line arugment argNum. If this command line argument is NOT an
+!     real, the program will SegFault.
+!     
+!     -H. P. Hratchian, 2024.
+!
+!
+      implicit none
+      integer(kind=int64),intent(in)::argNum
+      real(kind=real64),intent(out)::rArgument
+      character(len=:),allocatable::argument
+!
+!     Do the work...
+!
+      call mqc_get_command_argument(argNum,argument)
+      read(argument,*) rArgument
+!
+      Return
+      End Subroutine mqc_get_command_argument_real
+
 
 !
 !----------------------------------------------------------------

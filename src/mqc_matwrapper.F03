@@ -1,4 +1,4 @@
-!hph #define UCMGAUOPEN
+!hph#define UCMGAUOPEN
       Module MQC_MatWrapper
 !
 !     **********************************************************************
