@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -12163,8 +12163,6 @@
 !
 !     Do the work.
 !
-      data_type = A%data_type
-
       select type(P)
       type is (integer)
         scalar = P
@@ -12703,9 +12701,10 @@
       Real(kind=real64),Dimension(:),Allocatable::A_Symm,Temp_Vector
       Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
+      Real(kind=real64),Parameter::Zero=1.0E-8
 !
       if(mqc_matrix_test_symmetric(A,'antihermitian',.true.).and.&
-        A%norm().gt.0.0) then
+        A%norm().gt.Zero) then
         call MQC_Matrix_Diagonalize(im*A,EVals,EVecs)
         EVals = (-1)*im*EVals
         return
@@ -14171,7 +14170,7 @@
             If(Cnt1.eq.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = Mat%MatI(Cnt1,1)
               If (Mat%data_Type.eq.'Real') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
-              If (Mat%data_Type.eq.'Complex') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
+              If (Mat%data_Type.eq.'Complex') Matrix%MatC(M,N) = Mat%MatC(Cnt1,1)
             EndIf
             If(N.eq.LenCol) then
               N = 1
@@ -25033,6 +25032,10 @@
       rows = mqc_matrix_rows(a)
       cols = mqc_matrix_columns(a)
       minrc = min(rows,cols)
+      if(minrc.eq.0) then
+        det = 1.0
+        return
+      endIf
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)

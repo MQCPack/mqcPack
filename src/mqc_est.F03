@@ -38,8 +38,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                         Version 24.2.2                           **
-!     **                        Feburary 19, 2024                         **
+!     **                          Version 24.3.1                          **
+!     **                          March 30, 2024                          **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -210,7 +210,7 @@
       End Type MQC_Determinant_String
 !
 !     Parent Type
-!>    \brief <b> Binary strings reresenting occupation number vectors</b>
+!>    \brief <b> Binary strings representing occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
@@ -3297,8 +3297,8 @@
           if(my_axis.eq.2) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-            else
-              call outMatrixAlpha%init(0,size(alphaOrbs))
+!            else
+!              call outMatrixAlpha%init(0,size(alphaOrbs))
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
@@ -3306,8 +3306,8 @@
           elseIf(my_axis.eq.1) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-            else
-              call outMatrixAlpha%init(size(alphaOrbs),0)
+!            else
+!              call outMatrixAlpha%init(size(alphaOrbs),0)
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([abs(alphaOrbs(i))],[0]),[i],[0])
@@ -3334,13 +3334,13 @@
           if(my_axis.eq.2) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-            else
-              call outMatrixAlpha%init(0,size(alphaOrbs))
+!            else
+!              call outMatrixAlpha%init(0,size(alphaOrbs))
             endIf
             if(size(betaOrbs).ne.0) then
               call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
-            else
-              call outMatrixBeta%init(0,size(betaOrbs))
+!            else
+!              call outMatrixBeta%init(0,size(betaOrbs))
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
@@ -3351,13 +3351,13 @@
           elseIf(my_axis.eq.1) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-            else
-              call outMatrixAlpha%init(size(alphaOrbs),0)
+!            else
+!              call outMatrixAlpha%init(size(alphaOrbs),0)
             endIf
             if(size(betaOrbs).ne.0) then
               call outMatrixBeta%init(size(betaOrbs),nDimBeta2)
-            else
-              call outMatrixBeta%init(size(betaOrbs),0)
+!            else
+!              call outMatrixBeta%init(size(betaOrbs),0)
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([abs(alphaOrbs(i))],[0]),[i],[0])
@@ -3389,13 +3389,13 @@
         if(my_axis.eq.2) then
           if(size(alphaOrbs).ne.0) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-          else
-            call outMatrixAlpha%init(0,size(alphaOrbs))
+!          else
+!            call outMatrixAlpha%init(0,size(alphaOrbs))
           endIf
           if(size(betaOrbs).ne.0) then
             call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
-          else
-            call outMatrixBeta%init(0,size(betaOrbs))
+!          else
+!            call outMatrixBeta%init(0,size(betaOrbs))
           endIf
           do i = 1,size(alphaOrbs)
             if(alphaOrbs(i).ge.0) then
@@ -3414,13 +3414,13 @@
         elseIf(my_axis.eq.1) then
           if(size(alphaOrbs).ne.0) then
             call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-          else
-            call outMatrixAlpha%init(size(alphaOrbs),0)
+!          else
+!            call outMatrixAlpha%init(size(alphaOrbs),0)
           endIf
           if(size(betaOrbs).ne.0) then
             call outMatrixBeta%init(size(betaOrbs),nDimBeta2)
-          else
-            call outMatrixBeta%init(size(betaOrbs),0)
+!          else
+!            call outMatrixBeta%init(size(betaOrbs),0)
           endif
           do i = 1,size(alphaOrbs)
             if(alphaOrbs(i).ge.0) then
@@ -4758,9 +4758,9 @@
         if (integralIn%hasAlpha()) then
           if(size(integralIn%alpha).gt.0) &
             call matrixOut%mput(integralIn%alpha,[1,nDimAlpha1],[1,nDimAlpha2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasAlpha()', integralIn%hasAlpha() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
       case('spin')
         if(mqc_have_complex(integralIn%alpha)) then
@@ -4771,16 +4771,16 @@
         if (integralIn%hasAlpha()) then
           if(size(integralIn%alpha).gt.0) &
             call matrixOut%mput(integralIn%alpha,[1,nDimAlpha1],[1,nDimAlpha2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasAlpha()', integralIn%hasAlpha() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
         if (integralIn%hasBeta()) then
           if(size(integralIn%beta).gt.0) &
             call matrixOut%mput(integralIn%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasBeta()', integralIn%hasBeta() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasBeta()', integralIn%hasBeta() )
         endIf
       case ('general')
         if(mqc_have_complex(integralIn%alpha)) then
@@ -5062,8 +5062,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
         else
-          tmpMatrixAlpha = integralA%alpha.dot.matrixB
-          tmpMatrixBeta = integralA%beta.dot.matrixB
+          if(integralA%hasAlpha()) tmpMatrixAlpha = integralA%alpha.dot.matrixB
+          if(integralA%hasBeta()) tmpMatrixBeta = integralA%beta.dot.matrixB
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         endIf
       case('general')
@@ -5358,17 +5358,17 @@
       case('space')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
           call mqc_integral_allocate(integralOut,'','space',tmpMatrixAlpha)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%alpha+integralB%beta
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasBeta()) tmpMatrixBeta = integralA%alpha+integralB%beta
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%alpha+integralB%beta
-          tmpMatrixAlphaBeta = integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasBeta()) tmpMatrixBeta = integralA%alpha+integralB%beta
+          if(integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralB%alphaBeta
+          if(integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -5378,18 +5378,18 @@
       case('spin')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasAlpha()) tmpMatrixBeta = integralA%beta+integralB%alpha
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralB%alphaBeta
+          if(integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -5399,24 +5399,24 @@
       case('general')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%alpha
-          tmpMatrixAlphaBeta = integralA%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasAlpha()) tmpMatrixBeta = integralA%beta+integralB%alpha
+          if(integralA%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta
+          if(integralA%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralA%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta
+          if(integralA%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralA%alphaBeta+integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha+integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlphaBeta().and.integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta+integralB%alphaBeta
+          if(integralA%hasBetaAlpha().and.integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha+integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -6852,8 +6852,8 @@
             aBlock = 0.0
             bBlock = 0.0
             DO J = 1, blockSize
-              aBlock = aBlock + (tmpMatrix%at(J,I) * tmpMatrix%at(J,I))
-              bBlock = bBlock + (tmpMatrix%at(blockSize+J,I) * tmpMatrix%at(blockSize+J,I))
+              aBlock = aBlock + (conjg(tmpMatrix%at(J,I)) * tmpMatrix%at(J,I))
+              bBlock = bBlock + (conjg(tmpMatrix%at(blockSize+J,I)) * tmpMatrix%at(blockSize+J,I))
             END DO
             IF (aBlock%abs().ge.bBlock%abs()) THEN
               abarray(I) = 'a'
@@ -7448,6 +7448,7 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAHRden = temp(:,1)
+            abAHRden = (-1)*abAHRden
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')+ &
                 dagger(hermden%getblock('alpha-beta'))))
@@ -8065,11 +8066,11 @@
                 !AB Block
                 if(integral%array_type.eq.'general') then
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                   endIf
                 !BA Block
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                   endIf
                 endIf
               end do
@@ -11188,6 +11189,7 @@
       integer(kind=int64),optional,intent(out)::nBasUse
       type(mqc_matrix)::transform_matrix_tmp,SVecs
       type(mqc_vector)::SVals
+      type(mqc_scalar)::negHalf
       integer(kind=int64)::i
       real(kind=real64)::thresh=1.0d-4
 !
@@ -11199,14 +11201,13 @@
           if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
         endDo
       endIf
-      call SVals%power(-0.5)
-!hph      call mqc_error('Hrant - STOP')
-!hph      call SVals%diag(transform_matrix_tmp)
-!hph      call SVals%hphdiag(transform_matrix_tmp)
+      negHalf = -(float(1)/float(2))
+      call mqc_vector_power(SVals,negHalf)
       call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
       call mqc_integral_allocate(transform_matrix,'transformation matrix','space',transform_matrix_tmp)
 !
+      return
       end subroutine mqc_scf_transformation_matrix
 !
 !
@@ -11983,6 +11984,8 @@
       type(mqc_vector),intent(inOut),optional::nums_alpha_hole_out,&
         nums_alpha_part_out,nums_beta_hole_out,nums_beta_part_out
       integer::i,alpha_elems,beta_elems,arrayind
+!
+!
       select type (nBasisIn)
       type is (integer)
         nBasis = nBasisIn
@@ -12009,8 +12012,10 @@
       class default
         call mqc_error('NBetaIn type is not integer or MQC scalar')
       end select
+!
       subs = substitutions
-      call subs%sort()
+!hph      call subs%sort()
+      call MQC_Vector_Sort(subs)
       call nums_alpha_hole%init(size(subs),0)
       call nums_alpha_part%init(size(subs),0)
       if(nAlpha.ne.nBeta) then
@@ -12324,20 +12329,12 @@
       Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
       Type(MQC_Scalar)::MatEl,Sgn
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
-        II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt
+        II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt,NAlpha,NBeta,RNAlpha,RNBeta
       real(kind=real64)::ERI1,ERI2,Zero=0.0
       Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
       
-      If(Present(OnePartInts)) then
-        If(OnePartInts%type().ne.'space'.and.OnePartInts%type().ne.'spin') &
-          call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space one-particle integrals',6,'OnePartInts%type()',OnePartInts%type())
-      EndIf
-      If(Present(TwoPartInts)) then
-        If(TwoPartInts%type().ne.'space'.and.TwoPartInts%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space two-particle integrals',6,'TwoPartInts%type()',TwoPartInts%type())
-      endIf
+!     NOT WORKING FOR COMPLEX ORBITALS YET
       If(.not.present(OnePartInts).and..not.present(TwoPartInts)) call mqc_error('No integrals given to Slater_Condon')
 
  1050 Format( A )
@@ -12369,25 +12366,43 @@
       Det_Diff = 0
       Alpha_Diff_Cnt = 0
       Beta_Diff_Cnt = 0
+      NAlpha = 0
+      NBeta = 0
+      RNAlpha = 0
+      RNBeta = 0
       Do I = 1,NBit_Ints 
         Alpha_Diff(I) = IEOR(Alpha_String_1(I),Alpha_String_2(I))
 !        Write(IOut,*) 'Alpha Diff',I,':'
 !        Write(IOut,'(B64)') Alpha_Diff(I)
 !        Write(IOut,*) '-------------'
         Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(I)) 
+        NAlpha = NAlpha + PopCnt(Alpha_String_1(I))
         Beta_Diff(I) = IEOR(Beta_String_1(I),Beta_String_2(I))
 !        Write(IOut,*) 'Beta Diff',I,':'
 !        Write(IOut,'(B64)') Beta_Diff(I)
 !        Write(IOut,*) '-------------'
         Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(I))
+        NBeta = NBeta + PopCnt(Beta_String_1(I))
+        RNAlpha = RNAlpha + PopCnt(Alpha_String_2(I))
+        RNBeta = RNBeta + PopCnt(Beta_String_2(I))
       EndDo
 !      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
-      Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
+      Det_Diff = int(Alpha_Diff_Cnt/2.0 + Beta_Diff_Cnt/2.0)
 
-      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) & 
-        Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
-        'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
-        'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) then 
+        If(Present(OnePartInts)) then
+          If(OnePartInts%type().ne.'general') &
+            Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
+            'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+            'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+        EndIf
+        If(Present(TwoPartInts)) then
+          If(TwoPartInts%type().ne.'general') &
+            Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
+            'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+            'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+        EndIf
+      EndIf
 
 !      Write(IOut,*) "Det_Diff:",Det_Diff
       Select Case (Det_Diff)
@@ -12431,1045 +12446,578 @@
             IDiff = IDiff + 1
           EndIf
         EndDo
-!        Call MQC_Print(IOut,Orbs,'Orbs')
-!        Call MQC_Print(IOut,Spin,'Spin')
-!        Call MQC_Print(IOut,Det,'Det')
+!        Call MQC_Print(Orbs,IOut,'Orbs')
+!        Call MQC_Print(Spin,IOut,'Spin')
+!        Call MQC_Print(Det,IOut,'Det')
+
+!       Determine number of permutations to bring each orbital
+!       to the beginning of orbital string
+        ISgn = 0
+        I  = (Orbs(1)-1)/Bit_Size(0)+1
+        Do K = I, 1, -1
+          If(I.ne.K) then
+            II = Bit_Size(0)
+          Else
+            II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+          EndIf
+!          Write(IOut,*) 'Orbs:',Orbs(1),' I:',I,' II:',II
+          If(Spin(1).eq.0) then
+            If(Det(1).eq.1) then
+!              write(IOut,'(B64)') IBits(Alpha_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            ElseIf(Det(1).eq.2) then
+!              write(IOut,'(B64)') IBits(Alpha_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          ElseIf(Spin(1).eq.1) then
+            If(Det(1).eq.1) then
+!              write(IOut,'(B64)') IBits(Beta_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            ElseIf(Det(1).eq.2) then
+!              write(IOut,'(B64)') IBits(Beta_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndIf
+        EndDo
+        I  = (Orbs(2)-1)/Bit_Size(0)+1
+        Do K = I, 1, -1
+          If(I.ne.K) then
+            II = Bit_Size(0)
+          Else
+            II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+          EndIf
+!          Write(IOut,*) 'Orbs:',Orbs(2),' I:',I,' II:',II
+          If(Spin(2).eq.0) then
+            If(Det(2).eq.1) then
+!              write(IOut,'(B64)') IBits(Alpha_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            ElseIf(Det(2).eq.2) then
+!              write(IOut,'(B64)') IBits(Alpha_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          ElseIf(Spin(2).eq.1) then
+            If(Det(2).eq.1) then
+!              write(IOut,'(B64)') IBits(Beta_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            ElseIf(Det(2).eq.2) then
+!              write(IOut,'(B64)') IBits(Beta_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndIf
+        EndDo
+        I  = (Orbs(3)-1)/Bit_Size(0)+1
+        Do K = I, 1, -1
+          If(I.ne.K) then
+            II = Bit_Size(0)
+          Else
+            II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
+          EndIf
+!          Write(IOut,*) 'Orbs:',Orbs(3),' I:',I,' II:',II
+          If(Spin(3).eq.0) then
+            If(Det(3).eq.1) then
+!              write(IOut,'(B64)') IBits(Alpha_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            ElseIf(Det(3).eq.2) then
+!              write(IOut,'(B64)') IBits(Alpha_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          ElseIf(Spin(3).eq.1) then
+            If(Det(3).eq.1) then
+!              write(IOut,'(B64)') IBits(Beta_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            ElseIf(Det(3).eq.2) then
+!              write(IOut,'(B64)') IBits(Beta_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndIf
+        EndDo
+        I  = (Orbs(4)-1)/Bit_Size(0)+1
+        Do K = I, 1, -1
+          If(I.ne.K) then
+            II = Bit_Size(0)
+          Else
+            II = Mod((Orbs(4)-1),Bit_Size(0)) + 1
+          EndIf
+!          Write(IOut,*) 'Orbs:',Orbs(4),' I:',I,' II:',II
+          If(Spin(4).eq.0) then
+            If(Det(4).eq.1) then
+!              write(IOut,'(B64)') IBits(Alpha_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            ElseIf(Det(4).eq.2) then
+!              write(IOut,'(B64)') IBits(Alpha_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          ElseIf(Spin(4).eq.1) then
+            If(Det(4).eq.1) then
+!              write(IOut,'(B64)') IBits(Beta_String_1(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            ElseIf(Det(4).eq.2) then
+!              write(IOut,'(B64)') IBits(Beta_String_2(K),0,II-1)
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndIf
+        EndDo
+        If(Spin(1).eq.1) then
+          If(Det(1).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(1).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(2).eq.1) then
+          If(Det(2).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(2).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(3).eq.1) then
+          If(Det(3).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(3).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(4).eq.1) then
+          If(Det(4).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(4).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        ISgn = ISgn-2
 
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-!          Write(IOut,*) 'Entering case 1'
+!          Write(IOut,*) 'Entering case 1' 
 !          
 !         This section computes the Coulomb contribution to the matrix
 !         element
-          If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
 !            
-!           This section detemines number of permutations of creation
-!           operators and sets sign accordingly
-!           It got quite a bit longer after generalizing max number of
-!           orbitals
-!           Probably want to make some functions for these then later
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(2).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-!            
-!           This section computes the value of the matrix element
+!         This section detemines number of permutations of creation
+!         operators and sets sign accordingly
+!         It got quite a bit longer after generalizing max number of
+!         orbitals
+!         Probably want to make some functions for these then later
+          If(Spin(1).gt.Spin(2)) ISgn = ISgn+1 
+          If(Spin(3).gt.Spin(4)) ISgn = ISgn+1
+!          
+!         This section computes the value of the matrix element
 !
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
-            EndIf
-!            
-!           This section changes sign accounting for the ordering of alpha and
-!           beta strings
-            If(Spin(1).gt.Spin(2)) ERI1 = -ERI1
-            If(Spin(3).gt.Spin(4)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'bbab')
           Else
-!            
-!           Sets Coulomb contribution to zero if 2ERI is necessarily so by
-!           spin order in the integral
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(2).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-!
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
-            EndIf
-!
-            If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
-            If(Spin(3).gt.Spin(4)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and. &
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
 !
         ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
-!          Write(IOut,*) 'Entering case 2'
-          If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(3).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then 
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
-            If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+!          Write(IOut,*) 'Entering case 2' 
+
+          If(Spin(1).gt.Spin(3)) ISgn = ISgn+1 
+          If(Spin(2).gt.Spin(4)) ISgn = ISgn+1
+
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'bbab')
           Else
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(4).and.Spin(3).eq.Spin(2)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(3).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
-            If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
-!
+
         ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
-!          Write(IOut,*) 'Entering case 3'
-          If(Spin(1).eq.Spin(2).and.Spin(4).eq.Spin(3)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
-            If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+!          Write(IOut,*) 'Entering case 3' 
+         
+          If(Spin(1).gt.Spin(4)) ISgn = ISgn+1 
+          If(Spin(2).gt.Spin(3)) ISgn = ISgn+1
+
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and. &
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'bbab')
           Else
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(3).and.Spin(4).eq.Spin(2)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
-            If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
+            Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
+
         Else
           Write(IOut,1050) 'Slater Condon has been handed confusing determinant info'
         EndIf
 !
         MatEl = ERI1 - ERI2
-!        Write(IOut,*) 'Slater Condon Final:',float(MatEl)
-!        Deallocate(Orbs,Spin,Det)
+        If(Mod(ISgn,2).eq.1) MatEl = (-1)*MatEl
+!        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
         Return
 !
       Case(1)
@@ -13480,11 +13028,21 @@
           If(BTest(Alpha_Diff(I),J)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 0
+            If(BTest(Alpha_String_1(I),J)) then
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
+            EndIf
             IDiff = IDiff + 1
           EndIf
           If(BTest(Beta_Diff(I),J)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 1
+            If(BTest(Beta_String_1(I),J)) then
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
+            EndIf
             IDiff = IDiff + 1
           EndIf
         EndDo
@@ -13508,6 +13066,7 @@
               Else
                 JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
               EndIf
+!              Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
               ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
             EndDo
           EndIf
@@ -13526,8 +13085,97 @@
               Else
                 JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
               EndIf
+!              Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
               ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
             EndDo
+          EndIf
+        ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+          I  = (Orbs(1)-1)/Bit_Size(0)+1
+          Do K = I, 1, -1
+            If(K.ne.I) then
+              II = Bit_Size(0)
+            Else
+              II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+            EndIf
+            If(Det(1).eq.1) then
+!              Write(IOut,'(B64)') Alpha_String_1(K)
+!              Write(IOut,'(B64)') IBits(Alpha_String_1(K),0,II-1)
+!              Write(IOut,*) 'Orbs:',Orbs(1),' I:',I,' II:',II,&
+!                PopCnt(IBits(Alpha_String_1(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            Else
+!              Write(IOut,'(B64)') Alpha_String_2(K)
+!              Write(IOut,'(B64)') IBits(Alpha_String_2(K),0,II-1)
+!              Write(IOut,*) 'Orbs:',Orbs(1),' I:',I,' II:',II,&
+!                PopCnt(IBits(Alpha_String_2(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          EndDo
+          I  = (Orbs(2)-1)/Bit_Size(0)+1
+          Do K = I, 1, -1
+            If(K.ne.I) then
+              II = Bit_Size(0)
+            Else
+              II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+            EndIf
+            If(Det(2).eq.1) then
+!              Write(IOut,'(B64)') Beta_String_1(K)
+!              Write(IOut,'(B64)') IBits(Beta_String_1(K),0,II-1)
+!              Write(IOut,*) 'Orbs:',Orbs(2),' I:',I,' II:',II,&
+!                PopCnt(IBits(Beta_String_1(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            Else
+!              Write(IOut,'(B64)') Beta_String_2(K)
+!              Write(IOut,'(B64)') IBits(Beta_String_2(K),0,II-1)
+!              Write(IOut,*) 'Orbs:',Orbs(2),' I:',I,' II:',II,&
+!                PopCnt(IBits(Beta_String_2(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndDo
+          If(Det(2).eq.1) then
+            ISgn = ISgn + NAlpha
+          Else
+            ISgn = ISgn + RNAlpha
+          EndIf
+        ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+          I  = (Orbs(1)-1)/Bit_Size(0)+1
+          Do K = I, 1, -1
+            If(K.ne.I) then
+              II = Bit_Size(0)
+            Else
+              II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
+            EndIf
+            If(Det(1).eq.1) then
+!              Write(IOut,*) 'Orbs:',Orbs(1),' I:',I,' II:',II,&
+!                PopCnt(IBits(Beta_String_1(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Beta_String_1(K),0,II-1))
+            Else
+!              Write(IOut,*) 'Orbs:',Orbs(1),' I:',I,' II:',II,&
+!                PopCnt(IBits(Beta_String_2(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Beta_String_2(K),0,II-1))
+            EndIf
+          EndDo
+          I  = (Orbs(2)-1)/Bit_Size(0)+1
+          Do K = I, 1, -1
+            If(K.ne.I) then
+              II = Bit_Size(0)
+            Else
+              II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
+            EndIf
+            If(Det(2).eq.1) then
+!              Write(IOut,*) 'Orbs:',Orbs(2),' I:',I,' II:',II,&
+!                PopCnt(IBits(Alpha_String_1(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_1(K),0,II-1))
+            Else
+!              Write(IOut,*) 'Orbs:',Orbs(2),' I:',I,' II:',II,&
+!                PopCnt(IBits(Alpha_String_2(K),0,II-1))
+              ISgn = ISgn + PopCnt(IBits(Alpha_String_2(K),0,II-1))
+            EndIf
+          EndDo
+          If(Det(1).eq.1) then
+            ISgn = ISgn + NAlpha
+          Else
+            ISgn = ISgn + RNAlpha
           EndIf
         EndIf
         Sgn = (-1)**ISgn
@@ -13559,6 +13207,23 @@
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha'),iOut, &
 !                  'ALPHA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha')
+                If(TwoPartInts%type().eq.'general') then
+!                  Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baab'),iOut, &
+!                    'ALPHA: GHF True and 1 and 2 both beta, adding:')
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baab')
+                EndIf
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.0.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abaa') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'aaab'), iOut, &
+!                  'ALPHA: GHF True and 1 alpha and 2 beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abaa') - & 
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'aaab')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.1.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'baaa') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baaa'), iOut, &
+!                  'ALPHA: GHF True and 1 beta and 2 alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'baaa') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baaa')
               EndIf
             EndIf
           EndDo
@@ -13580,12 +13245,27 @@
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta'),iOut, &
 !                  'BETA: UHF True and 1 and 2 both alpha, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta') 
+                If(TwoPartInts%type().eq.'general') then
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abba')
+                EndIf
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
 !                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta'),iOut, &
 !                  'BETA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
                   Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.0.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abbb') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abbb'),iOut, &
+!                  'BETA: GHF True and 1 alpha and 2 beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abbb') - & 
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abbb')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.1.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'babb') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'bbba'),iOut, &
+!                  'BETA: GHF True and 1 beta and 2 alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'babb') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'bbba')
               EndIf
             EndIf
           EndDo
@@ -13598,6 +13278,12 @@
           ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !            Call MQC_Print(Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
             MatEl = MatEl + Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2))
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+!            Call MQC_Print(Sgn*OnePartInts%AlphaBeta%at(Orbs(1),Orbs(2)),iOut,'1 alpha and 2 beta, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%AlphaBeta%at(Orbs(1),Orbs(2))
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+!            Call MQC_Print(Sgn*OnePartInts%BetaAlpha%at(Orbs(1),Orbs(2)),iOut,'1 beta and 2 alpha, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%BetaAlpha%at(Orbs(1),Orbs(2))
           EndIf
         EndIf
         
@@ -13615,12 +13301,18 @@
 !              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
 !              Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
               MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
+!              if(OnePartInts%type().eq.'general') then
+!                MatEl = MatEl + OnePartInts%AlphaBeta%at(IPos+1,IPos+1)
+!              EndIf
             EndIf
             If(BTest(Beta_String_1(I),J)) then
 !              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-              If(OnePartInts%type().eq.'spin') then
+              If(OnePartInts%type().eq.'spin'.or.OnePartInts%type().eq.'general') then
 !                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
+!              ElseIf(OnePartInts%type().eq.'general') then
+!                MatEl = MatEl + OnePartInts%BetaAlpha%at(IPos+1,IPos+1)
+!                MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
               Else
 !                Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
@@ -13657,7 +13349,7 @@
               If(BTest(Beta_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(TwoPartInts%type().eq.'spin') then
+                  If(TwoPartInts%type().eq.'spin'.or.TwoPartInts%type().eq.'general') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
@@ -13682,9 +13374,12 @@
               If(BTest(Alpha_String_1(I),J)) then
                 If(BTest(Beta_String_1(II),JJ)) then 
 !                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(TwoPartInts%type().eq.'spin') then
+                  If(TwoPartInts%type().eq.'spin'.or.TwoPartInts%type().eq.'general') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
+                    If(TwoPartInts%type().eq.'general') then
+                      MatEl = MatEl - TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'abba')
+                    EndIf
                   Else
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha')
@@ -14929,7 +14624,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -15021,7 +14716,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -16675,19 +16370,14 @@
         Beta_String_1,Beta_String_2
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
         IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt,NBit_Ints, &
-        I,J,II,JJ
-      real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
-      type(mqc_scalar)::S2_Mat_Elem
+        I,J,II,JJ,Perm,RNAlpha,RNBeta
+      real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,Half=0.5d0,One=1.0d0,Alpha_Elecs,Beta_Elecs
+      Type(mqc_scalar)::S2_Mat_Elem,ABTerm
       Type(MQC_SCF_Integral),Intent(In)::MO_Overlap
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
 
       NBasis = NBasisIn
       NBit_Ints = (NBasis/Bit_Size(0))+1 
-!      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-!      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
-!      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
-!      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
-!      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
 !
 !      Write(IOut,*) 'alpha 1:'
 !      Write(IOut,'(B64)') Alpha_String_1
@@ -16705,7 +16395,12 @@
 !      Write(IOut,'(B64)') IEOR(Beta_String_1,Beta_String_2)   
 !      Write(IOut,*) 'NDifb=', PopCnt(IEOR(Beta_String_1,Beta_String_2))
 !      Write(IOut,*)
-!
+
+      if((MO_Overlap%blocksize('alpha').ne.NBasis*2.or.&
+        MO_Overlap%blocksize('beta').ne.NBasis*2).and.& 
+        (MO_Overlap%blocksize('alpha').ne.NBasis.or.&
+        MO_Overlap%blocksize('beta').ne.NBasis)) &
+        Call mqc_error('MO Overlap matrix is incorrectly sized in S2_Mat_Elem')
       Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
       Det_Diff = 0
       Alpha_Diff_Cnt = 0
@@ -16727,9 +16422,10 @@
         NBeta = NBeta + PopCnt(Beta_String_1(I))
       EndDo
 !      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
-      Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
+      Det_Diff = int(Alpha_Diff_Cnt/2.0 + Beta_Diff_Cnt/2.0)
 
-      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) &
+      If((Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0).and. &
+        MO_Overlap%blocksize('alpha').ne.NBasis*2) &
         Call MQC_Error_I('S2_Mat_Elem has been handed spin non-conserving &
         &determinants',6,'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
         'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
@@ -16766,10 +16462,10 @@
               IDiff = IDiff + 1
             EndIf
           EndDo
-!          Call Print_Vector(IOut,Orbs,'Orbs')
-!          Call Print_Vector(IOut,Spin,'Spin')
-!          Call Print_Vector(IOut,Det,'Det')
-!
+!          Call MQC_Print(Orbs,IOut,'Orbs')
+!          Call MQC_Print(Spin,IOut,'Spin')
+!          Call MQC_Print(Det,IOut,'Det')
+
           IOcc = 0
           Do IPos = Orbs(1)-1, 0, -1
             I = NBit_Ints - IPos/Bit_Size(0)
@@ -16846,102 +16542,359 @@
             EndIf
           EndDo
 !          Write(IOut,*) 'LOcc:',LOcc
-!          Mat_Sign = -1
-!          Mat_Sign = (-1)**(IOcc+JOcc+KOcc+LOcc-3)
-!          Write(IOut,*) 'Permutations:',(IOcc+JOcc+KOcc+LOcc-3)
-          Mat_Sign = (-1)**(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
-!          Write(IOut,*) 'Permutations:',(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
-!          Write(IOut,*) 'Mat_Sign:',Mat_Sign
+
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then 
+            Mat_Sign = (-1)**(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
+!            Write(IOut,*) 'Permutations:',(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
+!            Write(IOut,*) 'Mat_Sign:',Mat_Sign
 !
-          If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-            If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+            If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
+              If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(2).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
+                ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
+                If(Spin(1).eq.0.and.Spin(2).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
+                ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
               Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+!               This suggests that there are unbalanced spins between determinants 
                 S2_Mat_Elem = Zero
               EndIf
-            ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-              If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
-            EndIf
-          ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
-            If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-              If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
-                MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
-            EndIf
-          ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
-            If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            ElseIf(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+            ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
+              If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(3).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
+                ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
+                If(Spin(1).eq.0.and.Spin(3).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))
+                ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
                   MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
               Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+!               This suggests that there are unbalanced spins between determinants 
                 S2_Mat_Elem = Zero
               EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
+            ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
+              If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(4).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))
+                ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(4).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))
+                ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              Else
+!               This suggests that there are unbalanced spins between determinants 
+                S2_Mat_Elem = Zero
+              EndIf
             EndIf
+
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+
+            RNAlpha = 0
+            RNBeta = 0
+            Do I = 1,NBit_Ints
+              RNAlpha = RNAlpha + PopCnt(Alpha_String_2(I))
+              RNBeta = RNBeta + PopCnt(Beta_String_2(I))
+            EndDo
+
+            If(Spin(1).eq.0) then
+              If(Det(1).eq.1) then
+                Perm = NAlpha-IOcc+NBeta
+              Else
+                Perm = RNAlpha-IOcc+RNBeta
+              EndIf
+            ElseIf(Spin(1).eq.1) then
+              If(Det(1).eq.1) then
+                Perm = NBeta-IOcc
+              Else
+                Perm = RNBeta-IOcc
+              EndIf
+            EndIf
+!            write(*,*) 'IOcc Perm',Perm
+            If(Spin(2).eq.0) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NAlpha-JOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-JOcc+RNBeta
+              EndIf
+            ElseIf(Spin(2).eq.1) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NBeta-JOcc
+              Else
+                Perm = Perm+RNBeta-JOcc
+              EndIf
+            EndIf
+!            write(*,*) 'JOcc Perm',Perm
+            If(Spin(3).eq.0) then
+              If(Det(3).eq.1) then
+                Perm = Perm+NAlpha-KOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-KOcc+RNBeta
+              EndIf
+            ElseIf(Spin(3).eq.1) then
+              If(Det(3).eq.1) then
+                Perm = Perm+NBeta-KOcc
+              Else
+                Perm = Perm+RNBeta-KOcc
+              EndIf
+            EndIf
+!            write(*,*) 'KOcc Perm',Perm
+            If(Spin(4).eq.0) then
+              If(Det(4).eq.1) then
+                Perm = Perm+NAlpha-LOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-LOcc+RNBeta
+              EndIf
+            ElseIf(Spin(4).eq.1) then
+              If(Det(4).eq.1) then
+                Perm = Perm+NBeta-LOcc
+              Else
+                Perm = Perm+RNBeta-LOcc
+              EndIf
+            EndIf
+!            write(*,*) 'LOcc Perm',Perm
+            Perm = Perm-2
+!            write(*,*) 'Removing redundnant Perms',Perm
+            Perm = Perm+1
+!            Write(IOut,*) 'Additional sign Perm:',Perm
+
+            if(Det(1).eq.Det(2)) then
+              If(Spin(1).gt.Spin(2)) Perm = Perm+1 
+              If(Spin(3).gt.Spin(4)) Perm = Perm+1
+            elseIf(Det(1).eq.Det(3)) then
+              If(Spin(1).gt.Spin(3)) Perm = Perm+1 
+              If(Spin(2).gt.Spin(4)) Perm = Perm+1
+            elseIf(Det(1).eq.Det(4)) then
+              If(Spin(1).gt.Spin(4)) Perm = Perm+1 
+              If(Spin(2).gt.Spin(3)) Perm = Perm+1
+            endIf
+!            Write(IOut,*) 'Perm after spin order fix:',Perm
+            Mat_Sign = (-1)**Perm 
+!
+            If(Spin(1).eq.1) Orbs(1) = Orbs(1)+NBasis
+            If(Spin(2).eq.1) Orbs(2) = Orbs(2)+NBasis
+            If(Spin(3).eq.1) Orbs(3) = Orbs(3)+NBasis
+            If(Spin(4).eq.1) Orbs(4) = Orbs(4)+NBasis
+!   
+            S2_Mat_Elem = Zero 
+!
+!           5A/5B 
+            If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+              else
+!               5A
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(1))
+!               6B
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(1))
+!               5B
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
+!               6A
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(2))
+              endIf
+            ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+              else
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(3))
+              endIf
+            ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+              else
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(4))
+              endIf
+            EndIf
+
+!            Write(IOut,*) 'Permutations:',Perm
+!            Write(IOut,*) 'Mat_Sign:',Mat_Sign
+            S2_Mat_Elem = Mat_Sign * S2_Mat_Elem
+
           EndIf
-!          Write(IOut,*) 'S2_Mat_Elem:',S2_Mat_Elem
+!          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 
           Return
 
         Case(1)
           IDiff = 1
-!          Allocate(Orbs(2),Spin(2))
           Do IPos = 0, NBasis-1
             I = NBit_Ints - IPos/Bit_Size(0)
             J = Mod(IPos,Bit_Size(0)) 
@@ -16971,58 +16924,113 @@
 !          Write(IOut,*)'Det 1:',Det(1),' Det 2:',Det(2)
 !
           S2_Mat_Elem = Zero 
-          If(Spin(1).ne.Spin(2)) then
-            S2_Mat_Elem = Zero
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            If(Spin(1).ne.Spin(2)) then
+              S2_Mat_Elem = Zero
 !
-          ElseIf(Spin(1).eq.0) then
+            ElseIf(Spin(1).eq.0) then
 !
-            IOcc = 0
-            Do IPos = Orbs(1)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(1).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
-              ElseIf(Det(1).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
-              EndIf
-            EndDo
-!            Write(IOut,*) 'IOcc:',IOcc
-            JOcc = 0
-            Do IPos = Orbs(2)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(2).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
-              ElseIf(Det(2).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
-              EndIf
-            EndDo
-!            Write(IOut,*) 'JOcc:',JOcc
+              IOcc = 0
+              Do IPos = Orbs(1)-1, 0, -1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(Det(1).eq.1) then
+                  If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'IOcc:',IOcc
+              JOcc = 0
+              Do IPos = Orbs(2)-1, 0, -1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(Det(2).eq.1) then
+                  If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'JOcc:',JOcc
 !
-            Do IPos = 0, NBasis-1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(BTest(Beta_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*& 
-                  MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
-              EndIf
-            EndDo
-!            S2_Mat_Elem = - S2_Mat_Elem
-!            Write(IOut,*) 'Permutations:',(2*NAlpha+1-IOcc-JOcc)
-!            Write(IOut,*) 'Mat_Sign:',(-1)**(2*NAlpha+1-IOcc-JOcc)
-            S2_Mat_Elem = (-1)**(2*NAlpha+1-IOcc-JOcc) * S2_Mat_Elem
-!            S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
+              Do IPos = 0, NBasis-1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(BTest(Beta_String_1(I),J)) then
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*& 
+                    MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
+                EndIf
+              EndDo
+!!              S2_Mat_Elem = - S2_Mat_Elem
+!              Write(IOut,*) 'Permutations:',(2*NAlpha+1-IOcc-JOcc)
+!              Write(IOut,*) 'Mat_Sign:',(-1)**(2*NAlpha+1-IOcc-JOcc)
+              S2_Mat_Elem = (-1)**(2*NAlpha+1-IOcc-JOcc) * S2_Mat_Elem
+!!              S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
 !
-          ElseIf(Spin(1).eq.1) then
+            ElseIf(Spin(1).eq.1) then
 
+              IOcc = 0
+              Do IPos = Orbs(1)-1, 0, -1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(Det(1).eq.1) then
+                  If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'IOcc:',IOcc
+              JOcc = 0
+              Do IPos = Orbs(2)-1, 0, -1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(Det(2).eq.1) then
+                  If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'JOcc:',JOcc
+!
+              Do IPos = 0, NBasis-1
+                I = NBit_Ints - IPos/Bit_Size(0)
+                J = Mod(IPos,Bit_Size(0)) 
+                If(BTest(Alpha_String_1(I),J)) then
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+                EndIf
+              EndDo
+!              Write(IOut,*) 'Permutations:',(2*NBeta+1-IOcc-JOcc)
+!              Write(IOut,*) 'Mat_Sign:',(-1)**(2*NBeta+1-IOcc-JOcc)
+              S2_Mat_Elem = (-1)**(2*NBeta+1-IOcc-JOcc) * S2_Mat_Elem
+
+            EndIf
+!
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+!
+            RNAlpha = 0
+            RNBeta = 0
+            Do I = 1,NBit_Ints
+              RNAlpha = RNAlpha + PopCnt(Alpha_String_2(I))
+              RNBeta = RNBeta + PopCnt(Beta_String_2(I))
+            EndDo
+!
             IOcc = 0
             Do IPos = Orbs(1)-1, 0, -1
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
-              If(Det(1).eq.1) then
-                If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
-              ElseIf(Det(1).eq.2) then
-                If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
+              If(Spin(1).eq.0) then
+                If(Det(1).eq.1) then
+                  If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
+                EndIf
+              ElseIf(Spin(1).eq.1) then
+                If(Det(1).eq.1) then
+                  If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
+                EndIf
               EndIf
             EndDo
 !            Write(IOut,*) 'IOcc:',IOcc
@@ -17030,49 +17038,569 @@
             Do IPos = Orbs(2)-1, 0, -1
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
-              If(Det(2).eq.1) then
-                If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
-              ElseIf(Det(2).eq.2) then
-                If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
+              If(Spin(2).eq.0) then
+                If(Det(2).eq.1) then
+                  If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
+                EndIf
+              ElseIf(Spin(2).eq.1) then
+                If(Det(2).eq.1) then
+                  If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
+                EndIf
               EndIf
             EndDo
 !            Write(IOut,*) 'JOcc:',JOcc
+            If(Spin(1).eq.0) then
+              If(Det(1).eq.1) then
+                Perm = NAlpha-IOcc+NBeta
+              Else
+                Perm = RNAlpha-IOcc+RNBeta
+              EndIf
+            ElseIf(Spin(1).eq.1) then
+              If(Det(1).eq.1) then
+                Perm = NBeta-IOcc
+              Else
+                Perm = RNBeta-IOcc
+              EndIf
+            EndIf
+            If(Spin(2).eq.0) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NAlpha-JOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-JOcc+RNBeta
+              EndIf
+            ElseIf(Spin(2).eq.1) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NBeta-JOcc
+              Else
+                Perm = Perm+RNBeta-JOcc
+              EndIf
+            EndIf
+            Perm = Perm+1
 !
+            If(Spin(1).eq.1) Orbs(1) = Orbs(1)+NBasis
+            If(Spin(2).eq.1) Orbs(2) = Orbs(2)+NBasis
+!
+!           1A
             Do IPos = 0, NBasis-1
               I = NBit_Ints - IPos/Bit_Size(0)
               J = Mod(IPos,Bit_Size(0)) 
               If(BTest(Alpha_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
               EndIf
             EndDo
-!            S2_Mat_Elem = - S2_Mat_Elem
-!            Write(IOut,*) 'Permutations:',(2*NBeta+1-IOcc-JOcc)
-!            Write(IOut,*) 'Mat_Sign:',(-1)**(2*NBeta+1-IOcc-JOcc)
-            S2_Mat_Elem = (-1)**(2*NBeta+1-IOcc-JOcc) * S2_Mat_Elem
-!            S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 1A')
+!           1B 
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 1B')
+!           2A 
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 2A')
+!           2B
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 2B')
+!           S_z^2 contribution
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 1')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 2')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 3')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 4')
+
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 5')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 6')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 7')
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              If(BTest(Alpha_String_1(I),J)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1(I),J)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz final')
+
+!            Write(IOut,*) 'Permutations:',Perm
+!            Write(IOut,*) 'Mat_Sign:',(-1)**Perm
+            S2_Mat_Elem = (-1)**Perm * S2_Mat_Elem
 
           EndIf
 
-!          Write(IOut,*) 'S2_Mat_Elem:',S2_Mat_Elem
+!          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 
           Return
 !
         Case(0)
           ABTerm = Zero
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            Do JPos = 0, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
-              JJ = Mod(JPos,Bit_Size(0)) 
-              If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) then
-                ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
                   MO_Overlap%BetaAlpha%at(JPos+1,IPos+1) 
+              EndDo
+            EndDo
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,NBasis+JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,NBasis+IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+IPos+1) 
+              EndDo
+            EndDo
+
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(IPos+1,JPos+1)-&
+                  MO_Overlap%Beta%at(IPos+1,JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(IPos+1,NBasis+JPos+1)-&
+                  MO_Overlap%Beta%at(IPos+1,NBasis+JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(NBasis+IPos+1,JPos+1)-&
+                  MO_Overlap%Beta%at(NBasis+IPos+1,JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0)) 
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+JPos+1)-&
+                  MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+JPos+1))**2 
+              EndDo
+            EndDo
+          EndIf
+
+          if(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+            Alpha_Elecs = Zero
+            Beta_Elecs = Zero
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              If(BTest(Alpha_String_2(I),J)) then
+                Alpha_Elecs = Alpha_Elecs + MO_Overlap%Alpha%at(IPos+1,IPos+1) 
+                Beta_Elecs = Beta_Elecs + MO_Overlap%Beta%at(IPos+1,IPos+1) 
               EndIf
             EndDo
-          EndDo
-          S2_Mat_Elem = Quarter*((NAlpha-NBeta)**2+2*(NAlpha+NBeta)) - ABTerm
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              If(BTest(Beta_String_2(I),J)) then
+                Alpha_Elecs = Alpha_Elecs + MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1) 
+                Beta_Elecs = Beta_Elecs + MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1) 
+              EndIf
+            EndDo
+            S2_Mat_Elem = Quarter*(Alpha_Elecs-Beta_Elecs)**2+0.75*(Alpha_Elecs+Beta_Elecs) 
+
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Alpha_String_2(II),JJ))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              I = NBit_Ints - IPos/Bit_Size(0)
+              J = Mod(IPos,Bit_Size(0))
+              Do JPos = 0, NBasis-1
+                II = NBit_Ints - JPos/Bit_Size(0)
+                JJ = Mod(JPos,Bit_Size(0)) 
+                If((BTest(Beta_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                    MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+JPos+1)
+              EndDo
+            EndDo
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            S2_Mat_Elem = Quarter*((NAlpha-NBeta)**2+2*(NAlpha+NBeta)) 
+          EndIf
+
+          S2_Mat_Elem = S2_Mat_Elem - ABTerm
 !          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 !
           Return
@@ -17211,7 +17739,7 @@
       Type(MQC_Determinant)::Determinants2
       Logical::SymmFlag,S2Flag
       Character(len=12)::SymmStr
-      Character(len=256)::detIndex1,detIndex2
+      Character(len=:),allocatable::detIndex1,detIndex2
       Character(len=44)::bar=" Build Progress: ???% |                    |"
 !
       If(present(doS2)) then
@@ -17220,15 +17748,6 @@
         S2Flag = .false.
       EndIf
 !
-      If(Present(MO_Core_Ham)) then
-        If(.not.S2Flag.and.MO_Core_Ham%type().ne.'space'.and.MO_Core_Ham%type().ne.'spin') &
-          call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space one-particle integrals',6,'MO_Core_Ham%type()',MO_Core_Ham%type())
-      EndIf
-      If(Present(MO_ERIs)) then
-        If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space two-particle integrals',6,'MO_ERIs%type()',MO_ERIs%type())
-      endIf
       If(.not.present(MO_Core_Ham).and..not.present(MO_ERIs)) call mqc_error('No integrals given to Slater_Condon')
 !
       If(present(Dets2)) then
@@ -17432,7 +17951,6 @@
                         Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
                         Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
                         Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
-                        If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle 
                         If(S2Flag) then
                           Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
                             Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
