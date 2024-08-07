@@ -12701,9 +12701,10 @@
       Real(kind=real64),Dimension(:),Allocatable::A_Symm,Temp_Vector
       Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
+      Real(kind=real64),Parameter::Zero=1.0E-8
 !
       if(mqc_matrix_test_symmetric(A,'antihermitian',.true.).and.&
-        A%norm().gt.0.0) then
+        A%norm().gt.Zero) then
         call MQC_Matrix_Diagonalize(im*A,EVals,EVecs)
         EVals = (-1)*im*EVals
         return
@@ -14169,7 +14170,7 @@
             If(Cnt1.eq.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = Mat%MatI(Cnt1,1)
               If (Mat%data_Type.eq.'Real') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
-              If (Mat%data_Type.eq.'Complex') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
+              If (Mat%data_Type.eq.'Complex') Matrix%MatC(M,N) = Mat%MatC(Cnt1,1)
             EndIf
             If(N.eq.LenCol) then
               N = 1
@@ -25031,6 +25032,10 @@
       rows = mqc_matrix_rows(a)
       cols = mqc_matrix_columns(a)
       minrc = min(rows,cols)
+      if(minrc.eq.0) then
+        det = 1.0
+        return
+      endIf
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)
