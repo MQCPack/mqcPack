@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                          Version 24.6.0                          **
-!     **                           June 20, 2024                          **
+!     **                          Version 24.8.1                          **
+!     **                          August 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -3749,8 +3749,11 @@
       class(MQC_Variable),intent(in)::mqcVariable
       type(MQC_Variable)::det
       type(MQC_Variable)::eigenValues,eigenVectors
-      integer(kind=int64)::N
-      real(kind=real64),dimension(:),allocatable::eigenValuesTmp
+      integer(kind=int64)::N,i
+      real(kind=real64)::productReal,productImag,productReal1,  &
+        productImag1
+      real(kind=real64),dimension(:),allocatable::eigenValuesTmp,  &
+        eigenValuesImagTmp
       real(kind=real64),dimension(:,:),allocatable::eigenVectorsLeftTmp,  &
         eigenVectorsRightTmp
 !
@@ -3767,21 +3770,34 @@
         call mqc_error_i('Determinant: mqcVariable must be a real matrix.',  &
         6,'TypeCode',MQC_Variable_getTypeCode(mqcVariable))
 !
-!     Form the eigensystem for the matrix and then form the determinant.
+!     Find the eigenvalues of the matrix.
 !
       N = SIZE(mqcVariable,1)
-      Allocate(eigenValuesTmp(N))
+      Allocate(eigenValuesTmp(N),eigenValuesImagTmp(N))
       Allocate(eigenVectorsLeftTmp(N,N),eigenVectorsRightTmp(N,N))
       call mqc_dgeev_eigensystem_Full(  &
         RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
-        eigenValuesTmp,eigenVectorsLeftTmp,eigenVectorsRightTmp)
-      if(MQC_Algebra2_DEBUG) call mqc_print(eigenValuesTmp,  &
-        MQC_Algebra2_IOut,header='determinant: eigenvalues=')
-      det = PRODUCT(eigenValuesTmp)
+        eigenValuesTmp,eigenValuesImagTmp,eigenVectorsLeftTmp,  &
+        eigenVectorsRightTmp)
+!
+!     Solve for the determinant now. We check if the final determinant is
+!     complex. If it is, we die.
+!
+      productReal = eigenValuesTmp(1)
+      productImag = eigenValuesImagTmp(1)
+      do i = 2,N
+        productReal1 = productReal*eigenValuesTmp(i)  &
+          - productImag*eigenValuesImagTmp(i)
+        productImag1 = productImag*eigenValuesTmp(i)  &
+          + productReal*eigenValuesImagTmp(i)
+        productReal = productReal1
+        productImag = productImag1
+      endDo
+      if(ABS(productImag).gt.MQC_small)  &
+        call mqc_error('MQC_Variable_Matrix_Determinant: Complex determinant. NYI.')
+      det = productReal
       return
       end function MQC_Variable_Matrix_Determinant
-
-
 !
 !
       end module MQC_Algebra2

@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                          Version 24.6.0                          **
-!     **                           June 20, 2024                          **
+!     **                          Version 24.8.1                          **
+!     **                          August 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -116,7 +116,7 @@
 !
 !PROCEDURE mqc_dgeev_eigensystem_Full
       subroutine mqc_dgeev_eigensystem_Full(matrix,eigenValues,  &
-        leftEigenVectors,rightEigenVectors)
+        eigenValuesImaginary,leftEigenVectors,rightEigenVectors)
 !
 !     This subroutine wraps the LAPACK eigensystem routines for a general square
 !     matrix. 
@@ -126,12 +126,14 @@
       implicit none
       real(kind=real64),dimension(:,:),intent(in)::matrix
       real(kind=real64),dimension(:),allocatable,intent(out)::eigenValues
+      real(kind=real64),dimension(:),allocatable,OPTIONAL,intent(out)::eigenValuesImaginary
       real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::leftEigenVectors,  &
         rightEigenVectors
 !
       integer::i,N,LDVL,LDVR,INFO,LWORK
+      real(kind=real64)::minImaginary,maxImaginary
       real(kind=real64),dimension(:,:),allocatable::matrixCopy
-      real(kind=real64),dimension(:),allocatable::eigenValuesImaginary
+      real(kind=real64),dimension(:),allocatable::myEigenValuesImaginary
       real(kind=real64),dimension(:),allocatable::Work
       real(kind=real64),dimension(1)::WorkTmp
       character(len=1)::JOBVL,JOBVR
@@ -156,7 +158,7 @@
       else
         Allocate(eigenValues(N))
       endIf
-      Allocate(eigenValuesImaginary(N))
+      Allocate(myEigenValuesImaginary(N))
       if(PRESENT(leftEigenVectors)) then
         JOBVL = 'V'
         LDVL = N
@@ -192,14 +194,14 @@
 !
       Info = 0
       call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
-        eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
+        myEigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
         WorkTmp,-1,INFO)
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_MatrixFull: Failure in DGEEV getting WORK length.')
       LWork = WorkTmp(1)
       Allocate(Work(LWork))
       call dgeev(JOBVL,JOBVR,N,matrixCopy,N,eigenValues,  &
-        eigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
+        myEigenValuesImaginary,leftEigenVectors,LDVL,rightEigenVectors,LDVR,  &
         Work,LWork,INFO)
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_MatrixFull: Failure in DGEEV diagonalizing matrix.')
@@ -214,6 +216,25 @@
         endDo
       endIf
       deAllocate(matrixCopy,Work)
+!
+!     Check to see if eigenvalues are complex.
+!
+      if(PRESENT(eigenValuesImaginary)) then
+        if(Allocated(eigenValuesImaginary)) then
+          if(SIZE(eigenValuesImaginary).ne.N) then
+            DeAllocate(eigenValuesImaginary)
+            Allocate(eigenValuesImaginary(N))
+          endIf
+        else
+          Allocate(eigenValuesImaginary(N))
+        endIf
+        eigenValuesImaginary = myEigenValuesImaginary
+      else
+        minImaginary = ABS(MINVAL(myEigenValuesImaginary))
+        maxImaginary = ABS(MAXVAL(myEigenValuesImaginary))
+        if(minImaginary.gt.MQC_small.or.maxImaginary.gt.MQC_small)  &
+          call mqc_error('mqc_dgeev_eigensystem_Full: Complex eigenvalues.')
+      endIf
 !
       return
       end subroutine mqc_dgeev_eigensystem_Full

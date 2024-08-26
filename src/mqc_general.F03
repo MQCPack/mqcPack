@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                          Version 24.6.0                          **
-!     **                           June 20, 2024                          **
+!     **                          Version 24.8.1                          **
+!     **                          August 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -172,9 +172,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 24
-      if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '24.6.0'
+      if(PRESENT(minor))         minor         = 8
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '24.8.1'
 !
       return
       end subroutine mqc_version
@@ -840,7 +840,7 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
@@ -891,7 +891,7 @@
       Integer(kind=int64),Parameter::ColWidth=10
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2001 Format(1x,I7,10I14)
@@ -939,7 +939,7 @@
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2002 Format(1x,I7,10F14.6)
@@ -986,7 +986,7 @@
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10 
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
@@ -1033,7 +1033,7 @@
       logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       integer(kind=int64)::I,Length
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2x,A)
@@ -1073,7 +1073,7 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,Length
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1002 Format(1x,I7,2X,F14.6)
  1020 Format(" ")
 !
@@ -1112,7 +1112,7 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,Length
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1002 Format(1x,I7,F12.5,F11.5,"i")
  1020 Format(" ")
 !
@@ -1151,7 +1151,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1100 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',I10)
 
@@ -1199,7 +1199,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1200 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
 
@@ -1247,7 +1247,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1300 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
 

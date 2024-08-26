@@ -8,6 +8,20 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+August 26, 2024
+* MQCPack version set to 24.8.1
+* Fixed an erroneous assumption in procedures mqc_dgeev_eigensystem_Full
+  and MQC_Variable_Matrix_Determinant that used on the real part of the
+  eigenvalues list and completely ignored the imaginary part. Now, these
+  routines evaluate the complex values and, because we are only concerned
+  with real determinants, tests if the determinant has an imaginery
+  component. In such cases, the program errors out.
+
+June 25, 2024
+* MQCPack version set to 24.6.1
+* Fixed an error MQC_General whereby the Blank_At_Top argument was
+effectively ignored in MQC_Print routines.
+
 June 20, 2024
 * MQCPack version set to 24.6.0.
 * Small bug and minor feature updates.
