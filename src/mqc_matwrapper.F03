@@ -11,18 +11,19 @@
 !     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
 !     **    Hratchian                                                     **
 !     **                                                                  **
-!     **                          Version 24.8.1                          **
-!     **                          August 26, 2024                         **
+!     **                          Version 24.9.1                          **
+!     **                        September 9, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
 !     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
+!     **    2. MQC_Binary                                                 **
+!     **    3. MQC_DataStructures                                         **
+!     **    4. MQC_Algebra                                                **
+!     **    5. MQC_Files                                                  **
+!     **    6. MQC_Molecule                                               **
+!     **    7. MQC_EST                                                    **
+!     **    8. MQC_Gaussian                                               **
 !     **                                                                  **
 !     **********************************************************************
 !     **********************************************************************
