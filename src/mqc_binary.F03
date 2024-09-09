@@ -82,7 +82,7 @@
 !
 !
       implicit none
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
       integer(kind=int64),intent(in),optional::nBits
 !
       integer(kind=int64)::my_nBits,nIntegers
@@ -237,7 +237,7 @@
       implicit none
       type(mqc_bits),intent(In)::mqc_bits_in
       integer(kind=int64),intent(in)::bitNum
-      logical,intent(out)::bitValue
+      logical::bitValue
 !
       integer(kind=int64)::iInteger,iBitNum
 !
@@ -310,7 +310,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
@@ -343,7 +343,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
@@ -376,7 +376,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
