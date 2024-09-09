@@ -409,7 +409,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in
-      integer(kind=int64),intent(out)::bits_on
+      integer(kind=int64)::bits_on
 !
       integer(kind=int64)::i
 !
