@@ -13,6 +13,7 @@ September 9, 2024
 * MQCPack version set to 24.9.1
 * Added MQC_Binary to the build list.
 * Fixed a bug in MQC_Binary that caused a compile-time error with gfortran.
+* Updated the version number in $mqcroot/.other_libs/build_fcns/configure.ac_Makefile.
 
 August 26, 2024
 * MQCPack version set to 24.8.1
