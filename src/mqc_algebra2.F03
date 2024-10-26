@@ -9,11 +9,11 @@
 !     **                            (MQCPack)                             **
 !     **                                                                  **
 !     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
+!     **    Mullally, and Hrant P. Hratchian                              **
 !     **                                                                  **
-!     **                          Version 24.9.1                          **
-!     **                        September 9, 2024                         **
+!     **                          Version 24.10.1                         **
+!     **                         October 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -52,11 +52,25 @@
 !----------------------------------------------------------------
 !
 !     Variable...
+!
+!     The MQC_Variable class is a flexible numerical structure. MQC_Variable
+!     objects may represent scalars, vectors, matrices, or general tensors.
+!     Additionally, MQC_Variable objects may represent such structures as
+!     integer, real, or complex types. The goal is for such objects to be used
+!     in general form, abstracting away storage format and the like.
+!
+!     Elements of the MQC_Variable class include:
+!       - rank          The rank of the numerical array structure. This value
+!                       defaults to -1 to indicate that the object has not yet
+!                       been initialized.
+!       - dataType      This character string encodes the data type of the
+!                       object as "INTEGER", "REAL", or "COMPLEX".
       type MQC_Variable
         integer(kind=int64),private::rank=-1
         character(len=64),private::dataType,storageFormat
         integer(kind=int64),dimension(10),private::dimensions=0
         real(kind=real64),dimension(:),allocatable::realArray
+        complex(kind=real64),dimension(:),allocatable::complexArray
         integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
       Contains
