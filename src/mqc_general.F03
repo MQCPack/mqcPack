@@ -7,11 +7,11 @@
 !     **                            (MQCPack)                             **
 !     **                                                                  **
 !     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
+!     **    Mullally, and Hrant P. Hratchian                              **
 !     **                                                                  **
-!     **                          Version 24.9.1                          **
-!     **                        September 9, 2024                         **
+!     **                          Version 24.10.1                         **
+!     **                         October 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
@@ -177,9 +177,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 24
-      if(PRESENT(minor))         minor         = 9
+      if(PRESENT(minor))         minor         = 10
       if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '24.9.1'
+      if(PRESENT(versionString)) versionString = '24.10.1'
 !
       return
       end subroutine mqc_version

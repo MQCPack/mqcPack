@@ -1,4 +1,4 @@
-!hph#define UCMGAUOPEN
+!#define UCMGAUOPEN
       Module MQC_MatWrapper
 !
 !     **********************************************************************
@@ -8,11 +8,11 @@
 !     **                            (MQCPack)                             **
 !     **                                                                  **
 !     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
+!     **    Mullally, and Hrant P. Hratchian                              **
 !     **                                                                  **
-!     **                          Version 24.9.1                          **
-!     **                        September 9, 2024                         **
+!     **                          Version 24.10.1                         **
+!     **                         October 26, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **
