@@ -9,6 +9,10 @@ will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
 
+October 26, 2024
+* MQCPack version set to 24.10.1.
+* Began planning and structure preparation for building integral module.
+
 September 9, 2024
 * MQCPack version set to 24.9.1
 * Added MQC_Binary to the build list.
