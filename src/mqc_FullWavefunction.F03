@@ -11,8 +11,8 @@ module MQC_FullWavefunction
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
 !     **    Mullally, and Hrant P. Hratchian                              **
 !     **                                                                  **
-!     **                          Version 24.10.1                         **
-!     **                         October 26, 2024                         **
+!     **                          Version 24.10.2                         **
+!     **                         October 27, 2024                         **
 !     **                                                                  **
 !     **                                                                  **
 !     ** Modules beloning to MQCPack:                                     **

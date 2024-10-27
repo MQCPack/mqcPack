@@ -9,6 +9,11 @@ will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
 
+October 22, 2024
+* MQCPack version set to 24.10.2.
+* Added factorial (MQC_dactorial) and double factorial
+  (MQC_doubleFactorial) functions have been added to MQC_General.
+
 October 26, 2024
 * MQCPack version set to 24.10.1.
 * Began planning and structure preparation for building integral module.
