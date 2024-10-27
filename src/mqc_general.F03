@@ -178,8 +178,8 @@
 !
       if(PRESENT(major))         major         = 24
       if(PRESENT(minor))         minor         = 10
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '24.10.1'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '24.10.2'
 !
       return
       end subroutine mqc_version
@@ -2457,6 +2457,66 @@
 !
       return
       end function mqc_isqrt
+
+
+!
+!PROCEDURE mqc_factorial
+      function mqc_factorial(iArg) result(iResult)
+!
+!     This function returns iArg!.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),intent(in)::iArg
+      integer(kind=int64)::iResult
+      integer(kind=int64)::i
+!
+      if(iArg.lt.0) call mqc_error('Factorial of negative number not allowed.')
+      iResult = 1
+      do i = iArg,1,-1
+        iResult = iResult*i
+      endDo
+!
+      return
+      end function mqc_factorial
+
+
+!
+!PROCEDURE mqc_doubleFactorial
+      function mqc_doubleFactorial(iArg) result(iResult)
+!
+!     This function returns iArg!!.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),intent(in)::iArg
+      integer(kind=int64)::iResult
+      integer(kind=int64)::i
+!
+      if(iArg.eq.-1) then
+        iResult = -1
+      elseIf(iArg.eq.0) then
+        iResult = 1
+      elseIf(iArg.gt.0) then
+        iResult = 1
+        do i = iArg,1,-2
+          iResult = iResult*i
+        endDo
+      else
+        call mqc_error('Double factorial of negative number < -1 not allowed.')
+      endIf
+!
+      return
+      end function mqc_doubleFactorial
+
 
 !
 !PROCEDURE mqc_seq

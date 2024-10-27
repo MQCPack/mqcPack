@@ -15,8 +15,8 @@
    **                                                                      **
    **                The Merced Quantum Chemistry Package                  **
    **                              (MQCPack)                               **
-   **                            Version 24.10.1                           **
-   **                           October 26, 2024                           **
+   **                            Version 24.10.2                           **
+   **                           October 27, 2024                           **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
