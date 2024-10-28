@@ -9,6 +9,10 @@ will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
 
+October 27, 2024
+* MQCPack version set to 24.10.3.
+* Added mqc_integrals.F03 to MQCPack.
+
 October 22, 2024
 * MQCPack version set to 24.10.2.
 * Added factorial (MQC_dactorial) and double factorial

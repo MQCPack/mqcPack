@@ -582,7 +582,7 @@ echo "Congratulations! The libmqc is built!"
 MQC_BUILD_DOC="g"
 while [ "$MQC_BUILD_DOC" = "g" ]
 do
-    echo "Do you want build the documentation for MQC? [y or n]:"
+    echo "Do you want to build the documentation for MQC? [y or n]:"
     read -n 1 INTERFACE
     echo ""
     if [ "$INTERFACE" = "y" ]; then

@@ -2,32 +2,33 @@
 !MD+
 !#MQCPack: MQC_Algebra2
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
-!     **    Mullally, and Hrant P. Hratchian                              **
-!     **                                                                  **
-!     **                          Version 24.10.2                         **
-!     **                         October 27, 2024                         **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_Binary                                                 **
-!     **    3. MQC_DataStructures                                         **
-!     **    4. MQC_Algebra                                                **
-!     **    5. MQC_Files                                                  **
-!     **    6. MQC_Molecule                                               **
-!     **    7. MQC_EST                                                    **
-!     **    8. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
 !
 !     This module is a new (relative to mqc_algebra) module that provides

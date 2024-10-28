@@ -1,31 +1,32 @@
       Module MQC_General
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave       **
-!     **    Mullally, and Hrant P. Hratchian                              **
-!     **                                                                  **
-!     **                          Version 24.10.1                         **
-!     **                         October 26, 2024                         **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_Binary                                                 **
-!     **    3. MQC_DataStructures                                         **
-!     **    4. MQC_Algebra                                                **
-!     **    5. MQC_Files                                                  **
-!     **    6. MQC_Molecule                                               **
-!     **    7. MQC_EST                                                    **
-!     **    8. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
 !      |          1         2         3         4         5         6     |
 !      |123456789012345678901234567890123456789012345678901234567890123456|
@@ -178,8 +179,8 @@
 !
       if(PRESENT(major))         major         = 24
       if(PRESENT(minor))         minor         = 10
-      if(PRESENT(revision))      revision      = 2
-      if(PRESENT(versionString)) versionString = '24.10.2'
+      if(PRESENT(revision))      revision      = 3
+      if(PRESENT(versionString)) versionString = '24.10.3'
 !
       return
       end subroutine mqc_version
