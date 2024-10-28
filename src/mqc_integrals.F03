@@ -221,5 +221,96 @@
       end function MQC_CGTF_selfOverlap
 
 !
+!PROCEDURE MQC_Overlap_Primitive_XYZ_OS
+      recursive subroutine MQC_Overlap_Primitive_XYZ_OS(ixyz,jxyz,mu,p,XAB,XPA,XPB,Sij,haveSij)
+!
+!     This recursive subroutine solves a 1-D Cartesian overlap between two
+!     Cartesian Gaussian-type primitive functions using the Obara-Saika
+!     recurrence relation.
+!
+      implicit none
+      integer(kind=int64)::ixyz,jxyz
+      real(kind=real64)::mu,p,XAB
+      real(kind=real64),dimension(:,:)::Sij
+      logical,dimension(:,:)::haveSij
+!
+!     Look at ixyz and jxyz to determine what we need to do here. There are 9
+!     unique cases.
+!
+!     0,0
+      if(ixyz.eq.0.and.jxyz.eq.0) then
+        if(haveSij(1,1)) then
+          write(*,*)' Hrant - asked for a value I already have (0,0).'
+          return
+        endIf
+        Sij(1,1) = SQRT(pi/p)*exp(-mu*XAB**2)
+        haveSij(1,1) = .true.
+!
+!     0,1
+      elseIf(ixyz.eq.0.and.jxyz.eq.1) then
+        if(.not.haveSij(1,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(1,2) = XPB*Sij(1,1)
+        haveSij(1,2) = .true.
+!
+!     0,>=2
+      elseIf(ixyz.eq.0.and.jxyz.ge.2) then
+        if(.not.haveSij(1,jxyz))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,jxyz-1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(1,jxyz-1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,jxyz-2,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(1,jxyz+1) = XPB*Sij(1,jxyz)+Sij(1,jxyz-1)*(jxyz-1)/(float(2)*p)
+        haveSij(1,jxyz+1) = .true.
+!
+!     1,0
+      elseIf(ixyz.eq.1.and.jxyz.eq.0) then
+        if(.not.haveSij(1,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(2,1) = XPA*Sij(1,1)
+        haveSij(2,1) = .true.
+!
+!     >=2,0
+      elseIf(ixyz.ge.2.and.jxyz.eq.0) then
+        if(.not.haveSij(ixyz,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(ixyz-1,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-2,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(ixyz+1,1) = XPA*Sij(ixyz,1)+Sij(ixyz-1,1)*(ixyz-1)/(float(2)*p)
+        haveSij(ixyz+1,1) = .true.
+!
+!     1,1
+      elseIf(ixyz.eq.1.and.jxyz.eq.1) then
+
+
+
+!
+!     1,>=2
+      elseIf(ixyz.eq.1.and.jxyz.ge.2) then
+
+
+
+!
+!     >=2,1
+      elseIf(ixyz.ge.2.and.jxyz.eq.1) then
+
+
+
+!
+!     >=2,>=2
+      elseIf(ixyz.ge.2.and.jxyz.ge.2) then
+
+
+
+
+!
+!     Uknown combination...fail out.
+      else
+        call mqc_error('MQC_Overlap_Primitive_XYZ_OS: Invalid i and j.')
+      endIf
+!
+      return
+      end function MQC_Overlap_Primitive_XYZ_OS
+
+!
 !
       end module MQC_Integrals
