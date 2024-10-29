@@ -1,30 +1,32 @@
       module MQC_Binary
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
 !     NEED TO ADD COMMENTS
 !
@@ -81,7 +83,7 @@
 !
 !
       implicit none
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
       integer(kind=int64),intent(in),optional::nBits
 !
       integer(kind=int64)::my_nBits,nIntegers
@@ -236,7 +238,7 @@
       implicit none
       type(mqc_bits),intent(In)::mqc_bits_in
       integer(kind=int64),intent(in)::bitNum
-      logical,intent(out)::bitValue
+      logical::bitValue
 !
       integer(kind=int64)::iInteger,iBitNum
 !
@@ -309,7 +311,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
@@ -342,7 +344,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
@@ -375,7 +377,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in1,mqc_bits_in2
-      type(mqc_bits),intent(out)::mqc_bits_out
+      type(mqc_bits)::mqc_bits_out
 !
       integer(kind=int64)::i
 !
@@ -408,7 +410,7 @@
 !
       implicit none
       type(mqc_bits),intent(in)::mqc_bits_in
-      integer(kind=int64),intent(out)::bits_on
+      integer(kind=int64)::bits_on
 !
       integer(kind=int64)::i
 !

@@ -2,31 +2,33 @@
 !MD+
 !#MQCPack: MQC_Algebra2
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
 !
 !     This module is a new (relative to mqc_algebra) module that provides
@@ -51,11 +53,25 @@
 !----------------------------------------------------------------
 !
 !     Variable...
+!
+!     The MQC_Variable class is a flexible numerical structure. MQC_Variable
+!     objects may represent scalars, vectors, matrices, or general tensors.
+!     Additionally, MQC_Variable objects may represent such structures as
+!     integer, real, or complex types. The goal is for such objects to be used
+!     in general form, abstracting away storage format and the like.
+!
+!     Elements of the MQC_Variable class include:
+!       - rank          The rank of the numerical array structure. This value
+!                       defaults to -1 to indicate that the object has not yet
+!                       been initialized.
+!       - dataType      This character string encodes the data type of the
+!                       object as "INTEGER", "REAL", or "COMPLEX".
       type MQC_Variable
         integer(kind=int64),private::rank=-1
         character(len=64),private::dataType,storageFormat
         integer(kind=int64),dimension(10),private::dimensions=0
         real(kind=real64),dimension(:),allocatable::realArray
+        complex(kind=real64),dimension(:),allocatable::complexArray
         integer(kind=int64),dimension(:),allocatable,private::integerArray
         logical,private::initialized=.false.
       Contains
@@ -127,6 +143,11 @@
 !     Interface MQC Varaiable full contraction for vectors --> dot_product.
       interface dot_product
         module procedure MQC_Variable_dot_product
+      end interface
+!
+!     Interface MQC Varaiable vector-vector outer product --> outer_product.
+      interface outer_product
+        module procedure MQC_Variable_outer_product
       end interface
 !
 !     Interface MQC Varaiable full SUM.
@@ -3344,10 +3365,6 @@
         call mqc_error_i('dot_product must be between two vectors.',6, &
         'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
         'RANK(mqcVariable2)',mqcVariable2%getRank())
-      if(.not.MQC_Variable_isConformable(mqcVariable1,mqcVariable2))  &
-        call mqc_error_l('MQC Division only allowed for conformable values.',6, &
-        'MQC_Variable_isConformable(mqcVariable1,mqcVariable2)', &
-        MQC_Variable_isConformable(mqcVariable1,mqcVariable2))
 !
 !     Calculate the dot product.
 !
@@ -3355,6 +3372,87 @@
 !
       return
       end function MQC_Variable_dot_product
+
+
+!
+!PROCEDURE MQC_Variable_outer_product
+      function MQC_Variable_outer_product(mqcVariable1,mqcVariable2) result(mqcVariableOut)
+!
+!     This function solves the outer product of two vectors stored in the input
+!     dummy MQC_Variables arguments <mqcVariable1> and <mqcVariable2>. If these
+!     two arguments do not correspond to vectors, this function fails.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
+      type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::typeCode1,typeCode2,len1,len2
+      integer(kind=int64),dimension(:),allocatable::vectorInteger1,  &
+        vectorInteger2
+      integer(kind=int64),dimension(:,:),allocatable::matrixInteger
+      real(kind=real64),dimension(:),allocatable::vectorReal1,  &
+        vectorReal2
+      real(kind=real64),dimension(:,:),allocatable::matrixReal
+!
+!
+!     Start by ensuring the two MQC Variables are vectors and are conformable.
+!
+      if(mqcVariable1%getRank().ne.1.or.mqcVariable2%getRank().ne.1)  &
+        call mqc_error_i('outer_product must be between two vectors.',6, &
+        'RANK(mqcVariable1)',mqcVariable1%getRank(),  &
+        'RANK(mqcVariable2)',mqcVariable2%getRank())
+!
+!     Determine the type codes for the two vectors and ensure they're allowable.
+!
+      typeCode1 = MQC_Variable_getTypeCode(mqcVariable1)
+      typeCode2 = MQC_Variable_getTypeCode(mqcVariable2)
+      if(typeCode1.eq.0)  &
+        call mqc_error_I('Outer product: Var1 is of UNKONWN type.', 6, &
+          'typeCode1', typeCode1)
+      if(typeCode2.eq.0)  &
+        call mqc_error_I('Outer product: Var2 is of UNKONWN type.', 6, &
+          'typeCode2', typeCode2)
+!
+!     Now, do the outer product and set the output function value accordingly.
+!
+      len1 = SIZE(mqcVariable1)
+      len2 = SIZE(mqcVariable2)
+      select case(typeCode1*10 + typeCode2)
+      case(22)
+        vectorReal1 = mqcVariable1
+        vectorReal2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorReal1,[ len1,1 ]),  &
+          RESHAPE(vectorReal2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(23)
+        vectorReal1 = mqcVariable1
+        vectorInteger2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorReal1,[ len1,1 ]),  &
+          RESHAPE(vectorInteger2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(32)
+        vectorInteger1 = mqcVariable1
+        vectorReal2 = mqcVariable2
+        matrixReal = matmul(RESHAPE(vectorInteger1,[ len1,1 ]),  &
+          RESHAPE(vectorReal2,[ 1,len2 ]))
+        mqcVariableOut = matrixReal
+      case(33)
+        vectorInteger1 = mqcVariable1
+        vectorInteger2 = mqcVariable2
+        matrixInteger = matmul(RESHAPE(vectorInteger1,[ len1,1 ]),  &
+          RESHAPE(vectorInteger2,[ 1,len2 ]))
+        mqcVariableOut = matrixInteger
+      case default
+        call mqc_error_I('Outer product: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+             'typeCode1', typeCode1, &
+             'typeCode2', typeCode2 )
+      end select
+!
+      return
+      end function MQC_Variable_outer_product
 
 
 !
@@ -3667,8 +3765,11 @@
       class(MQC_Variable),intent(in)::mqcVariable
       type(MQC_Variable)::det
       type(MQC_Variable)::eigenValues,eigenVectors
-      integer(kind=int64)::N
-      real(kind=real64),dimension(:),allocatable::eigenValuesTmp
+      integer(kind=int64)::N,i
+      real(kind=real64)::productReal,productImag,productReal1,  &
+        productImag1
+      real(kind=real64),dimension(:),allocatable::eigenValuesTmp,  &
+        eigenValuesImagTmp
       real(kind=real64),dimension(:,:),allocatable::eigenVectorsLeftTmp,  &
         eigenVectorsRightTmp
 !
@@ -3685,21 +3786,34 @@
         call mqc_error_i('Determinant: mqcVariable must be a real matrix.',  &
         6,'TypeCode',MQC_Variable_getTypeCode(mqcVariable))
 !
-!     Form the eigensystem for the matrix and then form the determinant.
+!     Find the eigenvalues of the matrix.
 !
       N = SIZE(mqcVariable,1)
-      Allocate(eigenValuesTmp(N))
+      Allocate(eigenValuesTmp(N),eigenValuesImagTmp(N))
       Allocate(eigenVectorsLeftTmp(N,N),eigenVectorsRightTmp(N,N))
       call mqc_dgeev_eigensystem_Full(  &
         RESHAPE(mqcVariable%realArray(:),mqcVariable%dimensions(1:2)),  &
-        eigenValuesTmp,eigenVectorsLeftTmp,eigenVectorsRightTmp)
-      if(MQC_Algebra2_DEBUG) call mqc_print(eigenValuesTmp,  &
-        MQC_Algebra2_IOut,header='determinant: eigenvalues=')
-      det = PRODUCT(eigenValuesTmp)
+        eigenValuesTmp,eigenValuesImagTmp,eigenVectorsLeftTmp,  &
+        eigenVectorsRightTmp)
+!
+!     Solve for the determinant now. We check if the final determinant is
+!     complex. If it is, we die.
+!
+      productReal = eigenValuesTmp(1)
+      productImag = eigenValuesImagTmp(1)
+      do i = 2,N
+        productReal1 = productReal*eigenValuesTmp(i)  &
+          - productImag*eigenValuesImagTmp(i)
+        productImag1 = productImag*eigenValuesTmp(i)  &
+          + productReal*eigenValuesImagTmp(i)
+        productReal = productReal1
+        productImag = productImag1
+      endDo
+      if(ABS(productImag).gt.MQC_small)  &
+        call mqc_error('MQC_Variable_Matrix_Determinant: Complex determinant. NYI.')
+      det = productReal
       return
       end function MQC_Variable_Matrix_Determinant
-
-
 !
 !
       end module MQC_Algebra2

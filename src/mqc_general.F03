@@ -1,30 +1,36 @@
       Module MQC_General
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
+!
+!      |          1         2         3         4         5         6     |
+!      |123456789012345678901234567890123456789012345678901234567890123456|
+!      |                                *                                 |
 !
 !
 !
@@ -172,9 +178,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 24
-      if(PRESENT(minor))         minor         = 3
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '24.3.0'
+      if(PRESENT(minor))         minor         = 10
+      if(PRESENT(revision))      revision      = 3
+      if(PRESENT(versionString)) versionString = '24.10.3'
 !
       return
       end subroutine mqc_version
@@ -663,6 +669,31 @@
       Return
       End Subroutine mqc_get_command_argument_integer
 
+!
+!PROCEDURE mqc_get_command_argument_real
+      Subroutine mqc_get_command_argument_real(argNum,rArgument)
+!
+!     This subroutine is used to get a real argument from the command line. The
+!     output dummy argument rArgument is returned with the real number found as
+!     command line arugment argNum. If this command line argument is NOT an
+!     real, the program will SegFault.
+!     
+!     -H. P. Hratchian, 2024.
+!
+!
+      implicit none
+      integer(kind=int64),intent(in)::argNum
+      real(kind=real64),intent(out)::rArgument
+      character(len=:),allocatable::argument
+!
+!     Do the work...
+!
+      call mqc_get_command_argument(argNum,argument)
+      read(argument,*) rArgument
+!
+      Return
+      End Subroutine mqc_get_command_argument_real
+
 
 !
 !----------------------------------------------------------------
@@ -815,7 +846,7 @@
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
@@ -867,7 +898,7 @@
       Character(Len=256)::FormatLine
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2001 Format(1x,I7,10I14)
@@ -921,7 +952,7 @@
       Integer(kind=int64),Parameter::ColWidth=10
       Character(Len=256)::FormatLine
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2002 Format(1x,I7,10F14.6)
@@ -974,7 +1005,7 @@
       Integer(kind=int64),Parameter::ColWidth=10 
       Character(Len=256)::FormatLine
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
  1020 Format(" ")
  2003 Format(1x,I7,10(F12.5,F11.5,"i"))
@@ -1027,7 +1058,7 @@
       integer(kind=int64)::I,Length
       Character(Len=256)::FormatLine
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
  1002 Format(1x,I7,2X,F14.6)
  1003 Format(1x,I7,2x,A)
@@ -1073,7 +1104,7 @@
       Integer(kind=int64)::I,Length
       Character(Len=256)::FormatLine
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1002 Format(1x,I7,2X,F14.6)
  1020 Format(" ")
 !
@@ -1118,7 +1149,7 @@
       Integer(kind=int64)::I,Length
       Character(Len=256)::FormatLine
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1002 Format(1x,I7,F12.5,F11.5,"i")
  1020 Format(" ")
 !
@@ -1162,7 +1193,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1100 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',I10)
 
@@ -1210,7 +1241,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1200 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
 
@@ -1258,7 +1289,7 @@
       Integer(kind=int64)::I,J,K,L,D1,D2,D3,D4
 !
 !
- 1000 Format(/,1x,A)
+ 1000 Format(1x,A)
  1020 Format(" ")
  1300 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F12.5,F11.5,"i")
 
@@ -2463,6 +2494,66 @@
 !
       return
       end function mqc_isqrt
+
+
+!
+!PROCEDURE mqc_factorial
+      function mqc_factorial(iArg) result(iResult)
+!
+!     This function returns iArg!.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),intent(in)::iArg
+      integer(kind=int64)::iResult
+      integer(kind=int64)::i
+!
+      if(iArg.lt.0) call mqc_error('Factorial of negative number not allowed.')
+      iResult = 1
+      do i = iArg,1,-1
+        iResult = iResult*i
+      endDo
+!
+      return
+      end function mqc_factorial
+
+
+!
+!PROCEDURE mqc_doubleFactorial
+      function mqc_doubleFactorial(iArg) result(iResult)
+!
+!     This function returns iArg!!.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),intent(in)::iArg
+      integer(kind=int64)::iResult
+      integer(kind=int64)::i
+!
+      if(iArg.eq.-1) then
+        iResult = -1
+      elseIf(iArg.eq.0) then
+        iResult = 1
+      elseIf(iArg.gt.0) then
+        iResult = 1
+        do i = iArg,1,-2
+          iResult = iResult*i
+        endDo
+      else
+        call mqc_error('Double factorial of negative number < -1 not allowed.')
+      endIf
+!
+      return
+      end function mqc_doubleFactorial
+
 
 !
 !PROCEDURE mqc_seq

@@ -1,30 +1,32 @@
       Module MQC_Gaussian
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                 |                                 **
+!     **                          Version 24.10.3                          **
+!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
 !
 !     Set-up USE Association with Key MQC Modules.
@@ -115,6 +117,11 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!
+!     Interface BasisType2FunctionInfo...
+      interface basisType2FunctionInfo
+        module procedure MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+      end interface
 !
 !
 !----------------------------------------------------------------
@@ -2457,6 +2464,50 @@
 !
       return
       end Function MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
+
+      
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+      Subroutine MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info(basisType,  &
+        angularMomentum,component,isCartesian)
+!
+!     This routine is used to interpret an element of the basis function type
+!     list. The basis type value is the only input argument (see functions
+!     MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element and
+!     MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array to get the basis type
+!     value for a basis function) The output of this routine is the angular
+!     momentum of the basis function, the component (x, y, z for l=1, for
+!     example), and a logical that is TRUE for Cartesian basis functions and
+!     FALSE for pure basis functions.
+!
+!
+!     H. P. Hratchian, 2024.
+!
+!
+!     Variable Declarations.
+!
+      implicit none
+
+      integer(kind=int64),intent(in)::basisType
+      integer,intent(out),optional::angularMomentum,component
+      logical,intent(out),optional::isCartesian
+      integer::myBasisType,myAngularMomentum,myComponent
+!
+!     Decode the basisType number...
+!
+      myBasisType = ABS(basisType)
+      myAngularMomentum = myBasisType/1000
+      myComponent = mod(myBasisType,1000)
+!
+      if(PRESENT(angularMomentum)) angularMomentum = myAngularMomentum
+      if(PRESENT(component)) component = myComponent
+      if(PRESENT(isCartesian)) isCartesian = basisType.gt.0
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+
+
 
 
 !=====================================================================
