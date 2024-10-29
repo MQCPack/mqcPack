@@ -214,7 +214,7 @@
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
-        Integer(kind=int64)::NDets,NAlpStr,NBetStr
+        Integer(kind=int64)::NDets,NAlpStr,NBetStr,nCore
         Type(MQC_Vector)::NSubsAlpha,NSubsBeta
       End Type MQC_Determinant
 !
@@ -7418,7 +7418,6 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaHCden = temp(:,1)
-            aaHCden = (-1)*aaHCden
           endIf
           if(mod(flag,10).gt.0) then
             tmpMat = real(hermden%getblock('beta'))
@@ -7432,7 +7431,6 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbHCden = temp(:,1)
-              bbHCden = (-1)*bbHCden
             endIf
           endIf
           if(mod(flag,10).eq.2) then
@@ -7509,6 +7507,7 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAARden = temp(:,1)
+            abAARden = (-1)*abAARden
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')+ &
                 dagger(ahermden%getblock('alpha-beta'))))
@@ -7516,6 +7515,7 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHACden = temp(:,1)
+              abHACden = (-1)*abHACden
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')- &
                 dagger(ahermden%getblock('alpha-beta'))))
               if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
@@ -7561,10 +7561,10 @@
                 call mqc_print(bbACden,6,'Beta-Beta antihermitian complex density')
             endIf
             if (mod(flag,10).eq.2) then
-              call mqc_print(abHARden,6,'Alpha-Beta hermitian antihermitian real density')
+              call mqc_print(abHARden,6,'Alpha-Beta antihermitian hermitian real density')
               call mqc_print(abAARden,6,'Alpha-Beta antihermitian antihermitian real density')
               if(mod(flag,100)/10.eq.1) then
-                call mqc_print(abHACden,6,'Alpha-Beta hermitian antihermitian complex density')
+                call mqc_print(abHACden,6,'Alpha-Beta antihermitian hermitian complex density')
                 call mqc_print(abAACden,6,'Alpha-Beta antihermitian antihermitian complex density')
               endIf
             endIf
@@ -7758,17 +7758,17 @@
             if(m.ne.n.and.mod(flag,100)/10.eq.1) then
               if(abs(raf3).gt.zero) then
                 if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
-                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) - &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
                   raf3*aaHCden(symIndexHash(m,n))
                 if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
-                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) - &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
                   raf3*aaHCden(symIndexHash(k,l))
                 if(mod(flag,10).gt.0) then
                   if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
-                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) - &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
                     raf3*bbHCden(symIndexHash(m,n))
                   if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
-                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) - &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
                     raf3*bbHCden(symIndexHash(k,l))
                 endIf
               endIf
@@ -7899,18 +7899,18 @@
           if(doHerm) then
             call mqc_print(aaHRfoc,6,'Alpha-Alpha hermitian real Fock')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print((-1)*aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
+              call mqc_print(aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
             if(mod(flag,10).gt.0) then
               call mqc_print(bbHRfoc,6,'Beta-Beta hermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print((-1)*bbHCfoc,6,'Beta-Beta hermitian complex Fock')
-              if(mod(flag,10).eq.2) then
-                call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abHHCfoc,6,'Alpha-Beta hermitian hermitian complex Fock')
-                call mqc_print(abAHRfoc,6,'Alpha-Beta hermitian antihermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abAHCfoc,6,'Alpha-Beta hermitian antihermitian complex Fock')
+                call mqc_print(bbHCfoc,6,'Beta-Beta hermitian complex Fock')
+            endIf
+            if(mod(flag,10).eq.2) then
+              call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
+              call mqc_print(abAHRfoc,6,'Alpha-Beta hermitian antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(abHHCfoc,6,'Alpha-Beta hermitian hermitian complex Fock')
+                call mqc_print(abAHCfoc,6,'Alpha-Beta hermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
@@ -7922,13 +7922,13 @@
               call mqc_print(bbARfoc,6,'Beta-Beta antihermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
                 call mqc_print(bbACfoc,6,'Beta-Beta antihermitian complex Fock')
-              if(mod(flag,10).eq.2) then
-                call mqc_print(abHARfoc,6,'Alpha-Beta antihermitian hermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abHACfoc,6,'Alpha-Beta antihermitian hermitian complex Fock')
-                call mqc_print(abAARfoc,6,'Alpha-Beta antihermitian antihermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abAACfoc,6,'Alpha-Beta antihermitian antihermitian complex Fock')
+            endIf
+            if(mod(flag,10).eq.2) then
+              call mqc_print(abHARfoc,6,'Alpha-Beta antihermitian hermitian real Fock')
+              call mqc_print(abAARfoc,6,'Alpha-Beta antihermitian antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(abHACfoc,6,'Alpha-Beta antihermitian hermitian complex Fock')
+                call mqc_print(abAACfoc,6,'Alpha-Beta antihermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
@@ -7945,28 +7945,28 @@
               beta = beta + tmpMat 
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHHRfoc,'symmetric')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,(-1)*abAHRfoc,'antisymmetric')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat2,abHARfoc,'symmetric')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat3,abAARfoc,'antisymmetric')
-                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3
-                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,(-1)*abAARfoc,'antisymmetric')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3
               endIf
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
-            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,(-1)*aaHCfoc),'hermitian')
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
             call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
             alpha = alpha + tmpMat
             if(mod(flag,10).gt.0) then
-              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,(-1)*bbHCfoc),'hermitian')
+              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
               call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
               beta = beta + tmpMat
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,(-1)*abHHCfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,(-1)*abAHCfoc),'antihermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,abHACfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx(abAARfoc,abAACfoc),'antihermitian')
-                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3 
-                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3 
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx((-1)*abAHRfoc,abAHCfoc),'antihermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,(-1)*abHACfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx((-1)*abAARfoc,abAACfoc),'antihermitian')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3 
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3 
               endIf
             endIf
           endIf
@@ -11360,6 +11360,8 @@
         Class Default
           Call MQC_Error('NCoreIn type is not integer or MQC scalar')
         End Select
+      else
+        NCore = 0
       EndIf
 !
 !     Initialize Arrays
@@ -11561,6 +11563,7 @@
       Determinants%NDets = NAlpha_Str*NBeta_Str 
       Determinants%NAlpStr = NAlpha_Str
       Determinants%NBetStr = NBeta_Str 
+      Determinants%NCore = NCore 
       subNum = 0
       call mqc_deallocate_vector(determinants%nSubsAlpha)
       do while (.true.)
@@ -11848,6 +11851,7 @@
       determinants%nDets = nAlpha_str*nBeta_str 
       determinants%nAlpStr = nAlpha_str
       determinants%nBetStr = nBeta_str 
+      determinants%nCore = nCore
       call determinants%nSubsAlpha%init(maxval(substitutions)+1,0)
       call determinants%nSubsAlpha%put(1,1)
       do i = 1, size(substitutions)
@@ -12327,10 +12331,10 @@
       Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::Alpha_String_1,Alpha_String_2,&
         Beta_String_1,Beta_String_2
       Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
-      Type(MQC_Scalar)::MatEl,Sgn
+      Type(MQC_Scalar)::MatEl,Sgn,ERI1,ERI2
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
         II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt,NAlpha,NBeta,RNAlpha,RNBeta
-      real(kind=real64)::ERI1,ERI2,Zero=0.0
+      real(kind=real64)::Zero=0.0
       Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
       
@@ -13188,6 +13192,7 @@
             J = Mod(IPos,Bit_Size(0)) 
 !            Write(IOut,*) 'Alpha IPos:', IPos
             If(BTest(Alpha_String_1(I),J)) then
+              If(Spin(1).eq.0.and.IPos+1.eq.Orbs(1).or.Spin(2).eq.0.and.IPos+1.eq.Orbs(2)) cycle
               If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
@@ -13231,7 +13236,9 @@
           Do IPos = 0, NBasis-1
             I = IPos/Bit_Size(0)+1
             J = Mod(IPos,Bit_Size(0))
+!            Write(IOut,*) 'Beta IPos:', IPos
             If(BTest(Beta_String_1(I),J)) then
+              If(Spin(1).eq.1.and.IPos+1.eq.Orbs(1).or.Spin(2).eq.1.and.IPos+1.eq.Orbs(2)) cycle
               If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'BETA: UHF False and 1 and 2 same spin, adding:')
@@ -13286,6 +13293,8 @@
             MatEl = MatEl + Sgn*OnePartInts%BetaAlpha%at(Orbs(1),Orbs(2))
           EndIf
         EndIf
+
+        If(Det(2).eq.1) MatEl = conjg(MatEl)
         
 !        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
 
@@ -13301,18 +13310,12 @@
 !              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
 !              Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
               MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
-!              if(OnePartInts%type().eq.'general') then
-!                MatEl = MatEl + OnePartInts%AlphaBeta%at(IPos+1,IPos+1)
-!              EndIf
             EndIf
             If(BTest(Beta_String_1(I),J)) then
 !              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
               If(OnePartInts%type().eq.'spin'.or.OnePartInts%type().eq.'general') then
 !                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
-!              ElseIf(OnePartInts%type().eq.'general') then
-!                MatEl = MatEl + OnePartInts%BetaAlpha%at(IPos+1,IPos+1)
-!                MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
               Else
 !                Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
@@ -13378,6 +13381,7 @@
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
                     If(TwoPartInts%type().eq.'general') then
+!                      Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'abba'),IOut,'(IJ|JI)')
                       MatEl = MatEl - TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'abba')
                     EndIf
                   Else
@@ -17650,12 +17654,27 @@
 !>        The number of basis functions. 
 !>    \endverbatim
 !>    
+!>    \param[out] CI_Hamiltonian
+!>    \verbatim
+!>        CI_Hamiltonian is Type(MQC_Matrix)
+!>        The CI hamiltonian returned.
+!>    \endverbatim
+!>
 !>    \param[in] Determinants
 !>    \verbatim
 !>        Determinants is Type(MQC_Determinant)
 !>        The binary string occupation number vectors. If 
 !>        opional argument Dets2 is provided Determinants
 !>        variable will contain the row basis strings.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_Core_Ham
@@ -17670,35 +17689,45 @@
 !>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
-!>    \param[out] CI_Hamiltonian
+!>    \param[in] SubsA
 !>    \verbatim
-!>        CI_Hamiltonian is Type(MQC_Matrix)
-!>        The CI hamiltonian returned.
+!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. If not present, all substitutions are 
+!>        included. If SubsB not present, SubsA containes the the 
+!>        total (alpha+beta) substitutions that are permitted. If 
+!>        both SubsA and SubsB provided, SubsA contains the alpha
+!>        substitutions that are permitted. If Subs2A are provided, 
+!>        Subs1A gives substitutions for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsB
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. 
 !>    \endverbatim
 !>
-!>    \param[in] Subs
+!>    \param[in] Subs2A
 !>    \verbatim
-!>        Subs is Integer(kind=int64),Dimension(:),Optional
-!>        Permitted substitutions to include in the Hamiltonian.
-!>        If not present, all substitutions are included.
-!>    \endverbatim
-!>    
-!>    \param[in] Dets2
-!>    \verbatim
-!>        Dets2 is Type(MQC_Determinant),Optional
-!>        If provided, gives the binary string occupation number 
-!>        vectors for the column basis, where Determinants variable
-!>        will continue to provide the binary string occupation 
-!>        number vectors for the row basis.
-!>    \endverbatim
-!>    
-!>    \param[in] Subs2
-!>    \verbatim
-!>        Subs2 is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian for the column basis. If not present, 
 !>        column basis substitutions are equal to row basis 
-!>        substitutions provided by variable Subs.
+!>        substitutions provided by variable SubsA and/or SubsB.
+!>        If Subs2A provided but not Subs2B, Subs2A contains the total
+!>        (alpha+beta) substitutions that are permitted. If both 
+!>        Subs2A and Subs2B provided, Subs2A containes the alpha
+!>        substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2B
+!>    \verbatim
+!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. If not 
+!>        present, column basis substitutions are equal to row basis 
+!>        substitutions.
 !>    \endverbatim
 !>    
 !>    \param[in] doS2
@@ -17717,8 +17746,8 @@
 !>    \author L. M. Thompson
 !>    \date 2017,2021,2024
 !
-      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
-          MO_Core_Ham,MO_ERIs,CI_Hamiltonian,Subs,Dets2,Subs2,doS2)
+      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,CI_Hamiltonian,&
+          Determinants,Dets2,MO_Core_Ham,MO_ERIs,SubsA,SubsB,Subs2A,Subs2B,doS2)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
@@ -17727,20 +17756,24 @@
       Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Determinant),Optional,Intent(In)::Dets2
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsA,SubsB,Subs2A,Subs2B
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
       Integer(kind=int64)::I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
-        R_A_Start,R_B_Start,R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,Counter, &
-        NBit_Ints,NAlpha_Str2,NBeta_Str2,NDets2,Counter2
-      Integer(kind=int64),Dimension(:),Optional::Subs,Subs2
+        L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
+        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NBit_Ints,NAlpha_Str2,NBeta_Str2,NDets2,Counter2,&
+        NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
+        RASub_End,RBSub_End
       Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
-        Beta_String_2,rightSubs
+        Beta_String_2,lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
-      Logical::SymmFlag,S2Flag
+      Logical::SymmFlag,S2Flag,AFlag,BFlag
       Character(len=12)::SymmStr
       Character(len=:),allocatable::detIndex1,detIndex2
       Character(len=44)::bar=" Build Progress: ???% |                    |"
+
+      Integer(kind=int64)::tmp_index
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -17758,50 +17791,166 @@
         SymmFlag = .True.
       EndIf
 !
-!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
       NAlpha_Str1 = MQC_Matrix_Rows(Determinants%Strings%Alpha)
       NBeta_Str1 = MQC_Matrix_Rows(Determinants%Strings%Beta)
-      If(present(subs)) then
-        NDets1 = 0
-        Do I = 1, Size(Subs)
-          Do J = 1, Size(Determinants%NSubsAlpha)
-            Do K = 1, Size(Determinants%NSubsBeta)
-              If((J-1)+(K-1).eq.Subs(i)) then
-                NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-                  Determinants%NSubsBeta%at(K)
-              EndIf
-            EndDo
+      if(.not.present(subsA).and.present(subsB)) then
+       call mqc_error_l('Beta substitution levels present, but not alpha (or total) substitution level &
+         &provided',iOut,'present(subsA)',present(subsA),'present(subsB)',present(subsB))
+      endIf
+      If(.not.present(subsB)) then
+        If(.not.present(subsA)) then
+          lSubsT = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
+        Else
+          lSubsT = subsA
+        EndIf
+        lSubsA = [integer::]
+        do i = 1, size(lSubsT)
+          do j = 0, lSubsT(i)
+            if(.not.any(lSubsA.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
+              if(Determinants%NSubsAlpha%at(j+1).ne.0) lSubsA = [lSubsA,j]
+            endIf
+          endDo
+        endDo
+        lSubsB = [integer::]
+        do i = 1, size(lSubsT)
+          do j = 0, lSubsT(i)
+            if(.not.any(lSubsB.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
+              if(Determinants%NSubsBeta%at(j+1).ne.0) lSubsB = [lSubsB,j]
+            endIf
+          endDo
+        endDo
+        call sort(lSubsA)
+        call sort(lSubsB)
+      Else
+        lSubsA = subsA
+        lSubsB = subsB
+      endIf
+      lSubsT = [integer::]
+      do i = 1, size(lSubsA)
+        do j = 1, size(lSubsB)
+          if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
+        endDo
+      endDo
+      call sort(lSubsT)
+      
+      NDets1 = 0
+      NDets1A = 0
+      NDets1B = 0
+      Do I = 1, Size(lSubsT)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          Do K = 1, Size(Determinants%NSubsBeta)
+            If((J-1)+(K-1).eq.lSubsT(i).and.any(lSubsA.eq.(J-1)).and.any(lSubsB.eq.(K-1))) then
+              NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
+                Determinants%NSubsBeta%at(K)
+            EndIf
           EndDo
         EndDo
-      Else
-        NDets1 = NAlpha_Str1 * NBeta_Str1
-      EndIf
+      EndDo
+      Do I = 1, Size(Determinants%NSubsAlpha)
+        Do J = 1, Size(Determinants%NSubsBeta)
+          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsA.eq.(I-1)).and.any(lSubsB.eq.(J-1))) then
+            If(Determinants%NSubsBeta%at(J).ne.0) then
+              NDets1A = NDets1A + Determinants%NSubsAlpha%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+      Do I = 1, Size(Determinants%NSubsBeta)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsB.eq.(I-1)).and.any(lSubsA.eq.(J-1))) then
+            If(Determinants%NSubsAlpha%at(J).ne.0) then
+              NDets1B = NDets1B + Determinants%NSubsBeta%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
 
       NAlpha_Str2 = MQC_Matrix_Rows(Determinants2%Strings%Alpha)
       NBeta_Str2 = MQC_Matrix_Rows(Determinants2%Strings%Beta)
-      If(present(subs2)) then
-        rightSubs = subs2
-        SymmFlag = .False.
-      elseIf(present(subs)) then
-        rightSubs = subs
-      endIf
-      If(allocated(rightSubs)) then
-        NDets2 = 0
-        Do I = 1, Size(rightSubs)
-          Do J = 1, Size(Determinants2%NSubsAlpha)
-            Do K = 1, Size(Determinants2%NSubsBeta)
-              If((J-1)+(K-1).eq.rightSubs(i)) then
-                NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
-                  Determinants2%NSubsBeta%at(K)
-              EndIf
-            EndDo
+      if(.not.present(subs2A).and..not.present(subs2B)) then
+!       SymmFlag is true as subs are the same, unless determinants are different, as set above
+        rSubsA = lSubsA
+        rSubsB = lSubsB
+      ElseIf(.not.present(subs2B)) then
+        symmFlag = .False.
+        rSubsT = subs2A
+        rSubsA = [integer::]
+        do i = 1, size(rSubsT)
+          do j = 0, rSubsT(i)
+            if(.not.any(rSubsA.eq.j).and.j+1.le.size(Determinants2%NSubsAlpha)) then
+              if(Determinants2%NSubsAlpha%at(j+1).ne.0) rSubsA = [rSubsA,j]
+            endIf
+          endDo
+        endDo
+        do i = 1, size(rSubsT)
+          do j = 0, rSubsT(i)
+            if(.not.any(rSubsB.eq.j).and.j+1.le.size(Determinants2%NSubsBeta)) then
+              if(Determinants2%NSubsBeta%at(j+1).ne.0) rSubsB = [rSubsB,j]
+            endIf
+          endDo
+        endDo
+        call sort(rSubsA)
+        call sort(rSubsB)
+      Else
+        If(.not.present(subs2A)) call mqc_error_l('Beta substitution levels present, but alpha &
+          &(or total) substitution level not provided',iOut,'present(subs2A)',present(subs2A),&
+          'present(subs2B)',present(subs2B))
+        symmFlag = .False.
+        rSubsA = subs2A
+        rSubsB = subs2B
+      EndIf
+      rSubsT = [integer::]
+      do i = 1, size(rSubsA)
+        do j = 1, size(rSubsB)
+          if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
+        endDo
+      endDo
+      call sort(rSubsT)
+      
+      NDets2 = 0
+      NDets2A = 0
+      NDets2B = 0
+      Do I = 1, Size(rSubsT)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          Do K = 1, Size(Determinants%NSubsBeta)
+            If((J-1)+(K-1).eq.rSubsT(i).and.any(rSubsA.eq.(J-1)).and.any(rSubsB.eq.(K-1))) then
+              NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
+                Determinants2%NSubsBeta%at(K)
+            EndIf
           EndDo
         EndDo
-      Else
-        NDets2 = NAlpha_Str2 * NBeta_Str2 
-      EndIf
+      EndDo
+      Do I = 1, Size(Determinants2%NSubsAlpha)
+        Do J = 1, Size(Determinants2%NSubsBeta)
+          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsA.eq.(I-1)).and.any(rSubsB.eq.(J-1))) then
+            If(Determinants2%NSubsBeta%at(J).ne.0) then
+              NDets2A = NDets2A + Determinants2%NSubsAlpha%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+      Do I = 1, Size(Determinants2%NSubsBeta)
+        Do J = 1, Size(Determinants2%NSubsAlpha)
+          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsB.eq.(I-1)).and.any(rSubsA.eq.(J-1))) then
+            If(Determinants2%NSubsAlpha%at(J).ne.0) then
+              NDets2B = NDets2B + Determinants2%NSubsBeta%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+!
+!     Allocate output operator matrix
 !
       If(SymmFlag) then
+        if(NDets1.ne.NDets2) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
+          6,'NDets1',NDets1,'NDets2',NDets2)
         Call CI_Hamiltonian%init(NDets1,NDets2,Storage='StorHerm')
         SymmStr = 'hermitian'
       Else
@@ -17811,176 +17960,180 @@
       NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
       Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints), &
         Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-!
-      If(Determinants%order.ne.Determinants2%order) &
-        Call MQC_Error_A('Left and Right determinant sets have different order in &
-        &MQC_Build_CI_Hamiltonian',6,'Determinants%order',Determinants%order,&
-        'Determinants2%order',Determinants2%order)
-      select case (Determinants%order)
-      case ('lexical')
-        Counter = 0
-        Counter2 = 0
-        Do L_A_String = 1, NAlpha_Str1  
-          Do L_B_String = 1, NBeta_Str1  
-            Do R_A_String = 1, NAlpha_Str2  
-              Do R_B_String = 1, NBeta_Str2  
-                L_Index = 1+(L_B_String-1)*NAlpha_Str1+(L_A_String-1) 
-                R_Index = 1+(R_B_String-1)*NAlpha_Str2+(R_A_String-1) 
-                if(SymmFlag.and.L_Index.lt.R_Index) cycle
-                if(iPrint.ge.2.and.R_Index.eq.1) then
-                  Counter = Counter + 1
-                  if(L_Index.eq.1) then
-                    if(SymmFlag) then
-                      DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
-                    else
-                      DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
-                    endIf
-                  endIf
-                  DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
-                    ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                    Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-                endIf
-                if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
-                  Counter2 = Counter2 + 1
-                  if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
-                  DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
-                    ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
-                    Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
-                endIf
-!                write(*,*) '-------------------------------------------'
-!                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
-!                write(*,*) '-------------------------------------------'
-                Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-                Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
-                Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-                Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
-                If(S2Flag) then
-                  Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
-                    Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                    MO_Core_Ham),L_Index,R_Index,SymmStr)
-                Else
-                  If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
-                  ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham),L_Index,R_Index,SymmStr)
-                  ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
-                  Else
-                    Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
-                  EndIf
-                EndIf
+      nAlpha1 = get_string_nElec(Determinants%Strings%Alpha%vat([1],[1,NBit_Ints])) 
+      nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha%vat([1],[1,NBit_Ints])) 
+      nBeta1 = get_string_nElec(Determinants%Strings%Beta%vat([1],[1,NBit_Ints])) 
+      nBeta2 = get_string_nElec(Determinants2%Strings%Beta%vat([1],[1,NBit_Ints])) 
 
-!                Counter = Counter + 1
-!                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-!                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-!                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-!                    bar(23+i:23+i) = '#'
-!                  endDo
-!                  write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-!                EndIf
-              EndDo
-            EndDo
-          EndDo
-        EndDo
-        if(iPrint.ge.2) then
-          write(6,'(A)') trim(detIndex1)
-          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
-        endIf
-      case('ci') 
-        L_Index = 0
-        L_A_Start = 1
-        Counter = 0
-        Counter2 = 0
-        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
-          L_B_Start = 1
-          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
-            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
+      select case (Determinants%order)
+      case('lexical')
+        LASub_End = 0
+        LBSub_End = 0
+      case('ci')
+        LASub_End = size(Determinants%NSubsAlpha)-1
+        LBSub_End = size(Determinants%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+          iOut,'Determinants%order',Determinants%order)
+      end select
+      select case (Determinants2%order)
+      case('lexical')
+        RASub_End = 0
+        RBSub_End = 0
+      case('ci')
+        RASub_End = size(Determinants2%NSubsAlpha)-1
+        RBSub_End = size(Determinants2%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+          iOut,'Determinants2order',Determinants2%order)
+      end select
+
+      L_Index = 0
+      L_A_Start = 1
+      Counter = 0
+      Counter2 = 0
+      Do L_A_Sub = 0, LASub_End
+        if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
+        L_B_Start = 1
+        Do L_B_Sub = 0, LBSub_End
+          if(Determinants%order.eq.'ci'.and..not.any(lSubsB.eq.L_B_Sub)) cycle
+          If(Determinants%order.eq.'ci'.and..not.any(lSubsT.eq.(L_A_Sub+L_B_Sub))) cycle 
+          select case (Determinants%order)
+          case('lexical')
+            L_A_Start = NAlpha_Str1
+            L_B_Start = NBeta_Str1
+            L_A_End = 1
+            L_B_End = 1
+            L_A_Step = -1
+            L_B_Step = -1
+          case('ci')
             If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
             If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
             If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
             L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
             L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-            Do L_A_String = L_A_Start, L_A_End
-              Do L_B_String = L_B_Start, L_B_End
-                L_Index = L_Index + 1
-                R_Index = 0
-                R_A_Start = 1
-                Do R_A_Sub = 0, size(Determinants2%NSubsAlpha)-1
-                  R_B_Start = 1
-                  Do R_B_Sub = 0, size(Determinants2%NSubsBeta)-1
-                    If(.not.any(rightSubs.eq.(R_A_Sub+R_B_Sub))) cycle 
+            L_A_Step = 1
+            L_B_Step = 1
+          case default
+            call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+              iOut,'Determinants%order',Determinants%order)
+          end select
+          Do L_A_String = L_A_Start, L_A_End, L_A_Step
+            Do L_B_String = L_B_Start, L_B_End, L_B_Step
+              L_Index = L_Index + 1
+              R_Index = 0
+              R_A_Start = 1
+              Do R_A_Sub = 0, RASub_End
+                if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
+                R_B_Start = 1
+                Do R_B_Sub = 0, RBSub_End
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsB.eq.R_B_Sub)) cycle
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsT.eq.(R_A_Sub+R_B_Sub))) cycle 
+                  select case (Determinants2%order)
+                  case('lexical')
+                    R_A_Start = NAlpha_Str2
+                    R_B_Start = NBeta_Str2
+                    R_A_End = 1
+                    R_B_End = 1
+                    R_A_Step = -1
+                    R_B_Step = -1
+                  case('ci')
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants2%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants2%NSubsBeta%vat(1,R_B_Sub))+1
                     If((R_A_Start.gt.NAlpha_Str2).or.(R_B_Start.gt.NBeta_Str2)) cycle
                     R_A_End = R_A_Start + Determinants2%NSubsAlpha%at(R_A_Sub+1) - 1
                     R_B_End = R_B_Start + Determinants2%NSubsBeta%at(R_B_Sub+1) - 1
-                    Do R_A_String = R_A_Start, R_A_End
-                      Do R_B_String = R_B_Start, R_B_End
-                        R_Index = R_Index + 1
-                        if(SymmFlag.and.L_Index.lt.R_Index) cycle
-                        if(iPrint.ge.2.and.R_Index.eq.1) then
-                          Counter = Counter + 1
-                          if(L_Index.eq.1) then
-                            if(SymmFlag) then
-                              DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
-                            else
-                              DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
-                            endIf
-                          endIf
-                          DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
-                            ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                            Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-                        endIf
-                        if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
-                          Counter2 = Counter2 + 1
-                          if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
-                          DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
-                            ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
-                            Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
-                        endIf
-!                        write(*,*) '-------------------------------------------'
-!                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
-!                        write(*,*) '-------------------------------------------'
-                        Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-                        Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
-                        Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-                        Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
-                        If(S2Flag) then
-                          Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
+                    R_A_Step = 1
+                    R_B_Step = 1
+                  case default
+                    call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+                      iOut,'Determinants%order',Determinants%order)
+                  end select
+                  Do R_A_String = R_A_Start, R_A_End, R_A_Step
+                    Do R_B_String = R_B_Start, R_B_End, R_A_Step
+                      R_Index = R_Index + 1
+
+                      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
+                      Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
+                      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
+                      Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
+
+                      if(determinants%order.eq.'lexical') then
+                        if(.not.any(get_string_sub_level(Alpha_String_1,nAlpha1).eq.lSubsA)) cycle
+                        if(.not.any(get_string_sub_level(Beta_String_1,nBeta1).eq.lSubsB)) cycle
+                        if(.not.any((get_string_sub_level(Alpha_String_1,nAlpha1)+&
+                          get_string_sub_level(Beta_String_1,nBeta1)).eq.lSubsT)) cycle
+                      endIf
+                      if(determinants2%order.eq.'lexical') then
+                        if(.not.any(get_string_sub_level(Alpha_String_2,nAlpha2).eq.rSubsA)) cycle
+                        if(.not.any(get_string_sub_level(Beta_String_2,nBeta2).eq.rSubsB)) cycle
+                        if(.not.any((get_string_sub_level(Alpha_String_2,nAlpha2)+&
+                          get_string_sub_level(Beta_String_2,nBeta2)).eq.rSubsT)) cycle
+                      endIf
+
+                      L_Index = mqc_get_string_index(Alpha_String_1,int(nBasis-determinants%nCore),&
+                        (nAlpha1-determinants%nCore),'lexical',lSubsA,determinants%nCore)*NDets1B + &
+                        mqc_get_string_index(Beta_String_1,int(nBasis-determinants%nCore),&
+                        (nBeta1-determinants%nCore),'lexical',lSubsB,determinants%nCore)+1
+                      R_Index = mqc_get_string_index(Alpha_String_2,int(nBasis-determinants2%nCore),&
+                        (nAlpha2-determinants2%nCore),'lexical',rSubsA,determinants2%nCore)*NDets2B + &
+                        mqc_get_string_index(Beta_String_2,int(nBasis-determinants2%nCore),&
+                        (nBeta1-determinants2%nCore),'lexical',rSubsB,determinants2%nCore)+1
+
+                      if(SymmFlag.and.L_Index.lt.R_Index) cycle
+!                      if(iPrint.ge.2.and.R_Index.eq.1) then
+!                        Counter = Counter + 1
+!                        if(L_Index.eq.1) then
+!                          if(SymmFlag) then
+!                            DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
+!                          else
+!                            DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
+!                          endIf
+!                        endIf
+!                        DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
+!                          ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
+!                          Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
+!                      endIf
+!                      write(*,*) 'LMTLMT after detindex part'
+!                      if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
+!                        Counter2 = Counter2 + 1
+!                        if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
+!                        DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
+!                          ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
+!                          Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
+!                      endIf
+!                      write(*,*) '-------------------------------------------'
+!                      write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!                      write(*,*) '-------------------------------------------'
+                      If(S2Flag) then
+                        Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
+                          Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
+                          MO_Core_Ham),L_Index,R_Index,SymmStr)
+                      Else
+                        If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
+                            MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
+                        ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
                             Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
                             MO_Core_Ham),L_Index,R_Index,SymmStr)
+                        ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
+                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
+                            TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
                         Else
-                          If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
-                          ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham),L_Index,R_Index,SymmStr)
-                          ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
-                          Else
-                            Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
-                          EndIf
+                          Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
-!                        Counter = Counter + 1
-!                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-!                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-!                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-!                            bar(23+i:23+i) = '#'
-!                          endDo
-!                          write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-!                        EndIf
-                      EndDo
+                      EndIf
+!                      Counter = Counter + 1
+!                      If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
+!                        write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
+!                        do I = 1, 20*Counter/(NDets*(NDets+1)/2)
+!                          bar(23+i:23+i) = '#'
+!                        endDo
+!                        write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
+!                      EndIf
                     EndDo
                   EndDo
                 EndDo
@@ -17988,14 +18141,11 @@
             EndDo
           EndDo
         EndDo
-        if(iPrint.ge.2) then
-          write(6,'(A)') trim(detIndex1)
-          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
-        endIf
-      case default
-        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
-          iOut,'Determinants%order',Determinants%order)
-      end select
+      EndDo
+!      if(iPrint.ge.2) then
+!        write(6,'(A)') trim(detIndex1)
+!        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
+!      endIf
 !
       If(iPrint.ge.2) write(iOut,*) NEW_LINE('a')
 
@@ -18123,9 +18273,10 @@
 !
       select case (Determinants%order)
       case ('lexical')
-        Do L_A_String = 1, NAlpha_Str1  
-          Do L_B_String = 1, NBeta_Str1  
-            L_Index = 1+(L_B_String-1)*NAlpha_Str1+(L_A_String-1) 
+        L_Index = 0
+        Do L_A_String = NAlpha_Str1, 1, -1  
+          Do L_B_String = NBeta_Str1, 1, -1  
+            L_Index = L_Index+1
             If(L_Index.eq.IndIn) then
               aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
               bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
@@ -18174,6 +18325,344 @@
 !
       End Subroutine MQC_Get_Strings_At_Index 
 !
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_STRING_INDEX
+!
+!>    \brief <b> MQC_GET_STRING_INDEX is a function that returns the index of a 
+!>    string according to the specified ordering</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRINGS_AT_INDEX is a function that returns the index of a string 
+!>    according to the specified ordering.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] string
+!>    \verbatim
+!>        string is integer(kind=int64),dimension(:),allocatable
+!>        The string to evaluate. 
+!>    \endverbatim
+!>    
+!>    \param[in] nBasis
+!>    \verbatim
+!>        nBasis is integer(kind=int64)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] nElec 
+!>    \verbatim
+!>        nElec is integer(kind=int64)
+!>        The number of electrons. 
+!>    \endverbatim
+!>    
+!>    \param[in] order
+!>    \verbatim
+!>        order is character(len=*),optional
+!>        The order in which determinant strings are ordered.
+!>        The only option is currently lexical, which is the 
+!>        default.
+!>    \endverbatim
+!>    
+!>    \param[in] subs
+!>    \verbatim
+!>        subs is integer(kind=int64),dimension(:),optional
+!>        The substitution levels that are permitted in the 
+!>        expansion.
+!>    \endverbatim
+!>    
+!>    \param[in] nCore
+!>    \verbatim
+!>        nCore is integer(kind=int64),optional
+!>        The number of core orbitals in the string that 
+!>        remain occupied in all strings.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function MQC_Get_String_Index(string,nBasis,nElec,order,subs,nCore) result(ind)
+!
+      implicit none
+      integer(kind=int64),intent(in)::nBasis,nElec
+      integer(kind=int64),dimension(:),intent(in),optional::subs
+      integer(kind=int64),dimension(:),allocatable,intent(in)::string
+      character(len=*),optional,intent(in)::order
+      character(len=64)::lorder
+      integer(kind=int64),optional,intent(in)::nCore
+      integer(kind=int64)::ind
+
+      integer(kind=int64)::i,j,jStart,jEnd,nBit_Ints,x,iElec,iOrb,core
+
+      if(present(nCore)) then
+        core = nCore
+      else
+        core = 0
+      endIf
+      NBit_Ints = ((NBasis+Core)/(Bit_Size(0)-1))+1 
+
+      if(present(order)) then
+        call string_change_case(order,'L',lorder)
+      else
+        lorder = 'lexical'
+      endIf
+      select case (lorder)
+      case('lexical')
+        ind = 0
+        iOrb = nBasis
+        iElec = nElec
+        do i = size(string), core/(Bit_Size(0)-1)+1, -1
+          if(i.eq.size(string)) then
+            jStart = NBasis-nBit_Ints*(size(string)-1) 
+          else 
+            jStart = nBit_Ints
+          endIf
+          if(i.eq.core/(Bit_Size(0)-1)+1) then
+            jStart = jStart+core
+            jEnd = core+1
+          else 
+            jEnd = 1
+          endIf
+          do j = jStart, jEnd, -1
+            if(bTest(string(i),j-1)) then
+              iOrb = iOrb-1
+              iElec = iElec-1
+              !Y1(e,o) = 0 
+            else
+              iOrb = iOrb-1
+              !Y0(e,o) = x(e+1,o+1) 
+              x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis,subs,lorder)
+              ind = ind + x
+            endIf
+          endDo
+        endDo
+      case default
+        call mqc_error_a('Unrecognized order passed to MQC_Get_Strings_Index',6,&
+          'lorder',lorder)
+      end select
+
+      End Function MQC_Get_String_Index
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE CI_VERTEX_WEIGHT
+!
+!>    \brief <b> CI_VERTEX_WEIGHT is a recursive function that returns the 
+!>    vertex weight according to the specified ordering</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    CI_VERTEX_WEIGHT is a recursive function that returns the vertex 
+!>    weight according to the specified ordering.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] iElec
+!>    \verbatim
+!>        iElec is Integer(kind=int64)
+!>        The electron number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] iOrb
+!>    \verbatim
+!>        iOrb is Integer(kind=int64)
+!>        The orbital number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] nElec
+!>    \verbatim
+!>        nElec is Integer(kind=int64)
+!>        The number of electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] nOrb
+!>    \verbatim
+!>        nOrb is Integer(kind=int64)
+!>        The number of orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] subs
+!>    \verbatim
+!>        subs is integer(kind=int64),dimension(:),optional 
+!>        The substitution levels permitted in the expansion.
+!>    \endverbatim
+!>    
+!>    \param[in] order
+!>    \verbatim
+!>        order is character(len=*),intent(in),optional
+!>        The index order of strings returned (currently only
+!>        lexical is supported and is the default).
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      recursive function ci_vertex_weight(iElec,iOrb,nElec,nOrb,subs,order) result(weight)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::iElec,iOrb,nElec,nOrb
+      integer(kind=int64),dimension(:),intent(in),optional::subs
+      character(len=*),intent(in),optional::order
+      integer(kind=int64)::weight
+      character(len=64)::lorder
+      integer(kind=int64),dimension(:),allocatable::funcSubs
+      integer(kind=int64)::i
+!
+!     iOrb-iElec  is number of holes still to create
+!     (nOrb-iOrb)-(nElec-iElec)  is number of holes created    
+!     iElec       is number of electrons still to add
+!     nElec-iElec is the number of electrons added
+!
+      if(present(subs)) then
+        funcSubs = subs
+      else
+        funcSubs = [(i,i=0,min(nElec,nOrb-nElec))]
+      endIf
+      if(present(order)) then
+        call string_change_case(order,'L',lorder)
+      else
+        lorder = 'lexical'
+      endIf
+      select case (lorder)
+      case('lexical')
+        if(iOrb.eq.nElec.and..not.any(funcSubs.eq.(iOrb-iElec))) then
+          weight = 0
+        elseIf(iElec.eq.nElec) then
+          weight = 1
+        elseIf(iElec.gt.nElec) then
+          weight = 0
+        elseIf((iOrb-iElec).gt.nElec) then
+          weight = 0
+        else
+          weight = ci_vertex_weight(iElec+1,iOrb+1,nElec,nOrb,funcSubs,lorder)+&
+            ci_vertex_weight(iElec,iOrb+1,nElec,nOrb,funcSubs,lorder)
+        endIf
+      case default
+        call mqc_error_a('Unrecognized order passed to ci_vertex_weight',6,&
+          'lorder',lorder)
+      end select
+
+      end function ci_vertex_weight
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_STRING_SUB_LEVEL
+!
+!>    \brief <b> GET_STRING_SUB_LEVEL is a function that returns the 
+!>    substitution level of a string</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_STRING_SUB_LEVEL is a function that returns the substitution 
+!>    level of a string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] string
+!>    \verbatim
+!>        string is Integer(kind=int64),Dimension(:),Allocatable
+!>        The binary string to evaluate. 
+!>    \endverbatim
+!>    
+!>    \param[in] nElec
+!>    \verbatim
+!>        nElec is Integer(kind=int64) 
+!>        The number of electrons. 
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function get_string_sub_level(string,nElec) result(subLevel)
+!
+      Implicit None
+      Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::string
+      Integer(kind=int64),Intent(In)::nElec
+      integer(kind=int64)::subLevel
+      integer(kind=int64)::i,remElec
+
+      subLevel = 0
+      do i = 1, (nElec/(bit_size(0)-1))+1
+        if(i.eq.(nElec/(bit_size(0)-1))+1) then
+          remElec = nElec-(nElec/(bit_size(0)-1))*(bit_size(0)-1)
+          subLevel = subLevel + remElec - popcnt(ibits(string(i),0,remElec))
+        else
+          subLevel = subLevel + (bit_size(0)-1)-popCnt(string(i))
+        endIf
+      endDo
+
+      end function get_string_sub_level
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_STRING_NELEC
+!
+!>    \brief <b> GET_STRING_NELEC is a function that returns the 
+!>    number of electrons in a string</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_STRING_NELEC is a function that returns the number of electrons 
+!>    in a string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] String
+!>    \verbatim
+!>        String is type(mqc_vector)
+!>        The binary string to evaluate 
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function get_string_nElec(string) result(nElec)
+!
+      Implicit None
+      type(mqc_vector),Intent(In)::string
+      Integer(kind=int64)::nElec
+      integer(kind=int64)::i
+
+      nElec = 0
+      do i = 1, size(string)
+        nElec = nElec + popCnt(int(string%at(i)))
+      endDo
+
+      end function get_string_nElec
+!      
 !
 !=====================================================================
 !     
