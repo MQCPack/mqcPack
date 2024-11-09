@@ -124,12 +124,12 @@ Complex   =          F
  (  2,  2|  2,  2) =      0.77460594
  found UHF wavefunction
  Nuclear Repulsion Energy (au) =       0.105835
-Alpha Strings
-       1                                                                10
-       2                                                                 1
-Beta Strings
-       1                                                                10
-       2                                                                 1
+ Alpha Strings
+ 1 10
+ 2 01
+ Beta Strings
+ 1 10
+ 2 01
  MO Basis Core Hamiltonian
  Alpha Array
                   1             2
@@ -191,8 +191,6 @@ Beta Strings
  (  2,  2|  1,  2) =      0.00000000
  (  2,  2|  2,  1) =      0.00000000
  (  2,  2|  2,  2) =      0.44026964
- 
-
  CI Hamiltonian
    The matrix being printed is hermitian
                   1             2             3             4
