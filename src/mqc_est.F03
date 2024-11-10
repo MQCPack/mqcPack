@@ -17490,6 +17490,8 @@
       Character(len=44)::bar=" Build Progress: ???% |                    |"
 
       Integer(kind=int64)::tmp_index
+      Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
+        L_Iabk,R_Iabk,L_Xk,R_Xk
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -17543,14 +17545,14 @@
       Else
         lSubsA = subsA
         lSubsB = subsB
-      endIf
-      lSubsT = [integer::]
-      do i = 1, size(lSubsA)
-        do j = 1, size(lSubsB)
-          if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
+        lSubsT = [integer::]
+        do i = 1, size(lSubsA)
+          do j = 1, size(lSubsB)
+            if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
+          endDo
         endDo
-      endDo
-      call sort(lSubsT)
+        call sort(lSubsT)
+      endIf
       
       NDets1 = 0
       NDets1A = 0
@@ -17592,6 +17594,7 @@
 !       SymmFlag is true as subs are the same, unless determinants are different, as set above
         rSubsA = lSubsA
         rSubsB = lSubsB
+        rSubsT = lSubsT
       ElseIf(.not.present(subs2B)) then
         symmFlag = .False.
         rSubsT = subs2A
@@ -17619,14 +17622,14 @@
         symmFlag = .False.
         rSubsA = subs2A
         rSubsB = subs2B
-      EndIf
-      rSubsT = [integer::]
-      do i = 1, size(rSubsA)
-        do j = 1, size(rSubsB)
-          if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
+        rSubsT = [integer::]
+        do i = 1, size(rSubsA)
+          do j = 1, size(rSubsB)
+            if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
+          endDo
         endDo
-      endDo
-      call sort(rSubsT)
+        call sort(rSubsT)
+      EndIf
       
       NDets2 = 0
       NDets2A = 0
@@ -17702,10 +17705,9 @@
           iOut,'Determinants2order',Determinants2%order)
       end select
 
-      L_Index = 0
       L_A_Start = 1
-      Counter = 0
-      Counter2 = 0
+!      Counter = 0
+!      Counter2 = 0
       Do L_A_Sub = 0, LASub_End
         if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
         L_B_Start = 1
@@ -17734,8 +17736,6 @@
           end select
           Do L_A_String = L_A_Start, L_A_End, L_A_Step
             Do L_B_String = L_B_Start, L_B_End, L_B_Step
-!              L_Index = L_Index + 1
-              R_Index = 0
               R_A_Start = 1
               Do R_A_Sub = 0, RASub_End
                 if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
@@ -17765,34 +17765,68 @@
                   end select
                   Do R_A_String = R_A_Start, R_A_End, R_A_Step
                     Do R_B_String = R_B_Start, R_B_End, R_A_Step
-!                      R_Index = R_Index + 1
 
                       Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
                       Alpha_String_2 = Determinants2%Strings%Alpha(R_A_String) 
                       Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
                       Beta_String_2 = Determinants2%Strings%Beta(R_B_String) 
 
-                      if(determinants%order.eq.'lexical') then
-                        if(.not.any(get_string_sub_level(Alpha_String_1,nAlpha1).eq.lSubsA)) cycle
-                        if(.not.any(get_string_sub_level(Beta_String_1,nBeta1).eq.lSubsB)) cycle
-                        if(.not.any((get_string_sub_level(Alpha_String_1,nAlpha1)+&
-                          get_string_sub_level(Beta_String_1,nBeta1)).eq.lSubsT)) cycle
-                      endIf
-                      if(determinants2%order.eq.'lexical') then
-                        if(.not.any(get_string_sub_level(Alpha_String_2,nAlpha2).eq.rSubsA)) cycle
-                        if(.not.any(get_string_sub_level(Beta_String_2,nBeta2).eq.rSubsB)) cycle
-                        if(.not.any((get_string_sub_level(Alpha_String_2,nAlpha2)+&
-                          get_string_sub_level(Beta_String_2,nBeta2)).eq.rSubsT)) cycle
-                      endIf
+                      A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
+                      A2_subLevel = get_string_sub_level(Alpha_String_2,nAlpha2)
+                      B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
+                      B2_sublevel = get_string_sub_level(Beta_String_2,nBeta2)
+                      T1_sublevel = A1_subLevel + B1_subLevel
+                      T2_sublevel = A2_subLevel + B2_subLevel
 
-                      L_Index = mqc_get_string_index(Alpha_String_1,int(nBasis-determinants%nCore),&
-                        (nAlpha1-determinants%nCore),'lexical',lSubsA,determinants%nCore)*NDets1B + &
-                        mqc_get_string_index(Beta_String_1,int(nBasis-determinants%nCore),&
-                        (nBeta1-determinants%nCore),'lexical',lSubsB,determinants%nCore)+1
-                      R_Index = mqc_get_string_index(Alpha_String_2,int(nBasis-determinants2%nCore),&
-                        (nAlpha2-determinants2%nCore),'lexical',rSubsA,determinants2%nCore)*NDets2B + &
-                        mqc_get_string_index(Beta_String_2,int(nBasis-determinants2%nCore),&
-                        (nBeta1-determinants2%nCore),'lexical',rSubsB,determinants2%nCore)+1
+!                      if(determinants%order.eq.'lexical') then
+                        if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+                        if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+                        if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+!                      endIf
+!                      if(determinants2%order.eq.'lexical') then
+                        if(.not.any(A2_subLevel.eq.rSubsA)) cycle
+                        if(.not.any(B2_subLevel.eq.rSubsB)) cycle
+                        if(.not.any(T2_subLevel.eq.rSubsT)) cycle
+!                      endIf
+
+!                     Compute composite index within substituion level k
+!                     I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                      L_Iabk = mqc_get_string_index(Alpha_String_1,int(nBasis-determinants%nCore),&
+                         (nAlpha1-determinants%nCore),'lexical',[A1_subLevel],determinants%nCore)*&
+                         Determinants%NSubsBeta%at(B1_SubLevel+1) + mqc_get_string_index(Beta_String_1,&
+                         int(nBasis-determinants%nCore),(nBeta1-determinants%nCore),'lexical',&
+                         [B1_subLevel],determinants%nCore)
+                      R_Iabk = mqc_get_string_index(Alpha_String_2,int(nBasis-determinants2%nCore),&
+                         (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                         Determinants2%NSubsBeta%at(B2_SubLevel+1) + mqc_get_string_index(Beta_String_2,&
+                         int(nBasis-determinants2%nCore),(nBeta2-determinants2%nCore),'lexical',&
+                         [B2_subLevel],determinants2%nCore)
+
+!                     Compute composite substitution level offset 
+!                     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!                     where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                      L_Xk = 0
+                      l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
+                        do Counter2 = 0,size(Determinants%NSubsBeta)-1
+                          if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                          if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
+                          L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
+                            Determinants%NSubsBeta%at(Counter2+1)
+                        endDo
+                      endDo l_offset
+                      R_Xk = 0
+                      r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
+                        do Counter2 = 0,size(Determinants2%NSubsBeta)-1
+                          if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                          if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
+                          R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
+                            Determinants2%NSubsBeta%at(Counter2+1)
+                        endDo
+                      endDo r_offset
+
+!                     Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                      L_Index = L_Xk + L_Iabk + 1
+                      R_Index = R_Xk + R_Iabk + 1
 
                       if(SymmFlag.and.L_Index.lt.R_Index) cycle
 !                      if(iPrint.ge.2.and.R_Index.eq.1) then
@@ -17808,7 +17842,6 @@
 !                          ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
 !                          Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
 !                      endIf
-!                      write(*,*) 'LMTLMT after detindex part'
 !                      if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
 !                        Counter2 = Counter2 + 1
 !                        if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
@@ -17856,6 +17889,9 @@
           EndDo
         EndDo
       EndDo
+
+!     Can we just use string_at_index to loop through and build arrays here rather than build 
+!     up the string in the build_ci_hamiltonian main loop
 !      if(iPrint.ge.2) then
 !        write(6,'(A)') trim(detIndex1)
 !        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
