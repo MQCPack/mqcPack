@@ -217,7 +217,7 @@
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
-        Integer(kind=int64)::NDets,NAlpStr,NBetStr,nCore
+        Integer(kind=int64)::NDets,NAlpStr,NBetStr,nBasis,nCore,nVirt
         Type(MQC_Vector)::NSubsAlpha,NSubsBeta
       End Type MQC_Determinant
 !
@@ -4086,12 +4086,6 @@
 !>        The beta bit string to be printed.
 !>    \endverbatim
 !>
-!>    \param[in] nBasisIn
-!>    \verbatim
-!>        nBasisIn is Integer, optional
-!>        Number of basis functions.
-!>    \endverbatim
-!>
 !>    \param[in] nCoreIn
 !>    \verbatim
 !>        nCoreIn is Integer, optional
@@ -4111,25 +4105,20 @@
 !>    \author L. M. Thompson
 !>    \date 2022
 !
-      function mqc_detString_print(alphaString,betaString,nBasisIn,nCoreIn,nVirtIn) result(returnString)
+      function mqc_detString_print(alphaString,betaString,nCoreIn,nVirtIn) result(returnString)
 
       implicit none
-      type(mqc_vector),intent(in)::alphaString,betaString
-      integer,optional,intent(in)::nBasisIn,nCoreIn,nVirtIn
+      type(mqc_bits),intent(in)::alphaString,betaString
+      integer,optional,intent(in)::nCoreIn,nVirtIn
       character(:),allocatable::returnString
 
-      integer::nBitInts,temp_alpha_int,temp_beta_int,i,j,nBasis,nCore,nVirt
+      integer::i,nBasis,nCore,nVirt
 
-      if(size(alphaString).ne.size(betaString)) call mqc_error_i('Alpha and beta strings are different&
-        & lengths in mqc_detString_print',6,'size(alphaString)',size(alphaString),'size(betaString)',&
-        size(betaString))
-      nBitInts = size(alphaString)
+!      if(alphaString%nBits.ne.betaString%nBits) &
+!        call mqc_error_i('Alpha and beta strings are different lengths in mqc_detString_print',&
+!        6,'alphaString%nBits',alphaString%nBits,'betaString%nBits',betaString%nBits)
 
-      if(present(nBasisIn)) then
-        nBasis = nBasisIn
-      else
-        nBasis = nBitInts*Bit_Size(0)
-      endIf
+      nBasis = alphaString%nBits
       if(present(nCoreIn)) then
         nCore = nCoreIn
       else
@@ -4142,21 +4131,17 @@
       endIf
 
       returnString = '|'
-      do i = 1, nBitInts
-        temp_alpha_int = alphaString%at(i)
-        temp_beta_int = betaString%at(i)
-        do j = 0, Bit_Size(0)-1
-          if((i-1)*Bit_Size(0)+(j+1).le.nCore.or.(i-1)*Bit_Size(0)+(j+1).gt.nBasis-nVirt) cycle
-          if(btest(temp_alpha_int,j).and.btest(temp_beta_int,j)) then
-            returnString = trim(returnString)//'1'
-          elseIf(btest(temp_alpha_int,j)) then
-            returnString = trim(returnString)//'a'
-          elseIf(btest(temp_beta_int,j)) then
-            returnString = trim(returnString)//'b'
-          else
-            returnString = trim(returnString)//'0'
-          endIf
-        endDo
+      do i = 0, nBasis-1
+        if(i+1.le.nCore.or.i+1.gt.nBasis-nVirt) cycle
+        if(btest(alphaString,i).and.btest(betaString,i)) then
+          returnString = trim(returnString)//'1'
+        elseIf(btest(alphaString,i)) then
+          returnString = trim(returnString)//'a'
+        elseIf(btest(betaString,i)) then
+          returnString = trim(returnString)//'b'
+        else
+          returnString = trim(returnString)//'0'
+        endIf
       endDo
       returnString = trim(returnString)//'>'
 
@@ -11555,6 +11540,8 @@
       Determinants%NAlpStr = NAlpha_Str
       Determinants%NBetStr = NBeta_Str 
       Determinants%NCore = NCore 
+      Determinants%NVirt = NVirt 
+      Determinants%nBasis = NBasis+NCore+NVirt
       subNum = 0
       call mqc_deallocate_vector(determinants%nSubsAlpha)
       do while (.true.)
@@ -11851,6 +11838,8 @@
       determinants%nAlpStr = nAlpha_str
       determinants%nBetStr = nBeta_str 
       determinants%nCore = nCore
+      determinants%nVirt = nVirt
+      determinants%NBasis = NBasis+nCore+nVirt
       call determinants%nSubsAlpha%init(maxval(substitutions)+1,0)
       call determinants%nSubsAlpha%put(1,1)
       do i = 1, size(substitutions)
@@ -12269,12 +12258,6 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasisIn
-!>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
-!>        The number of basis functions. 
-!>    \endverbatim
-!>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
 !>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
@@ -12316,7 +12299,7 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function Slater_Condon(IOut,IPrint,NBasisIn,Alpha_String_1,Beta_String_1, &
+      Function Slater_Condon(IOut,IPrint,Alpha_String_1,Beta_String_1, &
        Alpha_String_2,Beta_String_2,OnePartInts,TwoPartInts) &
        Result(MatEl)
 !
@@ -12325,10 +12308,9 @@
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
       Type(MQC_Bits),Intent(In)::Alpha_String_1,Alpha_String_2,&
         Beta_String_1,Beta_String_2
+      Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
       Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
       Type(MQC_Scalar)::MatEl,Sgn,ERI1,ERI2
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,I,J,K, &
@@ -12341,7 +12323,12 @@
       If(.not.present(OnePartInts).and..not.present(TwoPartInts)) call mqc_error('No integrals given to Slater_Condon')
 
  1050 Format( A )
-      NBasis = NBasisIn
+      NBasis = Alpha_String_1%nbits
+      if(Beta_String_1%nbits.ne.nBasis.or.Alpha_String_2%nbits.ne.nBasis.or.&
+        Beta_String_2%nbits.ne.nBasis) call mqc_error_i('Different sized strings passed to &
+        & Slater_Condon',6,'Alpha_String_1%nbits',Alpha_String_1%nbits,'Beta_String_1%nbits',&
+        Beta_String_1%nbits,'Alpha_String_2%nbits',Alpha_String_2%nbits,'Beta_String_2%nbits',&
+        Beta_String_2%nbits)
 !
 !     Initialize Arrays
 !
@@ -16169,12 +16156,6 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasisIn
-!>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
-!>        The number of basis functions. 
-!>    \endverbatim
-!>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
 !>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
@@ -16210,26 +16191,31 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function S2_Mat_Elem(IOut,IPrint,NBasisIn,Alpha_String_1,Beta_String_1, &
-        Alpha_String_2,Beta_String_2,MO_Overlap)
+      Function S2_Mat_Elem(IOut,IPrint,Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2,&
+        MO_Overlap)
 !
 !     Variable Declarations...
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
       Type(mqc_bits),Intent(In)::Alpha_String_1,Alpha_String_2, &
         Beta_String_1,Beta_String_2
+      Type(MQC_SCF_Integral),Intent(In)::MO_Overlap
+
+      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
       Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
         IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt, &
         I,J,II,JJ,Perm,RNAlpha,RNBeta
       real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,Half=0.5d0,One=1.0d0,Alpha_Elecs,Beta_Elecs
       Type(mqc_scalar)::S2_Mat_Elem,ABTerm
-      Type(MQC_SCF_Integral),Intent(In)::MO_Overlap
       Type(MQC_Bits)::Alpha_Diff,Beta_Diff
 
-      NBasis = NBasisIn
+      NBasis = Alpha_String_1%nbits
+      if(Beta_String_1%nbits.ne.nBasis.or.Alpha_String_2%nbits.ne.nBasis.or.&
+        Beta_String_2%nbits.ne.nBasis) call mqc_error_i('Different sized strings passed to &
+        & S2_Mat_Elem',6,'Alpha_String_1%nbits',Alpha_String_1%nbits,'Beta_String_1%nbits',&
+        Beta_String_1%nbits,'Alpha_String_2%nbits',Alpha_String_2%nbits,'Beta_String_2%nbits',&
+        Beta_String_2%nbits)
 !
 !      call Alpha_String_1%print(6,'alpha 1')
 !      call Alpha_String_2%print(6,'alpha 2')
@@ -17364,12 +17350,6 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasis
-!>    \verbatim
-!>        NBasis is Type(MQC_Scalar)
-!>        The number of basis functions. 
-!>    \endverbatim
-!>    
 !>    \param[out] CI_Hamiltonian
 !>    \verbatim
 !>        CI_Hamiltonian is Type(MQC_Matrix)
@@ -17405,7 +17385,7 @@
 !>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
-!>    \param[in] SubsA
+!>    \param[in] SubsAIn
 !>    \verbatim
 !>        SubsA is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
@@ -17417,14 +17397,14 @@
 !>        Subs1A gives substitutions for the row basis only.
 !>    \endverbatim
 !>    
-!>    \param[in] SubsB
+!>    \param[in] SubsBIn
 !>    \verbatim
 !>        SubsB is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
 !>        include in the Hamiltonian. 
 !>    \endverbatim
 !>
-!>    \param[in] Subs2A
+!>    \param[in] Subs2AIn
 !>    \verbatim
 !>        Subs2A is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
@@ -17437,7 +17417,7 @@
 !>        substitutions that are permitted.
 !>    \endverbatim
 !>    
-!>    \param[in] Subs2B
+!>    \param[in] Subs2BIn
 !>    \verbatim
 !>        Subs2B is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
@@ -17462,25 +17442,25 @@
 !>    \author L. M. Thompson
 !>    \date 2017,2021,2024
 !
-      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,CI_Hamiltonian,&
-          Determinants,Dets2,MO_Core_Ham,MO_ERIs,SubsA,SubsB,Subs2A,Subs2B,doS2)
+      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,CI_Hamiltonian,Determinants,Dets2,&
+          MO_Core_Ham,MO_ERIs,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn,doS2)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasis
       Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
       Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Determinant),Optional,Intent(In)::Dets2
-      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsA,SubsB,Subs2A,Subs2B
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
-      Integer(kind=int64)::I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
+      Integer(kind=int64)::I,J,K,NDets1,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
         L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
-        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NAlpha_Str2,NBeta_Str2,NDets2,Counter2,&
+        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,Counter2,&
         NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
         RASub_End,RBSub_End
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
       Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
@@ -17492,6 +17472,7 @@
       Integer(kind=int64)::tmp_index
       Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
         L_Iabk,R_Iabk,L_Xk,R_Xk
+      type(mqc_bits)::tmp_a_string,tmp_b_string
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -17512,158 +17493,28 @@
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
 !
-      NAlpha_Str1 = size(Determinants%Strings%Alpha)
-      NBeta_Str1 = size(Determinants%Strings%Beta)
-      if(.not.present(subsA).and.present(subsB)) then
-       call mqc_error_l('Beta substitution levels present, but not alpha (or total) substitution level &
-         &provided',iOut,'present(subsA)',present(subsA),'present(subsB)',present(subsB))
+      if(present(subsAIn)) then
+        subsA = subsAIn
+      else
+        subsA = [integer::]
       endIf
-      If(.not.present(subsB)) then
-        If(.not.present(subsA)) then
-          lSubsT = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
-        Else
-          lSubsT = subsA
-        EndIf
-        lSubsA = [integer::]
-        do i = 1, size(lSubsT)
-          do j = 0, lSubsT(i)
-            if(.not.any(lSubsA.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
-              if(Determinants%NSubsAlpha%at(j+1).ne.0) lSubsA = [lSubsA,j]
-            endIf
-          endDo
-        endDo
-        lSubsB = [integer::]
-        do i = 1, size(lSubsT)
-          do j = 0, lSubsT(i)
-            if(.not.any(lSubsB.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
-              if(Determinants%NSubsBeta%at(j+1).ne.0) lSubsB = [lSubsB,j]
-            endIf
-          endDo
-        endDo
-        call sort(lSubsA)
-        call sort(lSubsB)
-      Else
-        lSubsA = subsA
-        lSubsB = subsB
-        lSubsT = [integer::]
-        do i = 1, size(lSubsA)
-          do j = 1, size(lSubsB)
-            if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
-          endDo
-        endDo
-        call sort(lSubsT)
+      if(present(subsBIn)) then
+        subsB = subsBIn
+      else
+        subsB = [integer::]
       endIf
-      
-      NDets1 = 0
-      NDets1A = 0
-      NDets1B = 0
-      Do I = 1, Size(lSubsT)
-        Do J = 1, Size(Determinants%NSubsAlpha)
-          Do K = 1, Size(Determinants%NSubsBeta)
-            If((J-1)+(K-1).eq.lSubsT(i).and.any(lSubsA.eq.(J-1)).and.any(lSubsB.eq.(K-1))) then
-              NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-                Determinants%NSubsBeta%at(K)
-            EndIf
-          EndDo
-        EndDo
-      EndDo
-      Do I = 1, Size(Determinants%NSubsAlpha)
-        Do J = 1, Size(Determinants%NSubsBeta)
-          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsA.eq.(I-1)).and.any(lSubsB.eq.(J-1))) then
-            If(Determinants%NSubsBeta%at(J).ne.0) then
-              NDets1A = NDets1A + Determinants%NSubsAlpha%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
-      Do I = 1, Size(Determinants%NSubsBeta)
-        Do J = 1, Size(Determinants%NSubsAlpha)
-          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsB.eq.(I-1)).and.any(lSubsA.eq.(J-1))) then
-            If(Determinants%NSubsAlpha%at(J).ne.0) then
-              NDets1B = NDets1B + Determinants%NSubsBeta%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
-
-      NAlpha_Str2 = size(Determinants2%Strings%Alpha)
-      NBeta_Str2 = size(Determinants2%Strings%Beta)
-      if(.not.present(subs2A).and..not.present(subs2B)) then
-!       SymmFlag is true as subs are the same, unless determinants are different, as set above
-        rSubsA = lSubsA
-        rSubsB = lSubsB
-        rSubsT = lSubsT
-      ElseIf(.not.present(subs2B)) then
-        symmFlag = .False.
-        rSubsT = subs2A
-        rSubsA = [integer::]
-        do i = 1, size(rSubsT)
-          do j = 0, rSubsT(i)
-            if(.not.any(rSubsA.eq.j).and.j+1.le.size(Determinants2%NSubsAlpha)) then
-              if(Determinants2%NSubsAlpha%at(j+1).ne.0) rSubsA = [rSubsA,j]
-            endIf
-          endDo
-        endDo
-        do i = 1, size(rSubsT)
-          do j = 0, rSubsT(i)
-            if(.not.any(rSubsB.eq.j).and.j+1.le.size(Determinants2%NSubsBeta)) then
-              if(Determinants2%NSubsBeta%at(j+1).ne.0) rSubsB = [rSubsB,j]
-            endIf
-          endDo
-        endDo
-        call sort(rSubsA)
-        call sort(rSubsB)
-      Else
-        If(.not.present(subs2A)) call mqc_error_l('Beta substitution levels present, but alpha &
-          &(or total) substitution level not provided',iOut,'present(subs2A)',present(subs2A),&
-          'present(subs2B)',present(subs2B))
-        symmFlag = .False.
-        rSubsA = subs2A
-        rSubsB = subs2B
-        rSubsT = [integer::]
-        do i = 1, size(rSubsA)
-          do j = 1, size(rSubsB)
-            if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
-          endDo
-        endDo
-        call sort(rSubsT)
-      EndIf
-      
-      NDets2 = 0
-      NDets2A = 0
-      NDets2B = 0
-      Do I = 1, Size(rSubsT)
-        Do J = 1, Size(Determinants%NSubsAlpha)
-          Do K = 1, Size(Determinants%NSubsBeta)
-            If((J-1)+(K-1).eq.rSubsT(i).and.any(rSubsA.eq.(J-1)).and.any(rSubsB.eq.(K-1))) then
-              NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
-                Determinants2%NSubsBeta%at(K)
-            EndIf
-          EndDo
-        EndDo
-      EndDo
-      Do I = 1, Size(Determinants2%NSubsAlpha)
-        Do J = 1, Size(Determinants2%NSubsBeta)
-          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsA.eq.(I-1)).and.any(rSubsB.eq.(J-1))) then
-            If(Determinants2%NSubsBeta%at(J).ne.0) then
-              NDets2A = NDets2A + Determinants2%NSubsAlpha%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
-      Do I = 1, Size(Determinants2%NSubsBeta)
-        Do J = 1, Size(Determinants2%NSubsAlpha)
-          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsB.eq.(I-1)).and.any(rSubsA.eq.(J-1))) then
-            If(Determinants2%NSubsAlpha%at(J).ne.0) then
-              NDets2B = NDets2B + Determinants2%NSubsBeta%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
+      if(present(subs2AIn)) then
+        subs2A = subs2AIn
+      else
+        subs2A = [integer::]
+      endIf
+      if(present(subs2BIn)) then
+        subs2B = subs2BIn
+      else
+        subs2B = [integer::]
+      endIf
+      call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
+        lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2,symmflag)
 !
 !     Allocate output operator matrix
 !
@@ -17676,6 +17527,14 @@
         Call CI_Hamiltonian%init(NDets1,NDets2)
         SymmStr = 'element'
       EndIf
+
+!     We are going to move everything below into the reverse lookup by index, and then have a 
+!     single loop over all indexes here. Psuedocode:
+!     do i = 1, ndet
+!       do j = 1,ndet
+!         if we are symmetry, skip all j greater than i
+!         return strings associated with these indicies
+!         if we are ci, then 
 
       nAlpha1 = get_string_nElec(Determinants%Strings%Alpha(1)) 
       nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha(1)) 
@@ -17716,8 +17575,8 @@
           If(Determinants%order.eq.'ci'.and..not.any(lSubsT.eq.(L_A_Sub+L_B_Sub))) cycle 
           select case (Determinants%order)
           case('lexical')
-            L_A_Start = NAlpha_Str1
-            L_B_Start = NBeta_Str1
+            L_A_Start = Determinants%NAlpStr
+            L_B_Start = Determinants%NBetStr
             L_A_End = 1
             L_B_End = 1
             L_A_Step = -1
@@ -17725,7 +17584,7 @@
           case('ci')
             If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
             If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-            If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
+            If((L_A_Start.gt.Determinants%NAlpStr).or.(L_B_Start.gt.Determinants%NBetStr)) cycle
             L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
             L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
             L_A_Step = 1
@@ -17745,8 +17604,8 @@
                   if(Determinants2%order.eq.'ci'.and..not.any(rSubsT.eq.(R_A_Sub+R_B_Sub))) cycle 
                   select case (Determinants2%order)
                   case('lexical')
-                    R_A_Start = NAlpha_Str2
-                    R_B_Start = NBeta_Str2
+                    R_A_Start = Determinants2%NAlpStr
+                    R_B_Start = Determinants2%NBetStr
                     R_A_End = 1
                     R_B_End = 1
                     R_A_Step = -1
@@ -17754,7 +17613,7 @@
                   case('ci')
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants2%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants2%NSubsBeta%vat(1,R_B_Sub))+1
-                    If((R_A_Start.gt.NAlpha_Str2).or.(R_B_Start.gt.NBeta_Str2)) cycle
+                    If((R_A_Start.gt.Determinants2%NAlpStr).or.(R_B_Start.gt.Determinants2%NBetStr)) cycle
                     R_A_End = R_A_Start + Determinants2%NSubsAlpha%at(R_A_Sub+1) - 1
                     R_B_End = R_B_Start + Determinants2%NSubsBeta%at(R_B_Sub+1) - 1
                     R_A_Step = 1
@@ -17789,18 +17648,22 @@
                         if(.not.any(T2_subLevel.eq.rSubsT)) cycle
 !                      endIf
 
+
 !                     Compute composite index within substituion level k
 !                     I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
-                      L_Iabk = mqc_get_string_index(Alpha_String_1,int(nBasis-determinants%nCore),&
-                         (nAlpha1-determinants%nCore),'lexical',[A1_subLevel],determinants%nCore)*&
-                         Determinants%NSubsBeta%at(B1_SubLevel+1) + mqc_get_string_index(Beta_String_1,&
-                         int(nBasis-determinants%nCore),(nBeta1-determinants%nCore),'lexical',&
-                         [B1_subLevel],determinants%nCore)
-                      R_Iabk = mqc_get_string_index(Alpha_String_2,int(nBasis-determinants2%nCore),&
-                         (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
-                         Determinants2%NSubsBeta%at(B2_SubLevel+1) + mqc_get_string_index(Beta_String_2,&
-                         int(nBasis-determinants2%nCore),(nBeta2-determinants2%nCore),'lexical',&
-                         [B2_subLevel],determinants2%nCore)
+                      L_Iabk = mqc_get_string_index(Alpha_String_1,&
+                        (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
+                        'lexical',[A1_subLevel],determinants%nCore)*&
+                        Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
+                        mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
+                        (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
+                      R_Iabk = mqc_get_string_index(Alpha_String_2,&
+                        (determinants2%nBasis-determinants2%nVirt),&
+                        (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                        Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
+                        mqc_get_string_index(Beta_String_2,&
+                        (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
+                        'lexical',[B2_subLevel],determinants2%nCore)
 
 !                     Compute composite substitution level offset 
 !                     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
@@ -17809,6 +17672,8 @@
                       l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
                         do Counter2 = 0,size(Determinants%NSubsBeta)-1
                           if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                          if(.not.any(Counter.eq.lSubsA)) cycle
+                          if(.not.any(Counter2.eq.lSubsB)) cycle
                           if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
                           L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
                             Determinants%NSubsBeta%at(Counter2+1)
@@ -17818,6 +17683,8 @@
                       r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
                         do Counter2 = 0,size(Determinants2%NSubsBeta)-1
                           if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                          if(.not.any(Counter.eq.rSubsA)) cycle
+                          if(.not.any(Counter2.eq.rSubsB)) cycle
                           if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
                           R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
                             Determinants2%NSubsBeta%at(Counter2+1)
@@ -17853,22 +17720,22 @@
 !                      write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                      write(*,*) '-------------------------------------------'
                       If(S2Flag) then
-                        Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
-                          Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                          MO_Core_Ham),L_Index,R_Index,SymmStr)
+                        Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,Alpha_String_1,&
+                          Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                          R_Index,SymmStr)
                       Else
                         If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                            MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham,MO_ERIs),&
+                            L_Index,R_Index,SymmStr)
                         ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
-                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                            MO_Core_Ham),L_Index,R_Index,SymmStr)
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                            R_Index,SymmStr)
                         ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                            TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,TwoPartInts=MO_ERIs),&
+                            L_Index,R_Index,SymmStr)
                         Else
                           Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
@@ -17890,8 +17757,6 @@
         EndDo
       EndDo
 
-!     Can we just use string_at_index to loop through and build arrays here rather than build 
-!     up the string in the build_ci_hamiltonian main loop
 !      if(iPrint.ge.2) then
 !        write(6,'(A)') trim(detIndex1)
 !        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
@@ -17902,180 +17767,174 @@
       End Subroutine MQC_Build_CI_Hamiltonian
 !
 !
-!!=====================================================================
-!!     
-!!     PROCEDURE MQC_GET_STRINGS_AT_INDEX
-!!
-!!>    \brief <b> MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings
-!!>    corresponding to the index of matrices built by MQC_Build_CI_Hamiltonian</b>
-!!>
-!!>    \par Purpose:
-!!     =============
-!!>
-!!>    \verbatim
-!!>       
-!!>    MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
-!!>    to the index of matrices built by MQC_Build_CI_Hamiltonian.
-!!>
-!!>    \endverbatim
-!!
-!!     Arguments:
-!!     ==========
-!!>    \param[in] IOut
-!!>    \verbatim
-!!>        IOut is Integer(kind=int64)
-!!>        The FORTRAN file to print to. 
-!!>    \endverbatim
-!!>    
-!!>    \param[in] IPrint
-!!>    \verbatim
-!!>        IPrint is Integer(kind=int64)
-!!>        The print level for the subroutine. 
-!!>    \endverbatim
-!!>    
-!!>    \param[in] Ind
-!!>    \verbatim
-!!>        Ind is Integer(kind=int64)
-!!>        The index from which determinant strings will be
-!!>        returned. If Ind is negative, the index will be
-!!>        counted from the end.
-!!>    \endverbatim
-!!>    
-!!>    \param[out] aString
-!!>    \verbatim
-!!>        aString is Integer(kind=int64),Dimension(:),Allocatable
-!!>        The alpha string at index Ind.
-!!>    \endverbatim
-!!>    
-!!>    \param[in] bString
-!!>    \verbatim
-!!>        bString is Integer(kind=int64),Dimension(:),Allocatable
-!!>        The beta string at index Ind.
-!!>    \endverbatim
-!!>    
-!!>    \param[in] NBasis
-!!>    \verbatim
-!!>        NBasis is Type(MQC_Scalar)
-!!>        The number of basis functions. 
-!!>    \endverbatim
-!!>    
-!!>    \param[in] Determinants
-!!>    \verbatim
-!!>        Determinants is Type(MQC_Determinant)
-!!>        The binary string occupation number vectors. If 
-!!>        opional argument Dets2 is provided Determinants
-!!>        variable will contain the row basis strings.
-!!>    \endverbatim
-!!>
-!!>    \param[in] Subs
-!!>    \verbatim
-!!>        Subs is Integer(kind=int64),Dimension(:),Optional
-!!>        Permitted substitutions to include in the Hamiltonian.
-!!>        If not present, all substitutions are included.
-!!>    \endverbatim
-!!>    
-!!     Authors:
-!!     ========
-!!>    \author L. M. Thompson
-!!>    \date 2024
-!!
-!      Subroutine MQC_Get_Strings_At_Index(IOut,IPrint,Ind,aString,bString,NBasis,Determinants, &
-!        Subs)
-!!
-!      Implicit None
-!      Integer(kind=int64),Intent(In)::IOut,IPrint,Ind
-!      Type(MQC_Scalar),Intent(In)::NBasis
-!      Type(MQC_Determinant),Intent(In)::Determinants
-!      Integer(kind=int64),Dimension(:),Intent(In),Optional::Subs
-!      Type(MQC_Vector),Intent(Out)::aString,bString
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_STRINGS_AT_INDEX
 !
-!      Integer(kind=int64)::IndIn,I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
-!        L_Index,L_A_Start,L_B_Start,L_A_End,L_B_End,L_A_Sub,L_B_Sub,NBit_Ints
-!!
-!!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
-!      NAlpha_Str1 = MQC_Matrix_Rows(Determinants%Strings%Alpha)
-!      NBeta_Str1 = MQC_Matrix_Rows(Determinants%Strings%Beta)
-!      If(present(subs)) then
-!        NDets1 = 0
-!        Do I = 1, Size(Subs)
-!          Do J = 1, Size(Determinants%NSubsAlpha)
-!            Do K = 1, Size(Determinants%NSubsBeta)
-!              If((J-1)+(K-1).eq.Subs(i)) then
-!                NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-!                  Determinants%NSubsBeta%at(K)
-!              EndIf
-!            EndDo
-!          EndDo
-!        EndDo
-!      Else
-!        NDets1 = NAlpha_Str1 * NBeta_Str1
-!      EndIf
-!      If(Ind.gt.NDets1) call mqc_error_i('Index requested is larger than dimension of matrix in &
-!        &MQC_Get_String_At_Index',6,'Ind',Ind,'NDets1',NDets1)
-!      If(Ind.eq.0) call mqc_error_i('Index zero requested in MQC_Get_String_At_Index',6,'Ind',Ind)
-!      If(Ind.lt.0) then
-!        IndIn = NDets1+Ind+1
-!      Else
-!        IndIn = Ind
-!      EndIf
-!!
-!      NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
-!!
-!      select case (Determinants%order)
-!      case ('lexical')
-!        L_Index = 0
-!        Do L_A_String = NAlpha_Str1, 1, -1  
-!          Do L_B_String = NBeta_Str1, 1, -1  
-!            L_Index = L_Index+1
-!            If(L_Index.eq.IndIn) then
-!              aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-!              bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-!              If(iPrint.ge.3) then
-!                write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
-!                  trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-!                  Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-!              EndIf
-!              Return
-!            EndIf
-!          EndDo
-!        EndDo
-!      case('ci') 
-!        L_Index = 0
-!        L_A_Start = 1
-!        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
-!          L_B_Start = 1
-!          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
-!            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
-!            If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
-!            If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-!            If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
-!            L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
-!            L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-!            Do L_A_String = L_A_Start, L_A_End
-!              Do L_B_String = L_B_Start, L_B_End
-!                L_Index = L_Index + 1
-!                If(L_Index.eq.IndIn) then
-!                  aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-!                  bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-!                  If(iPrint.ge.3) then
-!                    write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
-!                      trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-!                      Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-!                  EndIf
-!                  Return
-!                EndIf
-!              EndDo
-!            EndDo
-!          EndDo
-!        EndDo
-!      case default
-!        call mqc_error_a('Unrecognized determinant storage type in mqc_get_strings_at_index',&
-!          iOut,'Determinants%order',Determinants%order)
-!      end select
-!!
-!      End Subroutine MQC_Get_Strings_At_Index 
-!!
-!!
+!>    \brief <b> MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings
+!>    corresponding to the index of matrices built by MQC_Build_CI_Hamiltonian</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
+!>    to the index of matrices built by MQC_Build_CI_Hamiltonian.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] IndIn
+!>    \verbatim
+!>        IndIn is Integer(kind=int64)
+!>        The index from which determinant strings will be
+!>        returned. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors. 
+!>    \endverbatim
+!>
+!>    \param[in] SubsA
+!>    \verbatim
+!>        SubsA is Integer(kind=int64),Dimension(:)
+!>        Permitted alpha substitutions.
+!>    \endverbatim
+!>
+!>    \param[in] SubsB
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:)
+!>        Permitted beta substitutions.
+!>    \endverbatim
+!>
+!>    \param[in] SubsT
+!>    \verbatim
+!>        SubsT is Integer(kind=int64),Dimension(:)
+!>        Permitted total substitutions. 
+!>    \endverbatim
+!>    
+!>    \param[out] aString
+!>    \verbatim
+!>        aString is type(MQC_bits)
+!>        The alpha string at index IndIn.
+!>    \endverbatim
+!>    
+!>    \param[in] bString
+!>    \verbatim
+!>        bString is type(MQC_bits)
+!>        The beta string at index IndIn.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Subroutine MQC_Strings_At_Index(IOut,IPrint,IndIn,Determinants,SubsA,SubsB,SubsT,&
+        aString,bString)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,IndIn
+      Type(MQC_Determinant),Intent(In)::Determinants
+      integer(kind=int64),Dimension(:),Intent(In)::SubsA,SubsB,SubsT
+      type(MQC_bits),intent(Out)::aString,bString
+
+      Integer(kind=int64)::nAlpha,nBeta,Xk,A_Sub,B_Sub,A_Start,B_Start,A_End,&
+        B_End,A_String,B_String,A_SubLevel,B_SubLevel,Iabk,Ind
+
+      nAlpha = get_string_nElec(Determinants%Strings%Alpha(1)) 
+      nBeta = get_string_nElec(Determinants%Strings%Beta(1)) 
+
+!     Figure out what substitution level the index refers to and the start and end strings 
+!     associated with that substitution level
+!     Compute composite substitution level offset 
+!     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!     where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+
+      Xk = 0
+      A_Start = 1
+      B_Start = 1
+      offset: do A_Sub = 0,size(Determinants%NSubsAlpha)-1
+        if(.not.any(A_Sub.eq.SubsA)) cycle
+        do B_Sub = 0,size(Determinants%NSubsBeta)-1
+          if(.not.any(B_Sub.eq.SubsB)) cycle
+          if(.not.any(A_Sub+B_Sub.eq.SubsT)) cycle
+          if(IndIn.gt.Xk.and.IndIn.le.Xk+Determinants%NSubsAlpha%at(A_Sub+1)*&
+            Determinants%NSubsBeta%at(B_Sub+1)) then
+            if(A_Sub.ne.0) A_Start = sum(Determinants%NSubsAlpha%vat(1,A_Sub))+1
+            if(B_Sub.ne.0) B_Start = sum(Determinants%NSubsBeta%vat(1,B_Sub))+1
+            A_End = A_Start + Determinants%NSubsAlpha%at(A_Sub+1) - 1
+            B_End = B_Start + Determinants%NSubsBeta%at(B_Sub+1) - 1 
+            exit offset
+          else
+            if(.not.any(A_Sub.eq.SubsA)) cycle
+            if(.not.any(B_Sub.eq.SubsB)) cycle
+            if(.not.any(A_Sub+B_Sub.eq.SubsT)) cycle
+            Xk = Xk + Determinants%NSubsAlpha%at(A_Sub+1)*&
+              Determinants%NSubsBeta%at(B_Sub+1)
+          endIf
+        endDo
+      endDo offset
+      if(Determinants%order.eq.'lexical') then
+          A_Start = 1
+          B_Start = 1
+          A_End = Determinants%NAlpStr
+          B_End = Determinants%NBetStr
+      endIf
+
+!     Third determine offset for initial substitution level
+      indexSearch: Do A_String = A_Start, A_End
+        Do B_String = B_Start, B_End
+
+          aString = Determinants%Strings%Alpha(A_String) 
+          bString = Determinants%Strings%Beta(B_String) 
+
+          A_subLevel = get_string_sub_level(aString,nAlpha)
+          B_subLevel = get_string_sub_level(bString,nBeta)
+
+          if(A_subLevel.ne.A_Sub) cycle
+          if(B_subLevel.ne.B_Sub) cycle
+
+!         Compute composite index within substituion level k
+!         I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+          Iabk = mqc_get_string_index(aString,(determinants%nBasis-determinants%nVirt),&
+            (nAlpha-determinants%nCore),'lexical',[A_subLevel],determinants%nCore)*&
+            Determinants%NSubsBeta%at(B_SubLevel+1) + &
+            mqc_get_string_index(bString,(determinants%nBasis-determinants%nVirt),&
+            (nBeta-determinants%nCore),'lexical',[B_subLevel],determinants%nCore)
+
+!         Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+          Ind = Xk + Iabk + 1
+
+          if(Ind.eq.IndIn) exit indexSearch
+        EndDo
+      EndDo indexSearch
+
+      If(iPrint.ge.3) then
+        write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
+          trim(mqc_detstring_print(aString,bString))
+      EndIf
+      Return
+!
+      End Subroutine MQC_Strings_At_Index 
+!
+!
 !=====================================================================
 !     
 !     PROCEDURE MQC_GET_STRING_INDEX
@@ -18397,6 +18256,314 @@
 
       end function get_string_nElec
 !      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_SUBLEVELS
+!
+!>    \brief <b> GET_SUBLEVELS is an auxillary subroutine to mqc_build_ci_hamiltonian
+!>    that returns the substitution levels and number of determinants</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_SUBLEVELS is an auxillary subroutine to mqc_build_ci_hamiltonian
+!>    that returns the substitution levels and number of determinants.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is type(mqc_determinant)
+!>        The left set of determinant strings 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants2
+!>    \verbatim
+!>        Determinants2 is type(mqc_determinant)
+!>        The right set of determinant strings 
+!>    \endverbatim
+!>    
+!>    \param[in] subsA
+!>    \verbatim
+!>        SubsA is integer(kind=int64),dimension(:),allocatable
+!>        The total substitutions of the left determinant set (if subs1B is size 0)
+!>        or the alpha substutions of the left determinant set (if subs1B is not
+!>        size 0).
+!>    \endverbatim
+!>    
+!>    \param[in] subsB
+!>    \verbatim
+!>        SubsB is integer(kind=int64),dimension(:),allocatable
+!>        The beta substitutions of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] subs2A
+!>    \verbatim
+!>        Subs2A is integer(kind=int64),dimension(:),allocatable
+!>        The total substitutions of the right determinant set (if subs2B is size 0)
+!>        or the alpha substutions of the right determinant set (if subs2B is not
+!>        size 0).
+!>    \endverbatim
+!>    
+!>    \param[in] subs2B
+!>    \verbatim
+!>        Subs2B is integer(kind=int64),dimension(:),allocatable
+!>        The beta substitutions of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] lsubsA
+!>    \verbatim
+!>        lSubsA is integer(kind=int64),dimension(:),allocatable 
+!>        The left alpha substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] lsubsB
+!>    \verbatim
+!>        lSubsB is integer(kind=int64),dimension(:),allocatable 
+!>        The left beta substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] lsubsT
+!>    \verbatim
+!>        lSubsT is integer(kind=int64),dimension(:),allocatable 
+!>        The left total substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] rsubsA
+!>    \verbatim
+!>        rSubsA is integer(kind=int64),dimension(:),allocatable 
+!>        The right alpha substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] rsubsB
+!>    \verbatim
+!>        rSubsB is integer(kind=int64),dimension(:),allocatable 
+!>        The right beta substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] rsubsT
+!>    \verbatim
+!>        rSubsT is integer(kind=int64),dimension(:),allocatable 
+!>        The right total substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets1A
+!>    \verbatim
+!>        nDets1A is integer(kind=int64)
+!>        The number of left alpha strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets1B
+!>    \verbatim
+!>        nDets1B is integer(kind=int64)
+!>        The number of left beta strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets1
+!>    \verbatim
+!>        nDets1 is integer(kind=int64)
+!>        The number of left strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets2A
+!>    \verbatim
+!>        nDets2A is integer(kind=int64)
+!>        The number of right alpha strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets2B
+!>    \verbatim
+!>        nDets2B is integer(kind=int64)
+!>        The number of right beta strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets2
+!>    \verbatim
+!>        nDets2 is integer(kind=int64)
+!>        The number of right strings.
+!>    \endverbatim
+!>    
+!>    \param[inout] SymmFlag
+!>    \verbatim
+!>        SymmFlag is logical
+!>        The flag for whether the Hamiltonian 
+!>        being built is hermitian..
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      subroutine get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,&
+        lsubsA,lsubsB,lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,&
+        NDets2,SymmFlag) 
+
+      Implicit None
+      Type(MQC_Determinant),Intent(In)::Determinants,Determinants2
+      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB,subs2A,subs2B
+      integer(kind=int64),dimension(:),allocatable,intent(Out)::lsubsA,lsubsB,lsubsT,rsubsA,&
+        rsubsB,rsubsT
+      integer(kind=int64),intent(Out)::NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2
+      logical,intent(inOut)::symmflag
+      integer(kind=int64)::i,j,k
+
+      if(size(subsA).eq.0.and.size(subsB).ne.0) then
+       call mqc_error_i('Beta substitution levels present, but not alpha (or total) substitution level &
+         &provided',6,'size(subsA)',size(subsA),'size(subsB)',size(subsB))
+      endIf
+      If(size(subsB).eq.0) then
+        If(size(subsA).eq.0) then
+          lSubsT = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
+        Else
+          lSubsT = subsA
+        EndIf
+        lSubsA = [integer::]
+        do i = 1, size(lSubsT)
+          do j = 0, lSubsT(i)
+            if(.not.any(lSubsA.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
+              if(Determinants%NSubsAlpha%at(j+1).ne.0) lSubsA = [lSubsA,j]
+            endIf
+          endDo
+        endDo
+        lSubsB = [integer::]
+        do i = 1, size(lSubsT)
+          do j = 0, lSubsT(i)
+            if(.not.any(lSubsB.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
+              if(Determinants%NSubsBeta%at(j+1).ne.0) lSubsB = [lSubsB,j]
+            endIf
+          endDo
+        endDo
+        call sort(lSubsA)
+        call sort(lSubsB)
+      Else
+        lSubsA = subsA
+        lSubsB = subsB
+        lSubsT = [integer::]
+        do i = 1, size(lSubsA)
+          do j = 1, size(lSubsB)
+            if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
+          endDo
+        endDo
+        call sort(lSubsT)
+      endIf
+      
+      NDets1 = 0
+      NDets1A = 0
+      NDets1B = 0
+      Do I = 1, Size(lSubsT)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          Do K = 1, Size(Determinants%NSubsBeta)
+            If((J-1)+(K-1).eq.lSubsT(i).and.any(lSubsA.eq.(J-1)).and.any(lSubsB.eq.(K-1))) then
+              NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
+                Determinants%NSubsBeta%at(K)
+            EndIf
+          EndDo
+        EndDo
+      EndDo
+      Do I = 1, Size(Determinants%NSubsAlpha)
+        Do J = 1, Size(Determinants%NSubsBeta)
+          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsA.eq.(I-1)).and.any(lSubsB.eq.(J-1))) then
+            If(Determinants%NSubsBeta%at(J).ne.0) then
+              NDets1A = NDets1A + Determinants%NSubsAlpha%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+      Do I = 1, Size(Determinants%NSubsBeta)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsB.eq.(I-1)).and.any(lSubsA.eq.(J-1))) then
+            If(Determinants%NSubsAlpha%at(J).ne.0) then
+              NDets1B = NDets1B + Determinants%NSubsBeta%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+
+      if(size(subs2A).eq.0.and.size(subs2B).eq.0) then
+!       SymmFlag is true as subs are the same, unless determinants are different, as set above
+        rSubsA = lSubsA
+        rSubsB = lSubsB
+        rSubsT = lSubsT
+      ElseIf(size(subs2B).eq.0) then
+        symmFlag = .False.
+        rSubsT = subs2A
+        rSubsA = [integer::]
+        do i = 1, size(rSubsT)
+          do j = 0, rSubsT(i)
+            if(.not.any(rSubsA.eq.j).and.j+1.le.size(Determinants2%NSubsAlpha)) then
+              if(Determinants2%NSubsAlpha%at(j+1).ne.0) rSubsA = [rSubsA,j]
+            endIf
+          endDo
+        endDo
+        do i = 1, size(rSubsT)
+          do j = 0, rSubsT(i)
+            if(.not.any(rSubsB.eq.j).and.j+1.le.size(Determinants2%NSubsBeta)) then
+              if(Determinants2%NSubsBeta%at(j+1).ne.0) rSubsB = [rSubsB,j]
+            endIf
+          endDo
+        endDo
+        call sort(rSubsA)
+        call sort(rSubsB)
+      Else
+        If(size(subs2A).eq.0) call mqc_error_i('Beta substitution levels present, but alpha &
+          &(or total) substitution level not provided',6,'size(subs2A)',size(subs2A),&
+          'size(subs2B)',size(subs2B))
+        symmFlag = .False.
+        rSubsA = subs2A
+        rSubsB = subs2B
+        rSubsT = [integer::]
+        do i = 1, size(rSubsA)
+          do j = 1, size(rSubsB)
+            if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
+          endDo
+        endDo
+        call sort(rSubsT)
+      EndIf
+      
+      NDets2 = 0
+      NDets2A = 0
+      NDets2B = 0
+      Do I = 1, Size(rSubsT)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          Do K = 1, Size(Determinants%NSubsBeta)
+            If((J-1)+(K-1).eq.rSubsT(i).and.any(rSubsA.eq.(J-1)).and.any(rSubsB.eq.(K-1))) then
+              NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
+                Determinants2%NSubsBeta%at(K)
+            EndIf
+          EndDo
+        EndDo
+      EndDo
+      Do I = 1, Size(Determinants2%NSubsAlpha)
+        Do J = 1, Size(Determinants2%NSubsBeta)
+          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsA.eq.(I-1)).and.any(rSubsB.eq.(J-1))) then
+            If(Determinants2%NSubsBeta%at(J).ne.0) then
+              NDets2A = NDets2A + Determinants2%NSubsAlpha%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+      Do I = 1, Size(Determinants2%NSubsBeta)
+        Do J = 1, Size(Determinants2%NSubsAlpha)
+          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsB.eq.(I-1)).and.any(rSubsA.eq.(J-1))) then
+            If(Determinants2%NSubsAlpha%at(J).ne.0) then
+              NDets2B = NDets2B + Determinants2%NSubsBeta%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+
+      end subroutine get_subLevels
+!
 !
 !=====================================================================
 !     
