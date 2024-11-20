@@ -12536,8 +12536,7 @@
 !          
 !         This section computes the value of the matrix element
 !
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
             If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
@@ -12602,8 +12601,7 @@
             ERI1 = Zero
           EndIf
 
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and. &
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
             If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
@@ -12674,8 +12672,7 @@
           If(Spin(1).gt.Spin(3)) ISgn = ISgn+1 
           If(Spin(2).gt.Spin(4)) ISgn = ISgn+1
 
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
             If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
@@ -12740,8 +12737,7 @@
             ERI1 = Zero
           EndIf
 
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
             If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
@@ -12812,8 +12808,7 @@
           If(Spin(1).gt.Spin(4)) ISgn = ISgn+1 
           If(Spin(2).gt.Spin(3)) ISgn = ISgn+1
 
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and. &
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
             If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
@@ -12878,8 +12873,7 @@
             ERI1 = Zero
           EndIf
 
-          If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0.and.&
-            Spin(3).eq.0.and.Spin(4).eq.0)) then
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
             If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
             If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'alpha')
           ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
@@ -18566,6 +18560,8 @@
 !
 !
 !=====================================================================
+! WE STILL NEED TO FIX THIS SO IT CAN DEAL WITH NEW DETERMINANT STRUCTURES AS FOR 
+! BUILD_CI_HAMILTONIAN
 !     
 !     PROCEDURE Get_One_Gamma_Matrix
       function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,UHF,nCoreIn,nOrbsIn,Subs) Result(onePDMint)
