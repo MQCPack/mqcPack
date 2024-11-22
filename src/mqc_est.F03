@@ -17642,7 +17642,6 @@
                         if(.not.any(T2_subLevel.eq.rSubsT)) cycle
 !                      endIf
 
-
 !                     Compute composite index within substituion level k
 !                     I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
                       L_Iabk = mqc_get_string_index(Alpha_String_1,&
@@ -18140,12 +18139,17 @@
       select case (lorder)
       case('lexical')
         if(iOrb.eq.nElec.and..not.any(funcSubs.eq.(iOrb-iElec))) then
+!         At the HOMO, the number of holes should be a permitted amount
           weight = 0
         elseIf(iElec.eq.nElec) then
           weight = 1
         elseIf(iElec.gt.nElec) then
           weight = 0
-        elseIf((iOrb-iElec).gt.nElec) then
+        elseif((iOrb-iElec).lt.0) then
+!         There are more electrons than orbitals
+          weight = 0
+        elseIf((iOrb-iElec).gt.(nOrb-nElec)) then
+!         The number of holes is greater than the number of virtuals
           weight = 0
         else
           weight = ci_vertex_weight(iElec+1,iOrb+1,nElec,nOrb,funcSubs,lorder)+&
