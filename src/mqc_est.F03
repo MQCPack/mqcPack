@@ -12523,14 +12523,6 @@
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
 !          Write(IOut,*) 'Entering case 1' 
 !          
-!         This section computes the Coulomb contribution to the matrix
-!         element
-!            
-!         This section detemines number of permutations of creation
-!         operators and sets sign accordingly
-!         It got quite a bit longer after generalizing max number of
-!         orbitals
-!         Probably want to make some functions for these then later
           If(Spin(1).gt.Spin(2)) ISgn = ISgn+1 
           If(Spin(3).gt.Spin(4)) ISgn = ISgn+1
 !          
@@ -17631,17 +17623,13 @@
                       T1_sublevel = A1_subLevel + B1_subLevel
                       T2_sublevel = A2_subLevel + B2_subLevel
 
-!                      if(determinants%order.eq.'lexical') then
-                        if(.not.any(A1_subLevel.eq.lSubsA)) cycle
-                        if(.not.any(B1_subLevel.eq.lSubsB)) cycle
-                        if(.not.any(T1_subLevel.eq.lSubsT)) cycle
-!                      endIf
-!                      if(determinants2%order.eq.'lexical') then
-                        if(.not.any(A2_subLevel.eq.rSubsA)) cycle
-                        if(.not.any(B2_subLevel.eq.rSubsB)) cycle
-                        if(.not.any(T2_subLevel.eq.rSubsT)) cycle
-!                      endIf
-
+                      if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+                      if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+                      if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+                      if(.not.any(A2_subLevel.eq.rSubsA)) cycle
+                      if(.not.any(B2_subLevel.eq.rSubsB)) cycle
+                      if(.not.any(T2_subLevel.eq.rSubsT)) cycle
+                       
 !                     Compute composite index within substituion level k
 !                     I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
                       L_Iabk = mqc_get_string_index(Alpha_String_1,&
@@ -17689,26 +17677,6 @@
                       R_Index = R_Xk + R_Iabk + 1
 
                       if(SymmFlag.and.L_Index.lt.R_Index) cycle
-!                      if(iPrint.ge.2.and.R_Index.eq.1) then
-!                        Counter = Counter + 1
-!                        if(L_Index.eq.1) then
-!                          if(SymmFlag) then
-!                            DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
-!                          else
-!                            DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
-!                          endIf
-!                        endIf
-!                        DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
-!                          ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-!                          Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-!                      endIf
-!                      if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
-!                        Counter2 = Counter2 + 1
-!                        if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
-!                        DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
-!                          ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
-!                          Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
-!                      endIf
 !                      write(*,*) '-------------------------------------------'
 !                      write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !                      write(*,*) '-------------------------------------------'
@@ -17733,14 +17701,6 @@
                           Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
                       EndIf
-!                      Counter = Counter + 1
-!                      If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-!                        write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-!                        do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-!                          bar(23+i:23+i) = '#'
-!                        endDo
-!                        write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-!                      EndIf
                     EndDo
                   EndDo
                 EndDo
@@ -17750,14 +17710,262 @@
         EndDo
       EndDo
 
-!      if(iPrint.ge.2) then
-!        write(6,'(A)') trim(detIndex1)
-!        if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
-!      endIf
-!
-!      If(iPrint.ge.2) write(iOut,*) NEW_LINE('a')
-
       End Subroutine MQC_Build_CI_Hamiltonian
+!
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_BUILD_CI_OPERATOR
+!
+!>    \brief <b> MQC_BUILD_CI_OPERATOR is a subroutine that builds an 
+!>    operator matrix given MO integrals and determinant strings</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_CI_OPERATOR is a subroutine that builds an operator matrix 
+!>    given MO integrals and determinant strings. It can be used for any one, 
+!>    two, or one and two particle operator. The routine can also be used to 
+!>    build the S^2 operator matrix by passing the orbital overlap matrix and 
+!>    setting the appropriate input flag.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[out] Operator_Matrix
+!>    \verbatim
+!>        Operator_Matrix is Type(MQC_Matrix)
+!>        The CI operator matrix returned.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_Core_Ham
+!>    \verbatim
+!>        MO_Core_Ham is Type(MQC_SCF_Integral),Optional
+!>        The MO basis one-particle integrals.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_ERIs
+!>    \verbatim
+!>        MO_ERIs is Type(MQC_TwoERIs),Optional 
+!>        The MO basis two-particle integrals.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. If not present, all substitutions are 
+!>        included. If SubsB not present, SubsA containes the the 
+!>        total (alpha+beta) substitutions that are permitted. If 
+!>        both SubsA and SubsB provided, SubsA contains the alpha
+!>        substitutions that are permitted. If Subs2A are provided, 
+!>        Subs1A gives substitutions for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. 
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. If not present, 
+!>        column basis substitutions are equal to row basis 
+!>        substitutions provided by variable SubsA and/or SubsB.
+!>        If Subs2A provided but not Subs2B, Subs2A contains the total
+!>        (alpha+beta) substitutions that are permitted. If both 
+!>        Subs2A and Subs2B provided, Subs2A containes the alpha
+!>        substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. If not 
+!>        present, column basis substitutions are equal to row basis 
+!>        substitutions.
+!>    \endverbatim
+!>    
+!>    \param[in] doS2
+!>    \verbatim
+!>        DoS2 is Logical,Optional
+!>        Logical flag to build the S^2 matrix instead of using 
+!>        Slater Condon rules. The spatial molecular orbital basis
+!>        overlap (i.e. do not multiply by spin overlap which 
+!>        always leads to zero alpha-beta blocks) must be provided
+!>        in MO_Core_Ham argument if this option is used) must be provided
+!>        in MO_Core_Ham argument if this option is used..
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017,2021,2024
+!
+      Subroutine MQC_Build_CI_Operator(IOut,IPrint,Operator_Matrix,Determinants,Dets2,&
+          MO_Core_Ham,MO_ERIs,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn,doS2)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint
+      Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
+      Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
+      Type(MQC_Determinant),Intent(In)::Determinants
+      Type(MQC_Determinant),Optional,Intent(In)::Dets2
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Logical,Optional,Intent(In)::doS2
+      Type(MQC_Matrix),Intent(Out)::Operator_Matrix
+      Integer(kind=int64)::I,J,K,NDets1,L_A_String,L_B_String, &
+        R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
+        L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
+        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,Counter2,&
+        NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
+        RASub_End,RBSub_End,R_Index_End
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
+      Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant)::Determinants2
+      Logical::SymmFlag,S2Flag,AFlag,BFlag
+      Character(len=12)::SymmStr
+      Character(len=:),allocatable::detIndex1,detIndex2
+      Character(len=44)::bar=" Build Progress: ???% |                    |"
+
+      Integer(kind=int64)::tmp_index
+      Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
+        L_Iabk,R_Iabk,L_Xk,R_Xk
+      type(mqc_bits)::tmp_a_string,tmp_b_string
+!
+      If(present(doS2)) then
+        S2Flag = doS2
+      else
+        S2Flag = .false.
+      EndIf
+!
+      If(.not.present(MO_Core_Ham).and..not.present(MO_ERIs)) &
+        call mqc_error('No integrals given to MQC_Build_CI_Operator')
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .False.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .True.
+      EndIf
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      if(present(subsAIn)) then
+        subsA = subsAIn
+      else
+        subsA = [integer::]
+      endIf
+      if(present(subsBIn)) then
+        subsB = subsBIn
+      else
+        subsB = [integer::]
+      endIf
+      if(present(subs2AIn)) then
+        subs2A = subs2AIn
+      else
+        subs2A = [integer::]
+      endIf
+      if(present(subs2BIn)) then
+        subs2B = subs2BIn
+      else
+        subs2B = [integer::]
+      endIf
+      call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
+        lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2,symmflag)
+!
+!     Allocate output operator matrix
+!
+      If(SymmFlag) then
+        if(NDets1.ne.NDets2) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
+          6,'NDets1',NDets1,'NDets2',NDets2)
+        Call Operator_Matrix%init(NDets1,NDets2,Storage='StorHerm')
+        SymmStr = 'hermitian'
+      Else
+        Call Operator_Matrix%init(NDets1,NDets2)
+        SymmStr = 'element'
+      EndIf
+      
+      Do L_Index = 1, NDets1
+        If(SymmFlag) then
+          R_Index_End = L_Index
+        Else
+          R_Index_End = NDets2
+        EndIf
+        Do R_Index = 1, R_Index_End
+          call mqc_strings_at_index(iout,iprint,L_Index,Determinants,lsubsA,lSubsB,lSubsT,&
+            Alpha_String_1,Beta_String_1)
+          call mqc_strings_at_index(iout,iprint,R_Index,Determinants2,rsubsA,rSubsB,rSubsT,&
+            Alpha_String_2,Beta_String_2)
+!          write(*,*) '-------------------------------------------'
+!          write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!          write(*,*) '-------------------------------------------'
+          If(S2Flag) then
+            Call Operator_Matrix%put(S2_Mat_Elem(IOut,IPrint,Alpha_String_1,&
+              Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+              R_Index,SymmStr)
+          Else
+            If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham,MO_ERIs),&
+                L_Index,R_Index,SymmStr)
+            ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                R_Index,SymmStr)
+            ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,TwoPartInts=MO_ERIs),&
+                L_Index,R_Index,SymmStr)
+            Else
+              Call MQC_Error('No integrals present in MQC_Build_CI_Operator')
+            EndIf
+          EndIf
+        EndDo
+      EndDo
+
+      End Subroutine MQC_Build_CI_Operator
 !
 !
 !=====================================================================
@@ -18037,7 +18245,7 @@
           else
             iOrb = iOrb-1
             !Y0(e,o) = x(e+1,o+1) 
-            x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis,subs,lorder)
+            x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis-core,subs,lorder)
             ind = ind + x
           endIf
         endDo
@@ -18144,6 +18352,8 @@
         elseIf(iElec.eq.nElec) then
           weight = 1
         elseIf(iElec.gt.nElec) then
+          weight = 0
+        elseIf(iOrb.gt.nOrb) then
           weight = 0
         elseif((iOrb-iElec).lt.0) then
 !         There are more electrons than orbitals
@@ -18450,40 +18660,6 @@
         endDo
         call sort(lSubsT)
       endIf
-      
-      NDets1 = 0
-      NDets1A = 0
-      NDets1B = 0
-      Do I = 1, Size(lSubsT)
-        Do J = 1, Size(Determinants%NSubsAlpha)
-          Do K = 1, Size(Determinants%NSubsBeta)
-            If((J-1)+(K-1).eq.lSubsT(i).and.any(lSubsA.eq.(J-1)).and.any(lSubsB.eq.(K-1))) then
-              NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-                Determinants%NSubsBeta%at(K)
-            EndIf
-          EndDo
-        EndDo
-      EndDo
-      Do I = 1, Size(Determinants%NSubsAlpha)
-        Do J = 1, Size(Determinants%NSubsBeta)
-          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsA.eq.(I-1)).and.any(lSubsB.eq.(J-1))) then
-            If(Determinants%NSubsBeta%at(J).ne.0) then
-              NDets1A = NDets1A + Determinants%NSubsAlpha%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
-      Do I = 1, Size(Determinants%NSubsBeta)
-        Do J = 1, Size(Determinants%NSubsAlpha)
-          If(any(lSubsT.eq.(I-1)+(J-1)).and.any(lSubsB.eq.(I-1)).and.any(lSubsA.eq.(J-1))) then
-            If(Determinants%NSubsAlpha%at(J).ne.0) then
-              NDets1B = NDets1B + Determinants%NSubsBeta%at(I)
-              exit
-            endIf
-          endIf
-        endDo
-      endDo
 
       if(size(subs2A).eq.0.and.size(subs2B).eq.0) then
 !       SymmFlag is true as subs are the same, unless determinants are different, as set above
@@ -18525,43 +18701,122 @@
         endDo
         call sort(rSubsT)
       EndIf
+
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
+
+      end subroutine get_subLevels
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_EXPANSION_SIZE
+!
+!>    \brief <b> GET_EXPANSION_SIZE returns the size of a determinant 
+!>    expansion given a determinant object and the desired total, alpha 
+!>    and beta substitutions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_EXPANSION_SIZE returns the size of a determinant expansion 
+!>    given a determinant object and the desired total, alpha and beta 
+!>    substitutions</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is type(mqc_determinant)
+!>        The set of determinant strings 
+!>    \endverbatim
+!>    
+!>    \param[out] subsT
+!>    \verbatim
+!>        SubsT is integer(kind=int64),dimension(:),allocatable 
+!>        The total substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsA
+!>    \verbatim
+!>        SubsA is integer(kind=int64),dimension(:),allocatable 
+!>        The alpha substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsB
+!>    \verbatim
+!>        SubsB is integer(kind=int64),dimension(:),allocatable 
+!>        The beta substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets
+!>    \verbatim
+!>        nDets is integer(kind=int64)
+!>        The total number of strings.
+!>    \endverbatim
+!>
+!>    \param[out] nDetsA
+!>    \verbatim
+!>        nDetsA is integer(kind=int64)
+!>        The number of alpha strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDetsB
+!>    \verbatim
+!>        nDetsB is integer(kind=int64)
+!>        The number of beta strings.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      subroutine get_expansion_size(Determinants,subsT,subsA,subsB,NDets,NDetsA,NDetsB)
+
+      Implicit None
+      Type(MQC_Determinant),Intent(In)::Determinants
+      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB,subsT
+      integer(kind=int64),intent(Out)::NDetsA,NDetsB,NDets
+      integer(kind=int64)::i,j,k
       
-      NDets2 = 0
-      NDets2A = 0
-      NDets2B = 0
-      Do I = 1, Size(rSubsT)
+      NDets = 0
+      NDetsA = 0
+      NDetsB = 0
+      Do I = 1, Size(subsT)
         Do J = 1, Size(Determinants%NSubsAlpha)
           Do K = 1, Size(Determinants%NSubsBeta)
-            If((J-1)+(K-1).eq.rSubsT(i).and.any(rSubsA.eq.(J-1)).and.any(rSubsB.eq.(K-1))) then
-              NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
-                Determinants2%NSubsBeta%at(K)
+            If((J-1)+(K-1).eq.subsT(i).and.any(subsA.eq.(J-1)).and.any(subsB.eq.(K-1))) then
+              NDets = NDets + Determinants%NSubsAlpha%at(J)*Determinants%NSubsBeta%at(K)
             EndIf
           EndDo
         EndDo
       EndDo
-      Do I = 1, Size(Determinants2%NSubsAlpha)
-        Do J = 1, Size(Determinants2%NSubsBeta)
-          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsA.eq.(I-1)).and.any(rSubsB.eq.(J-1))) then
-            If(Determinants2%NSubsBeta%at(J).ne.0) then
-              NDets2A = NDets2A + Determinants2%NSubsAlpha%at(I)
+      Do I = 1, Size(Determinants%NSubsAlpha)
+        Do J = 1, Size(Determinants%NSubsBeta)
+          If(any(subsT.eq.(I-1)+(J-1)).and.any(subsA.eq.(I-1)).and.any(subsB.eq.(J-1))) then
+            If(Determinants%NSubsBeta%at(J).ne.0) then
+              NDetsA = NDetsA + Determinants%NSubsAlpha%at(I)
               exit
             endIf
           endIf
         endDo
       endDo
-      Do I = 1, Size(Determinants2%NSubsBeta)
-        Do J = 1, Size(Determinants2%NSubsAlpha)
-          If(any(rSubsT.eq.(I-1)+(J-1)).and.any(rSubsB.eq.(I-1)).and.any(rSubsA.eq.(J-1))) then
-            If(Determinants2%NSubsAlpha%at(J).ne.0) then
-              NDets2B = NDets2B + Determinants2%NSubsBeta%at(I)
+      Do I = 1, Size(Determinants%NSubsBeta)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          If(any(subsT.eq.(I-1)+(J-1)).and.any(subsB.eq.(I-1)).and.any(subsA.eq.(J-1))) then
+            If(Determinants%NSubsAlpha%at(J).ne.0) then
+              NDetsB = NDetsB + Determinants%NSubsBeta%at(I)
               exit
             endIf
           endIf
         endDo
       endDo
 
-      end subroutine get_subLevels
-!
+      end subroutine get_expansion_size
 !
 !=====================================================================
 ! WE STILL NEED TO FIX THIS SO IT CAN DEAL WITH NEW DETERMINANT STRUCTURES AS FOR 
