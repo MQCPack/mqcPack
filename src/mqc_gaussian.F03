@@ -321,10 +321,13 @@
       Logical::EOF,Temp_Logical
 !
 !
-!     Begin by opening the FChk file as an MQC text file.
+!     Begin by opening the FChk file as an MQC text file and then set
+!     Blank_Is_EOF to .False..
 !
       Call MQC_Open_Text_File(FileInfo,FileName,UnitNumber,OK)
       If(.not.OK) Return
+      call MQC_Files_Text_Parse_Controls(FileInfo,  &
+        Do_Blank_Is_EOF=.false.)
 !
 !     Load the title, job type, method, and basis set from the first two
 !     lines of the file.
@@ -342,7 +345,7 @@
 
 !
 !PROCEDURE Find_FChk_Entry
-      Subroutine Find_FChk_Entry(EntryTag,FChkFile,FoundEntry,  &
+      Subroutine Find_FChk_Entry(FChkFile,EntryTag,FoundEntry,  &
         TypeFlag,NElements,Scalar_Integer,Scalar_Real,Scalar_Character, &
         Scalar_Logical,Vector_Integer,Vector_Real)
 !
@@ -378,13 +381,13 @@
       Type(MQC_Gaussian_FChk_File),Intent(InOut)::FChkFile
       Logical,Intent(OUT)::FoundEntry
       Character(*),Intent(OUT)::TypeFlag
-      Integer,Intent(OUT)::NElements
-      Integer,Intent(OUT),OPTIONAL::Scalar_Integer
-      Real,Intent(OUT),OPTIONAL::Scalar_Real
+      Integer(kind=int64),Intent(OUT)::NElements
+      Integer(kind=int64),Intent(OUT),OPTIONAL::Scalar_Integer
+      Real(kind=real64),Intent(OUT),OPTIONAL::Scalar_Real
       Character(*),Intent(OUT),OPTIONAL::Scalar_Character
       Logical,Intent(OUT),OPTIONAL::Scalar_Logical
-      Integer,Dimension(:),Intent(OUT),OPTIONAL::Vector_Integer
-      Real,Dimension(:),Intent(OUT),OPTIONAL::Vector_Real
+      Integer(kind=int64),Dimension(:),Intent(OUT),OPTIONAL::Vector_Integer
+      Real(kind=real64),Dimension(:),Allocatable,OPTIONAL::Vector_Real
 !
       Character(Len=40)::Lab
       Character(Len=2)::PlaceholderNEq
@@ -436,11 +439,15 @@
                 Vector_Integer,EOF,OK)
           endIf
         Case('R')
-         Write(*,1060)' Found a REAL ARRAY'
+          Write(*,1060)' Found a REAL ARRAY'
           If(Present(Vector_Real)) then
-            If(Size(Vector_Real).ge.NElements) &
-              Call MQC_Files_Text_File_Read_Real_Vec(FChkFile,  &
-                Vector_Real,EOF,OK)
+            if(.not.Allocated(Vector_Real)) then
+              Allocate(Vector_Real(NElements))
+            elseIf(Size(Vector_Real).ne.NElements) then
+              DeAllocate(Vector_Real)
+              Allocate(Vector_Real(NElements))
+            endIf
+            Call MQC_Files_Text_File_Read_Real_Vec(FChkFile,Vector_Real,EOF,OK)
           endIf
         Case('C')
           Write(*,1060)' Found a CHARACTER ARRAY'
@@ -499,21 +506,21 @@
 !     Get the integer flags from the fchk file and then allocate the local
 !     arrays appropriately.
 !
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Number of atoms                            I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=NAtoms)
+        OK,Temp_Char,NElements,Scalar_Integer=NAtoms)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading NAtoms.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Charge                                     I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Charge)
+        OK,Temp_Char,NElements,Scalar_Integer=Charge)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading Charge.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Multiplicity                               I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Multiplicity)
+        OK,Temp_Char,NElements,Scalar_Integer=Multiplicity)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading Multiplicity.', 6, &
         'OK', OK )
@@ -523,28 +530,28 @@
 !
 !     Now, fill the arrays from the fchk file.
 !
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Atomic numbers                             I',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Integer=AtomicNumbers)
+        OK,Temp_Char,NElements,Vector_Integer=AtomicNumbers)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicNumbers.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Nuclear charges                            R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=NuclearCharges)
+        OK,Temp_Char,NElements,Vector_Real=NuclearCharges)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - NuclearCharges.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Current cartesian coordinates              R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=Cartesians_1D)
+        OK,Temp_Char,NElements,Vector_Real=Cartesians_1D)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - Cartesians.', 6, &
         'OK', OK )
       Cartesians = Reshape(Cartesians_1D,(/3,NAtoms/))
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Real atomic weights                        R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=AtomicMasses)
+        OK,Temp_Char,NElements,Vector_Real=AtomicMasses)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicMasses.', 6, &
         'OK', OK )

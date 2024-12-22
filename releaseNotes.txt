@@ -8,6 +8,12 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+DATE
+* MQCPack version set to ***.
+* Routine Find_FChk_Entry in MQC_Gaussian had the first two dummy arguments
+  swapped so that the first one is the FChk object with the file info in
+  it. This facilitates setting up a procedure element to the
+  MQC_Gaussian_FChk_File class.
 
 October 27, 2024
 * MQCPack version set to 24.10.3.

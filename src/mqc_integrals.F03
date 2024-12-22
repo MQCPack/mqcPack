@@ -230,7 +230,7 @@
 !
       implicit none
       integer(kind=int64)::ixyz,jxyz
-      real(kind=real64)::mu,p,XAB
+      real(kind=real64)::mu,p,XAB,XPA,XPB
       real(kind=real64),dimension(:,:)::Sij
       logical,dimension(:,:)::haveSij
 !
@@ -278,30 +278,45 @@
         Sij(ixyz+1,1) = XPA*Sij(ixyz,1)+Sij(ixyz-1,1)*(ixyz-1)/(float(2)*p)
         haveSij(ixyz+1,1) = .true.
 !
-!     1,1
+!     1,1  ==>  0,1
       elseIf(ixyz.eq.1.and.jxyz.eq.1) then
-
-
-
+        if(.not.haveSij(1,2))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(1,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(2,2) = XPA*Sij(1,2)+Sij(1,1)/(float(2)*p)
+        haveSij(2,2) = .true.
 !
 !     1,>=2
       elseIf(ixyz.eq.1.and.jxyz.ge.2) then
-
-
-
+        if(.not.haveSij(1,jxyz+1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,jxyz,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(1,jxyz))  &
+          call MQC_Overlap_Primitive_XYZ_OS(0,jxyz-1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(2,jxyz+1) = XPA*Sij(1,jxyz+1)+jxyz*Sij(1,jxyz)/(float(2)*p)
+        haveSij(2,jxyz+1) = .true.
 !
 !     >=2,1
       elseIf(ixyz.ge.2.and.jxyz.eq.1) then
-
-
-
+        if(.not.haveSij(ixyz,2))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(ixyz-1,2))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-2,1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(ixyz,1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(ixyz+1,2) = XPA*Sij(ixyz,2)+(ixyz*Sij(ixyz-1,2)+Sij(ixyz,1))/(float(2)*p)
+        haveSij(ixyz+1,2) = .true.
 !
 !     >=2,>=2
       elseIf(ixyz.ge.2.and.jxyz.ge.2) then
-
-
-
-
+        if(.not.haveSij(ixyz,jxyz+1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,jxyz,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(ixyz-1,jxyz+1))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-2,jxyz,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        if(.not.haveSij(ixyz,jxyz))  &
+          call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,jxyz-1,mu,p,XAB,XPA,XPB,Sij,haveSij)
+        Sij(ixyz+1,jxyz+1) = XPA*Sij(ixyz,jxyz+1)+((ixyz)*Sij(ixyz-1,jxyz+1)+(jxyz+1)*Sij(ixyz,jxyz))/(float(2)*p)
+        haveSij(ixyz+1,jxyz+1) = .true.
 !
 !     Uknown combination...fail out.
       else
@@ -309,7 +324,7 @@
       endIf
 !
       return
-      end function MQC_Overlap_Primitive_XYZ_OS
+      end subroutine MQC_Overlap_Primitive_XYZ_OS
 
 !
 !

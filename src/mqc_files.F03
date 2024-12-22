@@ -51,6 +51,7 @@
         Integer::buffer_cursor=0
         Logical::Inside_Quotes=.False.
         Logical::Skip_Multiple_Delimits=.True.
+        Logical::Blank_Is_EOF=.True.
       Contains
         Procedure,Pass::OpenFile => MQC_Open_Text_File
         Procedure,Pass::CloseFile => MQC_Close_Text_File
@@ -246,7 +247,8 @@
 
 !
 !PROCEDURE MQC_Files_Text_Parse_Controls
-      Subroutine MQC_Files_Text_Parse_Controls(FileInfo,Do_Skip_Multiple_Delimits)
+      Subroutine MQC_Files_Text_Parse_Controls(FileInfo,  &
+        Do_Skip_Multiple_Delimits,Do_Blank_Is_EOF)
 !
 !     This routine is used to change the basic buffer parsing behavior for the
 !     file associated with object <FileInfo>.
@@ -256,13 +258,15 @@
 !
       Implicit None
       class(MQC_Text_FileInfo),intent(InOut)::FileInfo
-      logical,intent(in),optional::Do_Skip_Multiple_Delimits
+      logical,intent(in),optional::Do_Skip_Multiple_Delimits,Do_Blank_Is_EOF
 !
 !
 !     Do the work...
 !
       if(PRESENT(Do_Skip_Multiple_Delimits))  &
         FileInfo%Skip_Multiple_Delimits=Do_Skip_Multiple_Delimits
+      if(PRESENT(Do_Blank_Is_EOF))  &
+        FileInfo%Blank_Is_EOF = Do_Blank_Is_EOF
 !
       Return
       End Subroutine MQC_Files_Text_Parse_Controls
@@ -797,10 +801,10 @@
 !PROCEDURE MQC_Files_Load_Buffer
       Logical Function MQC_Files_Load_Buffer(FileInfo,EOF)
 !
-!     This routine is used to load a text file buffer for the file
-!     described by input dummy argument/object FileInfo. If there is an
-!     error loading the FF Buffer, then MQC_Files_Load_Buffer returns
-!     .TRUE. as its result.  Otherwise, .FALSE. is returned.
+!     This routine is used to load a text file buffer for the file described by
+!     input dummy argument/object FileInfo. If there is an error loading the FF
+!     Buffer, then MQC_Files_Load_Buffer returns .TRUE. as its result.
+!     Otherwise, .FALSE. is returned.
 !
 !
 !     Variable Declarations
@@ -809,24 +813,26 @@
 !
       Class(MQC_Text_FileInfo),intent(InOut)::FileInfo
       logical,intent(out),optional::EOF
+      logical::my_EOF,my_Blank_Is_EOF
 !
 !     Local variables
 !
       integer::ierror
 !
 !
-!     Start by setting the function value to .FALSE. and ensuring that
-!     FileInfo has been connected to a file.
+!     Start by setting the function value to .FALSE. and setting
+!     my_Blank_Is_EOF. Also, ensure FileInfo has been connected to a file.
 !
-      MQC_Files_Load_Buffer = .False.
-      If(Present(EOF)) EOF = .False.
-      If(FileInfo%UnitNumber.le.0) then
-        MQC_Files_Load_Buffer = .True.
+      MQC_Files_Load_Buffer = .false.
+      my_EOF = .false.
+      my_Blank_Is_EOF = FileInfo%Blank_Is_EOF
+      if(FileInfo%UnitNumber.le.0) then
+        MQC_Files_Load_Buffer = .true.
         FileInfo%buffer = ' '
         FileInfo%buffer_caps = ' '
-        FileInfo%buffer_loaded = .False.
-        Return
-      EndIf
+        FileInfo%buffer_loaded = .false.
+        return
+      endIf
 !
 !     Ensure that buffer_loaded is set and then reset the buffer cursor and
 !     then fill the buffer.
@@ -835,17 +841,33 @@
       FileInfo%buffer_cursor = 1
       Read(Unit=FileInfo%UnitNumber,fmt='(A)',iostat=ierror)  &
         FileInfo%buffer
+      my_EOF = iError.lt.0
+      my_EOF = my_EOF.or.(my_Blank_Is_EOF.and.(Len(Trim(FileInfo%buffer)).eq.0))
+      if(mqc_files_DEBUG) then
+        write(*,*)
+        write(*,*)
+        write(*,*)' Buffer Updated:                      -->',TRIM(FileInfo%buffer)
+        write(*,*)'                      ierror           = ',ierror
+        write(*,*)'                      LEN              = ',Len(Trim(FileInfo%buffer))
+        write(*,*)'                      my_Blank_Is_EOF  = ',my_Blank_Is_EOF
+        write(*,*)'                      my_EOF           = ',my_EOF
+      endIf
       FileInfo%buffer_caps = FileInfo%buffer
       call String_Change_Case(FileInfo%buffer_caps,'U')
-      If((ierror.ne.0).or.(Len(Trim(FileInfo%buffer)).eq.0)) then
-        If(Present(EOF)) then
-          EOF = (ierror.lt.0).or.(Len(Trim(FileInfo%buffer)).eq.0)
-          If(ierror.gt.0) MQC_Files_Load_Buffer = .True.
+      if(Present(EOF)) EOF = my_EOF
+      if(my_EOF.or.(ierror.ne.0)) then
+        if(Present(EOF)) then
+          if(ierror.gt.0) MQC_Files_Load_Buffer = .True.
         else
           MQC_Files_Load_Buffer = .True.
         endIf
         FileInfo%buffer = ' '
         FileInfo%buffer_caps = ' '
+      endIf
+      if(mqc_files_DEBUG) then
+        write(*,*)' END OF BUFFER UPDATE'
+        write(*,*)'                      Function Value   = ',MQC_Files_Load_Buffer
+        if(Present(EOF)) write(*,*)'                      EOF              = ',EOF
       endIf
 !
       Return
@@ -1059,7 +1081,6 @@
           IPointer = Index(TRIM(FileInfo%buffer),TRIM(Search_String))
         else
           Temp_Search_String = Search_String
-!hph          Call Char_Change_Case(.True.,Temp_Search_String)
           call String_Change_Case(Temp_Search_String,'U')
           IPointer = Index(TRIM(FileInfo%buffer_caps),TRIM(Temp_Search_String))
         endIf
@@ -1077,7 +1098,7 @@
 
 
 !
-!PROCEDURE MQC_Files_Test_File_Write_Line
+!PROCEDURE MQC_Files_Text_File_Write_Line
       Subroutine MQC_Files_Text_File_Write_Line(FileInfo,Line)
 !
 !     This routine is used to write a line to a text file.
@@ -1094,8 +1115,8 @@
 !
  1050 Format( A, I10 )
  1060 Format( 2A )
-      write(*,1050)' Hrant - Unit number is ',FileInfo%UnitNumber
-      write(*,1060)' Hrant - Trying to write line: ',TRIM(line)
+      write(*,1050)' Unit number is ',FileInfo%UnitNumber
+      write(*,1060)' Trying to write line: ',TRIM(line)
       write(FileInfo%UnitNumber,'(A)') TRIM(Line)
 !
       Return
