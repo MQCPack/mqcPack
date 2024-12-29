@@ -17451,7 +17451,7 @@
       Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
       Logical::SymmFlag,S2Flag,AFlag,BFlag
-      Character(len=12)::SymmStr
+      Character(len=12)::SymmStr,index_order='genetic'
       Character(len=:),allocatable::detIndex1,detIndex2
       Character(len=44)::bar=" Build Progress: ???% |                    |"
 
@@ -17500,7 +17500,9 @@
         subs2B = [integer::]
       endIf
       call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
-        lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2,symmflag)
+        lsubsT,rsubsA,rsubsB,rsubsT,symmflag)
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
 !
 !     Allocate output operator matrix
 !
@@ -17513,14 +17515,6 @@
         Call CI_Hamiltonian%init(NDets1,NDets2)
         SymmStr = 'element'
       EndIf
-
-!     We are going to move everything below into the reverse lookup by index, and then have a 
-!     single loop over all indexes here. Psuedocode:
-!     do i = 1, ndet
-!       do j = 1,ndet
-!         if we are symmetry, skip all j greater than i
-!         return strings associated with these indicies
-!         if we are ci, then 
 
       nAlpha1 = get_string_nElec(Determinants%Strings%Alpha(1)) 
       nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha(1)) 
@@ -17550,9 +17544,8 @@
           iOut,'Determinants2order',Determinants2%order)
       end select
 
+      L_Index = 0
       L_A_Start = 1
-!      Counter = 0
-!      Counter2 = 0
       Do L_A_Sub = 0, LASub_End
         if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
         L_B_Start = 1
@@ -17581,6 +17574,53 @@
           end select
           Do L_A_String = L_A_Start, L_A_End, L_A_Step
             Do L_B_String = L_B_Start, L_B_End, L_B_Step
+
+              Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
+              Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
+
+              A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
+              B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
+              T1_sublevel = A1_subLevel + B1_subLevel
+
+              if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+              if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+              if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+
+              if(index_order.eq.'genetic') then
+!               Compute composite index within substituion level k
+!               I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                L_Iabk = mqc_get_string_index(Alpha_String_1,&
+                  (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
+                  'lexical',[A1_subLevel],determinants%nCore)*&
+                  Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
+                  mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
+                  (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
+
+!               Compute composite substitution level offset 
+!               X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!               where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                L_Xk = 0
+                l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
+                  do Counter2 = 0,size(Determinants%NSubsBeta)-1
+                    if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                    if(.not.any(Counter.eq.lSubsA)) cycle
+                    if(.not.any(Counter2.eq.lSubsB)) cycle
+                    if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
+                    L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
+                      Determinants%NSubsBeta%at(Counter2+1)
+                  endDo
+                endDo l_offset
+
+!               Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                L_Index = L_Xk + L_Iabk + 1
+              elseIf(index_order.eq.'input') then
+                L_Index = L_Index + 1
+              else
+                call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                  'index_order',index_order)
+              endIf
+
+              R_Index = 0
               R_A_Start = 1
               Do R_A_Sub = 0, RASub_End
                 if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
@@ -17611,70 +17651,51 @@
                   Do R_A_String = R_A_Start, R_A_End, R_A_Step
                     Do R_B_String = R_B_Start, R_B_End, R_A_Step
 
-                      Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
                       Alpha_String_2 = Determinants2%Strings%Alpha(R_A_String) 
-                      Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
                       Beta_String_2 = Determinants2%Strings%Beta(R_B_String) 
 
-                      A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
                       A2_subLevel = get_string_sub_level(Alpha_String_2,nAlpha2)
-                      B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
                       B2_sublevel = get_string_sub_level(Beta_String_2,nBeta2)
-                      T1_sublevel = A1_subLevel + B1_subLevel
                       T2_sublevel = A2_subLevel + B2_subLevel
 
-                      if(.not.any(A1_subLevel.eq.lSubsA)) cycle
-                      if(.not.any(B1_subLevel.eq.lSubsB)) cycle
-                      if(.not.any(T1_subLevel.eq.lSubsT)) cycle
                       if(.not.any(A2_subLevel.eq.rSubsA)) cycle
                       if(.not.any(B2_subLevel.eq.rSubsB)) cycle
                       if(.not.any(T2_subLevel.eq.rSubsT)) cycle
                        
-!                     Compute composite index within substituion level k
-!                     I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
-                      L_Iabk = mqc_get_string_index(Alpha_String_1,&
-                        (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
-                        'lexical',[A1_subLevel],determinants%nCore)*&
-                        Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
-                        mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
-                        (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
-                      R_Iabk = mqc_get_string_index(Alpha_String_2,&
-                        (determinants2%nBasis-determinants2%nVirt),&
-                        (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
-                        Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
-                        mqc_get_string_index(Beta_String_2,&
-                        (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
-                        'lexical',[B2_subLevel],determinants2%nCore)
+                      if(index_order.eq.'genetic') then
+!                       Compute composite index within substituion level k
+!                       I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                        R_Iabk = mqc_get_string_index(Alpha_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),&
+                          (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                          Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
+                          mqc_get_string_index(Beta_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
+                          'lexical',[B2_subLevel],determinants2%nCore)
 
-!                     Compute composite substitution level offset 
-!                     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
-!                     where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
-                      L_Xk = 0
-                      l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
-                        do Counter2 = 0,size(Determinants%NSubsBeta)-1
-                          if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
-                          if(.not.any(Counter.eq.lSubsA)) cycle
-                          if(.not.any(Counter2.eq.lSubsB)) cycle
-                          if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
-                          L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
-                            Determinants%NSubsBeta%at(Counter2+1)
-                        endDo
-                      endDo l_offset
-                      R_Xk = 0
-                      r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
-                        do Counter2 = 0,size(Determinants2%NSubsBeta)-1
-                          if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
-                          if(.not.any(Counter.eq.rSubsA)) cycle
-                          if(.not.any(Counter2.eq.rSubsB)) cycle
-                          if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
-                          R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
-                            Determinants2%NSubsBeta%at(Counter2+1)
-                        endDo
-                      endDo r_offset
+!                       Compute composite substitution level offset 
+!                       X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!                       where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                        R_Xk = 0
+                        r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
+                          do Counter2 = 0,size(Determinants2%NSubsBeta)-1
+                            if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                            if(.not.any(Counter.eq.rSubsA)) cycle
+                            if(.not.any(Counter2.eq.rSubsB)) cycle
+                            if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
+                            R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
+                              Determinants2%NSubsBeta%at(Counter2+1)
+                          endDo
+                        endDo r_offset
 
-!                     Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
-                      L_Index = L_Xk + L_Iabk + 1
-                      R_Index = R_Xk + R_Iabk + 1
+!                       Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                        R_Index = R_Xk + R_Iabk + 1
+                      elseIf(index_order.eq.'input') then
+                        R_Index = R_Index + 1
+                      else
+                        call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                          'index_order',index_order)
+                      endIf
 
                       if(SymmFlag.and.L_Index.lt.R_Index) cycle
 !                      write(*,*) '-------------------------------------------'
@@ -17913,7 +17934,9 @@
         subs2B = [integer::]
       endIf
       call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
-        lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2,symmflag)
+        lsubsT,rsubsA,rsubsB,rsubsT,symmflag)
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
 !
 !     Allocate output operator matrix
 !
@@ -17933,9 +17956,9 @@
         Else
           R_Index_End = NDets2
         EndIf
+        call mqc_strings_at_index(iout,iprint,L_Index,Determinants,lsubsA,lSubsB,lSubsT,&
+          Alpha_String_1,Beta_String_1)
         Do R_Index = 1, R_Index_End
-          call mqc_strings_at_index(iout,iprint,L_Index,Determinants,lsubsA,lSubsB,lSubsT,&
-            Alpha_String_1,Beta_String_1)
           call mqc_strings_at_index(iout,iprint,R_Index,Determinants2,rsubsA,rSubsB,rSubsT,&
             Alpha_String_2,Beta_String_2)
 !          write(*,*) '-------------------------------------------'
@@ -18609,15 +18632,13 @@
 !>    \date 2024
 !
       subroutine get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,&
-        lsubsA,lsubsB,lsubsT,rsubsA,rsubsB,rsubsT,NDets1A,NDets1B,NDets1,NDets2A,NDets2B,&
-        NDets2,SymmFlag) 
+        lsubsA,lsubsB,lsubsT,rsubsA,rsubsB,rsubsT,SymmFlag) 
 
       Implicit None
       Type(MQC_Determinant),Intent(In)::Determinants,Determinants2
       integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB,subs2A,subs2B
       integer(kind=int64),dimension(:),allocatable,intent(Out)::lsubsA,lsubsB,lsubsT,rsubsA,&
         rsubsB,rsubsT
-      integer(kind=int64),intent(Out)::NDets1A,NDets1B,NDets1,NDets2A,NDets2B,NDets2
       logical,intent(inOut)::symmflag
       integer(kind=int64)::i,j,k
 
@@ -18701,9 +18722,6 @@
         endDo
         call sort(rSubsT)
       EndIf
-
-      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
-      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
 
       end subroutine get_subLevels
 !
