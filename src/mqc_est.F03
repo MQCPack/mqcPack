@@ -17489,19 +17489,26 @@
       else
         subsB = [integer::]
       endIf
-      if(present(subs2AIn)) then
-        subs2A = subs2AIn
-      else
-        subs2A = [integer::]
-      endIf
-      if(present(subs2BIn)) then
-        subs2B = subs2BIn
-      else
-        subs2B = [integer::]
-      endIf
-      call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
-        lsubsT,rsubsA,rsubsB,rsubsT,symmflag)
+      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
       call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+
+      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+        subs2A = subsA
+        subs2B = subsB
+      elseIf(.not.present(subs2BIn)) then
+        subs2A = subs2AIn
+        subs2B = [integer::]
+        symmFlag = .False.
+      elseIf(.not.present(subs2AIn)) then
+        subs2A = [integer::]
+        subs2B = subs2BIn
+        symmFlag = .False.
+      else
+        subs2A = subs2AIn
+        subs2B = subs2BIn
+        symmFlag = .False.
+      endIf
+      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
       call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
 !
 !     Allocate output operator matrix
@@ -17878,11 +17885,11 @@
         L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
         L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,Counter2,&
         NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
-        RASub_End,RBSub_End,R_Index_End
+        RASub_End,RBSub_End,R_Index_End,LDetSize,RDetSize
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
       Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
-      Type(MQC_Determinant)::Determinants2
+      Type(MQC_Determinant),Allocatable::Determinants2
       Logical::SymmFlag,S2Flag,AFlag,BFlag
       Character(len=12)::SymmStr
       Character(len=:),allocatable::detIndex1,detIndex2
@@ -17909,6 +17916,9 @@
         Determinants2 = Determinants
         SymmFlag = .True.
       EndIf
+
+!      LDetSize = Size(Determinants)
+!      RDetSize = Size(Determinants2)
 !
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
@@ -17923,19 +17933,26 @@
       else
         subsB = [integer::]
       endIf
-      if(present(subs2AIn)) then
-        subs2A = subs2AIn
-      else
-        subs2A = [integer::]
-      endIf
-      if(present(subs2BIn)) then
-        subs2B = subs2BIn
-      else
-        subs2B = [integer::]
-      endIf
-      call get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,lsubsA,lsubsB,&
-        lsubsT,rsubsA,rsubsB,rsubsT,symmflag)
+      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
       call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+
+      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+        subs2A = subsA
+        subs2B = subsB
+      elseIf(.not.present(subs2BIn)) then
+        subs2A = subs2AIn
+        subs2B = [integer::]
+        symmFlag = .False.
+      elseIf(.not.present(subs2AIn)) then
+        subs2A = [integer::]
+        subs2B = subs2BIn
+        symmFlag = .False.
+      else
+        subs2A = subs2AIn
+        subs2B = subs2BIn
+        symmFlag = .False.
+      endIf
+      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
       call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
 !
 !     Allocate output operator matrix
@@ -18631,16 +18648,13 @@
 !>    \author L. M. Thompson
 !>    \date 2024
 !
-      subroutine get_subLevels(Determinants,Determinants2,subsA,subsB,subs2A,subs2B,&
-        lsubsA,lsubsB,lsubsT,rsubsA,rsubsB,rsubsT,SymmFlag) 
+      subroutine get_subLevels(Determinants,subsA,subsB,subsAOut,subsBOut,subsTOut)
 
       Implicit None
-      Type(MQC_Determinant),Intent(In)::Determinants,Determinants2
-      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB,subs2A,subs2B
-      integer(kind=int64),dimension(:),allocatable,intent(Out)::lsubsA,lsubsB,lsubsT,rsubsA,&
-        rsubsB,rsubsT
-      logical,intent(inOut)::symmflag
-      integer(kind=int64)::i,j,k
+      Type(MQC_Determinant),Intent(In)::Determinants
+      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB
+      integer(kind=int64),dimension(:),allocatable,intent(Out)::subsAOut,subsBOut,subsTOut
+      integer(kind=int64)::i,j
 
       if(size(subsA).eq.0.and.size(subsB).ne.0) then
        call mqc_error_i('Beta substitution levels present, but not alpha (or total) substitution level &
@@ -18648,80 +18662,40 @@
       endIf
       If(size(subsB).eq.0) then
         If(size(subsA).eq.0) then
-          lSubsT = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
+          subsTOut = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
         Else
-          lSubsT = subsA
+          subsTOut = subsA
         EndIf
-        lSubsA = [integer::]
-        do i = 1, size(lSubsT)
-          do j = 0, lSubsT(i)
-            if(.not.any(lSubsA.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
-              if(Determinants%NSubsAlpha%at(j+1).ne.0) lSubsA = [lSubsA,j]
+        subsAOut = [integer::]
+        do i = 1, size(subsTOut)
+          do j = 0, subsTOut(i)
+            if(.not.any(subsAOut.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
+              if(Determinants%NSubsAlpha%at(j+1).ne.0) subsAOut = [subsAOut,j]
             endIf
           endDo
         endDo
-        lSubsB = [integer::]
-        do i = 1, size(lSubsT)
-          do j = 0, lSubsT(i)
-            if(.not.any(lSubsB.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
-              if(Determinants%NSubsBeta%at(j+1).ne.0) lSubsB = [lSubsB,j]
+        subsBOut = [integer::]
+        do i = 1, size(subsTOut)
+          do j = 0, subsTOut(i)
+            if(.not.any(subsBOut.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
+              if(Determinants%NSubsBeta%at(j+1).ne.0) subsBOut = [subsBOut,j]
             endIf
           endDo
         endDo
-        call sort(lSubsA)
-        call sort(lSubsB)
+        call sort(subsAOut)
+        call sort(subsBOut)
       Else
-        lSubsA = subsA
-        lSubsB = subsB
-        lSubsT = [integer::]
-        do i = 1, size(lSubsA)
-          do j = 1, size(lSubsB)
-            if(.not.any(lSubsT.eq.lSubsA(i)+lSubsB(j))) lSubsT = [lSubsT,lSubsA(i)+lSubsB(j)]
+        subsAOut = subsA
+        subsBOut = subsB
+        subsTOut = [integer::]
+        do i = 1, size(subsAOut)
+          do j = 1, size(subsBOut)
+            if(.not.any(subsTOut.eq.subsAOut(i)+subsBOut(j))) &
+              subsTOut = [subsTOut,subsAOut(i)+subsBOut(j)]
           endDo
         endDo
-        call sort(lSubsT)
+        call sort(subsTOut)
       endIf
-
-      if(size(subs2A).eq.0.and.size(subs2B).eq.0) then
-!       SymmFlag is true as subs are the same, unless determinants are different, as set above
-        rSubsA = lSubsA
-        rSubsB = lSubsB
-        rSubsT = lSubsT
-      ElseIf(size(subs2B).eq.0) then
-        symmFlag = .False.
-        rSubsT = subs2A
-        rSubsA = [integer::]
-        do i = 1, size(rSubsT)
-          do j = 0, rSubsT(i)
-            if(.not.any(rSubsA.eq.j).and.j+1.le.size(Determinants2%NSubsAlpha)) then
-              if(Determinants2%NSubsAlpha%at(j+1).ne.0) rSubsA = [rSubsA,j]
-            endIf
-          endDo
-        endDo
-        do i = 1, size(rSubsT)
-          do j = 0, rSubsT(i)
-            if(.not.any(rSubsB.eq.j).and.j+1.le.size(Determinants2%NSubsBeta)) then
-              if(Determinants2%NSubsBeta%at(j+1).ne.0) rSubsB = [rSubsB,j]
-            endIf
-          endDo
-        endDo
-        call sort(rSubsA)
-        call sort(rSubsB)
-      Else
-        If(size(subs2A).eq.0) call mqc_error_i('Beta substitution levels present, but alpha &
-          &(or total) substitution level not provided',6,'size(subs2A)',size(subs2A),&
-          'size(subs2B)',size(subs2B))
-        symmFlag = .False.
-        rSubsA = subs2A
-        rSubsB = subs2B
-        rSubsT = [integer::]
-        do i = 1, size(rSubsA)
-          do j = 1, size(rSubsB)
-            if(.not.any(rSubsT.eq.rSubsA(i)+rSubsB(j))) rSubsT = [rSubsT,rSubsA(i)+rSubsB(j)]
-          endDo
-        endDo
-        call sort(rSubsT)
-      EndIf
 
       end subroutine get_subLevels
 !
