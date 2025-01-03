@@ -108,10 +108,15 @@
         module procedure MQC_mvBits
       end interface mvBits
 !
-!>    \brief <b> Moves a set number of bits</b>
+!>    \brief <b> Extracts a set number of bits</b>
       interface iBits
         module procedure MQC_iBits
       end interface iBits
+!
+!>    \brief <b> Shifts by a set number of bits</b>
+      interface iShft
+        module procedure MQC_iShft
+      end interface iShft
 !
 !
 !----------------------------------------------------------------
@@ -562,5 +567,60 @@
 !
       return
       end function MQC_iBits
+!
+!
+!PROCEDURE MQC_iShft
+      function MQC_iShft(bits,shift) result(bitsOut)
+!
+!     This function concatenates two mqc_bits.
+!
+!     L. M. Thompson, 2025.
+!
+!
+      implicit none
+      type(mqc_bits),intent(in)::bits
+      integer(kind=int64),intent(in)::shift
+      type(mqc_bits)::bitsOut
+!
+      integer(kind=int64)::i
+!
+!
+!     Do the work.
+!
+      bitsOut = mqc_bits(bits%nBits+shift)
+      do i = 0, bits%nBits-1
+        if(i+shift.ge.0.or.i+shift.le.bitsOut%nBits) then
+          if(bTest(bits,i)) bitsOut = ibset(bitsOut,i+shift)
+        endIf
+      endDo
+!
+      return
+      end function MQC_iShft 
+!
+!
+!PROCEDURE MQC_concatenate_bits
+      function MQC_concatenate_bits(bits1,bits2) result(bitsOut)
+!
+!     This function concatenates two mqc_bits.
+!
+!     L. M. Thompson, 2025.
+!
+!
+      implicit none
+      type(mqc_bits),intent(in)::bits1,bits2
+      type(mqc_bits)::bitsOut
+!
+      integer(kind=int64)::i
+!
+!
+!     Do the work.
+!
+      bitsOut = ishft(bits1,bits2%nbits)
+      do i = 0, bits2%nBits-1
+        if(bTest(bits2,i)) bitsOut = ibset(bitsOut,i)
+      endDo
+!
+      return
+      end function MQC_concatenate_bits
 !
       end module MQC_Binary

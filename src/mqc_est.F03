@@ -17448,7 +17448,7 @@
         RASub_End,RBSub_End
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
-      Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Vector)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
       Logical::SymmFlag,S2Flag,AFlag,BFlag
       Character(len=12)::SymmStr,index_order='genetic'
@@ -17875,21 +17875,23 @@
       Integer(kind=int64),Intent(In)::IOut,IPrint
       Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
       Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
-      Type(MQC_Determinant),Intent(In)::Determinants
-      Type(MQC_Determinant),Optional,Intent(In)::Dets2
-      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::Operator_Matrix
-      Integer(kind=int64)::I,J,K,NDets1,L_A_String,L_B_String, &
+      Integer(kind=int64)::I,J,K,L_A_String,L_B_String, &
         R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
         L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
-        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,Counter2,&
-        NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
+        L_B_Sub,R_A_Sub,R_B_Sub,Counter,Counter2,NDets1T,NDets2T,&
+        nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
         RASub_End,RBSub_End,R_Index_End,LDetSize,RDetSize
-      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
-      Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
-      Integer(kind=int64),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
-      Type(MQC_Determinant),Allocatable::Determinants2
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
+        NDets1A,NDets1B,NDets2A,NDets2B
+      Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,alphaStrTemp,&
+        betaStrTemp
+      Type(MQC_Vector),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
       Logical::SymmFlag,S2Flag,AFlag,BFlag
       Character(len=12)::SymmStr
       Character(len=:),allocatable::detIndex1,detIndex2
@@ -17917,67 +17919,94 @@
         SymmFlag = .True.
       EndIf
 
-!      LDetSize = Size(Determinants)
-!      RDetSize = Size(Determinants2)
+      LDetSize = Size(Determinants)
+      RDetSize = Size(Determinants2)
+      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
+        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
+        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
 !
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
 !
-      if(present(subsAIn)) then
-        subsA = subsAIn
-      else
-        subsA = [integer::]
-      endIf
-      if(present(subsBIn)) then
-        subsB = subsBIn
-      else
-        subsB = [integer::]
-      endIf
-      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
-      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+      NDets1T = 1
+      do i = 1, LDetSize
+        if(present(subsAIn)) then
+          subsA = subsAIn(i)
+        else
+          subsA = [integer::]
+        endIf
+        if(present(subsBIn)) then
+          subsB = subsBIn(i)
+        else
+          subsB = [integer::]
+        endIf
+        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
+        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
+          NDets1(i),NDets1A(i),NDets1B(i))
+        NDets1T = NDets1T*NDets1(i)
+      endDo
 
-      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
-        subs2A = subsA
-        subs2B = subsB
-      elseIf(.not.present(subs2BIn)) then
-        subs2A = subs2AIn
-        subs2B = [integer::]
-        symmFlag = .False.
-      elseIf(.not.present(subs2AIn)) then
-        subs2A = [integer::]
-        subs2B = subs2BIn
-        symmFlag = .False.
-      else
-        subs2A = subs2AIn
-        subs2B = subs2BIn
-        symmFlag = .False.
-      endIf
-      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
-      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
+      NDets2T = 1
+      do i = 1, RDetSize
+        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+          subs2A = subsA
+          subs2B = subsB
+        elseIf(.not.present(subs2BIn)) then
+          subs2A = subs2AIn(i)
+          subs2B = [integer::]
+          symmFlag = .False.
+        elseIf(.not.present(subs2AIn)) then
+          subs2A = [integer::]
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        else
+          subs2A = subs2AIn(i)
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        endIf
+        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
+        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
+          NDets2(i),NDets2A(i),NDets2B(i))
+        NDets2T = NDets2T*NDets2(i)
+      endDo
 !
 !     Allocate output operator matrix
 !
       If(SymmFlag) then
-        if(NDets1.ne.NDets2) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
-          6,'NDets1',NDets1,'NDets2',NDets2)
-        Call Operator_Matrix%init(NDets1,NDets2,Storage='StorHerm')
+        if(NDets1T.ne.NDets2T) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
+          6,'NDets1T',NDets1T,'NDets2T',NDets2T)
+        Call Operator_Matrix%init(NDets1T,NDets2T,Storage='StorHerm')
         SymmStr = 'hermitian'
       Else
-        Call Operator_Matrix%init(NDets1,NDets2)
+        Call Operator_Matrix%init(NDets1T,NDets2T)
         SymmStr = 'element'
       EndIf
       
-      Do L_Index = 1, NDets1
+      Do L_Index = 1, NDets1T
         If(SymmFlag) then
           R_Index_End = L_Index
         Else
-          R_Index_End = NDets2
+          R_Index_End = NDets2T
         EndIf
-        call mqc_strings_at_index(iout,iprint,L_Index,Determinants,lsubsA,lSubsB,lSubsT,&
-          Alpha_String_1,Beta_String_1)
+        alpha_string_1 = mqc_bits(0)
+        beta_string_1 = mqc_bits(0)
+        Do I = 1, LDetSize
+          J = mod((L_Index-1)/product(NDets1(1:i-1)),NDets1(i))+1
+          call mqc_strings_at_index(iout,iprint,j,Determinants(i),lsubsA(i),lSubsB(i),&
+            lSubsT(i),AlphaStrTemp,BetaStrTemp)
+          alpha_string_1 = MQC_concatenate_bits(alphaStrTemp,alpha_string_1)
+          beta_string_1 = MQC_concatenate_bits(betaStrTemp,beta_string_1)
+        EndDo
         Do R_Index = 1, R_Index_End
-          call mqc_strings_at_index(iout,iprint,R_Index,Determinants2,rsubsA,rSubsB,rSubsT,&
-            Alpha_String_2,Beta_String_2)
+          alpha_string_2 = mqc_bits(0)
+          beta_string_2 = mqc_bits(0)
+          Do I = 1, RDetSize
+            J = mod((R_Index-1)/product(NDets2(1:i-1)),NDets2(i))+1
+            call mqc_strings_at_index(iout,iprint,j,Determinants2(i),rsubsA(i),rSubsB(i),&
+              rSubsT(i),AlphaStrTemp,BetaStrTemp)
+            alpha_string_2 = MQC_concatenate_bits(alphaStrTemp,alpha_string_2)
+            beta_string_2 = MQC_concatenate_bits(betaStrTemp,beta_string_2)
+          EndDo
 !          write(*,*) '-------------------------------------------'
 !          write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !          write(*,*) '-------------------------------------------'
@@ -18093,7 +18122,7 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint,IndIn
       Type(MQC_Determinant),Intent(In)::Determinants
-      integer(kind=int64),Dimension(:),Intent(In)::SubsA,SubsB,SubsT
+      type(mqc_vector),Intent(In)::SubsA,SubsB,SubsT
       type(MQC_bits),intent(Out)::aString,bString
 
       Integer(kind=int64)::nAlpha,nBeta,Xk,A_Sub,B_Sub,A_Start,B_Start,A_End,&
@@ -18653,7 +18682,7 @@
       Implicit None
       Type(MQC_Determinant),Intent(In)::Determinants
       integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB
-      integer(kind=int64),dimension(:),allocatable,intent(Out)::subsAOut,subsBOut,subsTOut
+      type(mqc_vector),intent(Out)::subsAOut,subsBOut,subsTOut
       integer(kind=int64)::i,j
 
       if(size(subsA).eq.0.and.size(subsB).ne.0) then
@@ -18668,33 +18697,34 @@
         EndIf
         subsAOut = [integer::]
         do i = 1, size(subsTOut)
-          do j = 0, subsTOut(i)
+          do j = 0, int(subsTOut%at(i))
             if(.not.any(subsAOut.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
-              if(Determinants%NSubsAlpha%at(j+1).ne.0) subsAOut = [subsAOut,j]
+!              if(Determinants%NSubsAlpha%at(j+1).ne.0) subsAOut = [subsAOut,j]
+              if(Determinants%NSubsAlpha%at(j+1).ne.0) call subsAOut%push(j)
             endIf
           endDo
         endDo
         subsBOut = [integer::]
         do i = 1, size(subsTOut)
-          do j = 0, subsTOut(i)
+          do j = 0, int(subsTOut%at(i))
             if(.not.any(subsBOut.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
-              if(Determinants%NSubsBeta%at(j+1).ne.0) subsBOut = [subsBOut,j]
+              if(Determinants%NSubsBeta%at(j+1).ne.0) call subsBOut%push(j)
             endIf
           endDo
         endDo
-        call sort(subsAOut)
-        call sort(subsBOut)
+        call subsAOut%sort()
+        call subsBOut%sort()
       Else
         subsAOut = subsA
         subsBOut = subsB
         subsTOut = [integer::]
         do i = 1, size(subsAOut)
           do j = 1, size(subsBOut)
-            if(.not.any(subsTOut.eq.subsAOut(i)+subsBOut(j))) &
-              subsTOut = [subsTOut,subsAOut(i)+subsBOut(j)]
+            if(.not.any(subsTOut.eq.int(subsAOut%at(i))+int(subsBOut%at(j)))) &
+              call subsTOut%push(int(subsAOut%at(i))+int(subsBOut%at(j)))
           endDo
         endDo
-        call sort(subsTOut)
+        call subsTOut%sort()
       endIf
 
       end subroutine get_subLevels
@@ -18771,7 +18801,7 @@
 
       Implicit None
       Type(MQC_Determinant),Intent(In)::Determinants
-      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB,subsT
+      type(mqc_vector),intent(In)::subsA,subsB,subsT
       integer(kind=int64),intent(Out)::NDetsA,NDetsB,NDets
       integer(kind=int64)::i,j,k
       
@@ -18781,7 +18811,7 @@
       Do I = 1, Size(subsT)
         Do J = 1, Size(Determinants%NSubsAlpha)
           Do K = 1, Size(Determinants%NSubsBeta)
-            If((J-1)+(K-1).eq.subsT(i).and.any(subsA.eq.(J-1)).and.any(subsB.eq.(K-1))) then
+            If((J-1)+(K-1).eq.int(subsT%at(i)).and.any(subsA.eq.(J-1)).and.any(subsB.eq.(K-1))) then
               NDets = NDets + Determinants%NSubsAlpha%at(J)*Determinants%NSubsBeta%at(K)
             EndIf
           EndDo
