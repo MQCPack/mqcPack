@@ -17440,25 +17440,19 @@
       Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
-      Integer(kind=int64)::I,J,K,NDets1,L_A_String,L_B_String, &
-        R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
-        L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
-        L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,Counter2,&
-        NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
-        RASub_End,RBSub_End
+      Integer(kind=int64)::I,J,NDets1,L_A_String,L_B_String,R_A_String,R_B_String,L_Index,&
+        R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End,L_A_Step,L_B_Step,R_A_Start,R_B_Start,&
+        R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,&
+        Counter2,NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,&
+        LBSub_End,RASub_End,RBSub_End
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
       Type(MQC_Vector)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
-      Logical::SymmFlag,S2Flag,AFlag,BFlag
+      Logical::SymmFlag,S2Flag
       Character(len=12)::SymmStr,index_order='genetic'
-      Character(len=:),allocatable::detIndex1,detIndex2
-      Character(len=44)::bar=" Build Progress: ???% |                    |"
-
-      Integer(kind=int64)::tmp_index
       Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
         L_Iabk,R_Iabk,L_Xk,R_Xk
-      type(mqc_bits)::tmp_a_string,tmp_b_string
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -17784,19 +17778,22 @@
 !>
 !>    \param[in] Determinants
 !>    \verbatim
-!>        Determinants is Type(MQC_Determinant)
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
 !>        The binary string occupation number vectors. If 
 !>        opional argument Dets2 is provided Determinants
-!>        variable will contain the row basis strings.
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
 !>    \endverbatim
 !>    
 !>    \param[in] Dets2
 !>    \verbatim
-!>        Dets2 is Type(MQC_Determinant),Optional
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
 !>        If provided, gives the binary string occupation number 
 !>        vectors for the column basis, where Determinants variable
 !>        will continue to provide the binary string occupation 
-!>        number vectors for the row basis.
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_Core_Ham
@@ -17813,43 +17810,48 @@
 !>    
 !>    \param[in] SubsAIn
 !>    \verbatim
-!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
-!>        in the Hamiltonian. If not present, all substitutions are 
-!>        included. If SubsB not present, SubsA containes the the 
-!>        total (alpha+beta) substitutions that are permitted. If 
-!>        both SubsA and SubsB provided, SubsA contains the alpha
-!>        substitutions that are permitted. If Subs2A are provided, 
-!>        Subs1A gives substitutions for the row basis only.
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
 !>    \endverbatim
 !>    
 !>    \param[in] SubsBIn
 !>    \verbatim
-!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
-!>        include in the Hamiltonian. 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
 !>    \endverbatim
 !>
 !>    \param[in] Subs2AIn
 !>    \verbatim
-!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
-!>        in the Hamiltonian for the column basis. If not present, 
-!>        column basis substitutions are equal to row basis 
-!>        substitutions provided by variable SubsA and/or SubsB.
-!>        If Subs2A provided but not Subs2B, Subs2A contains the total
-!>        (alpha+beta) substitutions that are permitted. If both 
-!>        Subs2A and Subs2B provided, Subs2A containes the alpha
-!>        substitutions that are permitted.
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
 !>    \endverbatim
 !>    
 !>    \param[in] Subs2BIn
 !>    \verbatim
-!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
-!>        include in the Hamiltonian for the column basis. If not 
-!>        present, column basis substitutions are equal to row basis 
-!>        substitutions.
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
 !>    \endverbatim
 !>    
 !>    \param[in] doS2
@@ -17880,27 +17882,15 @@
       Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::Operator_Matrix
-      Integer(kind=int64)::I,J,K,L_A_String,L_B_String, &
-        R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
-        L_A_Step,L_B_Step,R_A_Start,R_B_Start,R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,&
-        L_B_Sub,R_A_Sub,R_B_Sub,Counter,Counter2,NDets1T,NDets2T,&
-        nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,LBSub_End,&
-        RASub_End,RBSub_End,R_Index_End,LDetSize,RDetSize
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End,LDetSize,RDetSize
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
         NDets1A,NDets1B,NDets2A,NDets2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,alphaStrTemp,&
         betaStrTemp
       Type(MQC_Vector),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
-      Logical::SymmFlag,S2Flag,AFlag,BFlag
+      Logical::SymmFlag,S2Flag
       Character(len=12)::SymmStr
-      Character(len=:),allocatable::detIndex1,detIndex2
-      Character(len=44)::bar=" Build Progress: ???% |                    |"
-
-      Integer(kind=int64)::tmp_index
-      Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
-        L_Iabk,R_Iabk,L_Xk,R_Xk
-      type(mqc_bits)::tmp_a_string,tmp_b_string
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -18559,117 +18549,36 @@
 !>        The left set of determinant strings 
 !>    \endverbatim
 !>    
-!>    \param[in] Determinants2
-!>    \verbatim
-!>        Determinants2 is type(mqc_determinant)
-!>        The right set of determinant strings 
-!>    \endverbatim
-!>    
 !>    \param[in] subsA
 !>    \verbatim
 !>        SubsA is integer(kind=int64),dimension(:),allocatable
-!>        The total substitutions of the left determinant set (if subs1B is size 0)
-!>        or the alpha substutions of the left determinant set (if subs1B is not
+!>        The total substitutions of the determinant set (if subsB is size 0)
+!>        or the alpha substutions of the determinant set (if subsB is not
 !>        size 0).
 !>    \endverbatim
 !>    
 !>    \param[in] subsB
 !>    \verbatim
 !>        SubsB is integer(kind=int64),dimension(:),allocatable
-!>        The beta substitutions of the left determinant set.
+!>        The beta substitutions of the determinant set.
 !>    \endverbatim
 !>    
-!>    \param[in] subs2A
+!>    \param[out] subsAOut
 !>    \verbatim
-!>        Subs2A is integer(kind=int64),dimension(:),allocatable
-!>        The total substitutions of the right determinant set (if subs2B is size 0)
-!>        or the alpha substutions of the right determinant set (if subs2B is not
-!>        size 0).
+!>        subsAOut is type(MQC_Vector),allocatable 
+!>        The alpha substitutions.
 !>    \endverbatim
 !>    
-!>    \param[in] subs2B
+!>    \param[out] subsBOut
 !>    \verbatim
-!>        Subs2B is integer(kind=int64),dimension(:),allocatable
-!>        The beta substitutions of the right determinant set.
+!>        subsBOut is type(MQC_Vector),allocatable 
+!>        The beta substitutions.
 !>    \endverbatim
 !>    
-!>    \param[out] lsubsA
+!>    \param[out] subsTOut
 !>    \verbatim
-!>        lSubsA is integer(kind=int64),dimension(:),allocatable 
-!>        The left alpha substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] lsubsB
-!>    \verbatim
-!>        lSubsB is integer(kind=int64),dimension(:),allocatable 
-!>        The left beta substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] lsubsT
-!>    \verbatim
-!>        lSubsT is integer(kind=int64),dimension(:),allocatable 
-!>        The left total substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] rsubsA
-!>    \verbatim
-!>        rSubsA is integer(kind=int64),dimension(:),allocatable 
-!>        The right alpha substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] rsubsB
-!>    \verbatim
-!>        rSubsB is integer(kind=int64),dimension(:),allocatable 
-!>        The right beta substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] rsubsT
-!>    \verbatim
-!>        rSubsT is integer(kind=int64),dimension(:),allocatable 
-!>        The right total substitutions.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets1A
-!>    \verbatim
-!>        nDets1A is integer(kind=int64)
-!>        The number of left alpha strings.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets1B
-!>    \verbatim
-!>        nDets1B is integer(kind=int64)
-!>        The number of left beta strings.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets1
-!>    \verbatim
-!>        nDets1 is integer(kind=int64)
-!>        The number of left strings.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets2A
-!>    \verbatim
-!>        nDets2A is integer(kind=int64)
-!>        The number of right alpha strings.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets2B
-!>    \verbatim
-!>        nDets2B is integer(kind=int64)
-!>        The number of right beta strings.
-!>    \endverbatim
-!>    
-!>    \param[out] nDets2
-!>    \verbatim
-!>        nDets2 is integer(kind=int64)
-!>        The number of right strings.
-!>    \endverbatim
-!>    
-!>    \param[inout] SymmFlag
-!>    \verbatim
-!>        SymmFlag is logical
-!>        The flag for whether the Hamiltonian 
-!>        being built is hermitian..
+!>        subsTOut is type(MQC_Vector),allocatable 
+!>        The total substitutions.
 !>    \endverbatim
 !>    
 !     Authors:
