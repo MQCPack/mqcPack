@@ -9,9 +9,9 @@
 !     ** Written By:                                                       **
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
-!     **                                 |                                 **
-!     **                          Version 24.10.3                          **
-!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                          Version 25.1.0                           **
+!     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -177,10 +177,10 @@
       integer,OPTIONAL,intent(out)::major,minor,revision
       character(len=*),OPTIONAL,intent(out)::versionString
 !
-      if(PRESENT(major))         major         = 24
-      if(PRESENT(minor))         minor         = 10
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '24.10.3'
+      if(PRESENT(major))         major         = 25
+      if(PRESENT(minor))         minor         = 1
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.1.0'
 !
       return
       end subroutine mqc_version

@@ -10,9 +10,9 @@
 !     ** Written By:                                                       **
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
-!     **                                 |                                 **
-!     **                          Version 24.10.3                          **
-!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                          Version 25.1.0                           **
+!     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -521,6 +521,13 @@
         Character(Len=64)::Name
         Call_Test = 0
         call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
+
+!hph+
+      write(*,*)
+      write(*,*)' Hrant - Rd_RInd: IntPrecision = ',IntPrecision
+      write(*,*)
+!hph-
+
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
            IU_4 = IU
