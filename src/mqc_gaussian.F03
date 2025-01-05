@@ -9,9 +9,9 @@
 !     ** Written By:                                                       **
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
-!     **                                 |                                 **
-!     **                          Version 24.10.3                          **
-!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                          Version 25.1.0                           **
+!     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -131,7 +131,6 @@
 !----------------------------------------------------------------
 !
       Logical,Private::MQC_Gaussian_DEBUG=.False.
-      Logical,Public::MQC_Gaussian_DEBUGHPH=.False.
 !
 !
 !     Subroutines/Functions...
@@ -315,16 +314,25 @@
       Integer,Intent(In)::UnitNumber
       Logical,optional,Intent(Out)::OK
       character(len=*),intent(in),optional::fileAction
+      Integer::myUnitNumber
 !
       Character(Len=256)::Temp_Char
       Integer::IError
       Logical::EOF,Temp_Logical
 !
 !
-!     Begin by opening the FChk file as an MQC text file.
+!     Begin by opening the FChk file as an MQC text file and then set
+!     Blank_Is_EOF to .False..
 !
-      Call MQC_Open_Text_File(FileInfo,FileName,UnitNumber,OK)
+      if(UnitNumber.gt.0) then
+        myUnitNumber = UnitNumber
+      else
+        myUnitNumber = MQC_getUnitNumber()
+      endIf
+      Call MQC_Open_Text_File(FileInfo,FileName,myUnitNumber,OK)
       If(.not.OK) Return
+      call MQC_Files_Text_Parse_Controls(FileInfo,  &
+        Do_Blank_Is_EOF=.false.)
 !
 !     Load the title, job type, method, and basis set from the first two
 !     lines of the file.
@@ -342,7 +350,7 @@
 
 !
 !PROCEDURE Find_FChk_Entry
-      Subroutine Find_FChk_Entry(EntryTag,FChkFile,FoundEntry,  &
+      Subroutine Find_FChk_Entry(FChkFile,EntryTag,FoundEntry,  &
         TypeFlag,NElements,Scalar_Integer,Scalar_Real,Scalar_Character, &
         Scalar_Logical,Vector_Integer,Vector_Real)
 !
@@ -378,13 +386,13 @@
       Type(MQC_Gaussian_FChk_File),Intent(InOut)::FChkFile
       Logical,Intent(OUT)::FoundEntry
       Character(*),Intent(OUT)::TypeFlag
-      Integer,Intent(OUT)::NElements
-      Integer,Intent(OUT),OPTIONAL::Scalar_Integer
-      Real,Intent(OUT),OPTIONAL::Scalar_Real
+      Integer(kind=int64),Intent(OUT)::NElements
+      Integer(kind=int64),Intent(OUT),OPTIONAL::Scalar_Integer
+      Real(kind=real64),Intent(OUT),OPTIONAL::Scalar_Real
       Character(*),Intent(OUT),OPTIONAL::Scalar_Character
       Logical,Intent(OUT),OPTIONAL::Scalar_Logical
-      Integer,Dimension(:),Intent(OUT),OPTIONAL::Vector_Integer
-      Real,Dimension(:),Intent(OUT),OPTIONAL::Vector_Real
+      Integer(kind=int64),Dimension(:),Intent(OUT),OPTIONAL::Vector_Integer
+      Real(kind=real64),Dimension(:),Allocatable,OPTIONAL::Vector_Real
 !
       Character(Len=40)::Lab
       Character(Len=2)::PlaceholderNEq
@@ -436,11 +444,15 @@
                 Vector_Integer,EOF,OK)
           endIf
         Case('R')
-         Write(*,1060)' Found a REAL ARRAY'
+          Write(*,1060)' Found a REAL ARRAY'
           If(Present(Vector_Real)) then
-            If(Size(Vector_Real).ge.NElements) &
-              Call MQC_Files_Text_File_Read_Real_Vec(FChkFile,  &
-                Vector_Real,EOF,OK)
+            if(.not.Allocated(Vector_Real)) then
+              Allocate(Vector_Real(NElements))
+            elseIf(Size(Vector_Real).ne.NElements) then
+              DeAllocate(Vector_Real)
+              Allocate(Vector_Real(NElements))
+            endIf
+            Call MQC_Files_Text_File_Read_Real_Vec(FChkFile,Vector_Real,EOF,OK)
           endIf
         Case('C')
           Write(*,1060)' Found a CHARACTER ARRAY'
@@ -499,21 +511,21 @@
 !     Get the integer flags from the fchk file and then allocate the local
 !     arrays appropriately.
 !
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Number of atoms                            I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=NAtoms)
+        OK,Temp_Char,NElements,Scalar_Integer=NAtoms)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading NAtoms.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Charge                                     I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Charge)
+        OK,Temp_Char,NElements,Scalar_Integer=Charge)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading Charge.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Multiplicity                               I',  &
-        FChkFile,OK,Temp_Char,NElements,Scalar_Integer=Multiplicity)
+        OK,Temp_Char,NElements,Scalar_Integer=Multiplicity)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error loading Multiplicity.', 6, &
         'OK', OK )
@@ -523,28 +535,28 @@
 !
 !     Now, fill the arrays from the fchk file.
 !
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Atomic numbers                             I',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Integer=AtomicNumbers)
+        OK,Temp_Char,NElements,Vector_Integer=AtomicNumbers)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicNumbers.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Nuclear charges                            R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=NuclearCharges)
+        OK,Temp_Char,NElements,Vector_Real=NuclearCharges)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - NuclearCharges.', 6, &
         'OK', OK )
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Current cartesian coordinates              R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=Cartesians_1D)
+        OK,Temp_Char,NElements,Vector_Real=Cartesians_1D)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - Cartesians.', 6, &
         'OK', OK )
       Cartesians = Reshape(Cartesians_1D,(/3,NAtoms/))
-      Call Find_FChk_Entry(                              &
+      Call Find_FChk_Entry(FChkFile,                     &
         'Real atomic weights                        R',  &
-        FChkFile,OK,Temp_Char,NElements,Vector_Real=AtomicMasses)
+        OK,Temp_Char,NElements,Vector_Real=AtomicMasses)
       If(.not.OK)  &
         Call MQC_Error_L('MQC_Gaussian: FChk error - AtomicMasses.', 6, &
         'OK', OK )
@@ -624,23 +636,23 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Open
-      subroutine MQC_Gaussian_Unformatted_Matrix_Open(fileinfo,filename,unitnumber,ok)
+      subroutine MQC_Gaussian_Unformatted_Matrix_Open(fileinfo,filename,unitNumber,ok)
 !
-!     This Routine is used to set-up a Gaussian unformatted matrix file
-!     object file. The dummy argument <FileName> is an input argument
-!     giving the the name of the file. For now, the dummy argument
-!     <unitnumber> must be sent, but it is ultimately. The output dummy
-!     argument <ok> is returned TRUE if everything proceeds without error;
-!     otherwise, <ok> is returned FALSE.
+!     This Routine is used to set-up a Gaussian unformatted matrix file object
+!     file. The dummy argument <FileName> is an input argument giving the the
+!     name of the file. For now, the dummy argument <unitNumber> must be sent,
+!     but it is ultimately ignored. The output dummy argument <ok> is returned
+!     TRUE if everything proceeds without error; otherwise, <ok> is returned
+!     FALSE.
 !
-!     NOTE: This routine does NOT actually open the file. Instead, this
-!     routine serves as the required OpenFile deferred procedure binding
-!     for members of the MQC_FileInfo class. Because the unformatted matrix
-!     file is a Fortran unformatted file, the file will only be read OR
-!     write. So, there are two different routines for working with the file
-!     -- one for READ mode and one for WRITE mode. Also, note that the
-!     matrix file has header scalars and arrays that must initially be
-!     read/written. Then arrays/matrices can be read/written.
+!     NOTE: This routine does NOT actually open the file. Instead, this routine
+!     serves as the required OpenFile deferred procedure binding for members of
+!     the MQC_FileInfo class. Because the unformatted matrix file is a Fortran
+!     unformatted file, the file will only be read OR write. So, there are two
+!     different routines for working with the file -- one for READ mode and one
+!     for WRITE mode. Also, note that the matrix file has header scalars and
+!     arrays that must initially be read/written. Then arrays/matrices can be
+!     read/written.
 !
 !     H. P. Hratchian, 2017.
 !
@@ -650,7 +662,7 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::filename
-      integer,intent(in)::unitnumber
+      integer,intent(in)::unitNumber
       logical,intent(out)::ok
 !
       integer::iout=6,unit_number
@@ -661,7 +673,9 @@
       if(fileinfo%IsOpen()) call MQC_Gaussian_Unformatted_Matrix_Close(fileinfo)
       ok = .true.
       fileinfo%filename       = TRIM(filename)
-      fileinfo%UnitNumber     = unitnumber
+      fileinfo%unitNumber     = 0
+      if(MQC_Gaussian_DEBUG) write(*,*)' In OpenFile, unitNumber = ',  &
+        fileinfo%unitNumber
       fileinfo%declared       = .false.
       fileinfo%CurrentlyOpen  = .true.
 !
@@ -721,11 +735,8 @@
       if(allocated(fileinfo%NShlDB)) deallocate(fileinfo%NShlDB)
       if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
-
-!hph+
       if(allocated(fileinfo%gaussianScalars)) deallocate(fileinfo%gaussianScalars)
-!hph-
-
+      call MQC_setOff_unitNumbersOpened(fileinfo%UnitNumber)
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
@@ -839,6 +850,7 @@
           fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
           fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,len12l,  &
           len4l,iopcl,fileinfo%icgu)
+        call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
         allocate(fileinfo%atomicNumbers(fileinfo%natoms),  &
           fileinfo%atomTypes(fileinfo%natoms),  &
           fileinfo%atomicCharges(fileinfo%natoms),  &
@@ -855,7 +867,7 @@
         fileinfo%CurrentlyOpen = .true.
         fileinfo%header_read   = .true.
       endIf
-      if(DEBUG.or.MQC_Gaussian_DEBUGHPH) then
+      if(DEBUG.or.MQC_Gaussian_DEBUG) then
         write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
           TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
           fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
@@ -2373,7 +2385,7 @@
           'element', element, &
           'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%basisFunction2Atom(element)
-        if(MQC_Gaussian_DEBUGHPH) write(*,1000)element,value_out
+        if(MQC_Gaussian_DEBUG) write(*,1000)element,value_out
       case('basis type')
         if(.not.allocated(fileinfo%IBasisFunctionType))  &
           call MQC_Error_l('Requested basis type not possible.', 6, &
