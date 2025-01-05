@@ -131,7 +131,6 @@
 !----------------------------------------------------------------
 !
       Logical,Private::MQC_Gaussian_DEBUG=.False.
-      Logical,Public::MQC_Gaussian_DEBUGHPH=.False.
 !
 !
 !     Subroutines/Functions...
@@ -315,6 +314,7 @@
       Integer,Intent(In)::UnitNumber
       Logical,optional,Intent(Out)::OK
       character(len=*),intent(in),optional::fileAction
+      Integer::myUnitNumber
 !
       Character(Len=256)::Temp_Char
       Integer::IError
@@ -324,7 +324,12 @@
 !     Begin by opening the FChk file as an MQC text file and then set
 !     Blank_Is_EOF to .False..
 !
-      Call MQC_Open_Text_File(FileInfo,FileName,UnitNumber,OK)
+      if(UnitNumber.gt.0) then
+        myUnitNumber = UnitNumber
+      else
+        myUnitNumber = MQC_getUnitNumber()
+      endIf
+      Call MQC_Open_Text_File(FileInfo,FileName,myUnitNumber,OK)
       If(.not.OK) Return
       call MQC_Files_Text_Parse_Controls(FileInfo,  &
         Do_Blank_Is_EOF=.false.)
@@ -631,23 +636,23 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Open
-      subroutine MQC_Gaussian_Unformatted_Matrix_Open(fileinfo,filename,unitnumber,ok)
+      subroutine MQC_Gaussian_Unformatted_Matrix_Open(fileinfo,filename,unitNumber,ok)
 !
-!     This Routine is used to set-up a Gaussian unformatted matrix file
-!     object file. The dummy argument <FileName> is an input argument
-!     giving the the name of the file. For now, the dummy argument
-!     <unitnumber> must be sent, but it is ultimately. The output dummy
-!     argument <ok> is returned TRUE if everything proceeds without error;
-!     otherwise, <ok> is returned FALSE.
+!     This Routine is used to set-up a Gaussian unformatted matrix file object
+!     file. The dummy argument <FileName> is an input argument giving the the
+!     name of the file. For now, the dummy argument <unitNumber> must be sent,
+!     but it is ultimately ignored. The output dummy argument <ok> is returned
+!     TRUE if everything proceeds without error; otherwise, <ok> is returned
+!     FALSE.
 !
-!     NOTE: This routine does NOT actually open the file. Instead, this
-!     routine serves as the required OpenFile deferred procedure binding
-!     for members of the MQC_FileInfo class. Because the unformatted matrix
-!     file is a Fortran unformatted file, the file will only be read OR
-!     write. So, there are two different routines for working with the file
-!     -- one for READ mode and one for WRITE mode. Also, note that the
-!     matrix file has header scalars and arrays that must initially be
-!     read/written. Then arrays/matrices can be read/written.
+!     NOTE: This routine does NOT actually open the file. Instead, this routine
+!     serves as the required OpenFile deferred procedure binding for members of
+!     the MQC_FileInfo class. Because the unformatted matrix file is a Fortran
+!     unformatted file, the file will only be read OR write. So, there are two
+!     different routines for working with the file -- one for READ mode and one
+!     for WRITE mode. Also, note that the matrix file has header scalars and
+!     arrays that must initially be read/written. Then arrays/matrices can be
+!     read/written.
 !
 !     H. P. Hratchian, 2017.
 !
@@ -657,7 +662,7 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
       character(len=*),intent(in)::filename
-      integer,intent(in)::unitnumber
+      integer,intent(in)::unitNumber
       logical,intent(out)::ok
 !
       integer::iout=6,unit_number
@@ -668,7 +673,13 @@
       if(fileinfo%IsOpen()) call MQC_Gaussian_Unformatted_Matrix_Close(fileinfo)
       ok = .true.
       fileinfo%filename       = TRIM(filename)
-      fileinfo%UnitNumber     = unitnumber
+      fileinfo%unitNumber     = 0
+
+!hph+
+      if(MQC_Gaussian_DEBUG) write(*,*)' In OpenFile, unitNumber = ',  &
+        fileinfo%unitNumber
+!hph-
+
       fileinfo%declared       = .false.
       fileinfo%CurrentlyOpen  = .true.
 !
@@ -728,11 +739,8 @@
       if(allocated(fileinfo%NShlDB)) deallocate(fileinfo%NShlDB)
       if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
-
-!hph+
       if(allocated(fileinfo%gaussianScalars)) deallocate(fileinfo%gaussianScalars)
-!hph-
-
+      call MQC_setOff_unitNumbersOpened(fileinfo%UnitNumber)
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
@@ -798,6 +806,11 @@
 !     program unit. If so, then get the file declared before reading the
 !     header information.
 !
+
+!hph+
+      if(MQC_Gaussian_DEBUG) write(*,*) ' Loading file...isOpen = ',fileinfo%isOpen()
+!hph-
+
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
@@ -841,11 +854,27 @@
           fileinfo%multiplicity,fileinfo%nelectrons,fileinfo%icgu,fileinfo%NFC, &
           fileinfo%NFV,fileinfo%ITran,fileinfo%IDum9,fileinfo%NShlAO,fileinfo%NPrmAO, &
           fileinfo%NShlDB,fileinfo%NPrmDB,fileinfo%NBTot)
+
+!hph+
+      if(MQC_Gaussian_DEBUG) write(*,*)' In Load, about to call Open_Read. unitNumber = ',  &
+        fileinfo%unitNumber
+!hph-
+
         call Open_Read(TRIM(fileinfo%filename),fileinfo%UnitNumber,  &
           fileinfo%labfil,ivers,nlab,fileinfo%gvers,fileinfo%title,  &
           fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
           fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,len12l,  &
           len4l,iopcl,fileinfo%icgu)
+
+!hph+
+        call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
+!hph-
+
+!hph+
+      if(MQC_Gaussian_DEBUG) write(*,*)' In Load, after call to Open_Read. unitNumber = ',  &
+        fileinfo%unitNumber
+!hph-
+
         allocate(fileinfo%atomicNumbers(fileinfo%natoms),  &
           fileinfo%atomTypes(fileinfo%natoms),  &
           fileinfo%atomicCharges(fileinfo%natoms),  &
@@ -862,7 +891,7 @@
         fileinfo%CurrentlyOpen = .true.
         fileinfo%header_read   = .true.
       endIf
-      if(DEBUG.or.MQC_Gaussian_DEBUGHPH) then
+      if(DEBUG.or.MQC_Gaussian_DEBUG) then
         write(IOut,1010) TRIM(fileinfo%LabFil),IVers,NLab,  &
           TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
           fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
@@ -2380,7 +2409,7 @@
           'element', element, &
           'fileinfo%nbasis', fileinfo%nbasis )
         value_out = fileinfo%basisFunction2Atom(element)
-        if(MQC_Gaussian_DEBUGHPH) write(*,1000)element,value_out
+        if(MQC_Gaussian_DEBUG) write(*,1000)element,value_out
       case('basis type')
         if(.not.allocated(fileinfo%IBasisFunctionType))  &
           call MQC_Error_l('Requested basis type not possible.', 6, &
@@ -5498,11 +5527,23 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
       type(MQC_Variable)::mqcTmp
+
+!hph+
+       value_out = 0.0
+!hph        return
+!hph-
+
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen()) then
+
+!hph+
+      write(*,*)' Hrant - file is NOT open'
+      return
+!hph-
+
         if(PRESENT(filename)) then
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
@@ -5538,10 +5579,21 @@
           call MQC_Error('Logic error loading gaussianScalars.')
         fileinfo%gaussianScalars = mqcTmp
       endIf
+
+!hph+
+      return
+!hph-
+
 !
 !     Do the work...
 !
       call String_Change_Case(label,'l',myLabel)
+
+!hph+
+      write(*,*)' Hrant - myLabel = ',TRIM(myLabel)
+      return
+!hph-
+
       select case (mylabel)
       case('energy')
         value_out = fileinfo%gaussianScalars(43)

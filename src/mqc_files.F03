@@ -68,13 +68,151 @@
       integer,private::NDelimiters_Default=3
       character(len=1),dimension(Max_NDelimiters_Default),private::  &
         Delimit_Default=(/ ' ',',',';',' ',' ',' ',' ',' ',' ',' ' /)
-      logical::mqc_files_DEBUG=.false.
+      logical::mqc_files_DEBUG=.false.,unitNumbersOpened_init=.false.
+      logical,dimension(0:99)::unitNumbersOpened=.false.
 !
 !
 !     Subroutines and Functions.
 !
       CONTAINS
 !
+!
+!PROCEDURE MQC_getUnitNumber
+     function MQC_getUnitNumber(startingValue) result(unitNumber)
+!
+!     This function returns the value of an available file unit number. The
+!     dummy arguemtne <startingValue> is OPTIONAL; if it is sent, the returned
+!     unit number will be greater than or equal to <startingValue>.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer,optional::startingValue
+      integer::unitNumber
+      integer::iStart,i
+      logical::isOpened,found
+!
+!
+!     Do the work...
+!
+      if(.not.unitNumbersOpened_init) call MQC_init_unitNumbersOpened()
+      iStart = 50
+      if(PRESENT(startingValue)) iStart = startingValue
+      found = .false.
+      do i = iStart,99
+        INQUIRE(unit=i,opened=isOpened)
+        if(isOpened.and..not.MQC_get_unitNumbersOpened(i)) then
+          call MQC_setOn_unitNumbersOpened(i)
+        elseIf(.not.unitNumbersOpened(i)) then
+          found = .true.
+          unitNumber = i
+        endIf
+        if(found) exit
+      endDo
+      if(.not.found) call mqc_error('Unable to find an available unit number.')
+!
+      return
+      end function MQC_getUnitNumber
+
+
+!
+!PROCEDURE MQC_init_unitNumbersOpened
+     subroutine MQC_init_unitNumbersOpened()
+!
+!     This subroutine is used to initialize the unitNumbersOpened array used in
+!     this module. The initialization process protects unit numbers 0, 5, and 6.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(0) = .true.
+      unitNumbersOpened(5) = .true.
+      unitNumbersOpened(6) = .true.
+!
+      return
+      end subroutine MQC_init_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_setOn_unitNumbersOpened
+     subroutine MQC_setOn_unitNumbersOpened(iUnit)
+!
+!     This subroutine is used to set a member of the unitNumbersOpened array to
+!     true.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(iUnit) = .true.
+
+!hph+
+!      write(*,*)
+!      write(*,*)' hrant - setting iUnit to TRUE. iUnit = ',iUnit
+!      write(*,*)
+!hph-
+
+!
+      return
+      end subroutine MQC_setOn_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_setOff_unitNumbersOpened
+     subroutine MQC_setOff_unitNumbersOpened(iUnit)
+!
+!     This subroutine is used to set a member of the unitNumbersOpened array to
+!     false.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(iUnit) = .false.
+!
+      return
+      end subroutine MQC_setOff_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_get_unitNumbersOpened
+     function MQC_get_unitNumbersOpened(iUnit) result(onOff)
+!
+!     This function is used to get the true/false values of a member of the
+!     unitNumbersOpened array, which is given by dummy argument iUnit.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+      logical::onOff
+!
+!
+!     Do the work...
+!
+      onOff = unitNumbersOpened(iUnit)
+!
+      return
+      end function MQC_get_unitNumbersOpened
+
+
 !
 !PROCEDURE MQC_IsOpen_File
       Function MQC_File_IsOpen(FileInfo)
@@ -157,6 +295,7 @@
       FileInfo%buffer_loaded = .False.
       If(MQC_Files_Load_Buffer(FileInfo,EOF)) Return
       if(PRESENT(OK)) OK = .True.
+      call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
 !
       Return
       End Subroutine MQC_Open_Text_File
@@ -181,6 +320,7 @@
 !     FileInfo%buffer_loaded.
 !
       Close(Unit=FileInfo%UnitNumber)
+      call MQC_setOff_unitNumbersOpened(fileinfo%UnitNumber)
       FileInfo%CurrentlyOpen = .False.
       FileInfo%UnitNumber = 0
       FileInfo%buffer = ' '
