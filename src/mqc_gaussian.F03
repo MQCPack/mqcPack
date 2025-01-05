@@ -9,9 +9,9 @@
 !     ** Written By:                                                       **
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
-!     **                                 |                                 **
-!     **                          Version 24.10.3                          **
-!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                          Version 25.1.0                           **
+!     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -674,12 +674,8 @@
       ok = .true.
       fileinfo%filename       = TRIM(filename)
       fileinfo%unitNumber     = 0
-
-!hph+
       if(MQC_Gaussian_DEBUG) write(*,*)' In OpenFile, unitNumber = ',  &
         fileinfo%unitNumber
-!hph-
-
       fileinfo%declared       = .false.
       fileinfo%CurrentlyOpen  = .true.
 !
@@ -806,11 +802,6 @@
 !     program unit. If so, then get the file declared before reading the
 !     header information.
 !
-
-!hph+
-      if(MQC_Gaussian_DEBUG) write(*,*) ' Loading file...isOpen = ',fileinfo%isOpen()
-!hph-
-
       if(.not.fileinfo%isOpen()) then
         if(PRESENT(filename)) then
           call fileinfo%OPENFILE(TRIM(filename),0,ok)
@@ -854,27 +845,12 @@
           fileinfo%multiplicity,fileinfo%nelectrons,fileinfo%icgu,fileinfo%NFC, &
           fileinfo%NFV,fileinfo%ITran,fileinfo%IDum9,fileinfo%NShlAO,fileinfo%NPrmAO, &
           fileinfo%NShlDB,fileinfo%NPrmDB,fileinfo%NBTot)
-
-!hph+
-      if(MQC_Gaussian_DEBUG) write(*,*)' In Load, about to call Open_Read. unitNumber = ',  &
-        fileinfo%unitNumber
-!hph-
-
         call Open_Read(TRIM(fileinfo%filename),fileinfo%UnitNumber,  &
           fileinfo%labfil,ivers,nlab,fileinfo%gvers,fileinfo%title,  &
           fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
           fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,len12l,  &
           len4l,iopcl,fileinfo%icgu)
-
-!hph+
         call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
-!hph-
-
-!hph+
-      if(MQC_Gaussian_DEBUG) write(*,*)' In Load, after call to Open_Read. unitNumber = ',  &
-        fileinfo%unitNumber
-!hph-
-
         allocate(fileinfo%atomicNumbers(fileinfo%natoms),  &
           fileinfo%atomTypes(fileinfo%natoms),  &
           fileinfo%atomicCharges(fileinfo%natoms),  &
@@ -5527,23 +5503,11 @@
       character(len=64)::myLabel
       character(len=256)::my_filename
       type(MQC_Variable)::mqcTmp
-
-!hph+
-       value_out = 0.0
-!hph        return
-!hph-
-
 !
 !
 !     Ensure the matrix file has already been opened and the header read.
 !
       if(.not.fileinfo%isOpen()) then
-
-!hph+
-      write(*,*)' Hrant - file is NOT open'
-      return
-!hph-
-
         if(PRESENT(filename)) then
           call MQC_Gaussian_Unformatted_Matrix_Read_Header(fileinfo,  &
             filename)
@@ -5579,21 +5543,10 @@
           call MQC_Error('Logic error loading gaussianScalars.')
         fileinfo%gaussianScalars = mqcTmp
       endIf
-
-!hph+
-      return
-!hph-
-
 !
 !     Do the work...
 !
       call String_Change_Case(label,'l',myLabel)
-
-!hph+
-      write(*,*)' Hrant - myLabel = ',TRIM(myLabel)
-      return
-!hph-
-
       select case (mylabel)
       case('energy')
         value_out = fileinfo%gaussianScalars(43)

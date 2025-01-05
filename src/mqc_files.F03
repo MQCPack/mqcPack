@@ -9,9 +9,9 @@
 !     ** Written By:                                                       **
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
-!     **                                 |                                 **
-!     **                          Version 24.10.3                          **
-!     **                         October 27, 2024                          **
+!     **                                                                   **
+!     **                          Version 25.1.0                           **
+!     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
