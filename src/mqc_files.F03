@@ -1,30 +1,32 @@
       Module MQC_Files
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                                                   **
+!     **                          Version 25.1.1                           **
+!     **                          January 4, 2025                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
       use MQC_General
 !
@@ -49,6 +51,7 @@
         Integer::buffer_cursor=0
         Logical::Inside_Quotes=.False.
         Logical::Skip_Multiple_Delimits=.True.
+        Logical::Blank_Is_EOF=.True.
       Contains
         Procedure,Pass::OpenFile => MQC_Open_Text_File
         Procedure,Pass::CloseFile => MQC_Close_Text_File
@@ -65,13 +68,151 @@
       integer,private::NDelimiters_Default=3
       character(len=1),dimension(Max_NDelimiters_Default),private::  &
         Delimit_Default=(/ ' ',',',';',' ',' ',' ',' ',' ',' ',' ' /)
-      logical::mqc_files_DEBUG=.false.
+      logical::mqc_files_DEBUG=.false.,unitNumbersOpened_init=.false.
+      logical,dimension(0:99)::unitNumbersOpened=.false.
 !
 !
 !     Subroutines and Functions.
 !
       CONTAINS
 !
+!
+!PROCEDURE MQC_getUnitNumber
+     function MQC_getUnitNumber(startingValue) result(unitNumber)
+!
+!     This function returns the value of an available file unit number. The
+!     dummy arguemtne <startingValue> is OPTIONAL; if it is sent, the returned
+!     unit number will be greater than or equal to <startingValue>.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer,optional::startingValue
+      integer::unitNumber
+      integer::iStart,i
+      logical::isOpened,found
+!
+!
+!     Do the work...
+!
+      if(.not.unitNumbersOpened_init) call MQC_init_unitNumbersOpened()
+      iStart = 50
+      if(PRESENT(startingValue)) iStart = startingValue
+      found = .false.
+      do i = iStart,99
+        INQUIRE(unit=i,opened=isOpened)
+        if(isOpened.and..not.MQC_get_unitNumbersOpened(i)) then
+          call MQC_setOn_unitNumbersOpened(i)
+        elseIf(.not.unitNumbersOpened(i)) then
+          found = .true.
+          unitNumber = i
+        endIf
+        if(found) exit
+      endDo
+      if(.not.found) call mqc_error('Unable to find an available unit number.')
+!
+      return
+      end function MQC_getUnitNumber
+
+
+!
+!PROCEDURE MQC_init_unitNumbersOpened
+     subroutine MQC_init_unitNumbersOpened()
+!
+!     This subroutine is used to initialize the unitNumbersOpened array used in
+!     this module. The initialization process protects unit numbers 0, 5, and 6.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(0) = .true.
+      unitNumbersOpened(5) = .true.
+      unitNumbersOpened(6) = .true.
+!
+      return
+      end subroutine MQC_init_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_setOn_unitNumbersOpened
+     subroutine MQC_setOn_unitNumbersOpened(iUnit)
+!
+!     This subroutine is used to set a member of the unitNumbersOpened array to
+!     true.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(iUnit) = .true.
+
+!hph+
+!      write(*,*)
+!      write(*,*)' hrant - setting iUnit to TRUE. iUnit = ',iUnit
+!      write(*,*)
+!hph-
+
+!
+      return
+      end subroutine MQC_setOn_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_setOff_unitNumbersOpened
+     subroutine MQC_setOff_unitNumbersOpened(iUnit)
+!
+!     This subroutine is used to set a member of the unitNumbersOpened array to
+!     false.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+!
+!
+!     Do the work...
+!
+      unitNumbersOpened(iUnit) = .false.
+!
+      return
+      end subroutine MQC_setOff_unitNumbersOpened
+
+
+!
+!PROCEDURE MQC_get_unitNumbersOpened
+     function MQC_get_unitNumbersOpened(iUnit) result(onOff)
+!
+!     This function is used to get the true/false values of a member of the
+!     unitNumbersOpened array, which is given by dummy argument iUnit.
+!
+!
+!     Variable Declarations.
+!
+      Implicit None
+      integer::iUnit
+      logical::onOff
+!
+!
+!     Do the work...
+!
+      onOff = unitNumbersOpened(iUnit)
+!
+      return
+      end function MQC_get_unitNumbersOpened
+
+
 !
 !PROCEDURE MQC_IsOpen_File
       Function MQC_File_IsOpen(FileInfo)
@@ -154,6 +295,7 @@
       FileInfo%buffer_loaded = .False.
       If(MQC_Files_Load_Buffer(FileInfo,EOF)) Return
       if(PRESENT(OK)) OK = .True.
+      call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
 !
       Return
       End Subroutine MQC_Open_Text_File
@@ -178,6 +320,7 @@
 !     FileInfo%buffer_loaded.
 !
       Close(Unit=FileInfo%UnitNumber)
+      call MQC_setOff_unitNumbersOpened(fileinfo%UnitNumber)
       FileInfo%CurrentlyOpen = .False.
       FileInfo%UnitNumber = 0
       FileInfo%buffer = ' '
@@ -244,7 +387,8 @@
 
 !
 !PROCEDURE MQC_Files_Text_Parse_Controls
-      Subroutine MQC_Files_Text_Parse_Controls(FileInfo,Do_Skip_Multiple_Delimits)
+      Subroutine MQC_Files_Text_Parse_Controls(FileInfo,  &
+        Do_Skip_Multiple_Delimits,Do_Blank_Is_EOF)
 !
 !     This routine is used to change the basic buffer parsing behavior for the
 !     file associated with object <FileInfo>.
@@ -254,13 +398,15 @@
 !
       Implicit None
       class(MQC_Text_FileInfo),intent(InOut)::FileInfo
-      logical,intent(in),optional::Do_Skip_Multiple_Delimits
+      logical,intent(in),optional::Do_Skip_Multiple_Delimits,Do_Blank_Is_EOF
 !
 !
 !     Do the work...
 !
       if(PRESENT(Do_Skip_Multiple_Delimits))  &
         FileInfo%Skip_Multiple_Delimits=Do_Skip_Multiple_Delimits
+      if(PRESENT(Do_Blank_Is_EOF))  &
+        FileInfo%Blank_Is_EOF = Do_Blank_Is_EOF
 !
       Return
       End Subroutine MQC_Files_Text_Parse_Controls
@@ -795,10 +941,10 @@
 !PROCEDURE MQC_Files_Load_Buffer
       Logical Function MQC_Files_Load_Buffer(FileInfo,EOF)
 !
-!     This routine is used to load a text file buffer for the file
-!     described by input dummy argument/object FileInfo. If there is an
-!     error loading the FF Buffer, then MQC_Files_Load_Buffer returns
-!     .TRUE. as its result.  Otherwise, .FALSE. is returned.
+!     This routine is used to load a text file buffer for the file described by
+!     input dummy argument/object FileInfo. If there is an error loading the FF
+!     Buffer, then MQC_Files_Load_Buffer returns .TRUE. as its result.
+!     Otherwise, .FALSE. is returned.
 !
 !
 !     Variable Declarations
@@ -807,24 +953,26 @@
 !
       Class(MQC_Text_FileInfo),intent(InOut)::FileInfo
       logical,intent(out),optional::EOF
+      logical::my_EOF,my_Blank_Is_EOF
 !
 !     Local variables
 !
       integer::ierror
 !
 !
-!     Start by setting the function value to .FALSE. and ensuring that
-!     FileInfo has been connected to a file.
+!     Start by setting the function value to .FALSE. and setting
+!     my_Blank_Is_EOF. Also, ensure FileInfo has been connected to a file.
 !
-      MQC_Files_Load_Buffer = .False.
-      If(Present(EOF)) EOF = .False.
-      If(FileInfo%UnitNumber.le.0) then
-        MQC_Files_Load_Buffer = .True.
+      MQC_Files_Load_Buffer = .false.
+      my_EOF = .false.
+      my_Blank_Is_EOF = FileInfo%Blank_Is_EOF
+      if(FileInfo%UnitNumber.le.0) then
+        MQC_Files_Load_Buffer = .true.
         FileInfo%buffer = ' '
         FileInfo%buffer_caps = ' '
-        FileInfo%buffer_loaded = .False.
-        Return
-      EndIf
+        FileInfo%buffer_loaded = .false.
+        return
+      endIf
 !
 !     Ensure that buffer_loaded is set and then reset the buffer cursor and
 !     then fill the buffer.
@@ -833,17 +981,33 @@
       FileInfo%buffer_cursor = 1
       Read(Unit=FileInfo%UnitNumber,fmt='(A)',iostat=ierror)  &
         FileInfo%buffer
+      my_EOF = iError.lt.0
+      my_EOF = my_EOF.or.(my_Blank_Is_EOF.and.(Len(Trim(FileInfo%buffer)).eq.0))
+      if(mqc_files_DEBUG) then
+        write(*,*)
+        write(*,*)
+        write(*,*)' Buffer Updated:                      -->',TRIM(FileInfo%buffer)
+        write(*,*)'                      ierror           = ',ierror
+        write(*,*)'                      LEN              = ',Len(Trim(FileInfo%buffer))
+        write(*,*)'                      my_Blank_Is_EOF  = ',my_Blank_Is_EOF
+        write(*,*)'                      my_EOF           = ',my_EOF
+      endIf
       FileInfo%buffer_caps = FileInfo%buffer
       call String_Change_Case(FileInfo%buffer_caps,'U')
-      If((ierror.ne.0).or.(Len(Trim(FileInfo%buffer)).eq.0)) then
-        If(Present(EOF)) then
-          EOF = (ierror.lt.0).or.(Len(Trim(FileInfo%buffer)).eq.0)
-          If(ierror.gt.0) MQC_Files_Load_Buffer = .True.
+      if(Present(EOF)) EOF = my_EOF
+      if(my_EOF.or.(ierror.ne.0)) then
+        if(Present(EOF)) then
+          if(ierror.gt.0) MQC_Files_Load_Buffer = .True.
         else
           MQC_Files_Load_Buffer = .True.
         endIf
         FileInfo%buffer = ' '
         FileInfo%buffer_caps = ' '
+      endIf
+      if(mqc_files_DEBUG) then
+        write(*,*)' END OF BUFFER UPDATE'
+        write(*,*)'                      Function Value   = ',MQC_Files_Load_Buffer
+        if(Present(EOF)) write(*,*)'                      EOF              = ',EOF
       endIf
 !
       Return
@@ -1057,7 +1221,6 @@
           IPointer = Index(TRIM(FileInfo%buffer),TRIM(Search_String))
         else
           Temp_Search_String = Search_String
-!hph          Call Char_Change_Case(.True.,Temp_Search_String)
           call String_Change_Case(Temp_Search_String,'U')
           IPointer = Index(TRIM(FileInfo%buffer_caps),TRIM(Temp_Search_String))
         endIf
@@ -1075,7 +1238,7 @@
 
 
 !
-!PROCEDURE MQC_Files_Test_File_Write_Line
+!PROCEDURE MQC_Files_Text_File_Write_Line
       Subroutine MQC_Files_Text_File_Write_Line(FileInfo,Line)
 !
 !     This routine is used to write a line to a text file.
@@ -1092,8 +1255,8 @@
 !
  1050 Format( A, I10 )
  1060 Format( 2A )
-      write(*,1050)' Hrant - Unit number is ',FileInfo%UnitNumber
-      write(*,1060)' Hrant - Trying to write line: ',TRIM(line)
+      write(*,1050)' Unit number is ',FileInfo%UnitNumber
+      write(*,1060)' Trying to write line: ',TRIM(line)
       write(FileInfo%UnitNumber,'(A)') TRIM(Line)
 !
       Return

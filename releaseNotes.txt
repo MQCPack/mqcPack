@@ -8,6 +8,68 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+January 6, 2025
+* MQCPack version set to 25.1.1.
+* The determinant object now uses the MQC_Bits object to store binary 
+  strings. All routines that use determinant strings have been updated
+  to use the new object.
+* Extensive change have been made to the CI operator matrix builder. 
+  First, a new indexing routine using a genetic tree has been developed.
+  Second, new substitution level inputs have been developed so it is 
+  possible to return only substitutions of specific spin combinations.
+  Third, a new routine had been written to allow for determinants 
+  representing orbital subspaces to be combined, allowing for RAS or 
+  MRPT2 etc. 
+
+January 4, 2025
+* MQCPack version set to 25.1.0.
+* Some new functionality added to MQC_Files to provide ability to have a
+  file unit number assigned by MQCPack so a main program or routine doesn't
+  need to keep track of which unit numbers should or shouldn't be
+  available. Note that GauOpen does this already and MQCPack has been
+  set-up to use GauOpen's assignment when working with Gaussian array
+  files.
+* Some debug print routines have been added to a couple of the MQCPack
+  modules.
+
+October 27, 2024
+* MQCPack version set to 24.10.3.
+* Added mqc_integrals.F03 to MQCPack.
+
+October 22, 2024
+* MQCPack version set to 24.10.2.
+* Added factorial (MQC_dactorial) and double factorial
+  (MQC_doubleFactorial) functions have been added to MQC_General.
+
+October 26, 2024
+* MQCPack version set to 24.10.1.
+* Began planning and structure preparation for building integral module.
+
+September 9, 2024
+* MQCPack version set to 24.9.1
+* Added MQC_Binary to the build list.
+* Fixed a bug in MQC_Binary that caused a compile-time error with gfortran.
+* Updated the version number in $mqcroot/.other_libs/build_fcns/configure.ac_Makefile.
+
+August 26, 2024
+* MQCPack version set to 24.8.1
+* Fixed an erroneous assumption in procedures mqc_dgeev_eigensystem_Full
+  and MQC_Variable_Matrix_Determinant that used on the real part of the
+  eigenvalues list and completely ignored the imaginary part. Now, these
+  routines evaluate the complex values and, because we are only concerned
+  with real determinants, tests if the determinant has an imaginery
+  component. In such cases, the program errors out.
+
+June 25, 2024
+* MQCPack version set to 24.6.1
+* Fixed an error MQC_General whereby the Blank_At_Top argument was
+effectively ignored in MQC_Print routines.
+
+June 20, 2024
+* MQCPack version set to 24.6.0.
+* Small bug and minor feature updates.
+* Added command line real reading function: mqc_get_command_argument_real
+
 March 30, 2024
 * MQCPack version set to 24.3.1.
 * Multiple bug fixes between prior version and this one.
@@ -17,14 +79,13 @@ February 26, 2024
 * MQCPack version set to 24.2.2.
 * CI basis index to string subroutine implemented.
 * UHF logical option has been removed from mqc_build_ci_hamiltonian and 
-slater_condon.
+  slater_condon.
 
 February 19, 2024
 * MQCPack version set to 24.2.1.
 * Top-of-file version text has been updated in all source files.
 * LT has added new functionality to the CI matrix element building
-procedures.
-
+  procedures.
 
 February 8, 2024
 * MQCPack version set to 24.2.0.

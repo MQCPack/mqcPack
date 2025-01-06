@@ -1,31 +1,33 @@
 ! A generic linked list object
 module MQC_FullWavefunction
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                                                   **
+!     **                          Version 25.1.1                           **
+!     **                          January 4, 2025                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !                                                                    
       Use MQC_Algebra
       Use MQC_DataStructures
