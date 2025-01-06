@@ -17315,10 +17315,15 @@
 !>    \verbatim
 !>       
 !>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI operator matrix 
-!>    given MO integrals and determinant strings. The name of the routine reflects
-!>    its original purpose of returning the CI Hamiltonian matrix, but in fact it
-!>    can be used for any one, two, or one and two particle operator. The routine
-!>    can also be used to build the S^2 operator matrix in the CI basis.
+!>    given MO integrals and determinant strings. Unlike the similar routine 
+!>    MQC_BUILD_CI_OPERATOR, MQC_BUILD_CI_HAMILTONIAN can only accept a single 
+!>    determinant string. Due to the way that the indices are accessed, 
+!>    MQC_BUILD_CI_HAMILTONIAN is the most computationally efficient way of 
+!>    dealing with the single determinant string case, but it can't deal with 
+!>    substring determinant blocks. The name of the routine reflects it's original 
+!>    purpose of returning the CI Hamiltonian matrix, but in fact it can be used 
+!>    for any one, two, or one and two particle operator. The routine can also be 
+!>    used to build the S^2 operator matrix in the CI basis. 
 !>
 !>    \endverbatim
 !
@@ -17469,6 +17474,9 @@
         Determinants2 = Determinants
         SymmFlag = .True.
       EndIf
+      if(Determinants%nBasis.ne.Determinants2%nBasis) &
+        call mqc_error('Provided determinant strings have different numbers of orbitals in &
+        &MQC_Build_CI_Hamiltonian')
 !
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
@@ -17752,7 +17760,14 @@
 !>    given MO integrals and determinant strings. It can be used for any one, 
 !>    two, or one and two particle operator. The routine can also be used to 
 !>    build the S^2 operator matrix by passing the orbital overlap matrix and 
-!>    setting the appropriate input flag.
+!>    setting the appropriate input flag. In contrast to the similar routine
+!>    MQC_BUILD_CI_HAMILTONIAN, MQC_BUILD_CI_OPERATOR can accept multiple 
+!>    determinant strings corresponsing to substring blocks. Due to the 
+!>    requirement to compute the determinant strings corresponding to a given
+!>    index, which has no analytic form and must be determined by searching 
+!>    through all strings of a given substitution level, the routine is less 
+!>    computationally efficient for a given orbital string length than
+!>    MQC_BUILD_CI_HAMILTONIAN.
 !>
 !>    \endverbatim
 !
@@ -18750,36 +18765,162 @@
       end subroutine get_expansion_size
 !
 !=====================================================================
-! WE STILL NEED TO FIX THIS SO IT CAN DEAL WITH NEW DETERMINANT STRUCTURES AS FOR 
-! BUILD_CI_HAMILTONIAN
 !     
-!     PROCEDURE Get_One_Gamma_Matrix
-      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,UHF,nCoreIn,nOrbsIn,Subs) Result(onePDMint)
+!     PROCEDURE GET_ONE_GAMMA_MATRIX
 !
-!     This function returns the CI one-particle density matrix 
+!>    \brief <b> GET_ONE_GAMMA_MATRIX is a function that returns the CI 
+!>    one-particle density matrix operator matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_ONE_GAMMA_MATRIX is a function that returns the CI one-particle 
+!>    density matrix operator matrix given CI coefficients and determinant 
+!>    strings.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] CI_Amplitudes
+!>    \verbatim
+!>        CI_Amplitudes is Type(MQC_Vector)
+!>        The vector of CI amplitudes.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. 
+!>    \endverbatim
+!>    
+!>    \param[in] nCoreIn
+!>    \verbatim
+!>        nCoreIn is Integer(kind=int64),Optional
+!>        The number of core orbitals to exclude from the density 
+!>        matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] nOrbsIn
+!>    \verbatim
+!>        nOrbsIn is Integer(kind=int64),Optional
+!>        The number of orbitals to include in the density matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. If not present, all substitutions are 
+!>        included. If SubsB not present, SubsA containes the the 
+!>        total (alpha+beta) substitutions that are permitted. If 
+!>        both SubsA and SubsB provided, SubsA contains the alpha
+!>        substitutions that are permitted. If Subs2A are provided, 
+!>        Subs1A gives substitutions for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. 
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. If not present, 
+!>        column basis substitutions are equal to row basis 
+!>        substitutions provided by variable SubsA and/or SubsB.
+!>        If Subs2A provided but not Subs2B, Subs2A contains the total
+!>        (alpha+beta) substitutions that are permitted. If both 
+!>        Subs2A and Subs2B provided, Subs2A containes the alpha
+!>        substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. If not 
+!>        present, column basis substitutions are equal to row basis 
+!>        substitutions.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function get_one_gamma_matrix(iOut,iPrint,ci_amplitudes,determinants,Dets2,nCoreIn,nOrbsIn,&
+        SubsAIn,SubsBIn,Subs2AIn,Subs2BIn) Result(onePDMint)
 !
 !     Variable Declarations...
 !
       Implicit None
       integer(kind=int64),intent(in)::iOut,iPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_Determinant),Intent(In)::Determinants
       type(mqc_vector),intent(in)::ci_amplitudes
-      logical,intent(in)::UHF
+      Type(MQC_Determinant),Intent(In)::Determinants
+      Type(MQC_Determinant),Optional,Intent(In)::Dets2
       integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
-      Integer(kind=int64),Dimension(:),Optional::Subs
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       type(mqc_scf_integral)::onePDMint
       type(mqc_matrix)::onePDMalpha,onePDMbeta
-      integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
+      integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String,NDets1,NDets2,NDets1A,&
+        NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,A1_subLevel,B1_subLevel,T1_subLevel,&
+        A2_subLevel,B2_subLevel,T2_subLevel
       Type(MQC_Scalar)::Sgn
-      Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,m,n,o,mm,nn,rdet,ldet, &
-        Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,R_A_End,&
-        R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End
+      Integer(kind=int64)::nCore,nOrbs,IPos,Det_Diff,ISgn,m,n,o,mm,nn,rdet,ldet, &
+        Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,&
+        R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,&
+        R_B_Sub_End,L_A_Step,L_B_Step,R_A_Step,R_B_Step,L_Iabk,R_Iabk,L_Xk,R_Xk,Counter,Counter2
       integer(kind=int64),dimension(2)::orb
       type(mqc_bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,Alpha_Diff,&
         Beta_Diff
+      Logical::SymmFlag
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Vector)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant)::Determinants2
+      Character(len=12)::index_order='genetic'
 
-      nBasis = nBasisIn
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .False.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .True.
+      EndIf
+
+      if(Determinants%nBasis.ne.Determinants2%nBasis) &
+        call mqc_error('Provided determinant strings have different numbers of orbitals in &
+        &get_one_gamma_matrix')
+
       if(present(nCoreIn)) then
         nCore = nCoreIn
       else
@@ -18788,75 +18929,229 @@
       if(present(nOrbsIn)) then
         nOrbs = nOrbsIn
       else
-        nOrbs = nBasis
+        nOrbs = determinants%nBasis-nCore
       endIf
       call onePDMalpha%init(nOrbs,nOrbs)
       call onePDMbeta%init(nOrbs,nOrbs)
 
-      if(present(subs).and.determinants%order.ne.'ci') &
-        call mqc_error('Truncated CI only implemented for CI order determinant strings')
-
-      if(present(subs)) then
-        L_A_Sub_End = size(Determinants%NSubsAlpha)-1
-        L_B_Sub_End = size(Determinants%NSubsBeta)-1
-        R_A_Sub_End = size(Determinants%NSubsAlpha)-1
-        R_B_Sub_End = size(Determinants%NSubsBeta)-1
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      if(present(subsAIn)) then
+        subsA = subsAIn
       else
+        subsA = [integer::]
+      endIf
+      if(present(subsBIn)) then
+        subsB = subsBIn
+      else
+        subsB = [integer::]
+      endIf
+      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+
+      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+        subs2A = subsA
+        subs2B = subsB
+      elseIf(.not.present(subs2BIn)) then
+        subs2A = subs2AIn
+        subs2B = [integer::]
+        symmFlag = .False.
+      elseIf(.not.present(subs2AIn)) then
+        subs2A = [integer::]
+        subs2B = subs2BIn
+        symmFlag = .False.
+      else
+        subs2A = subs2AIn
+        subs2B = subs2BIn
+        symmFlag = .False.
+      endIf
+      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
+
+      nAlpha1 = get_string_nElec(Determinants%Strings%Alpha(1)) 
+      nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha(1)) 
+      nBeta1 = get_string_nElec(Determinants%Strings%Beta(1)) 
+      nBeta2 = get_string_nElec(Determinants2%Strings%Beta(1)) 
+
+      select case (Determinants%order)
+      case('lexical')
         L_A_Sub_End = 0
         L_B_Sub_End = 0
+      case('ci')
+        L_A_Sub_End = size(Determinants%NSubsAlpha)-1
+        L_B_Sub_End = size(Determinants%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+          iOut,'Determinants%order',Determinants%order)
+      end select
+      select case (Determinants2%order)
+      case('lexical')
         R_A_Sub_End = 0
         R_B_Sub_End = 0
-      endIf
+      case('ci')
+        R_A_Sub_End = size(Determinants2%NSubsAlpha)-1
+        R_B_Sub_End = size(Determinants2%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+          iOut,'Determinants2order',Determinants2%order)
+      end select
+
       ldet = 0
       L_A_Start = 1
       do L_A_Sub = 0, L_A_Sub_End
+        if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
         L_B_Start =1
         do L_B_Sub = 0, L_B_Sub_End
-          If(present(Subs)) then
-            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle
+          if(Determinants%order.eq.'ci'.and..not.any(lSubsB.eq.L_B_Sub)) cycle
+          If(Determinants%order.eq.'ci'.and..not.any(lSubsT.eq.(L_A_Sub+L_B_Sub))) cycle 
+          select case (Determinants%order)
+          case('lexical')
+            L_A_Start = Determinants%NAlpStr
+            L_B_Start = Determinants%NBetStr
+            L_A_End = 1
+            L_B_End = 1
+            L_A_Step = -1
+            L_B_Step = -1
+          case('ci')
             If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
             If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-            If((L_A_Start.gt.determinants%NAlpStr).or.(L_B_Start.gt.determinants%NBetStr)) cycle
+            If((L_A_Start.gt.Determinants%NAlpStr).or.(L_B_Start.gt.Determinants%NBetStr)) cycle
             L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
             L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-          Else
-            L_A_End = determinants%NAlpStr
-            L_B_End = determinants%NBetStr
-          EndIf
-          Do L_A_String = L_A_Start, L_A_End 
-            Do L_B_String = L_B_Start, L_B_End 
-              If(present(subs)) then
+            L_A_Step = 1
+            L_B_Step = 1
+          case default
+            call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+              iOut,'Determinants%order',Determinants%order)
+          end select
+          Do L_A_String = L_A_Start, L_A_End, L_A_Step
+            Do L_B_String = L_B_Start, L_B_End, L_B_Step 
+
+              Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
+              Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
+
+              A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
+              B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
+              T1_sublevel = A1_subLevel + B1_subLevel
+
+              if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+              if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+              if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+
+              if(index_order.eq.'genetic') then
+!               Compute composite index within substituion level k
+!               I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                L_Iabk = mqc_get_string_index(Alpha_String_1,&
+                  (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
+                  'lexical',[A1_subLevel],determinants%nCore)*&
+                  Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
+                  mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
+                  (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
+
+!               Compute composite substitution level offset 
+!               X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!               where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                L_Xk = 0
+                l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
+                  do Counter2 = 0,size(Determinants%NSubsBeta)-1
+                    if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                    if(.not.any(Counter.eq.lSubsA)) cycle
+                    if(.not.any(Counter2.eq.lSubsB)) cycle
+                    if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
+                    L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
+                      Determinants%NSubsBeta%at(Counter2+1)
+                  endDo
+                endDo l_offset
+
+!               Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                ldet = L_Xk + L_Iabk + 1
+              elseIf(index_order.eq.'input') then
                 ldet = ldet + 1
               else
-                ldet = 1+(L_B_String-1)*determinants%NAlpStr+(L_A_String-1)
+                call mqc_error_a('Unrecognized index order requested in get_one_gamma_matrix',6,&
+                  'index_order',index_order)
               endIf
+
               rdet = 0
               R_A_Start = 1
               do R_A_Sub = 0, R_A_Sub_End
+                if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
                 R_B_Start =1
                 do R_B_Sub = 0, R_B_Sub_End
-                  If(present(Subs)) then
-                    If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle
-                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
-                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
-                    If((R_A_Start.gt.determinants%NAlpStr).or.(R_B_Start.gt.determinants%NBetStr)) cycle
-                    R_A_End = R_A_Start + Determinants%NSubsAlpha%at(R_A_Sub+1) - 1
-                    R_B_End = R_B_Start + Determinants%NSubsBeta%at(R_B_Sub+1) - 1
-                  Else
-                    R_A_End = determinants%NAlpStr
-                    R_B_End = determinants%NBetStr
-                  EndIf
-                  Do R_A_String = R_A_Start, R_A_End 
-                    Do R_B_String = R_B_Start, R_B_End 
-                      If(present(subs)) then
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsB.eq.R_B_Sub)) cycle
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsT.eq.(R_A_Sub+R_B_Sub))) cycle 
+                  select case (Determinants2%order)
+                  case('lexical')
+                    R_A_Start = Determinants2%NAlpStr
+                    R_B_Start = Determinants2%NBetStr
+                    R_A_End = 1
+                    R_B_End = 1
+                    R_A_Step = -1
+                    R_B_Step = -1
+                  case('ci')
+                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants2%NSubsAlpha%vat(1,R_A_Sub))+1
+                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants2%NSubsBeta%vat(1,R_B_Sub))+1
+                    If((R_A_Start.gt.Determinants2%NAlpStr).or.(R_B_Start.gt.Determinants2%NBetStr)) cycle
+                    R_A_End = R_A_Start + Determinants2%NSubsAlpha%at(R_A_Sub+1) - 1
+                    R_B_End = R_B_Start + Determinants2%NSubsBeta%at(R_B_Sub+1) - 1
+                    R_A_Step = 1
+                    R_B_Step = 1
+                  case default
+                    call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+                      iOut,'Determinants%order',Determinants%order)
+                  end select
+
+                  Do R_A_String = R_A_Start, R_A_End, R_A_Step
+                    Do R_B_String = R_B_Start, R_B_End, R_B_Step 
+
+                      Alpha_String_2 = Determinants%Strings%Alpha(R_A_String)
+                      Beta_String_2 = Determinants%Strings%Beta(R_B_String)
+
+                      A2_subLevel = get_string_sub_level(Alpha_String_2,nAlpha2)
+                      B2_sublevel = get_string_sub_level(Beta_String_2,nBeta2)
+                      T2_sublevel = A2_subLevel + B2_subLevel
+
+                      if(.not.any(A2_subLevel.eq.rSubsA)) cycle
+                      if(.not.any(B2_subLevel.eq.rSubsB)) cycle
+                      if(.not.any(T2_subLevel.eq.rSubsT)) cycle
+                       
+                      if(index_order.eq.'genetic') then
+!                       Compute composite index within substituion level k
+!                       I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                        R_Iabk = mqc_get_string_index(Alpha_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),&
+                          (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                          Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
+                          mqc_get_string_index(Beta_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
+                          'lexical',[B2_subLevel],determinants2%nCore)
+
+!                       Compute composite substitution level offset 
+!                       X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!                       where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                        R_Xk = 0
+                        r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
+                          do Counter2 = 0,size(Determinants2%NSubsBeta)-1
+                            if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                            if(.not.any(Counter.eq.rSubsA)) cycle
+                            if(.not.any(Counter2.eq.rSubsB)) cycle
+                            if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
+                            R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
+                              Determinants2%NSubsBeta%at(Counter2+1)
+                          endDo
+                        endDo r_offset
+
+!                       Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                        rdet = R_Xk + R_Iabk + 1
+                      elseIf(index_order.eq.'input') then
                         rdet = rdet + 1
                       else
-                        rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
+                        call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                          'index_order',index_order)
                       endIf
-                      Alpha_String_1 = Determinants%Strings%Alpha(L_A_String)
-                      Alpha_String_2 = Determinants%Strings%Alpha(R_A_String)
-                      Beta_String_1 = Determinants%Strings%Beta(L_B_String)
-                      Beta_String_2 = Determinants%Strings%Beta(R_B_String)
+
                       Alpha_Diff = IEOR(Alpha_String_1,Alpha_String_2)
                       Alpha_Diff_Cnt = PopCnt(Alpha_Diff)
                       Beta_Diff = IEOR(Beta_String_1,Beta_String_2)
@@ -18951,7 +19246,7 @@
         EndDo
       EndDo
 
-      If(.not.UHF) then
+      If(MQC_Matrix_Norm(onePDMalpha-onePDMbeta).lt.1.0e-14) then
         call mqc_integral_allocate(onePDMint,'mo density','space',onePDMalpha)  
       else
         call mqc_integral_allocate(onePDMint,'mo density','spin',onePDMalpha,onePDMbeta)
