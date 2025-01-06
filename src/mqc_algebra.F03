@@ -43,7 +43,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.0                           **
+!     **                          Version 25.1.1                           **
 !     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
@@ -532,6 +532,13 @@
         Module Procedure MQC_Set_Array2Vector_Complex
       End Interface
 !
+!>    \brief <b> MQC_Vector structure constructor</b>
+      Interface MQC_Vector
+        Module Procedure MQC_Set_Array2Vector_Integer_Func
+        Module Procedure MQC_Set_Array2Vector_Real_Func
+        Module Procedure MQC_Set_Array2Vector_Complex_Func
+      End Interface
+!
 !>    \brief <b> Sets a symmetric packed intrinsic array as an MQC Matrix object</b>
       Interface MQC_Matrix_SymmMatrix_Put
         Module Procedure MQC_Matrix_SymmMatrix_Put_Integer,MQC_Matrix_SymmMatrix_Put_Real, MQC_Matrix_SymmMatrix_Put_Complex
@@ -922,6 +929,14 @@
 !     Documentation in scalar operator section
       Interface Operator (-)
         Module Procedure MQC_R4Tensor_R4Tensor_Difference
+      End Interface
+!
+!>    \brief <b> Determines if two variables are equal</b>
+      Interface Operator (.eq.)
+        Module Procedure MQC_ScalarEQVector
+        Module Procedure MQC_VectorEQScalar
+        Module Procedure MQC_IntegerEQVector
+        Module Procedure MQC_VectorEQInteger
       End Interface
 !
 !
@@ -8446,6 +8461,132 @@
       End Subroutine MQC_Set_Array2Vector_Complex
 !
 !
+!     PROCEDURE MQC_Set_Array2Vector_Integer_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Integer_Func is a function that sets a 
+!>    rank 1 intrinsic integer array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Integer_Func is a function that sets a rank 1  
+!>    intrinsic integer array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Integer_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Integer(kind=int64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Integer_Func
+!
+!
+!     PROCEDURE MQC_Set_Array2Vector_Real_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Real_Func is a function that sets a 
+!>    rank 1 intrinsic real array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Real_Func is a function that sets a rank 1  
+!>    intrinsic real array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Real_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Real(kind=real64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Real_Func
+!
+!
+!     PROCEDURE MQC_Set_Array2Vector_Complex_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Complex_Func is a function that sets a 
+!>    rank 1 intrinsic complex array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Complex_Func is a function that sets a rank 1  
+!>    intrinsic complex array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Complex_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Complex(kind=real64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Complex_Func
+!
+!
 !     PROCEDURE MQC_Set_Vector2Vector
 !
 !>    \brief <b> MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal 
@@ -12638,6 +12779,226 @@
       End Function MQC_Vector_Reshape_Matrix
 !
 !
+!     PROCEDURE MQC_ScalarEQVector
+!
+!>    \brief <b> MQC_ScalarEQVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the MQC_Scalar
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the MQC_Scalar and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_ScalarEQVector(Scalar,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_ScalarEQVector
+!
+!
+!     PROCEDURE MQC_VectorEQScalar
+!
+!>    \brief <b> MQC_VectorEQScalar is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the MQC_Scalar
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorEQScalar is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the MQC_Scalar and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_VectorEQScalar(Vector,Scalar) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorEQScalar
+!
+!
+!     PROCEDURE MQC_IntegerEQVector
+!
+!>    \brief <b> MQC_IntegerEQVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the integer
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerEQVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the integer and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Integer(kind=int64)
+!>        The integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_IntegerEQVector(Integr,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::Integr
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_IntegerEQVector
+!
+!
+!     PROCEDURE MQC_VectorEQInteger
+!
+!>    \brief <b> MQC_VectorEQInteger is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the integer
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorEQInteger is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the integer and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Type(MQC_Scalar)
+!>        The integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_VectorEQInteger(Vector,Integr) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Integer(kind=int64),Intent(In)::Integr
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorEQInteger
+!
+!
 !----------------------------------------------------------------
 !                                                               |
 !     MATRIX PROCEDURES                                         |
@@ -12703,9 +13064,10 @@
       Real(kind=real64),Dimension(:),Allocatable::A_Symm,Temp_Vector
       Complex(Kind=real64),Dimension(:),Allocatable::AC_Symm,TempC_Vector
       character(len=64)::typeFlag
+      Real(kind=real64),Parameter::Zero=1.0E-8
 !
       if(mqc_matrix_test_symmetric(A,'antihermitian',.true.).and.&
-        A%norm().gt.0.0) then
+        A%norm().gt.Zero) then
         call MQC_Matrix_Diagonalize(im*A,EVals,EVecs)
         EVals = (-1)*im*EVals
         return
@@ -14171,7 +14533,7 @@
             If(Cnt1.eq.Cnt2) then
               If (Mat%Data_Type.eq.'Integer') Matrix%MatI(M,N) = Mat%MatI(Cnt1,1)
               If (Mat%data_Type.eq.'Real') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
-              If (Mat%data_Type.eq.'Complex') Matrix%MatR(M,N) = Mat%MatR(Cnt1,1)
+              If (Mat%data_Type.eq.'Complex') Matrix%MatC(M,N) = Mat%MatC(Cnt1,1)
             EndIf
             If(N.eq.LenCol) then
               N = 1
@@ -25033,6 +25395,10 @@
       rows = mqc_matrix_rows(a)
       cols = mqc_matrix_columns(a)
       minrc = min(rows,cols)
+      if(minrc.eq.0) then
+        det = 1.0
+        return
+      endIf
       storFlag = a%Storage
       typeFlag = a%Data_Type
       if(a%Storage.eq.'StorDiag') call mqc_matrix_diag2Full(a)

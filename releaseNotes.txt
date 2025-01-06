@@ -8,6 +8,19 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+January 6, 2025
+* MQCPack version set to 25.1.1.
+* The determinant object now uses the MQC_Bits object to store binary 
+  strings. All routines that use determinant strings have been updated
+  to use the new object.
+* Extensive change have been made to the CI operator matrix builder. 
+  First, a new indexing routine using a genetic tree has been developed.
+  Second, new substitution level inputs have been developed so it is 
+  possible to return only substitutions of specific spin combinations.
+  Third, a new routine had been written to allow for determinants 
+  representing orbital subspaces to be combined, allowing for RAS or 
+  MRPT2 etc. 
+
 January 4, 2025
 * MQCPack version set to 25.1.0.
 * Some new functionality added to MQC_Files to provide ability to have a
@@ -66,13 +79,13 @@ February 26, 2024
 * MQCPack version set to 24.2.2.
 * CI basis index to string subroutine implemented.
 * UHF logical option has been removed from mqc_build_ci_hamiltonian and 
-slater_condon.
+  slater_condon.
 
 February 19, 2024
 * MQCPack version set to 24.2.1.
 * Top-of-file version text has been updated in all source files.
 * LT has added new functionality to the CI matrix element building
-procedures.
+  procedures.
 
 February 8, 2024
 * MQCPack version set to 24.2.0.

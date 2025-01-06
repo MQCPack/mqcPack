@@ -38,7 +38,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.0                           **
+!     **                          Version 25.1.1                           **
 !     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
@@ -57,6 +57,7 @@
 !     ***********************************************************************
 !
       Use MQC_General
+      Use MQC_Binary
       Use MQC_Algebra
       Use MQC_DataStructures
       Use MQC_Files
@@ -208,7 +209,7 @@
 !
 !     MQC_Determinant_String
       Type,Private::MQC_Determinant_String
-        Type(MQC_Matrix)::Alpha,Beta
+        Type(MQC_Bits),Dimension(:),Allocatable::Alpha,Beta
       End Type MQC_Determinant_String
 !
 !     Parent Type
@@ -216,7 +217,7 @@
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
         Character(Len=64)::Order !lexical,ci 
-        Integer(kind=int64)::NDets,NAlpStr,NBetStr
+        Integer(kind=int64)::NDets,NAlpStr,NBetStr,nBasis,nCore,nVirt
         Type(MQC_Vector)::NSubsAlpha,NSubsBeta
       End Type MQC_Determinant
 !
@@ -3299,8 +3300,8 @@
           if(my_axis.eq.2) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-            else
-              call outMatrixAlpha%init(0,size(alphaOrbs))
+!            else
+!              call outMatrixAlpha%init(0,size(alphaOrbs))
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
@@ -3308,8 +3309,8 @@
           elseIf(my_axis.eq.1) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-            else
-              call outMatrixAlpha%init(size(alphaOrbs),0)
+!            else
+!              call outMatrixAlpha%init(size(alphaOrbs),0)
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([abs(alphaOrbs(i))],[0]),[i],[0])
@@ -3336,13 +3337,13 @@
           if(my_axis.eq.2) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-            else
-              call outMatrixAlpha%init(0,size(alphaOrbs))
+!            else
+!              call outMatrixAlpha%init(0,size(alphaOrbs))
             endIf
             if(size(betaOrbs).ne.0) then
               call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
-            else
-              call outMatrixBeta%init(0,size(betaOrbs))
+!            else
+!              call outMatrixBeta%init(0,size(betaOrbs))
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([0],[abs(alphaOrbs(i))]),[0],[i])
@@ -3353,13 +3354,13 @@
           elseIf(my_axis.eq.1) then
             if(size(alphaOrbs).ne.0) then
               call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-            else
-              call outMatrixAlpha%init(size(alphaOrbs),0)
+!            else
+!              call outMatrixAlpha%init(size(alphaOrbs),0)
             endIf
             if(size(betaOrbs).ne.0) then
               call outMatrixBeta%init(size(betaOrbs),nDimBeta2)
-            else
-              call outMatrixBeta%init(size(betaOrbs),0)
+!            else
+!              call outMatrixBeta%init(size(betaOrbs),0)
             endIf
             do i = 1,size(alphaOrbs)
               call outMatrixAlpha%vput(tmpMatrixAlpha%vat([abs(alphaOrbs(i))],[0]),[i],[0])
@@ -3391,13 +3392,13 @@
         if(my_axis.eq.2) then
           if(size(alphaOrbs).ne.0) then
             call outMatrixAlpha%init(nDimAlpha1,size(alphaOrbs))
-          else
-            call outMatrixAlpha%init(0,size(alphaOrbs))
+!          else
+!            call outMatrixAlpha%init(0,size(alphaOrbs))
           endIf
           if(size(betaOrbs).ne.0) then
             call outMatrixBeta%init(nDimBeta1,size(betaOrbs))
-          else
-            call outMatrixBeta%init(0,size(betaOrbs))
+!          else
+!            call outMatrixBeta%init(0,size(betaOrbs))
           endIf
           do i = 1,size(alphaOrbs)
             if(alphaOrbs(i).ge.0) then
@@ -3416,13 +3417,13 @@
         elseIf(my_axis.eq.1) then
           if(size(alphaOrbs).ne.0) then
             call outMatrixAlpha%init(size(alphaOrbs),nDimAlpha2)
-          else
-            call outMatrixAlpha%init(size(alphaOrbs),0)
+!          else
+!            call outMatrixAlpha%init(size(alphaOrbs),0)
           endIf
           if(size(betaOrbs).ne.0) then
             call outMatrixBeta%init(size(betaOrbs),nDimBeta2)
-          else
-            call outMatrixBeta%init(size(betaOrbs),0)
+!          else
+!            call outMatrixBeta%init(size(betaOrbs),0)
           endif
           do i = 1,size(alphaOrbs)
             if(alphaOrbs(i).ge.0) then
@@ -4085,12 +4086,6 @@
 !>        The beta bit string to be printed.
 !>    \endverbatim
 !>
-!>    \param[in] nBasisIn
-!>    \verbatim
-!>        nBasisIn is Integer, optional
-!>        Number of basis functions.
-!>    \endverbatim
-!>
 !>    \param[in] nCoreIn
 !>    \verbatim
 !>        nCoreIn is Integer, optional
@@ -4110,25 +4105,20 @@
 !>    \author L. M. Thompson
 !>    \date 2022
 !
-      function mqc_detString_print(alphaString,betaString,nBasisIn,nCoreIn,nVirtIn) result(returnString)
+      function mqc_detString_print(alphaString,betaString,nCoreIn,nVirtIn) result(returnString)
 
       implicit none
-      type(mqc_vector),intent(in)::alphaString,betaString
-      integer,optional,intent(in)::nBasisIn,nCoreIn,nVirtIn
+      type(mqc_bits),intent(in)::alphaString,betaString
+      integer,optional,intent(in)::nCoreIn,nVirtIn
       character(:),allocatable::returnString
 
-      integer::nBitInts,temp_alpha_int,temp_beta_int,i,j,nBasis,nCore,nVirt
+      integer::i,nBasis,nCore,nVirt
 
-      if(size(alphaString).ne.size(betaString)) call mqc_error_i('Alpha and beta strings are different&
-        & lengths in mqc_detString_print',6,'size(alphaString)',size(alphaString),'size(betaString)',&
-        size(betaString))
-      nBitInts = size(alphaString)
+!      if(alphaString%nBits.ne.betaString%nBits) &
+!        call mqc_error_i('Alpha and beta strings are different lengths in mqc_detString_print',&
+!        6,'alphaString%nBits',alphaString%nBits,'betaString%nBits',betaString%nBits)
 
-      if(present(nBasisIn)) then
-        nBasis = nBasisIn
-      else
-        nBasis = nBitInts*Bit_Size(0)
-      endIf
+      nBasis = alphaString%nBits
       if(present(nCoreIn)) then
         nCore = nCoreIn
       else
@@ -4141,21 +4131,17 @@
       endIf
 
       returnString = '|'
-      do i = 1, nBitInts
-        temp_alpha_int = alphaString%at(i)
-        temp_beta_int = betaString%at(i)
-        do j = 0, Bit_Size(0)-1
-          if((i-1)*Bit_Size(0)+(j+1).le.nCore.or.(i-1)*Bit_Size(0)+(j+1).gt.nBasis-nVirt) cycle
-          if(btest(temp_alpha_int,j).and.btest(temp_beta_int,j)) then
-            returnString = trim(returnString)//'1'
-          elseIf(btest(temp_alpha_int,j)) then
-            returnString = trim(returnString)//'a'
-          elseIf(btest(temp_beta_int,j)) then
-            returnString = trim(returnString)//'b'
-          else
-            returnString = trim(returnString)//'0'
-          endIf
-        endDo
+      do i = 0, nBasis-1
+        if(i+1.le.nCore.or.i+1.gt.nBasis-nVirt) cycle
+        if(btest(alphaString,i).and.btest(betaString,i)) then
+          returnString = trim(returnString)//'1'
+        elseIf(btest(alphaString,i)) then
+          returnString = trim(returnString)//'a'
+        elseIf(btest(betaString,i)) then
+          returnString = trim(returnString)//'b'
+        else
+          returnString = trim(returnString)//'0'
+        endIf
       endDo
       returnString = trim(returnString)//'>'
 
@@ -4760,9 +4746,9 @@
         if (integralIn%hasAlpha()) then
           if(size(integralIn%alpha).gt.0) &
             call matrixOut%mput(integralIn%alpha,[1,nDimAlpha1],[1,nDimAlpha2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasAlpha()', integralIn%hasAlpha() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
       case('spin')
         if(mqc_have_complex(integralIn%alpha)) then
@@ -4773,16 +4759,16 @@
         if (integralIn%hasAlpha()) then
           if(size(integralIn%alpha).gt.0) &
             call matrixOut%mput(integralIn%alpha,[1,nDimAlpha1],[1,nDimAlpha2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasAlpha()', integralIn%hasAlpha() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasAlpha()', integralIn%hasAlpha() )
         endIf
         if (integralIn%hasBeta()) then
           if(size(integralIn%beta).gt.0) &
             call matrixOut%mput(integralIn%beta,[nDimAlpha1+1,nDimTotal1],[nDimAlpha2+1,nDimTotal2]) 
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
-               'integralIn%hasBeta()', integralIn%hasBeta() )
+!        else
+!          call mqc_error_L('block does not exist in mqc_integral_output_array', 6, &
+!               'integralIn%hasBeta()', integralIn%hasBeta() )
         endIf
       case ('general')
         if(mqc_have_complex(integralIn%alpha)) then
@@ -5064,8 +5050,8 @@
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha, &
             tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha) 
         else
-          tmpMatrixAlpha = integralA%alpha.dot.matrixB
-          tmpMatrixBeta = integralA%beta.dot.matrixB
+          if(integralA%hasAlpha()) tmpMatrixAlpha = integralA%alpha.dot.matrixB
+          if(integralA%hasBeta()) tmpMatrixBeta = integralA%beta.dot.matrixB
           call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
         endIf
       case('general')
@@ -5360,17 +5346,17 @@
       case('space')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
           call mqc_integral_allocate(integralOut,'','space',tmpMatrixAlpha)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%alpha+integralB%beta
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasBeta()) tmpMatrixBeta = integralA%alpha+integralB%beta
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%alpha+integralB%beta
-          tmpMatrixAlphaBeta = integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasBeta()) tmpMatrixBeta = integralA%alpha+integralB%beta
+          if(integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralB%alphaBeta
+          if(integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -5380,18 +5366,18 @@
       case('spin')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%alpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasAlpha()) tmpMatrixBeta = integralA%beta+integralB%alpha
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
           call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralB%alphaBeta
+          if(integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -5401,24 +5387,24 @@
       case('general')
         select case (integralB%array_type)
         case('space')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%alpha
-          tmpMatrixAlphaBeta = integralA%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasAlpha()) tmpMatrixBeta = integralA%beta+integralB%alpha
+          if(integralA%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta
+          if(integralA%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case('spin')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralA%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta
+          if(integralA%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case('general')
-          tmpMatrixAlpha = integralA%alpha+integralB%alpha
-          tmpMatrixBeta = integralA%beta+integralB%beta
-          tmpMatrixAlphaBeta = integralA%alphaBeta+integralB%alphaBeta
-          tmpMatrixBetaAlpha = integralA%betaAlpha+integralB%betaAlpha
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          if(integralA%hasBeta().and.integralB%hasBeta()) tmpMatrixBeta = integralA%beta+integralB%beta
+          if(integralA%hasAlphaBeta().and.integralB%hasAlphaBeta()) tmpMatrixAlphaBeta = integralA%alphaBeta+integralB%alphaBeta
+          if(integralA%hasBetaAlpha().and.integralB%hasBetaAlpha()) tmpMatrixBetaAlpha = integralA%betaAlpha+integralB%betaAlpha
           call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
         case default
@@ -6854,8 +6840,8 @@
             aBlock = 0.0
             bBlock = 0.0
             DO J = 1, blockSize
-              aBlock = aBlock + (tmpMatrix%at(J,I) * tmpMatrix%at(J,I))
-              bBlock = bBlock + (tmpMatrix%at(blockSize+J,I) * tmpMatrix%at(blockSize+J,I))
+              aBlock = aBlock + (conjg(tmpMatrix%at(J,I)) * tmpMatrix%at(J,I))
+              bBlock = bBlock + (conjg(tmpMatrix%at(blockSize+J,I)) * tmpMatrix%at(blockSize+J,I))
             END DO
             IF (aBlock%abs().ge.bBlock%abs()) THEN
               abarray(I) = 'a'
@@ -7420,7 +7406,6 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             aaHCden = temp(:,1)
-            aaHCden = (-1)*aaHCden
           endIf
           if(mod(flag,10).gt.0) then
             tmpMat = real(hermden%getblock('beta'))
@@ -7434,7 +7419,6 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               bbHCden = temp(:,1)
-              bbHCden = (-1)*bbHCden
             endIf
           endIf
           if(mod(flag,10).eq.2) then
@@ -7450,6 +7434,7 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAHRden = temp(:,1)
+            abAHRden = (-1)*abAHRden
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(hermden%getblock('alpha-beta')+ &
                 dagger(hermden%getblock('alpha-beta'))))
@@ -7510,6 +7495,7 @@
             if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
             temp = tmpMat
             abAARden = temp(:,1)
+            abAARden = (-1)*abAARden
             if(mod(flag,100)/10.eq.1) then
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')+ &
                 dagger(ahermden%getblock('alpha-beta'))))
@@ -7517,6 +7503,7 @@
               if(mqc_matrix_haveDiagonal(tmpMat)) call mqc_matrix_diag2symm(tmpMat)
               temp = tmpMat
               abHACden = temp(:,1)
+              abHACden = (-1)*abHACden
               tmpMat = aimag(half*(ahermden%getblock('alpha-beta')- &
                 dagger(ahermden%getblock('alpha-beta'))))
               if(mqc_matrix_haveFull(tmpMat)) call mqc_matrix_full2symm(tmpMat)
@@ -7562,10 +7549,10 @@
                 call mqc_print(bbACden,6,'Beta-Beta antihermitian complex density')
             endIf
             if (mod(flag,10).eq.2) then
-              call mqc_print(abHARden,6,'Alpha-Beta hermitian antihermitian real density')
+              call mqc_print(abHARden,6,'Alpha-Beta antihermitian hermitian real density')
               call mqc_print(abAARden,6,'Alpha-Beta antihermitian antihermitian real density')
               if(mod(flag,100)/10.eq.1) then
-                call mqc_print(abHACden,6,'Alpha-Beta hermitian antihermitian complex density')
+                call mqc_print(abHACden,6,'Alpha-Beta antihermitian hermitian complex density')
                 call mqc_print(abAACden,6,'Alpha-Beta antihermitian antihermitian complex density')
               endIf
             endIf
@@ -7759,17 +7746,17 @@
             if(m.ne.n.and.mod(flag,100)/10.eq.1) then
               if(abs(raf3).gt.zero) then
                 if(abs(aaHCden(symIndexHash(m,n))).gt.zero) &
-                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) - &
+                  aaHCfoc(symIndexHash(k,l)) = aaHCfoc(symIndexHash(k,l)) + &
                   raf3*aaHCden(symIndexHash(m,n))
                 if(abs(aaHCden(symIndexHash(k,l))).gt.zero) &
-                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) - &
+                  aaHCfoc(symIndexHash(m,n)) = aaHCfoc(symIndexHash(m,n)) + &
                   raf3*aaHCden(symIndexHash(k,l))
                 if(mod(flag,10).gt.0) then
                   if(abs(bbHCden(symIndexHash(m,n))).gt.zero) &
-                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) - &
+                    bbHCfoc(symIndexHash(k,l)) = bbHCfoc(symIndexHash(k,l)) + &
                     raf3*bbHCden(symIndexHash(m,n))
                   if(abs(bbHCden(symIndexHash(k,l))).gt.zero) &
-                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) - &
+                    bbHCfoc(symIndexHash(m,n)) = bbHCfoc(symIndexHash(m,n)) + &
                     raf3*bbHCden(symIndexHash(k,l))
                 endIf
               endIf
@@ -7900,18 +7887,18 @@
           if(doHerm) then
             call mqc_print(aaHRfoc,6,'Alpha-Alpha hermitian real Fock')
             if(mod(flag,100)/10.eq.1) &
-              call mqc_print((-1)*aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
+              call mqc_print(aaHCfoc,6,'Alpha-Alpha hermitian complex Fock')
             if(mod(flag,10).gt.0) then
               call mqc_print(bbHRfoc,6,'Beta-Beta hermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
-                call mqc_print((-1)*bbHCfoc,6,'Beta-Beta hermitian complex Fock')
-              if(mod(flag,10).eq.2) then
-                call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abHHCfoc,6,'Alpha-Beta hermitian hermitian complex Fock')
-                call mqc_print(abAHRfoc,6,'Alpha-Beta hermitian antihermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abAHCfoc,6,'Alpha-Beta hermitian antihermitian complex Fock')
+                call mqc_print(bbHCfoc,6,'Beta-Beta hermitian complex Fock')
+            endIf
+            if(mod(flag,10).eq.2) then
+              call mqc_print(abHHRfoc,6,'Alpha-Beta hermitian hermitian real Fock')
+              call mqc_print(abAHRfoc,6,'Alpha-Beta hermitian antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(abHHCfoc,6,'Alpha-Beta hermitian hermitian complex Fock')
+                call mqc_print(abAHCfoc,6,'Alpha-Beta hermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
@@ -7923,13 +7910,13 @@
               call mqc_print(bbARfoc,6,'Beta-Beta antihermitian real Fock')
               if(mod(flag,100)/10.eq.1) &
                 call mqc_print(bbACfoc,6,'Beta-Beta antihermitian complex Fock')
-              if(mod(flag,10).eq.2) then
-                call mqc_print(abHARfoc,6,'Alpha-Beta antihermitian hermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abHACfoc,6,'Alpha-Beta antihermitian hermitian complex Fock')
-                call mqc_print(abAARfoc,6,'Alpha-Beta antihermitian antihermitian real Fock')
-                if(mod(flag,100)/10.eq.1) &
-                  call mqc_print(abAACfoc,6,'Alpha-Beta antihermitian antihermitian complex Fock')
+            endIf
+            if(mod(flag,10).eq.2) then
+              call mqc_print(abHARfoc,6,'Alpha-Beta antihermitian hermitian real Fock')
+              call mqc_print(abAARfoc,6,'Alpha-Beta antihermitian antihermitian real Fock')
+              if(mod(flag,100)/10.eq.1) then
+                call mqc_print(abHACfoc,6,'Alpha-Beta antihermitian hermitian complex Fock')
+                call mqc_print(abAACfoc,6,'Alpha-Beta antihermitian antihermitian complex Fock')
               endIf
             endIf
           endIf
@@ -7946,28 +7933,28 @@
               beta = beta + tmpMat 
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,abHHRfoc,'symmetric')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,abAHRfoc,'antisymmetric')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,(-1)*abAHRfoc,'antisymmetric')
                 call MQC_Matrix_SymmMatrix_Put(tmpMat2,abHARfoc,'symmetric')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat3,abAARfoc,'antisymmetric')
-                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3
-                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,(-1)*abAARfoc,'antisymmetric')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3
               endIf
             endIf
           elseIf(mod(flag,100)/10.eq.1) then
-            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,(-1)*aaHCfoc),'hermitian')
+            call MQC_Matrix_SymmMatrix_Put(alpha,cmplx(aaHRfoc,aaHCfoc),'hermitian')
             call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(aaARfoc,aaACfoc),'antihermitian')
             alpha = alpha + tmpMat
             if(mod(flag,10).gt.0) then
-              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,(-1)*bbHCfoc),'hermitian')
+              call MQC_Matrix_SymmMatrix_Put(beta,cmplx(bbHRfoc,bbHCfoc),'hermitian')
               call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(bbARfoc,bbACfoc),'antihermitian')
               beta = beta + tmpMat
               if(mod(flag,10).eq.2) then
                 call MQC_Matrix_SymmMatrix_Put(alphaBeta,cmplx(abHHRfoc,(-1)*abHHCfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx(abAHRfoc,(-1)*abAHCfoc),'antihermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,abHACfoc),'hermitian')
-                call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx(abAARfoc,abAACfoc),'antihermitian')
-                betaAlpha = alphaBeta + tmpMat - tmpMat2 + tmpMat3 
-                alphaBeta = alphaBeta - tmpMat + tmpMat2 + tmpMat3 
+                call MQC_Matrix_SymmMatrix_Put(tmpMat,cmplx((-1)*abAHRfoc,abAHCfoc),'antihermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat2,cmplx(abHARfoc,(-1)*abHACfoc),'hermitian')
+                call MQC_Matrix_SymmMatrix_Put(tmpMat3,cmplx((-1)*abAARfoc,abAACfoc),'antihermitian')
+                betaAlpha = alphaBeta - tmpMat - tmpMat2 + tmpMat3 
+                alphaBeta = alphaBeta + tmpMat + tmpMat2 + tmpMat3 
               endIf
             endIf
           endIf
@@ -8067,11 +8054,11 @@
                 !AB Block
                 if(integral%array_type.eq.'general') then
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                   endIf
                 !BA Block
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                   endIf
                 endIf
               end do
@@ -11245,10 +11232,7 @@
 !>    Constructing the graph uses the following for the vertex and arc values:
 !>    Yo(e,o)=0, Y1(e,o)=x(e+1,o), x(e,o)=x(e,o-1)+x(e-1,o-1) 
 !>
-!>    The routine is set up to deal with arbitrary number of active orbitals, up to 
-!>    the machine word size. It is unlikley you will need  more than this, as your 
-!>    determinant expansion will be really large. 
-!>
+!>    The routine is set up to deal with arbitrary number of active orbitals. 
 !>    Optional argument NCore allows inclusion of set of always occupied orbitals
 !>    in determinant string. Note that there is no limit on the number of core +
 !>    active orbitals. 
@@ -11298,6 +11282,12 @@
 !>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
+!>    
+!>    \param[in] NVirtIn
+!>    \verbatim
+!>        NVirtIn is Class(*),optional
+!>        The number of virtual orbitals to consider always unoccupied.
+!>    \endverbatim
 !>
 !     Authors:
 !     ========
@@ -11305,21 +11295,22 @@
 !>    \date 2016
 !
       Subroutine Gen_Det_Str(IOut,IPrint,NBasisIn,NAlphaIn,NBetaIn, &
-          Determinants,NCoreIn)
+          Determinants,NCoreIn,NVirtIn)
 !
       Implicit None
 
-      Integer(kind=int64)::IOut,IPrint,NBasis,NAlpha,NBeta,NAlpha_Str,NBeta_Str,NBit_Ints,IOrb,&
-        NElec,NEMax,NEMin,I,J,K,NCore,Pos
-      Integer(kind=int64),Dimension(:,:),Allocatable::Alpha_Strings,Beta_Strings
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Core,Beta_Core,Temp_String
+      Integer(kind=int64)::IOut,IPrint,NBasis,NAlpha,NBeta,NAlpha_Str,NBeta_Str,IOrb,&
+        NElec,NEMax,NEMin,I,J,K,NCore,NVirt,Pos
+      Type(mqc_bits),Dimension(:),Allocatable::Alpha_Strings,Beta_Strings
+      Type(mqc_bits)::Alpha_Core,Beta_Core,Temp_String
       Class(*)::NBasisIn,NAlphaIn,NBetaIn
-      Class(*),Optional::NCoreIn
+      Class(*),Optional::NCoreIn,NVirtIn
       Type(MQC_Determinant)::Determinants
       Type(MQC_LinkedList),Pointer::String_List_1,String_List_2,&
         String_Node_1,String_Node_2
-      Integer(kind=int64)::New_Value,SubNum,Scratch
-      Integer(kind=int64),Allocatable::Returned_Value
+      Integer(kind=int64)::SubNum,Scratch
+      Type(mqc_bits)::New_Value
+      Type(mqc_bits)::Returned_Value
       Logical::Last
 !      
  1001 Format(1x,I7,2x,*(B64))
@@ -11361,6 +11352,22 @@
         Class Default
           Call MQC_Error('NCoreIn type is not integer or MQC scalar')
         End Select
+      else
+        NCore = 0
+      EndIf
+
+      if(present(NVirtIn)) then
+        Select Type (NVirtIn)
+        Type Is (Integer)
+          NVirt = NVirtIn
+        Type Is (MQC_Scalar)
+          NVirt = NVirtIn
+        Class Default
+          Call MQC_Error('NVirtIn type is not integer or MQC scalar')
+        End Select
+        Write(iOut,'(A,I4,A)') ' Adding ',NVirt,' virtual orbitals to string'
+      else
+        NVirt = 0
       EndIf
 !
 !     Initialize Arrays
@@ -11371,24 +11378,11 @@
       String_Node_2=>Null()
       NAlpha_Str = Bin_Coeff(NBasis,NAlpha)
       NBeta_Str = Bin_Coeff(NBasis,NBeta)
-      If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) then
-        if(present(NCoreIn)) then
-          Write(iOut,'(A,I4,A)') 'Adding ',NCore,' core orbitals to string'
-          NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
-        else
-          NBit_Ints = (NBasis/(Bit_Size(0)-1))+1
-        endIf
-        If(((NBasis/(Bit_Size(0)-1))+1).gt.1) then
-          Call MQC_Error_I('Determinant generator limited to 1 integer', 6, &
-               '(NBasis/(Bit_Size(0)-1))+1', (NBasis/(Bit_Size(0)-1))+1 )
-        EndIf
-        Allocate(Alpha_Strings(NAlpha_Str,NBit_Ints),Beta_Strings(NBeta_Str,NBit_Ints))
-      EndIf
-      Alpha_Strings = 0 
-      Beta_Strings = 0
+      If(.not.Allocated(Alpha_Strings).and..not.Allocated(Beta_Strings)) & 
+        Allocate(Alpha_Strings(NAlpha_Str),Beta_Strings(NBeta_Str))
 !
 !    Forming alpha strings
-      New_Value = 0
+      New_Value = mqc_bits(nBasis+nVirt)
       Call LinkedList_Push(String_List_2,New_Value)
 !    Still need to take care of cases where  number of orbitals is greater than one bit
       Do IOrb=1, NBasis
@@ -11439,7 +11433,7 @@
         Do While(.not.Last)
           Call LinkedList_GetNext(String_Node_2,Last,.True.)
           Call LinkedList_Return_Value(String_Node_2,Returned_Value)
-          Alpha_Strings(I,1) = Returned_Value
+          Alpha_Strings(I) = Returned_Value
           I=I+1
         EndDo
       EndIf
@@ -11447,7 +11441,7 @@
 !    Forming beta strings
       Call LinkedList_Delete(String_List_2)
       Allocate(String_List_2)
-      New_Value = 0
+      New_Value = mqc_bits(nBasis+nVirt)
       Call LinkedList_Push(String_List_2,New_Value)
 !    Still need to take care of cases where  number of orbitals is greater than one bit
       Do IOrb=1, NBasis
@@ -11498,7 +11492,7 @@
         Do While(.not.Last)
           Call LinkedList_GetNext(String_Node_2,Last,.True.)
           Call LinkedList_Return_Value(String_Node_2,Returned_Value)
-          Beta_Strings(I,1) = Returned_Value
+          Beta_Strings(I) = Returned_Value
           I=I+1
         EndDo
       EndIf
@@ -11506,53 +11500,36 @@
 !     Add core strings if NCore present
 !
       if(present(NCoreIn)) then
-!        NBit_Ints = ((NBasis+NCore)/(Bit_Size(0)-1))+1
-        Allocate(Alpha_Core(NBit_Ints),Beta_Core(NBit_Ints),Temp_String(NBit_Ints))
-        Alpha_Core = 0
-        K = NBit_Ints + 1
+        Write(iOut,'(A,I4,A)') ' Adding ',NCore,' core orbitals to string'
+        alpha_core = mqc_bits(nCore)
         Do I = 0, NCore-1
-          If(Mod(I,Bit_Size(0)).eq.0) K = K-1
-          Alpha_Core(K) = IBSet(Alpha_Core(K),I)
+          Alpha_Core = IBSet(Alpha_Core,I)
         EndDo
         Do I = 1, NAlpha_Str
-          Temp_String = 0
-          Do J = 1, NBasis
-            K = NBit_Ints - (NCore+J)/Bit_Size(0)
-            Pos = Mod(NCore+J,Bit_Size(0)) - 1
-            Call MvBits(Alpha_Strings(I,1),J-1,1,Temp_String(K),Pos)
-          EndDo
-          Do K = 1, NBit_Ints
-            Alpha_Strings(I,K) = IOr(Temp_String(K),Alpha_Core(K))
-          EndDo
+          Temp_String = Alpha_Core
+          Call MvBits(Alpha_Strings(I),0,nBasis+nVirt,Temp_String,nCore)
+          Alpha_Strings(I) = Temp_String
         EndDo
 
-        Beta_Core = 0
-        K = NBit_Ints + 1
+        beta_core =  mqc_bits(nCore)
         Do I = 0, NCore-1
-          If(Mod(I,Bit_Size(0)).eq.0) K = K-1
-          Beta_Core(K) = IBSet(Beta_Core(K),I)
+          Beta_core = IBSet(beta_Core,I)
         EndDo
         Do I = 1, NBeta_Str
-          Temp_String = 0
-          Do J = 1, NBasis
-            K = NBit_Ints - (NCore+J)/Bit_Size(0)
-            Pos = Mod(NCore+J,Bit_Size(0)) - 1
-            Call MvBits(Beta_Strings(I,1),J-1,1,Temp_String(K),Pos)
-          EndDo
-          Do K = 1, NBit_Ints
-            Beta_Strings(I,K) = IOr(Temp_String(K),Beta_Core(K))
-          EndDo
+          Temp_String = Beta_Core
+          Call MvBits(Beta_Strings(I),0,nBasis+nVirt,Temp_String,nCore)
+          Beta_Strings(I) = Temp_String
         EndDo
       endIf
 !
       If(IPrint.ge.4) then
-        Write(IOut,1050) "Alpha Strings"
+        Write(IOut,1050) " Alpha Strings"
         Do I = 1,NAlpha_Str
-          Write(IOut,1001) I,(Alpha_Strings(I,J),J=1,NBit_Ints)
+          call Alpha_Strings(I)%print(IOut,trim(num2char(I))//' ')
         EndDo
-        Write(IOut,1050) "Beta Strings"
+        Write(IOut,1050) " Beta Strings"
         Do I = 1,NBeta_Str
-          Write(IOut,1001) I,(Beta_Strings(I,J),J=1,NBit_Ints)
+          call Beta_Strings(I)%print(IOut,trim(num2char(I))//' ')
         EndDo
       EndIf
 
@@ -11562,6 +11539,9 @@
       Determinants%NDets = NAlpha_Str*NBeta_Str 
       Determinants%NAlpStr = NAlpha_Str
       Determinants%NBetStr = NBeta_Str 
+      Determinants%NCore = NCore 
+      Determinants%NVirt = NVirt 
+      Determinants%nBasis = NBasis+NCore+NVirt
       subNum = 0
       call mqc_deallocate_vector(determinants%nSubsAlpha)
       do while (.true.)
@@ -11666,6 +11646,12 @@
 !>        NCoreIn is Class(*),optional
 !>        The number of core orbitals to consider always occupied.
 !>    \endverbatim
+!>    
+!>    \param[in] NVirtIn
+!>    \verbatim
+!>        NVirtIn is Class(*),optional
+!>        The number of virtual orbitals to consider always unoccupied.
+!>    \endverbatim
 !>
 !     Authors:
 !     ========
@@ -11673,17 +11659,17 @@
 !>    \date 2021
 !
       subroutine TRCI_DETS_STRING(iOut,iPrint,nBasisIn,nAlphaIn,nBetaIn,&
-          substitutions,determinants,nCoreIn)
+          substitutions,determinants,nCoreIn,nVirtIn)
 !
       implicit none
       integer(kind=int64)::iOut,iPrint
       class(*),intent(in)::nBasisIn,nAlphaIn,nBetaIn
-      class(*),Optional::NCoreIn
-      integer(kind=int64)::NBasis,NAlpha,NBeta,NCore,NAlpha_Str,NBeta_Str,NBit_Ints,&
+      class(*),Optional::NCoreIn,nVirtIn
+      integer(kind=int64)::NBasis,NAlpha,NBeta,NCore,NVirt,NAlpha_Str,NBeta_Str,&
         arrStart,arrEnd,holeStart,partStart,holeInd,partInd
-      integer(kind=int64),dimension(:,:),allocatable::Alpha_Strings,Beta_Strings
+      type(mqc_bits),dimension(:),allocatable::Alpha_Strings,Beta_Strings
       integer(kind=int64),dimension(:),intent(in)::substitutions
-      integer(kind=int64),dimension(:),allocatable::initstr
+      type(mqc_bits)::initstr
       type(mqc_vector)::subs
       type(mqc_matrix)::alpha_arr_hole,alpha_arr_part,beta_arr_hole,beta_arr_part
       type(mqc_vector)::nums_alpha_hole,nums_alpha_part,nums_beta_hole,&
@@ -11730,9 +11716,23 @@
         class default
           call mqc_error('NCoreIn type is not integer or MQC scalar')
         end Select
-        write(iOut,'(A,I4,A)') 'Adding ',nCore,' core orbitals to string.'
+        write(iOut,'(A,I4,A)') ' Adding ',nCore,' core orbitals to string.'
       else 
         nCore = 0
+      endIf
+
+      if(present(nVirtIn)) then
+        select type (nVirtIn)
+        type is (integer)
+          nVirt = nVirtIn
+        type is (mqc_scalar)
+          nVirt = nVirtIn
+        class default
+          call mqc_error('NVirtIn type is not integer or MQC scalar')
+        end Select
+        write(iOut,'(A,I4,A)') ' Adding ',nVirt,' virtual orbitals to string.'
+      else 
+        nVirt = 0
       endIf
       call trci_dets_arr(nBasis,nAlpha,nBeta,substitutions,alpha_arr_hole, &
         alpha_arr_part,beta_arr_hole,beta_arr_part,nah,nap,nbh,nbp)
@@ -11747,30 +11747,22 @@
       endDo
       if(allocated(alpha_strings)) deallocate(alpha_strings)
       if(allocated(beta_strings)) deallocate(beta_strings)
-      nBit_Ints = ((nBasis+nCore)/(bit_size(0)-1))+1
-      allocate(alpha_strings(nAlpha_Str,nBit_Ints),beta_strings(nBeta_str,nBit_ints))
+      allocate(alpha_strings(nAlpha_Str),beta_strings(nBeta_str))
       
-      alpha_strings = 0
-      beta_strings = 0
-      allocate(initstr(nBit_Ints))
-      initstr = 0
-      j = 0
+      initstr = mqc_bits(nBasis+nVirt+nCore)
       do i = 0, nAlpha+nCore-1
-        if(mod(i,bit_size(0)).eq.0) j = j+1
-        initstr(j) = iBSet(initstr(j),mod(i,bit_size(0)))
+        initstr = iBSet(initstr,i)
       endDo
       do i = 1, nAlpha_Str
-        alpha_strings(i,:) = initstr
+        alpha_strings(i) = initstr
       endDo
       if(nAlpha.ne.nBeta) then
-        initstr = 0
-        j = 0
+        initstr = mqc_bits(nBasis+nVirt+nCore)
         do i = 0, nBeta+nCore-1
-          if(mod(i,bit_size(0)).eq.0) j = j+1
-          initstr(j) = iBSet(initstr(j),mod(i,bit_size(0)))
+          initstr = iBSet(initstr,i)
         endDo
         do i = 1, nBeta_Str
-          beta_strings(i,:) = initstr
+          beta_strings(i) = initstr
         endDo
       else
         beta_strings = alpha_strings
@@ -11789,16 +11781,14 @@
           partInd = mod((j-arrstart),int(nap%at(i)))+partstart+1
           do k = 1,size(alpha_arr_hole,2)
             if(alpha_arr_hole%at(holeInd,k).ne.0) then
-              l = mod(int(alpha_arr_hole%at(holeInd,k))+nCore-1,bit_size(0))+1
-              m = (alpha_arr_hole%at(holeInd,k)+nCore)/(bit_size(0)+1)+1
-              alpha_strings(j,m) = iBClr(alpha_strings(j,m),l-1)
+              l = int(alpha_arr_hole%at(holeInd,k))+nCore-1
+              alpha_strings(j) = iBClr(alpha_strings(j),l)
             endIf
           endDo
           do k = 1,size(alpha_arr_part,2)
             if(alpha_arr_part%at(partInd,k).ne.0) then
-              l = mod(int(alpha_arr_part%at(partInd,k))+nCore-1,bit_size(0))+1
-              m = (alpha_arr_part%at(partInd,k)+nCore)/(bit_size(0)+1)+1
-              alpha_strings(j,m) = iBSet(alpha_strings(j,m),l-1)
+              l = int(alpha_arr_part%at(partInd,k))+nCore-1
+              alpha_strings(j) = iBSet(alpha_strings(j),l)
             endIf
           endDo
         endDo
@@ -11817,29 +11807,27 @@
           partInd = mod((j-arrstart),int(nbp%at(i)))+partstart+1
           do k = 1,size(beta_arr_hole,2)
             if(beta_arr_hole%at(holeInd,k).ne.0) then
-              l = mod(int(beta_arr_hole%at(holeInd,k))+nCore-1,bit_size(0))+1
-              m = (beta_arr_hole%at(holeInd,k)+nCore)/(bit_size(0)+1)+1
-              beta_strings(j,m) = iBClr(beta_strings(j,m),l-1)
+              l = int(beta_arr_hole%at(holeInd,k))+nCore-1
+              beta_strings(j) = iBClr(beta_strings(j),l)
             endIf
           endDo
           do k = 1,size(beta_arr_part,2)
             if(beta_arr_part%at(partInd,k).ne.0) then
-              l = mod(int(beta_arr_part%at(partInd,k))+nCore-1,bit_size(0))+1
-              m = (beta_arr_part%at(partInd,k)+nCore)/(bit_size(0)+1)+1
-              beta_strings(j,m) = iBSet(beta_strings(j,m),l-1)
+              l = int(beta_arr_part%at(partInd,k))+nCore-1
+              beta_strings(j) = iBSet(beta_strings(j),l)
             endIf
           endDo
         endDo
       endDo
 
       if(iPrint.ge.4) then
-        write(iOut,1050) "Alpha Strings"
+        write(iOut,1050) " Alpha Strings"
         do i = 1,nAlpha_Str
-          write(iOut,1001) i,(alpha_strings(i,j),j=1,nBit_Ints)
+          call alpha_strings(i)%print(iOut,trim(num2char(I))//' ')
         endDo
-        write(iOut,1050) "Beta Strings"
+        write(iOut,1050) " Beta Strings"
         do i = 1,nBeta_Str
-          write(iOut,1001) i,(beta_strings(i,j),j=1,nBit_Ints)
+          call beta_strings(i)%print(iOut,trim(num2char(I))//' ')
         endDo
       endIf
 
@@ -11849,6 +11837,9 @@
       determinants%nDets = nAlpha_str*nBeta_str 
       determinants%nAlpStr = nAlpha_str
       determinants%nBetStr = nBeta_str 
+      determinants%nCore = nCore
+      determinants%nVirt = nVirt
+      determinants%NBasis = NBasis+nCore+nVirt
       call determinants%nSubsAlpha%init(maxval(substitutions)+1,0)
       call determinants%nSubsAlpha%put(1,1)
       do i = 1, size(substitutions)
@@ -12267,12 +12258,6 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasisIn
-!>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
-!>        The number of basis functions. 
-!>    \endverbatim
-!>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
 !>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
@@ -12314,7 +12299,7 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function Slater_Condon(IOut,IPrint,NBasisIn,Alpha_String_1,Beta_String_1, &
+      Function Slater_Condon(IOut,IPrint,Alpha_String_1,Beta_String_1, &
        Alpha_String_2,Beta_String_2,OnePartInts,TwoPartInts) &
        Result(MatEl)
 !
@@ -12323,77 +12308,69 @@
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
-      Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::Alpha_String_1,Alpha_String_2,&
+      Type(MQC_Bits),Intent(In)::Alpha_String_1,Alpha_String_2,&
         Beta_String_1,Beta_String_2
+      Type(MQC_SCF_Integral),Optional,Intent(In)::OnePartInts
       Type(MQC_TwoERIs),Optional,Intent(In)::TwoPartInts
-      Type(MQC_Scalar)::MatEl,Sgn
-      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,NBit_Ints,I,J,K, &
-        II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt
-      real(kind=real64)::ERI1,ERI2,Zero=0.0
+      Type(MQC_Scalar)::MatEl,Sgn,ERI1,ERI2
+      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,ISgn,I,J,K, &
+        II,JJ,Alpha_Diff_Cnt,Beta_Diff_Cnt,NAlpha,NBeta,RNAlpha,RNBeta
+      Type(MQC_Bits)::Alpha_Diff,Beta_Diff
+      real(kind=real64)::Zero=0.0
       Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
       
-      If(Present(OnePartInts)) then
-        If(OnePartInts%type().ne.'space'.and.OnePartInts%type().ne.'spin') &
-          call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space one-particle integrals',6,'OnePartInts%type()',OnePartInts%type())
-      EndIf
-      If(Present(TwoPartInts)) then
-        If(TwoPartInts%type().ne.'space'.and.TwoPartInts%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space two-particle integrals',6,'TwoPartInts%type()',TwoPartInts%type())
-      endIf
+!     NOT WORKING FOR COMPLEX ORBITALS YET
       If(.not.present(OnePartInts).and..not.present(TwoPartInts)) call mqc_error('No integrals given to Slater_Condon')
 
  1050 Format( A )
-      NBasis = NBasisIn
-      NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
+      NBasis = Alpha_String_1%nbits
+      if(Beta_String_1%nbits.ne.nBasis.or.Alpha_String_2%nbits.ne.nBasis.or.&
+        Beta_String_2%nbits.ne.nBasis) call mqc_error_i('Different sized strings passed to &
+        & Slater_Condon',6,'Alpha_String_1%nbits',Alpha_String_1%nbits,'Beta_String_1%nbits',&
+        Beta_String_1%nbits,'Alpha_String_2%nbits',Alpha_String_2%nbits,'Beta_String_2%nbits',&
+        Beta_String_2%nbits)
 !
 !     Initialize Arrays
 !
-!      Write(IOut,*) '---alpha 1:---'
-!      Write(IOut,'(B64)') Alpha_String_1
-!      Write(IOut,*) '---alpha 2:---'
-!      Write(IOut,'(B64)') Alpha_String_2
+!      call Alpha_String_1%print(6,'alpha 1')
+!      call Alpha_String_2%print(6,'alpha 2')
 !      Write(IOut,*) '-------------'
-!      Write(IOut,*) 'alpha XOR results in slater condon'
-!      Write(IOut,'(B64)') IEOR(Alpha_String_1,Alpha_String_2)   
-!      Write(IOut,*) 'NDifa=', PopCnt(IEOR(Alpha_String_1,Alpha_String_2))
+!      call mqc_print(IEOR(Alpha_String_1,Alpha_String_2),6,'alpha XOR results in slater condon') 
 !      Write(IOut,*)
-!      Write(IOut,*) '--beta 1:--'
-!      Write(IOut,'(B64)') Beta_String_1
-!      Write(IOut,*) '---beta 2:---'
-!      Write(IOut,'(B64)') Beta_String_2
-!      Write(IOut,*) '-------------'
-!      Write(IOut,*) 'beta XOR results in slater condon'
-!      Write(IOut,'(B64)') IEOR(Beta_String_1,Beta_String_2)   
-!      Write(IOut,*) 'NDifb=', PopCnt(IEOR(Beta_String_1,Beta_String_2))
+!      call Beta_String_1%print(6,'beta 1')
+!      call Beta_String_2%print(6,'beta 2')
+!      call mqc_print(IEOR(Beta_String_1,Beta_String_2),6,'beta XOR results in slater condon') 
 !      Write(IOut,*)
 
-      Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
-      Det_Diff = 0
-      Alpha_Diff_Cnt = 0
-      Beta_Diff_Cnt = 0
-      Do I = 1,NBit_Ints 
-        Alpha_Diff(I) = IEOR(Alpha_String_1(I),Alpha_String_2(I))
-!        Write(IOut,*) 'Alpha Diff',I,':'
-!        Write(IOut,'(B64)') Alpha_Diff(I)
-!        Write(IOut,*) '-------------'
-        Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(I)) 
-        Beta_Diff(I) = IEOR(Beta_String_1(I),Beta_String_2(I))
-!        Write(IOut,*) 'Beta Diff',I,':'
-!        Write(IOut,'(B64)') Beta_Diff(I)
-!        Write(IOut,*) '-------------'
-        Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(I))
-      EndDo
+      Alpha_Diff = IEOR(Alpha_String_1,Alpha_String_2)
+!      call Alpha_Diff%print(6,'Alpha Diff')
+!      Write(IOut,*) '-------------'
+      Alpha_Diff_Cnt = PopCnt(Alpha_Diff) 
+      NAlpha = PopCnt(Alpha_String_1)
+      Beta_Diff = IEOR(Beta_String_1,Beta_String_2)
+!      call Beta_Diff%print(6,'Beta Diff')
+!      Write(IOut,*) '-------------'
+      Beta_Diff_Cnt = PopCnt(Beta_Diff)
+      NBeta = PopCnt(Beta_String_1)
+      RNAlpha = PopCnt(Alpha_String_2)
+      RNBeta = PopCnt(Beta_String_2)
 !      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
-      Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
+      Det_Diff = int(Alpha_Diff_Cnt/2.0 + Beta_Diff_Cnt/2.0)
 
-      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) & 
-        Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
-        'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
-        'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) then 
+        If(Present(OnePartInts)) then
+          If(OnePartInts%type().ne.'general') &
+            Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
+            'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+            'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+        EndIf
+        If(Present(TwoPartInts)) then
+          If(TwoPartInts%type().ne.'general') &
+            Call MQC_Error_I('Slater_Condon has been handed spin non-conserving determinants', 6, &
+            'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
+            'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
+        EndIf
+      EndIf
 
 !      Write(IOut,*) "Det_Diff:",Det_Diff
       Select Case (Det_Diff)
@@ -12413,23 +12390,20 @@
 !     First we need to determine the relevant orbital, spin and determinant
         IDiff = 1
         Do IPos = 0, NBasis-1
-          I = IPos/Bit_Size(0)+1
-          J = Mod(IPos,Bit_Size(0)) 
-!          Write(IOut,*) 'Orbs:',IPos,' I:',I,' J:',J
-          If(BTest(Alpha_Diff(I),J)) then
+          If(BTest(Alpha_Diff,IPos)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 0
-            If(BTest(Alpha_String_1(I),J)) then
+            If(BTest(Alpha_String_1,IPos)) then
               Det(IDiff) = 1
             Else 
               Det(IDiff) = 2
             EndIf
             IDiff = IDiff + 1
           EndIf
-          If(BTest(Beta_Diff(I),J)) then
+          If(BTest(Beta_Diff,IPos)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 1
-            If(BTest(Beta_String_1(I),J)) then
+            If(BTest(Beta_String_1,IPos)) then
               Det(IDiff) = 1
             Else 
               Det(IDiff) = 2
@@ -12437,1060 +12411,555 @@
             IDiff = IDiff + 1
           EndIf
         EndDo
-!        Call MQC_Print(IOut,Orbs,'Orbs')
-!        Call MQC_Print(IOut,Spin,'Spin')
-!        Call MQC_Print(IOut,Det,'Det')
+!        Call MQC_Print(Orbs,IOut,'Orbs')
+!        Call MQC_Print(Spin,IOut,'Spin')
+!        Call MQC_Print(Det,IOut,'Det')
+
+!       Determine number of permutations to bring each orbital
+!       to the beginning of orbital string
+        ISgn = 0
+        If(Spin(1).eq.0) then
+          If(Det(1).eq.1) then
+!            call mqc_print(IBits(Alpha_String_1,0,Orbs(1)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(1)-1))
+          ElseIf(Det(1).eq.2) then
+!            call mqc_print(IBits(Alpha_String_2,0,Orbs(1)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(1)-1))
+          EndIf
+        ElseIf(Spin(1).eq.1) then
+          If(Det(1).eq.1) then
+!            call mqc_print(IBits(Beta_String_1,0,Orbs(1)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(1)-1))
+          ElseIf(Det(1).eq.2) then
+!            call mqc_print(IBits(Beta_String_2,0,Orbs(1)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(1)-1))
+          EndIf
+        EndIf
+        
+        If(Spin(2).eq.0) then
+          If(Det(2).eq.1) then
+!            call mqc_print(IBits(Alpha_String_1,0,Orbs(2)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(2)-1))
+          ElseIf(Det(2).eq.2) then
+!            call mqc_print(IBits(Alpha_String_2,0,Orbs(2)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(2)-1))
+          EndIf
+        ElseIf(Spin(2).eq.1) then
+          If(Det(2).eq.1) then
+!            call mqc_print(IBits(Beta_String_1,0,Orbs(2)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(2)-1))
+          ElseIf(Det(2).eq.2) then
+!            call mqc_print(IBits(Beta_String_2,0,Orbs(2)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(2)-1))
+          EndIf
+        EndIf
+
+        If(Spin(3).eq.0) then
+          If(Det(3).eq.1) then
+!            call mqc_print(IBits(Alpha_String_1,0,Orbs(3)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(3)-1))
+          ElseIf(Det(3).eq.2) then
+!            call mqc_print(IBits(Alpha_String_2,0,Orbs(3)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(3)-1))
+          EndIf
+        ElseIf(Spin(3).eq.1) then
+          If(Det(3).eq.1) then
+!            call mqc_print(IBits(Beta_String_1,0,Orbs(3)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(3)-1))
+          ElseIf(Det(3).eq.2) then
+!            call mqc_print(IBits(Beta_String_2,0,Orbs(3)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(3)-1))
+          EndIf
+        EndIf
+        
+        If(Spin(4).eq.0) then
+          If(Det(4).eq.1) then
+!            call mqc_print(IBits(Alpha_String_1,0,Orbs(4)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(4)-1))
+          ElseIf(Det(4).eq.2) then
+!            call mqc_print(IBits(Alpha_String_2,0,Orbs(4)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(4)-1))
+          EndIf
+        ElseIf(Spin(4).eq.1) then
+          If(Det(4).eq.1) then
+!            call mqc_print(IBits(Beta_String_1,0,Orbs(4)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(4)-1))
+          ElseIf(Det(4).eq.2) then
+!            call mqc_print(IBits(Beta_String_2,0,Orbs(4)-1),6,'')
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(4)-1))
+          EndIf
+        EndIf
+        
+        If(Spin(1).eq.1) then
+          If(Det(1).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(1).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(2).eq.1) then
+          If(Det(2).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(2).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(3).eq.1) then
+          If(Det(3).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(3).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        If(Spin(4).eq.1) then
+          If(Det(4).eq.1) then
+            ISgn = ISgn+NAlpha
+          ElseIf(Det(4).eq.2) then
+            ISgn = ISgn+RNAlpha
+          EndIf
+        EndIf
+        ISgn = ISgn-2
 
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-!          Write(IOut,*) 'Entering case 1'
+!          Write(IOut,*) 'Entering case 1' 
 !          
-!         This section computes the Coulomb contribution to the matrix
-!         element
-          If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-!            
-!           This section detemines number of permutations of creation
-!           operators and sets sign accordingly
-!           It got quite a bit longer after generalizing max number of
-!           orbitals
-!           Probably want to make some functions for these then later
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(2).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-!            
-!           This section computes the value of the matrix element
+          If(Spin(1).gt.Spin(2)) ISgn = ISgn+1 
+          If(Spin(3).gt.Spin(4)) ISgn = ISgn+1
+!          
+!         This section computes the value of the matrix element
 !
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
-            EndIf
-!            
-!           This section changes sign accounting for the ordering of alpha and
-!           beta strings
-            If(Spin(1).gt.Spin(2)) ERI1 = -ERI1
-            If(Spin(3).gt.Spin(4)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(2),Orbs(4),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(3),Orbs(1),Orbs(4),Orbs(2),'bbab')
           Else
-!            
-!           Sets Coulomb contribution to zero if 2ERI is necessarily so by
-!           spin order in the integral
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(2).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-!
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(2).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
-            EndIf
-!
-            If(Spin(1).gt.Spin(2)) ERI2 = -ERI2
-            If(Spin(3).gt.Spin(4)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(2),Orbs(3),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(3),Orbs(2),Orbs(4),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
 !
         ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
-!          Write(IOut,*) 'Entering case 2'
-          If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(3).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then 
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(3)) ERI1 = -ERI1
-            If(Spin(2).gt.Spin(4)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+!          Write(IOut,*) 'Entering case 2' 
+
+          If(Spin(1).gt.Spin(3)) ISgn = ISgn+1 
+          If(Spin(2).gt.Spin(4)) ISgn = ISgn+1
+
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(3),Orbs(4),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(4),Orbs(3),'bbab')
           Else
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(4).and.Spin(3).eq.Spin(2)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(3).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              If(Orbs(3)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(2),Orbs(3),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(4)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(3).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(3).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(3).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(3)) ERI2 = -ERI2
-            If(Spin(2).gt.Spin(4)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(4),Orbs(3),Orbs(2),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(3),Orbs(4),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
-!
+
         ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
-!          Write(IOut,*) 'Entering case 3'
-          If(Spin(1).eq.Spin(2).and.Spin(4).eq.Spin(3)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(3)-1.gt.0) then
-                I  = (Orbs(3)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(3),Orbs(4),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(2)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(2)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-!                  Write(IOut,*) 'Orbs:',Orbs(1),Orbs(2),' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(4)) ERI1 = -ERI1
-            If(Spin(2).gt.Spin(3)) ERI1 = -ERI1
-            If(Mod(ISgn,2).eq.1) ERI1 = -ERI1
-!            Write(IOut,*) 'Setting ERI1 to',ERI1
+!          Write(IOut,*) 'Entering case 3' 
+         
+          If(Spin(1).gt.Spin(4)) ISgn = ISgn+1 
+          If(Spin(2).gt.Spin(3)) ISgn = ISgn+1
+
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'alphaBeta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'betaAlpha')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'beta')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'aaab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'aaba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baaa')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'baba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'abbb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'babb')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'abbb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'bbab')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI1 = TwoPartInts%at(Orbs(1),Orbs(2),Orbs(4),Orbs(3),'bbba')
+            If(Det(1).eq.2) ERI1 = TwoPartInts%at(Orbs(2),Orbs(1),Orbs(3),Orbs(4),'bbab')
           Else
 !            Write(IOut,*) 'Setting ERI1 to zero'
             ERI1 = Zero
           EndIf
-          If(Spin(1).eq.Spin(3).and.Spin(4).eq.Spin(2)) then
-            ISgn = 0
-            If(Spin(1).eq.0.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then 
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then 
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              If(Orbs(4)-Orbs(2)-1.gt.0) then
-                I  = (Orbs(2)-1)/Bit_Size(0)+1
-                J  = (Orbs(4)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(4)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-              If(Orbs(3)-Orbs(1)-1.gt.0) then
-                I  = (Orbs(1)-1)/Bit_Size(0)+1
-                J  = (Orbs(3)-1)/Bit_Size(0)+1
-                Do K = I, J, -1
-                  If(I.ne.K) then 
-                    II = 1
-                  Else 
-                    II = Mod((Orbs(1)-1),Bit_Size(0)) + 1
-                  EndIf
-                  If(J.ne.K) then 
-                    JJ = Bit_Size(0)
-                  Else
-                    JJ = Mod((Orbs(3)-1),Bit_Size(0)) + 1
-                  EndIf
-                  ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-                EndDo
-              EndIf
-            EndIf
-            If(TwoPartInts%type().eq.'space'.or.(Spin(1).eq.0.and.Spin(4).eq.0)) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
-            ElseIf(Spin(1).eq.0.and.Spin(4).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
-            ElseIf(Spin(1).eq.1.and.Spin(4).eq.1) then
-              ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
-            EndIf
-            If(Spin(1).gt.Spin(4)) ERI2 = -ERI2
-            If(Spin(2).gt.Spin(3)) ERI2 = -ERI2
-            If(Mod(ISgn,2).eq.1) ERI2 = -ERI2
-!            Write(IOut,*) 'Setting ERI2 to',ERI2
+
+          If(Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'alpha')
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'alphaBeta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'betaAlpha')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'betaAlpha')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'alphaBeta')
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'beta')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'beta')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'aaab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'aaba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'aaba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abaa')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baaa')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'aaab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'baba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'baba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.0.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'abbb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'bbba')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.0.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'babb')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'bbab')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.1.and.Spin(3).eq.1.and.Spin(4).eq.0)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'bbab')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'babb')
+          ElseIf(TwoPartInts%type().eq.'general'.and. &
+            (Spin(1).eq.1.and.Spin(2).eq.0.and.Spin(3).eq.1.and.Spin(4).eq.1)) then
+            If(Det(1).eq.1) ERI2 = TwoPartInts%at(Orbs(1),Orbs(3),Orbs(4),Orbs(2),'bbba')
+            If(Det(1).eq.2) ERI2 = TwoPartInts%at(Orbs(2),Orbs(4),Orbs(3),Orbs(1),'abbb')
           Else 
 !            Write(IOut,*) 'Setting ERI2 to zero'
             ERI2 = Zero
           EndIf
+
         Else
           Write(IOut,1050) 'Slater Condon has been handed confusing determinant info'
         EndIf
 !
         MatEl = ERI1 - ERI2
-!        Write(IOut,*) 'Slater Condon Final:',float(MatEl)
-!        Deallocate(Orbs,Spin,Det)
+        If(Mod(ISgn,2).eq.1) MatEl = (-1)*MatEl
+!        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
         Return
 !
       Case(1)
         IDiff = 1
         Do IPos = 0, NBasis-1
-          I = IPos/Bit_Size(0)+1
-          J = Mod(IPos,Bit_Size(0)) 
-          If(BTest(Alpha_Diff(I),J)) then
+          If(BTest(Alpha_Diff,IPos)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 0
+            If(BTest(Alpha_String_1,IPos)) then
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
+            EndIf
             IDiff = IDiff + 1
           EndIf
-          If(BTest(Beta_Diff(I),J)) then
+          If(BTest(Beta_Diff,IPos)) then
             Orbs(IDiff) = IPos+1
             Spin(IDiff) = 1
+            If(BTest(Beta_String_1,IPos)) then
+              Det(IDiff) = 1
+            Else 
+              Det(IDiff) = 2
+            EndIf
             IDiff = IDiff + 1
           EndIf
         EndDo
@@ -13500,40 +12969,58 @@
 !
         ISgn = 0
         If(Spin(1).eq.0.and.Spin(2).eq.0) then
-          If(Orbs(2)-Orbs(1)-1.gt.0) then 
-            I  = (Orbs(1)-1)/Bit_Size(0)+1
-            J  = (Orbs(2)-1)/Bit_Size(0)+1
-            Do K = I, J, -1
-              If(I.ne.K) then 
-                II = 1
-              Else 
-                II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
-              EndIf
-              If(J.ne.K) then 
-                JJ = Bit_Size(0) 
-              Else
-                JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-              EndIf
-              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(K),Alpha_String_2(K)),II,JJ-II-1))
-            EndDo
-          EndIf
+          If(Orbs(2)-Orbs(1)-1.gt.0) ISgn = ISgn + &
+            PopCnt(IBits(IAnd(Alpha_String_1,Alpha_String_2),Orbs(1),Orbs(2)-Orbs(1)-1))
         ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
-          If(Orbs(2)-Orbs(1)-1.gt.0) then
-            I  = (Orbs(1)-1)/Bit_Size(0)+1
-            J  = (Orbs(2)-1)/Bit_Size(0)+1
-            Do K = I, J, -1
-              If(I.ne.K) then 
-                II = 1
-              Else 
-                II = Mod((Orbs(1)-1),Bit_Size(0)) + 1 
-              EndIf
-              If(J.ne.K) then 
-                JJ = Bit_Size(0) 
-              Else
-                JJ = Mod((Orbs(2)-1),Bit_Size(0)) + 1
-              EndIf
-              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(K),Beta_String_2(K)),II,JJ-II-1))
-            EndDo
+          If(Orbs(2)-Orbs(1)-1.gt.0) ISgn = ISgn + &
+            PopCnt(IBits(IAnd(Beta_String_1,Beta_String_2),Orbs(1),Orbs(2)-Orbs(1)-1))
+        ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+          If(Det(1).eq.1) then
+!            call mqc_print(Alpha_String_1,6,'')
+!            call mqc_print(IBits(Alpha_String_1,0,Orbs(1)-1),6,'')
+!            Write(IOut,*) 'Orbs:',Orbs(1),PopCnt(IBits(Alpha_String_1,0,Orbs(1)-1))
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(1)-1))
+          Else
+!            call mqc_print(Alpha_String_2,6,'')
+!            call mqc_print(IBits(Alpha_String_2,0,Orbs(1)-1),6,'')
+!            Write(IOut,*) 'Orbs:',Orbs(1),PopCnt(IBits(Alpha_String_2,0,Orbs(1)-1))
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(1)-1))
+          EndIf
+          If(Det(2).eq.1) then
+!            call mqc_print(Beta_String_1,6,'')
+!            call mqc_print(IBits(Beta_String_1,0,Orbs(2)-1),6,'')
+!            Write(IOut,*) 'Orbs:',Orbs(2),PopCnt(IBits(Beta_String_1,0,Orbs(2)-1))
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(2)-1))
+          Else
+!            call mqc_print(Beta_String_2,6,'')
+!            call mqc_print(IBits(Beta_String_2,0,Orbs(2)-1),6,'')
+!            Write(IOut,*) 'Orbs:',Orbs(2),PopCnt(IBits(Beta_String_2,0,Orbs(2)-1))
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(2)-1))
+          EndIf
+          If(Det(2).eq.1) then
+            ISgn = ISgn + NAlpha
+          Else
+            ISgn = ISgn + RNAlpha
+          EndIf
+        ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+          If(Det(1).eq.1) then
+!            Write(IOut,*) 'Orbs:',Orbs(1),PopCnt(IBits(Beta_String_1,0,Orbs(1)-1))
+            ISgn = ISgn + PopCnt(IBits(Beta_String_1,0,Orbs(1)-1))
+          Else
+!            Write(IOut,*) 'Orbs:',Orbs(1),PopCnt(IBits(Beta_String_2,0,Orbs(1)-1))
+            ISgn = ISgn + PopCnt(IBits(Beta_String_2,0,Orbs(1)-1))
+          EndIf
+          If(Det(2).eq.1) then
+!            Write(IOut,*) 'Orbs:',Orbs(2),PopCnt(IBits(Alpha_String_1,0,Orbs(2)-1))
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_1,0,Orbs(2)-1))
+          Else
+!            Write(IOut,*) 'Orbs:',Orbs(2),PopCnt(IBits(Alpha_String_2,0,Orbs(2)-1))
+            ISgn = ISgn + PopCnt(IBits(Alpha_String_2,0,Orbs(2)-1))
+          EndIf
+          If(Det(1).eq.1) then
+            ISgn = ISgn + NAlpha
+          Else
+            ISgn = ISgn + RNAlpha
           EndIf
         EndIf
         Sgn = (-1)**ISgn
@@ -13542,10 +13029,9 @@
         MatEl = Zero
         If(Present(TwoPartInts)) then
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0)) 
 !            Write(IOut,*) 'Alpha IPos:', IPos
-            If(BTest(Alpha_String_1(I),J)) then
+            If(BTest(Alpha_String_1,IPos)) then
+              If(Spin(1).eq.0.and.IPos+1.eq.Orbs(1).or.Spin(2).eq.0.and.IPos+1.eq.Orbs(2)) cycle
               If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'ALPHA: UHF False and 1 and 2 same spin, adding:')
@@ -13565,14 +13051,31 @@
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha'),iOut, &
 !                  'ALPHA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'betaAlpha')
+                If(TwoPartInts%type().eq.'general') then
+!                  Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baab'),iOut, &
+!                    'ALPHA: GHF True and 1 and 2 both beta, adding:')
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baab')
+                EndIf
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.0.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abaa') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'aaab'), iOut, &
+!                  'ALPHA: GHF True and 1 alpha and 2 beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abaa') - & 
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'aaab')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.1.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'baaa') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baaa'), iOut, &
+!                  'ALPHA: GHF True and 1 beta and 2 alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'baaa') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'baaa')
               EndIf
             EndIf
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0))
-            If(BTest(Beta_String_1(I),J)) then
+!            Write(IOut,*) 'Beta IPos:', IPos
+            If(BTest(Beta_String_1,IPos)) then
+              If(Spin(1).eq.1.and.IPos+1.eq.Orbs(1).or.Spin(2).eq.1.and.IPos+1.eq.Orbs(2)) cycle
               If(TwoPartInts%type().eq.'space'.and.Spin(1).eq.Spin(2)) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alpha'),iOut, &
 !                  'BETA: UHF False and 1 and 2 same spin, adding:')
@@ -13586,12 +13089,27 @@
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta'),iOut, &
 !                  'BETA: UHF True and 1 and 2 both alpha, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'alphaBeta') 
+                If(TwoPartInts%type().eq.'general') then
+                  MatEl = MatEl - Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abba')
+                EndIf
               ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
 !                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta'),iOut, &
 !                  'BETA: UHF True and 1 and 2 both beta, adding:')
                 MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'beta') - &
                   Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'beta')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.0.and.Spin(2).eq.1) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abbb') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abbb'),iOut, &
+!                  'BETA: GHF True and 1 alpha and 2 beta, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'abbb') - & 
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'abbb')
+              ElseIf(TwoPartInts%type().eq.'general'.and.Spin(1).eq.1.and.Spin(2).eq.0) then
+!                Call MQC_Print(Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'babb') - &
+!                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'bbba'),iOut, &
+!                  'BETA: GHF True and 1 beta and 2 alpha, adding:')
+                MatEl = MatEl + Sgn*TwoPartInts%at(Orbs(1),Orbs(2),IPos+1,IPos+1,'babb') - &
+                  Sgn*TwoPartInts%at(Orbs(1),IPos+1,IPos+1,Orbs(2),'bbba')
               EndIf
             EndIf
           EndDo
@@ -13604,8 +13122,16 @@
           ElseIf(Spin(1).eq.1.and.Spin(2).eq.1) then
 !            Call MQC_Print(Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2)),iOut,'1 and 2 both beta, adding core:')
             MatEl = MatEl + Sgn*OnePartInts%Beta%at(Orbs(1),Orbs(2))
+          ElseIf(Spin(1).eq.0.and.Spin(2).eq.1) then
+!            Call MQC_Print(Sgn*OnePartInts%AlphaBeta%at(Orbs(1),Orbs(2)),iOut,'1 alpha and 2 beta, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%AlphaBeta%at(Orbs(1),Orbs(2))
+          ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+!            Call MQC_Print(Sgn*OnePartInts%BetaAlpha%at(Orbs(1),Orbs(2)),iOut,'1 beta and 2 alpha, adding core:')
+            MatEl = MatEl + Sgn*OnePartInts%BetaAlpha%at(Orbs(1),Orbs(2))
           EndIf
         EndIf
+
+        If(Det(2).eq.1) MatEl = conjg(MatEl)
         
 !        Call MQC_Print(MatEl,IOut,'CI Matrix Element')
 
@@ -13615,16 +13141,14 @@
         MatEl = Zero
         If(Present(OnePartInts)) then
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0))
-            If(BTest(Alpha_String_1(I),J)) then
-!              Write(IOut,*) 'Alpha:',IPos+1,' I:',I,' J:',J
+            If(BTest(Alpha_String_1,IPos)) then
+!              Write(IOut,*) 'Alpha:',IPos+1
 !              Call MQC_Print(OnePartInts%Alpha%at(IPos+1,IPos+1),IOut,'(I|h|I)')
               MatEl = MatEl + OnePartInts%Alpha%at(IPos+1,IPos+1)
             EndIf
-            If(BTest(Beta_String_1(I),J)) then
-!              Write(IOut,*) 'Beta:',IPos+1,' I:',I,' J:',J
-              If(OnePartInts%type().eq.'spin') then
+            If(BTest(Beta_String_1,IPos)) then
+!              Write(IOut,*) 'Beta:',IPos+1
+              If(OnePartInts%type().eq.'spin'.or.OnePartInts%type().eq.'general') then
 !                Call MQC_Print(OnePartInts%Beta%at(IPos+1,IPos+1),IOut,'(I|h|I)')
                 MatEl = MatEl + OnePartInts%Beta%at(IPos+1,IPos+1)
               Else
@@ -13637,14 +13161,10 @@
 !
         If(Present(TwoPartInts)) then
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0)) 
             Do JPos = IPos+1, NBasis-1
-              II = JPos/Bit_Size(0)+1
-              JJ = Mod(JPos,Bit_Size(0)) 
-              If(BTest(Alpha_String_1(I),J)) then
-                If(BTest(Alpha_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
+              If(BTest(Alpha_String_1,IPos)) then
+                If(BTest(Alpha_String_1,JPos)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1
 !                  Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
 !                  Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'alpha'),IOut,'(IJ|JI)') 
                   MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha') - &
@@ -13655,15 +13175,11 @@
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0)) 
             Do JPos = IPos+1, NBasis-1
-              II = JPos/Bit_Size(0)+1
-              JJ = Mod(JPos,Bit_Size(0))
-              If(BTest(Beta_String_1(I),J)) then
-                If(BTest(Beta_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(TwoPartInts%type().eq.'spin') then
+              If(BTest(Beta_String_1,IPos)) then
+                If(BTest(Beta_String_1,JPos)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1
+                  If(TwoPartInts%type().eq.'spin'.or.TwoPartInts%type().eq.'general') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta'),IOut,'(II|JJ)')
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'beta'),IOut,'(IJ|JI)') 
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'beta') - & 
@@ -13680,17 +13196,17 @@
           EndDo
 !
           Do IPos = 0, NBasis-1
-            I = IPos/Bit_Size(0)+1
-            J = Mod(IPos,Bit_Size(0)) 
             Do JPos = 0, NBasis-1
-              II = JPos/Bit_Size(0)+1
-              JJ = Mod(JPos,Bit_Size(0))
-              If(BTest(Alpha_String_1(I),J)) then
-                If(BTest(Beta_String_1(II),JJ)) then 
-!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1,' I:',I,' J:',J,' II:',II,' JJ:',JJ
-                  If(TwoPartInts%type().eq.'spin') then
+              If(BTest(Alpha_String_1,IPos)) then
+                If(BTest(Beta_String_1,JPos)) then 
+!                  Write(IOut,*) 'IPos:',IPos+1,'JPos:',JPos+1
+                  If(TwoPartInts%type().eq.'spin'.or.TwoPartInts%type().eq.'general') then
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alphaBeta')
+                    If(TwoPartInts%type().eq.'general') then
+!                      Call MQC_Print(TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'abba'),IOut,'(IJ|JI)')
+                      MatEl = MatEl - TwoPartInts%at(IPos+1,JPos+1,JPos+1,IPos+1,'abba')
+                    EndIf
                   Else
 !                    Call MQC_Print(TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha'),IOut,'(II|JJ)')
                     MatEl = MatEl + TwoPartInts%at(IPos+1,IPos+1,JPos+1,JPos+1,'alpha')
@@ -14935,7 +14451,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -15027,7 +14543,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -16626,12 +16142,6 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasisIn
-!>    \verbatim
-!>        NBasisIn is Type(MQC_Scalar)
-!>        The number of basis functions. 
-!>    \endverbatim
-!>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
 !>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
@@ -16667,75 +16177,63 @@
 !>    \author L. M. Thompson
 !>    \date 2016
 !
-      Function S2_Mat_Elem(IOut,IPrint,NBasisIn,Alpha_String_1,Beta_String_1, &
-        Alpha_String_2,Beta_String_2,MO_Overlap)
+      Function S2_Mat_Elem(IOut,IPrint,Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2,&
+        MO_Overlap)
 !
 !     Variable Declarations...
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-!      Type(MQC_Determinant),Intent(In)::Determinants
-      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
-      Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::Alpha_String_1,Alpha_String_2, &
+      Type(mqc_bits),Intent(In)::Alpha_String_1,Alpha_String_2, &
         Beta_String_1,Beta_String_2
-      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
-        IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt,NBit_Ints, &
-        I,J,II,JJ
-      real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,ABTerm,One=1.0d0
-      type(mqc_scalar)::S2_Mat_Elem
       Type(MQC_SCF_Integral),Intent(In)::MO_Overlap
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_Diff,Beta_Diff
 
-      NBasis = NBasisIn
-      NBit_Ints = (NBasis/Bit_Size(0))+1 
-!      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints),Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-!      Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints])
-!      Alpha_String_2 = Determinants%Strings%Alpha%vat([R_A_String],[1,NBit_Ints])
-!      Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints])
-!      Beta_String_2 = Determinants%Strings%Beta%vat([R_B_String],[1,NBit_Ints])
+      Integer(kind=int64),Dimension(4)::Orbs,Spin,Det
+      Integer(kind=int64)::NBasis,IPos,JPos,IDiff,Det_Diff,NAlpha,NBeta, &
+        IOcc,JOcc,KOcc,LOcc,Mat_Sign,Alpha_Diff_Cnt,Beta_Diff_Cnt, &
+        I,J,II,JJ,Perm,RNAlpha,RNBeta
+      real(kind=real64)::Zero=0.0d0,Quarter=0.25d0,Half=0.5d0,One=1.0d0,Alpha_Elecs,Beta_Elecs
+      Type(mqc_scalar)::S2_Mat_Elem,ABTerm
+      Type(MQC_Bits)::Alpha_Diff,Beta_Diff
+
+      NBasis = Alpha_String_1%nbits
+      if(Beta_String_1%nbits.ne.nBasis.or.Alpha_String_2%nbits.ne.nBasis.or.&
+        Beta_String_2%nbits.ne.nBasis) call mqc_error_i('Different sized strings passed to &
+        & S2_Mat_Elem',6,'Alpha_String_1%nbits',Alpha_String_1%nbits,'Beta_String_1%nbits',&
+        Beta_String_1%nbits,'Alpha_String_2%nbits',Alpha_String_2%nbits,'Beta_String_2%nbits',&
+        Beta_String_2%nbits)
 !
-!      Write(IOut,*) 'alpha 1:'
-!      Write(IOut,'(B64)') Alpha_String_1
-!      Write(IOut,*) 'alpha 2:'
-!      Write(IOut,'(B64)') Alpha_String_2
-!      Write(IOut,*) 'alpha XOR results in slater condon'
-!      Write(IOut,'(B64)') IEOR(Alpha_String_1,Alpha_String_2)   
+!      call Alpha_String_1%print(6,'alpha 1')
+!      call Alpha_String_2%print(6,'alpha 2')
+!      call mqc_print(IEOR(Alpha_String_1,Alpha_String_2),6,'alpha XOR results in S2 mat elem') 
 !      Write(IOut,*) 'NDifa=', PopCnt(IEOR(Alpha_String_1,Alpha_String_2))
 !      Write(IOut,*)
-!      Write(IOut,*) 'beta 1:'
-!      Write(IOut,'(B64)') Beta_String_1
-!      Write(IOut,*) 'beta 2:'
-!      Write(IOut,'(B64)') Beta_String_2
-!      Write(IOut,*) 'beta XOR results in slater condon'
-!      Write(IOut,'(B64)') IEOR(Beta_String_1,Beta_String_2)   
+!      call Beta_String_1%print(6,'beta 1')
+!      call Beta_String_2%print(6,'beta 2')
+!      call mqc_print(IEOR(Beta_String_1,Beta_String_2),6,'beta XOR results in S2 mat elem') 
 !      Write(IOut,*) 'NDifb=', PopCnt(IEOR(Beta_String_1,Beta_String_2))
 !      Write(IOut,*)
-!
-      Allocate(Alpha_Diff(NBit_Ints),Beta_Diff(NBit_Ints))
-      Det_Diff = 0
-      Alpha_Diff_Cnt = 0
-      Beta_Diff_Cnt = 0
-      NAlpha = 0
-      NBeta = 0
-      Do I = 1,NBit_Ints
-        Alpha_Diff(I) = IEOR(Alpha_String_1(I),Alpha_String_2(I))
-!        Write(IOut,*) 'Alpha Diff',I,':'
-!        Write(IOut,'(B64)') Alpha_Diff(I)
-!        Write(IOut,*) '-------------'
-        Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(I)) 
-        NAlpha = NAlpha + PopCnt(Alpha_String_1(I))
-        Beta_Diff(I) = IEOR(Beta_String_1(I),Beta_String_2(I))
-!        Write(IOut,*) 'Beta Diff',I,':'
-!        Write(IOut,'(B64)') Beta_Diff(I)
-!        Write(IOut,*) '-------------'
-        Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(I))
-        NBeta = NBeta + PopCnt(Beta_String_1(I))
-      EndDo
-!      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
-      Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
 
-      If(Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0) &
+      if((MO_Overlap%blocksize('alpha').ne.NBasis*2.or.&
+        MO_Overlap%blocksize('beta').ne.NBasis*2).and.& 
+        (MO_Overlap%blocksize('alpha').ne.NBasis.or.&
+        MO_Overlap%blocksize('beta').ne.NBasis)) &
+        Call mqc_error('MO Overlap matrix is incorrectly sized in S2_Mat_Elem')
+      Alpha_Diff = IEOR(Alpha_String_1,Alpha_String_2)
+!      call Alpha_Diff%print(6,'Alpha Diff')
+!      Write(IOut,*) '-------------'
+      Alpha_Diff_Cnt = PopCnt(Alpha_Diff) 
+      NAlpha = PopCnt(Alpha_String_1)
+      Beta_Diff = IEOR(Beta_String_1,Beta_String_2)
+!      call Beta_Diff%print(6,'Beta Diff')
+!      Write(IOut,*) '-------------'
+      Beta_Diff_Cnt = PopCnt(Beta_Diff)
+      NBeta = PopCnt(Beta_String_1)
+!      Write(IOut,*)'Alpha_Diff_Cnt:',Alpha_Diff_Cnt,'Beta_Diff_Cnt:',Beta_Diff_Cnt
+      Det_Diff = int(Alpha_Diff_Cnt/2.0 + Beta_Diff_Cnt/2.0)
+
+      If((Mod(Alpha_Diff_Cnt,2).ne.0.or.Mod(Beta_Diff_Cnt,2).ne.0).and. &
+        MO_Overlap%blocksize('alpha').ne.NBasis*2) &
         Call MQC_Error_I('S2_Mat_Elem has been handed spin non-conserving &
         &determinants',6,'Mod(Alpha_Diff_Cnt,2)', Mod(Alpha_Diff_Cnt,2), &
         'Mod(Beta_Diff_Cnt,2)', Mod(Beta_Diff_Cnt,2) )
@@ -16749,22 +16247,20 @@
         Case(2)
           IDiff = 1
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            If(BTest(Alpha_Diff(I),J)) then
+            If(BTest(Alpha_Diff,IPos)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 0
-              If(BTest(Alpha_String_1(I),J)) then
+              If(BTest(Alpha_String_1,IPos)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
               EndIf
               IDiff = IDiff + 1
             EndIf
-            If(BTest(Beta_Diff(I),J)) then
+            If(BTest(Beta_Diff,IPos)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 1
-              If(BTest(Beta_String_1(I),J)) then
+              If(BTest(Beta_String_1,IPos)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
@@ -16772,199 +16268,442 @@
               IDiff = IDiff + 1
             EndIf
           EndDo
-!          Call Print_Vector(IOut,Orbs,'Orbs')
-!          Call Print_Vector(IOut,Spin,'Spin')
-!          Call Print_Vector(IOut,Det,'Det')
-!
+!          Call MQC_Print(Orbs,IOut,'Orbs')
+!          Call MQC_Print(Spin,IOut,'Spin')
+!          Call MQC_Print(Det,IOut,'Det')
+
           IOcc = 0
           Do IPos = Orbs(1)-1, 0, -1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
             If(Spin(1).eq.0) then
               If(Det(1).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
+                If(BTest(Alpha_String_1,IPos)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
+                If(BTest(Alpha_String_2,IPos)) IOcc = IOcc + 1
               EndIf
             ElseIf(Spin(1).eq.1) then
               If(Det(1).eq.1) then
-                If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
+                If(BTest(Beta_String_1,IPos)) IOcc = IOcc + 1
               ElseIf(Det(1).eq.2) then
-                If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
+                If(BTest(Beta_String_2,IPos)) IOcc = IOcc + 1
               EndIf
             EndIf
           EndDo
 !          Write(IOut,*) 'IOcc:',IOcc
           JOcc = 0
           Do IPos = Orbs(2)-1, 0, -1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
             If(Spin(2).eq.0) then
               If(Det(2).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
+                If(BTest(Alpha_String_1,IPos)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
+                If(BTest(Alpha_String_2,IPos)) JOcc = JOcc + 1
               EndIf
             ElseIf(Spin(2).eq.1) then
               If(Det(2).eq.1) then
-                If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
+                If(BTest(Beta_String_1,IPos)) JOcc = JOcc + 1
               ElseIf(Det(2).eq.2) then
-                If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
+                If(BTest(Beta_String_2,IPos)) JOcc = JOcc + 1
               EndIf
             EndIf
           EndDo
 !          Write(IOut,*) 'JOcc:',JOcc
           KOcc = 0
           Do IPos = Orbs(3)-1, 0, -1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
             If(Spin(3).eq.0) then
               If(Det(3).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) KOcc = KOcc + 1
+                If(BTest(Alpha_String_1,IPos)) KOcc = KOcc + 1
               ElseIf(Det(3).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) KOcc = KOcc + 1
+                If(BTest(Alpha_String_2,IPos)) KOcc = KOcc + 1
               EndIf
             ElseIf(Spin(3).eq.1) then
               If(Det(3).eq.1) then
-                If(BTest(Beta_String_1(I),J)) KOcc = KOcc + 1
+                If(BTest(Beta_String_1,IPos)) KOcc = KOcc + 1
               ElseIf(Det(3).eq.2) then
-                If(BTest(Beta_String_2(I),J)) KOcc = KOcc + 1
+                If(BTest(Beta_String_2,IPos)) KOcc = KOcc + 1
               EndIf
             EndIf
           EndDo
 !          Write(IOut,*) 'KOcc:',KOcc
           LOcc = 0
           Do IPos = Orbs(4)-1, 0, -1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
             If(Spin(4).eq.0) then
               If(Det(4).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) LOcc = LOcc + 1
+                If(BTest(Alpha_String_1,IPos)) LOcc = LOcc + 1
               ElseIf(Det(4).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) LOcc = LOcc + 1
+                If(BTest(Alpha_String_2,IPos)) LOcc = LOcc + 1
               EndIf
             ElseIf(Spin(4).eq.1) then
               If(Det(4).eq.1) then
-                If(BTest(Beta_String_1(I),J)) LOcc = LOcc + 1
+                If(BTest(Beta_String_1,IPos)) LOcc = LOcc + 1
               ElseIf(Det(4).eq.2) then
-                If(BTest(Beta_String_2(I),J)) LOcc = LOcc + 1
+                If(BTest(Beta_String_2,IPos)) LOcc = LOcc + 1
               EndIf
             EndIf
           EndDo
 !          Write(IOut,*) 'LOcc:',LOcc
-!          Mat_Sign = -1
-!          Mat_Sign = (-1)**(IOcc+JOcc+KOcc+LOcc-3)
-!          Write(IOut,*) 'Permutations:',(IOcc+JOcc+KOcc+LOcc-3)
-          Mat_Sign = (-1)**(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
-!          Write(IOut,*) 'Permutations:',(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
-!          Write(IOut,*) 'Mat_Sign:',Mat_Sign
+
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then 
+            Mat_Sign = (-1)**(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
+!            Write(IOut,*) 'Permutations:',(2*(NAlpha+NBeta)+1-IOcc-JOcc-KOcc-LOcc)
+!            Write(IOut,*) 'Mat_Sign:',Mat_Sign
 !
-          If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-            If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+            If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
+              If(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(2).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
+                ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
+                If(Spin(1).eq.0.and.Spin(2).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
+                ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
               Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+!               This suggests that there are unbalanced spins between determinants 
                 S2_Mat_Elem = Zero
               EndIf
-            ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-              If(Spin(1).eq.0.and.Spin(2).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(2).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
-            EndIf
-          ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
-            If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
-              If(Spin(1).eq.0.and.Spin(3).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))
-              ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
-                MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
-            EndIf
-          ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
-            If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
-              Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
-                S2_Mat_Elem = Zero
-              EndIf
-            ElseIf(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
-              If(Spin(1).eq.0.and.Spin(4).eq.1) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))
-              ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
-                S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+            ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
+              If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(3).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
+                ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(4).and.Spin(2).eq.Spin(3)) then
+                If(Spin(1).eq.0.and.Spin(3).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))
+                ElseIf(Spin(1).eq.1.and.Spin(3).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
                   MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
               Else
-!             Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+!               This suggests that there are unbalanced spins between determinants 
                 S2_Mat_Elem = Zero
               EndIf
-            Else
-!             This suggests that there are unbalanced spins between determinants 
-              S2_Mat_Elem = Zero
+            ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
+              If(Spin(1).eq.Spin(2).and.Spin(3).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(4).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))
+                ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              ElseIf(Spin(1).eq.Spin(3).and.Spin(2).eq.Spin(4)) then
+                If(Spin(1).eq.0.and.Spin(4).eq.1) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))
+                ElseIf(Spin(1).eq.1.and.Spin(4).eq.0) then
+                  S2_Mat_Elem = Mat_Sign*MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                Else
+!               Setting anything that isn't alpha-beta --> alpha-beta excitations to zero
+                  S2_Mat_Elem = Zero
+                EndIf
+              Else
+!               This suggests that there are unbalanced spins between determinants 
+                S2_Mat_Elem = Zero
+              EndIf
             EndIf
+
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+
+            RNAlpha = PopCnt(Alpha_String_2)
+            RNBeta = PopCnt(Beta_String_2)
+
+            If(Spin(1).eq.0) then
+              If(Det(1).eq.1) then
+                Perm = NAlpha-IOcc+NBeta
+              Else
+                Perm = RNAlpha-IOcc+RNBeta
+              EndIf
+            ElseIf(Spin(1).eq.1) then
+              If(Det(1).eq.1) then
+                Perm = NBeta-IOcc
+              Else
+                Perm = RNBeta-IOcc
+              EndIf
+            EndIf
+!            write(*,*) 'IOcc Perm',Perm
+            If(Spin(2).eq.0) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NAlpha-JOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-JOcc+RNBeta
+              EndIf
+            ElseIf(Spin(2).eq.1) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NBeta-JOcc
+              Else
+                Perm = Perm+RNBeta-JOcc
+              EndIf
+            EndIf
+!            write(*,*) 'JOcc Perm',Perm
+            If(Spin(3).eq.0) then
+              If(Det(3).eq.1) then
+                Perm = Perm+NAlpha-KOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-KOcc+RNBeta
+              EndIf
+            ElseIf(Spin(3).eq.1) then
+              If(Det(3).eq.1) then
+                Perm = Perm+NBeta-KOcc
+              Else
+                Perm = Perm+RNBeta-KOcc
+              EndIf
+            EndIf
+!            write(*,*) 'KOcc Perm',Perm
+            If(Spin(4).eq.0) then
+              If(Det(4).eq.1) then
+                Perm = Perm+NAlpha-LOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-LOcc+RNBeta
+              EndIf
+            ElseIf(Spin(4).eq.1) then
+              If(Det(4).eq.1) then
+                Perm = Perm+NBeta-LOcc
+              Else
+                Perm = Perm+RNBeta-LOcc
+              EndIf
+            EndIf
+!            write(*,*) 'LOcc Perm',Perm
+            Perm = Perm-2
+!            write(*,*) 'Removing redundnant Perms',Perm
+            Perm = Perm+1
+!            Write(IOut,*) 'Additional sign Perm:',Perm
+
+            if(Det(1).eq.Det(2)) then
+              If(Spin(1).gt.Spin(2)) Perm = Perm+1 
+              If(Spin(3).gt.Spin(4)) Perm = Perm+1
+            elseIf(Det(1).eq.Det(3)) then
+              If(Spin(1).gt.Spin(3)) Perm = Perm+1 
+              If(Spin(2).gt.Spin(4)) Perm = Perm+1
+            elseIf(Det(1).eq.Det(4)) then
+              If(Spin(1).gt.Spin(4)) Perm = Perm+1 
+              If(Spin(2).gt.Spin(3)) Perm = Perm+1
+            endIf
+!            Write(IOut,*) 'Perm after spin order fix:',Perm
+            Mat_Sign = (-1)**Perm 
+!
+            If(Spin(1).eq.1) Orbs(1) = Orbs(1)+NBasis
+            If(Spin(2).eq.1) Orbs(2) = Orbs(2)+NBasis
+            If(Spin(3).eq.1) Orbs(3) = Orbs(3)+NBasis
+            If(Spin(4).eq.1) Orbs(4) = Orbs(4)+NBasis
+!   
+            S2_Mat_Elem = Zero 
+!
+!           5A/5B 
+            If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(2),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(2),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+              else
+!               5A
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(1))
+!               6B
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(1))
+!               5B
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))
+!               6A
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(3),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(3),Orbs(2))
+              endIf
+            ElseIf(Det(1).eq.Det(3).and.Det(2).eq.Det(4)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(4))
+              else
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(3))
+              endIf
+            ElseIf(Det(1).eq.Det(4).and.Det(2).eq.Det(3)) then
+              if(Det(1).eq.1) then
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(3))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Alpha%at(Orbs(1),Orbs(3))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(4),Orbs(2))*&
+                  MO_Overlap%Beta%at(Orbs(1),Orbs(3))
+              else
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(4))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Alpha%at(Orbs(2),Orbs(4))
+                S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(Orbs(3),Orbs(1))*&
+                  MO_Overlap%Beta%at(Orbs(2),Orbs(4))
+              endIf
+            EndIf
+
+!            Write(IOut,*) 'Permutations:',Perm
+!            Write(IOut,*) 'Mat_Sign:',Mat_Sign
+            S2_Mat_Elem = Mat_Sign * S2_Mat_Elem
+
           EndIf
-!          Write(IOut,*) 'S2_Mat_Elem:',S2_Mat_Elem
+!          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 
           Return
 
         Case(1)
           IDiff = 1
-!          Allocate(Orbs(2),Spin(2))
           Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            If(BTest(Alpha_Diff(I),J)) then
+            If(BTest(Alpha_Diff,IPos)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 0
-              If(BTest(Alpha_String_1(I),J)) then
+              If(BTest(Alpha_String_1,IPos)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
               EndIf
               IDiff = IDiff + 1
             EndIf
-            If(BTest(Beta_Diff(I),J)) then
+            If(BTest(Beta_Diff,IPos)) then
               Orbs(IDiff) = IPos+1
               Spin(IDiff) = 1
-              If(BTest(Beta_String_1(I),J)) then
+              If(BTest(Beta_String_1,IPos)) then
                 Det(IDiff) = 1
               Else 
                 Det(IDiff) = 2
@@ -16977,108 +16716,583 @@
 !          Write(IOut,*)'Det 1:',Det(1),' Det 2:',Det(2)
 !
           S2_Mat_Elem = Zero 
-          If(Spin(1).ne.Spin(2)) then
-            S2_Mat_Elem = Zero
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            If(Spin(1).ne.Spin(2)) then
+              S2_Mat_Elem = Zero
 !
-          ElseIf(Spin(1).eq.0) then
+            ElseIf(Spin(1).eq.0) then
 !
-            IOcc = 0
-            Do IPos = Orbs(1)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(1).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) IOcc = IOcc + 1
-              ElseIf(Det(1).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) IOcc = IOcc + 1
-              EndIf
-            EndDo
-!            Write(IOut,*) 'IOcc:',IOcc
-            JOcc = 0
-            Do IPos = Orbs(2)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(2).eq.1) then
-                If(BTest(Alpha_String_1(I),J)) JOcc = JOcc + 1
-              ElseIf(Det(2).eq.2) then
-                If(BTest(Alpha_String_2(I),J)) JOcc = JOcc + 1
-              EndIf
-            EndDo
-!            Write(IOut,*) 'JOcc:',JOcc
+              IOcc = 0
+              Do IPos = Orbs(1)-1, 0, -1
+                If(Det(1).eq.1) then
+                  If(BTest(Alpha_String_1,IPos)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Alpha_String_2,IPos)) IOcc = IOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'IOcc:',IOcc
+              JOcc = 0
+              Do IPos = Orbs(2)-1, 0, -1
+                If(Det(2).eq.1) then
+                  If(BTest(Alpha_String_1,IPos)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Alpha_String_2,IPos)) JOcc = JOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'JOcc:',JOcc
 !
-            Do IPos = 0, NBasis-1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(BTest(Beta_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*& 
-                  MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
-              EndIf
-            EndDo
-!            S2_Mat_Elem = - S2_Mat_Elem
-!            Write(IOut,*) 'Permutations:',(2*NAlpha+1-IOcc-JOcc)
-!            Write(IOut,*) 'Mat_Sign:',(-1)**(2*NAlpha+1-IOcc-JOcc)
-            S2_Mat_Elem = (-1)**(2*NAlpha+1-IOcc-JOcc) * S2_Mat_Elem
-!            S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
+              Do IPos = 0, NBasis-1
+                If(BTest(Beta_String_1,IPos)) then
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*& 
+                    MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
+                EndIf
+              EndDo
+!!              S2_Mat_Elem = - S2_Mat_Elem
+!              Write(IOut,*) 'Permutations:',(2*NAlpha+1-IOcc-JOcc)
+!              Write(IOut,*) 'Mat_Sign:',(-1)**(2*NAlpha+1-IOcc-JOcc)
+              S2_Mat_Elem = (-1)**(2*NAlpha+1-IOcc-JOcc) * S2_Mat_Elem
+!!              S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
 !
-          ElseIf(Spin(1).eq.1) then
+            ElseIf(Spin(1).eq.1) then
 
+              IOcc = 0
+              Do IPos = Orbs(1)-1, 0, -1
+                If(Det(1).eq.1) then
+                  If(BTest(Beta_String_1,IPos)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Beta_String_2,IPos)) IOcc = IOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'IOcc:',IOcc
+              JOcc = 0
+              Do IPos = Orbs(2)-1, 0, -1
+                If(Det(2).eq.1) then
+                  If(BTest(Beta_String_1,IPos)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Beta_String_2,IPos)) JOcc = JOcc + 1
+                EndIf
+              EndDo
+!              Write(IOut,*) 'JOcc:',JOcc
+!
+              Do IPos = 0, NBasis-1
+                If(BTest(Alpha_String_1,IPos)) then
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
+                    MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+                EndIf
+              EndDo
+!              Write(IOut,*) 'Permutations:',(2*NBeta+1-IOcc-JOcc)
+!              Write(IOut,*) 'Mat_Sign:',(-1)**(2*NBeta+1-IOcc-JOcc)
+              S2_Mat_Elem = (-1)**(2*NBeta+1-IOcc-JOcc) * S2_Mat_Elem
+
+            EndIf
+!
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+!
+            RNAlpha = PopCnt(Alpha_String_2)
+            RNBeta = PopCnt(Beta_String_2)
+!
             IOcc = 0
             Do IPos = Orbs(1)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(1).eq.1) then
-                If(BTest(Beta_String_1(I),J)) IOcc = IOcc + 1
-              ElseIf(Det(1).eq.2) then
-                If(BTest(Beta_String_2(I),J)) IOcc = IOcc + 1
+              If(Spin(1).eq.0) then
+                If(Det(1).eq.1) then
+                  If(BTest(Alpha_String_1,IPos)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Alpha_String_2,IPos)) IOcc = IOcc + 1
+                EndIf
+              ElseIf(Spin(1).eq.1) then
+                If(Det(1).eq.1) then
+                  If(BTest(Beta_String_1,IPos)) IOcc = IOcc + 1
+                ElseIf(Det(1).eq.2) then
+                  If(BTest(Beta_String_2,IPos)) IOcc = IOcc + 1
+                EndIf
               EndIf
             EndDo
 !            Write(IOut,*) 'IOcc:',IOcc
             JOcc = 0
             Do IPos = Orbs(2)-1, 0, -1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(Det(2).eq.1) then
-                If(BTest(Beta_String_1(I),J)) JOcc = JOcc + 1
-              ElseIf(Det(2).eq.2) then
-                If(BTest(Beta_String_2(I),J)) JOcc = JOcc + 1
+              If(Spin(2).eq.0) then
+                If(Det(2).eq.1) then
+                  If(BTest(Alpha_String_1,IPos)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Alpha_String_2,IPos)) JOcc = JOcc + 1
+                EndIf
+              ElseIf(Spin(2).eq.1) then
+                If(Det(2).eq.1) then
+                  If(BTest(Beta_String_1,IPos)) JOcc = JOcc + 1
+                ElseIf(Det(2).eq.2) then
+                  If(BTest(Beta_String_2,IPos)) JOcc = JOcc + 1
+                EndIf
               EndIf
             EndDo
 !            Write(IOut,*) 'JOcc:',JOcc
+            If(Spin(1).eq.0) then
+              If(Det(1).eq.1) then
+                Perm = NAlpha-IOcc+NBeta
+              Else
+                Perm = RNAlpha-IOcc+RNBeta
+              EndIf
+            ElseIf(Spin(1).eq.1) then
+              If(Det(1).eq.1) then
+                Perm = NBeta-IOcc
+              Else
+                Perm = RNBeta-IOcc
+              EndIf
+            EndIf
+            If(Spin(2).eq.0) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NAlpha-JOcc+NBeta
+              Else
+                Perm = Perm+RNAlpha-JOcc+RNBeta
+              EndIf
+            ElseIf(Spin(2).eq.1) then
+              If(Det(2).eq.1) then
+                Perm = Perm+NBeta-JOcc
+              Else
+                Perm = Perm+RNBeta-JOcc
+              EndIf
+            EndIf
+            Perm = Perm+1
 !
+            If(Spin(1).eq.1) Orbs(1) = Orbs(1)+NBasis
+            If(Spin(2).eq.1) Orbs(2) = Orbs(2)+NBasis
+!
+!           1A
             Do IPos = 0, NBasis-1
-              I = NBit_Ints - IPos/Bit_Size(0)
-              J = Mod(IPos,Bit_Size(0)) 
-              If(BTest(Alpha_String_1(I),J)) then
-                S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
-                  MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%BetaAlpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
               EndIf
             EndDo
-!            S2_Mat_Elem = - S2_Mat_Elem
-!            Write(IOut,*) 'Permutations:',(2*NBeta+1-IOcc-JOcc)
-!            Write(IOut,*) 'Mat_Sign:',(-1)**(2*NBeta+1-IOcc-JOcc)
-            S2_Mat_Elem = (-1)**(2*NBeta+1-IOcc-JOcc) * S2_Mat_Elem
-!            S2_Mat_Elem = (-1)**(IOcc+JOcc-1) * S2_Mat_Elem
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 1A')
+!           1B 
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 1B')
+!           2A 
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - MO_Overlap%BetaAlpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%AlphaBeta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 2A')
+!           2B
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%BetaAlpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after 2B')
+!           S_z^2 contribution
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 1')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 2')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Alpha%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 3')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(1),Orbs(2))
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                      MO_Overlap%Beta%at(Orbs(2),Orbs(1))
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 4')
+
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 5')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Alpha%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 6')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then 
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Alpha%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem - Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Alpha%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz 7')
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_1,IPos)) then
+                If(IPos+1.ne.Orbs(1).and.IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+              If(BTest(Beta_String_1,IPos)) then
+                If(NBasis+IPos+1.ne.Orbs(1).and.NBasis+IPos+1.ne.Orbs(2)) then
+                  If(Det(1).eq.1) then
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(2))*&
+                      MO_Overlap%Beta%at(Orbs(1),NBasis+IPos+1)
+                  Else
+                    S2_Mat_Elem = S2_Mat_Elem + Half*MO_Overlap%Beta%at(NBasis+IPos+1,Orbs(1))*&
+                      MO_Overlap%Beta%at(Orbs(2),NBasis+IPos+1)
+                  EndIf
+                EndIf
+              EndIf
+            EndDo
+!            Call S2_Mat_Elem%print(6,'S2_Mat_Elem after Sz final')
+
+!            Write(IOut,*) 'Permutations:',Perm
+!            Write(IOut,*) 'Mat_Sign:',(-1)**Perm
+            S2_Mat_Elem = (-1)**Perm * S2_Mat_Elem
 
           EndIf
 
-!          Write(IOut,*) 'S2_Mat_Elem:',S2_Mat_Elem
+!          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 
           Return
 !
         Case(0)
           ABTerm = Zero
-          Do IPos = 0, NBasis-1
-            I = NBit_Ints - IPos/Bit_Size(0)
-            J = Mod(IPos,Bit_Size(0)) 
-            Do JPos = 0, NBasis-1
-              II = NBit_Ints - JPos/Bit_Size(0)
-              JJ = Mod(JPos,Bit_Size(0)) 
-              If((BTest(Alpha_String_2(I),J)).and.(BTest(Beta_String_2(II),JJ))) then
-                ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
+          If(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
                   MO_Overlap%BetaAlpha%at(JPos+1,IPos+1) 
+              EndDo
+            EndDo
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(IPos+1,NBasis+JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,NBasis+IPos+1) 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  ABTerm = ABTerm + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+JPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+IPos+1) 
+              EndDo
+            EndDo
+
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(IPos+1,JPos+1)-&
+                  MO_Overlap%Beta%at(IPos+1,JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(IPos+1,NBasis+JPos+1)-&
+                  MO_Overlap%Beta%at(IPos+1,NBasis+JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(NBasis+IPos+1,JPos+1)-&
+                  MO_Overlap%Beta%at(NBasis+IPos+1,JPos+1))**2 
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  ABTerm = ABTerm + Quarter*abs(MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+JPos+1)-&
+                  MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+JPos+1))**2 
+              EndDo
+            EndDo
+          EndIf
+
+          if(MO_Overlap%blocksize('alpha').eq.NBasis*2) then
+            Alpha_Elecs = Zero
+            Beta_Elecs = Zero
+            Do IPos = 0, NBasis-1
+              If(BTest(Alpha_String_2,IPos)) then
+                Alpha_Elecs = Alpha_Elecs + MO_Overlap%Alpha%at(IPos+1,IPos+1) 
+                Beta_Elecs = Beta_Elecs + MO_Overlap%Beta%at(IPos+1,IPos+1) 
               EndIf
             EndDo
-          EndDo
-          S2_Mat_Elem = Quarter*((NAlpha-NBeta)**2+2*(NAlpha+NBeta)) - ABTerm
+            Do IPos = 0, NBasis-1
+              If(BTest(Beta_String_2,IPos)) then
+                Alpha_Elecs = Alpha_Elecs + MO_Overlap%Alpha%at(NBasis+IPos+1,NBasis+IPos+1) 
+                Beta_Elecs = Beta_Elecs + MO_Overlap%Beta%at(NBasis+IPos+1,NBasis+IPos+1) 
+              EndIf
+            EndDo
+            S2_Mat_Elem = Quarter*(Alpha_Elecs-Beta_Elecs)**2+0.75*(Alpha_Elecs+Beta_Elecs) 
+
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Alpha_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(IPos+1,IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Alpha_String_2,JPos))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                  MO_Overlap%BetaAlpha%at(JPos+1,JPos+1)
+              EndDo
+            EndDo
+            Do IPos = 0, NBasis-1
+              Do JPos = 0, NBasis-1
+                If((BTest(Beta_String_2,IPos)).and.(BTest(Beta_String_2,JPos))) &
+                  S2_Mat_Elem = S2_Mat_Elem + MO_Overlap%AlphaBeta%at(NBasis+IPos+1,NBasis+IPos+1)*&
+                    MO_Overlap%BetaAlpha%at(NBasis+JPos+1,NBasis+JPos+1)
+              EndDo
+            EndDo
+          ElseIf(MO_Overlap%blocksize('alpha').eq.NBasis) then
+            S2_Mat_Elem = Quarter*((NAlpha-NBeta)**2+2*(NAlpha+NBeta)) 
+          EndIf
+
+          S2_Mat_Elem = S2_Mat_Elem - ABTerm
 !          Call S2_Mat_Elem%print(6,'S2_Mat_Elem')
 !
           Return
@@ -17101,10 +17315,15 @@
 !>    \verbatim
 !>       
 !>    MQC_BUILD_CI_HAMILTONIAN is a subroutine that builds the CI operator matrix 
-!>    given MO integrals and determinant strings. The name of the routine reflects
-!>    its original purpose of returning the CI Hamiltonian matrix, but in fact it
-!>    can be used for any one, two, or one and two particle operator. The routine
-!>    can also be used to build the S^2 operator matrix in the CI basis.
+!>    given MO integrals and determinant strings. Unlike the similar routine 
+!>    MQC_BUILD_CI_OPERATOR, MQC_BUILD_CI_HAMILTONIAN can only accept a single 
+!>    determinant string. Due to the way that the indices are accessed, 
+!>    MQC_BUILD_CI_HAMILTONIAN is the most computationally efficient way of 
+!>    dealing with the single determinant string case, but it can't deal with 
+!>    substring determinant blocks. The name of the routine reflects it's original 
+!>    purpose of returning the CI Hamiltonian matrix, but in fact it can be used 
+!>    for any one, two, or one and two particle operator. The routine can also be 
+!>    used to build the S^2 operator matrix in the CI basis. 
 !>
 !>    \endverbatim
 !
@@ -17122,18 +17341,27 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] NBasis
+!>    \param[out] CI_Hamiltonian
 !>    \verbatim
-!>        NBasis is Type(MQC_Scalar)
-!>        The number of basis functions. 
+!>        CI_Hamiltonian is Type(MQC_Matrix)
+!>        The CI hamiltonian returned.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Determinants
 !>    \verbatim
 !>        Determinants is Type(MQC_Determinant)
 !>        The binary string occupation number vectors. If 
 !>        opional argument Dets2 is provided Determinants
 !>        variable will contain the row basis strings.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis.
 !>    \endverbatim
 !>    
 !>    \param[in] MO_Core_Ham
@@ -17148,35 +17376,45 @@
 !>        The MO basis two-particle integrals.
 !>    \endverbatim
 !>    
-!>    \param[out] CI_Hamiltonian
+!>    \param[in] SubsAIn
 !>    \verbatim
-!>        CI_Hamiltonian is Type(MQC_Matrix)
-!>        The CI hamiltonian returned.
+!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. If not present, all substitutions are 
+!>        included. If SubsB not present, SubsA containes the the 
+!>        total (alpha+beta) substitutions that are permitted. If 
+!>        both SubsA and SubsB provided, SubsA contains the alpha
+!>        substitutions that are permitted. If Subs2A are provided, 
+!>        Subs1A gives substitutions for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. 
 !>    \endverbatim
 !>
-!>    \param[in] Subs
+!>    \param[in] Subs2AIn
 !>    \verbatim
-!>        Subs is Integer(kind=int64),Dimension(:),Optional
-!>        Permitted substitutions to include in the Hamiltonian.
-!>        If not present, all substitutions are included.
-!>    \endverbatim
-!>    
-!>    \param[in] Dets2
-!>    \verbatim
-!>        Dets2 is Type(MQC_Determinant),Optional
-!>        If provided, gives the binary string occupation number 
-!>        vectors for the column basis, where Determinants variable
-!>        will continue to provide the binary string occupation 
-!>        number vectors for the row basis.
-!>    \endverbatim
-!>    
-!>    \param[in] Subs2
-!>    \verbatim
-!>        Subs2 is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian for the column basis. If not present, 
 !>        column basis substitutions are equal to row basis 
-!>        substitutions provided by variable Subs.
+!>        substitutions provided by variable SubsA and/or SubsB.
+!>        If Subs2A provided but not Subs2B, Subs2A contains the total
+!>        (alpha+beta) substitutions that are permitted. If both 
+!>        Subs2A and Subs2B provided, Subs2A containes the alpha
+!>        substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. If not 
+!>        present, column basis substitutions are equal to row basis 
+!>        substitutions.
 !>    \endverbatim
 !>    
 !>    \param[in] doS2
@@ -17195,30 +17433,31 @@
 !>    \author L. M. Thompson
 !>    \date 2017,2021,2024
 !
-      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,NBasis,Determinants, &
-          MO_Core_Ham,MO_ERIs,CI_Hamiltonian,Subs,Dets2,Subs2,doS2)
+      Subroutine MQC_Build_CI_Hamiltonian(IOut,IPrint,CI_Hamiltonian,Determinants,Dets2,&
+          MO_Core_Ham,MO_ERIs,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn,doS2)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut,IPrint
-      Type(MQC_Scalar),Intent(In)::NBasis
       Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
       Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
       Type(MQC_Determinant),Intent(In)::Determinants
       Type(MQC_Determinant),Optional,Intent(In)::Dets2
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::CI_Hamiltonian
-      Integer(kind=int64)::I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
-        R_A_String,R_B_String,L_Index,R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End, &
-        R_A_Start,R_B_Start,R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,Counter, &
-        NBit_Ints,NAlpha_Str2,NBeta_Str2,NDets2,Counter2
-      Integer(kind=int64),Dimension(:),Optional::Subs,Subs2
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
-        Beta_String_2,rightSubs
+      Integer(kind=int64)::I,J,NDets1,L_A_String,L_B_String,R_A_String,R_B_String,L_Index,&
+        R_Index,L_A_Start,L_B_Start,L_A_End,L_B_End,L_A_Step,L_B_Step,R_A_Start,R_B_Start,&
+        R_A_End,R_B_End,R_A_Step,R_B_Step,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,Counter,NDets2,&
+        Counter2,NDets1A,NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,LASub_End,&
+        LBSub_End,RASub_End,RBSub_End
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2
+      Type(MQC_Vector)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
       Type(MQC_Determinant)::Determinants2
       Logical::SymmFlag,S2Flag
-      Character(len=12)::SymmStr
-      Character(len=256)::detIndex1,detIndex2
-      Character(len=44)::bar=" Build Progress: ???% |                    |"
+      Character(len=12)::SymmStr,index_order='genetic'
+      Integer(kind=int64)::A1_subLevel,A2_subLevel,B1_subLevel,B2_subLevel,T1_subLevel,T2_subLevel,&
+        L_Iabk,R_Iabk,L_Xk,R_Xk
 !
       If(present(doS2)) then
         S2Flag = doS2
@@ -17226,15 +17465,6 @@
         S2Flag = .false.
       EndIf
 !
-      If(Present(MO_Core_Ham)) then
-        If(.not.S2Flag.and.MO_Core_Ham%type().ne.'space'.and.MO_Core_Ham%type().ne.'spin') &
-          call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space one-particle integrals',6,'MO_Core_Ham%type()',MO_Core_Ham%type())
-      EndIf
-      If(Present(MO_ERIs)) then
-        If(MO_ERIs%type().ne.'space'.and.MO_ERIs%type().ne.'spin') call mqc_error_A('Slater_Condon only implemented for &
-          & spin or space two-particle integrals',6,'MO_ERIs%type()',MO_ERIs%type())
-      endIf
       If(.not.present(MO_Core_Ham).and..not.present(MO_ERIs)) call mqc_error('No integrals given to Slater_Condon')
 !
       If(present(Dets2)) then
@@ -17244,231 +17474,263 @@
         Determinants2 = Determinants
         SymmFlag = .True.
       EndIf
+      if(Determinants%nBasis.ne.Determinants2%nBasis) &
+        call mqc_error('Provided determinant strings have different numbers of orbitals in &
+        &MQC_Build_CI_Hamiltonian')
 !
-!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
-      NAlpha_Str1 = MQC_Matrix_Rows(Determinants%Strings%Alpha)
-      NBeta_Str1 = MQC_Matrix_Rows(Determinants%Strings%Beta)
-      If(present(subs)) then
-        NDets1 = 0
-        Do I = 1, Size(Subs)
-          Do J = 1, Size(Determinants%NSubsAlpha)
-            Do K = 1, Size(Determinants%NSubsBeta)
-              If((J-1)+(K-1).eq.Subs(i)) then
-                NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-                  Determinants%NSubsBeta%at(K)
-              EndIf
-            EndDo
-          EndDo
-        EndDo
-      Else
-        NDets1 = NAlpha_Str1 * NBeta_Str1
-      EndIf
-
-      NAlpha_Str2 = MQC_Matrix_Rows(Determinants2%Strings%Alpha)
-      NBeta_Str2 = MQC_Matrix_Rows(Determinants2%Strings%Beta)
-      If(present(subs2)) then
-        rightSubs = subs2
-        SymmFlag = .False.
-      elseIf(present(subs)) then
-        rightSubs = subs
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      if(present(subsAIn)) then
+        subsA = subsAIn
+      else
+        subsA = [integer::]
       endIf
-      If(allocated(rightSubs)) then
-        NDets2 = 0
-        Do I = 1, Size(rightSubs)
-          Do J = 1, Size(Determinants2%NSubsAlpha)
-            Do K = 1, Size(Determinants2%NSubsBeta)
-              If((J-1)+(K-1).eq.rightSubs(i)) then
-                NDets2 = NDets2 + Determinants2%NSubsAlpha%at(J)*&
-                  Determinants2%NSubsBeta%at(K)
-              EndIf
-            EndDo
-          EndDo
-        EndDo
-      Else
-        NDets2 = NAlpha_Str2 * NBeta_Str2 
-      EndIf
+      if(present(subsBIn)) then
+        subsB = subsBIn
+      else
+        subsB = [integer::]
+      endIf
+      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+
+      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+        subs2A = subsA
+        subs2B = subsB
+      elseIf(.not.present(subs2BIn)) then
+        subs2A = subs2AIn
+        subs2B = [integer::]
+        symmFlag = .False.
+      elseIf(.not.present(subs2AIn)) then
+        subs2A = [integer::]
+        subs2B = subs2BIn
+        symmFlag = .False.
+      else
+        subs2A = subs2AIn
+        subs2B = subs2BIn
+        symmFlag = .False.
+      endIf
+      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
+!
+!     Allocate output operator matrix
 !
       If(SymmFlag) then
+        if(NDets1.ne.NDets2) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
+          6,'NDets1',NDets1,'NDets2',NDets2)
         Call CI_Hamiltonian%init(NDets1,NDets2,Storage='StorHerm')
         SymmStr = 'hermitian'
       Else
         Call CI_Hamiltonian%init(NDets1,NDets2)
         SymmStr = 'element'
       EndIf
-      NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
-      Allocate(Alpha_String_1(NBit_Ints),Alpha_String_2(NBit_Ints), &
-        Beta_String_1(NBit_Ints),Beta_String_2(NBit_Ints))
-!
-      If(Determinants%order.ne.Determinants2%order) &
-        Call MQC_Error_A('Left and Right determinant sets have different order in &
-        &MQC_Build_CI_Hamiltonian',6,'Determinants%order',Determinants%order,&
-        'Determinants2%order',Determinants2%order)
-      select case (Determinants%order)
-      case ('lexical')
-        Counter = 0
-        Counter2 = 0
-        Do L_A_String = 1, NAlpha_Str1  
-          Do L_B_String = 1, NBeta_Str1  
-            Do R_A_String = 1, NAlpha_Str2  
-              Do R_B_String = 1, NBeta_Str2  
-                L_Index = 1+(L_B_String-1)*NAlpha_Str1+(L_A_String-1) 
-                R_Index = 1+(R_B_String-1)*NAlpha_Str2+(R_A_String-1) 
-                if(SymmFlag.and.L_Index.lt.R_Index) cycle
-                if(iPrint.ge.2.and.R_Index.eq.1) then
-                  Counter = Counter + 1
-                  if(L_Index.eq.1) then
-                    if(SymmFlag) then
-                      DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
-                    else
-                      DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
-                    endIf
-                  endIf
-                  DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
-                    ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                    Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-                endIf
-                if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
-                  Counter2 = Counter2 + 1
-                  if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
-                  DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
-                    ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
-                    Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
-                endIf
-!                write(*,*) '-------------------------------------------'
-!                write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
-!                write(*,*) '-------------------------------------------'
-                Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-                Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
-                Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-                Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
-                If(S2Flag) then
-                  Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
-                    Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                    MO_Core_Ham),L_Index,R_Index,SymmStr)
-                Else
-                  If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
-                  ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      MO_Core_Ham),L_Index,R_Index,SymmStr)
-                  ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                    Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                      Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                      TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
-                  Else
-                    Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
-                  EndIf
-                EndIf
 
-!                Counter = Counter + 1
-!                If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-!                  write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-!                  do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-!                    bar(23+i:23+i) = '#'
-!                  endDo
-!                  write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-!                EndIf
-              EndDo
-            EndDo
-          EndDo
-        EndDo
-        if(iPrint.ge.2) then
-          write(6,'(A)') trim(detIndex1)
-          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
-        endIf
-      case('ci') 
-        L_Index = 0
-        L_A_Start = 1
-        Counter = 0
-        Counter2 = 0
-        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
-          L_B_Start = 1
-          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
-            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
+      nAlpha1 = get_string_nElec(Determinants%Strings%Alpha(1)) 
+      nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha(1)) 
+      nBeta1 = get_string_nElec(Determinants%Strings%Beta(1)) 
+      nBeta2 = get_string_nElec(Determinants2%Strings%Beta(1)) 
+
+      select case (Determinants%order)
+      case('lexical')
+        LASub_End = 0
+        LBSub_End = 0
+      case('ci')
+        LASub_End = size(Determinants%NSubsAlpha)-1
+        LBSub_End = size(Determinants%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+          iOut,'Determinants%order',Determinants%order)
+      end select
+      select case (Determinants2%order)
+      case('lexical')
+        RASub_End = 0
+        RBSub_End = 0
+      case('ci')
+        RASub_End = size(Determinants2%NSubsAlpha)-1
+        RBSub_End = size(Determinants2%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+          iOut,'Determinants2order',Determinants2%order)
+      end select
+
+      L_Index = 0
+      L_A_Start = 1
+      Do L_A_Sub = 0, LASub_End
+        if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
+        L_B_Start = 1
+        Do L_B_Sub = 0, LBSub_End
+          if(Determinants%order.eq.'ci'.and..not.any(lSubsB.eq.L_B_Sub)) cycle
+          If(Determinants%order.eq.'ci'.and..not.any(lSubsT.eq.(L_A_Sub+L_B_Sub))) cycle 
+          select case (Determinants%order)
+          case('lexical')
+            L_A_Start = Determinants%NAlpStr
+            L_B_Start = Determinants%NBetStr
+            L_A_End = 1
+            L_B_End = 1
+            L_A_Step = -1
+            L_B_Step = -1
+          case('ci')
             If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
             If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-            If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
+            If((L_A_Start.gt.Determinants%NAlpStr).or.(L_B_Start.gt.Determinants%NBetStr)) cycle
             L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
             L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-            Do L_A_String = L_A_Start, L_A_End
-              Do L_B_String = L_B_Start, L_B_End
+            L_A_Step = 1
+            L_B_Step = 1
+          case default
+            call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+              iOut,'Determinants%order',Determinants%order)
+          end select
+          Do L_A_String = L_A_Start, L_A_End, L_A_Step
+            Do L_B_String = L_B_Start, L_B_End, L_B_Step
+
+              Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
+              Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
+
+              A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
+              B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
+              T1_sublevel = A1_subLevel + B1_subLevel
+
+              if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+              if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+              if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+
+              if(index_order.eq.'genetic') then
+!               Compute composite index within substituion level k
+!               I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                L_Iabk = mqc_get_string_index(Alpha_String_1,&
+                  (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
+                  'lexical',[A1_subLevel],determinants%nCore)*&
+                  Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
+                  mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
+                  (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
+
+!               Compute composite substitution level offset 
+!               X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!               where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                L_Xk = 0
+                l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
+                  do Counter2 = 0,size(Determinants%NSubsBeta)-1
+                    if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                    if(.not.any(Counter.eq.lSubsA)) cycle
+                    if(.not.any(Counter2.eq.lSubsB)) cycle
+                    if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
+                    L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
+                      Determinants%NSubsBeta%at(Counter2+1)
+                  endDo
+                endDo l_offset
+
+!               Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                L_Index = L_Xk + L_Iabk + 1
+              elseIf(index_order.eq.'input') then
                 L_Index = L_Index + 1
-                R_Index = 0
-                R_A_Start = 1
-                Do R_A_Sub = 0, size(Determinants2%NSubsAlpha)-1
-                  R_B_Start = 1
-                  Do R_B_Sub = 0, size(Determinants2%NSubsBeta)-1
-                    If(.not.any(rightSubs.eq.(R_A_Sub+R_B_Sub))) cycle 
+              else
+                call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                  'index_order',index_order)
+              endIf
+
+              R_Index = 0
+              R_A_Start = 1
+              Do R_A_Sub = 0, RASub_End
+                if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
+                R_B_Start = 1
+                Do R_B_Sub = 0, RBSub_End
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsB.eq.R_B_Sub)) cycle
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsT.eq.(R_A_Sub+R_B_Sub))) cycle 
+                  select case (Determinants2%order)
+                  case('lexical')
+                    R_A_Start = Determinants2%NAlpStr
+                    R_B_Start = Determinants2%NBetStr
+                    R_A_End = 1
+                    R_B_End = 1
+                    R_A_Step = -1
+                    R_B_Step = -1
+                  case('ci')
                     If (R_A_Sub.ne.0) R_A_Start = sum(Determinants2%NSubsAlpha%vat(1,R_A_Sub))+1
                     If (R_B_Sub.ne.0) R_B_Start = sum(Determinants2%NSubsBeta%vat(1,R_B_Sub))+1
-                    If((R_A_Start.gt.NAlpha_Str2).or.(R_B_Start.gt.NBeta_Str2)) cycle
+                    If((R_A_Start.gt.Determinants2%NAlpStr).or.(R_B_Start.gt.Determinants2%NBetStr)) cycle
                     R_A_End = R_A_Start + Determinants2%NSubsAlpha%at(R_A_Sub+1) - 1
                     R_B_End = R_B_Start + Determinants2%NSubsBeta%at(R_B_Sub+1) - 1
-                    Do R_A_String = R_A_Start, R_A_End
-                      Do R_B_String = R_B_Start, R_B_End
+                    R_A_Step = 1
+                    R_B_Step = 1
+                  case default
+                    call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+                      iOut,'Determinants%order',Determinants%order)
+                  end select
+                  Do R_A_String = R_A_Start, R_A_End, R_A_Step
+                    Do R_B_String = R_B_Start, R_B_End, R_A_Step
+
+                      Alpha_String_2 = Determinants2%Strings%Alpha(R_A_String) 
+                      Beta_String_2 = Determinants2%Strings%Beta(R_B_String) 
+
+                      A2_subLevel = get_string_sub_level(Alpha_String_2,nAlpha2)
+                      B2_sublevel = get_string_sub_level(Beta_String_2,nBeta2)
+                      T2_sublevel = A2_subLevel + B2_subLevel
+
+                      if(.not.any(A2_subLevel.eq.rSubsA)) cycle
+                      if(.not.any(B2_subLevel.eq.rSubsB)) cycle
+                      if(.not.any(T2_subLevel.eq.rSubsT)) cycle
+                       
+                      if(index_order.eq.'genetic') then
+!                       Compute composite index within substituion level k
+!                       I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                        R_Iabk = mqc_get_string_index(Alpha_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),&
+                          (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                          Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
+                          mqc_get_string_index(Beta_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
+                          'lexical',[B2_subLevel],determinants2%nCore)
+
+!                       Compute composite substitution level offset 
+!                       X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!                       where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                        R_Xk = 0
+                        r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
+                          do Counter2 = 0,size(Determinants2%NSubsBeta)-1
+                            if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                            if(.not.any(Counter.eq.rSubsA)) cycle
+                            if(.not.any(Counter2.eq.rSubsB)) cycle
+                            if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
+                            R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
+                              Determinants2%NSubsBeta%at(Counter2+1)
+                          endDo
+                        endDo r_offset
+
+!                       Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                        R_Index = R_Xk + R_Iabk + 1
+                      elseIf(index_order.eq.'input') then
                         R_Index = R_Index + 1
-                        if(SymmFlag.and.L_Index.lt.R_Index) cycle
-                        if(iPrint.ge.2.and.R_Index.eq.1) then
-                          Counter = Counter + 1
-                          if(L_Index.eq.1) then
-                            if(SymmFlag) then
-                              DetIndex1 = NEW_LINE('A')//' CI determinant index'//NEW_LINE('A')
-                            else
-                              DetIndex1 = NEW_LINE('A')//' Left CI determinant index'//NEW_LINE('A')
-                            endIf
-                          endIf
-                          DetIndex1 = trim(DetIndex1)//NEW_LINE('A')//' '//trim(num2char(Counter,'I6'))//& 
-                            ' = '//trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                            Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-                        endIf
-                        if(.not.SymmFlag.and.iPrint.ge.2.and.L_Index.eq.1) then
-                          Counter2 = Counter2 + 1
-                          if(R_Index.eq.1) DetIndex2 = NEW_LINE('A')//' Right CI determinant index'//NEW_LINE('A')
-                          DetIndex2 = trim(DetIndex2)//NEW_LINE('A')//' '//trim(num2char(Counter2,'I6'))// & 
-                            ' = '//trim(mqc_detstring_print(Determinants2%Strings%Alpha%vat([R_A_String],[0]),&
-                            Determinants2%Strings%Beta%vat([R_B_String],[0]),Int(NBasis)))
-                        endIf
-!                        write(*,*) '-------------------------------------------'
-!                        write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
-!                        write(*,*) '-------------------------------------------'
-                        Alpha_String_1 = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-                        Alpha_String_2 = Determinants2%Strings%Alpha%vat([R_A_String],[1,NBit_Ints]) 
-                        Beta_String_1 = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-                        Beta_String_2 = Determinants2%Strings%Beta%vat([R_B_String],[1,NBit_Ints]) 
-                        If(abs(R_A_Sub+R_B_Sub-L_A_Sub-L_B_Sub).gt.2) cycle 
-                        If(S2Flag) then
-                          Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,NBasis, &
-                            Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                            MO_Core_Ham),L_Index,R_Index,SymmStr)
+                      else
+                        call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                          'index_order',index_order)
+                      endIf
+
+                      if(SymmFlag.and.L_Index.lt.R_Index) cycle
+!                      write(*,*) '-------------------------------------------'
+!                      write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!                      write(*,*) '-------------------------------------------'
+                      If(S2Flag) then
+                        Call CI_Hamiltonian%put(S2_Mat_Elem(IOut,IPrint,Alpha_String_1,&
+                          Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                          R_Index,SymmStr)
+                      Else
+                        If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham,MO_ERIs),&
+                            L_Index,R_Index,SymmStr)
+                        ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                            R_Index,SymmStr)
+                        ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+                          Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                            Beta_String_1,Alpha_String_2,Beta_String_2,TwoPartInts=MO_ERIs),&
+                            L_Index,R_Index,SymmStr)
                         Else
-                          If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham,MO_ERIs),L_Index,R_Index,SymmStr)
-                          ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              MO_Core_Ham),L_Index,R_Index,SymmStr)
-                          ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
-                            Call CI_Hamiltonian%put(Slater_Condon(IOut,IPrint,NBasis, &
-                              Alpha_String_1,Beta_String_1,Alpha_String_2,Beta_String_2, &
-                              TwoPartInts=MO_ERIs),L_Index,R_Index,SymmStr)
-                          Else
-                            Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
-                          EndIf
+                          Call MQC_Error('No integrals present in MQC_Build_CI_Hamiltonian')
                         EndIf
-!                        Counter = Counter + 1
-!                        If(iPrint.ge.1.and.Mod(100*Counter/(NDets*(NDets+1)/2),5).eq.0) then
-!                          write(unit=bar(18:20),fmt="(i3)") 100*Counter/(NDets*(NDets+1)/2)
-!                          do I = 1, 20*Counter/(NDets*(NDets+1)/2)
-!                            bar(23+i:23+i) = '#'
-!                          endDo
-!                          write(unit=iOut,fmt='(a1,a1,a44)',advance='no') '+',char(13),bar
-!                        EndIf
-                      EndDo
+                      EndIf
                     EndDo
                   EndDo
                 EndDo
@@ -17476,18 +17738,308 @@
             EndDo
           EndDo
         EndDo
-        if(iPrint.ge.2) then
-          write(6,'(A)') trim(detIndex1)
-          if(.not.symmFlag) write(6,'(A)') trim(detIndex2)
-        endIf
-      case default
-        call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
-          iOut,'Determinants%order',Determinants%order)
-      end select
-!
-      If(iPrint.ge.2) write(iOut,*) NEW_LINE('a')
+      EndDo
 
       End Subroutine MQC_Build_CI_Hamiltonian
+!
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_BUILD_CI_OPERATOR
+!
+!>    \brief <b> MQC_BUILD_CI_OPERATOR is a subroutine that builds an 
+!>    operator matrix given MO integrals and determinant strings</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_CI_OPERATOR is a subroutine that builds an operator matrix 
+!>    given MO integrals and determinant strings. It can be used for any one, 
+!>    two, or one and two particle operator. The routine can also be used to 
+!>    build the S^2 operator matrix by passing the orbital overlap matrix and 
+!>    setting the appropriate input flag. In contrast to the similar routine
+!>    MQC_BUILD_CI_HAMILTONIAN, MQC_BUILD_CI_OPERATOR can accept multiple 
+!>    determinant strings corresponsing to substring blocks. Due to the 
+!>    requirement to compute the determinant strings corresponding to a given
+!>    index, which has no analytic form and must be determined by searching 
+!>    through all strings of a given substitution level, the routine is less 
+!>    computationally efficient for a given orbital string length than
+!>    MQC_BUILD_CI_HAMILTONIAN.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[out] Operator_Matrix
+!>    \verbatim
+!>        Operator_Matrix is Type(MQC_Matrix)
+!>        The CI operator matrix returned.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_Core_Ham
+!>    \verbatim
+!>        MO_Core_Ham is Type(MQC_SCF_Integral),Optional
+!>        The MO basis one-particle integrals.
+!>    \endverbatim
+!>    
+!>    \param[in] MO_ERIs
+!>    \verbatim
+!>        MO_ERIs is Type(MQC_TwoERIs),Optional 
+!>        The MO basis two-particle integrals.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
+!>    \endverbatim
+!>    
+!>    \param[in] doS2
+!>    \verbatim
+!>        DoS2 is Logical,Optional
+!>        Logical flag to build the S^2 matrix instead of using 
+!>        Slater Condon rules. The spatial molecular orbital basis
+!>        overlap (i.e. do not multiply by spin overlap which 
+!>        always leads to zero alpha-beta blocks) must be provided
+!>        in MO_Core_Ham argument if this option is used) must be provided
+!>        in MO_Core_Ham argument if this option is used..
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2017,2021,2024
+!
+      Subroutine MQC_Build_CI_Operator(IOut,IPrint,Operator_Matrix,Determinants,Dets2,&
+          MO_Core_Ham,MO_ERIs,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn,doS2)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint
+      Type(MQC_TwoERIs),Optional,Intent(In)::MO_ERIs
+      Type(MQC_SCF_Integral),Optional,Intent(In)::MO_Core_Ham
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Logical,Optional,Intent(In)::doS2
+      Type(MQC_Matrix),Intent(Out)::Operator_Matrix
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End,LDetSize,RDetSize
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
+        NDets1A,NDets1B,NDets2A,NDets2B
+      Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,alphaStrTemp,&
+        betaStrTemp
+      Type(MQC_Vector),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
+      Logical::SymmFlag,S2Flag
+      Character(len=12)::SymmStr
+!
+      If(present(doS2)) then
+        S2Flag = doS2
+      else
+        S2Flag = .false.
+      EndIf
+!
+      If(.not.present(MO_Core_Ham).and..not.present(MO_ERIs)) &
+        call mqc_error('No integrals given to MQC_Build_CI_Operator')
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .False.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .True.
+      EndIf
+
+      LDetSize = Size(Determinants)
+      RDetSize = Size(Determinants2)
+      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
+        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
+        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      NDets1T = 1
+      do i = 1, LDetSize
+        if(present(subsAIn)) then
+          subsA = subsAIn(i)
+        else
+          subsA = [integer::]
+        endIf
+        if(present(subsBIn)) then
+          subsB = subsBIn(i)
+        else
+          subsB = [integer::]
+        endIf
+        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
+        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
+          NDets1(i),NDets1A(i),NDets1B(i))
+        NDets1T = NDets1T*NDets1(i)
+      endDo
+
+      NDets2T = 1
+      do i = 1, RDetSize
+        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+          subs2A = subsA
+          subs2B = subsB
+        elseIf(.not.present(subs2BIn)) then
+          subs2A = subs2AIn(i)
+          subs2B = [integer::]
+          symmFlag = .False.
+        elseIf(.not.present(subs2AIn)) then
+          subs2A = [integer::]
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        else
+          subs2A = subs2AIn(i)
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        endIf
+        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
+        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
+          NDets2(i),NDets2A(i),NDets2B(i))
+        NDets2T = NDets2T*NDets2(i)
+      endDo
+!
+!     Allocate output operator matrix
+!
+      If(SymmFlag) then
+        if(NDets1T.ne.NDets2T) call mqc_error_i('SymmFlag is true but Hamiltonian dimensions are not equal',&
+          6,'NDets1T',NDets1T,'NDets2T',NDets2T)
+        Call Operator_Matrix%init(NDets1T,NDets2T,Storage='StorHerm')
+        SymmStr = 'hermitian'
+      Else
+        Call Operator_Matrix%init(NDets1T,NDets2T)
+        SymmStr = 'element'
+      EndIf
+      
+      Do L_Index = 1, NDets1T
+        If(SymmFlag) then
+          R_Index_End = L_Index
+        Else
+          R_Index_End = NDets2T
+        EndIf
+        alpha_string_1 = mqc_bits(0)
+        beta_string_1 = mqc_bits(0)
+        Do I = 1, LDetSize
+          J = mod((L_Index-1)/product(NDets1(1:i-1)),NDets1(i))+1
+          call mqc_strings_at_index(iout,iprint,j,Determinants(i),lsubsA(i),lSubsB(i),&
+            lSubsT(i),AlphaStrTemp,BetaStrTemp)
+          alpha_string_1 = MQC_concatenate_bits(alphaStrTemp,alpha_string_1)
+          beta_string_1 = MQC_concatenate_bits(betaStrTemp,beta_string_1)
+        EndDo
+        Do R_Index = 1, R_Index_End
+          alpha_string_2 = mqc_bits(0)
+          beta_string_2 = mqc_bits(0)
+          Do I = 1, RDetSize
+            J = mod((R_Index-1)/product(NDets2(1:i-1)),NDets2(i))+1
+            call mqc_strings_at_index(iout,iprint,j,Determinants2(i),rsubsA(i),rSubsB(i),&
+              rSubsT(i),AlphaStrTemp,BetaStrTemp)
+            alpha_string_2 = MQC_concatenate_bits(alphaStrTemp,alpha_string_2)
+            beta_string_2 = MQC_concatenate_bits(betaStrTemp,beta_string_2)
+          EndDo
+!          write(*,*) '-------------------------------------------'
+!          write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
+!          write(*,*) '-------------------------------------------'
+          If(S2Flag) then
+            Call Operator_Matrix%put(S2_Mat_Elem(IOut,IPrint,Alpha_String_1,&
+              Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+              R_Index,SymmStr)
+          Else
+            If(Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham,MO_ERIs),&
+                L_Index,R_Index,SymmStr)
+            ElseIf(Present(MO_Core_Ham).and..not.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,MO_Core_Ham),L_Index,&
+                R_Index,SymmStr)
+            ElseIf(.not.Present(MO_Core_Ham).and.Present(MO_ERIs)) then
+              Call Operator_Matrix%put(Slater_Condon(IOut,IPrint,Alpha_String_1,&
+                Beta_String_1,Alpha_String_2,Beta_String_2,TwoPartInts=MO_ERIs),&
+                L_Index,R_Index,SymmStr)
+            Else
+              Call MQC_Error('No integrals present in MQC_Build_CI_Operator')
+            EndIf
+          EndIf
+        EndDo
+      EndDo
+
+      End Subroutine MQC_Build_CI_Operator
 !
 !
 !=====================================================================
@@ -17521,45 +18073,47 @@
 !>        The print level for the subroutine. 
 !>    \endverbatim
 !>    
-!>    \param[in] Ind
+!>    \param[in] IndIn
 !>    \verbatim
-!>        Ind is Integer(kind=int64)
+!>        IndIn is Integer(kind=int64)
 !>        The index from which determinant strings will be
-!>        returned. If Ind is negative, the index will be
-!>        counted from the end.
-!>    \endverbatim
-!>    
-!>    \param[out] aString
-!>    \verbatim
-!>        aString is Integer(kind=int64),Dimension(:),Allocatable
-!>        The alpha string at index Ind.
-!>    \endverbatim
-!>    
-!>    \param[in] bString
-!>    \verbatim
-!>        bString is Integer(kind=int64),Dimension(:),Allocatable
-!>        The beta string at index Ind.
-!>    \endverbatim
-!>    
-!>    \param[in] NBasis
-!>    \verbatim
-!>        NBasis is Type(MQC_Scalar)
-!>        The number of basis functions. 
+!>        returned. 
 !>    \endverbatim
 !>    
 !>    \param[in] Determinants
 !>    \verbatim
 !>        Determinants is Type(MQC_Determinant)
-!>        The binary string occupation number vectors. If 
-!>        opional argument Dets2 is provided Determinants
-!>        variable will contain the row basis strings.
+!>        The binary string occupation number vectors. 
 !>    \endverbatim
 !>
-!>    \param[in] Subs
+!>    \param[in] SubsA
 !>    \verbatim
-!>        Subs is Integer(kind=int64),Dimension(:),Optional
-!>        Permitted substitutions to include in the Hamiltonian.
-!>        If not present, all substitutions are included.
+!>        SubsA is Integer(kind=int64),Dimension(:)
+!>        Permitted alpha substitutions.
+!>    \endverbatim
+!>
+!>    \param[in] SubsB
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:)
+!>        Permitted beta substitutions.
+!>    \endverbatim
+!>
+!>    \param[in] SubsT
+!>    \verbatim
+!>        SubsT is Integer(kind=int64),Dimension(:)
+!>        Permitted total substitutions. 
+!>    \endverbatim
+!>    
+!>    \param[out] aString
+!>    \verbatim
+!>        aString is type(MQC_bits)
+!>        The alpha string at index IndIn.
+!>    \endverbatim
+!>    
+!>    \param[in] bString
+!>    \verbatim
+!>        bString is type(MQC_bits)
+!>        The beta string at index IndIn.
 !>    \endverbatim
 !>    
 !     Authors:
@@ -17567,132 +18121,806 @@
 !>    \author L. M. Thompson
 !>    \date 2024
 !
-      Subroutine MQC_Get_Strings_At_Index(IOut,IPrint,Ind,aString,bString,NBasis,Determinants, &
-        Subs)
+      Subroutine MQC_Strings_At_Index(IOut,IPrint,IndIn,Determinants,SubsA,SubsB,SubsT,&
+        aString,bString)
 !
       Implicit None
-      Integer(kind=int64),Intent(In)::IOut,IPrint,Ind
-      Type(MQC_Scalar),Intent(In)::NBasis
+      Integer(kind=int64),Intent(In)::IOut,IPrint,IndIn
       Type(MQC_Determinant),Intent(In)::Determinants
-      Integer(kind=int64),Dimension(:),Intent(In),Optional::Subs
-      Type(MQC_Vector),Intent(Out)::aString,bString
+      type(mqc_vector),Intent(In)::SubsA,SubsB,SubsT
+      type(MQC_bits),intent(Out)::aString,bString
 
-      Integer(kind=int64)::IndIn,I,J,K,NAlpha_Str1,NBeta_Str1,NDets1,L_A_String,L_B_String, &
-        L_Index,L_A_Start,L_B_Start,L_A_End,L_B_End,L_A_Sub,L_B_Sub,NBit_Ints
-!
-!     Need to figure out dimensions of CI Hamiltonian, alpha strings and beta stings
-      NAlpha_Str1 = MQC_Matrix_Rows(Determinants%Strings%Alpha)
-      NBeta_Str1 = MQC_Matrix_Rows(Determinants%Strings%Beta)
-      If(present(subs)) then
-        NDets1 = 0
-        Do I = 1, Size(Subs)
-          Do J = 1, Size(Determinants%NSubsAlpha)
-            Do K = 1, Size(Determinants%NSubsBeta)
-              If((J-1)+(K-1).eq.Subs(i)) then
-                NDets1 = NDets1 + Determinants%NSubsAlpha%at(J)*&
-                  Determinants%NSubsBeta%at(K)
-              EndIf
-            EndDo
-          EndDo
+      Integer(kind=int64)::nAlpha,nBeta,Xk,A_Sub,B_Sub,A_Start,B_Start,A_End,&
+        B_End,A_String,B_String,A_SubLevel,B_SubLevel,Iabk,Ind
+
+      nAlpha = get_string_nElec(Determinants%Strings%Alpha(1)) 
+      nBeta = get_string_nElec(Determinants%Strings%Beta(1)) 
+
+!     Figure out what substitution level the index refers to and the start and end strings 
+!     associated with that substitution level
+!     Compute composite substitution level offset 
+!     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!     where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+
+      Xk = 0
+      A_Start = 1
+      B_Start = 1
+      offset: do A_Sub = 0,size(Determinants%NSubsAlpha)-1
+        if(.not.any(A_Sub.eq.SubsA)) cycle
+        do B_Sub = 0,size(Determinants%NSubsBeta)-1
+          if(.not.any(B_Sub.eq.SubsB)) cycle
+          if(.not.any(A_Sub+B_Sub.eq.SubsT)) cycle
+          if(IndIn.gt.Xk.and.IndIn.le.Xk+Determinants%NSubsAlpha%at(A_Sub+1)*&
+            Determinants%NSubsBeta%at(B_Sub+1)) then
+            if(A_Sub.ne.0) A_Start = sum(Determinants%NSubsAlpha%vat(1,A_Sub))+1
+            if(B_Sub.ne.0) B_Start = sum(Determinants%NSubsBeta%vat(1,B_Sub))+1
+            A_End = A_Start + Determinants%NSubsAlpha%at(A_Sub+1) - 1
+            B_End = B_Start + Determinants%NSubsBeta%at(B_Sub+1) - 1 
+            exit offset
+          else
+            if(.not.any(A_Sub.eq.SubsA)) cycle
+            if(.not.any(B_Sub.eq.SubsB)) cycle
+            if(.not.any(A_Sub+B_Sub.eq.SubsT)) cycle
+            Xk = Xk + Determinants%NSubsAlpha%at(A_Sub+1)*&
+              Determinants%NSubsBeta%at(B_Sub+1)
+          endIf
+        endDo
+      endDo offset
+      if(Determinants%order.eq.'lexical') then
+          A_Start = 1
+          B_Start = 1
+          A_End = Determinants%NAlpStr
+          B_End = Determinants%NBetStr
+      endIf
+
+!     Third determine offset for initial substitution level
+      indexSearch: Do A_String = A_Start, A_End
+        Do B_String = B_Start, B_End
+
+          aString = Determinants%Strings%Alpha(A_String) 
+          bString = Determinants%Strings%Beta(B_String) 
+
+          A_subLevel = get_string_sub_level(aString,nAlpha)
+          B_subLevel = get_string_sub_level(bString,nBeta)
+
+          if(A_subLevel.ne.A_Sub) cycle
+          if(B_subLevel.ne.B_Sub) cycle
+
+!         Compute composite index within substituion level k
+!         I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+          Iabk = mqc_get_string_index(aString,(determinants%nBasis-determinants%nVirt),&
+            (nAlpha-determinants%nCore),'lexical',[A_subLevel],determinants%nCore)*&
+            Determinants%NSubsBeta%at(B_SubLevel+1) + &
+            mqc_get_string_index(bString,(determinants%nBasis-determinants%nVirt),&
+            (nBeta-determinants%nCore),'lexical',[B_subLevel],determinants%nCore)
+
+!         Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+          Ind = Xk + Iabk + 1
+
+          if(Ind.eq.IndIn) exit indexSearch
         EndDo
-      Else
-        NDets1 = NAlpha_Str1 * NBeta_Str1
+      EndDo indexSearch
+
+      If(iPrint.ge.3) then
+        write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
+          trim(mqc_detstring_print(aString,bString))
       EndIf
-      If(Ind.gt.NDets1) call mqc_error_i('Index requested is larger than dimension of matrix in &
-        &MQC_Get_String_At_Index',6,'Ind',Ind,'NDets1',NDets1)
-      If(Ind.eq.0) call mqc_error_i('Index zero requested in MQC_Get_String_At_Index',6,'Ind',Ind)
-      If(Ind.lt.0) then
-        IndIn = NDets1+Ind+1
-      Else
-        IndIn = Ind
-      EndIf
+      Return
 !
-      NBit_Ints = (NBasis/(Bit_Size(0)-1))+1 
-!
-      select case (Determinants%order)
-      case ('lexical')
-        Do L_A_String = 1, NAlpha_Str1  
-          Do L_B_String = 1, NBeta_Str1  
-            L_Index = 1+(L_B_String-1)*NAlpha_Str1+(L_A_String-1) 
-            If(L_Index.eq.IndIn) then
-              aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-              bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-              If(iPrint.ge.3) then
-                write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
-                  trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                  Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-              EndIf
-              Return
-            EndIf
-          EndDo
-        EndDo
-      case('ci') 
-        L_Index = 0
-        L_A_Start = 1
-        Do L_A_Sub = 0, size(Determinants%NSubsAlpha)-1
-          L_B_Start = 1
-          Do L_B_Sub = 0, size(Determinants%NSubsBeta)-1
-            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle 
-            If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
-            If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-            If((L_A_Start.gt.NAlpha_Str1).or.(L_B_Start.gt.NBeta_Str1)) cycle
-            L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
-            L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-            Do L_A_String = L_A_Start, L_A_End
-              Do L_B_String = L_B_Start, L_B_End
-                L_Index = L_Index + 1
-                If(L_Index.eq.IndIn) then
-                  aString = Determinants%Strings%Alpha%vat([L_A_String],[1,NBit_Ints]) 
-                  bString = Determinants%Strings%Beta%vat([L_B_String],[1,NBit_Ints]) 
-                  If(iPrint.ge.3) then
-                    write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
-                      trim(mqc_detstring_print(Determinants%Strings%Alpha%vat([L_A_String],[0]),&
-                      Determinants%Strings%Beta%vat([L_B_String],[0]),Int(NBasis)))
-                  EndIf
-                  Return
-                EndIf
-              EndDo
-            EndDo
-          EndDo
-        EndDo
-      case default
-        call mqc_error_a('Unrecognized determinant storage type in mqc_get_strings_at_index',&
-          iOut,'Determinants%order',Determinants%order)
-      end select
-!
-      End Subroutine MQC_Get_Strings_At_Index 
+      End Subroutine MQC_Strings_At_Index 
 !
 !
 !=====================================================================
 !     
-!     PROCEDURE Get_One_Gamma_Matrix
-      function get_one_gamma_matrix(iOut,iPrint,nBasisIn,determinants,ci_amplitudes,UHF,nCoreIn,nOrbsIn,Subs) Result(onePDMint)
+!     PROCEDURE MQC_GET_STRING_INDEX
 !
-!     This function returns the CI one-particle density matrix 
+!>    \brief <b> MQC_GET_STRING_INDEX is a function that returns the index of a 
+!>    string according to the specified ordering</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRINGS_AT_INDEX is a function that returns the index of a string 
+!>    according to the specified ordering.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] string
+!>    \verbatim
+!>        string is integer(kind=int64),dimension(:),allocatable
+!>        The string to evaluate. 
+!>    \endverbatim
+!>    
+!>    \param[in] nBasis
+!>    \verbatim
+!>        nBasis is integer(kind=int64)
+!>        The number of basis functions. 
+!>    \endverbatim
+!>    
+!>    \param[in] nElec 
+!>    \verbatim
+!>        nElec is integer(kind=int64)
+!>        The number of electrons. 
+!>    \endverbatim
+!>    
+!>    \param[in] order
+!>    \verbatim
+!>        order is character(len=*),optional
+!>        The order in which determinant strings are ordered.
+!>        The only option is currently lexical, which is the 
+!>        default.
+!>    \endverbatim
+!>    
+!>    \param[in] subsIn
+!>    \verbatim
+!>        subsIn is integer(kind=int64),dimension(:),optional
+!>        The substitution levels that are permitted in the 
+!>        expansion.
+!>    \endverbatim
+!>    
+!>    \param[in] nCore
+!>    \verbatim
+!>        nCore is integer(kind=int64),optional
+!>        The number of core orbitals in the string that 
+!>        remain occupied in all strings.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function MQC_Get_String_Index(string,nBasis,nElec,order,subsIn,nCore) result(ind)
+!
+      implicit none
+      integer(kind=int64),intent(in)::nBasis,nElec
+      integer(kind=int64),dimension(:),intent(in),optional::subsIn
+      type(mqc_bits),intent(in)::string
+      character(len=*),optional,intent(in)::order
+      character(len=64)::lorder
+      integer(kind=int64),optional,intent(in)::nCore
+      integer(kind=int64)::ind
+
+      integer(kind=int64)::i,j,jStart,jEnd,x,iElec,iOrb,core
+      integer(kind=int64),dimension(:),allocatable::subs
+
+      if(present(nCore)) then
+        core = nCore
+      else
+        core = 0
+      endIf
+
+      if(present(order)) then
+        call string_change_case(order,'L',lorder)
+      else
+        lorder = 'lexical'
+      endIf
+
+      if(present(subsIn)) then
+        subs = subsIn
+      else
+        subs = [(i,i=0,min(nElec,nBasis-nElec))] 
+      endIf
+
+      select case (lorder)
+      case('lexical')
+        ind = 0
+        iOrb = nBasis-core
+        iElec = nElec
+        do j = NBasis, core+1, -1
+          if(bTest(string,j-1)) then
+            iOrb = iOrb-1
+            iElec = iElec-1
+            !Y1(e,o) = 0 
+          else
+            iOrb = iOrb-1
+            !Y0(e,o) = x(e+1,o+1) 
+            x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis-core,subs,lorder)
+            ind = ind + x
+          endIf
+        endDo
+      case default
+        call mqc_error_a('Unrecognized order passed to MQC_Get_Strings_Index',6,&
+          'lorder',lorder)
+      end select
+
+      End Function MQC_Get_String_Index
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE CI_VERTEX_WEIGHT
+!
+!>    \brief <b> CI_VERTEX_WEIGHT is a recursive function that returns the 
+!>    vertex weight according to the specified ordering</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    CI_VERTEX_WEIGHT is a recursive function that returns the vertex 
+!>    weight according to the specified ordering.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] iElec
+!>    \verbatim
+!>        iElec is Integer(kind=int64)
+!>        The electron number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] iOrb
+!>    \verbatim
+!>        iOrb is Integer(kind=int64)
+!>        The orbital number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] nElec
+!>    \verbatim
+!>        nElec is Integer(kind=int64)
+!>        The number of electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] nOrb
+!>    \verbatim
+!>        nOrb is Integer(kind=int64)
+!>        The number of orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] subs
+!>    \verbatim
+!>        subs is integer(kind=int64),dimension(:),optional 
+!>        The substitution levels permitted in the expansion.
+!>    \endverbatim
+!>    
+!>    \param[in] order
+!>    \verbatim
+!>        order is character(len=*),intent(in),optional
+!>        The index order of strings returned (currently only
+!>        lexical is supported and is the default).
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      recursive function ci_vertex_weight(iElec,iOrb,nElec,nOrb,subs,order) result(weight)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::iElec,iOrb,nElec,nOrb
+      integer(kind=int64),dimension(:),intent(in),optional::subs
+      character(len=*),intent(in),optional::order
+      integer(kind=int64)::weight
+      character(len=64)::lorder
+      integer(kind=int64),dimension(:),allocatable::funcSubs
+      integer(kind=int64)::i
+!
+!     iOrb-iElec  is number of holes still to create
+!     (nOrb-iOrb)-(nElec-iElec)  is number of holes created    
+!     iElec       is number of electrons still to add
+!     nElec-iElec is the number of electrons added
+!
+      if(present(subs)) then
+        funcSubs = subs
+      else
+        funcSubs = [(i,i=0,min(nElec,nOrb-nElec))]
+      endIf
+      if(present(order)) then
+        call string_change_case(order,'L',lorder)
+      else
+        lorder = 'lexical'
+      endIf
+      select case (lorder)
+      case('lexical')
+        if(iOrb.eq.nElec.and..not.any(funcSubs.eq.(iOrb-iElec))) then
+!         At the HOMO, the number of holes should be a permitted amount
+          weight = 0
+        elseIf(iElec.eq.nElec) then
+          weight = 1
+        elseIf(iElec.gt.nElec) then
+          weight = 0
+        elseIf(iOrb.gt.nOrb) then
+          weight = 0
+        elseif((iOrb-iElec).lt.0) then
+!         There are more electrons than orbitals
+          weight = 0
+        elseIf((iOrb-iElec).gt.(nOrb-nElec)) then
+!         The number of holes is greater than the number of virtuals
+          weight = 0
+        else
+          weight = ci_vertex_weight(iElec+1,iOrb+1,nElec,nOrb,funcSubs,lorder)+&
+            ci_vertex_weight(iElec,iOrb+1,nElec,nOrb,funcSubs,lorder)
+        endIf
+      case default
+        call mqc_error_a('Unrecognized order passed to ci_vertex_weight',6,&
+          'lorder',lorder)
+      end select
+
+      end function ci_vertex_weight
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_STRING_SUB_LEVEL
+!
+!>    \brief <b> GET_STRING_SUB_LEVEL is a function that returns the 
+!>    substitution level of a string</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_STRING_SUB_LEVEL is a function that returns the substitution 
+!>    level of a string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] string
+!>    \verbatim
+!>        string is Integer(kind=int64),Dimension(:),Allocatable
+!>        The binary string to evaluate. 
+!>    \endverbatim
+!>    
+!>    \param[in] nElec
+!>    \verbatim
+!>        nElec is Integer(kind=int64) 
+!>        The number of electrons. 
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function get_string_sub_level(string,nElec) result(subLevel)
+!
+      Implicit None
+!      Integer(kind=int64),Dimension(:),Allocatable,Intent(In)::string
+      Type(mqc_bits),Intent(In)::string
+      Integer(kind=int64),Intent(In)::nElec
+      integer(kind=int64)::subLevel
+      integer(kind=int64)::i,remElec
+
+      subLevel = nElec - popcnt(ibits(string,0,nElec))
+
+      end function get_string_sub_level
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_STRING_NELEC
+!
+!>    \brief <b> GET_STRING_NELEC is a function that returns the 
+!>    number of electrons in a string</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_STRING_NELEC is a function that returns the number of electrons 
+!>    in a string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] String
+!>    \verbatim
+!>        String is type(mqc_vector)
+!>        The binary string to evaluate 
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      function get_string_nElec(string) result(nElec)
+!
+      Implicit None
+      type(mqc_bits),Intent(In)::string
+      Integer(kind=int64)::nElec
+      integer(kind=int64)::i
+
+      nElec = popCnt(string)
+
+      end function get_string_nElec
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_SUBLEVELS
+!
+!>    \brief <b> GET_SUBLEVELS is an auxillary subroutine to mqc_build_ci_hamiltonian
+!>    that returns the substitution levels and number of determinants</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_SUBLEVELS is an auxillary subroutine to mqc_build_ci_hamiltonian
+!>    that returns the substitution levels and number of determinants.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is type(mqc_determinant)
+!>        The left set of determinant strings 
+!>    \endverbatim
+!>    
+!>    \param[in] subsA
+!>    \verbatim
+!>        SubsA is integer(kind=int64),dimension(:),allocatable
+!>        The total substitutions of the determinant set (if subsB is size 0)
+!>        or the alpha substutions of the determinant set (if subsB is not
+!>        size 0).
+!>    \endverbatim
+!>    
+!>    \param[in] subsB
+!>    \verbatim
+!>        SubsB is integer(kind=int64),dimension(:),allocatable
+!>        The beta substitutions of the determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] subsAOut
+!>    \verbatim
+!>        subsAOut is type(MQC_Vector),allocatable 
+!>        The alpha substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsBOut
+!>    \verbatim
+!>        subsBOut is type(MQC_Vector),allocatable 
+!>        The beta substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsTOut
+!>    \verbatim
+!>        subsTOut is type(MQC_Vector),allocatable 
+!>        The total substitutions.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      subroutine get_subLevels(Determinants,subsA,subsB,subsAOut,subsBOut,subsTOut)
+
+      Implicit None
+      Type(MQC_Determinant),Intent(In)::Determinants
+      integer(kind=int64),dimension(:),allocatable,intent(In)::subsA,subsB
+      type(mqc_vector),intent(Out)::subsAOut,subsBOut,subsTOut
+      integer(kind=int64)::i,j
+
+      if(size(subsA).eq.0.and.size(subsB).ne.0) then
+       call mqc_error_i('Beta substitution levels present, but not alpha (or total) substitution level &
+         &provided',6,'size(subsA)',size(subsA),'size(subsB)',size(subsB))
+      endIf
+      If(size(subsB).eq.0) then
+        If(size(subsA).eq.0) then
+          subsTOut = [(i,i=0,size(Determinants%NSubsAlpha)+size(Determinants%NSubsBeta)-2)]
+        Else
+          subsTOut = subsA
+        EndIf
+        subsAOut = [integer::]
+        do i = 1, size(subsTOut)
+          do j = 0, int(subsTOut%at(i))
+            if(.not.any(subsAOut.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
+!              if(Determinants%NSubsAlpha%at(j+1).ne.0) subsAOut = [subsAOut,j]
+              if(Determinants%NSubsAlpha%at(j+1).ne.0) call subsAOut%push(j)
+            endIf
+          endDo
+        endDo
+        subsBOut = [integer::]
+        do i = 1, size(subsTOut)
+          do j = 0, int(subsTOut%at(i))
+            if(.not.any(subsBOut.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
+              if(Determinants%NSubsBeta%at(j+1).ne.0) call subsBOut%push(j)
+            endIf
+          endDo
+        endDo
+        call subsAOut%sort()
+        call subsBOut%sort()
+      Else
+        subsAOut = subsA
+        subsBOut = subsB
+        subsTOut = [integer::]
+        do i = 1, size(subsAOut)
+          do j = 1, size(subsBOut)
+            if(.not.any(subsTOut.eq.int(subsAOut%at(i))+int(subsBOut%at(j)))) &
+              call subsTOut%push(int(subsAOut%at(i))+int(subsBOut%at(j)))
+          endDo
+        endDo
+        call subsTOut%sort()
+      endIf
+
+      end subroutine get_subLevels
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_EXPANSION_SIZE
+!
+!>    \brief <b> GET_EXPANSION_SIZE returns the size of a determinant 
+!>    expansion given a determinant object and the desired total, alpha 
+!>    and beta substitutions</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_EXPANSION_SIZE returns the size of a determinant expansion 
+!>    given a determinant object and the desired total, alpha and beta 
+!>    substitutions</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is type(mqc_determinant)
+!>        The set of determinant strings 
+!>    \endverbatim
+!>    
+!>    \param[out] subsT
+!>    \verbatim
+!>        SubsT is integer(kind=int64),dimension(:),allocatable 
+!>        The total substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsA
+!>    \verbatim
+!>        SubsA is integer(kind=int64),dimension(:),allocatable 
+!>        The alpha substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] subsB
+!>    \verbatim
+!>        SubsB is integer(kind=int64),dimension(:),allocatable 
+!>        The beta substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] nDets
+!>    \verbatim
+!>        nDets is integer(kind=int64)
+!>        The total number of strings.
+!>    \endverbatim
+!>
+!>    \param[out] nDetsA
+!>    \verbatim
+!>        nDetsA is integer(kind=int64)
+!>        The number of alpha strings.
+!>    \endverbatim
+!>    
+!>    \param[out] nDetsB
+!>    \verbatim
+!>        nDetsB is integer(kind=int64)
+!>        The number of beta strings.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      subroutine get_expansion_size(Determinants,subsT,subsA,subsB,NDets,NDetsA,NDetsB)
+
+      Implicit None
+      Type(MQC_Determinant),Intent(In)::Determinants
+      type(mqc_vector),intent(In)::subsA,subsB,subsT
+      integer(kind=int64),intent(Out)::NDetsA,NDetsB,NDets
+      integer(kind=int64)::i,j,k
+      
+      NDets = 0
+      NDetsA = 0
+      NDetsB = 0
+      Do I = 1, Size(subsT)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          Do K = 1, Size(Determinants%NSubsBeta)
+            If((J-1)+(K-1).eq.int(subsT%at(i)).and.any(subsA.eq.(J-1)).and.any(subsB.eq.(K-1))) then
+              NDets = NDets + Determinants%NSubsAlpha%at(J)*Determinants%NSubsBeta%at(K)
+            EndIf
+          EndDo
+        EndDo
+      EndDo
+      Do I = 1, Size(Determinants%NSubsAlpha)
+        Do J = 1, Size(Determinants%NSubsBeta)
+          If(any(subsT.eq.(I-1)+(J-1)).and.any(subsA.eq.(I-1)).and.any(subsB.eq.(J-1))) then
+            If(Determinants%NSubsBeta%at(J).ne.0) then
+              NDetsA = NDetsA + Determinants%NSubsAlpha%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+      Do I = 1, Size(Determinants%NSubsBeta)
+        Do J = 1, Size(Determinants%NSubsAlpha)
+          If(any(subsT.eq.(I-1)+(J-1)).and.any(subsB.eq.(I-1)).and.any(subsA.eq.(J-1))) then
+            If(Determinants%NSubsAlpha%at(J).ne.0) then
+              NDetsB = NDetsB + Determinants%NSubsBeta%at(I)
+              exit
+            endIf
+          endIf
+        endDo
+      endDo
+
+      end subroutine get_expansion_size
+!
+!=====================================================================
+!     
+!     PROCEDURE GET_ONE_GAMMA_MATRIX
+!
+!>    \brief <b> GET_ONE_GAMMA_MATRIX is a function that returns the CI 
+!>    one-particle density matrix operator matrix</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    GET_ONE_GAMMA_MATRIX is a function that returns the CI one-particle 
+!>    density matrix operator matrix given CI coefficients and determinant 
+!>    strings.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] CI_Amplitudes
+!>    \verbatim
+!>        CI_Amplitudes is Type(MQC_Vector)
+!>        The vector of CI amplitudes.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. 
+!>    \endverbatim
+!>    
+!>    \param[in] nCoreIn
+!>    \verbatim
+!>        nCoreIn is Integer(kind=int64),Optional
+!>        The number of core orbitals to exclude from the density 
+!>        matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] nOrbsIn
+!>    \verbatim
+!>        nOrbsIn is Integer(kind=int64),Optional
+!>        The number of orbitals to include in the density matrix.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. If not present, all substitutions are 
+!>        included. If SubsB not present, SubsA containes the the 
+!>        total (alpha+beta) substitutions that are permitted. If 
+!>        both SubsA and SubsB provided, SubsA contains the alpha
+!>        substitutions that are permitted. If Subs2A are provided, 
+!>        Subs1A gives substitutions for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. 
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. If not present, 
+!>        column basis substitutions are equal to row basis 
+!>        substitutions provided by variable SubsA and/or SubsB.
+!>        If Subs2A provided but not Subs2B, Subs2A contains the total
+!>        (alpha+beta) substitutions that are permitted. If both 
+!>        Subs2A and Subs2B provided, Subs2A containes the alpha
+!>        substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. If not 
+!>        present, column basis substitutions are equal to row basis 
+!>        substitutions.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function get_one_gamma_matrix(iOut,iPrint,ci_amplitudes,determinants,Dets2,nCoreIn,nOrbsIn,&
+        SubsAIn,SubsBIn,Subs2AIn,Subs2BIn) Result(onePDMint)
 !
 !     Variable Declarations...
 !
       Implicit None
       integer(kind=int64),intent(in)::iOut,iPrint
-      Type(MQC_Scalar),Intent(In)::NBasisIn
-      Type(MQC_Determinant),Intent(In)::Determinants
       type(mqc_vector),intent(in)::ci_amplitudes
-      logical,intent(in)::UHF
+      Type(MQC_Determinant),Intent(In)::Determinants
+      Type(MQC_Determinant),Optional,Intent(In)::Dets2
       integer(kind=int64),optional,intent(in)::nCoreIn,nOrbsIn
-      Integer(kind=int64),Dimension(:),Optional::Subs
+      Integer(kind=int64),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       type(mqc_scf_integral)::onePDMint
       type(mqc_matrix)::onePDMalpha,onePDMbeta
-      integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String
+      integer(kind=int64)::L_A_String,L_B_String,R_A_String,R_B_String,NDets1,NDets2,NDets1A,&
+        NDets1B,NDets2A,NDets2B,nAlpha1,nAlpha2,nBeta1,nBeta2,A1_subLevel,B1_subLevel,T1_subLevel,&
+        A2_subLevel,B2_subLevel,T2_subLevel
       Type(MQC_Scalar)::Sgn
-      Integer(kind=int64)::NBasis,nCore,nOrbs,IPos,Det_Diff,ISgn,NBit_Ints,m,n,o,mm,nn,rdet,ldet, &
-        Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,R_A_End,&
-        R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,R_B_Sub_End, &
-        string_bits
+      Integer(kind=int64)::nCore,nOrbs,IPos,Det_Diff,ISgn,m,n,o,mm,nn,rdet,ldet, &
+        Alpha_Diff_Cnt,Beta_Diff_Cnt,L_A_Start,L_B_Start,L_A_End,L_B_End,R_A_Start,R_B_Start,&
+        R_A_End,R_B_End,L_A_Sub,L_B_Sub,R_A_Sub,R_B_Sub,L_A_Sub_End,L_B_Sub_End,R_A_Sub_End,&
+        R_B_Sub_End,L_A_Step,L_B_Step,R_A_Step,R_B_Step,L_Iabk,R_Iabk,L_Xk,R_Xk,Counter,Counter2
       integer(kind=int64),dimension(2)::orb
-      Integer(kind=int64),Dimension(:),Allocatable::Alpha_String_1,Alpha_String_2,Beta_String_1, &
-        Beta_String_2,Alpha_Diff,Beta_Diff
+      type(mqc_bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,Alpha_Diff,&
+        Beta_Diff
+      Logical::SymmFlag
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Vector)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant)::Determinants2
+      Character(len=12)::index_order='genetic'
 
-      nBasis = nBasisIn
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .False.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .True.
+      EndIf
+
+      if(Determinants%nBasis.ne.Determinants2%nBasis) &
+        call mqc_error('Provided determinant strings have different numbers of orbitals in &
+        &get_one_gamma_matrix')
+
       if(present(nCoreIn)) then
         nCore = nCoreIn
       else
@@ -17701,110 +18929,250 @@
       if(present(nOrbsIn)) then
         nOrbs = nOrbsIn
       else
-        nOrbs = nBasis
+        nOrbs = determinants%nBasis-nCore
       endIf
-      nBit_Ints = (nBasis/(Bit_Size(0)-1))+1
-      string_bits = ((nCore+nOrbs)/(Bit_Size(0)-1))+1
-      Allocate(Alpha_String_1(string_bits),Alpha_String_2(string_bits),Beta_String_1(string_bits),Beta_String_2(string_bits))
-      Allocate(Alpha_Diff(string_bits),Beta_Diff(string_bits))
       call onePDMalpha%init(nOrbs,nOrbs)
       call onePDMbeta%init(nOrbs,nOrbs)
 
-      if(present(subs).and.determinants%order.ne.'ci') &
-        call mqc_error('Truncated CI only implemented for CI order determinant strings')
-
-      if(present(subs)) then
-        L_A_Sub_End = size(Determinants%NSubsAlpha)-1
-        L_B_Sub_End = size(Determinants%NSubsBeta)-1
-        R_A_Sub_End = size(Determinants%NSubsAlpha)-1
-        R_B_Sub_End = size(Determinants%NSubsBeta)-1
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      if(present(subsAIn)) then
+        subsA = subsAIn
       else
+        subsA = [integer::]
+      endIf
+      if(present(subsBIn)) then
+        subsB = subsBIn
+      else
+        subsB = [integer::]
+      endIf
+      call get_subLevels(Determinants,subsA,subsB,lsubsA,lsubsB,lsubsT)
+      call get_expansion_size(Determinants,lSubsT,lSubsA,lSubsB,NDets1,NDets1A,NDets1B)
+
+      if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+        subs2A = subsA
+        subs2B = subsB
+      elseIf(.not.present(subs2BIn)) then
+        subs2A = subs2AIn
+        subs2B = [integer::]
+        symmFlag = .False.
+      elseIf(.not.present(subs2AIn)) then
+        subs2A = [integer::]
+        subs2B = subs2BIn
+        symmFlag = .False.
+      else
+        subs2A = subs2AIn
+        subs2B = subs2BIn
+        symmFlag = .False.
+      endIf
+      call get_subLevels(Determinants2,subs2A,subs2B,rsubsA,rsubsB,rsubsT)
+      call get_expansion_size(Determinants2,rSubsT,rSubsA,rSubsB,NDets2,NDets2A,NDets2B)
+
+      nAlpha1 = get_string_nElec(Determinants%Strings%Alpha(1)) 
+      nAlpha2 = get_string_nElec(Determinants2%Strings%Alpha(1)) 
+      nBeta1 = get_string_nElec(Determinants%Strings%Beta(1)) 
+      nBeta2 = get_string_nElec(Determinants2%Strings%Beta(1)) 
+
+      select case (Determinants%order)
+      case('lexical')
         L_A_Sub_End = 0
         L_B_Sub_End = 0
+      case('ci')
+        L_A_Sub_End = size(Determinants%NSubsAlpha)-1
+        L_B_Sub_End = size(Determinants%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+          iOut,'Determinants%order',Determinants%order)
+      end select
+      select case (Determinants2%order)
+      case('lexical')
         R_A_Sub_End = 0
         R_B_Sub_End = 0
-      endIf
+      case('ci')
+        R_A_Sub_End = size(Determinants2%NSubsAlpha)-1
+        R_B_Sub_End = size(Determinants2%NSubsBeta)-1
+      case default
+        call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+          iOut,'Determinants2order',Determinants2%order)
+      end select
+
       ldet = 0
       L_A_Start = 1
       do L_A_Sub = 0, L_A_Sub_End
+        if(Determinants%order.eq.'ci'.and..not.any(lSubsA.eq.L_A_Sub)) cycle
         L_B_Start =1
         do L_B_Sub = 0, L_B_Sub_End
-          If(present(Subs)) then
-            If(.not.any(subs.eq.(L_A_Sub+L_B_Sub))) cycle
+          if(Determinants%order.eq.'ci'.and..not.any(lSubsB.eq.L_B_Sub)) cycle
+          If(Determinants%order.eq.'ci'.and..not.any(lSubsT.eq.(L_A_Sub+L_B_Sub))) cycle 
+          select case (Determinants%order)
+          case('lexical')
+            L_A_Start = Determinants%NAlpStr
+            L_B_Start = Determinants%NBetStr
+            L_A_End = 1
+            L_B_End = 1
+            L_A_Step = -1
+            L_B_Step = -1
+          case('ci')
             If (L_A_Sub.ne.0) L_A_Start = sum(Determinants%NSubsAlpha%vat(1,L_A_Sub))+1
             If (L_B_Sub.ne.0) L_B_Start = sum(Determinants%NSubsBeta%vat(1,L_B_Sub))+1
-            If((L_A_Start.gt.determinants%NAlpStr).or.(L_B_Start.gt.determinants%NBetStr)) cycle
+            If((L_A_Start.gt.Determinants%NAlpStr).or.(L_B_Start.gt.Determinants%NBetStr)) cycle
             L_A_End = L_A_Start + Determinants%NSubsAlpha%at(L_A_Sub+1) - 1
             L_B_End = L_B_Start + Determinants%NSubsBeta%at(L_B_Sub+1) - 1
-          Else
-            L_A_End = determinants%NAlpStr
-            L_B_End = determinants%NBetStr
-          EndIf
-          Do L_A_String = L_A_Start, L_A_End 
-            Do L_B_String = L_B_Start, L_B_End 
-              If(present(subs)) then
+            L_A_Step = 1
+            L_B_Step = 1
+          case default
+            call mqc_error_a('Unrecognized determinant storage type in mqc_build_ci_hamiltonian',&
+              iOut,'Determinants%order',Determinants%order)
+          end select
+          Do L_A_String = L_A_Start, L_A_End, L_A_Step
+            Do L_B_String = L_B_Start, L_B_End, L_B_Step 
+
+              Alpha_String_1 = Determinants%Strings%Alpha(L_A_String) 
+              Beta_String_1 = Determinants%Strings%Beta(L_B_String) 
+
+              A1_subLevel = get_string_sub_level(Alpha_String_1,nAlpha1)
+              B1_subLevel = get_string_sub_level(Beta_String_1,nBeta1)
+              T1_sublevel = A1_subLevel + B1_subLevel
+
+              if(.not.any(A1_subLevel.eq.lSubsA)) cycle
+              if(.not.any(B1_subLevel.eq.lSubsB)) cycle
+              if(.not.any(T1_subLevel.eq.lSubsT)) cycle
+
+              if(index_order.eq.'genetic') then
+!               Compute composite index within substituion level k
+!               I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                L_Iabk = mqc_get_string_index(Alpha_String_1,&
+                  (determinants%nBasis-determinants%nVirt),(nAlpha1-determinants%nCore),&
+                  'lexical',[A1_subLevel],determinants%nCore)*&
+                  Determinants%NSubsBeta%at(B1_SubLevel+1) + & 
+                  mqc_get_string_index(Beta_String_1,(determinants%nBasis-determinants%nVirt),&
+                  (nBeta1-determinants%nCore),'lexical',[B1_subLevel],determinants%nCore)
+
+!               Compute composite substitution level offset 
+!               X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!               where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                L_Xk = 0
+                l_offset: do Counter = 0,size(Determinants%NSubsAlpha)-1
+                  do Counter2 = 0,size(Determinants%NSubsBeta)-1
+                    if(Counter.eq.A1_subLevel.and.Counter2.eq.B1_subLevel) exit l_offset
+                    if(.not.any(Counter.eq.lSubsA)) cycle
+                    if(.not.any(Counter2.eq.lSubsB)) cycle
+                    if(.not.any(Counter+Counter2.eq.lSubsT)) cycle
+                    L_Xk = L_Xk + Determinants%NSubsAlpha%at(Counter+1)*&
+                      Determinants%NSubsBeta%at(Counter2+1)
+                  endDo
+                endDo l_offset
+
+!               Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                ldet = L_Xk + L_Iabk + 1
+              elseIf(index_order.eq.'input') then
                 ldet = ldet + 1
               else
-                ldet = 1+(L_B_String-1)*determinants%NAlpStr+(L_A_String-1)
+                call mqc_error_a('Unrecognized index order requested in get_one_gamma_matrix',6,&
+                  'index_order',index_order)
               endIf
+
               rdet = 0
               R_A_Start = 1
               do R_A_Sub = 0, R_A_Sub_End
+                if(Determinants2%order.eq.'ci'.and..not.any(rSubsA.eq.R_A_Sub)) cycle
                 R_B_Start =1
                 do R_B_Sub = 0, R_B_Sub_End
-                  If(present(Subs)) then
-                    If(.not.any(subs.eq.(R_A_Sub+R_B_Sub))) cycle
-                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants%NSubsAlpha%vat(1,R_A_Sub))+1
-                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants%NSubsBeta%vat(1,R_B_Sub))+1
-                    If((R_A_Start.gt.determinants%NAlpStr).or.(R_B_Start.gt.determinants%NBetStr)) cycle
-                    R_A_End = R_A_Start + Determinants%NSubsAlpha%at(R_A_Sub+1) - 1
-                    R_B_End = R_B_Start + Determinants%NSubsBeta%at(R_B_Sub+1) - 1
-                  Else
-                    R_A_End = determinants%NAlpStr
-                    R_B_End = determinants%NBetStr
-                  EndIf
-                  Do R_A_String = R_A_Start, R_A_End 
-                    Do R_B_String = R_B_Start, R_B_End 
-                      If(present(subs)) then
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsB.eq.R_B_Sub)) cycle
+                  if(Determinants2%order.eq.'ci'.and..not.any(rSubsT.eq.(R_A_Sub+R_B_Sub))) cycle 
+                  select case (Determinants2%order)
+                  case('lexical')
+                    R_A_Start = Determinants2%NAlpStr
+                    R_B_Start = Determinants2%NBetStr
+                    R_A_End = 1
+                    R_B_End = 1
+                    R_A_Step = -1
+                    R_B_Step = -1
+                  case('ci')
+                    If (R_A_Sub.ne.0) R_A_Start = sum(Determinants2%NSubsAlpha%vat(1,R_A_Sub))+1
+                    If (R_B_Sub.ne.0) R_B_Start = sum(Determinants2%NSubsBeta%vat(1,R_B_Sub))+1
+                    If((R_A_Start.gt.Determinants2%NAlpStr).or.(R_B_Start.gt.Determinants2%NBetStr)) cycle
+                    R_A_End = R_A_Start + Determinants2%NSubsAlpha%at(R_A_Sub+1) - 1
+                    R_B_End = R_B_Start + Determinants2%NSubsBeta%at(R_B_Sub+1) - 1
+                    R_A_Step = 1
+                    R_B_Step = 1
+                  case default
+                    call mqc_error_a('Unrecognized determinant storage type in get_one_gamma_matrix',&
+                      iOut,'Determinants%order',Determinants%order)
+                  end select
+
+                  Do R_A_String = R_A_Start, R_A_End, R_A_Step
+                    Do R_B_String = R_B_Start, R_B_End, R_B_Step 
+
+                      Alpha_String_2 = Determinants%Strings%Alpha(R_A_String)
+                      Beta_String_2 = Determinants%Strings%Beta(R_B_String)
+
+                      A2_subLevel = get_string_sub_level(Alpha_String_2,nAlpha2)
+                      B2_sublevel = get_string_sub_level(Beta_String_2,nBeta2)
+                      T2_sublevel = A2_subLevel + B2_subLevel
+
+                      if(.not.any(A2_subLevel.eq.rSubsA)) cycle
+                      if(.not.any(B2_subLevel.eq.rSubsB)) cycle
+                      if(.not.any(T2_subLevel.eq.rSubsT)) cycle
+                       
+                      if(index_order.eq.'genetic') then
+!                       Compute composite index within substituion level k
+!                       I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
+                        R_Iabk = mqc_get_string_index(Alpha_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),&
+                          (nAlpha1-determinants2%nCore),'lexical',[A2_subLevel],determinants2%nCore)*&
+                          Determinants2%NSubsBeta%at(B2_SubLevel+1) + &
+                          mqc_get_string_index(Beta_String_2,&
+                          (determinants2%nBasis-determinants2%nVirt),(nBeta2-determinants2%nCore),&
+                          'lexical',[B2_subLevel],determinants2%nCore)
+
+!                       Compute composite substitution level offset 
+!                       X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!                       where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
+                        R_Xk = 0
+                        r_offset: do Counter = 0,size(Determinants2%NSubsAlpha)-1
+                          do Counter2 = 0,size(Determinants2%NSubsBeta)-1
+                            if(Counter.eq.A2_subLevel.and.Counter2.eq.B2_subLevel) exit r_offset
+                            if(.not.any(Counter.eq.rSubsA)) cycle
+                            if(.not.any(Counter2.eq.rSubsB)) cycle
+                            if(.not.any(Counter+Counter2.eq.rSubsT)) cycle
+                            R_Xk = R_Xk + Determinants2%NSubsAlpha%at(Counter+1)*&
+                              Determinants2%NSubsBeta%at(Counter2+1)
+                          endDo
+                        endDo r_offset
+
+!                       Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
+                        rdet = R_Xk + R_Iabk + 1
+                      elseIf(index_order.eq.'input') then
                         rdet = rdet + 1
                       else
-                        rdet = 1+(R_B_String-1)*determinants%NAlpStr+(R_A_String-1)
+                        call mqc_error_a('Unrecognized index order requested in mqc_build_ci_hamiltonian',6,&
+                          'index_order',index_order)
                       endIf
-                      Alpha_String_1 = 0
-                      Alpha_String_2 = 0
-                      Beta_String_1 = 0
-                      Beta_String_2 = 0
-                      Alpha_Diff_Cnt = 0
-                      Beta_Diff_Cnt = 0
-                      Do m = 1,NBit_Ints
-                        Alpha_String_1(m) = Determinants%Strings%Alpha%at(L_A_String,m)
-                        Alpha_String_2(m) = Determinants%Strings%Alpha%at(R_A_String,m)
-                        Beta_String_1(m) = Determinants%Strings%Beta%at(L_B_String,m)
-                        Beta_String_2(m) = Determinants%Strings%Beta%at(R_B_String,m)
-                        Alpha_Diff(m) = IEOR(Alpha_String_1(m),Alpha_String_2(m))
-                        Alpha_Diff_Cnt = Alpha_Diff_Cnt + PopCnt(Alpha_Diff(m))
-                        Beta_Diff(m) = IEOR(Beta_String_1(m),Beta_String_2(m))
-                        Beta_Diff_Cnt = Beta_Diff_Cnt + PopCnt(Beta_Diff(m))
-                      endDo
+
+                      Alpha_Diff = IEOR(Alpha_String_1,Alpha_String_2)
+                      Alpha_Diff_Cnt = PopCnt(Alpha_Diff)
+                      Beta_Diff = IEOR(Beta_String_1,Beta_String_2)
+                      Beta_Diff_Cnt = PopCnt(Beta_Diff)
                       Det_Diff = Alpha_Diff_Cnt/2 + Beta_Diff_Cnt/2
 
                       select case (det_diff)
                       case(0)
                         Do IPos = nCore, nCore+nOrbs-1
-                          m = IPos/Bit_Size(0)+1
-                          n = Mod(IPos,Bit_Size(0))
-                          If(BTest(Alpha_String_1(m),n).and.BTest(Beta_String_1(m),n)) then
+                          If(BTest(Alpha_String_1,IPos).and.BTest(Beta_String_1,IPos)) then
                             call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
                             call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
-                          elseIf(BTest(Alpha_String_1(m),n)) then
+                          elseIf(BTest(Alpha_String_1,IPos)) then
                             call onePDMalpha%put(onePDMalpha%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
-                          elseIf(BTest(Beta_String_1(m),n)) then
+                          elseIf(BTest(Beta_String_1,IPos)) then
                             call onePDMbeta%put(onePDMbeta%at(iPos+1-nCore,iPos+1-nCore)+ &
                               conjg(ci_amplitudes%at(ldet))*ci_amplitudes%at(rdet), &
                               iPos+1-nCore,iPos+1-nCore)
@@ -17812,23 +19180,21 @@
                         endDo
                       case(1)
                         Do IPos = nCore, nCore+nOrbs-1
-                          m = IPos/Bit_Size(0)+1
-                          n = Mod(IPos,Bit_Size(0))
                           If(Alpha_Diff_Cnt.eq.0) then
-                            If(BTest(Beta_Diff(m),n)) then
-                              If(BTest(Beta_String_1(m),n)) then
+                            If(BTest(Beta_Diff,IPos)) then
+                              If(BTest(Beta_String_1,IPos)) then
                                 orb(1) = IPos+1-nCore
                               endif
-                              If(BTest(Beta_String_2(m),n)) then
+                              If(BTest(Beta_String_2,IPos)) then
                                 orb(2) = IPos+1-nCore
                               endif
                             endIf
                           elseIf(Beta_Diff_Cnt.eq.0) then
-                            If(BTest(Alpha_Diff(m),n)) then
-                              If(BTest(Alpha_String_1(m),n)) then
+                            If(BTest(Alpha_Diff,IPos)) then
+                              If(BTest(Alpha_String_1,IPos)) then
                                 orb(1) = IPos+1-nCore
                               endif
-                              If(BTest(Alpha_String_2(m),n)) then
+                              If(BTest(Alpha_String_2,IPos)) then
                                 orb(2) = IPos+1-nCore
                               endif
                             endIf
@@ -17836,45 +19202,23 @@
                         endDo
                         ISgn = 0
                         If(Orb(2)-Orb(1)-1.gt.0) then
-                          m  = (Orb(1)-1+nCore)/Bit_Size(0)+1
-                          n  = (Orb(2)-1+nCore)/Bit_Size(0)+1
-                          Do o = m, n, -1
-                            If(m.ne.o) then
-                              mm = 1
-                            Else
-                              mm = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
-                            EndIf
-                            If(n.ne.o) then
-                              nn = Bit_Size(0)
-                            Else
-                              nn = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
-                            EndIf
-                            If(Beta_Diff_Cnt.eq.0) then
-                              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
-                            elseIf(Alpha_Diff_Cnt.eq.0) then
-                              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
-                            endIf
-                          EndDo
+                          mm = Orb(1)+nCore
+                          nn = Orb(2)+nCore
+                          If(Beta_Diff_Cnt.eq.0) then
+                            ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1,Alpha_String_2),&
+                              Orb(1)+nCore,Orb(2)-Orb(1)-1))
+                          elseIf(Alpha_Diff_Cnt.eq.0) then
+                            ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1,Beta_String_2),&
+                               Orb(1)+nCore,Orb(2)-Orb(1)-1))
+                          endIf
                         elseIf(Orb(1)-Orb(2)-1.gt.0) then
-                          m  = (Orb(2)-1+nCore)/Bit_Size(0)+1
-                          n  = (Orb(1)-1+nCore)/Bit_Size(0)+1
-                          Do o = m, n, -1
-                            If(m.ne.o) then
-                              mm = 1
-                            Else
-                              mm = Mod((Orb(2)-1+nCore),Bit_Size(0)) + 1
-                            EndIf
-                            If(n.ne.o) then
-                              nn = Bit_Size(0)
-                            Else
-                              nn = Mod((Orb(1)-1+nCore),Bit_Size(0)) + 1
-                            EndIf
-                            If(Beta_Diff_Cnt.eq.0) then
-                              ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1(o),Alpha_String_2(o)),mm,nn-mm-1))
-                            elseIf(Alpha_Diff_Cnt.eq.0) then
-                              ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1(o),Beta_String_2(o)),mm,nn-mm-1))
-                            endIf
-                          EndDo
+                          If(Beta_Diff_Cnt.eq.0) then
+                            ISgn = ISgn + PopCnt(IBits(IAnd(Alpha_String_1,Alpha_String_2),&
+                              Orb(2)+nCore,Orb(1)-Orb(2)-1))
+                          elseIf(Alpha_Diff_Cnt.eq.0) then
+                            ISgn = ISgn + PopCnt(IBits(IAnd(Beta_String_1,Beta_String_2),&
+                              Orb(2)+nCore,Orb(1)-Orb(2)-1))
+                          endIf
                         EndIf
                         Sgn = (-1)**ISgn
 
@@ -17902,7 +19246,7 @@
         EndDo
       EndDo
 
-      If(.not.UHF) then
+      If(MQC_Matrix_Norm(onePDMalpha-onePDMbeta).lt.1.0e-14) then
         call mqc_integral_allocate(onePDMint,'mo density','space',onePDMalpha)  
       else
         call mqc_integral_allocate(onePDMint,'mo density','spin',onePDMalpha,onePDMbeta)
