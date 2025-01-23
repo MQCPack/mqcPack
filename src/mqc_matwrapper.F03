@@ -521,13 +521,6 @@
         Character(Len=64)::Name
         Call_Test = 0
         call MQC_Mat_Precision(Name, IntPrecision, Call_Test)
-
-!hph+
-      write(*,*)
-      write(*,*)' Hrant - Rd_RInd: IntPrecision = ',IntPrecision
-      write(*,*)
-!hph-
-
         if ( IntPrecision .eq. 4 ) then
 ! File requires 32-bit integers
            IU_4 = IU

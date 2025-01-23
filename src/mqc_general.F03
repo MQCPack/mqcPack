@@ -1502,7 +1502,11 @@
       if(vectorMagnitude.gt.MQC_small) then
         vector = vector/vectorMagnitude
       else
+#ifdef PGI
+        vector = dfloat(0)
+#else
         vector = float(0)
+#endif
       endIf
 !
       return
@@ -1516,7 +1520,7 @@
 !     have absolute values below a threshold to float(0).
 !
 !     If the optional dummy argument <vectorOut> is sent, then <vectorIn> is
-!     left unchanges and the zero-d version of the vector is returned in
+!     left unchanged and the zero-d version of the vector is returned in
 !     <vectorOut>. Otherwise, the zero-ing is done in place in <vectorIn>.
 !
 !     The optional dummy argument <small> may be sent with a user specified
@@ -1603,12 +1607,20 @@
 !     Do phase correction and trim work.
 !
       if(myTrimZero.and.(abs(vector(1)).lt.MQC_small))  &
+#ifdef PGI
+        vector(1) = dfloat(0)
+#else
         vector(1) = float(0)
+#endif
       largestMagnitudeValue = abs(vector(1)) + MQC_small
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
         if(myTrimZero.and.(abs(vector(i)).lt.MQC_small))  &
+#ifdef PGI
+          vector(i) = dfloat(0)
+#else
           vector(i) = float(0)
+#endif
         if(abs(vector(i)).gt.largestMagnitudeValue) then
           largestMagnitudeValue = abs(vector(i)) + MQC_small
           largestMagnitudePosition = i
@@ -2054,6 +2066,33 @@
 !
       return
       end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
+!
+!
+!PROCEDURE mqc_matrixTrace
+      function mqc_matrixTrace(matrix) result(trace)
+!
+!     This function returns the trace of the matrix <matrix>. For now, this
+!     function only works for full square matrices.
+!
+!
+!     H. P. Hratchian, 2025
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrix
+      real(kind=real64)::trace
+      integer::i
+!
+!     Evaluate the trace of the matrix.
+!
+      if(Size(matrix,1).ne.Size(matrix,2))  &
+        call mqc_error('mqc_matrixTrace: Non-square matrix sent.')
+      trace = float(0)
+      do i = 1,Size(matrix,1)
+        trace = trace + matrix(i,i)
+      endDo
+!
+      return
+      end function mqc_matrixTrace
 !
 !
 !PROCEDURE mqc_diagMatrixTimesFullMatrix
