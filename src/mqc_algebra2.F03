@@ -95,6 +95,7 @@
         procedure,public ::print         => MQC_Print_mqcVariable
         procedure,public ::isConformable => MQC_Variable_isConformable
         procedure,public ::trimZero      => mqc_variable_trimZero
+        procedure,public ::trace         => mqc_variable_matrixTrace
         procedure,public ::iPower        => MQC_Variable_integerPower
         procedure,public ::rPower        => MQC_Variable_realPower
         procedure,public ::column        => MQC_Variable_MatrixGetColumn
