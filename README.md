@@ -12,11 +12,11 @@
    **  | $$ \/  | $|  $$$$$$|  $$$$$$| $$    |  $$$$$$|  $$$$$$| $$ \  $$  **
    **  |__/     |__/\____ $$$\______/|__/     \_______/\_______|__/  \__/  **
    **          \__/                                                        **
-   **                                  |                                   **
-   **                The Merced Quantum Chemistry Package                  **
+   **                                                                      **
+   **                 The Merced Quantum Chemistry Package                 **
    **                              (MQCPack)                               **
-   **                           Version 25.1.1                             **
-   **                           January 4, 2025                            **
+   **                            Version 25.2.0                            **
+   **                           February 2, 2025                           **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
