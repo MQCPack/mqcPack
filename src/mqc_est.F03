@@ -38,8 +38,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.1                           **
-!     **                          January 4, 2025                          **
+!     **                          Version 25.2.0                           **
+!     **                         February 2, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -11189,7 +11189,11 @@
           if(MQC_Scalar_Get_Intrinsic_Real(SVals%at(i)).gt.thresh) nBasUse = nBasUse+1
         endDo
       endIf
+#ifdef PGI
+      negHalf = -(dfloat(1)/dfloat(2))
+#else
       negHalf = -(float(1)/float(2))
+#endif
       call mqc_vector_power(SVals,negHalf)
       call MQC_Matrix_DiagMatrix_Put_Vector(SVals,transform_matrix_tmp)
       transform_matrix_tmp = matmul(SVecs,transform_matrix_tmp)
