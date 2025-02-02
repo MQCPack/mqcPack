@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.1                           **
-!     **                          January 4, 2025                          **
+!     **                          Version 25.2.0                           **
+!     **                         February 2, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -3031,7 +3031,7 @@
 !
 !     Variable Declarations.
       implicit none
-      class(MQC_Variable),intent(in)::mqcVariable
+      class(MQC_Variable),intent(inOut)::mqcVariable
       real(kind=real64),optional,intent(in)::small
       real(kind=real64)::mySmall
 !
