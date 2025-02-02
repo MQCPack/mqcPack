@@ -10,7 +10,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.0                           **
+!     **                          Version 25.1.1                           **
 !     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
@@ -705,7 +705,7 @@
 !
 !PROCEDURE MQC_Print_Scalar_Integer
       Subroutine MQC_Print_Scalar_Integer(scalar,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,formatString)
+        Blank_At_Bottom,formatStr)
 !
 !     This subroutine is used to print an integer scalar.
 !
@@ -717,7 +717,7 @@
       Implicit None
       Integer(kind=int64),Intent(In)::iOut
       Integer(kind=int64),Intent(In)::scalar
-      Character(Len=*),Intent(In),optional::Header,formatString
+      Character(Len=*),Intent(In),optional::Header,formatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
 !
@@ -730,8 +730,8 @@
       else
         lineToPrint = ' '
       endIf
-      if(PRESENT(formatString)) then
-        lineToPrint = TRIM(lineToPrint)//' '//TRIM(integer2character(scalar,formatString))
+      if(PRESENT(formatStr)) then
+        lineToPrint = TRIM(lineToPrint)//' '//TRIM(integer2character(scalar,formatStr))
       else
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(integer2character(scalar))
       endIf
@@ -748,7 +748,7 @@
 !
 !PROCEDURE MQC_Print_Scalar_Real
       Subroutine MQC_Print_Scalar_Real(scalar,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,formatString)
+        Blank_At_Bottom,formatStr)
 !
 !     This subroutine is used to print an real scalar.
 !
@@ -760,7 +760,7 @@
       Implicit None
       Integer(kind=int64),Intent(In)::iOut
       Real(kind=real64),Intent(In)::scalar
-      Character(Len=*),Intent(In),optional::Header,formatString
+      Character(Len=*),Intent(In),optional::Header,formatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint
 !
@@ -773,8 +773,8 @@
       else
         lineToPrint = ' '
       endIf
-      if(PRESENT(formatString)) then
-        lineToPrint = TRIM(lineToPrint)//' '//TRIM(real2character(scalar,formatString))
+      if(PRESENT(formatStr)) then
+        lineToPrint = TRIM(lineToPrint)//' '//TRIM(real2character(scalar,formatStr))
       else
         lineToPrint = TRIM(lineToPrint)//' '//TRIM(real2character(scalar))
       endIf
@@ -790,7 +790,7 @@
 !
 !PROCEDURE MQC_Print_Scalar_Complex
       Subroutine MQC_Print_Scalar_Complex(scalar,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,formatString)
+        Blank_At_Bottom,formatStr)
 !
 !     This subroutine is used to print complex scalar.
 !
@@ -801,7 +801,7 @@
       Implicit None
       Integer(kind=int64),Intent(In)::iOut
       Complex(kind=real64),Intent(In)::scalar
-      Character(Len=*),Intent(In),optional::Header,formatString
+      Character(Len=*),Intent(In),optional::Header,formatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       character(len=256)::lineToPrint,FormatLine
 !
@@ -814,8 +814,8 @@
       else
         lineToPrint = ' '
       endIf
-      if(PRESENT(formatString)) then
-        FormatLine = '(1X,A,1X,"=",1X,'//trim(FormatString)//',SP,'//trim(FormatString)//',"i")'
+      if(PRESENT(formatStr)) then
+        FormatLine = '(1X,A,1X,"=",1X,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
       else
         FormatLine = '(1x,A,1x,"=",1x,F14.6,SP,F14.6,"i")'
       endIf
@@ -879,7 +879,7 @@
 !
 !PROCEDURE MQC_Print_Matrix_Array_Integer
       Subroutine MQC_Print_Matrix_Array_Integer(Array,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print an integer Matrix array variable.
 !
@@ -891,10 +891,11 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Integer(kind=int64),dimension(:,:),Intent(In)::Array
-      Character(Len=*),Intent(In),Optional::Header
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10
+      Character(Len=256)::FormatLine
 !
 !
  1000 Format(1x,A)
@@ -914,7 +915,12 @@
         ILast = Min(IFirst+ColWidth-1,NCols)
         Write(IOut,1001) (I,I=IFirst,ILast)
         Do I = 1,NRows
-          Write(IOut,2001) I, (Array(I,J),J=IFirst,ILast)
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
+          Else
+            Write(IOut,2001) I, (Array(I,J),J=IFirst,ILast)
+          EndIf
         EndDo
       EndDo
 
@@ -928,7 +934,7 @@
 !
 !PROCEDURE MQC_Print_Matrix_Array_Real
       Subroutine MQC_Print_Matrix_Array_Real(Array,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print a real Matrix array variable.
 !
@@ -940,10 +946,11 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Real(kind=real64),dimension(:,:),Intent(In)::Array
-      Character(Len=*),Intent(In),Optional::Header
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -962,7 +969,12 @@
         ILast = Min(IFirst+ColWidth-1,NCols)
         Write(IOut,1001) (I,I=IFirst,ILast)
         do I = 1,NRows
-          Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
+            Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
+          else
+            Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
+          endIf
         enddo
       EndDo
 
@@ -976,7 +988,7 @@
 !
 !PROCEDURE MQC_Print_Matrix_Array_Complex
       Subroutine MQC_Print_Matrix_Array_Complex(Array,IOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print a complex Matrix array variable.
 !
@@ -987,10 +999,11 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Complex(kind=real64),dimension(:,:),Intent(In)::Array
-      Character(Len=*),Intent(In),Optional::Header
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10 
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -1009,7 +1022,12 @@
         ILast = Min(IFirst+ColWidth-1,NCols)
         Write(IOut,1001) (I,I=IFirst,ILast)
         do I = 1,NRows
-          Write(IOut,2003) I, (Array(I,J),J=IFirst,ILast)
+          If(present(FormatStr)) then
+            FormatLine = '(1x,I7,2x,10('//trim(FormatStr)//','//trim(FormatStr)//',"i"))'
+            Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
+          else
+            Write(IOut,2003) I, (Array(I,J),J=IFirst,ILast)
+          endIf
         enddo
       EndDo
 
@@ -1023,7 +1041,7 @@
 
 !PROCEDURE MQC_Print_Vector_Array_Integer
       subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print a Vector array type variable.
 !
@@ -1035,9 +1053,10 @@
       implicit none
       integer(kind=int64),Intent(In)::IOut
       integer(kind=int64),Dimension(:),Intent(In)::Vector
-      character(Len=*),Intent(In),Optional::Header
+      character(Len=*),Intent(In),Optional::Header,FormatStr
       logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1001 Format(1x,I7,2x,I14)
@@ -1051,7 +1070,12 @@
       if(Present(Header)) Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
       Do I = 1, Length
-        Write(IOut,1001) I, Vector(I)
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+          Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          Write(IOut,1001) I, Vector(I)
+        EndIf
       EndDo
       If(PRESENT(Blank_At_Bottom)) then
         If(Blank_At_Bottom) Write(IOut,1020)
@@ -1063,7 +1087,7 @@
 
 !PROCEDURE MQC_Print_Vector_Array_Real
       Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print a Vector array type variable.
 !
@@ -1075,9 +1099,10 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Real(kind=real64),Dimension(:),Intent(In)::Vector
-      Character(Len=*),Intent(In),Optional::Header
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1002 Format(1x,I7,2X,F14.6)
@@ -1089,7 +1114,12 @@
       Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
       Do I = 1, Length
-        Write(IOut,1002) I, Vector(I)
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+          Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          Write(IOut,1002) I, Vector(I)
+        endIf
       EndDo
 
       If(PRESENT(Blank_At_Bottom)) then
@@ -1102,7 +1132,7 @@
 
 !PROCEDURE MQC_Print_Vector_Array_Complex
       Subroutine MQC_Print_Vector_Array_Complex(vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
+        Blank_At_Bottom,FormatStr)
 !
 !     This subroutine is used to print a Vector array type variable.
 !
@@ -1114,9 +1144,10 @@
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Complex(kind=real64),Dimension(:),Intent(In)::Vector
-      Character(Len=*),Intent(In),Optional::Header
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
       Integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
 !
  1000 Format(1x,A)
  1002 Format(1x,I7,F12.5,F11.5,"i")
@@ -1128,7 +1159,12 @@
       Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
       Do I = 1, Length
-        Write(IOut,1002) I, Vector(I)
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
+          Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          Write(IOut,1002) I, Vector(I)
+        EndIf
       EndDo
 
       If(PRESENT(Blank_At_Bottom)) then

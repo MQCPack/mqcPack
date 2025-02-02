@@ -10,7 +10,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.0                           **
+!     **                          Version 25.1.1                           **
 !     **                          January 4, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
@@ -29,6 +29,7 @@
 !     ***********************************************************************
 !
       Use MQC_General
+      Use MQC_Binary
       use iso_fortran_env, only: int64, real64
 !
 !
@@ -45,6 +46,7 @@
         Module Procedure LinkedList_Return_Integer_Value
         Module Procedure LinkedList_Return_Real_Value
         Module Procedure LinkedList_Return_Character_Value
+        Module Procedure LinkedList_Return_Binary_Value
       End Interface
 
 
@@ -143,6 +145,38 @@
       Return
       End Subroutine LinkedList_Return_Character_Value
 !
+!
+!     PROCEDURE LinkedList_Return_Binary_Value
+      Subroutine LinkedList_Return_Binary_Value(LL_Cur,Return_Value)
+!
+!     This routine is used to return the value of a member of a linked
+!     list. LL_Cur is an INPUT linked list member and Return_Value is an
+!     OUTPUT argument that is allocatable of the same type as LL_Cur%Val.
+!
+!     L. M. Thompson, 2024
+!
+      Implicit None
+      Type(MQC_LinkedList),Pointer::LL_Cur
+      Type(MQC_Bits),Intent(InOut)::Return_Value
+!
+!     Allocate Return_Value, set it to LL_Cur%Val, and return to the
+!     calling procedure.
+!
+      If(Associated(LL_Cur)) then
+        If(Allocated(LL_Cur%Val)) then
+          Select Type (Val => LL_Cur%Val)
+          Type is (MQC_Bits)
+            Return_Value = Val
+          Class Default
+            Call MQC_Error('Data types not compatible in LinkedList_Return_Binary_Value')
+          End Select
+        endIf
+      endIf
+!
+      Return
+      End Subroutine LinkedList_Return_Binary_Value
+!
+!
 !     PROCEDURE LinkedList_Print_Node
       Subroutine LinkedList_Print_Node(LL_Cur,IOut)
 !
@@ -163,6 +197,8 @@
           Write(IOut,'(A10)',advance="no") Output
         Type is (Real)
           Write(IOut,'(D15.5)',advance="no") Output
+        Type is (MQC_Bits)
+          Call Output%Print(IOut)
         Class Default
           Stop 'Unexpected data type in link'
         End Select
@@ -200,6 +236,8 @@
             Write(IOut,'(A10)',advance="no") Output
           Type is (Real)
             Write(IOut,'(D15.5)',advance="no") Output
+          Type is (MQC_Bits)
+            Call Output%Print(IOut)
           Class Default
             Stop 'Unexpected data type in link'
           End Select
