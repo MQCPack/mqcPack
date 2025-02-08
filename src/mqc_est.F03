@@ -18216,6 +18216,239 @@
 !
 !=====================================================================
 !     
+!     PROCEDURE MQC_SUBSTRINGS_AT_INDEX
+!
+!>    \brief <b> MQC_SUBSTRINGS_AT_INDEX is a subroutine that returns the strings
+!>    corresponding to the index of matrices built by MQC_Build_CI_Operator</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_SUBSTRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
+!>    to the index of matrices built by MQC_Build_CI_Operator.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] IndIn
+!>    \verbatim
+!>        IndIn is Integer(kind=int64)
+!>        The index from which determinant strings will be
+!>        returned. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. One
+!>        determinant object should be provided for each
+!>        substring.
+!>    \endverbatim
+!>
+!>    \param[in] SubsA
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:)
+!>        Permitted alpha substitutions. One vector
+!>        object should be provided for each substring.
+!>    \endverbatim
+!>
+!>    \param[in] SubsB
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:)
+!>        Permitted beta substitutions. One vector 
+!>        object should be provided for each substring.
+!>    \endverbatim
+!>
+!>    \param[in] SubsT
+!>    \verbatim
+!>        SubsT is Type(MQC_Vector),Dimension(:)
+!>        Permitted total substitutions. One vector
+!>        object should be provided for each substring.
+!>    \endverbatim
+!>    
+!>    \param[out] aString
+!>    \verbatim
+!>        aString is type(MQC_bits)
+!>        The alpha string at index IndIn.
+!>    \endverbatim
+!>    
+!>    \param[in] bString
+!>    \verbatim
+!>        bString is type(MQC_bits)
+!>        The beta string at index IndIn.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Subroutine MQC_SubStrings_At_Index(IOut,IPrint,IndIn,Determinants,SubsA,SubsB,SubsT,&
+        aString,bString)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,IndIn
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      type(mqc_vector),Dimension(:),Intent(In)::SubsA,SubsB,SubsT
+      type(MQC_bits),intent(Out)::aString,bString
+
+      Integer(kind=int64)::i,j
+      Integer(kind=int64),Dimension(:),Allocatable::NDets,NDetsA,NDetsB
+      type(mqc_bits)::alphaStrTemp,betaStrTemp
+
+      allocate(NDets(Size(Determinants)),NDetsA(Size(Determinants)),&
+        NDetsB(Size(Determinants)))
+      Do I = 1, size(determinants)
+        call get_expansion_size(Determinants(i),SubsT(i),SubsA(i),SubsB(i),&
+          NDets(i),NDetsA(i),NDetsB(i))
+      EndDo
+      aString = mqc_bits(0)
+      bString = mqc_bits(0)
+      Do I = 1, size(determinants)
+        J = mod((IndIn-1)/product(NDets(1:i-1)),NDets(i))+1
+        call mqc_strings_at_index(iout,iprint,j,Determinants(i),subsA(i),SubsB(i),&
+          SubsT(i),AlphaStrTemp,BetaStrTemp)
+        aString = MQC_concatenate_bits(alphaStrTemp,aString)
+        bString = MQC_concatenate_bits(betaStrTemp,bString)
+      EndDo
+      Return
+!
+      End Subroutine MQC_SubStrings_At_Index 
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_INDEX_STRINGS
+!
+!>    \brief <b> MQC_INDEX_STRINGS is a subroutine that returns the strings
+!>    corresponding of the index of a matrix produced by MQC_Build_CI_Operator
+!>    given either the allowed total substituitons or the allowed alpha and 
+!>    beta substitutions.</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_INDEX_STRINGS is a subroutine that returns the strings corresponding 
+!>    to the index of a matrix built by MQC_Build_CI_Operator given either the 
+!>    allowed total substituitons or the allowed alpha and beta substitutions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] IndIn
+!>    \verbatim
+!>        IndIn is Integer(kind=int64)
+!>        The index from which determinant strings will be
+!>        returned. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. One
+!>        determinant object should be provided for each
+!>        substring.
+!>    \endverbatim
+!>    
+!>    \param[out] aString
+!>    \verbatim
+!>        aString is type(MQC_bits)
+!>        The alpha string at index IndIn.
+!>    \endverbatim
+!>    
+!>    \param[in] bString
+!>    \verbatim
+!>        bString is type(MQC_bits)
+!>        The beta string at index IndIn.
+!>    \endverbatim
+!>
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:)
+!>        Permitted alpha substitutions. One vector
+!>        object should be provided for each substring.
+!>    \endverbatim
+!>
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:)
+!>        Permitted beta substitutions. One vector 
+!>        object should be provided for each substring.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Index_Strings(IOut,IPrint,IndIn,Determinants,&
+        aString,bString,SubsAIn,SubsBIn)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,IndIn
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      type(MQC_bits),intent(Out)::aString,bString
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn
+
+      Integer(kind=int64)::i
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB
+      Type(MQC_Vector),Dimension(:),Allocatable::SubsTOut,SubsAOut,SubsBOut
+
+      allocate(subsAOut(size(determinants)),subsBOut(size(determinants)),&
+        subsTOut(size(determinants)))
+      do i = 1, size(determinants)
+        if(present(subsAIn)) then
+          subsA = subsAIn(i)
+        else
+          subsA = [integer::]
+        endIf
+        if(present(subsBIn)) then
+          subsB = subsBIn(i)
+        else
+          subsB = [integer::]
+        endIf
+        call get_subLevels(Determinants(i),subsA,subsB,subsAOut(i),subsBOut(i),subsTOut(i))
+      endDo
+
+      call MQC_SubStrings_At_Index(IOut,IPrint,IndIn,Determinants,subsAOut,subsBOut,subsTOut,&
+        aString,bString)
+      Return
+!
+      End Subroutine MQC_Index_Strings 
+!
+!
+!=====================================================================
+!     
 !     PROCEDURE MQC_GET_STRING_INDEX
 !
 !>    \brief <b> MQC_GET_STRING_INDEX is a function that returns the index of a 
@@ -18623,16 +18856,15 @@
         Else
           subsTOut = subsA
         EndIf
-        subsAOut = [integer::]
+!        subsAOut = [integer::]
         do i = 1, size(subsTOut)
           do j = 0, int(subsTOut%at(i))
             if(.not.any(subsAOut.eq.j).and.j+1.le.size(Determinants%NSubsAlpha)) then
-!              if(Determinants%NSubsAlpha%at(j+1).ne.0) subsAOut = [subsAOut,j]
               if(Determinants%NSubsAlpha%at(j+1).ne.0) call subsAOut%push(j)
             endIf
           endDo
         endDo
-        subsBOut = [integer::]
+!        subsBOut = mqc_vector([integer::])
         do i = 1, size(subsTOut)
           do j = 0, int(subsTOut%at(i))
             if(.not.any(subsBOut.eq.j).and.j+1.le.size(Determinants%NSubsBeta)) then
@@ -18640,19 +18872,22 @@
             endIf
           endDo
         endDo
-        call subsAOut%sort()
-        call subsBOut%sort()
+!        call subsAOut%sort()
+        call MQC_Vector_Sort(subsAOut)
+!        call subsBOut%sort()
+        call MQC_Vector_Sort(subsBOut)
       Else
         subsAOut = subsA
         subsBOut = subsB
-        subsTOut = [integer::]
+!        subsTOut = mqc_vector([integer::])
         do i = 1, size(subsAOut)
           do j = 1, size(subsBOut)
             if(.not.any(subsTOut.eq.int(subsAOut%at(i))+int(subsBOut%at(j)))) &
               call subsTOut%push(int(subsAOut%at(i))+int(subsBOut%at(j)))
           endDo
         endDo
-        call subsTOut%sort()
+!        call subsTOut%sort()
+        call MQC_Vector_Sort(subsTOut)
       endIf
 
       end subroutine get_subLevels
