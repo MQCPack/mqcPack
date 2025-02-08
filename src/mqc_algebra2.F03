@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.1.1                           **
-!     **                          January 4, 2025                          **
+!     **                          Version 25.2.0                           **
+!     **                         February 2, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -94,6 +94,8 @@
         procedure,public ::getType       => MQC_Variable_getType
         procedure,public ::print         => MQC_Print_mqcVariable
         procedure,public ::isConformable => MQC_Variable_isConformable
+        procedure,public ::trimZero      => mqc_variable_trimZero
+        procedure,public ::trace         => mqc_variable_matrixTrace
         procedure,public ::iPower        => MQC_Variable_integerPower
         procedure,public ::rPower        => MQC_Variable_realPower
         procedure,public ::column        => MQC_Variable_MatrixGetColumn
@@ -3013,6 +3015,42 @@
 
 
 !
+!PROCEDURE MQC_Variable_TrimZero
+      Subroutine mqc_variable_trimZero(mqcVariable,small)
+!
+!     This subroutine accepts an MQC Variable (mqcVariable) and sets all entries that
+!     have absolute values below a threshold to float(0).
+!
+!     The optional dummy argument <small> may be sent with a user specified
+!     threshold. Otherwise, the threshold is set to the MQC system value of
+!     <MQC_small>.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      real(kind=real64),optional,intent(in)::small
+      real(kind=real64)::mySmall
+!
+!     Do the requested work by calling mqc_vectorTrimZero from MQC_General.
+!
+      if(mqcVariable%getType().ne.'REAL')  &
+        call mqc_error('mqc_variable_trimZero: Only real arrays are allowed.')
+      if(PRESENT(small)) then
+        mySmall = small
+      else
+        mySmall = MQC_small
+      endIf
+      call mqc_vectorTrimZero(mqcVariable%realArray,small=mySmall)
+!
+      return
+      end subroutine mqc_variable_trimZero
+
+
+!
 !PROCEDURE MQC_Variable_RealPower
       function MQC_Variable_RealPower(mqcVariable,realPower) result(mqcVariableOut)
 !
@@ -3268,6 +3306,29 @@
       return
       end function MQC_Variable_SubMatrix
 
+!
+!PROCEDURE mqc_variable_matrixTrace
+      function mqc_variable_matrixTrace(mqcVariable) result(trace)
+!
+!     This function returns the trace of matrix. For now, only real matrices are
+!     allowed.
+!
+!
+!     H. P. Hratchian, 2025
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      real(kind=real64)::trace
+!
+!     Call the MQC_General routine and then return the trace.
+!
+      if(mqcVariable%getType().ne.'REAL')  &
+        call mqc_error('mqc_variable_matrixTrace: Only real arrays are allowed.')
+      trace = mqc_matrixTrace(RESHAPE(mqcVariable%realArray,  &
+        [Size(mqcVariable,1),Size(mqcVariable,2)]))
+!
+      return
+      end function mqc_variable_matrixTrace
 
 !
 !PROCEDURE MQC_Variable_Contraction_Full
