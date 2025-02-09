@@ -24,9 +24,10 @@ jobs:
           echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
           sudo apt-get update -y
           sudo apt-get install -y nvhpc-25-1
-          export NVCOMPILERS=/opt/nvidia/hpc_sdk
-          export PATH=$NVCOMPILERS/Linux_x86_64/25.1/compilers/bin:$PATH
-
+          NVARCH=`uname -s`_`uname -m`; export NVARCH
+          NVCOMPILERS=/opt/nvidia/hpc_sdk; export NVCOMPILERS
+          MANPATH=$MANPATH:$NVCOMPILERS/$NVARCH/25.1/compilers/man; export MANPATH
+          PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
       - name: Install GauOpen and create the mqc-install directory
         run: |
           mkdir gauopen
