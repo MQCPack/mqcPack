@@ -1,4 +1,4 @@
-name: Fortran Build and Test
+name: Linux Ubuntu Tests
 
 on:
   push:
