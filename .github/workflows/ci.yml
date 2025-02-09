@@ -24,15 +24,6 @@ jobs:
           echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
           sudo apt-get update -y
           sudo apt-get install -y nvhpc-25-1
-          NVARCH=`uname -s`_`uname -m`
-          NVCOMPILERS=/opt/nvidia/hpc_sdk
-          echo 'Hrant - NVARCH: '$NVARCH
-          echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
-          PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
-          echo 'Hrant - ls /opt/nvidia/hpc_sdk'
-          ls /opt/nvidia/hpc_sdk
-          echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
-          ls /opt/nvidia/hpc_sdk/$NVARCH/25.1/compilers/bin
 
       - name: Install GauOpen and create the mqc-install directory
         run: |
@@ -43,21 +34,13 @@ jobs:
           cd ..
           mkdir mqc-install
 
-#      - name: Build mqcPack with gfortran
-#        run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+      - name: Build mqcPack with gfortran
+        run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
       - name: Build mqcPack with nvfortran
         run: |
-          echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
-          ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin
           NVARCH=`uname -s`_`uname -m`
           NVCOMPILERS=/opt/nvidia/hpc_sdk
           PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
-          echo 'Hrant - NVARCH: '$NVARCH
-          echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
-          echo 'Hrant - PATH:'
-          echo $PATH
-          ls /opt/
-          which nvfortran
-#        run: echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+          echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
