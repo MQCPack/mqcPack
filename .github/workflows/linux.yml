@@ -44,27 +44,3 @@ jobs:
           PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
           echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
-  build-and-test:
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system level dependencies
-        run: |
-          brew install doxygen automake 
-          brew reinstall gcc
-
-      - name: Install GauOpen and create the mqc-install directory
-        run: |
-          mkdir gauopen
-          cd gauopen
-          wget http://gaussian.com/g16/gauopen_v2.zip
-          unzip gauopen_v2.zip
-          cd ..
-          mkdir mqc-install
-
-      - name: Build mqcPack with gfortran
-        run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
-
