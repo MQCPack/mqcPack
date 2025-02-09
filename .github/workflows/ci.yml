@@ -49,6 +49,7 @@ jobs:
       - name: Build mqcPack with nvfortran
         run: |
           echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
+          ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin
           echo 'Hrant - NVARCH: '$NVARCH
           echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
           echo $PATH
