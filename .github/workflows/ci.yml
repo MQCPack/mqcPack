@@ -50,8 +50,12 @@ jobs:
         run: |
           echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
           ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin
+          NVARCH=`uname -s`_`uname -m`
+          NVCOMPILERS=/opt/nvidia/hpc_sdk
+          PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
           echo 'Hrant - NVARCH: '$NVARCH
           echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
+          echo 'Hrant - PATH:'
           echo $PATH
           ls /opt/
           which nvfortran
