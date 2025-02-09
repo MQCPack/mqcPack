@@ -18,6 +18,12 @@ jobs:
           sudo apt-get install doxygen
           sudo apt-get install libopenblas-dev
 
+      - name: Install NVidia compiler
+        run: |
+          sudo apt-get install -y nvhpc-25-1
+          export NVCOMPILERS=/opt/nvidia/hpc_sdk
+          export PATH=$NVCOMPILERS/Linux_x86_64/25.1/compilers/bin:$PATH
+
       - name: Install GauOpen
         run: |
           mkdir gauopen
@@ -26,8 +32,13 @@ jobs:
           unzip gauopen_v2.zip
           cd ..
 
-      - name: Build mqcPack
+      - name: Build mqcPack with gfortran
         run: |
           mkdir mqc-install
           echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+
+      - name: Build mqcPack with nvfortran
+        run: |
+          mkdir mqc-install
+          echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
