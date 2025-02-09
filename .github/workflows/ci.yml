@@ -27,21 +27,18 @@ jobs:
           export NVCOMPILERS=/opt/nvidia/hpc_sdk
           export PATH=$NVCOMPILERS/Linux_x86_64/25.1/compilers/bin:$PATH
 
-      - name: Install GauOpen
+      - name: Install GauOpen and create the mqc-install directory
         run: |
           mkdir gauopen
           cd gauopen
           wget http://gaussian.com/g16/gauopen_v2.zip
           unzip gauopen_v2.zip
           cd ..
+          mkdir mqc-install
 
       - name: Build mqcPack with gfortran
-        run: |
-          mkdir mqc-install
-          echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+        run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
       - name: Build mqcPack with nvfortran
-        run: |
-          mkdir mqc-install
-          echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+        run: echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
