@@ -1,39 +1,33 @@
-name: CI
-on: [push, pull_request]
+name: Fortran Build and Test
+
+on:
+  push:
+  pull_request:
+
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest] 
+  build-and-test:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Install dependencies (Linux)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system level dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install doxygen
           sudo apt-get install libopenblas-dev
-        if: matrix.os == 'ubuntu-latest'
-      - name: Install dependencies (macOS)
-        run: |
-          brew install doxygen automake 
-          brew reinstall gcc
-        if: matrix.os == 'macos-latest'
-      - name: Checkout
-        uses: actions/checkout@v2.3.4
-      - name: Before install
+
+      - name: Install GauOpen
         run: |
           mkdir gauopen
-          mkdir mqc-install
           cd gauopen
           wget http://gaussian.com/g16/gauopen_v2.zip
           unzip gauopen_v2.zip
           cd ..
-          pwd
-          ls
-      - name: Install
+
+      - name: Build mqcPack
         run: |
+          mkdir mqc-install
           echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
-        
-
-
-
 
