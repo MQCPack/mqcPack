@@ -31,8 +31,9 @@ jobs:
           PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
           echo 'Hrant - ls /opt/nvidia/hpc_sdk'
           ls /opt/nvidia/hpc_sdk
-          echo 'Hrant - ls /opt/nvidia/hpc_sdk/$NVARCH/25.1/compilers/bin'
+          echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
           ls /opt/nvidia/hpc_sdk/$NVARCH/25.1/compilers/bin
+
       - name: Install GauOpen and create the mqc-install directory
         run: |
           mkdir gauopen
@@ -47,6 +48,7 @@ jobs:
 
       - name: Build mqcPack with nvfortran
         run: |
+          echo 'Hrant - ls /opt/nvidia/hpc_sdk/Linux_x86_64/25.1/compilers/bin'
           echo 'Hrant - NVARCH: '$NVARCH
           echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
           echo $PATH
