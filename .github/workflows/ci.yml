@@ -29,6 +29,10 @@ jobs:
           echo 'Hrant - NVARCH: '$NVARCH
           echo 'Hrant - NVCOMPILERS: '$NVCOMPILERS
           PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH
+          echo 'Hrant - ls /opt/nvidia/hpc_sdk'
+          ls /opt/nvidia/hpc_sdk
+          echo 'Hrant - ls /opt/nvidia/hpc_sdk/$NVARCH/25.1/compilers/bin'
+          ls /opt/nvidia/hpc_sdk/$NVARCH/25.1/compilers/bin
       - name: Install GauOpen and create the mqc-install directory
         run: |
           mkdir gauopen
