@@ -1,0 +1,46 @@
+name: Fortran Build and Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system level dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install doxygen
+          sudo apt-get install libopenblas-dev
+
+      - name: Install NVidia compiler
+        run: |
+          curl https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
+          sudo apt-get update -y
+          sudo apt-get install -y nvhpc-25-1
+
+      - name: Install GauOpen and create the mqc-install directory
+        run: |
+          mkdir gauopen
+          cd gauopen
+          wget http://gaussian.com/g16/gauopen_v2.zip
+          unzip gauopen_v2.zip
+          cd ..
+          mkdir mqc-install
+
+      - name: Build mqcPack with gfortran
+        run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+
+      - name: Build mqcPack with nvfortran
+        run: |
+          NVARCH=`uname -s`_`uname -m`
+          NVCOMPILERS=/opt/nvidia/hpc_sdk
+          PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
+          echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+
