@@ -1,5 +1,5 @@
-[![Linux Ubuntu Tests](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/linux.yml/badge.svg)](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/linux.yml)
-[![MacOS Tests](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/macos.yml/badge.svg)](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/macos.yml)
+[![Linux Ubuntu Tests](https://github.com/MQCPack/mqcPack/actions/workflows/linux.yml/badge.svg)](https://github.com/MQCPack/mqcPack/actions/workflows/linux.yml)
+[![MacOS Tests](https://github.com/MQCPack/mqcPack/actions/workflows/macos.yml/badge.svg)](https://github.com/MQCPack/mqcPack/actions/workflows/macos.yml)
 <pre>
    **************************************************************************
    **************************************************************************
