@@ -1,4 +1,5 @@
-[![CI](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml/badge.svg)](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml)
+[![Linux Ubuntu Tests](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/linux.yml/badge.svg)](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/linux.yml)
+[![MacOS Tests](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/macos.yml/badge.svg)](https://github.com/thompsonresearchgroup/mqcPack/actions/workflows/macos.yml)
 <pre>
    **************************************************************************
    **************************************************************************
