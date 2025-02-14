@@ -18511,6 +18511,13 @@
 !>        remain occupied in all strings.
 !>    \endverbatim
 !>    
+!>    \param[in] branchTree
+!>    \verbatim
+!>        branchTree is type(mqc_matrix),optional
+!>        An optional matrix to allow vertex values to be
+!>        precomputed rater than determined on each lookup.
+!>    \endverbatim
+!>    
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
@@ -18713,16 +18720,10 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] iElec
+!>    \param[out] indexMatrix
 !>    \verbatim
-!>        iElec is Integer(kind=int64)
-!>        The electron number of the vertex.
-!>    \endverbatim
-!>    
-!>    \param[in] iOrb
-!>    \verbatim
-!>        iOrb is Integer(kind=int64)
-!>        The orbital number of the vertex.
+!>        indexMatrix is type(mqc_matrix)
+!>        The matrix which will store vertex values..
 !>    \endverbatim
 !>    
 !>    \param[in] nElec
@@ -18753,7 +18754,7 @@
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2024
+!>    \date 2025
 !
       subroutine build_genelogical_tree(indexMatrix,nElec,nOrb,subs,order) 
 !
