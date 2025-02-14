@@ -11388,7 +11388,6 @@
 !    Forming alpha strings
       New_Value = mqc_bits(nBasis+nVirt)
       Call LinkedList_Push(String_List_2,New_Value)
-!    Still need to take care of cases where  number of orbitals is greater than one bit
       Do IOrb=1, NBasis
         Call LinkedList_Delete(String_List_1)
         String_Node_2 => String_List_2
@@ -18136,6 +18135,7 @@
 
       Integer(kind=int64)::nAlpha,nBeta,Xk,A_Sub,B_Sub,A_Start,B_Start,A_End,&
         B_End,A_String,B_String,A_SubLevel,B_SubLevel,Iabk,Ind
+      type(mqc_matrix)::alphaTree,betaTree
 
       nAlpha = get_string_nElec(Determinants%Strings%Alpha(1)) 
       nBeta = get_string_nElec(Determinants%Strings%Beta(1)) 
@@ -18176,8 +18176,13 @@
           A_End = Determinants%NAlpStr
           B_End = Determinants%NBetStr
       endIf
-
+      call build_genelogical_tree(alphaTree,(nAlpha-determinants%nCore),&
+        (determinants%nBasis-determinants%nVirt-determinants%nCore),[A_Sub])
+      call build_genelogical_tree(betaTree,(nBeta-determinants%nCore),&
+        (determinants%nBasis-determinants%nVirt-determinants%nCore),[B_Sub])
+!
 !     Third determine offset for initial substitution level
+!
       indexSearch: Do A_String = A_Start, A_End
         Do B_String = B_Start, B_End
 
@@ -18193,10 +18198,10 @@
 !         Compute composite index within substituion level k
 !         I_{alpha,beta}^{k} = I_{alpha}^{k_i}*N_{\beta}^{k_j} + I_{beta}^{k_j}
           Iabk = mqc_get_string_index(aString,(determinants%nBasis-determinants%nVirt),&
-            (nAlpha-determinants%nCore),'lexical',[A_subLevel],determinants%nCore)*&
+            (nAlpha-determinants%nCore),'lexical',[A_subLevel],determinants%nCore,alphaTree)*&
             Determinants%NSubsBeta%at(B_SubLevel+1) + &
             mqc_get_string_index(bString,(determinants%nBasis-determinants%nVirt),&
-            (nBeta-determinants%nCore),'lexical',[B_subLevel],determinants%nCore)
+            (nBeta-determinants%nCore),'lexical',[B_subLevel],determinants%nCore,betaTree)
 
 !         Compute final index I_{alpha,beta} = X_{k} + I_{alpha,beta}^{k}
           Ind = Xk + Iabk + 1
@@ -18511,17 +18516,18 @@
 !>    \author L. M. Thompson
 !>    \date 2024
 !
-      function MQC_Get_String_Index(string,nBasis,nElec,order,subsIn,nCore) result(ind)
+      function MQC_Get_String_Index(string,nBasis,nElec,order,subsIn,nCore,branchTree) result(ind)
 !
       implicit none
       integer(kind=int64),intent(in)::nBasis,nElec
       integer(kind=int64),dimension(:),intent(in),optional::subsIn
       type(mqc_bits),intent(in)::string
       character(len=*),optional,intent(in)::order
-      character(len=64)::lorder
       integer(kind=int64),optional,intent(in)::nCore
-      integer(kind=int64)::ind
+      type(mqc_matrix),optional::branchTree
 
+      character(len=64)::lorder
+      integer(kind=int64)::ind
       integer(kind=int64)::i,j,jStart,jEnd,x,iElec,iOrb,core
       integer(kind=int64),dimension(:),allocatable::subs
 
@@ -18556,7 +18562,11 @@
           else
             iOrb = iOrb-1
             !Y0(e,o) = x(e+1,o+1) 
-            x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis-core,subs,lorder)
+            if(present(branchTree)) then
+              x = branchTree%at(iOrb+2,iElec+2) 
+            else
+              x = ci_vertex_weight(iElec+1,iOrb+1,nElec,nBasis-core,subs,lorder)
+            endIf
             ind = ind + x
           endIf
         endDo
@@ -18682,6 +18692,131 @@
       end select
 
       end function ci_vertex_weight
+!      
+!
+!=====================================================================
+!     
+!     PROCEDURE BUILD_GENEOLOGICAL_TREE
+!
+!>    \brief <b> BUILD_GENEOLOGICAL_TREE is a subroutine that returns the 
+!>    complete geneological tree for string indexing</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    BUILD_GENEOLOGICAL_TREE is a subroutine that returns the complete 
+!>    geneological tree for string indexing. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] iElec
+!>    \verbatim
+!>        iElec is Integer(kind=int64)
+!>        The electron number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] iOrb
+!>    \verbatim
+!>        iOrb is Integer(kind=int64)
+!>        The orbital number of the vertex.
+!>    \endverbatim
+!>    
+!>    \param[in] nElec
+!>    \verbatim
+!>        nElec is Integer(kind=int64)
+!>        The number of electrons.
+!>    \endverbatim
+!>    
+!>    \param[in] nOrb
+!>    \verbatim
+!>        nOrb is Integer(kind=int64)
+!>        The number of orbitals.
+!>    \endverbatim
+!>    
+!>    \param[in] subs
+!>    \verbatim
+!>        subs is integer(kind=int64),dimension(:),optional 
+!>        The substitution levels permitted in the expansion.
+!>    \endverbatim
+!>    
+!>    \param[in] order
+!>    \verbatim
+!>        order is character(len=*),intent(in),optional
+!>        The index order of strings returned (currently only
+!>        lexical is supported and is the default).
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      subroutine build_genelogical_tree(indexMatrix,nElec,nOrb,subs,order) 
+!
+      Implicit None
+      Type(mqc_matrix),Intent(Out)::indexMatrix
+      Integer(kind=int64),Intent(In)::nElec,nOrb
+      integer(kind=int64),dimension(:),intent(in),optional::subs
+      character(len=*),intent(in),optional::order
+
+      integer(kind=int64)::i
+      character(len=64)::lorder
+      integer(kind=int64),dimension(:),allocatable::funcSubs
+      Integer(kind=int64)::iElec,iOrb
+!
+!     iOrb-iElec  is number of holes still to create
+!     (nOrb-iOrb)-(nElec-iElec)  is number of holes created    
+!     iElec       is number of electrons still to add
+!     nElec-iElec is the number of electrons added
+!
+      if(present(subs)) then
+        funcSubs = subs
+      else
+        funcSubs = [(i,i=0,min(nElec,nOrb-nElec))]
+      endIf
+      if(present(order)) then
+        call string_change_case(order,'L',lorder)
+      else
+        lorder = 'lexical'
+      endIf
+
+      call indexMatrix%init(nOrb+1,nElec+2,0)
+      do iElec = nElec,0,-1
+        do iOrb = nOrb,0,-1
+           
+          select case (lorder)
+          case('lexical')
+            if(iOrb.le.nElec.and.(.not.any(funcSubs.ge.(iOrb-iElec)).or.&
+              .not.any(funcSubs.le.(nElec-iElec)))) then
+              call indexMatrix%put(0,iOrb+1,iElec+1)
+            ElseIf(iOrb.gt.nElec.and.(.not.any(funcSubs.le.(iOrb-iElec)).or.&
+              .not.any(funcSubs.ge.(nElec-iElec)))) then
+              call indexMatrix%put(0,iOrb+1,iElec+1)
+            elseif((iOrb-iElec).lt.0) then
+!             There are more electrons than orbitals
+              call indexMatrix%put(0,iOrb+1,iElec+1)
+            elseIf((iOrb-iElec).gt.(nOrb-nElec)) then
+!             The number of holes is greater than the number of virtuals
+              call indexMatrix%put(0,iOrb+1,iElec+1)
+            elseIf(iElec.eq.nElec) then
+              call indexMatrix%put(1,iOrb+1,iElec+1)
+            else
+              call indexMatrix%put(indexMatrix%at(iOrb+2,iElec+2)+&
+                indexMatrix%at(iOrb+2,iElec+1),iOrb+1,iElec+1)
+            endIf
+          case default
+            call mqc_error_a('Unrecognized order passed to build_genelogical_tree',6,&
+              'lorder',lorder)
+          end select
+
+        endDo
+      endDo
+
+      end subroutine build_genelogical_tree
 !      
 !
 !=====================================================================
