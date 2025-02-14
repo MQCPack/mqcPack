@@ -9275,16 +9275,16 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] ERIs
+!>    \param[in] ERIs1
 !>    \verbatim
-!>        ERIs is type(mqc_twoERIs) 
-!>        The 2ERIs to be contracted.
+!>        ERIs1 is type(mqc_twoERIs) 
+!>        The first 2ERIs to be contracted.
 !>    \endverbatim
 !>
-!>    \param[in] R4Tensor
+!>    \param[in] ERIs2
 !>    \verbatim
-!>        R4Tensor is type(mqc_R4Tensor) 
-!>        The MQC rank-4 tensor to be contracted.
+!>        ERIs2 is type(mqc_twoERIs) 
+!>        The second 2ERIs to be contracted.
 !>    \endverbatim
 !>
 !>    \param[in] Label
@@ -9441,28 +9441,45 @@
 !>    MQC_ERI_ERI_Contraction is used to return the contraction of two-ERIs with 
 !>    an MQC two-ERIs.
 !>
-!>    1. Label = 'coulomb' returns the contraction with single bar coulomb integrals.
-!>    2. Label = 'exchange' returns the contraction with single bar exchange integrals.
-!>    3. Label = 'doublebar' returns the contraction with double-bar integrals (default).
-!>
 !>    \endverbatim
 !
 !     Arguments:
 !     ==========
-!>    \param[in] ERIs
+!>    \param[in] ERIs1
 !>    \verbatim
-!>        ERIs is type(mqc_twoERIs) 
-!>        The 2ERIs to be contracted.
+!>        ERIs1 is type(mqc_twoERIs) 
+!>        The first 2ERIs to be contracted.
 !>    \endverbatim
 !>
-!>    \param[in] R4Tensor
+!>    \param[in] ERIs2
 !>    \verbatim
-!>        R4Tensor is type(mqc_R4Tensor) 
-!>        The MQC rank-4 tensor to be contracted.
+!>        ERIs2 is type(mqc_twoERIs) 
+!>        The second 2ERIs to be contracted.
 !>    \endverbatim
 !>
-!>    TODO: finish doc
+!>    \param[in] Index1
+!>    \verbatim
+!>        Index1 is integer(kind=int64),dimension(4),optional 
+!>        Contain the indexes of ERIs1 to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>        Ex: If Index1=[3,2,4,1], the third and second indexes of ERIs1 are contracted.
+!>            The fourth and first are multiplied to form the first and second indices
+!>            of the result matrix, respectivelly.
 !>    \endverbatim
+!>
+!>    \param[in] Index2
+!>    \verbatim
+!>        Index2 is Integer(kind=int64),dimension(4),optional
+!>        Contain the indexes of ERIs2 to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>
+!>        Ex: index1=[3,2,4,1] and index2=[2,1,4,3]
+!>        sum_{i,j} ERIs1_{ljik} ERIs2_{jilk} = IntOut_{kl}
+!>
+!>    \endverbatim
+!>
 !
 !     Authors:
 !     ========
@@ -9572,8 +9589,8 @@
             eris1%getBlock('aaaa'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
               if(str2.eq.'aabb'.or.str1.eq.'bbaa') then
                 if (active_conf(3:4).eq.'aa') then
@@ -9600,8 +9617,8 @@
             eris1%getBlock('aaaa'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
               if (active_conf(3:4).eq.'aa') then
                 aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
@@ -9632,8 +9649,8 @@
             eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
               if(str2.eq.'aabb'.or.str1.eq.'bbaa') then
                 if (active_conf(3:4).eq.'aa') then
@@ -9660,8 +9677,8 @@
             eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
               if (active_conf(3:4).eq.'aa') then
                 aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
@@ -9692,8 +9709,8 @@
             eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if(str2.eq.'aabb'.or.str2.eq.'bbaa') then
               if (active_conf(3:4).eq.'aa') then
                 aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
@@ -9718,8 +9735,8 @@
             eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
           do i=1,6
             active_conf=aa_bb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if (active_conf(3:4).eq.'aa') then
               aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
                    eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
@@ -9738,8 +9755,8 @@
           end do
           do i=1,4
             active_conf=a_bbb_array(i)
-            str1=mqc_index_to_string([ia,ja,ka,la],active_conf(:))
-            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf(:))
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
             if (active_conf(3:4) == 'aa') then
               aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
                    eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
@@ -9834,7 +9851,7 @@
 !>        An arbitrary permutation of (1,2,3,4)
 !>    \endverbatim
 !>
-!>    \param[in] targ_string
+!>    \param[in] target_string
 !>    \verbatim
 !>        target_string character(len=4)
 !>        An ERI alpha/beta string, ex: 'aaaa' or 'abaa' 
@@ -11264,6 +11281,14 @@
 !>        A is Class(MQC_scf_integral)
 !>        The name of the MQC_SCF_Integral variable.
 !>    \endverbatim
+!>
+!>    \param[in] IndexNum
+!>    \verbatim
+!>        IndexNum is Integer(kind=int64)
+!>        The index over which the partial sum will be
+!>        performed.
+!>    \endverbatim
+!>
 !
 !     Authors:
 !     ========
@@ -12827,6 +12852,12 @@
 !>        Integral is Class(MQC_SCF_Integral)
 !>        The MQC integral to return the value of the (I,J)th 
 !>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Type(mqc_scalar)
+!>        The value to put in the integral.
 !>    \endverbatim
 !>    
 !>    \param[in] I  
@@ -18243,14 +18274,32 @@
 !>
 !>    \verbatim
 !>       
-!>    lines before or after output.
+!>    MQC_Print_Integral is a subroutine used to print an MQC EST SCF 
+!>    integral object.
 !>
 !>    \endverbatim
 !
 !     Arguments:
 !     ==========
 !>    \param[in] Integral
+!>    \verbatim
+!>       Integral is Class(mqc_scf_integral)
+!>       The first integral in the outer product.
 !>    \endverbatim
+!>
+!>    \param[in] Integral2
+!>    \verbatim
+!>       Integral2 is Class(mqc_scf_integral)
+!>       The second integral in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Cross
+!>    \verbatim
+!>       Cross is Logical
+!>       If True, the cross outer product is computed,
+!>       and if False, the outer product is computed. 
+!>    \endverbatim
+!>
 !
 !     Authors:
 !     ========

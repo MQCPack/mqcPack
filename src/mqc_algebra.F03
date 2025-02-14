@@ -13742,7 +13742,7 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] MA
+!>    \param[in] RA
 !>    \verbatim
 !>        RA is Type(MQC_R4Tensor)
 !>        The MQC r4tensor to convert.
@@ -32394,8 +32394,6 @@
 !>        Ex: if inorder=[3,2], the thrid and second indexes of RA is contacted
 !>            with the first and second of MB, respectivelly.
 !>    \endverbatim
-!>
-!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -32557,11 +32555,9 @@
 !>        Contain the indexes of RB to be contracted.
 !>        The two first integers in the object are the ones to be contracted,
 !>        while the two last are the one to be multiplied.
-!>    \endverbatim
 !>
 !>        Ex: orderA=[3,2,4,1] and orderB=[2,1,4,3]
 !>        sum_{i,j} RA_{ljik} RB_{jilk} = MC_{kl}
-!>
 !>
 !>    \endverbatim
 !
