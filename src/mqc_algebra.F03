@@ -236,6 +236,7 @@
         Procedure, Public::exp => MQC_Matrix_Exp
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::sum => MQC_Matrix_Sum
+        Procedure, Public::psum => MQC_Matrix_Partial_Sum
 !>      \brief <b> Returns the MQC_Matrix raised to a specified power</b>
         Procedure, Public::power => MQC_Matrix_Power
         Procedure, Private::at_sca => MQC_Matrix_Scalar_At_Scalar
@@ -358,6 +359,7 @@
         module procedure mqc_scalar_havereal
         Module procedure mqc_vector_havereal
         module procedure mqc_matrix_havereal
+        module procedure mqc_r4tensor_havereal
       end interface
 !
 !>    \brief <b> Determines in an array is integer type</b>
@@ -365,6 +367,7 @@
         module procedure mqc_scalar_haveinteger
         module procedure mqc_vector_haveinteger
         module procedure mqc_matrix_haveinteger
+        module procedure mqc_r4tensor_haveinteger
       end interface
 !
 !>    \brief <b> Determines in an array is complex type</b>
@@ -372,6 +375,7 @@
         module procedure mqc_scalar_havecomplex
         module procedure mqc_vector_havecomplex
         module procedure mqc_matrix_havecomplex
+        module procedure mqc_r4tensor_havecomplex
       end interface
 !
 !>    \brief <b> Sets an array to integer type</b>
@@ -384,6 +388,7 @@
       interface mqc_cast_real
         module procedure mqc_vector_cast_real
         module procedure mqc_matrix_cast_real
+        module procedure mqc_r4tensor_cast_real
       end interface
 !
 !>    \brief <b> Sets an array to complex type</b>
@@ -627,6 +632,16 @@
         module procedure MQC_Matrix_Scalar_Put_ScaInt
         module procedure MQC_Matrix_Scalar_Put_IntSca
         module procedure MQC_Matrix_Scalar_Put_Int 
+      end interface
+!
+!>    \brief <b> Do the contraction between an R4Tensor and a Matrix</b>
+      interface MQC_R4Tensor_Matrix_Contraction
+        module procedure MQC_R4Tensor_Matrix_Contraction
+      end interface
+!
+!>    \brief <b> Do a partial contraction between two R4Tensor R4Tensor</b>
+      interface MQC_R4Tensor_R4Tensor_Partial_Contraction
+        module procedure MQC_R4Tensor_R4Tensor_Partial_Contraction
       end interface
 !
 !>    \brief <b> Puts a value in the R4tensor at the specied index</b>
@@ -907,6 +922,10 @@
 !
       Interface Operator (.outer.)
         Module Procedure MQC_Matrix_Matrix_Outer
+      End Interface
+!
+      Interface Operator (.crossouter.)
+        Module Procedure MQC_Matrix_Matrix_Cross_Outer
       End Interface
 !
 !     Rank 4 tensor operators...
@@ -13705,6 +13724,52 @@
       endif
 
       End Function MQC_Matrix_Cast_Real
+!
+!     PROCEDURE MQC_R4Tensor_Cast_Real
+!
+!>    \brief <b> MQC_R4Tensor_Cast_Real is a function that converts an MQC r4tensor to
+!>    its real space</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Cast_Real is a function that converts an MQC r4tensor to its real 
+!>    space.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RA
+!>    \verbatim
+!>        RA is Type(MQC_R4Tensor)
+!>        The MQC r4tensor to convert.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      Function MQC_R4Tensor_Cast_Real(RA) Result(RB)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::RA
+      Type(MQC_R4Tensor)::RB
+
+      Call MQC_Allocate_R4Tensor(MQC_R4Tensor_Size(RA,1),MQC_R4Tensor_Size(RA,2),&
+                                 MQC_R4Tensor_Size(RA,3),MQC_R4Tensor_Size(RA,4),&
+                                 RB,'Real',RA%Storage)
+      if(mqc_have_int(RA)) then
+        RB%RTen = RA%ITen
+      elseif(mqc_have_complex(RA)) then
+        RB%RTen = RA%CTen
+      endif
+
+      End Function MQC_R4Tensor_Cast_Real
+!
 !
 !
 !     PROCEDURE MQC_Matrix_Cast_Integer
@@ -27145,6 +27210,74 @@
       endDo
 
       end function MQC_Matrix_Matrix_Outer
+
+
+!
+!
+!     PROCEDURE MQC_Matrix_Matrix_Cross_Outer
+!
+!>    \brief <b> MQC_Matrix_Matrix_Cross_Outer is similar to
+!>    MQC_Matrix_Matrix_Outer but returns a rank-4 with swapped indexes
+!>    M1(i,l)xM(k,j) instead of M1(i,j)xM2(k,l)</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Cross_Outer is a function that returns the rank-4 tensor containing 
+!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices </b>.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the outer product.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      Function MQC_Matrix_Matrix_Cross_Outer(matrix1,matrix2) result(outer)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_r4tensor)::outer
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::M,N,O,P,i,j,k,l
+
+      M = size(matrix1,1)
+      N = size(matrix1,2)
+      O = size(matrix2,1)
+      P = size(matrix2,2)
+
+      call outer%init(M,P,O,N)
+
+      do i = 1,M
+        do j = 1,N
+          do k = 1,O
+            do l = 1,P
+              call outer%put(matrix1%at(i,j)*matrix2%at(k,l),i,l,k,j)
+            endDo
+          endDo
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Cross_Outer
+
+
 !
 !
 !     PROCEDURE MQC_Matrix_Complex_RealPart
@@ -27643,6 +27776,75 @@
       endDo
 !
       end function mqc_matrix_sum
+
+!
+!
+!     PROCEDURE MQC_Matrix_Partial_Sum
+!
+!>    \brief <b> MQC_Matrix_Partial_Sum is a function that returns the sum of all 
+!>    rows or columns elemente of an MQC matrix and returns a MQC vector.</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Partial_Sum is a function that returns the sum of all 
+!>    rows or columns elemente of an MQC matrix and returns a MQC vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Matrix)
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!>    \param[in] indexnum
+!>    \verbatim
+!>        indexnum is integer(kind=int64),optional
+!>        The index that will be summed over (1 or 2).
+!>        default=1
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_matrix_partial_sum(A,indexnum) result(output)
+!
+      Implicit None
+      class(mqc_matrix),intent(in)::A
+      integer(kind=int64),optional::indexnum
+      type(mqc_vector)::output
+      integer(kind=int64)::i,j,ind
+
+      ind = 1
+      if(present(indexnum)) ind = indexnum
+        
+      if (ind.eq.1) then
+        call output%init(size(A,2))
+        do j=1,size(A,2)
+          do i=1,size(A,1)
+            call output%put(output%at(j) + A%at(i,j) , j)
+          endDo
+        endDo
+      else if (ind.eq.2) then
+        call output%init(size(A,1))
+        do j=1,size(A,1)
+          do i=1,size(A,2)
+            call output%put(output%at(j) + A%at(j,i) , j)
+          endDo
+        endDo
+      else
+        Call MQC_Error_I('Index out of range MQC_Matrix_Partial_Sum', 6, &
+                         'index', ind )
+      end if
+!
+      end function mqc_matrix_partial_sum
+
 !
 !
 !     PROCEDURE MQC_Matrix_Power
@@ -32155,4 +32357,418 @@
       end function mqc_R4Tensor_complex_imagPart
 !
 !
+
+!
+!
+!     PROCEDURE MQC_R4Tensor_Matrix_Contraction
+!
+!>    \brief <b> MQC_R4Tensor_Matrix_Contraction 
+!>    </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Matrix_Contraction
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RA
+!>    \verbatim
+!>        RA is Type(MQC_R4Tensor)
+!>    \endverbatim
+!>
+!>    \param[in] MB
+!>    \verbatim
+!>        MB is Type(MQC_Matrix)
+!>        The MQC matrix multiply.
+!>    \endverbatim
+!>
+!>    \param[in] inorder
+!>    \verbatim
+!>        inorder is Integer(kind=int64),dimension(2),optional
+!>        Contain the indexes to be contracted.
+!>        Ex: if inorder=[3,2], the thrid and second indexes of RA is contacted
+!>            with the first and second of MB, respectivelly.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      Function MQC_R4Tensor_Matrix_Contraction(RA,MB,inorder) Result(MC)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::RA
+      Type(MQC_Matrix),Intent(In)::MB
+      Integer(kind=int64),dimension(2),Intent(In),optional::inorder
+      Type(MQC_R4Tensor)::RAreal
+      Type(MQC_Matrix)::MC,MCreal,MBreal
+      Type(MQC_Matrix)::tmpM,tmpR
+      Integer(kind=int64)::ia,ib,ic,id,i,j,k
+      Integer(kind=int64)::dima,dimb,dimc,dimd
+      Integer(kind=int64),dimension(2)::va,vb
+
+      if(present(inorder)) then
+        ia=inorder(1)
+        ib=inorder(2)
+        ic=0
+        id=0
+        if (ia.eq.ib) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_Matrix_Contraction', 6, &
+             'ia', ia,'ib',ib)
+        if (ia.gt.4.or.ia.le.0.or.ib.gt.4.or.ib.le.0) Call MQC_Error_I(&
+             'Index out of range in MQC_R4Tensor_Matrix_Contraction', 6, &
+             'ia', ia,'ib',ib)
+        do i=1,4
+          if (i.ne.ia.and.i.ne.ib) then
+            if(ic.eq.0) then
+              ic=i
+            else
+              id=i
+            endif
+          endif
+        end do
+      else
+        ia=1
+        ib=2
+        ic=3
+        id=4
+      endif
+      dima = MQC_R4Tensor_Size(RA,ia)
+      dimb = MQC_R4Tensor_Size(RA,ib)
+      dimc = MQC_R4Tensor_Size(RA,ic)
+      dimd = MQC_R4Tensor_Size(RA,id)
+      If (MB%NRow.ne.dima.or.MB%NCol.ne.dimb) then
+        Call MQC_Error_I('R4Tensor and Matrix are not conformable for contraction', 6, &
+             'MB%NRow', MB%NRow,'MQC_R4Tensor_Size(RA%ia)',dima,&
+             'MB%NCol', MB%NCol,'MQC_R4Tensor_Size(RA%ib)',dimb)
+      EndIf
+
+      If (MQC_R4Tensor_HaveInteger(RA)) RAreal = MQC_Cast_Real(RA)
+      If (MQC_Matrix_HaveInteger(MB)) MBreal = MQC_Cast_Real(MB)
+      If (MQC_R4Tensor_HaveComplex(RA) .or. MQC_Matrix_HaveComplex(MB)) then
+        Call MQC_Allocate_Matrix(dimc,dimd,MC,'Complex','StorFull')
+      ElseIf (MQC_R4Tensor_HaveReal(RA) .or. MQC_Matrix_HaveReal(MB)) then
+        Call MQC_Allocate_Matrix(dimc,dimd,MC,'Real','StorFull')
+       !!TODO:Consider symm
+      Else
+        Call MQC_Allocate_Matrix(dimc,dimd,MC,'Integer','StorFull')
+      EndIf
+      
+      va=[1,dima]
+      vb=[1,dimb]
+      do i=1,dimc
+        do j=1,dimd
+          select case(ia)
+          case(1)      
+            select case(ib)
+            case(2)      
+              tmpR = RA%mat(va,vb,[i],[j])
+            case(3)      
+              tmpR = RA%mat(va,[i],vb,[j])
+            case(4)
+              tmpR = RA%mat(va,[i],[j],vb)
+            end select      
+          case(2)      
+            select case(ib)
+            case(1)      
+              tmpR = transpose(RA%mat(vb,va,[i],[j]))
+            case(3)      
+              tmpR = RA%mat([i],va,vb,[j])
+            case(4)
+              tmpR = RA%mat([i],va,[j],vb)
+            end select      
+          case(3)      
+            select case(ib)
+            case(1)      
+              tmpR = transpose(RA%mat(vb,[i],va,[j]))
+            case(2)      
+              tmpR = transpose(RA%mat([i],vb,va,[j]))
+            case(4)
+              tmpR = RA%mat([i],[j],va,vb)
+            end select      
+          case(4)
+            select case(ib)
+            case(1)      
+              tmpR = transpose(RA%mat(vb,[i],[j],va))
+            case(2)       
+              tmpR = transpose(RA%mat([i],vb,[j],va))
+            case(3)       
+              tmpR = transpose(RA%mat([i],[j],vb,va))
+            end select      
+          end select      
+          call MC%put(Contraction(tmpR,MB),i,j)
+        enddo
+      enddo
+
+
+      EndFunction MQC_R4Tensor_Matrix_Contraction
+
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Partial_Contraction
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Partial_Contraction 
+!>    </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Partial_Contraction
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RA
+!>    \verbatim
+!>        RA is Type(MQC_R4Tensor)
+!>        The MQC  R4Tensor to be partially contracted.
+!>    \endverbatim
+!>
+!>    \param[in] RB
+!>    \verbatim
+!>        RB is Type(MQC_R4Tensor)
+!>        The MQC  R4Tensor to be partially contracted.
+!>    \endverbatim
+!>
+!>    \param[in] orderA
+!>    \verbatim
+!>        inorder is Integer(kind=int64),dimension(4),optional
+!>        Contain the indexes of RA to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>        Ex: If orderA=[3,2,4,1], the thrid and second indexes of RA are contacted.
+!>            The fourth and first are multiplied to form the first and second indexes
+!>            of the result matrix, respectivelly.
+!>    \endverbatim
+!>
+!>    \param[in] orderB
+!>    \verbatim
+!>        inorder is Integer(kind=int64),dimension(B),optional
+!>        Contain the indexes of RB to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>
+!>        Ex: orderA=[3,2,4,1] and orderB=[2,1,4,3]
+!>        sum_{i,j} RA_{ljik} RB_{jilk} = MC_{kl}
+!>
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      Function MQC_R4Tensor_R4Tensor_Partial_Contraction(RA,RB,orderA,orderB) Result(MC)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::RA,RB
+      Integer(kind=int64),dimension(4),Intent(In),optional::orderA,orderB
+      Type(MQC_R4Tensor)::RAreal,RBreal
+      Type(MQC_Matrix)::MC,MCreal
+      Type(MQC_Matrix)::tmpRB,tmpRA
+      Integer(kind=int64)::ia,ja,ka,la,ib,jb,kb,lb,i,j,k,l
+      Integer(kind=int64)::dimAi,dimAj,dimAk,dimAl,dimBi,dimBj,dimBk,dimBl
+      Integer(kind=int64),dimension(2)::vi,vj
+
+      if(present(orderA)) then
+        ia=orderA(1)
+        ja=orderA(2)
+        ka=orderA(3)
+        la=orderA(4)
+        if (ia.eq.ja) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ia', ia,'ja',ja)             
+        if (ia.eq.ka) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ia', ia,'ka',ka)             
+        if (ia.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ia', ia,'la',la)             
+        if (ja.eq.ka) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ja', ja,'ka',ka)             
+        if (ja.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ja', ja,'la',la)             
+        if (ka.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction',&
+                                        6,'ka', ka,'la',la)
+      else
+        ia=1
+        ja=2
+        ka=3
+        la=4
+      endif
+      if(present(orderB)) then
+        ib=orderB(1)
+        jb=orderB(2)
+        kb=orderB(3)
+        lb=orderB(4)
+        if (ib.eq.jb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'ib', ib,'jb',jb)
+        if (ib.eq.kb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'ib', ib,'kb',kb)
+        if (ib.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'ib', ib,'lb',lb)
+        if (jb.eq.kb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'jb', jb,'kb',kb)
+        if (jb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'jb', jb,'lb',lb)
+        if (kb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction',&
+                                        6,'kb', kb,'lb',lb)
+      else
+        ib=1
+        jb=2
+        kb=3
+        lb=4
+      endif
+      if (ia.gt.4.or.ia.le.0.or.ib.gt.4.or.ib.le.0.or.&
+          ja.gt.4.or.ja.le.0.or.jb.gt.4.or.jb.le.0.or.&
+          ka.gt.4.or.ka.le.0.or.kb.gt.4.or.kb.le.0.or.&
+          la.gt.4.or.la.le.0.or.lb.gt.4.or.lb.le.0.) Call MQC_Error(&
+           'Index out of range in MQC_R4Tensor_R4Tensor_Partial_Contraction', 6)
+      dimAi = MQC_R4Tensor_Size(RA,ia)
+      dimAj = MQC_R4Tensor_Size(RA,ja)
+      dimAk = MQC_R4Tensor_Size(RA,ka)
+      dimAl = MQC_R4Tensor_Size(RA,la)
+
+      dimBi = MQC_R4Tensor_Size(RB,ib)
+      dimBj = MQC_R4Tensor_Size(RB,jb)
+      dimBk = MQC_R4Tensor_Size(RB,kb)
+      dimBl = MQC_R4Tensor_Size(RB,lb)
+
+      If (dimAi.ne.dimBi.or.dimAj.ne.dimBj.or.&
+          dimAk.ne.dimBk.or.dimAl.ne.dimBl) Call MQC_Error(&
+             'R4Tensor are not conformable for partial contraction', 6)
+
+      If (MQC_R4Tensor_HaveInteger(RA)) RAreal = MQC_Cast_Real(RA)
+      If (MQC_R4Tensor_HaveInteger(RB)) RBreal = MQC_Cast_Real(RB)
+      If (MQC_R4Tensor_HaveComplex(RA) .or. MQC_R4Tensor_HaveComplex(RB)) then
+        Call MQC_Allocate_Matrix(dimAk,dimAl,MC,'Complex','StorFull')
+      ElseIf (MQC_R4Tensor_HaveReal(RA) .or. MQC_R4Tensor_HaveReal(RB)) then
+        Call MQC_Allocate_Matrix(dimAk,dimAl,MC,'Real','StorFull')
+       !!TODO:Consider symm
+      Else
+        Call MQC_Allocate_Matrix(dimAk,dimAl,MC,'Integer','StorFull')
+      EndIf
+      
+      vi=[1,dimAi]
+      vj=[1,dimAj]
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
+!$OMP       ib,jb,lb,kb,MC,dimAl,dimAk),&
+!$OMP PRIVATE(tmpRA,tmpRB,k,l)
+      do k=1,dimAl
+        do l=1,dimAk
+          select case(ia)
+          case(1)      
+            select case(ja)
+            case(2)      
+              if(ka.eq.3) tmpRA = RA%mat(vi,vj,[k],[l])
+              if(ka.eq.4) tmpRA = RA%mat(vi,vj,[l],[k])
+            case(3)      
+              if(ka.eq.2) tmpRA = RA%mat(vi,[k],vj,[l])
+              if(ka.eq.4) tmpRA = RA%mat(vi,[l],vj,[k])
+            case(4)
+              if(ka.eq.2) tmpRA = RA%mat(vi,[k],[l],vj)
+              if(ka.eq.3) tmpRA = RA%mat(vi,[l],[k],vj)
+            end select      
+          case(2)      
+            select case(ja)
+            case(1)      
+              if(ka.eq.3) tmpRA = transpose(RA%mat(vj,vi,[k],[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat(vj,vi,[l],[k]))
+            case(3)      
+              if(ka.eq.1) tmpRA = RA%mat([k],vi,vj,[l])
+              if(ka.eq.4) tmpRA = RA%mat([l],vi,vj,[k])
+            case(4)
+              if(ka.eq.1) tmpRA = RA%mat([k],vi,[l],vj)
+              if(ka.eq.3) tmpRA = RA%mat([l],vi,[k],vj)
+            end select      
+          case(3)      
+            select case(ja)
+            case(1)      
+              if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],vi,[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat(vj,[l],vi,[k]))
+            case(2)      
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,vi,[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat([l],vj,vi,[k]))
+            case(4)
+              if(ka.eq.1) tmpRA = RA%mat([k],[l],vi,vj)
+              if(ka.eq.2) tmpRA = RA%mat([l],[k],vi,vj)
+            end select      
+          case(4)
+            select case(ib)
+            case(1)      
+              if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],[l],vi))
+              if(ka.eq.3) tmpRA = transpose(RA%mat(vj,[l],[k],vi))
+            case(2)       
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,[l],vi))
+              if(ka.eq.3) tmpRA = transpose(RA%mat([l],vj,[k],vi))
+            case(3)       
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],[l],vj,vi))
+              if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
+            end select      
+          end select      
+         select case(ib)
+          case(1)
+            select case(jb)
+            case(2)
+              if(kb.eq.3) tmpRB = RB%mat(vi,vj,[k],[l])
+              if(kb.eq.4) tmpRB = RB%mat(vi,vj,[l],[k])
+            case(3)
+              if(kb.eq.2) tmpRB = RB%mat(vi,[k],vj,[l])
+              if(kb.eq.4) tmpRB = RB%mat(vi,[l],vj,[k])
+            case(4)
+              if(kb.eq.2) tmpRB = RB%mat(vi,[k],[l],vj)
+              if(kb.eq.3) tmpRB = RB%mat(vi,[l],[k],vj)
+            end select
+          case(2)
+            select case(ja)
+            case(1)
+              if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[k],[l]))
+              if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[l],[k]))
+            case(3)
+              if(kb.eq.1) tmpRB = RB%mat([k],vi,vj,[l])
+              if(kb.eq.4) tmpRB = RB%mat([l],vi,vj,[k])
+            case(4)
+              if(kb.eq.1) tmpRB = RB%mat([k],vi,[l],vj)
+              if(kb.eq.3) tmpRB = RB%mat([l],vi,[k],vj)
+            end select
+          case(3)
+            select case(ja)
+            case(1)
+              if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],vi,[l]))
+              if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[l],vi,[k]))
+            case(2)
+              if(kb.eq.1) tmpRB = transpose(RB%mat([k],vj,vi,[l]))
+              if(kb.eq.4) tmpRB = transpose(RB%mat([l],vj,vi,[k]))
+            case(4)
+              if(kb.eq.1) tmpRB = RB%mat([k],[l],vi,vj)
+              if(kb.eq.2) tmpRB = RB%mat([l],[k],vi,vj)
+            end select
+          case(4)
+            select case(ib)
+            case(1)
+              if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],[l],vi))
+              if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[l],[k],vi))
+            case(2)
+              if(kb.eq.1) tmpRB = transpose(RB%mat([k],vj,[l],vi))
+              if(kb.eq.3) tmpRB = transpose(RB%mat([l],vj,[k],vi))
+            case(3)
+              if(kb.eq.1) tmpRB = transpose(RB%mat([k],[l],vj,vi))
+              if(kb.eq.2) tmpRB = transpose(RB%mat([l],[k],vj,vi))
+            end select
+          end select
+          call MC%put(Contraction(tmpRA,tmpRB),k,l)
+        enddo
+      enddo
+!$OMP END PARALLEL DO
+
+
+
+      EndFunction MQC_R4Tensor_R4Tensor_Partial_Contraction
+
       End Module MQC_Algebra

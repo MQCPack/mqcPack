@@ -92,7 +92,7 @@
         Procedure, Private::hasAlphaBeta => mqc_integral_has_alphabeta
         Procedure, Private::hasBetaAlpha => mqc_integral_has_betaalpha
         Procedure, Public::type => mqc_integral_array_type
-        Procedure, Private::blockSize => mqc_integral_dimension 
+        Procedure, Public::blockSize => mqc_integral_dimension 
 !>      \brief <b> Return the label of the MQC_SCF_Integral object</b>
         Procedure, Public::getLabel => mqc_integral_array_name
 !>      \brief <b> Set the label of the MQC_SCF_Integral object</b>
@@ -122,10 +122,14 @@
         Procedure, Public::power => mqc_scf_integral_power
 !>      \brief <b> Returns an MQC_SCF_Integral object raised to a power (function)</b>
         Procedure, Public::powerf => mqc_scf_integral_power_func
+        Procedure, Public::put => mqc_integral_put
         Procedure, Public::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+!>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
+        Procedure, Public::esum => MQC_Integral_Sum_Elements
+        Procedure, Public::pesum => MQC_Integral_Partial_Sum_Elements
 !>      \brief <b> Returns a subset of an MQC_SCF_Integral object</b>
         Procedure, Public::orbitals => mqc_integral_output_orbitals 
 !>      \brief <b> Swaps rows/columns of an MQC_SCF_Integral object</b>
@@ -134,6 +138,12 @@
         Procedure, Public::combine => mqc_integral_combine_orbitals
 !>      \brief <b> Swaps ab and ba blocks of an MQC_SCF_Integral objects</b>
         Procedure, Public::swapODB => mqc_integral_swap_offDiagBlocks
+!>      \brief <b> Outer product between 2 integrals</b>
+        Procedure, Public::outer => mqc_integral_outer
+!>    \brief <b> Outer Product of two variables into a two ERIs</b>
+        Procedure, Public::outer2ERI => mqc_integral_integral_outer_product
+!>    \brief <b> Outer Product of two variables into a two ERIs</b>
+        Procedure, Public::crossouter2ERI => mqc_integral_integral_crossouter_product
       End Type
 !
 !>    \brief <b> EST intermediate diagonal matrix variable</b>
@@ -160,6 +170,8 @@
 !>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
 !>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
+!>    \brief <b> Outer Product of two variables into a SCF Integral</b>
+        Procedure, Public::outer => mqc_eigen_eigen_outer_product
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -287,6 +299,12 @@
         Module Procedure mqc_scf_integral_contraction
         Module Procedure mqc_eri_integral_contraction
         Module Procedure mqc_eri_r4tensor_contraction
+        Module Procedure mqc_eri_eri_contraction
+      End Interface
+!
+!>    \brief <b> Contracts two objects</b>
+      Interface PartialContraction
+        Module Procedure mqc_eri_eri_partial_contraction
       End Interface
 !
 !>    \brief <b> Converts object from alpha-beta order to energy order</b>
@@ -319,12 +337,19 @@
 !>    \brief <b> Sums two variables</b>
       Interface Operator (+)
         Module Procedure MQC_Integral_Sum
+        Module Procedure MQC_ERI_Sum 
+      End Interface
+!
+!>    \brief <b> Sums two variables dimensions presevend</b>
+      Interface Operator (.sum.)
+        Module Procedure MQC_Integral_Merge_Sum
       End Interface
 !
 !>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
         Module Procedure MQC_Integral_Difference
         Module Procedure MQC_Matrix_Integral_Difference
+        Module Procedure MQC_ERI_Difference 
       End Interface
 !
 !>    \brief <b> Multiplies two variables</b>
@@ -2609,7 +2634,7 @@
           call mqc_twoeris_allocate(twoERIs,'symm','raffenetti3',aaaa)
           return
         elseIf(my_integralType.eq.'molecular') then
-          if(.not.present(mo_coefficients)) call mqc_error_l('MO oefficients myst be present to&
+          if(.not.present(mo_coefficients)) call mqc_error_l('MO oefficients must be present to&
             & transform AO 2ERIs to MO 2ERIs',6,'present(mo_coefficients)',present(mo_coefficients))
           if(present(mo_coeff_2)) then
             call twoERI_Trans(iOut,iPrint,mo_coefficients,twoERIs,temp,mo_coeff_2)
@@ -2906,16 +2931,20 @@
 !>        = 'full':        outputs the full MQC_SCF_Integral. 
 !>        = 'alpha':       outputs the alpha-alpha spin block.
 !>        = 'alpha-alpha': outputs the alpha-alpha spin block. 
+!>        = 'aa':          outputs the alpha-alpha spin block. 
 !>        = 'beta':        outputs the beta-beta spin block. 
 !>        = 'beta-beta':   outputs the beta-beta spin block. 
-!>        = 'alpha-beta'   outputs the alpha-beta spin block. 
-!>        = 'beta-alpha'   outputs the beta-alpha spin block. 
+!>        = 'bb':          outputs the beta-beta spin block. 
+!>        = 'alpha-beta':  outputs the alpha-beta spin block. 
+!>        = 'ab':          outputs the alpha-beta spin block. 
+!>        = 'beta-alpha':  outputs the beta-alpha spin block. 
+!>        = 'ba':          outputs the beta-alpha spin block. 
 !>    \endverbatim
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2016
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2016, 2024
 !
       function mqc_integral_output_block(integral,blockName) result(matrixOut)
 !
@@ -3012,14 +3041,14 @@
 !                 'integral%hasBetaAlpha()', integral%hasBetaAlpha() )
 !          endIf
         endIf
-      case('alpha')
+      case('alpha','alpha-alpha','aa')
         if (integral%hasAlpha()) then
           matrixOut = integral%alpha
         else
           call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
                'integral%hasAlpha()', integral%hasAlpha() )
         endIf
-      case('beta')
+      case('beta','beta-beta','bb')
         if (integral%hasBeta()) then
           matrixOut = integral%beta
         elseIf (integral%type().eq.'space') then
@@ -3033,14 +3062,7 @@
           call mqc_error_A('block does not exist in mqc_integral_output_block', 6, &
                'integral%type()', integral%type() )
         endIf
-      case('alpha-alpha')
-        if (integral%hasAlpha()) then
-          matrixOut = integral%alpha
-        else
-          call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-               'integral%hasAlpha()', integral%hasAlpha() )
-        endIf
-      case('alpha-beta')
+      case('alpha-beta','alphabeta','ab')
         if (integral%hasAlphaBeta()) then
           matrixOut = integral%alphaBeta
         else
@@ -3067,7 +3089,7 @@
             endIf
           endIf
         endIf
-      case('beta-alpha')
+      case('beta-alpha','betaalpha','ba')
         if (integral%hasBetaAlpha()) then
           matrixOut = integral%betaAlpha
         else
@@ -3092,20 +3114,6 @@
               call matrixOut%init(NDimBeta1,NDimAlpha2,zeroR)
             endIf
           endIf
-        endIf
-      case('beta-beta')
-        if (integral%hasBeta()) then
-          matrixOut = integral%beta
-        elseIf (integral%type().eq.'space') then
-          if (integral%hasAlpha()) then
-            matrixOut = integral%alpha
-          else
-            call mqc_error_L('block does not exist in mqc_integral_output_block', 6, &
-                 'integral%hasAlpha()', integral%hasAlpha() )
-          endIf
-        else
-          call mqc_error_A('block does not exist in mqc_integral_output_block', 6, &
-               'integral%type()', integral%type() )
         endIf
       case default
         call mqc_error_A('unrecognised block name in mqc_integral_output_block', 6, &
@@ -4180,8 +4188,8 @@
 !>    \verbatim
 !>        BlockName is character(len=*),optional
 !>        = 'full':        outputs the full MQC_SCF_Integral. 
-!>        = 'alpha':       outputs the alpha spin block.
-!>        = 'beta':        outputs the beta spin block. 
+!>        = 'alpha','a':   outputs the alpha spin block.
+!>        = 'beta','b':    outputs the beta spin block. 
 !>    \endverbatim
 !
 !     Authors:
@@ -4248,14 +4256,14 @@
                  eigenvalues%hasBeta())
           endIf
         endIf
-      case('alpha')
+      case('alpha','a')
         if (eigenvalues%hasAlpha()) then
           vectorOut = eigenvalues%alpha
         else
           call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
                'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
         endIf
-      case('beta')
+      case('beta','b')
         if (eigenvalues%hasBeta()) then
           vectorOut = eigenvalues%beta
         elseIf (eigenvalues%type().eq.'space') then
@@ -5419,6 +5427,410 @@
       end function mqc_integral_sum
 !
 !
+!     PROCEDURE MQC_Integral_Merge_Sum
+!
+!>    \brief <b> MQC_Integral_Merge_Sum is used to sum two MQC integral type variables
+!>    the result preserves the size of the largest integral object</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Merge_Sum is used to sum two MQC integral type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_matrix)
+!>        The first MQC integral variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>        The second MQC integral variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_integral_merge_sum(integralA,integralB) result(integralOut)
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integralA,integralB
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+!
+      select case(integralA%array_type)
+      case('space')
+        select case (integralB%array_type)
+        case('space')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          call mqc_integral_allocate(integralOut,'','space',tmpMatrixAlpha)
+        case('spin')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasAlpha().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%alpha+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixBeta = integralA%alpha
+          end if
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('general')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasAlpha().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%alpha+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixBeta = integralA%alpha
+          end if
+          if(integralB%hasAlphaBeta()) then 
+            tmpMatrixAlphaBeta = integralB%alphaBeta
+          end if
+          if(integralB%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralB%betaAlpha
+          end if
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_merge_sum', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case('spin')
+        select case (integralB%array_type)
+        case('space')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasBeta().and.integralB%hasAlpha()) then
+             tmpMatrixBeta = integralB%alpha+integralA%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixBeta = integralB%alpha
+          end if
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('spin')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasBeta().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%beta+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          end if
+          call mqc_integral_allocate(integralOut,'','spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('general')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasBeta().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%beta+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          end if
+          if(integralB%hasAlphaBeta()) then 
+            tmpMatrixAlphaBeta = integralB%alphaBeta
+          end if
+          if(integralB%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralB%betaAlpha
+          end if
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_merge_sum', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case('general')
+        select case (integralB%array_type)
+        case('space')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralB%hasAlpha().and.integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%alpha+integralB%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixBeta = integralB%alpha
+          end if
+          if(integralA%hasAlphaBeta()) then 
+            tmpMatrixAlphaBeta = integralA%alphaBeta
+          end if
+          if(integralA%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralA%betaAlpha
+          end if
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('spin')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasBeta().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%beta+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          end if
+          if(integralA%hasAlphaBeta()) then 
+            tmpMatrixAlphaBeta = integralA%alphaBeta
+          end if
+          if(integralA%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralA%betaAlpha
+          end if
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('general')
+          if(integralA%hasAlpha().and.integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha+integralB%alpha
+          elseif(integralB%hasAlpha()) then
+             tmpMatrixAlpha = integralB%alpha
+          elseif(integralA%hasAlpha()) then
+             tmpMatrixAlpha = integralA%alpha
+          end if
+          if(integralA%hasBeta().and.integralB%hasBeta()) then
+             tmpMatrixBeta = integralA%beta+integralB%beta
+          elseif(integralB%hasBeta()) then
+             tmpMatrixBeta = integralB%beta
+          elseif(integralA%hasBeta()) then
+             tmpMatrixBeta = integralA%beta
+          end if
+          if(integralA%hasAlphaBeta().and.integralB%hasAlphaBeta()) then
+            tmpMatrixAlphaBeta = integralA%alphaBeta+integralB%alphaBeta
+          elseif(integralA%hasAlphaBeta()) then
+            tmpMatrixAlphaBeta = integralA%alphaBeta
+          elseif(integralB%hasAlphaBeta()) then
+            tmpMatrixAlphaBeta = integralB%alphaBeta
+          end if
+          if(integralA%hasBetaAlpha().and.integralB%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralA%betaAlpha+integralB%betaAlpha
+          elseif(integralA%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralA%betaAlpha
+          elseif(integralB%hasBetaAlpha()) then
+            tmpMatrixBetaAlpha = integralB%betaAlpha
+          endif
+          call mqc_integral_allocate(integralOut,'','general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_integral_merge_sum', 6, &
+               'integralB%array_type', integralB%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_merge_sum', 6, &
+             'integralA%array_type', integralA%array_type )
+      end select
+
+      end function mqc_integral_merge_sum
+!
+!
+!     PROCEDURE MQC_ERI_Sum
+!
+!>    \brief <b> MQC_ERI_Sum is used to sum two MQC twoERIs type 
+!>    variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_Sum is used to sum two MQC twoERIs type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIA
+!>    \verbatim
+!>        ERIA is type(mqc_twoERIs)
+!>        The MQC twoERIs variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIB
+!>    \verbatim
+!>        ERIB is type(mqc_twoERIs)
+!>        The MQC twoERIs variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_eri_sum(ERIA,ERIB) result(ERIOut)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::ERIA,ERIB
+      type(mqc_twoERIs)::ERIOut
+      type(mqc_r4tensor)::aaaa,bbbb,aabb,bbaa,abab,abba,baab,baba,&
+                          aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
+!
+      select case(ERIA%integraltype)
+      case('space')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','space',aaaa)
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('aaaa')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aaaa')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('aaaa')+ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('general')                        
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('aaaa')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aaaa')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('aaaa')+ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIB%getBlock('abab'),     ERIB%getBlock('abba'),&
+                     ERIB%getBlock('baab'),     ERIB%getBlock('baba'),&
+                     ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
+                     ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
+                     ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
+                     ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case('spin')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('aaaa')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aaaa')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('general')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIB%getBlock('abab'),     ERIB%getBlock('abba'),&
+                     ERIB%getBlock('baab'),     ERIB%getBlock('baba'),&
+                     ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
+                     ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
+                     ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
+                     ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case('general')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('aaaa')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aaaa')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
+                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                     ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
+                     ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
+                     ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
+                     ERIA%getBlock('babb'),     ERIA%getBlock('abbb'))
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
+                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                     ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
+                     ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
+                     ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
+                     ERIA%getBlock('babb'),     ERIA%getBlock('abbb'))
+        case('general')
+          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+          aaab = ERIA%getBlock('aaab')+ERIB%getBlock('aaab')
+          aaba = ERIA%getBlock('aaba')+ERIB%getBlock('aaba')
+          abaa = ERIA%getBlock('abaa')+ERIB%getBlock('abaa')
+          baaa = ERIA%getBlock('baaa')+ERIB%getBlock('baaa')
+          bbba = ERIA%getBlock('bbba')+ERIB%getBlock('bbba')
+          bbab = ERIA%getBlock('bbab')+ERIB%getBlock('bbab')
+          babb = ERIA%getBlock('babb')+ERIB%getBlock('babb')
+          abbb = ERIA%getBlock('abbb')+ERIB%getBlock('abbb')
+          abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
+          abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
+          baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
+          baba = ERIA%getBlock('baba')+ERIB%getBlock('baba')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+            aabb,bbaa,abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb)
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case default
+        call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+             'ERIA%integraltype', ERIA%integraltype )
+      end select
+      end function mqc_eri_sum
+!
+!
+!
 !     PROCEDURE MQC_Integral_Difference
 !
 !>    \brief <b> MQC_Integral_Difference is used to subtract two MQC integral type 
@@ -5650,6 +6062,170 @@
       end select
 
       end function mqc_matrix_integral_difference
+!
+!
+!     PROCEDURE MQC_ERI_Difference
+!
+!>    \brief <b> MQC_ERI_Difference is used to subtract two MQC twoERIs type 
+!>    variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_Difference is used to subtract two MQC twoERIs type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIA
+!>    \verbatim
+!>        ERIA is type(mqc_twoERIs)
+!>        The MQC twoERIs variable to subtract from.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIB
+!>    \verbatim
+!>        ERIB is type(mqc_twoERIs)
+!>        The MQC twoERIs variable to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_eri_difference(ERIA,ERIB) result(ERIOut)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::ERIA,ERIB
+      type(mqc_twoERIs)::ERIOut
+      type(mqc_r4tensor)::aaaa,bbbb,aabb,bbaa,abab,abba,baab,baba,&
+                          aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
+!
+      select case(ERIA%integraltype)
+      case('space')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','space',aaaa)
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('general')                        
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                (-1)*ERIB%getBlock('abab'),(-1)*ERIB%getBlock('abba'),&
+                (-1)*ERIB%getBlock('baab'),(-1)*ERIB%getBlock('baba'),&
+                (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case('spin')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
+                                                         aabb,bbaa)
+        case('general')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                (-1)*ERIB%getBlock('abab'),(-1)*ERIB%getBlock('abba'),&
+                (-1)*ERIB%getBlock('baab'),(-1)*ERIB%getBlock('baba'),&
+                (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case('general')
+        select case (ERIB%integraltype)
+        case('space')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
+                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                     ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
+                     ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
+                     ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
+                     ERIA%getBlock('babb'),     ERIA%getBlock('abbb'))
+        case('spin')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                            aabb,bbaa,&
+                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
+                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                     ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
+                     ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
+                     ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
+                     ERIA%getBlock('babb'),     ERIA%getBlock('abbb'))
+        case('general')
+          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+          aaab = ERIA%getBlock('aaab')-ERIB%getBlock('aaab')
+          aaba = ERIA%getBlock('aaba')-ERIB%getBlock('aaba')
+          abaa = ERIA%getBlock('abaa')-ERIB%getBlock('abaa')
+          baaa = ERIA%getBlock('baaa')-ERIB%getBlock('baaa')
+          bbba = ERIA%getBlock('bbba')-ERIB%getBlock('bbba')
+          bbab = ERIA%getBlock('bbab')-ERIB%getBlock('bbab')
+          babb = ERIA%getBlock('babb')-ERIB%getBlock('babb')
+          abbb = ERIA%getBlock('abbb')-ERIB%getBlock('abbb')
+          abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+          abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+          baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+          baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+            aabb,bbaa,abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb)
+        case default
+          call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+               'ERIB%integraltype', ERIB%integraltype )
+        end select
+      case default
+        call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
+             'ERIA%integraltype', ERIA%integraltype )
+      end select
+
+      end function mqc_eri_difference
+!
 !
 !
 !     PROCEDURE MQC_Integral_Integral_Multiply
@@ -5896,6 +6472,9 @@
         scalar = scalarIn
       type is (mqc_scalar)
         scalar = scalarIn
+      type is (mqc_scf_integral)
+        integralOut =  MQC_Element_Integral_Multiply(scalarIn,integral)
+        return
       class default
         call mqc_error_I('scalarIn type not defined in mqc_scalar_integral_multiply',6)
       end select
@@ -5990,6 +6569,9 @@
         scalar = scalarIn
       type is (mqc_scalar)
         scalar = scalarIn
+      type is (mqc_scf_integral)
+        integralOut = mqc_element_integral_multiply(integral,scalarIn)
+        return
       class default
         call mqc_error_I('scalarIn type not defined in mqc_integral_scalar_multiply',6)
       end select
@@ -6018,10 +6600,464 @@
             tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
       case default
         call mqc_error_A('Unknown integral type in mqc_integral_scalar_multiply', 6, &
-             'integralA%array_type', integral%array_type )
+             'integral%array_type', integral%array_type )
       end select
 !
       end function mqc_integral_scalar_multiply
+
+!
+!     PROCEDURE MQC_Element_Integral_Multiply
+!
+!>    \brief <b> MQC_Element_Integral_Multiply is used to multiply term-by-term two MQC integral 
+!>    an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Element_Integral_Multiply is used to multiply term-by-term two MQC integral type variable 
+!>    and returns an MQC integral. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral1
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Integral2
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function mqc_element_integral_multiply(integral1,integral2) result(integralOut)
+!
+      implicit none
+      type(mqc_scf_integral),intent(in)::integral1,integral2
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_integral)::integralOut
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      type(mqc_scalar)::scalar
+      Character(Len=64)::myLabel
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+
+
+      select case (integral1%array_type)
+      case('space')
+        select case (integral2%array_type)
+        case('space')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+        case('spin','general')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('beta'))
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_element_integral_multiply', 6, &
+             'integral2%array_type', integral2%array_type )
+        end select
+      case('spin')
+        select case (integral2%array_type)
+        case('space')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('alpha'))
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+        case('spin','general')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('beta'))
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_element_integral_multiply', 6, &
+             'integral2%array_type', integral2%array_type )
+        end select
+      case('general')
+        select case (integral2%array_type)
+        case('space')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('alpha'))
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+        case('spin')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('beta'))
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('general')
+          tmpMatrixAlpha=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('alpha'))
+          tmpMatrixBeta=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('beta'))
+          tmpMatrixAlphaBeta=MQC_ElementMatrixProduct(integral1%getBlock('alpha'),integral2%getBlock('beta'))
+          tmpMatrixBetaAlpha=MQC_ElementMatrixProduct(integral1%getBlock('beta'),integral2%getBlock('alpha'))
+          call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_element_integral_multiply', 6, &
+             'integral2%array_type', integral2%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_element_integral_multiply', 6, &
+             'integral1%array_type', integral1%array_type )
+      end select
+!
+      end function mqc_element_integral_multiply
+!     
+!     
+!     PROCEDURE MQC_Integral_Integral_Outer_Product
+!     
+!>    \brief <b> MQC_Integral_Integral_Outer_Product is used to calculate the
+!>    outer product between two MQC integral type variabel and returns an MQC ERIs</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Integral_Outer_Product is used to calculate the outer product between
+!>    two MQC integral and returns an MQC ERIs. 
+!>
+!>    \endverbatim
+!     
+!     Arguments: 
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>    \endverbatim
+!
+!         
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!     
+      function mqc_integral_integral_outer_product(integralA,integralB) result(ERIsOut)
+      implicit none
+      class(mqc_scf_integral),intent(in)::integralA
+      type(mqc_scf_integral),intent(in)::integralB
+      type(mqc_twoERIs)::ERIsOut
+     
+      Character(len=15)::intType
+      Integer(kind=int64)::NBasis
+      Type(mqc_matrix)::AlphaA,AlphaB,BetaA,BetaB,AlBeA,AlBeB,BeAlA,BeAlB
+      Type(mqc_r4tensor)::Alpha,Beta,AlphaBeta,BetaAlpha,aaab,aaba,abaa,baaa,abab, &
+                          baab,baba,abba,bbba,bbab,babb,abbb
+
+      if(integralA%array_type.eq.'general'.or.integralB%array_type.eq.'general') then
+        intType='general'
+      elseif(integralA%array_type.eq.'spin'.or.integralB%array_type.eq.'spin') then
+        intType='spin'
+      elseif(integralA%array_type.eq.'space'.or.integralB%array_type.eq.'space') then
+        intType='space'
+      else
+        call mqc_error_A('Unknown integral type in mqc_integral_integral_outer_product', 6, &
+             'integralA%array_type', integralA%array_type,&
+             'integralB%array_type', integralB%array_type )
+      end if
+      if(integralA%array_type.eq.'general'.or.integralA%array_type.eq.'spin') then 
+        NBasis = max(MQC_Matrix_Rows(integralA%Alpha),MQC_Matrix_Rows(integralA%Beta))
+      else
+        NBasis = MQC_Matrix_Rows(integralA%Alpha)
+      end if
+
+      call Alpha%init(NBasis,NBasis,NBasis,NBasis)
+      if(intType.ne.'space') then 
+        call Beta%init(NBasis,NBasis,NBasis,NBasis)
+        call AlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
+        call BetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+      endif
+      if(intType.ne.'general') then 
+        call aaab%init(NBasis,NBasis,NBasis,NBasis)
+        call aaba%init(NBasis,NBasis,NBasis,NBasis)
+        call abaa%init(NBasis,NBasis,NBasis,NBasis)
+        call baaa%init(NBasis,NBasis,NBasis,NBasis)
+        call abab%init(NBasis,NBasis,NBasis,NBasis)
+        call baab%init(NBasis,NBasis,NBasis,NBasis)
+        call baba%init(NBasis,NBasis,NBasis,NBasis)
+        call abba%init(NBasis,NBasis,NBasis,NBasis)
+        call bbba%init(NBasis,NBasis,NBasis,NBasis)
+        call bbab%init(NBasis,NBasis,NBasis,NBasis)
+        call babb%init(NBasis,NBasis,NBasis,NBasis)
+        call abbb%init(NBasis,NBasis,NBasis,NBasis)
+      endif
+
+      AlphaA=integralA%getBlock('alpha')
+      AlphaB=integralB%getBlock('alpha')
+      Alpha = AlphaA.outer.AlphaB
+      if(intType.ne.'space') then 
+        if(integralA%array_type.eq.'space') then
+          BetaA=integralA%getBlock('alpha')
+        else
+          BetaA=integralA%getBlock('beta')
+        end if
+        if(integralB%array_type.eq.'space') then
+          BetaB=integralB%getBlock('alpha')
+        else
+          BetaB=integralB%getBlock('beta')
+        end if
+        Beta =  BetaA.outer.BetaB
+        AlphaBeta = AlphaA.outer.BetaB
+        BetaAlpha =  BetaA.outer.AlphaB
+      endif
+      if(intType.eq.'general') then 
+        if(integralA%array_type.eq.'general') then
+          AlBeA=integralA%getBlock('alphabeta')
+          BeAlA=integralA%getBlock('betaalpha')
+          abaa = AlBeA.outer.AlphaB
+          baaa = BeAlA.outer.AlphaB
+          abbb = AlBeA.outer.BetaB
+          babb = BeAlA.outer.BetaB
+        end if
+        if(integralB%array_type.eq.'general') then
+          AlBeB=integralB%getBlock('alphabeta')
+          BeAlB=integralB%getBlock('betaalpha')
+          aaab = AlphaA.outer.AlBeB
+          aaba = AlphaA.outer.BeAlB
+          bbab =  BetaA.outer.AlBeB
+          bbba =  BetaA.outer.BeAlB
+        end if
+        if(integralA%array_type.eq.'general'.and.integralB%array_type.eq.'general') then
+          abab = AlBeA.outer.AlBeB
+          abba = AlBeA.outer.BeAlB
+          baab = BeAlA.outer.AlBeB
+          baba = BeAlA.outer.BeAlB
+        end if
+      end if
+      if (intType.eq.'space') then
+        call mqc_twoeris_allocate(ERIsOut,'full','space',Alpha)
+      elseif (intType.eq.'spin') then
+        call mqc_twoeris_allocate(ERIsOut,'full','spin',Alpha,Beta,AlphaBeta,BetaAlpha)
+      elseif (intType.eq.'general') then
+        call mqc_twoeris_allocate(ERIsOut,'full','general',Alpha,Beta,AlphaBeta,BetaAlpha,&
+            abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb) 
+      endif
+      end function mqc_integral_integral_outer_product
+
+!     
+!     
+!     PROCEDURE MQC_Integral_Integral_CrossOuter_Product
+!     
+!>    \brief <b> MQC_Integral_Integral_CrossOuter_Product is used to calculate the
+!>    crossouter product between two MQC integral type variabel and returns an MQC ERIs</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Integral_CrossOuter_Product is used to calculate the crossouter product between
+!>    two MQC integral and returns an MQC ERIs. 
+!>
+!>    \endverbatim
+!     
+!     Arguments: 
+!     ==========
+!>    \param[in] IntegralA
+!>    \verbatim
+!>        IntegralA is type(mqc_scf_integral)
+!>    \endverbatim
+!>    
+!>    \param[in] IntegralB
+!>    \verbatim
+!>        IntegralB is type(mqc_scf_integral)
+!>    \endverbatim
+!
+!         
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!     
+      function mqc_integral_integral_crossouter_product(integralA,integralB) result(ERIsOut)
+      implicit none
+      class(mqc_scf_integral),intent(in)::integralA
+      type(mqc_scf_integral),intent(in)::integralB
+      type(mqc_twoERIs)::ERIsOut
+     
+      Character(len=15)::intType
+      Integer(kind=int64)::NBasis
+      Type(mqc_matrix)::AlphaA,AlphaB,BetaA,BetaB,AlBeA,AlBeB,BeAlA,BeAlB
+      Type(mqc_r4tensor)::Alpha,Beta,AlphaBeta,BetaAlpha,aaab,aaba,abaa,baaa,abab, &
+                          baab,baba,abba,bbba,bbab,babb,abbb
+
+      if(integralA%array_type.eq.'general'.or.integralB%array_type.eq.'general') then
+        intType='general'
+      elseif(integralA%array_type.eq.'spin'.or.integralB%array_type.eq.'spin') then
+        intType='general'
+      elseif(integralA%array_type.eq.'space'.or.integralB%array_type.eq.'space') then
+        intType='general'
+      else
+        call mqc_error_A('Unknown integral type in mqc_integral_integral_outer_product', 6, &
+             'integralA%array_type', integralA%array_type,&
+             'integralB%array_type', integralB%array_type )
+      end if
+      if(integralA%array_type.eq.'general'.or.integralA%array_type.eq.'spin') then 
+        NBasis = max(MQC_Matrix_Rows(integralA%Alpha),MQC_Matrix_Rows(integralA%Beta))
+      else
+        NBasis = MQC_Matrix_Rows(integralA%Alpha)
+      end if
+
+      call Alpha%init(NBasis,NBasis,NBasis,NBasis)
+      call Beta%init(NBasis,NBasis,NBasis,NBasis)
+      call AlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
+      call BetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+      call aaab%init(NBasis,NBasis,NBasis,NBasis)
+      call aaba%init(NBasis,NBasis,NBasis,NBasis)
+      call abaa%init(NBasis,NBasis,NBasis,NBasis)
+      call baaa%init(NBasis,NBasis,NBasis,NBasis)
+      call abab%init(NBasis,NBasis,NBasis,NBasis)
+      call baab%init(NBasis,NBasis,NBasis,NBasis)
+      call baba%init(NBasis,NBasis,NBasis,NBasis)
+      call abba%init(NBasis,NBasis,NBasis,NBasis)
+      call bbba%init(NBasis,NBasis,NBasis,NBasis)
+      call bbab%init(NBasis,NBasis,NBasis,NBasis)
+      call babb%init(NBasis,NBasis,NBasis,NBasis)
+      call abbb%init(NBasis,NBasis,NBasis,NBasis)
+
+      AlphaA=integralA%getBlock('alpha')
+      AlphaB=integralB%getBlock('alpha')
+      Alpha = AlphaA.crossouter.AlphaB
+      if(integralA%array_type.eq.'space') then
+        BetaA=integralA%getBlock('alpha')
+      else
+        BetaA=integralA%getBlock('beta')
+      end if
+      if(integralB%array_type.eq.'space') then
+        BetaB=integralB%getBlock('alpha')
+      else
+        BetaB=integralB%getBlock('beta')
+      end if
+      Beta = BetaA.crossouter.BetaB
+      abba = AlphaA.crossouter.BetaB
+      baab = BetaA.crossouter.AlphaB
+      if(integralA%array_type.eq.'general') then
+        AlBeA=integralA%getBlock('alphabeta')
+        BeAlA=integralA%getBlock('betaalpha')
+        aaab = AlBeA.crossouter.AlphaB
+        baaa = BeAlA.crossouter.AlphaB
+        abbb = AlBeA.crossouter.BetaB
+        bbba = BeAlA.crossouter.BetaB
+      end if
+      if(integralB%array_type.eq.'general') then
+        AlBeB=integralB%getBlock('alphabeta')
+        BeAlB=integralB%getBlock('betaalpha')
+        abaa = AlphaA.crossouter.AlBeB
+        aaba = AlphaA.crossouter.BeAlB
+        bbab =  BetaA.crossouter.AlBeB
+        babb =  BetaA.outer.BeAlB
+      end if
+      if(integralA%array_type.eq.'general'.and.integralB%array_type.eq.'general') then
+        abab = AlBeA.crossouter.AlBeB
+        AlphaBeta = AlBeA.crossouter.BeAlB
+        BetaAlpha = BeAlA.crossouter.AlBeB
+        baba = BeAlA.crossouter.BeAlB
+      end if
+      call mqc_twoeris_allocate(ERIsOut,'full','general',Alpha,Beta,AlphaBeta,BetaAlpha,&
+          abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb) 
+      end function mqc_integral_integral_crossouter_product
+
+!     
+!     
+!     PROCEDURE MQC_Eigen_Eigen_Outer_Product
+!     
+!>    \brief <b> MQC_Eigen_Eigen_Outer_Product is used to calculate the
+!>    outer product between two MQC SCF eigenvalue type variabel and returns 
+!>    an MQC SCF Integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigen_Eigen_Outer_Product is used to calculate the
+!>    outer product between two MQC SCF eigenvalue type variabel and returns 
+!>    an MQC SCF Integral.
+!>
+!>    \endverbatim
+!     
+!     Arguments: 
+!     ==========
+!>    \param[in] eigA
+!>    \verbatim
+!>        eigA is type(mqc_scf_eigenvalues)
+!>    \endverbatim
+!>    
+!>    \param[in] eigB
+!>    \verbatim
+!>        eigB is type(mqc_scf_eigenvalues)
+!>    \endverbatim
+!
+!         
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!     
+      function mqc_eigen_eigen_outer_product(eigA,eigB) result(IntOut)
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigA
+      type(mqc_scf_eigenvalues),intent(in)::eigB
+      type(mqc_scf_integral)::IntOut
+     
+      Integer(kind=int64)::NBasis
+      Type(mqc_vector)::AlphaA,AlphaB,BetaA,BetaB
+      Type(mqc_matrix)::aa,bb,ab,ba
+
+      AlphaA=eigA%getBlock('a')
+      AlphaB=transpose(eigB%getBlock('a'))
+      aa = AlphaA.outer.AlphaB
+      select case(eigA%type())
+      case('space')
+        select case(eigB%type())
+        case('space')
+          call mqc_integral_allocate(IntOut,'','general',aa,aa,aa,aa)
+        case('spin','general')
+          BetaB=transpose(eigB%getBlock('b'))
+          ab = AlphaA.outer.BetaB
+          call mqc_integral_allocate(IntOut,'','general',aa,ab,ab,aa)
+        case default
+          call mqc_error_A('Unknown Eigenvalue type in mqc_eigen_eigen_outer_product', 6, &
+               'eigB%type', eigB%type() )
+        end select
+      case('spin','general')
+        select case(eigB%type())
+        case('space')
+          BetaA=eigA%getBlock('b')
+          ba = BetaA.outer.AlphaB
+          call mqc_integral_allocate(IntOut,'','general',aa,ba,aa,ba)
+        case('spin','general')
+          BetaA=eigA%getBlock('b')
+          BetaB=transpose(eigB%getBlock('b'))
+          ab = AlphaA.outer.BetaB
+          ba = BetaA.outer.AlphaB
+          bb = BetaA.outer.BetaB
+          call mqc_integral_allocate(IntOut,'','general',aa,bb,ab,ba)
+        case default
+          call mqc_error_A('Unknown Eigenvalue type in mqc_eigen_eigen_outer_product', 6, &
+               'eigB%type', eigB%type() )
+        end select
+      case default
+        call mqc_error_A('Unknown Eigenvalue type in mqc_eigen_eigen_outer_product', 6, &
+             'eigA%type', eigA%type() )
+      end select
+      end function mqc_eigen_eigen_outer_product
+
 !
 !
 !     PROCEDURE MQC_Integral_Eigenvalues_Multiply
@@ -8218,6 +9254,627 @@
       end function mqc_eri_r4tensor_contraction
 !
 !
+!     PROCEDURE MQC_ERI_ERI_Contraction
+!
+!>    \brief <b> MQC_ERI_ERI_Contraction is used to return the contraction of 
+!>    two-ERIs with an MQC rank-4 tensor</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_ERI_Contraction is used to return the contraction of two-ERIs with 
+!>    an MQC two-ERIs.
+!>
+!>    1. Label = 'coulomb' returns the contraction with single bar coulomb integrals.
+!>    2. Label = 'exchange' returns the contraction with single bar exchange integrals.
+!>    3. Label = 'doublebar' returns the contraction with double-bar integrals (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIs1
+!>    \verbatim
+!>        ERIs1 is type(mqc_twoERIs) 
+!>        The first 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] ERIs2
+!>    \verbatim
+!>        ERIs2 is type(mqc_twoERIs) 
+!>        The second 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is character(len=*),optional 
+!>        = 'coulomb':   contracts with coulomb integrals.
+!>        = 'exchange':  contracts with exchange integrals.
+!>        = 'doublebar': contracts with double bar integrals
+!>                       (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_eri_eri_contraction(eris1,eris2,label) result(output)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::eris1,eris2
+      character(len=*),optional,intent(in)::label
+      type(mqc_scalar)::output
+      character(len=64)::mylabel
+      integer(kind=int64)::r4t1,r4t2,r4t3,r4t4,nB1,nB2,nB3,nB4
+      type(mqc_twoERIs)::temp
+!      integer(kind=int64)::k,l,m,n,nBasis
+!      character(len=64)::mylabel
+!      real(kind=real64)::zero=1.0d-10
+!     
+      if(present(label)) then
+        call string_change_case(label,'L',myLabel)
+      else
+        myLabel = 'doublebar'
+      endIf
+!
+       if (eris1%blockSize('alpha',1).ne.eris2%blockSize('alpha',1).or.&
+           eris1%blockSize('alpha',2).ne.eris2%blockSize('alpha',2).or.&
+           eris1%blockSize('alpha',3).ne.eris2%blockSize('alpha',3).or.&
+           eris1%blockSize('alpha',4).ne.eris2%blockSize('alpha',4))&
+           call mqc_error_i('2ERIs not correctly dimensioned in mqc_eri_eri_contraction',6,&
+            'dim1',eris1%blockSize('alpha',1)-eris2%blockSize('alpha',1),&
+            'dim2',eris1%blockSize('alpha',2)-eris2%blockSize('alpha',2),&
+            'dim3',eris1%blockSize('alpha',3)-eris2%blockSize('alpha',3),&
+            'dim4',eris1%blockSize('alpha',4)-eris2%blockSize('alpha',4))
+
+      select case (myLabel)
+      case ('coulomb')
+        temp = eris1
+      case ('exchange')
+        temp = mqc_eri_interaction(eris1,'exchange')
+      case ('doublebar')
+        temp = mqc_eri_interaction(eris1,'doublebar')
+      case default
+        call mqc_error_a('Unrecognized 2ERI integral interaction specified',&
+                          6,'myLabel',myLabel)
+      end select
+
+      output = 0.0
+      select case (eris1%type())
+      case ('space','regular')
+        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        select case (eris2%type())
+        case ('space','regular')
+          if(myLabel.eq.'coulomb')  output = 4*output
+          if(myLabel.eq.'exchange') output = 2*output
+          if(myLabel.eq.'doublebar') &
+              output = 2*output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        case ('spin')
+          output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'exchange') then
+            output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb'))
+            output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
+          end if
+        case ('general')
+          output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'exchange') then
+            output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb'))
+            output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
+          end if
+          if(myLabel.ne.'coulomb') then
+            output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba'))
+            output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('baab'))
+          end if
+        end select
+      case ('spin')
+        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        select case (eris2%type())
+        case ('space','regular')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('aaaa'))
+          if(myLabel.ne.'exchange') then
+            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa'))
+            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+          end if
+        case ('spin')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'exchange') then
+            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
+            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          end if
+        case ('general')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'exchange') then
+            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
+            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          end if
+          if(myLabel.ne.'coulomb') then
+            output = output + contraction(temp%getBlock('abba'),eris2%getBlock('abba'))
+            output = output + contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+          end if
+        end select
+      case ('general')
+        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        select case (eris2%type())
+        case ('space','regular')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('aaaa'))
+          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa'))
+          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+        case ('spin')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
+          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
+          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+        case ('general')
+          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
+          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
+          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          output = output + contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+          output = output + contraction(temp%getBlock('abba'),eris2%getBlock('abba'))
+          output = output + contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+          output = output + contraction(temp%getBlock('abab'),eris2%getBlock('abab'))
+          output = output + contraction(temp%getBlock('aaab'),eris2%getBlock('aaab'))
+          output = output + contraction(temp%getBlock('aaba'),eris2%getBlock('aaba'))
+          output = output + contraction(temp%getBlock('abaa'),eris2%getBlock('abaa'))
+          output = output + contraction(temp%getBlock('baaa'),eris2%getBlock('baaa'))
+          output = output + contraction(temp%getBlock('bbba'),eris2%getBlock('bbba'))
+          output = output + contraction(temp%getBlock('bbab'),eris2%getBlock('bbab'))
+          output = output + contraction(temp%getBlock('babb'),eris2%getBlock('babb'))
+          output = output + contraction(temp%getBlock('abbb'),eris2%getBlock('abbb'))
+        end select
+      end select
+!
+      end function mqc_eri_eri_contraction
+!
+!
+!     PROCEDURE MQC_ERI_ERI_Partial_Contraction
+!
+!>    \brief <b> MQC_ERI_ERI_Contraction is used to return the contraction of 
+!>    two-ERIs with an MQC rank-4 tensor</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_ERI_ERI_Contraction is used to return the contraction of two-ERIs with 
+!>    an MQC two-ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERIs1
+!>    \verbatim
+!>        ERIs1 is type(mqc_twoERIs) 
+!>        The first 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] ERIs2
+!>    \verbatim
+!>        ERIs2 is type(mqc_twoERIs) 
+!>        The second 2ERIs to be contracted.
+!>    \endverbatim
+!>
+!>    \param[in] Index1
+!>    \verbatim
+!>        Index1 is integer(kind=int64),dimension(4),optional 
+!>        Contain the indexes of ERIs1 to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>        Ex: If Index1=[3,2,4,1], the third and second indexes of ERIs1 are contracted.
+!>            The fourth and first are multiplied to form the first and second indices
+!>            of the result matrix, respectivelly.
+!>    \endverbatim
+!>
+!>    \param[in] Index2
+!>    \verbatim
+!>        Index2 is Integer(kind=int64),dimension(4),optional
+!>        Contain the indexes of ERIs2 to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>
+!>        Ex: index1=[3,2,4,1] and index2=[2,1,4,3]
+!>        sum_{i,j} ERIs1_{ljik} ERIs2_{jilk} = IntOut_{kl}
+!>
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_eri_eri_partial_contraction(eris1,eris2,index1,index2) result(IntOut)
+!
+      implicit none
+      type(mqc_twoERIs),intent(in)::eris1,eris2
+      integer(kind=int64),dimension(4),intent(in),optional::index1,index2
+      type(mqc_scf_integral)::IntOut
+
+      type(mqc_matrix)::aa,ab,ba,bb
+      character(len=64)::mylabel,intType
+      integer(kind=int64)::r4t1,r4t2,r4t3,r4t4,nB1,nB2,nB3,nB4
+      type(mqc_twoERIs)::temp
+      Integer(kind=int64)::ia,ja,ka,la,ib,jb,kb,lb,i,j,k,l
+      Integer(kind=int64)::dimAi,dimAj,dimAk,dimAl,dimBi,dimBj,dimBk,dimBl
+      character(len=4)::str1,str2,active_conf
+      character(len=4),dimension(4)::allowed_spin,a_bbb_array,aaa_b_array
+      character(len=4),dimension(6)::aa_bb_array                                       
+
+
+      aa_bb_array=['aabb','abab','abba','baab','baba','bbaa']
+      a_bbb_array=['abbb','babb','bbab','bbba']
+      aaa_b_array=['baaa','abaa','aaba','aaab']
+
+!
+      if(present(index1)) then
+        ia=index1(1)
+        ja=index1(2)
+        ka=index1(3)
+        la=index1(4)
+        if (ia.eq.ja) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ia', ia,'ja',ja)
+        if (ia.eq.ka) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ia', ia,'ka',ka)
+        if (ia.eq.la) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ia', ia,'la',la)
+        if (ja.eq.ka) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ja', ja,'ka',ka)
+        if (ja.eq.la) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ja', ja,'la',la)
+        if (ka.eq.la) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Contraction',&
+                                        6,'ka', ka,'la',la)
+      else
+        ia=1
+        ja=2
+        ka=3
+        la=4
+      endif
+      if(present(index2)) then
+        ib=index2(1)
+        jb=index2(2)
+        kb=index2(3)
+        lb=index2(4)
+        if (ib.eq.jb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'ib', ib,'jb',jb)
+        if (ib.eq.kb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'ib', ib,'kb',kb)
+        if (ib.eq.lb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'ib', ib,'lb',lb)
+        if (jb.eq.kb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'jb', jb,'kb',kb)
+        if (jb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'jb', jb,'lb',lb)
+        if (kb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_ERI_ERI_Partial_Contraction',&
+                                        6,'kb', kb,'lb',lb)
+      else
+        ib=1
+        jb=2
+        kb=3
+        lb=4
+      endif
+      if (ia.gt.4.or.ia.le.0.or.ib.gt.4.or.ib.le.0.or.&
+          ja.gt.4.or.ja.le.0.or.jb.gt.4.or.jb.le.0.or.&
+          ka.gt.4.or.ka.le.0.or.kb.gt.4.or.kb.le.0.or.&
+          la.gt.4.or.la.le.0.or.lb.gt.4.or.lb.le.0.) Call MQC_Error(&
+           'Index out of range in MQC_ERI_ERI_Partial_Contraction', 6)
+
+       if (eris1%blockSize('alpha',ia).ne.eris2%blockSize('alpha',ib).or.&
+           eris1%blockSize('alpha',ja).ne.eris2%blockSize('alpha',jb).or.&
+           eris1%blockSize('alpha',ka).ne.eris2%blockSize('alpha',kb).or.&
+           eris1%blockSize('alpha',la).ne.eris2%blockSize('alpha',lb))&
+           call mqc_error_i('2ERIs not correctly dimensioned in mqc_eri_eri_contraction',6,&
+            'dim1',eris1%blockSize('alpha',ia)-eris2%blockSize('alpha',ib),&
+            'dim2',eris1%blockSize('alpha',ja)-eris2%blockSize('alpha',jb),&
+            'dim3',eris1%blockSize('alpha',ka)-eris2%blockSize('alpha',kb),&
+            'dim4',eris1%blockSize('alpha',la)-eris2%blockSize('alpha',lb))
+
+      call aa%init(eris1%blockSize('alpha',ka),eris1%blockSize('alpha',la))
+      call ab%init(eris1%blockSize('alpha',ka),eris1%blockSize('beta',la))
+      call ba%init(eris1%blockSize('beta',ka),eris1%blockSize('alpha',la))
+      call bb%init(eris1%blockSize('beta',ka),eris1%blockSize('beta',la))
+
+      aa = aa + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('aaaa'),eris2%getBlock('aaaa'),index1,index2)
+      select case (eris1%type())
+      case ('space','regular')
+        select case (eris2%type())
+        case ('space','regular')
+          intType='space'
+        case ('spin')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('aaaa'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
+              if(str2.eq.'aabb'.or.str1.eq.'bbaa') then
+                if (active_conf(3:4).eq.'aa') then
+                  aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'bb') then
+                  bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'ab') then
+                  intType='general'
+                  ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'ba') then
+                  intType='general'
+                  ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                end if
+              end if
+            end if
+          end do
+        case ('general')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('aaaa'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
+              if (active_conf(3:4).eq.'aa') then
+                aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'bb') then
+                bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ab') then
+                intType='general'
+                ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ba') then
+                intType='general'
+                ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              end if
+            end if
+          end do
+        case default
+          call mqc_error_a('Unrecognized 2ERI integral type',6,&
+                           'eris2%type',eris2%type())
+        end select
+      case ('spin')
+        select case (eris2%type())
+        case ('space','regular','spin')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
+              if(str2.eq.'aabb'.or.str1.eq.'bbaa') then
+                if (active_conf(3:4).eq.'aa') then
+                  aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'bb') then
+                  bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'ab') then
+                  intType='general'
+                  ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                else if (active_conf(3:4).eq.'ba') then
+                  intType='general'
+                  ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                       eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+                end if
+              end if
+            end if
+          end do
+        case ('general')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if(str1.eq.'aabb'.or.str1.eq.'bbaa') then
+              if (active_conf(3:4).eq.'aa') then
+                aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'bb') then
+                bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ab') then
+                intType='general'
+                ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ba') then
+                intType='general'
+                ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              end if
+            end if
+          end do
+        case default
+          call mqc_error_a('Unrecognized 2ERI integral type',6,&
+                           'eris2%type',eris2%type())
+        end select
+      case ('general')
+        select case (eris2%type())
+        case ('space','regular','spin')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if(str2.eq.'aabb'.or.str2.eq.'bbaa') then
+              if (active_conf(3:4).eq.'aa') then
+                aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'bb') then
+                bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ab') then
+                intType='general'
+                ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              else if (active_conf(3:4).eq.'ba') then
+                intType='general'
+                ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                     eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+              end if
+            end if
+          end do
+        case ('general')
+          intType='spin'
+          bb = bb + MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+            eris1%getBlock('bbbb'),eris2%getBlock('bbbb'),index1,index2)
+          do i=1,6
+            active_conf=aa_bb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if (active_conf(3:4).eq.'aa') then
+              aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4).eq.'bb') then
+              bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4).eq.'ab') then
+              intType='general'
+              ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4).eq.'ba') then
+              intType='general'
+              ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            end if
+          end do
+          do i=1,4
+            active_conf=a_bbb_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if (active_conf(3:4) == 'aa') then
+              aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'bb') then
+              bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'ab') then
+              intType='general'
+              ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'ba') then
+              intType='general'
+              ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            end if
+          end do
+          do i=1,4
+            active_conf=aaa_b_array(i)
+            str1=mqc_index_to_string([ia,ja,ka,la],active_conf)
+            str2=mqc_index_to_string([ib,jb,kb,lb],active_conf)
+            if (active_conf(3:4) == 'aa') then
+              aa = aa +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'bb') then
+              bb = bb +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'ab') then
+              intType='general'
+              ab = ab +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            else if (active_conf(3:4) == 'ba') then
+              intType='general'
+              ba = ba +  MQC_R4Tensor_R4Tensor_Partial_Contraction(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            end if
+          end do
+        case default
+          call mqc_error_a('Unrecognized 2ERI integral type',6,&
+                           'eris2%type',eris2%type())
+        end select
+      case default
+        call mqc_error_a('Unrecognized 2ERI integral type',6,&
+                         'eris1%type',eris1%type())
+      end select
+      if (intType.eq.'space') then
+        call mqc_integral_allocate(IntOut,'full','space',aa)
+      elseif (intType.eq.'spin') then
+        call mqc_integral_allocate(IntOut,'full','spin',aa,bb)
+      elseif (intType.eq.'general') then
+        call mqc_integral_allocate(IntOut,'full','general',aa,bb,ab,ba)
+      endif
+ 
+!
+      end function mqc_eri_eri_partial_contraction
+!
+!
+!     PROCEDURE MQC_Index_to_String
+!
+!>    \brief <b> MQC_Index_to_String is a support function to  
+!>    MQC_ERI_ERI_Partial_Contraction that returns an alpha/beta string
+!>    representing the ERI block to be contracted.</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Index_to_String is used to return an alpha/beta string based on a target 
+!>    and a reference set of indexes.
+!>
+!>
+!>    Example:
+!>    ref:    (4,3,1,2)
+!>    target: (a,b,a,a)
+!>             ^ ^
+!>     to be contracted
+!>    output: (a,a,b,a)
+!>
+!>    A partial contraction (via MQC_ERI_ERI_Partial_Contraction) with 
+!>    (4,3,1,2) indexes (ref_index). 
+!>    The desired result is the contactions of one alpha and one 
+!>    beta type orbtials (a,b) and return a alpha,alpha matrix (a,a) (target)
+!>    The ERI block symmetri to be used is 'aaba' (output)
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ref_index
+!>    \verbatim
+!>        ref_index is integer(kind=int64),dimension(4) 
+!>        An arbitrary permutation of (1,2,3,4)
+!>    \endverbatim
+!>
+!>    \param[in] target_string
+!>    \verbatim
+!>        target_string character(len=4)
+!>        An ERI alpha/beta string, ex: 'aaaa' or 'abaa' 
+!>    \endverbatim
+!>
+ 
+      function mqc_index_to_string(ref_index,target_string) result(string)
+      implicit none
+      integer(kind=int64),dimension(4),intent(in)::ref_index
+      character(len=4),intent(in)::target_string
+      character(len=4)::string
+      integer(kind=int64)::i,refi
+      
+      string='    ' 
+      do i=1,4
+        refi=ref_index(i)
+        string=trim(string(1:i))//target_string(refi:refi)      
+      end do
+
+      end function mqc_index_to_string
+!
+!
+!
 !     PROCEDURE MQC_ERI_Interaction
 !
 !>    \brief <b> MQC_ERI_Interaction is used to return the two-electron integrals of
@@ -9549,6 +11206,325 @@
       end subroutine mqc_integral_delete_energy_list
 !
 !
+!     PROCEDURE MQC_Integral_Sum_Elements
+!
+!>    \brief <b> MQC_Integral_Sum_Elements is a function that returns the sum of all elements 
+!>    of an MQC SCF Integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Sum is a function that returns the sum of all elements of an MQC
+!>    SCF Integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A 
+!>    \verbatim
+!>        A is Class(MQC_scf_integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_integral_sum_elements(A) result(output)
+!
+      Implicit None
+      class(mqc_scf_integral),intent(in)::A
+      type(mqc_scalar)::output
+  
+      output = 0.0
+      select case(A%array_type)
+      case('space') 
+        output = output + 2*sum(A%getBlock('aa'))
+      case('spin') 
+        output = output + sum(A%getBlock('aa'))
+        output = output + sum(A%getBlock('bb'))
+      case('general') 
+        output = output + sum(A%getBlock('aa'))
+        output = output + sum(A%getBlock('bb'))
+        output = output + sum(A%getBlock('ab'))
+        output = output + sum(A%getBlock('ba'))
+      case default
+        call mqc_error_a('Unrecognized data type  in MQC_Integral_Sum_Elements',6,&
+          'integral%array_type',A%array_type)
+      end select
+      end function mqc_integral_sum_elements
+!
+!
+!     PROCEDURE MQC_Integral_Partial_Sum_Elements
+!
+!>    \brief <b> MQC_Integral_Partial_Sum_Elements is a function that returns  
+!>    the sum of all elements in one index of an MQC SCF Integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Partial_Sum_Elements is a function that returns  
+!>    the sum of all elements in one index of an MQC SCF Integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A 
+!>    \verbatim
+!>        A is Class(MQC_scf_integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] IndexNum
+!>    \verbatim
+!>        IndexNum is Integer(kind=int64)
+!>        The index over which the partial sum will be
+!>        performed.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_integral_partial_sum_elements(A,indexnum) result(output)
+!
+      Implicit None
+      class(mqc_scf_integral),intent(in)::A
+      integer(kind=int64),optional::indexnum
+      type(mqc_matrix)::activeM,activeM2,activeM3,activeM4
+      type(mqc_vector)::aa,bb
+      type(mqc_scf_eigenvalues)::output
+      integer(kind=int64)::i,j,ind
+  
+      ind = 1
+      if(present(indexnum)) ind = indexnum
+
+      select case(A%array_type)
+      case('space') 
+        activeM = A%getBlock('aa')
+        if (ind.eq.1) then
+          call aa%init(size(activeM,2))
+          do j=1,size(activeM,2)
+            do i=1,size(activeM,1)
+              call aa%put(aa%at(j) + activeM%at(i,j) , j)
+            endDo
+          endDo
+        else if (ind.eq.2) then
+          call aa%init(size(activeM,1))
+          do j=1,size(activeM,1)
+            do i=1,size(activeM,2)
+              call aa%put(aa%at(j) + activeM%at(j,i) , j)
+            endDo
+          endDo
+        else
+          Call MQC_Error_I('Index out of range MQC_Integral_Partial_Sum_Element', &
+                            6,'index', ind )
+        end if
+        call mqc_eigenvalues_allocate(output,'','space',aa)
+      case('spin') 
+        activeM  = A%getBlock('aa')
+        activeM2 = A%getBlock('bb')
+        if (ind.eq.1) then
+          call aa%init(size(activeM,2))
+          do j=1,size(activeM,2)
+            do i=1,size(activeM,1)
+              call aa%put(aa%at(j) + activeM%at(i,j) , j)
+            endDo
+          endDo
+          call bb%init(size(activeM2,2))
+          do j=1,size(activeM2,2)
+            do i=1,size(activeM2,1)
+              call bb%put(bb%at(j) + activeM2%at(i,j) , j)
+            endDo
+          endDo
+        else if (ind.eq.2) then
+          call aa%init(size(activeM,1))
+          do j=1,size(activeM,1)
+            do i=1,size(activeM,2)
+              call aa%put(aa%at(j) + activeM%at(j,i) , j)
+            endDo
+          endDo
+          call bb%init(size(activeM2,1))
+          do j=1,size(activeM2,1)
+            do i=1,size(activeM2,2)
+              call bb%put(bb%at(j) + activeM2%at(j,i) , j)
+            endDo
+          endDo
+        else
+          Call MQC_Error_I('Index out of range MQC_Integral_Partial_Sum_Element', &
+                            6,'index', ind )
+        end if
+        call mqc_eigenvalues_allocate(output,'','spin',aa,bb)
+      case('general') 
+        activeM  = A%getBlock('aa')
+        activeM2 = A%getBlock('bb')
+        activeM3 = A%getBlock('ab')
+        activeM4 = A%getBlock('ba')
+        if (ind.eq.1) then
+          call aa%init(size(activeM,2))
+          call bb%init(size(activeM2,2))
+          do j=1,size(activeM,2)
+            do i=1,size(activeM,1)
+              call aa%put(aa%at(j) + activeM%at(i,j) , j)
+            endDo
+            do i=1,size(activeM4,1)
+              call aa%put(aa%at(j) + activeM4%at(i,j) , j)
+            endDo
+          endDo
+          do j=1,size(activeM2,2)
+            do i=1,size(activeM2,1)
+              call bb%put(bb%at(j) + activeM2%at(i,j) , j)
+            endDo
+            do i=1,size(activeM3,1)
+              call bb%put(bb%at(j) + activeM3%at(i,j) , j)
+            endDo
+          endDo
+        else if (ind.eq.2) then
+          call aa%init(size(activeM,1))
+          call bb%init(size(activeM2,1))
+          do j=1,size(activeM,1)
+            do i=1,size(activeM,2)
+              call aa%put(aa%at(j) + activeM%at(j,i) , j)
+            endDo
+            do i=1,size(activeM3,2)
+              call aa%put(aa%at(j) + activeM3%at(j,i) , j)
+            endDo
+          endDo
+          do j=1,size(activeM2,1)
+            do i=1,size(activeM2,2)
+              call bb%put(bb%at(j) + activeM2%at(j,i) , j)
+            endDo
+            do i=1,size(activeM4,2)
+              call bb%put(bb%at(j) + activeM4%at(j,i) , j)
+            endDo
+          endDo
+        endif
+        call mqc_eigenvalues_allocate(output,'','spin',aa,bb)
+      case default
+        call mqc_error_a('Unrecognized data type  in MQC_Integral_Partial_Sum_Elements',6,&
+          'integral%array_type',A%array_type)
+      end select
+      end function mqc_integral_partial_sum_elements
+
+!
+!
+!     PROCEDURE MQC_Integral_Multiply
+!
+!>    \brief <b> MQC_Integral_Multiply is a function that returns 
+!>    the product of each elements between two MQC SCF Integral</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Multiply is a function that returns the product of each elements 
+!>    between two MQC SCF Integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A 
+!>    \verbatim
+!>        A is Class(MQC_scf_integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!>    \param[in] B
+!>    \verbatim
+!>        B is Class(MQC_scf_integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      function mqc_integral_multiply(A,B) result(integralOut)
+!
+      Implicit None
+      type(mqc_scf_integral),intent(in)::A,B
+      type(mqc_scf_integral)::integralOut
+
+      type(mqc_matrix)::Aaa,Abb,Oaa,Obb,Oab,Oba
+      Character(Len=64)::OutType
+  
+      select case(A%array_type)
+      case('space') 
+        Aaa = A%getBlock('aa')
+        select case(B%array_type)
+        case('space') 
+          Oaa = B%getBlock('aa')*Aaa
+          OutType = 'space'
+        case('spin','general') 
+          Oaa = B%getBlock('aa')*Aaa
+          Obb = B%getBlock('bb')*Aaa
+          OutType = 'spin'
+        case default
+          call mqc_error_a('Unrecognized data type  in MQC_Integral_Multiply',6,&
+            'integralB%array_type',B%array_type)
+        end select
+      case('spin') 
+        Aaa = A%getBlock('aa')
+        Abb = A%getBlock('bb')
+        select case(B%array_type)
+        case('space','spin','general') 
+          Oaa = B%getBlock('aa')*Aaa
+          Obb = B%getBlock('bb')*Abb
+          OutType = 'spin'
+        case default
+          call mqc_error_a('Unrecognized data type  in MQC_Integral_Multiply',6,&
+            'integralB%array_type',B%array_type)
+        end select
+      case('general') 
+        Aaa = A%getBlock('aa')
+        Abb = A%getBlock('bb')
+        select case(B%array_type)
+        case('space','spin') 
+          Oaa = B%getBlock('aa')*Aaa
+          Obb = B%getBlock('bb')*Abb
+          OutType = 'spin'
+        case('general')
+          Oaa = B%getBlock('aa')*Aaa
+          Obb = B%getBlock('bb')*Abb
+          Oab = B%getBlock('ab')*A%getBlock('ab')
+          Oba = B%getBlock('ba')*A%getBlock('ba')
+          OutType = 'general'
+        case default
+          call mqc_error_a('Unrecognized data type  in MQC_Integral_Multiply',6,&
+            'integralB%array_type',B%array_type)
+        end select
+      case default
+        call mqc_error_a('Unrecognized data type  in MQC_Integral_Multiply',6,&
+          'integralA%array_type',A%array_type)
+      end select
+
+      select case(OutType)
+      case('space')
+       call mqc_integral_allocate(integralOut,'','space',Oaa)
+      case('spin')
+       call mqc_integral_allocate(integralOut,'','spin',Oaa,Obb)
+      case('general')
+       call mqc_integral_allocate(integralOut,'','general',Oaa,Obb,Oab,Oba)
+      case default
+        call mqc_error_a('Unrecognized data type in MQC_Integral_Multiply',6,&
+          'OuType',OutType)
+      end select
+
+      end function mqc_integral_multiply
+!
+!
 !     PROCEDURE MQC_SCF_Eigenvalues_Power
 !
 !>    \brief <b> MQC_SCF_Eigenvalues_Power is a function that returns the value of 
@@ -10842,6 +12818,181 @@
       endIf
 
       end function mqc_twoERIs_At
+
+!
+!
+!     PROCEDURE MQC_Integral_Put
+!
+!>    \brief <b> MQC_Integral_Put is a function that updates the value of an element 
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Integral_Put is a function that updates the value of (I,J)th element of a 
+!>    MQC integral variable as an MQC scalar. If I or J is negative, the (N-I+1)th 
+!>    index is selected. Optional argument SpinBlock specifies the spin block of MQC
+!>    integrals. If I or J is greater than the dimension of the alpha spin block, the
+!>    remainder is used as the index of the beta spin block. The following options 
+!>    are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
+!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral to return the value of the (I,J)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Type(mqc_scalar)
+!>        The value to put in the integral.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC integral
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in] J  
+!>    \verbatim
+!>        J is Integer(kind=int64)
+!>        The second dimension of the element in MQC integral
+!>          If J>0 row count is from first index
+!>          If J<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlockIn
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>        = 'alphaBeta': alpha-beta spin block
+!>        = 'betaAlpha': beta-alpha spin block.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2024
+!
+      subroutine mqc_integral_put(integral,element,i,j,spinBlockIn)
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      class(*),intent(in)::i,j
+      integer(kind=int64)::myI,myJ
+      type(mqc_scalar)::element
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      select type (i)
+      type is (integer)
+        myI = i
+      type is (mqc_scalar)
+        myI = i
+      class default
+        call mqc_error('index type not defined in MQC_twoERIs_put')
+      end select
+      select type (j)
+      type is (integer)
+        myJ = j
+      type is (mqc_scalar)
+        myJ = j
+      class default
+        call mqc_error('index type not defined in MQC_twoERIs_put')
+      end select
+
+      if(myI.gt.integral%blockSize('alpha',1)+integral%blockSize('beta',1)) &
+        call mqc_error('Requested I dimension out of bounds in mqc_integral_put')
+      if(myJ.gt.integral%blockSize('alpha',2)+integral%blockSize('beta',2)) &
+        call mqc_error('Requested J dimension out of bounds in mqc_integral_put')
+
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
+        if(integral%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(integral%array_type.eq.'spin') then
+          if(spinBlock.eq.'alpha') then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseif(spinblock.eq.'beta') then
+            if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(integral%array_type.eq.'general') then
+          if(spinBlock.eq.'alpha') then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseif(spinblock.eq.'beta') then
+            if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
+          elseif(spinblock.eq.'alphabeta') then
+            if(integral%hasAlphaBeta()) call integral%alphaBeta%put(element,myI,myJ)
+          elseif(spinblock.eq.'betaalpha') then
+            if(integral%hasBetaAlpha()) call integral%betaAlpha%put(element,myI,myJ) 
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Integral_Put',6,'Array_Type',integral%array_type)
+        endIf
+      else
+        if(integral%array_type.eq.'space') then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
+            myI = myI - integral%blockSize('alpha',1)
+            myJ = myJ - integral%blockSize('alpha',2)
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          endIf
+        elseIf(integral%array_type.eq.'spin') then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
+            myI = myI - integral%blockSize('alpha',1)
+            myJ = myJ - integral%blockSize('alpha',2)
+            if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
+          endIf
+        elseIf(integral%array_type.eq.'general') then
+          if(myI.le.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
+            if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
+          elseIf(myI.le.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
+            myJ = myJ - integral%blockSize('alpha',2)
+            if(integral%hasAlphaBeta()) call integral%alphaBeta%put(element,myI,myJ)
+          elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.le.integral%blockSize('alpha',2)) then
+            myI = myI - integral%blockSize('alpha',1)
+            if(integral%hasBetaAlpha()) call integral%betaAlpha%put(element,myI,myJ)
+          elseIf(myI.gt.integral%blockSize('alpha',1).and.myJ.gt.integral%blockSize('alpha',2)) then
+            myI = myI - integral%blockSize('alpha',1)
+            myJ = myJ - integral%blockSize('alpha',2)
+            if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Integral_Put',6,'Array_Type',integral%array_type)
+        endIf
+      endIf
+
+      end subroutine mqc_integral_put
+
+
 !
 !
 !     PROCEDURE MQC_Integral_At
@@ -16112,6 +18263,71 @@
 !
       End Subroutine TwoERI_Trans
 
+!
+!     PROCEDURE MQC_Integral_Outer
+!
+!>    \brief <b> MQC_Print_Integral is a subroutine used to print an MQC
+!>    EST SCF integral object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_Integral is a subroutine used to print an MQC EST SCF 
+!>    integral object.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>       Integral is Class(mqc_scf_integral)
+!>       The first integral in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Integral2
+!>    \verbatim
+!>       Integral2 is Class(mqc_scf_integral)
+!>       The second integral in the outer product.
+!>    \endverbatim
+!>
+!>    \param[in] Cross
+!>    \verbatim
+!>       Cross is Logical
+!>       If True, the cross outer product is computed,
+!>       and if False, the outer product is computed. 
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes 
+!>    \date 2024
+!
+      function mqc_integral_outer(integral,integral2,cross) result(R4out)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral,integral2
+      logical::cross
+      type(mqc_r4tensor)::R4out
+
+      type(mqc_matrix)::tmp1,tmp2
+      
+!
+!! TODO:check if the sizes are consistent
+      tmp1=integral%getBlock('full')
+      tmp2=integral2%getBlock('full')
+      if(cross) then
+        R4out=tmp1.crossouter.tmp2 
+      else      
+        R4out=tmp1.outer.tmp2 
+      end if
+!
+      end function mqc_integral_outer
+!
+!
 
 !
 !=====================================================================
