@@ -14363,7 +14363,7 @@
       integer::nBitInts,temp_int,i,j,nBasis
       type(mqc_vector)::tmpArray
 
-      do i = 0, string%nBits 
+      do i = 0, string%nBits-1 
         if(btest(string,i)) call tmpArray%push(i)
       endDo
       allocate(arrayOut(size(tmpArray)))
