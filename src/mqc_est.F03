@@ -14345,7 +14345,7 @@
 !     ==========
 !>    \param[in] String
 !>    \verbatim
-!>        String is Type(MQC_Vector)
+!>        String is Type(MQC_Bits)
 !>        The bit string to be analyzed.
 !>    \endverbatim
 !
@@ -14357,20 +14357,14 @@
       function mqc_detString_to_occArray(string) result(arrayOut)
 
       implicit none
-      type(mqc_vector),intent(in)::string
+      type(mqc_bits),intent(in)::string
       integer(kind=int64),dimension(:),allocatable::arrayOut
 
       integer::nBitInts,temp_int,i,j,nBasis
       type(mqc_vector)::tmpArray
 
-      nBitInts = size(string)
-      nBasis = nBitInts*Bit_Size(0)
-
-      do i = 1, nBitInts
-        temp_int = string%at(i)
-        do j = 0, Bit_Size(0)-1
-          if(btest(temp_int,j)) call tmpArray%push((i-1)*(Bit_Size(0)-1)+(j+1))
-        endDo
+      do i = 0, string%nBits 
+        if(btest(string,i)) call tmpArray%push(i)
       endDo
       allocate(arrayOut(size(tmpArray)))
       arrayOut = tmpArray
