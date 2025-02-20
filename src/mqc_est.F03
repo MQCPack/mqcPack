@@ -13203,9 +13203,9 @@
 !>          If I<0 row count is from last index.
 !>    \endverbatim
 !>    
-!>    \param[in,out] SpinBlock
+!>    \param[in,out] SpinBlockIn
 !>    \verbatim
-!>        SpinBlock is character(len=64),optional
+!>        SpinBlockIn is character(len=64),optional
 !>        = 'alpha':     alpha spin block
 !>        = 'beta':      beta spin block
 !>    \endverbatim
@@ -13215,14 +13215,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_eigenvalues_at(eigenvalues,i,spinBlock) result(element)
+      function mqc_eigenvalues_at(eigenvalues,i,spinBlockIn) result(element)
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
       class(*),intent(in)::i
       integer(kind=int64)::myI
       type(mqc_scalar)::element
-      character(len=64),optional::spinBlock
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
       real(kind=real64)::zero=0.0d0
 
       select type (i)  
@@ -13234,8 +13235,8 @@
         call mqc_error('index type not defined in MQC_twoERIs_at')
       end select
 
-      if(present(spinBlock)) then
-        call string_change_case(spinBlock,'L')
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
         if(eigenvalues%array_type.eq.'space') then
           if(spinBlock.eq.'alpha') then
             element = eigenvalues%alpha%at(myI)
