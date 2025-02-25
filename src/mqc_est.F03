@@ -13203,7 +13203,7 @@
 !>          If I<0 row count is from last index.
 !>    \endverbatim
 !>    
-!>    \param[in,out] SpinBlock
+!>    \param[in] SpinBlockIn
 !>    \verbatim
 !>        SpinBlock is character(len=64),optional
 !>        = 'alpha':     alpha spin block
@@ -13215,14 +13215,15 @@
 !>    \author L. M. Thompson
 !>    \date 2018
 !
-      function mqc_eigenvalues_at(eigenvalues,i,spinBlock) result(element)
+      function mqc_eigenvalues_at(eigenvalues,i,spinBlockIn) result(element)
 !
       implicit none
       class(mqc_scf_eigenvalues)::eigenvalues
       class(*),intent(in)::i
       integer(kind=int64)::myI
       type(mqc_scalar)::element
-      character(len=64),optional::spinBlock
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
       real(kind=real64)::zero=0.0d0
 
       select type (i)  
@@ -13234,10 +13235,10 @@
         call mqc_error('index type not defined in MQC_twoERIs_at')
       end select
 
-      if(present(spinBlock)) then
-        call string_change_case(spinBlock,'L')
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
         if(eigenvalues%array_type.eq.'space') then
-          if(spinBlock.eq.'alpha') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
             element = eigenvalues%alpha%at(myI)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
@@ -14345,7 +14346,7 @@
 !     ==========
 !>    \param[in] String
 !>    \verbatim
-!>        String is Type(MQC_Vector)
+!>        String is Type(MQC_Bits)
 !>        The bit string to be analyzed.
 !>    \endverbatim
 !
@@ -14357,20 +14358,14 @@
       function mqc_detString_to_occArray(string) result(arrayOut)
 
       implicit none
-      type(mqc_vector),intent(in)::string
+      type(mqc_bits),intent(in)::string
       integer(kind=int64),dimension(:),allocatable::arrayOut
 
       integer::nBitInts,temp_int,i,j,nBasis
       type(mqc_vector)::tmpArray
 
-      nBitInts = size(string)
-      nBasis = nBitInts*Bit_Size(0)
-
-      do i = 1, nBitInts
-        temp_int = string%at(i)
-        do j = 0, Bit_Size(0)-1
-          if(btest(temp_int,j)) call tmpArray%push((i-1)*(Bit_Size(0)-1)+(j+1))
-        endDo
+      do i = 0, string%nBits-1 
+        if(btest(string,i)) call tmpArray%push(i)
       endDo
       allocate(arrayOut(size(tmpArray)))
       arrayOut = tmpArray
