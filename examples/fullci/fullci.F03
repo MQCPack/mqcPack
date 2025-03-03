@@ -15,7 +15,7 @@
       integer(kind=int64)::iOut=6,iPrint=4
       type(mqc_pscf_wavefunction)::wavefunction
       type(mqc_molecule_data)::moleculeInfo
-      type(mqc_twoERIs)::eris,mo_ERIs
+      type(mqc_twoERISet)::eris
       type(mqc_scalar)::Vnn
       type(mqc_determinant)::determinants
       type(mqc_scf_integral)::mo_core_ham
@@ -66,12 +66,12 @@
       mo_core_ham = matmul(transpose(wavefunction%MO_Coefficients),matmul(wavefunction%core_Hamiltonian, &
           Wavefunction%MO_Coefficients))
       if(IPrint.ge.2) call mo_core_ham%print(iOut,'MO Basis Core Hamiltonian') 
-      call twoERI_trans(iOut,iPrint,wavefunction%MO_Coefficients,ERIs,mo_ERIs)
+      call eris%transform('molecular',LmoCoeff=wavefunction%MO_Coefficients)
 !
 !     Generate Hamiltonian Matrix
 !
       call mqc_build_ci_hamiltonian(iOut,iPrint,CI_Hamiltonian,determinants, &
-        MO_Core_Ham=mo_core_ham,MO_ERIs=mo_ERIs)
+        MO_Core_Ham=mo_core_ham,MO_ERIs=eris%eris('molecular'))
       call CI_Hamiltonian%print(iOut,'CI Hamiltonian')
 !
 !     Diagonalize Hamiltonian
