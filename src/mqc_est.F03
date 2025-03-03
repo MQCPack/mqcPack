@@ -13795,7 +13795,7 @@
 !>          If I<0 row count is from last index.
 !>    \endverbatim
 !>    
-!>    \param[in,out] SpinBlockIn
+!>    \param[in] SpinBlockIn
 !>    \verbatim
 !>        SpinBlockIn is character(len=64),optional
 !>        = 'alpha':     alpha spin block
@@ -13830,7 +13830,7 @@
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(eigenvalues%array_type.eq.'space') then
-          if(spinBlock.eq.'alpha') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
             element = eigenvalues%alpha%at(myI)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
