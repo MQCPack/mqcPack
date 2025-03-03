@@ -228,15 +228,16 @@
 !>    \brief <b> Binary strings representing occupation number vectors</b>
       Type MQC_Determinant
         Type(MQC_Determinant_String)::Strings
-        Character(Len=64)::Order !lexical,ci 
+        Character(Len=64)::Order !lexical,ci
         Integer(kind=int64)::NDets,NAlpStr,NBetStr,nBasis,nCore,nVirt
         Type(MQC_Vector)::NSubsAlpha,NSubsBeta
       End Type MQC_Determinant
 !
 !    
 !     Two electron integrals....
+!     Need to properly implement code using mqc_twoERISet
 !
-!     Parent Type
+!     MQC_TwoERIs
 !>    \brief <b> Two-electron resonance integrals</b>
       type mqc_twoERIs
         type(mqc_r4tensor),private::alpha,beta,alphaBeta,betaAlpha,aaab,aaba,abaa,baaa,abab, &
@@ -255,6 +256,20 @@
         procedure, public::type => mqc_eris_array_type
       end type mqc_twoERIs
 !
+!     Parent Type
+!>    \brief <b> Container of multiple twoERII sets</b>
+      type mqc_twoERISet
+        type(mqc_twoERIs),dimension(:),allocatable::twoERIs
+        integer(kind=int64)::nERIs=0
+      contains 
+!>      \brief <b> Print the MQC_TwoERISet object</b>
+        procedure, public::print => mqc_print_twoERISet
+        procedure, public::erinum => mqc_2ERISet_get_erinum 
+        procedure, public::eris => mqc_2ERISet_output_eri 
+        procedure, public::transform => mqc_2ERISet_transform
+        procedure, public::addtoset => mqc_2ERISet_addtoset
+      end type mqc_twoERISet
+!
 !----------------------------------------------------------------
 !                                                               |
 !     PROCEDURE INTERFACES                                      |
@@ -267,6 +282,7 @@
         module procedure mqc_print_integral
         module procedure mqc_print_eigenvalues
         module procedure mqc_print_twoERIS
+        module procedure mqc_print_twoERISet
       end interface
 !
 !>    \brief <b> Multiplies two objects</b>
@@ -316,6 +332,13 @@
 !>    \brief <b> Returns the complex conjugate</b>
       Interface Conjg
         Module Procedure mqc_scf_integral_conjg
+      End Interface
+!
+!>    \brief <b> Returns the block length along the specified dimension</b>
+      Interface Size
+        Module Procedure mqc_eigenvalues_dimension
+        Module Procedure mqc_integral_dimension 
+        Module Procedure mqc_eris_dimension
       End Interface
 !
 !----------------------------------------------------------------
@@ -867,7 +890,90 @@
         if(blank_at_bottom) write(iout,1020)
       endif
 !
-      end subroutine mqc_print_twoERIs 
+      end subroutine mqc_print_twoERIs
+!
+!
+!     PROCEDURE MQC_Print_TwoERISet
+!
+!>    \brief <b> MQC_Print_TwoERISet is a subroutine used to print a set of MQC EST 
+!>    2ERIs stored in the MQC_TwoERISet object</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Print_TwoERISet is a subroutine used to print a set if MQC EST 2ERIs 
+!>    stored iun the MQC_TwoERISet object. Blank_At_Top and Blank_At_Bottom are 
+!>    optional logical arguments to print blank lines before or after output.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] TwoERISet
+!>    \verbatim
+!>        TwoERISet is Class(MQC_TwoERISet)
+!>        The set of 2ERIs to be printed.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64) 
+!>        The Fortran file number to print to. 
+!>    \endverbatim
+!>
+!>    \param[in] Header
+!>    \verbatim
+!>        Header is Character(Len=*)
+!>        The title to print along with TwoERIs.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Top
+!>    \verbatim
+!>        Blank_At_Top is Logical,Optional
+!>        = .True.:  print blank line above output
+!>        = .False.: do not print blank line above output.
+!>    \endverbatim
+!>
+!>    \param[in] Blank_At_Bottom
+!>    \verbatim
+!>        Blank_At_Bottom is Logical,Optional
+!>        = .True.:  print blank line below output
+!>        = .False.: do not print blank line below output.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      subroutine mqc_print_twoERISet(twoERISet,iOut,header, &
+          blank_at_top,blank_at_bottom)
+!
+      implicit none
+      class(mqc_twoERISet)::twoERISet
+      integer(kind=int64),intent(in)::iOut
+      character(len=*),intent(in)::header
+      logical,intent(In),optional::blank_at_top,blank_at_bottom
+!
+      integer(kind=int64)::i
+!
+ 1000 Format(1x,A)
+ 1020 Format( " " )
+!  
+      if(present(blank_at_top)) then
+        if(blank_at_top) write(iout,1020)
+      endif
+      write(iout,1000) trim(header)
+      do i = 1,twoERISet%nERIs
+        call twoERISet%twoERIs(i)%print(iout,trim(header)//' Set '//trim(num2char(i)))
+      endDo
+      if(present(blank_at_bottom)) then
+        if(blank_at_bottom) write(iout,1020)
+      endif
+!
+      end subroutine mqc_print_twoERISet
 !
 !
 !     PROCEDURE MQC_Integral_isAllocated
@@ -1786,10 +1892,14 @@
       implicit none
       class(mqc_scf_eigenvalues),intent(in)::eigenvalues
       integer(kind=int64)::dimBlock
-      Character(Len=*),intent(in)::label
+      Character(Len=*),optional,intent(in)::label
       Character(Len=64)::myLabel
 !
-      call string_change_case(label,'l',myLabel)
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        mylabel = 'full'
+      endIf
       select case (myLabel)
       case('alpha')
         if(.not.eigenvalues%hasAlpha()) then
@@ -1806,6 +1916,17 @@
           endIf
         else
           dimBlock = mqc_length_vector(eigenvalues%beta)
+        endIf
+      case('full')
+        if(.not.eigenvalues%hasAlpha()) then
+          dimBlock = 0
+        else
+          dimBlock = mqc_length_vector(eigenvalues%alpha)
+        endIf
+        if(.not.eigenvalues%hasBeta()) then
+          if(eigenvalues%type().eq.'space') dimBlock = 2*dimBlock 
+        else
+          dimBlock = dimBlock + mqc_length_vector(eigenvalues%beta)
         endIf
       case default
         call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
@@ -1918,6 +2039,61 @@
       end select 
 !
       end function mqc_eris_dimension 
+!
+!
+!     PROCEDURE MQC_TwoERISet_Allocate
+!
+!>    \brief <b> MQC_TwoERISet_Allocate is used to allocate a two-electron integral 
+!>    set type variable of the MQC_twoERISet class</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_TwoERISet_Allocate is used to allocate a two-electron integral type variable 
+!>    of the MQC_twoERISet class. The object can be used to store multiple integral 
+!>    types, and MQC routines will test the different stored integrals to check the
+!>    correct type is present. To minimize storage requirements, MQC routines will 
+!>    overwrite original integrals in transformations. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] TwoERISet
+!>    \verbatim
+!>        TwoERISet is class(mqc_twoERISet)
+!>        The MQC_TwoERISet variable to allocate.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIs
+!>    \verbatim
+!>        ERIs is type(mqc_twoERIs),dimension(:)
+!>        The vector of 2ERI integrals.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      subroutine mqc_twoeriSet_allocate(twoERISet,ERIs)
+!
+      implicit none
+      class(mqc_twoERISet)::twoERISet
+      type(mqc_twoERIs),dimension(:)::ERIs
+!
+      integer(kind=int64)::i
+!
+      if(allocated(twoERISet%twoERIs)) deallocate(twoERISet%twoERIs)
+      allocate(twoERISet%twoERIs(size(ERIs))) 
+      twoERISet%nERIs = size(ERIs)
+      do i = 1, twoERISet%nERIs
+        twoERISet%twoERIs(i) = ERIs(i)
+      endDo
+!
+      end subroutine mqc_twoeriset_allocate  
 !
 !
 !     PROCEDURE MQC_TwoERIs_Allocate
@@ -2218,14 +2394,15 @@
           beta,alphaBeta,betaAlpha) 
 !
       implicit none
-      class(mqc_scf_integral)::integral
-      character(len=*)::arrayName,arrayType
-      type(mqc_matrix),optional::alpha,beta,alphaBeta,betaAlpha
+      class(mqc_scf_integral),intent(out)::integral
+      character(len=*),intent(in)::arrayName,arrayType
+      type(mqc_matrix),optional,intent(in)::alpha,beta,alphaBeta,betaAlpha
+      character(len=64)::myArrayName,myArrayType
 !
-      call string_change_case(arrayType,'L')
-      call string_change_case(arrayName,'L')
-      integral%array_type = arrayType 
-      integral%array_name = arrayName 
+      call string_change_case(arrayType,'L',myArrayType)
+      call string_change_case(arrayName,'L',myArrayName)
+      integral%array_type = myArrayType 
+      integral%array_name = myArrayName 
 !
       if(mqc_matrix_isallocated(integral%alpha)) call mqc_deallocate_matrix(integral%alpha)
       if(mqc_matrix_isallocated(integral%beta)) call mqc_deallocate_matrix(integral%beta)
@@ -2233,13 +2410,15 @@
       if(mqc_matrix_isallocated(integral%betaAlpha)) call mqc_deallocate_matrix(integral%betaAlpha)
 !
       if(present(alpha)) integral%alpha = alpha
-      if(arrayType.eq.'spin') then
+      if(myArrayType.eq.'spin') then
         if(present(beta)) integral%beta = beta
-      elseIf(arrayType.eq.'general') then
+      elseIf(myArrayType.eq.'general') then
         if(present(beta)) integral%beta = beta
         ! This is completely general - we are not going to assume anything about block size
         if(present(alphaBeta)) integral%alphaBeta = alphaBeta
         if(present(betaAlpha)) integral%betaAlpha = betaAlpha
+      elseIf(myArrayType.ne.'space') then
+        call mqc_error_a('ArrayType name not recognized',6,'myArrayType',myArrayType)
       endIf
 !
       end subroutine mqc_integral_allocate
@@ -2500,6 +2679,14 @@
 !>        Ket MO coefficients required for AO -> MO transformations
 !>        if bra and ket orbitals are different. 
 !>    \endverbatim
+!>
+!>    \param[out] Transform 
+!>    \verbatim
+!>        Transform is logical,optional
+!>        If present, returns true if the requested two ERIS can be formed 
+!>        and false otherwise.
+!>    \endverbatim
+!>    
 !
 !     Authors:
 !     ========
@@ -2507,12 +2694,13 @@
 !>    \date 2019
 !
 !
-      subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients,mo_coeff_2)
+      subroutine mqc_twoeris_transform(twoERIs,integralType,mo_coefficients,mo_coeff_2,transform)
 !
       implicit none
       type(mqc_twoERIs)::twoERIs
       character(len=*),intent(in)::integralType
       type(mqc_scf_integral),optional,intent(in)::mo_coefficients,mo_coeff_2
+      logical,optional,intent(out)::transform
       character(len=64)::my_integralType
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
@@ -2520,6 +2708,7 @@
       integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=4
 
       call string_change_case(integralType,'l',my_integralType)
+      if(present(transform)) transform = .true.
 
       select case (twoERIs%type())
       case ('regular')
@@ -2644,27 +2833,55 @@
           twoERIs = temp
           return
         else
-          call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
-            'my_integralType',my_integralType)
+          if(present(transform)) then
+            transform = .false.
+          else
+            call mqc_error_a('Unrecognized 2ERIs type requested in mqc_twoeris_transform',6, &
+              'my_integralType',my_integralType)
+          endIf
         endIf
       case ('raffenetti1')
-        call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case ('raffenetti2')
-        call mqc_error_a('Transformation of Raffenetti 2 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of Raffenetti 2 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case ('raffenetti3')
-        call mqc_error_a('Transformation of Raffenetti 3 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of Raffenetti 3 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case ('space')
-        call mqc_error_a('Transformation of spatial MO 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of spatial MO 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case ('spin')
-        call mqc_error_a('Transformation of spin MO 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of spin MO 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case ('general')
-        call mqc_error_a('Transformation of general MO 2ERIs NYI in mqc_twoeris_transform',6, &
-          'twoERIs%type()',twoERIs%type())
+        if(present(transform)) then
+          transform = .false.
+        else
+          call mqc_error_a('Transformation of general MO 2ERIs NYI in mqc_twoeris_transform',6, &
+            'twoERIs%type()',twoERIs%type())
+        endIf
       case default
         call mqc_error_a('Unrecognized 2ERIs integral type in mqc_twoeris_transform',6, &
           'twoERIs%type()',twoERIs%type())
@@ -4694,6 +4911,397 @@
       end select
 !
       end function mqc_2ERIs_output_block  
+!
+!
+!     PROCEDURE MQC_2ERISet_output_eri
+!
+!>    \brief <b> MQC_2ERISet_Output_ERI is used to output the twoERI of the specified
+!>    type from the set stored in MQC_TwoERISet</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERISet_Output_ERI is used to output the twoERI of the specified set stored 
+!>    in MQC_TwoERISet. If the set is not present, the routine will die with an error
+!>    unless the logical found in present, which will be true if the requested twoERIs
+!>    are present, and false if they are not present. The following options are available:
+!>    
+!>    1.  ERIType = 'regular' outputs the regular ERIs.
+!>    2.  ERIType = 'raffenetti1' outputs the raffenetti1 ERIs.
+!>    3.  ERIType = 'raffenetti2' outputs the raffenetti2 ERIs.
+!>    4.  ERIType = 'raffenetti3' outputs the raffenetti3 ERIs.
+!>    5.  ERIType = 'molecular' outputs the molecular orbital ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERISet
+!>    \verbatim
+!>        eriSet is class(mqc_twoeriset)
+!>        The MQC_TwoERISET variable to test.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIType
+!>    \verbatim
+!>        ERIType is character(len=*)
+!>        = 'regular':      outputs the regular ERIs.  
+!>        = 'raffenetti1':  outputs the raffenetti1 ERIs
+!>        = 'raffenetti2':  outputs the raffenetti2 ERIs. 
+!>        = 'raffenetti3':  outputs the raffenetti3 ERIs.
+!>        = 'molecular':    outputs the molecular orbital ERIs.
+!>    \endverbatim
+!>
+!>    \param[out] Found 
+!>    \verbatim
+!>        Found is logical,optional
+!>        If present, returns true if the requested two ERIS are present, and
+!>        and false otherwise.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_2ERISet_output_eri(eriSet,ERIType,found) result(eriOut)
+!
+      implicit none
+      class(mqc_twoeriset),intent(in)::eriSet
+      character(len=*),intent(in)::eriType
+      logical,optional,intent(out)::found
+      type(mqc_twoERIs)::eriOut
+!
+      character(len=64)::myERIType
+      integer(kind=int64)::val
+!
+      call string_change_case(eriType,'l',myERIType)
+      val =  mqc_2ERISet_get_eriNum(eriSet,ERItype)
+      if(val.eq.0) then
+        if(present(found)) then
+          found = .false.
+        else
+          call mqc_error('Requested integral type not present in &
+            &mqc_2ERISet_output_eri') 
+        endIf
+      else
+        if(present(found)) found = .true.
+        eriOut = eriSet%twoERIs(val)
+      endIf
+!
+      end function mqc_2ERISet_output_eri
+!
+!
+!     PROCEDURE MQC_2ERISet_transform
+!
+!>    \brief <b> MQC_2ERISet_Transform is used to update the twoERIs in the set stored 
+!>    in MQC_TwoERISet to include the specified type</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERISet_Transform is used to update the twoERIs in the set stored in MQC_TwoERISet 
+!>    to include the specified type. If it is not possible to obtain the desired twoERI type
+!>    from a twoERI object already in the MQC_twoERISet object, the routine will die with an 
+!>    error unless the logical transform is present, which will be true if the requested twoERIs
+!>    can be formed, and false if they cannot. If the optional logical replace is set to true,
+!>    the new twoERIs will overwrite all other twoERIs in the MQC_twoERISet object. Otherwise,
+!>    if replace is set to false, the new twoERIs will be added to the existing set of twoERIs
+!>    already present in MQC_twoERISet. If transformation to molecular orbital twoERIs is 
+!>    requested, the optional mqc_scf_integrals LmoCoeff and possibly RmoCoeff must be provided.
+!>    The following options are available:
+!>    
+!>    1.  ERIType = 'regular' requests formation of regular ERIs.
+!>    2.  ERIType = 'raffenetti1' requests formation of raffenetti1 ERIs.
+!>    3.  ERIType = 'raffenetti2' requests formation of raffenetti2 ERIs.
+!>    4.  ERIType = 'raffenetti3' requests formation of raffenetti3 ERIs.
+!>    5.  ERIType = 'molecular' requests formation of molecular orbital ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inout] ERISet
+!>    \verbatim
+!>        eriSet is class(mqc_twoeriset)
+!>        The MQC_TwoERISET variable to test.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIType
+!>    \verbatim
+!>        ERIType is character(len=*)
+!>        = 'regular':      requests formation of regular ERIs.  
+!>        = 'raffenetti1':  requests formation of raffenetti1 ERIs
+!>        = 'raffenetti2':  requests formation of raffenetti2 ERIs. 
+!>        = 'raffenetti3':  requests formation of raffenetti3 ERIs.
+!>        = 'molecular':    requests formation of molecular orbital ERIs.
+!>    \endverbatim
+!>
+!>    \param[out] Transform 
+!>    \verbatim
+!>        Transform is logical,optional
+!>        If present, returns true if the requested two ERIS can be formed 
+!>        and false otherwise.
+!>    \endverbatim
+!>    
+!>    \param[in] Replace 
+!>    \verbatim
+!>        Replace is logical,optional
+!>        If present, if true, if transform 
+!>        is true, will overwrite 2ERIs 
+!>        currently in eriSet with the new 
+!>        set of TwoERIs.
+!>    \endverbatim
+!>    
+!>    \param[in] LmoCoeff
+!>    \verbatim
+!>        LmoCoeff is type(mqc_scf_integral),optional
+!>        MO coefficients required for AO -> MO transformations. 
+!>    \endverbatim
+!>    
+!>    \param[in] RmoCoeff
+!>    \verbatim
+!>        RmoCoeff is type(mqc_scf_integral),optional
+!>        Ket MO coefficients required for AO -> MO transformations
+!>        if bra and ket orbitals are different. 
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      subroutine mqc_2ERISet_transform(eriSet,ERIType,transform,replace,&
+        LmoCoeff,RmoCoeff) 
+!
+      implicit none
+      class(mqc_twoeriset),intent(inOut)::eriSet
+      character(len=*),intent(in)::eriType
+      logical,optional,intent(out)::transform
+      logical,optional,intent(in)::replace
+      type(mqc_scf_integral),optional,intent(in)::LmoCoeff,RmoCoeff
+!
+      character(len=64)::myERIType
+      integer(kind=int64)::i
+      type(mqc_twoERIs)::temp_twoERIs
+      logical::tempTrans,myReplace
+      type(mqc_twoERIs),dimension(:),allocatable::temp_twoERISets
+!
+      call string_change_case(eriType,'l',myERIType)
+      if(present(transform)) transform = .false.
+      if(present(replace)) then
+        myReplace = replace
+      else
+        myReplace = .true.
+      endIf
+      do i = 1, eriSet%nERIs
+        if(myReplace) then
+          if(present(LmoCoeff).and.present(RmoCoeff)) then
+            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,LmoCoeff,RmoCoeff,tempTrans)
+          elseIf(present(LmoCoeff)) then
+            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,LmoCoeff,transform=tempTrans)
+          elseIf(present(RmoCoeff)) then
+            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,RmoCoeff,transform=tempTrans)
+          else
+            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,transform=tempTrans)
+          endIf
+        else
+          temp_twoERIs = eriSet%twoERIs(i)
+          if(present(LmoCoeff).and.present(RmoCoeff)) then
+            call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,RmoCoeff,tempTrans)
+          elseIf(present(LmoCoeff)) then
+            call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,transform=tempTrans)
+          elseIf(present(RmoCoeff)) then
+            call mqc_twoeris_transform(temp_twoERIs,myERIType,RmoCoeff,transform=tempTrans)
+          else
+            call mqc_twoeris_transform(temp_twoERIs,myERIType,transform=tempTrans)
+          endIf
+        endIf
+        if(tempTrans) then
+          if(present(transform)) transform = .true.
+          if(myReplace) then
+            allocate(temp_twoERISets(1))
+            temp_twoERISets(1) = eriSet%twoERIs(i)
+          else
+            allocate(temp_twoERISets(size(eriSet%twoERIs)+1))
+            temp_twoERISets(1:size(eriSet%twoERIs)) = eriSet%twoERIs
+            temp_twoERISets(size(eriSet%twoERIs)+1) = temp_twoERIs
+          endIf
+          call move_alloc(temp_twoERISets,eriSet%twoERIs)
+          eriSet%nERIs=size(eriSet%twoERIs)
+          exit
+        endIf
+      endDo
+!
+      end subroutine mqc_2ERISet_transform
+!
+!
+!     PROCEDURE MQC_2ERISet_AddtoSet
+!
+!>    \brief <b> MQC_2ERISet_AddtoSet is used to add the input twoERIs to the set stored 
+!>    in MQC_TwoERISet</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERISet_AddtoSet is used to add the input twoERIs to the set stored in 
+!>    MQC_TwoERISet. The new ERIs are added to the beginning of the set, so will be 
+!>    indexed before other integrals of the same type, but will not remove integrals 
+!>    already in the set of the same type unless the optional logical argument 
+!>    replace is set to true.  
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inout] ERISet
+!>    \verbatim
+!>        eriSet is class(mqc_twoeriset)
+!>        The MQC_TwoERISET variable to test.
+!>    \endverbatim
+!>
+!>    \param[inout] ERIs
+!>    \verbatim
+!>        eris is class(mqc_twoeris)
+!>        The MQC_TwoERIs variable to add.
+!>    \endverbatim
+!>
+!>    \param[in] Replace 
+!>    \verbatim
+!>        Replace is logical,optional
+!>        If present, if true, if transform 
+!>        is true, will overwrite 2ERIs 
+!>        currently in eriSet with the new 
+!>        set of TwoERIs.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      subroutine mqc_2ERISet_addToSet(eriSet,eris,replace)
+!
+      implicit none
+      class(mqc_twoeriset),intent(inOut)::eriSet
+      class(mqc_twoeris),intent(in)::eris
+      logical,optional,intent(in)::replace
+!
+      logical::myReplace
+      type(mqc_twoERIs),dimension(:),allocatable::temp_twoERISets
+      integer(kind=int64)::i,j,allocSize
+!
+      if(present(replace)) then
+        myReplace = replace
+      else
+        myReplace = .true.
+      endIf
+      allocSize = eriSet%nERIs+1
+      if(myReplace) then
+        do i = 1, eriSet%nERIs 
+          if(eriSet%twoERIs(i)%integralType.eq.eris%integralType) &
+            allocSize = allocSize - 1
+        endDo
+      endIf
+      allocate(temp_twoERISets(allocSize))
+      temp_twoERISets(1) = eris
+      i=2
+      j=1
+      do while (i.le.allocSize)
+        if(myReplace.and.eriSet%twoERIs(j)%integralType.eq.eris%integralType) then
+          j = j+1
+          cycle
+        endIf
+        temp_twoERISets(i) = eriSet%twoERIs(j)
+        i = i+1
+        j = j+1
+      endDo
+      call move_alloc(temp_twoERISets,eriSet%twoERIs)
+      eriSet%nERIs=size(eriSet%twoERIs)
+!
+      end subroutine mqc_2ERISet_addtoSet
+!
+!
+!     PROCEDURE MQC_2ERISet_Get_ERINum
+!
+!>    \brief <b> MQC_2ERISet_Get_ERINum is used to determine which twoERI in the
+!>    set stored in MQC_TwoERISet is the desired type.</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_2ERISet_Get_ERINum is used to determine which twoERI in the set stored 
+!>    in MQC_TwoERISet is the desired type. The position of the first index with 
+!>    the correct type is returned. If no integral is present, 0 is returned. The 
+!>    following options are available:
+!>    
+!>    1.  ERIType = 'regular' outputs the set of regular ERIs.
+!>    2.  ERIType = 'raffenetti1' outputs the set of raffenetti1 ERIs.
+!>    3.  ERIType = 'raffenetti2' outputs the set of raffenetti2 ERIs.
+!>    4.  ERIType = 'raffenetti3' outputs the set of raffenetti3 ERIs.
+!>    5.  ERIType = 'molecular' outputs the set of molecular orbital ERIs.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ERISet
+!>    \verbatim
+!>        eriSet is class(mqc_twoeriset)
+!>        The MQC_TwoERISET variable to test.
+!>    \endverbatim
+!>    
+!>    \param[in] ERIType
+!>    \verbatim
+!>        ERIType is character(len=*)
+!>        = 'regular':      outputs the set of regular ERIs.  
+!>        = 'raffenetti1':  outputs the set of raffenetti1 ERIs
+!>        = 'raffenetti2':  outputs the set of raffenetti2 ERIs. 
+!>        = 'raffenetti3':  outputs the set of raffenetti3 ERIs.
+!>        = 'molecular':    outputs the set of molecular orbital ERIs.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_2ERISet_get_erinum(eriSet,ERIType) result(pos)
+!
+      implicit none
+      class(mqc_twoeriset),intent(in)::eriSet
+      character(len=*),intent(in)::eriType
+      integer(kind=int64)::pos
+!
+      integer(kind=int64)::i
+      character(len=64)::myERIType
+!
+      pos=0
+      call string_change_case(eriType,'l',myERIType)
+      do i = 1, eriSet%nERIs
+        select case (myERIType)
+        case('regular','raffenetti1','raffenetti2','raffenetti3')
+          if(eriSet%twoERIs(i)%integralType.eq.myERIType) pos = i
+        case('molecular')
+          if(eriSet%twoERIs(i)%integralType.eq.'space') pos = i
+          if(eriSet%twoERIs(i)%integralType.eq.'spin') pos = i
+          if(eriSet%twoERIs(i)%integralType.eq.'general') pos = i
+        case default
+          call mqc_error_a('Unrecognized integral type request in &
+            & mqc_2ERISet_get_erinum',6,'myERIType',myERIType)
+        end select
+        if(pos.ne.0) exit
+      endDo
+!
+      end function mqc_2ERISet_get_erinum
 !
 !
 !     PROCEDURE MQC_Integral_Output_Array
@@ -8305,7 +8913,7 @@
       function mqc_eri_integral_contraction(eris,integral,zeroIn,label) result(output)
 !
       implicit none
-      type(mqc_twoERIs),dimension(:),intent(in)::eris
+      type(mqc_twoERISet),intent(in)::eris
       type(mqc_scf_integral),intent(in)::integral
       real(kind=real64),optional,intent(in)::zeroIn
       character(len=*),optional::label
@@ -8377,41 +8985,11 @@
         flag = flag + 2
       endIf
       if(mqc_have_complex(integral%getBlock('full'))) flag = flag + 10
-      if(eris(1)%type().eq.'space'.or.eris(1)%type().eq.'spin'.or.eris(1)%type().eq.'general') &
-        call mqc_error_a('Trying to contract matrix with MO basis 2ERIs',6,'eris(1)%type()',eris(1)%type())
-      if(eris(1)%type().eq.'regular') then
-        flag = flag + 100
-      elseif(eris(1)%type().eq.'raffenetti1') then
-        flag = flag + 200
-      elseif(eris(1)%type().eq.'raffenetti2') then
-        flag = flag + 300
-      elseif(eris(1)%type().eq.'raffenetti3') then
-        flag = flag + 400
-      endIf
-      if(size(eris).ge.2) then
-        if(eris(2)%type().eq.'regular') then
-          flag = flag + 1000
-        elseif(eris(2)%type().eq.'raffenetti1') then
-          flag = flag + 2000
-        elseif(eris(2)%type().eq.'raffenetti2') then
-          flag = flag + 3000
-        elseif(eris(2)%type().eq.'raffenetti3') then
-          flag = flag + 4000
-        endIf
-      endIf
-      if(size(eris).ge.3) then
-        if(eris(3)%type().eq.'regular') then
-          flag = flag + 10000
-        elseif(eris(3)%type().eq.'raffenetti1') then
-          flag = flag + 20000
-        elseif(eris(3)%type().eq.'raffenetti2') then
-          flag = flag + 30000
-        elseif(eris(3)%type().eq.'raffenetti3') then
-          flag = flag + 40000
-        endIf
-      endIf
-      
       if(debug) write(6,'(A,1x,I5)') 'Option flag:',flag
+
+      if(eris%erinum('regular').eq.0.and.eris%erinum('raffenetti1').eq.0) &
+        call mqc_error('Regular or Raffenetti integrals are required in &
+        &mqc_eri_integral_contraction')
 
       nBasis = integral%blockSize('alpha')
       ntt = (nBasis*(nBasis+1))/2
@@ -8722,41 +9300,42 @@
           l = kp - k*(k-1)/2
           n = mp - m*(m-1)/2
 
-          if(mod(flag,1000)/100.eq.1) then
-            raf1 = eris(1)%at(k,l,m,n) - 0.25*(eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l))
+          if(eris%erinum('raffenetti1').ne.0) then
+            raf1 = eris%twoERIs(eris%erinum('raffenetti1'))%at(k,l,m,n)
+          elseIf(eris%erinum('regular').ne.0) then
+            raf1 = eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n) - &
+              0.25*(eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l) + &
+              eris%twoERIs(eris%erinum('regular'))%at(k,m,n,l))
             if(kp.eq.mp) raf1 = 0.5*raf1 
-          elseIf(mod(flag,1000)/100.eq.2) then
-            raf1 = eris(1)%at(k,l,m,n)
           else
-            call mqc_error_a('Unrecognized/incorrect integrals given in eris(1) in &
-              & mqc_eri_integral_contraction',6,'eris(1)%type()',eris(1)%type())
+            call mqc_error('Regular or Raffenetti 1 type TwoERIs missing in &
+              & mqc_eri_integral_contraction')
           endIf
           if(mod(flag,10).gt.0) then
-            if(mod(flag,1000)/100.eq.1) then
-              raf2 = eris(1)%at(k,n,m,l) + eris(1)%at(k,m,n,l)
+            if(eris%erinum('raffenetti2').ne.0) then
+              raf2 = eris%twoERIs(eris%erinum('raffenetti2'))%at(k,l,m,n) 
+            elseIf(eris%erinum('regular').ne.0) then
+              raf2 = eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l) + &
+                eris%twoERIs(eris%erinum('regular'))%at(k,m,n,l)
               if(kp.eq.mp) raf2 = 0.5*raf2 
-            elseIf(mod(flag,10000)/1000.eq.3) then
-              raf2 = eris(2)%at(k,l,m,n) 
             else
-              call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) in &
-                & mqc_eri_integral_contraction',6,'eris(2)%type()',eris(2)%type())
+              call mqc_error('Regular or Raffenetti 2 type TwoERIs missing in &
+                & mqc_eri_integral_contraction')
             endIf
           else
             raf2 = 0.0 
           endIf
           if (m.ne.n) then
             if (doAhrm.or.mod(flag,10).eq.2.or.mod(flag,100)/10.eq.1) then
-              if(mod(flag,1000)/100.eq.1) then
-                raf3 = eris(1)%at(k,m,n,l) - eris(1)%at(k,n,m,l) 
+              if(eris%erinum('raffenetti3').ne.0) then
+                raf3 = eris%twoERIs(eris%erinum('raffenetti3'))%at(k,l,m,n) 
+              elseIf(eris%erinum('regular').ne.0) then
+                raf3 = eris%twoERIs(eris%erinum('regular'))%at(k,m,n,l) - &
+                  eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l) 
                 if(kp.eq.mp) raf3 = 0.5*raf3 
-              elseIf(mod(flag,10000)/1000.eq.4) then
-                raf3 = eris(2)%at(k,l,m,n) 
-              elseIf(mod(flag,100000)/10000.eq.4) then
-                raf3 = eris(3)%at(k,l,m,n) 
               else
-                call mqc_error_a('Unrecognized/incorrect integrals given in eris(2) or & 
-                  & eris(3) in mqc_eri_integral_contraction',6,'eris(2)%type()', &
-                  eris(2)%type(),'eris(3)%type()',eris(3)%type())
+                call mqc_error('Regular or Raffenetti 3 type TwoERIs missing in &
+                  & mqc_eri_integral_contraction')
               endIf
             endIf
           else
@@ -9048,9 +9627,9 @@
         
       elseIf(algorithm.eq.'square') then
 
-        if(eris(1)%integralType.ne.'regular') call mqc_error_A('2ERI contraction only &
-          & implemented with regular integrals in mqc_eri_integral_contraction',6, &
-          'eris(1)%integralType:',eris(1)%integralType)
+        if(eris%erinum('regular').eq.0) call mqc_error('Square algorithm twoERI &
+          &contraction only implemented with regular integrals in &
+          &mqc_eri_integral_contraction')
 
 !        !$OMP PARALLEL REDUCTION(+:alpha,beta,alphaBeta,betaAlpha) DEFAULT(NONE), &
         !$OMP PARALLEL DEFAULT(NONE), &
@@ -9068,33 +9647,42 @@
           do l = 1, nBasis
             do m = 1, nBasis
               do n = 1, nBasis
-                if(abs(eris(1)%at(k,l,m,n)).le.zero.and.abs(eris(1)%at(k,n,m,l)).le.zero) cycle
+                if(abs(eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n)).le.zero.and.&
+                  abs(eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l)).le.zero) cycle
                 ! AA Block
                 if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
-                  call alphaLoc%put(alphaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+&
+                    eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)+&
+                    eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
                 endIf
                 if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                  call alphaLoc%put(alphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n),k,l)
+                  call alphaLoc%put(alphaLoc%at(k,l)-&
+                    eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l)*integral%at(m,n),k,l)
                 endIf
                 !BB Block
                 if(integral%array_type.eq.'spin'.or.integral%array_type.eq.'general') then
                   if(myLabel.eq.'coulomb'.or.myLabel.eq.'doublebar') then
-                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
-                    call betaLoc%put(betaLoc%at(k,l)+eris(1)%at(k,l,m,n)*integral%at(m,n),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+&
+                      eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)+&
+                      eris%twoERIs(eris%erinum('regular'))%at(k,l,m,n)*integral%at(m,n),k,l)
                   endIf
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaLoc%put(betaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
+                    call betaLoc%put(betaLoc%at(k,l)-&
+                      eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l)*integral%at(m+nBasis,n+nBasis),k,l)
                   endIf
                 endIf
                 !AB Block
                 if(integral%array_type.eq.'general') then
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
+                    call alphaBetaLoc%put(alphaBetaLoc%at(k,l)-&
+                      eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l)*integral%at(m,n+nBasis),k,l)
                   endIf
                 !BA Block
                   if(myLabel.eq.'exchange'.or.myLabel.eq.'doublebar') then
-                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-eris(1)%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
+                    call betaAlphaLoc%put(betaAlphaLoc%at(k,l)-&
+                      eris%twoERIs(eris%erinum('regular'))%at(k,n,m,l)*integral%at(m+nBasis,n),k,l)
                   endIf
                 endIf
               end do
@@ -11867,6 +12455,10 @@
       element = zero
       select type (i)  
       type is (integer)
+        myI = i
+      type is (integer(kind=int32))
+        myI = i
+      type is (real(kind=real64))
         myI = i
       type is (mqc_scalar)
         myI = i

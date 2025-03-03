@@ -93,12 +93,16 @@
         procedure,pass::getBasisData     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Set_Matrices
         procedure,pass::getMolData       => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj        => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
-        procedure,pass::get2ERIs         => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+        procedure,private::get2ERIObj    => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
+        procedure,private::get2ERISet    => MQC_Gaussian_Unformatted_Matrix_Get_twoERISet  
+        generic,public::get2ERIs         => get2ERIObj, get2ERISet
         procedure,pass::writeArray2      => MQC_Gaussian_Unformatted_Matrix_Write_Array2
         procedure,pass::writeArray       => MQC_Gaussian_Unformatted_Matrix_Write_Array
         procedure,pass::writeBasisData   => MQC_Gaussian_Unformatted_Matrix_Write_Basis_Set_Matrices
         procedure,pass::writeESTObj      => MQC_Gaussian_Unformatted_Matrix_Write_EST_Object
-        procedure,pass::write2ERIs       => MQC_Gaussian_Unformatted_Matrix_Write_twoERIs
+        procedure,private::write2ERIObj  => MQC_Gaussian_Unformatted_Matrix_Write_twoERIs
+        procedure,private::write2ERISet  => MQC_Gaussian_Unformatted_Matrix_Write_twoERISet
+        generic,public::write2ERIs       => write2ERIObj, write2ERISet
         procedure,pass::updateHeader     => MQC_Gaussian_Unformatted_Matrix_Update_Header_Info
       End Type MQC_Gaussian_Unformatted_Matrix_File
 !
@@ -5370,6 +5374,217 @@
 !
       return
       end subroutine MQC_Gaussian_Unformatted_Matrix_Write_twoERIs    
+
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Get_twoERISet   
+      subroutine mqc_gaussian_unformatted_matrix_get_twoERISet(fileinfo,label, &
+        ERISet,filename,foundERI,replace)
+!
+!     This subroutine reads two-electron resonance integrals of the requested type
+!     from input Gaussian unformatted matrix file sent in object <fileinfo> to
+!     output dummy mqc_twoERISet argument <est_twoeriSet>. The recognized labels 
+!     and their meaning include:
+!           'regular'            return regular 2ERIs 
+!           'raffenetti'         return the set of raffenetti 2ERIs present
+!           'molecular'          return the molecular orbital basis 2ERIs
+
+!     L. M. Thompson, 2025.
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inOut)::fileinfo
+      character(len=*),intent(in)::label
+      type(mqc_twoERISet),intent(out)::ERISet
+      character(len=*),intent(in),optional::filename
+      logical,optional,intent(out)::foundERI
+      logical,optional,intent(in)::replace
+!      
+      type(mqc_twoERIs)::ERIs
+      character(len=64)::myLabel
+      logical::myReplace,found,raffound
+!
+!     Do the work...
+!
+      if(present(replace)) then
+        myReplace = replace
+      else
+        myReplace = .true.
+      endIf
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('regular')
+        if(present(filename)) then
+          call fileinfo%get2ERIs('regular',ERIs,filename,found)
+        else
+          call fileinfo%get2ERIs('regular',ERIs,foundERI=found)
+        endIf
+        if(.not.found) then
+          if(present(foundERI)) then
+            foundERI = .false.
+            return
+          else
+            call mqc_error('EXITING DUE TO MISSING INTEGRALS IN &
+              &mqc_gaussian_unformatted_matrix_get_twoERISet')
+          endIf
+        else
+          if(present(foundERI)) foundERI = .true.
+          call ERISet%addToSet(ERIs,myReplace)
+        endIf
+      case('raffenetti')
+        raffound = .false.
+        if(present(filename)) then
+          call fileinfo%get2ERIs('raffenetti1',ERIs,filename,found)
+        else
+          call fileinfo%get2ERIs('raffenetti1',ERIs,foundERI=found)
+        endIf
+        if(found) then
+           raffound = .true.
+          if(present(foundERI)) foundERI = .true.
+          call ERISet%addToSet(ERIs,myReplace)
+        endIf
+        if(present(filename)) then
+          call fileinfo%get2ERIs('raffenetti2',ERIs,filename,found)
+        else
+          call fileinfo%get2ERIs('raffenetti2',ERIs,foundERI=found)
+        endIf
+        if(found) then
+           raffound = .true.
+          if(present(foundERI)) foundERI = .true.
+          call ERISet%addToSet(ERIs,myReplace)
+        endIf
+        if(present(filename)) then
+          call fileinfo%get2ERIs('raffenetti3',ERIs,filename,found)
+        else
+          call fileinfo%get2ERIs('raffenetti3',ERIs,foundERI=found)
+        endIf
+        if(found) then
+           raffound = .true.
+          if(present(foundERI)) foundERI = .true.
+          call ERISet%addToSet(ERIs,myReplace)
+        endIf
+        if(.not.raffound) then
+          if(present(foundERI)) then
+            foundERI = .false.
+            return
+          else
+            call mqc_error('EXITING DUE TO MISSING INTEGRALS IN &
+              &mqc_gaussian_unformatted_matrix_get_twoERISet')
+          endIf
+        endIf
+      case('molecular')
+        if(present(filename)) then
+          call fileinfo%get2ERIs('molecular',ERIs,filename,found)
+        else
+          call fileinfo%get2ERIs('molecular',ERIs,foundERI=found)
+        endIf
+        if(.not.found) then
+          if(present(foundERI)) then
+            foundERI = .false.
+            return
+          else
+            call mqc_error('EXITING DUE TO MISSING INTEGRALS IN &
+              &mqc_gaussian_unformatted_matrix_get_twoERISet')
+          endIf
+        else
+          if(present(foundERI)) foundERI = .true.
+          call ERISet%addToSet(ERIs,myReplace)
+        endIf
+      case default
+        call mqc_error_A('Invalid label sent to MQC_Gaussian_Unformatted_Matrix_Write_twoERISet', 6, &
+             'mylabel', mylabel )
+      end select
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Get_twoERISet    
+
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Write_twoERISet   
+      subroutine mqc_gaussian_unformatted_matrix_write_twoERISet(fileinfo,label, &
+        ERISet,filename)
+!
+!     This subroutine writes two-electron resonance integrals of the requested type
+!     from input dummy mqc_twoERISet argument <est_twoeriSet> to a Gaussian unformatted 
+!     matrix file sent in object <fileinfo>. The recognized labels and their meaning 
+!     include:
+!           'regular'            search for and write regular 2ERIs if present 
+!           'raffenetti'         search for and write raffenetti 2ERIs if present
+!           'molecular'          the array contains molecular orbital basis 2ERIs (NYI)
+
+!     L. M. Thompson, 2025.
+!
+!     Variable Declarations.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      character(len=*),intent(in)::label
+      type(mqc_twoERISet),intent(in)::ERISet
+      character(len=*),intent(in),optional::filename
+!      
+      type(mqc_twoERIs),dimension(:),allocatable::ERIs
+      character(len=64)::myLabel
+!
+!     Do the work...
+!
+      call String_Change_Case(label,'l',myLabel)
+      select case (mylabel)
+      case('regular')
+        if(ERISet%erinum('regular').eq.0) &
+          call mqc_error('Attempting to write regular 2ERIs but regular integrals not &
+          &present in ERISet in MQC_Gaussian_Unformatted_Matrix_Write_twoERISet')
+        allocate(ERIs(1))
+        ERIs(1) = ERISet%eris('regular')
+        if(present(filename)) then
+          call fileinfo%write2ERIs('regular',ERIs,fileName)
+        else
+          call fileinfo%write2ERIs('regular',ERIs)
+        endIf
+      case('raffenetti')
+        if(ERISet%erinum('raffenetti1').eq.0) call mqc_error('Attempting to write Raffenetti 2ERIs &
+          &but Raffenetti 1 integrals not present in ERISet in &
+          &MQC_Gaussian_Unformatted_Matrix_Write_twoERISet')
+        if(ERISet%erinum('raffenetti2').eq.0.and.ERISet%erinum('raffenetti3').ne.0) &
+          call mqc_error('GauOpen expects Raffenetti 2 integrals to be present if Raffenetti 3 &
+          &integrals are present in MQC_Gaussian_Unformatted_Matrix_Write_twoERISet')
+        if(ERISet%erinum('raffenetti3').ne.0) then
+          allocate(ERIs(3))
+        elseIf(ERISet%erinum('raffenetti2').ne.0) then
+          allocate(ERIs(2))
+        else
+          allocate(ERIs(1))
+        endIf
+        ERIs(1) = ERISet%eris('raffenetti1')
+        if(size(ERIs).ge.2) ERIs(2) = ERISet%eris('raffenetti2')
+        if(size(ERIs).eq.3) ERIs(3) = ERISet%eris('raffenetti3')
+        if(present(filename)) then
+          call fileinfo%write2ERIs('raffenetti',ERIs,fileName)
+        else
+          call fileinfo%write2ERIs('raffenetti',ERIs)
+        endIf
+      case('molecular')
+        if(ERISet%erinum('molecular').eq.0) &
+          call mqc_error('Attempting to write molecular 2ERIs but molecular integrals not &
+          &present in ERISet in MQC_Gaussian_Unformatted_Matrix_Write_twoERISet')
+        allocate(ERIs(1))
+        ERIs(1) = ERISet%eris('molecular')
+        if(present(filename)) then
+          call fileinfo%write2ERIs('molecular',ERIs,fileName)
+        else
+          call fileinfo%write2ERIs('molecular',ERIs)
+        endIf
+      case default
+        call mqc_error_A('Invalid label sent to MQC_Gaussian_Unformatted_Matrix_Write_twoERISet', 6, &
+             'mylabel', mylabel )
+      end select
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Write_twoERISet    
 
 
 !=====================================================================
