@@ -5494,7 +5494,7 @@
           call ERISet%addToSet(ERIs,myReplace)
         endIf
       case default
-        call mqc_error_A('Invalid label sent to MQC_Gaussian_Unformatted_Matrix_Write_twoERISet', 6, &
+        call mqc_error_A('Invalid label sent to MQC_Gaussian_Unformatted_Matrix_Get_twoERISet', 6, &
              'mylabel', mylabel )
       end select
 !

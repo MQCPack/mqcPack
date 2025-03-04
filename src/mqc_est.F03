@@ -5052,7 +5052,16 @@
 !>    \verbatim
 !>        Replace is logical,optional
 !>        If present, if true, if transform 
-!>        is true, will overwrite 2ERIs 
+!>        is true, will overwrite the 2ERIs 
+!>        of the same type currently in 
+!>        eriSet with the new set of TwoERIs.
+!>    \endverbatim
+!>    
+!>    \param[in] ReplaceAll 
+!>    \verbatim
+!>        ReplaceAll is logical,optional
+!>        If present, if true, if transform 
+!>        is true, will overwrite all 2ERIs 
 !>        currently in eriSet with the new 
 !>        set of TwoERIs.
 !>    \endverbatim
@@ -5076,19 +5085,19 @@
 !>    \date 2025
 !
       subroutine mqc_2ERISet_transform(eriSet,ERIType,transform,replace,&
-        LmoCoeff,RmoCoeff) 
+        replaceAll,LmoCoeff,RmoCoeff) 
 !
       implicit none
       class(mqc_twoeriset),intent(inOut)::eriSet
       character(len=*),intent(in)::eriType
       logical,optional,intent(out)::transform
-      logical,optional,intent(in)::replace
+      logical,optional,intent(in)::replace,replaceAll
       type(mqc_scf_integral),optional,intent(in)::LmoCoeff,RmoCoeff
 !
       character(len=64)::myERIType
       integer(kind=int64)::i
       type(mqc_twoERIs)::temp_twoERIs
-      logical::tempTrans,myReplace
+      logical::tempTrans,myReplace,myReplaceAll
       type(mqc_twoERIs),dimension(:),allocatable::temp_twoERISets
 !
       call string_change_case(eriType,'l',myERIType)
@@ -5098,41 +5107,29 @@
       else
         myReplace = .true.
       endIf
+      if(present(replace)) then
+        myReplaceAll = replaceAll
+      else
+        myReplaceAll = .false.
+      endIf
+      if(myReplaceAll.and..not.myReplace) call mqc_error_l('Incompatible 2ERI &
+        &overwrite instructions in mqc_2ERISet_addToSet',6,'myReplace',myReplace,&
+        'myReplaceAll',myReplaceAll)
+
       do i = 1, eriSet%nERIs
-        if(myReplace) then
-          if(present(LmoCoeff).and.present(RmoCoeff)) then
-            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,LmoCoeff,RmoCoeff,tempTrans)
-          elseIf(present(LmoCoeff)) then
-            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,LmoCoeff,transform=tempTrans)
-          elseIf(present(RmoCoeff)) then
-            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,RmoCoeff,transform=tempTrans)
-          else
-            call mqc_twoeris_transform(eriSet%twoERIs(i),myERIType,transform=tempTrans)
-          endIf
+        temp_twoERIs = eriSet%twoERIs(i)
+        if(present(LmoCoeff).and.present(RmoCoeff)) then
+          call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,RmoCoeff,tempTrans)
+        elseIf(present(LmoCoeff)) then
+          call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,transform=tempTrans)
+        elseIf(present(RmoCoeff)) then
+          call mqc_twoeris_transform(temp_twoERIs,myERIType,RmoCoeff,transform=tempTrans)
         else
-          temp_twoERIs = eriSet%twoERIs(i)
-          if(present(LmoCoeff).and.present(RmoCoeff)) then
-            call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,RmoCoeff,tempTrans)
-          elseIf(present(LmoCoeff)) then
-            call mqc_twoeris_transform(temp_twoERIs,myERIType,LmoCoeff,transform=tempTrans)
-          elseIf(present(RmoCoeff)) then
-            call mqc_twoeris_transform(temp_twoERIs,myERIType,RmoCoeff,transform=tempTrans)
-          else
-            call mqc_twoeris_transform(temp_twoERIs,myERIType,transform=tempTrans)
-          endIf
+          call mqc_twoeris_transform(temp_twoERIs,myERIType,transform=tempTrans)
         endIf
         if(tempTrans) then
           if(present(transform)) transform = .true.
-          if(myReplace) then
-            allocate(temp_twoERISets(1))
-            temp_twoERISets(1) = eriSet%twoERIs(i)
-          else
-            allocate(temp_twoERISets(size(eriSet%twoERIs)+1))
-            temp_twoERISets(1:size(eriSet%twoERIs)) = eriSet%twoERIs
-            temp_twoERISets(size(eriSet%twoERIs)+1) = temp_twoERIs
-          endIf
-          call move_alloc(temp_twoERISets,eriSet%twoERIs)
-          eriSet%nERIs=size(eriSet%twoERIs)
+          call eriSet%addtoSet(temp_twoERIs,myReplace,myReplaceAll)
           exit
         endIf
       endDo
@@ -5176,7 +5173,16 @@
 !>    \verbatim
 !>        Replace is logical,optional
 !>        If present, if true, if transform 
-!>        is true, will overwrite 2ERIs 
+!>        is true, will overwrite the 2ERIs 
+!>        of the same type currently in 
+!>        eriSet with the new set of TwoERIs.
+!>    \endverbatim
+!>    
+!>    \param[in] ReplaceAll 
+!>    \verbatim
+!>        ReplaceAll is logical,optional
+!>        If present, if true, if transform 
+!>        is true, will overwrite all 2ERIs 
 !>        currently in eriSet with the new 
 !>        set of TwoERIs.
 !>    \endverbatim
@@ -5186,14 +5192,14 @@
 !>    \author L. M. Thompson
 !>    \date 2025
 !
-      subroutine mqc_2ERISet_addToSet(eriSet,eris,replace)
+      subroutine mqc_2ERISet_addToSet(eriSet,eris,replace,replaceAll)
 !
       implicit none
       class(mqc_twoeriset),intent(inOut)::eriSet
       class(mqc_twoeris),intent(in)::eris
-      logical,optional,intent(in)::replace
+      logical,optional,intent(in)::replace,replaceAll
 !
-      logical::myReplace
+      logical::myReplace,myReplaceAll
       type(mqc_twoERIs),dimension(:),allocatable::temp_twoERISets
       integer(kind=int64)::i,j,allocSize
 !
@@ -5202,14 +5208,28 @@
       else
         myReplace = .true.
       endIf
-      allocSize = eriSet%nERIs+1
-      if(myReplace) then
-        do i = 1, eriSet%nERIs 
-          if(eriSet%twoERIs(i)%integralType.eq.eris%integralType) &
-            allocSize = allocSize - 1
-        endDo
+      if(present(replaceAll)) then
+        myReplaceAll = replaceAll
+      else
+        myReplaceAll = .false.
+      endIf
+      if(myReplaceAll.and..not.myReplace) call mqc_error_l('Incompatible 2ERI &
+        &overwrite instructions in mqc_2ERISet_addToSet',6,'myReplace',myReplace,&
+        'myReplaceAll',myReplaceAll)
+
+      if(myReplaceAll) then
+        allocSize = 1
+      else
+        allocSize = eriSet%nERIs+1
+        if(myReplace) then
+          do i = 1, eriSet%nERIs 
+            if(eriSet%twoERIs(i)%integralType.eq.eris%integralType) &
+              allocSize = allocSize - 1
+          endDo
+        endIf
       endIf
       allocate(temp_twoERISets(allocSize))
+
       temp_twoERISets(1) = eris
       i=2
       j=1
