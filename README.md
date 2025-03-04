@@ -1,4 +1,5 @@
-[![CI](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml/badge.svg)](https://github.com/leethomo86/mqcPack/actions/workflows/ci.yml)
+[![Linux Ubuntu Tests](https://github.com/MQCPack/mqcPack/actions/workflows/linux.yml/badge.svg)](https://github.com/MQCPack/mqcPack/actions/workflows/linux.yml)
+[![MacOS Tests](https://github.com/MQCPack/mqcPack/actions/workflows/macos.yml/badge.svg)](https://github.com/MQCPack/mqcPack/actions/workflows/macos.yml)
 <pre>
    **************************************************************************
    **************************************************************************
@@ -13,10 +14,10 @@
    **  |__/     |__/\____ $$$\______/|__/     \_______/\_______|__/  \__/  **
    **          \__/                                                        **
    **                                                                      **
-   **                The Merced Quantum Chemistry Package                  **
+   **                 The Merced Quantum Chemistry Package                 **
    **                              (MQCPack)                               **
-   **                            Version 24.3.1                            **
-   **                            March 30, 2024                            **
+   **                            Version 25.2.1                            **
+   **                           February 9, 2025                           **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **

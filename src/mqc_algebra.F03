@@ -33,31 +33,33 @@
 !
       Module MQC_Algebra
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                                                   **
+!     **                          Version 25.2.1                           **
+!     **                         February 9, 2025                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
       Use MQC_General
       use iso_fortran_env, only: int32, int64, real64
@@ -537,6 +539,13 @@
         Module Procedure MQC_Set_Array2Vector_Complex
       End Interface
 !
+!>    \brief <b> MQC_Vector structure constructor</b>
+      Interface MQC_Vector
+        Module Procedure MQC_Set_Array2Vector_Integer_Func
+        Module Procedure MQC_Set_Array2Vector_Real_Func
+        Module Procedure MQC_Set_Array2Vector_Complex_Func
+      End Interface
+!
 !>    \brief <b> Sets a symmetric packed intrinsic array as an MQC Matrix object</b>
       Interface MQC_Matrix_SymmMatrix_Put
         Module Procedure MQC_Matrix_SymmMatrix_Put_Integer,MQC_Matrix_SymmMatrix_Put_Real, MQC_Matrix_SymmMatrix_Put_Complex
@@ -941,6 +950,30 @@
 !     Documentation in scalar operator section
       Interface Operator (-)
         Module Procedure MQC_R4Tensor_R4Tensor_Difference
+      End Interface
+!
+!>    \brief <b> Determines if two variables are equal</b>
+      Interface Operator (.eq.)
+        Module Procedure MQC_ScalarEQVector
+        Module Procedure MQC_VectorEQScalar
+        Module Procedure MQC_IntegerEQVector
+        Module Procedure MQC_VectorEQInteger
+      End Interface
+!
+!>    \brief <b> Determines if vector elements are greater or equal</b>
+      Interface Operator (.ge.)
+        Module Procedure MQC_ScalarGEVector
+        Module Procedure MQC_VectorGEScalar
+        Module Procedure MQC_IntegerGEVector
+        Module Procedure MQC_VectorGEInteger
+      End Interface
+!
+!>    \brief <b> Determines if vector elements are less than or equal</b>
+      Interface Operator (.le.)
+        Module Procedure MQC_ScalarLEVector
+        Module Procedure MQC_VectorLEScalar
+        Module Procedure MQC_IntegerLEVector
+        Module Procedure MQC_VectorLEInteger
       End Interface
 !
 !
@@ -2781,7 +2814,6 @@
         output = 0.0
       else
         output = acos(Scalar%rval()/abs(Scalar))
-        write(6,*) 'test', output%rval()
       end if
       return
 !
@@ -8520,6 +8552,132 @@
       End Subroutine MQC_Set_Array2Vector_Complex
 !
 !
+!     PROCEDURE MQC_Set_Array2Vector_Integer_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Integer_Func is a function that sets a 
+!>    rank 1 intrinsic integer array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Integer_Func is a function that sets a rank 1  
+!>    intrinsic integer array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Integer(kind=int64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Integer_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Integer(kind=int64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Integer_Func
+!
+!
+!     PROCEDURE MQC_Set_Array2Vector_Real_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Real_Func is a function that sets a 
+!>    rank 1 intrinsic real array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Real_Func is a function that sets a rank 1  
+!>    intrinsic real array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Real(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Real_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Real(kind=real64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Real_Func
+!
+!
+!     PROCEDURE MQC_Set_Array2Vector_Complex_Func
+!
+!>    \brief <b> MQC_Set_Array2Vector_Complex_Func is a function that sets a 
+!>    rank 1 intrinsic complex array equal to a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Array2Vector_Complex_Func is a function that sets a rank 1  
+!>    intrinsic complex array equal to a MQC vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ArrayIn
+!>    \verbatim
+!>        ArrayOut is Complex(kind=real64),Dimension(:)
+!>        The rank 1 intrinsic array whose data will be input 
+!>        into the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2025
+!
+      Function MQC_Set_Array2Vector_Complex_Func(ArrayIn) Result(VectorOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector)::VectorOut
+      Complex(kind=real64),Dimension(:),Intent(In)::ArrayIn
+!
+      VectorOut = ArrayIn
+!
+      Return
+      End Function MQC_Set_Array2Vector_Complex_Func
+!
+!
 !     PROCEDURE MQC_Set_Vector2Vector
 !
 !>    \brief <b> MQC_Set_Vector2Vector is a subroutine that sets a MQC vector equal 
@@ -12712,6 +12870,666 @@
       End Function MQC_Vector_Reshape_Matrix
 !
 !
+!     PROCEDURE MQC_ScalarEQVector
+!
+!>    \brief <b> MQC_ScalarEQVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the MQC_Scalar
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarEQVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the MQC_Scalar and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_ScalarEQVector(Scalar,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_ScalarEQVector
+!
+!
+!     PROCEDURE MQC_VectorEQScalar
+!
+!>    \brief <b> MQC_VectorEQScalar is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the MQC_Scalar
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorEQScalar is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the MQC_Scalar and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_VectorEQScalar(Vector,Scalar) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorEQScalar
+!
+!
+!     PROCEDURE MQC_IntegerEQVector
+!
+!>    \brief <b> MQC_IntegerEQVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the integer
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerEQVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the integer and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Integer(kind=int64)
+!>        The integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_IntegerEQVector(Integr,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::Integr
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_IntegerEQVector
+!
+!
+!     PROCEDURE MQC_VectorEQInteger
+!
+!>    \brief <b> MQC_VectorEQInteger is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is equal to the integer
+!>    and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorEQInteger is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is equal to the integer and elements 
+!>    FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Type(MQC_Scalar)
+!>        The integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2024
+!
+      Function MQC_VectorEQInteger(Vector,Integr) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Integer(kind=int64),Intent(In)::Integr
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).eq.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorEQInteger
+!
+!
+!     PROCEDURE MQC_ScalarGEVector
+!
+!>    \brief <b> MQC_ScalarGEVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is greater than or equal 
+!>    to the MQC_Scalar and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarGEVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is greater than or equal to the MQC_Scalar 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_ScalarGEVector(Scalar,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).ge.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_ScalarGEVector
+!
+!
+!     PROCEDURE MQC_VectorGEScalar
+!
+!>    \brief <b> MQC_VectorGEScalar is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is greater than or equal 
+!>    to the MQC_Scalar and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorGEScalar is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is greater than or equal to the MQC_Scalar 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_VectorGEScalar(Vector,Scalar) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).ge.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorGEScalar
+!
+!
+!     PROCEDURE MQC_IntegerGEVector
+!
+!>    \brief <b> MQC_IntegerGEVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is greater than or equal 
+!>    to the integer and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerGEVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is greater than or equal to the integer 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Integer(kind=int64)
+!>        The integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_IntegerGEVector(Integr,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::Integr
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).ge.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_IntegerGEVector
+!
+!
+!     PROCEDURE MQC_VectorGEInteger
+!
+!>    \brief <b> MQC_VectorGEInteger is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is greater than or equal 
+!>    to the integer and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorGEInteger is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is greater than or equal to the integer 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Type(MQC_Scalar)
+!>        The integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_VectorGEInteger(Vector,Integr) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Integer(kind=int64),Intent(In)::Integr
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).ge.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorGEInteger
+!
+!
+!     PROCEDURE MQC_ScalarLEVector
+!
+!>    \brief <b> MQC_ScalarLEVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is less than or equal 
+!>    to the MQC_Scalar and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_ScalarLEVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is less than or equal to the MQC_Scalar 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_ScalarLEVector(Scalar,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).le.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_ScalarLEVector
+!
+!
+!     PROCEDURE MQC_VectorLEScalar
+!
+!>    \brief <b> MQC_VectorLEScalar is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is less than or equal 
+!>    to the MQC_Scalar and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorLEScalar is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is less than or equal to the MQC_Scalar 
+!>    and elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar)
+!>        The MQC_Scalar that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_VectorLEScalar(Vector,Scalar) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Type(MQC_Scalar),Intent(In)::Scalar
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).le.scalar) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorLEScalar
+!
+!
+!     PROCEDURE MQC_IntegerLEVector
+!
+!>    \brief <b> MQC_IntegerLEVector is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is less than or equal 
+!>    to the integer and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_IntegerLEVector is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is less than or equal to the integer and 
+!>    elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Integer(kind=int64)
+!>        The integer that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_IntegerLEVector(Integr,Vector) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::Integr
+      Type(MQC_Vector),Intent(In)::Vector
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).le.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_IntegerLEVector
+!
+!
+!     PROCEDURE MQC_VectorLEInteger
+!
+!>    \brief <b> MQC_VectorLEInteger is a function that returns a logical array 
+!>    with elements TRUE if the element of an MQC_Vector is less than or equal to 
+!>    the integer and elements FALSE otherwise</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_VectorLEInteger is a function that returns a logical array with elements 
+!>    TRUE if the element of an MQC_Vector is less than or equal to the integer and 
+!>    elements FALSE otherwise.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector)
+!>        The MQC_Vector that will be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Integr
+!>    \verbatim
+!>        Integr is Type(MQC_Scalar)
+!>        The integer that will be tested.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_VectorLEInteger(Vector,Integr) Result(Output)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_Vector),Intent(In)::Vector
+      Integer(kind=int64),Intent(In)::Integr
+      Logical,Dimension(:),Allocatable::Output
+      integer::i
+!
+      allocate(output(size(vector)))
+      output = .false.
+      do i = 1, size(output)
+        if(vector%at(i).le.integr) output(i) = .true.
+      endDo
+!
+      Return
+      End Function MQC_VectorLEInteger
+!
+!
 !----------------------------------------------------------------
 !                                                               |
 !     MATRIX PROCEDURES                                         |
@@ -12980,7 +13798,7 @@
 !
 !     Arguments:
 !     ==========
-!>    \param[in] MA
+!>    \param[in] RA
 !>    \verbatim
 !>        RA is Type(MQC_R4Tensor)
 !>        The MQC r4tensor to convert.
@@ -27144,8 +27962,8 @@
         call mqc_error_I('P type not defined in MQC_Vector_Power',6)
       end select
 !
-!      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
-      call A%diag(evals=sVals,evecs=uMatrix)
+      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+!      call A%diag(evals=sVals,evecs=uMatrix)
       call sVals%power(scalar)
       call sVals%diag(A)
       A = matmul(matmul(uMatrix,A),dagger(uMatrix))
@@ -31633,8 +32451,6 @@
 !>        Ex: if inorder=[3,2], the thrid and second indexes of RA is contacted
 !>            with the first and second of MB, respectivelly.
 !>    \endverbatim
-!>
-!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -31796,11 +32612,9 @@
 !>        Contain the indexes of RB to be contracted.
 !>        The two first integers in the object are the ones to be contracted,
 !>        while the two last are the one to be multiplied.
-!>    \endverbatim
 !>
 !>        Ex: orderA=[3,2,4,1] and orderB=[2,1,4,3]
 !>        sum_{i,j} RA_{ljik} RB_{jilk} = MC_{kl}
-!>
 !>
 !>    \endverbatim
 !

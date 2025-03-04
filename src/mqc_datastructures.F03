@@ -1,32 +1,35 @@
       Module MQC_DataStructures
 !
-!     **********************************************************************
-!     **********************************************************************
-!     **                                                                  **
-!     **               The Merced Quantum Chemistry Package               **
-!     **                            (MQCPack)                             **
-!     **                                                                  **
-!     ** Written By:                                                      **
-!     **    Lee M. Thompson, Dave Mullaly, Xianghai Sheng, and Hrant P.   **
-!     **    Hratchian                                                     **
-!     **                                                                  **
-!     **                          Version 24.3.1                          **
-!     **                          March 30, 2024                          **
-!     **                                                                  **
-!     **                                                                  **
-!     ** Modules beloning to MQCPack:                                     **
-!     **    1. MQC_General                                                **
-!     **    2. MQC_DataStructures                                         **
-!     **    3. MQC_Algebra                                                **
-!     **    4. MQC_Files                                                  **
-!     **    5. MQC_Molecule                                               **
-!     **    6. MQC_EST                                                    **
-!     **    7. MQC_Gaussian                                               **
-!     **                                                                  **
-!     **********************************************************************
-!     **********************************************************************
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                                                   **
+!     **                          Version 25.2.1                           **
+!     **                         February 9, 2025                          **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
 !
       Use MQC_General
+      Use MQC_Binary
       use iso_fortran_env, only: int64, real64
 !
 !
@@ -43,6 +46,7 @@
         Module Procedure LinkedList_Return_Integer_Value
         Module Procedure LinkedList_Return_Real_Value
         Module Procedure LinkedList_Return_Character_Value
+        Module Procedure LinkedList_Return_Binary_Value
       End Interface
 
 
@@ -141,6 +145,38 @@
       Return
       End Subroutine LinkedList_Return_Character_Value
 !
+!
+!     PROCEDURE LinkedList_Return_Binary_Value
+      Subroutine LinkedList_Return_Binary_Value(LL_Cur,Return_Value)
+!
+!     This routine is used to return the value of a member of a linked
+!     list. LL_Cur is an INPUT linked list member and Return_Value is an
+!     OUTPUT argument that is allocatable of the same type as LL_Cur%Val.
+!
+!     L. M. Thompson, 2024
+!
+      Implicit None
+      Type(MQC_LinkedList),Pointer::LL_Cur
+      Type(MQC_Bits),Intent(InOut)::Return_Value
+!
+!     Allocate Return_Value, set it to LL_Cur%Val, and return to the
+!     calling procedure.
+!
+      If(Associated(LL_Cur)) then
+        If(Allocated(LL_Cur%Val)) then
+          Select Type (Val => LL_Cur%Val)
+          Type is (MQC_Bits)
+            Return_Value = Val
+          Class Default
+            Call MQC_Error('Data types not compatible in LinkedList_Return_Binary_Value')
+          End Select
+        endIf
+      endIf
+!
+      Return
+      End Subroutine LinkedList_Return_Binary_Value
+!
+!
 !     PROCEDURE LinkedList_Print_Node
       Subroutine LinkedList_Print_Node(LL_Cur,IOut)
 !
@@ -161,6 +197,8 @@
           Write(IOut,'(A10)',advance="no") Output
         Type is (Real)
           Write(IOut,'(D15.5)',advance="no") Output
+        Type is (MQC_Bits)
+          Call Output%Print(IOut)
         Class Default
           Stop 'Unexpected data type in link'
         End Select
@@ -198,6 +236,8 @@
             Write(IOut,'(A10)',advance="no") Output
           Type is (Real)
             Write(IOut,'(D15.5)',advance="no") Output
+          Type is (MQC_Bits)
+            Call Output%Print(IOut)
           Class Default
             Stop 'Unexpected data type in link'
           End Select

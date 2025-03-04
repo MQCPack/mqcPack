@@ -70,8 +70,8 @@
 !
 !     Generate Hamiltonian Matrix
 !
-      call mqc_build_ci_hamiltonian(iOut,iPrint,wavefunction%nBasis,determinants, &
-        mo_core_ham,mo_ERIs,CI_Hamiltonian)
+      call mqc_build_ci_hamiltonian(iOut,iPrint,CI_Hamiltonian,determinants, &
+        MO_Core_Ham=mo_core_ham,MO_ERIs=mo_ERIs)
       call CI_Hamiltonian%print(iOut,'CI Hamiltonian')
 !
 !     Diagonalize Hamiltonian
