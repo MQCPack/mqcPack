@@ -123,7 +123,7 @@ do
     echo "Please select a compiler.  The case insenstive available options are:"
     echo "    G - GNU compilers (gfortran/gcc) "
     echo "    I - Intel compilers (ifort/icc) "
-    echo "    P - PGI compilers (pgfortran/gcc)"
+    echo "    N - NVidia compilers (nvfortran/gcc)"
     read -n 1 MQC_Compiler
     echo ""
     if [ "${MQC_Compiler}" = "G" ] || [ "${MQC_Compiler}" = "g" ]; then
@@ -148,7 +148,7 @@ do
 	    echo "gcc not found in path"
 	    echo "Cannot use GNU option.  gcc not found in path"
 	fi
-    elif [ "${MQC_Compiler}" = "P" ] || [ "${MQC_Compiler}" = "p" ]; then
+    elif [ "${MQC_Compiler}" = "N" ] || [ "${MQC_Compiler}" = "n" ]; then
 	export CC="g"
 	path_to_executable="`command -v gcc`"
 	if [ -x "${path_to_executable}" ] ; then
@@ -174,7 +174,7 @@ do
 	    path_to_executable="`command -v pgfortran`"
 	    if [ -x "${path_to_executable}" ] ; then
 		export FC="pgfortran"
-		MQC_Compiler="PGI"
+		MQC_Compiler="NVidia"
 		if [ "${Isize}" = "8" ]; then
 		    MQC_INTEGER_Compiler_Flag="-i8"
 		else
@@ -182,7 +182,7 @@ do
 		fi
 		MQC_L_INTEGER_Compiler_Flag="-i8"
 	    else
-		echo "Cannot use PGI option.  pgfortran not found in path"
+		echo "Cannot use NVidia option.  nvfortran/pgfortran not found in path"
 	    fi
 	fi
     elif [ "${MQC_Compiler}" = "I" ] || [ "${MQC_Compiler}" = "i" ]; then
@@ -220,7 +220,7 @@ do
 	fi
     elif [ "${FC}" = "no" ]; then
 	echo ""
-	echo "Please specify either GNU or PGI"
+	echo "Please specify either GNU or NVidia"
 	echo ""
    fi
 done
