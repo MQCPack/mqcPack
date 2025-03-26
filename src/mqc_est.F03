@@ -139,6 +139,8 @@
         Procedure, Public::swap => mqc_integral_swap_orbitals
 !>      \brief <b> Combines virtual and occupied MQC_SCF_Integral objects</b>
         Procedure, Public::combine => mqc_integral_combine_orbitals
+!>      \brief <b> Updates rows or columns of MQC_SCF_Integral objects</b>
+        Procedure, Public::update => mqc_integral_update_orbitals
 !>      \brief <b> Swaps ab and ba blocks of an MQC_SCF_Integral objects</b>
         Procedure, Public::swapODB => mqc_integral_swap_offDiagBlocks
 !>      \brief <b> Outer product between 2 integrals</b>
@@ -6925,7 +6927,7 @@
           call mqc_error('matrix A and integral B in mqc_matrix_integral_difference are not conformable')
         endIf
       case default
-        call mqc_error_A('Unknown integral type in mqc_integral_integral_multiply', 6, &
+        call mqc_error_A('Unknown integral type in mqc_matrix_integral_difference', 6, &
              'integralB%array_type', integralB%array_type )
       end select
 
@@ -8590,18 +8592,24 @@
       select case (integral%array_type)
       case('space')
           tmpMatrixAlpha = dagger(integral%alpha)
-          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha)
+          call mqc_integral_allocate(integralOut,myLabel,'space',tmpMatrixAlpha, &
+            nDimA1=size(integral,'alpha',2),nDimA2=size(integral,'alpha',1),&
+            nDimB1=size(integral,'beta',2),nDimB2=size(integral,'beta',1))
       case('spin')
           tmpMatrixAlpha = dagger(integral%alpha)
           tmpMatrixBeta = dagger(integral%beta)
-          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          call mqc_integral_allocate(integralOut,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta,&
+            nDimA1=size(integral,'alpha',2),nDimA2=size(integral,'alpha',1),&
+            nDimB1=size(integral,'beta',2),nDimB2=size(integral,'beta',1))
       case('general')
           tmpMatrixAlpha = dagger(integral%alpha)
           tmpMatrixBeta = dagger(integral%beta)
           tmpMatrixAlphaBeta = dagger(integral%betaAlpha)
           tmpMatrixBetaAlpha = dagger(integral%alphaBeta)
           call mqc_integral_allocate(integralOut,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta, &
-            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+            tmpMatrixAlphaBeta,tmpMatrixBetaAlpha,nDimA1=size(integral,'alpha',2),&
+            nDimA2=size(integral,'alpha',1),nDimB1=size(integral,'beta',2),&
+            nDimB2=size(integral,'beta',1))
       case default
         call mqc_error_A('Unknown integral type in mqc_integral_conjugate_transpose', 6, &
              'integral%array_type', integral%array_type )
