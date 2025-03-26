@@ -41,5 +41,5 @@ jobs:
           NVARCH=`uname -s`_`uname -m`
           NVCOMPILERS=/opt/nvidia/hpc_sdk
           PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
-          echo -e "yp$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
+          echo -e "yn$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 
