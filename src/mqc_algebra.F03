@@ -15789,7 +15789,7 @@
       If (IndL.lt.0) IndL = Mat%NCol + IndL + 1
       LenRow = IndJ-IndI+1
       LenCol = IndL-IndK+1
-      If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
+      If (LenRow.lt.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
      &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow, &
@@ -15804,7 +15804,7 @@
      'IndJ', IndJ, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow )
-      If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
+      If (LenCol.lt.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
      &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenCol', LenCol, &
      'Mat%NCol', Mat%NCol, &
@@ -15873,8 +15873,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15882,8 +15882,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -19959,7 +19959,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Class(MQC_Matrix),Intent(InOut)::Matrix
+      Class(MQC_Matrix),Intent(In)::Matrix
       Logical::isAllocated
 !
       isAllocated = .False.
