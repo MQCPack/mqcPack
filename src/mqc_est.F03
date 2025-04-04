@@ -179,8 +179,14 @@
         Procedure, Public::at => mqc_eigenvalues_at
 !>      \brief <b> Outer Product of two variables into a SCF Integral</b>
         Procedure, Public::outer => mqc_eigen_eigen_outer_product
+!>      \brief <b> Returns the minimum value in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::minval => MQC_Eigenvalues_MinVal
 !>      \brief <b> Returns the maximum value in MQC_SCF_Eigenvalues</b>
-        Procedure, Public::maxval => MQC_SCF_Eigenvalues_MaxVal
+        Procedure, Public::maxval => MQC_Eigenvalues_MaxVal
+!>      \brief <b> Returns the location of the minimum value in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::minloc => MQC_Eigenvalues_MinLoc
+!>      \brief <b> Returns the location of the maximum value in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -358,8 +364,24 @@
 !
 !>    \brief <b> Returns the maximum value in MQC_SCF_Eigenvalues</b>
       Interface maxval
-        Module Procedure MQC_SCF_Eigenvalues_MaxVal
+        Module Procedure MQC_Eigenvalues_MaxVal
       End Interface
+!
+!>    \brief <b> Returns the minimum value in MQC_SCF_Eigenvalues</b>
+      Interface minval
+        Module Procedure MQC_Eigenvalues_MinVal
+      End Interface
+!
+!>    \brief <b> Returns the location of the maximum value in MQC_SCF_Eigenvalues</b>
+      Interface maxloc
+        Module Procedure MQC_Eigenvalues_MaxLoc
+      End Interface
+!
+!>    \brief <b> Returns the location of the minimum value in MQC_SCF_Eigenvalues</b>
+      Interface minloc
+        Module Procedure MQC_Eigenvalues_MinLoc
+      End Interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -1835,6 +1857,7 @@
 !>
 !>    1. Label = 'alpha' returns the alpha spin block.
 !>    2. Label = 'beta' returns the beta spin block.
+!>    3. Label = 'full' returns the alpha+beta spin block (default).
 !>
 !>    \endverbatim
 !
@@ -4379,6 +4402,8 @@
         endDo
         call tempIntA%combine(tempIntA,&
           integral1%orbitals(alphaOrbsIn=[(j,j=alphaOrbs(size(alphaOrbs))+1,size(integral1,'alpha',my_Axis))],axis=my_Axis))
+      else
+        tempIntA = integral1%orbitals(alphaOrbsIn=[(j,j=1,size(integral1,'alpha',my_Axis))],axis=my_Axis)
       endIf
 
       if(size(betaOrbs).gt.0) then
@@ -4390,6 +4415,8 @@
         endDo
         call tempIntB%combine(tempIntB,&
           integral1%orbitals(betaOrbsIn=[(j,j=betaOrbs(size(betaOrbs))+1,size(integral1,'beta',my_Axis))],axis=my_Axis))
+      else
+        tempIntB = integral1%orbitals(betaOrbsIn=[(j,j=1,size(integral1,'beta',my_Axis))],axis=my_Axis)
       endIf
 
       call integralOut%combine(tempIntA%orbitals('alpha',axis=my_Axis),tempIntB%orbitals('beta',axis=my_Axis),axis=my_Axis)
@@ -5805,7 +5832,7 @@
 !>    
 !>    \param[in] MatrixB
 !>    \verbatim
-!>        MaxtrixB is type(mqc_matrix)
+!>        MatrixB is type(mqc_matrix)
 !>        MQC Matrix type variable to multiply.
 !>    \endverbatim
 !>    
@@ -5982,7 +6009,7 @@
 !     ==========
 !>    \param[in] MatrixA
 !>    \verbatim
-!>        MaxtrixA is type(mqc_matrix)
+!>        MatrixA is type(mqc_matrix)
 !>        MQC Matrix type variable to multiply.
 !>    \endverbatim
 !>    
@@ -9533,8 +9560,10 @@
         endIf
 
         if(doAhrm) then
-          aaACden = 2*(aaACden + bbACden) 
-          bbACden = 2*(aaACden/2.0 - 2*bbACden) 
+          if(mod(flag,100)/10.eq.1) then
+            aaACden = 2*(aaACden + bbACden) 
+            bbACden = 2*(aaACden/2.0 - 2*bbACden) 
+          endIf
           do i = 1,nBasis
             if(mod(flag,10).eq.2) &
               abHARden(symIndexHash(i,i)) = abHARden(symIndexHash(i,i))/2.0
@@ -14193,8 +14222,7 @@
 !>
 !>    1. SpinBlock = 'alpha' uses the alpha spin block.
 !>    2. SpinBlock = 'beta' uses the beta spin block.
-!>    3. SpinBlock = 'alphaBeta' uses the alpha-beta spin block.
-!>    4. SpinBlock = 'betaAlpha' uses the beta-alpha spin block.
+!>    3. SpinBlock = 'full' uses the alpha+beta spin block.
 !>
 !>    \endverbatim
 !
@@ -14211,8 +14239,8 @@
 !>    \verbatim
 !>        I is Integer(kind=int64)
 !>        The dimension of the element in Eigenvalues
-!>          If I>0 row count is from first index
-!>          If I<0 row count is from last index.
+!>          If I>0 count is from first index
+!>          If I<0 count is from last index.
 !>    \endverbatim
 !>    
 !>    \param[in] SpinBlockIn
@@ -14220,6 +14248,7 @@
 !>        SpinBlockIn is character(len=64),optional
 !>        = 'alpha':     alpha spin block
 !>        = 'beta':      beta spin block
+!>        = 'full':      alpha+beta spin block
 !>    \endverbatim
 !
 !     Authors:
@@ -14248,44 +14277,77 @@
       end select
 
       if(present(spinBlockIn)) then
-        call string_change_case(spinBlockIn,'L',spinBlock)
+        call string_change_case(spinBlockIn,'l',spinBlock)
+      else
+        spinBlock = 'full'
+      endIf
+
+      select case (spinBlock)
+      case ('alpha')
+        if(myI.lt.0) myI = eigenvalues%blockSize('alpha') + myI + 1
+        element = eigenvalues%alpha%at(myI)
+      case('beta')
         if(eigenvalues%array_type.eq.'space') then
-          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
-            element = eigenvalues%alpha%at(myI)
-          else
-            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
-          endIf
-        elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
-          if(spinBlock.eq.'alpha') then
-            element = eigenvalues%alpha%at(myI)
-          elseif(spinblock.eq.'beta') then
-            element = eigenvalues%beta%at(myI)
-          else
-            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
-          endIf
-        else
-          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
-        endIf
-      else 
-        if(eigenvalues%array_type.eq.'space') then
-          if(myI.gt.eigenvalues%blockSize('alpha')) myI = myI - eigenvalues%blockSize('alpha')
-          if(myI.lt.(-1)*eigenvalues%blockSize('alpha')) myI = myI + eigenvalues%blockSize('alpha')
+          if(myI.lt.0) myI = eigenvalues%blockSize('alpha') + myI + 1
           element = eigenvalues%alpha%at(myI)
         elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
-          if(myI.gt.eigenvalues%blockSize('alpha')) then
-            element = eigenvalues%beta%at(myI)
-          elseIf(myI.ge.0) then
-            element = eigenvalues%alpha%at(myI)
-          elseIf(myI.lt.(-1)*eigenvalues%blockSize('alpha')) then
-            myI = myI + eigenvalues%blockSize('alpha')
-            element = eigenvalues%beta%at(myI)
-          else
-            element = eigenvalues%alpha%at(myI)
-          endIf
-        else
-          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
+          if(myI.lt.0) myI = eigenvalues%blockSize('beta') + myI + 1
+          element = eigenvalues%beta%at(myI)
         endIf
-      endIf
+      case('full')
+        if(myI.lt.0) myI = eigenvalues%blockSize('full') + myI + 1
+        if(myI.le.eigenvalues%blockSize('alpha')) then
+          element = eigenvalues%alpha%at(myI)
+        elseIf(myI.le.eigenvalues%blockSize('full')) then
+          myI = myI - eigenvalues%blockSize('alpha')
+          element = eigenvalues%beta%at(myI)
+        else
+          call mqc_error_i('Requested index is outside size of eigenvalues object',6,'myI',myI)
+        endIf
+      case default
+        call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
+      end select
+
+!
+!      if(present(spinBlockIn)) then
+!        call string_change_case(spinBlockIn,'L',spinBlock)
+!        if(eigenvalues%array_type.eq.'space') then
+!          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+!            element = eigenvalues%alpha%at(myI)
+!          else
+!            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
+!          endIf
+!        elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
+!          if(spinBlock.eq.'alpha') then
+!            element = eigenvalues%alpha%at(myI)
+!          elseif(spinblock.eq.'beta') then
+!            element = eigenvalues%beta%at(myI)
+!          else
+!            call mqc_error_A('SpinBlock type not valid in MQC_Eigenvalues_At',6,'SpinBlock',SpinBlock)
+!          endIf
+!        else
+!          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
+!        endIf
+!      else 
+!        if(eigenvalues%array_type.eq.'space') then
+!          if(myI.gt.eigenvalues%blockSize('alpha')) myI = myI - eigenvalues%blockSize('alpha')
+!          if(myI.lt.(-1)*eigenvalues%blockSize('alpha')) myI = myI + eigenvalues%blockSize('alpha')
+!          element = eigenvalues%alpha%at(myI)
+!        elseIf(eigenvalues%array_type.eq.'spin'.or.eigenvalues%array_type.eq.'general') then
+!          if(myI.gt.eigenvalues%blockSize('alpha')) then
+!            element = eigenvalues%beta%at(myI)
+!          elseIf(myI.ge.0) then
+!            element = eigenvalues%alpha%at(myI)
+!          elseIf(myI.lt.(-1)*eigenvalues%blockSize('alpha')) then
+!            myI = myI + eigenvalues%blockSize('alpha')
+!            element = eigenvalues%beta%at(myI)
+!          else
+!            element = eigenvalues%alpha%at(myI)
+!          endIf
+!        else
+!          call mqc_error_A('Array type not valid in MQC_Eigenvalues_At',6,'Array_Type',eigenvalues%array_type)
+!        endIf
+!      endIf
 
       end function mqc_eigenvalues_at
 !
@@ -14422,27 +14484,38 @@
       end function mqc_scf_integral_diagonal_elements
 !
 !
-!     PROCEDURE MQC_SCF_EIgenvalues_MaxVal
+!     PROCEDURE MQC_Eigenvalues_Minval
 !
-!>    \brief <b> MQC_SCF_Eigenvalues_MaxVal is a function that returns the 
-!>    largest value in an MQC SCF eigenvalues object</b>
+!>    \brief <b> MQC_Eigenvalues_Minval is a function that returns the smallest value of a
+!>    spin block of an MQC_Eigenvalues variable</b>
 !
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>
-!>    MQC_SCF_Eigenvalues_MaxVal is a function that returns the largest value 
-!>    in an MQC SCF Eigenvalues object. 
+!>    MQC_Eigenvalues_Minval is a function that returns the smallest value of a spin block 
+!>    of an MQC_Eigenvalues variable. The optional argument label specifies which block is 
+!>    queried. The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Label = 'full' returns the alpha+beta spin block (default).
 !>
 !>    \endverbatim
 !
 !     Arguments:
 !     ==========
-!>    \param[in] Eigenvalues
+!>    \param[in,out] Eigenvalues
 !>    \verbatim
-!>        Eigenvalues is Class(MQC_SCF_Eigenvalues)
-!>        The name of the MQC_SCF_Eigenvalues variable.
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
 !>    \endverbatim
 !
 !     Authors:
@@ -14450,17 +14523,275 @@
 !>    \author L. M. Thompson
 !>    \date 2025
 !
-      Function MQC_SCF_Eigenvalues_MaxVal(Eigenvalues) result(Output)
+      function mqc_eigenvalues_minval(eigenvalues,label) result(output)
 !
-!     Variable Declarations.
       implicit none
       class(mqc_scf_eigenvalues),intent(in)::eigenvalues
       type(mqc_scalar)::output
+      Character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
 !
-      output = maxval(eigenvalues%getBlock('full'))
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        mylabel = 'full'
+      endIf
+
+      select case (myLabel)
+      case('alpha')
+        output = minval(eigenvalues%alpha)
+      case('beta')
+        if(eigenvalues%type().eq.'space') then
+          output = minval(eigenvalues%alpha)
+        else
+          output = minval(eigenvalues%beta)
+        endIf
+      case('full')
+        output = minval(eigenvalues%alpha)
+        if(eigenvalues%type().ne.'space') then 
+          if(minval(eigenvalues%beta).lt.output) output = minval(eigenvalues%beta)
+        endIf
+      case default
+        call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
+          'myLabel', myLabel )
+      end select 
 !
-      return
-      end function mqc_scf_eigenvalues_maxval
+      end function mqc_eigenvalues_minval
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Maxval
+!
+!>    \brief <b> MQC_Eigenvalues_Maxval is a function that returns the largest value of a
+!>    spin block of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Minval is a function that returns the largest value of a spin block 
+!>    of an MQC_Eigenvalues variable. The optional argument label specifies which block is 
+!>    queried. The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Label = 'full' returns the alpha+beta spin block (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_maxval(eigenvalues,label) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scalar)::output
+      Character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        mylabel = 'full'
+      endIf
+
+      select case (myLabel)
+      case('alpha')
+        output = maxval(eigenvalues%alpha)
+      case('beta')
+        if(eigenvalues%type().eq.'space') then
+          output = maxval(eigenvalues%alpha)
+        else
+          output = maxval(eigenvalues%beta)
+        endIf
+      case('full')
+        output = maxval(eigenvalues%alpha)
+        if(eigenvalues%type().ne.'space') then 
+          if(maxval(eigenvalues%beta).lt.output) output = maxval(eigenvalues%beta)
+        endIf
+      case default
+        call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
+          'myLabel', myLabel )
+      end select 
+!
+      end function mqc_eigenvalues_maxval
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Minloc
+!
+!>    \brief <b> MQC_Eigenvalues_Minloc is a function that returns the index of the 
+!>    smallest value of a spin block of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Minval is a function that returns the index of the smallest value of 
+!>    a spin block of an MQC_Eigenvalues variable. The optional argument label specifies 
+!>    which block is queried. The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Label = 'full' returns the alpha+beta spin block (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_minloc(eigenvalues,label) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      integer(kind=int64)::output
+      Character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        mylabel = 'full'
+      endIf
+
+      select case (myLabel)
+      case('alpha')
+        output = minloc(eigenvalues%alpha)
+      case('beta')
+        if(eigenvalues%type().eq.'space') then
+          output = minloc(eigenvalues%alpha)
+        else
+          output = minloc(eigenvalues%beta)
+        endIf
+      case('full')
+        if(eigenvalues%type().ne.'space') then 
+          if(minval(eigenvalues%alpha).lt.minval(eigenvalues%beta)) then 
+            output = minloc(eigenvalues%alpha)
+          else
+            output = size(eigenvalues%alpha) + minloc(eigenvalues%beta)
+          endIf
+        else
+          output = minloc(eigenvalues%alpha)
+        endIf
+      case default
+        call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
+          'myLabel', myLabel )
+      end select 
+!
+      end function mqc_eigenvalues_minloc
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Maxloc
+!
+!>    \brief <b> MQC_Eigenvalues_Maxloc is a function that returns the index of the 
+!>    largest value of a spin block of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Maxval is a function that returns the index of the largest value of 
+!>    a spin block of an MQC_Eigenvalues variable. The optional argument label specifies 
+!>    which block is queried. The following options are available:
+!>
+!>    1. Label = 'alpha' returns the alpha spin block.
+!>    2. Label = 'beta' returns the beta spin block.
+!>    3. Label = 'full' returns the alpha+beta spin block (default).
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*)
+!>        The spin block to query.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_maxloc(eigenvalues,label) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      integer(kind=int64)::output
+      Character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        mylabel = 'full'
+      endIf
+
+      select case (myLabel)
+      case('alpha')
+        output = maxloc(eigenvalues%alpha)
+      case('beta')
+        if(eigenvalues%type().eq.'space') then
+          output = maxloc(eigenvalues%alpha)
+        else
+          output = maxloc(eigenvalues%beta)
+        endIf
+      case('full')
+        if(eigenvalues%type().ne.'space') then 
+          if(minval(eigenvalues%alpha).lt.minval(eigenvalues%beta)) then 
+            output = maxloc(eigenvalues%alpha)
+          else
+            output = size(eigenvalues%alpha) + maxloc(eigenvalues%beta)
+          endIf
+        else
+          output = maxloc(eigenvalues%alpha)
+        endIf
+      case default
+        call mqc_error_A('label not valid in mqc_eigenvalues_dimension', 6, &
+          'myLabel', myLabel )
+      end select 
+!
+      end function mqc_eigenvalues_maxloc
 !
 !
 !=====================================================================
