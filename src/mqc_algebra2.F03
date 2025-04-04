@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.2.1                           **
-!     **                         February 9, 2025                          **
+!     **                          Version 25.3.0                           **
+!     **                          March 25, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -121,6 +121,11 @@
 !     Interface MQC Variables to the SIZE intrinsic function.
       interface size
         module procedure MQC_Variable_getSize
+      end interface
+!
+!     Interface MQC Variables to the RESHAPE intrinsic function.
+      interface reshape
+        module procedure MQC_Variable_reshape
       end interface
 !
 !     Interface intrinsic real/integer to MQC variable.
@@ -655,6 +660,34 @@
 !
       return
       end function MQC_Variable_getSize
+
+
+!
+!PROCEDURE MQC_Variable_reshape
+      function MQC_Variable_reshape(mqcVariable,newShape) result(mqcVariableNew)
+!
+!     This function reshapes an MQC variable array.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      type(MQC_Variable),intent(in)::mqcVariable
+      integer(kind=int64),dimension(:),intent(in)::newShape
+      type(MQC_Variable)::mqcVariableNew
+!
+!
+      if(PRODUCT(newShape).ne.SIZE(mqcVariable))  &
+        call mqc_error('RESHAPE: Inconsistend new shape and size.')
+      mqcVariableNew = mqcVariable
+      mqcVariableNew%dimensions=0
+      mqcVariableNew%dimensions(1:SIZE(newShape))=newShape
+      mqcVariableNew%rank=SIZE(newShape)
+!
+      return
+      end function MQC_Variable_reshape
 
 
 !
@@ -3615,17 +3648,19 @@
       class(MQC_Variable),intent(in)::mqcVariable1,mqcVariable2
       type(MQC_Variable)::mqcVariableOut
       integer(kind=int64)::typeCode1,typeCode2
+      integer(kind=int64),dimension(:),allocatable::productVectorInteger
       integer(kind=int64),dimension(:,:),allocatable::productMatrixInteger
+      real(kind=real64),dimension(:),allocatable::productVectorReal
       real(kind=real64),dimension(:,:),allocatable::productMatrixReal
 !
 !
 !     Start by ensuring the two MQC Variables are matrices and have conformable
 !     dimensions.
 !
-      if(.not.Rank(mqcVariable1).eq.2)  &
+      if(Rank(mqcVariable1).ne.2)  &
         call mqc_error('MQC Matrix Multiplication: mqcVariable 1 is NOT a matrix.')
-      if(.not.Rank(mqcVariable2).eq.2)  &
-        call mqc_error('MQC Matrix Multiplication: mqcVariable 2 is NOT a matrix.')
+      if((Rank(mqcVariable2).ne.2).and.(Rank(mqcVariable2).ne.1))  &
+        call mqc_error('MQC Matrix Multiplication: mqcVariable 2 is NOT a matrix or vector.')
       if(Size(mqcVariable1,2).ne.Size(mqcVariable2,1))  &
         call mqc_error('MQC Matrix Multiplication: Matrices do not have matching inner-dimensions.')
 !
@@ -3651,43 +3686,86 @@
         'typeCode2' ,typeCode2);
       select case(MIN(typeCode1,typeCode2))
       case(2)
-        allocate(productMatrixReal(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+        if(RANK(mqcVariable2).eq.2) then
+          allocate(productMatrixReal(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+        else
+          allocate(productVectorReal(SIZE(mqcVariable1,1)))
+        endIf
       case(3)
-        allocate(productMatrixInteger(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+        if(RANK(mqcVariable2).eq.2) then
+          allocate(productMatrixInteger(SIZE(mqcVariable1,1),SIZE(mqcVariable2,2)))
+        else
+          allocate(productVectorInteger(SIZE(mqcVariable1,1)))
+        endIf
       case default
         call mqc_error_i('MQC_Variable_Multiplication: Result is of UNKNOWN type.', 6, &
              'typeCode1', typeCode1, &
              'typeCode2', typeCode2 )
       end select
 !
-!     Now, do the addition and set the output function value accordingly.
+!     Now, do the multiplication and set the output function value accordingly.
+!     Note that this is done in three blocks...matrix-matrix, matrix-vector, and
+!     vector-matrix (NYI).
 !
-      select case(typeCode1*10 + typeCode2)
-      case(22)
-        productMatrixReal = MatMul(  &
-          RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
-          RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
-        mqcVariableOut = productMatrixReal
-      case(23)
-        productMatrixReal = MatMul(  &
-          RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
-          RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
-        mqcVariableOut = productMatrixReal
-      case(32)
-        productMatrixReal = MatMul(  &
-          RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
-          RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
-        mqcVariableOut = productMatrixReal
-      case(33)
-        productMatrixInteger = MatMul(  &
-          RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
-          RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
-        mqcVariableOut = productMatrixInteger
-      case default
-        call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
-             'typeCode1*10', typeCode1*10, &
-             'typeCode2', typeCode2 )
-      end select
+      if(RANK(mqcVariable1).eq.2.and.RANK(mqcVariable2).eq.2) then
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          productMatrixReal = MatMul(  &
+            RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
+          mqcVariableOut = productMatrixReal
+        case(23)
+          productMatrixReal = MatMul(  &
+            RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
+          mqcVariableOut = productMatrixReal
+        case(32)
+          productMatrixReal = MatMul(  &
+            RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:2)))
+          mqcVariableOut = productMatrixReal
+        case(33)
+          productMatrixInteger = MatMul(  &
+            RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:2)))
+          mqcVariableOut = productMatrixInteger
+        case default
+          call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2 )
+        end select
+      elseIf(RANK(mqcVariable1).eq.2.and.RANK(mqcVariable2).eq.1) then
+        select case(typeCode1*10 + typeCode2)
+        case(22)
+          productVectorReal = MatMul(  &
+            RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:1)))
+          mqcVariableOut = productVectorReal
+        case(23)
+          productVectorReal = MatMul(  &
+            RESHAPE(mqcVariable1%realArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:1)))
+          mqcVariableOut = productVectorReal
+        case(32)
+          productVectorReal = MatMul(  &
+            RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%realArray(:),mqcVariable2%dimensions(1:1)))
+          mqcVariableOut = productVectorReal
+        case(33)
+          productVectorInteger = MatMul(  &
+            RESHAPE(mqcVariable1%integerArray(:),mqcVariable1%dimensions(1:2)),  &
+            RESHAPE(mqcVariable2%integerArray(:),mqcVariable2%dimensions(1:1)))
+          mqcVariableOut = productVectorInteger
+        case default
+          call mqc_error_I('MQC_Variable_Multiplication: Combination of var1 and var 2 types is UNKNOWN.', 6, &
+              'typeCode1*10', typeCode1*10, &
+              'typeCode2', typeCode2 )
+        end select
+      elseIf(RANK(mqcVariable1).eq.1.and.RANK(mqcVariable2).eq.2) then
+        call mqc_error('MQC_Variable_Matrix_Multiplication: vector-matrix multiplication NYI.')
+      else
+        call mqc_error('MQC_Variable_Matrix_Multiplication: Unknow RANK combination.')
+      endIf
 !
       return
       end function MQC_Variable_Matrix_Multiplication
