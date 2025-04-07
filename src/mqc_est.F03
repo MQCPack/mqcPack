@@ -5299,7 +5299,7 @@
       else
         myReplace = .true.
       endIf
-      if(present(replace)) then
+      if(present(replaceAll)) then
         myReplaceAll = replaceAll
       else
         myReplaceAll = .false.
