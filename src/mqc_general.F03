@@ -92,6 +92,7 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+        module procedure MQC_Print_Matrix_Array_Logical
         module procedure MQC_Print_R4Tensor_Array_Integer
         module procedure MQC_Print_R4Tensor_Array_Real
         module procedure MQC_Print_R4Tensor_Array_Complex
@@ -113,6 +114,7 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+        module procedure MQC_Print_Matrix_Array_Logical
       end interface
 !
       interface mqc_print_r4tensor
@@ -178,9 +180,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 2
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '25.2.1'
+      if(PRESENT(minor))         minor         = 3
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.3.0'
 !
       return
       end subroutine mqc_version
@@ -1038,7 +1040,61 @@
       Return
       End Subroutine MQC_Print_Matrix_Array_Complex
 
+!
+!PROCEDURE MQC_Print_Matrix_Array_Logical
+      Subroutine MQC_Print_Matrix_Array_Logical(Array,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a logical Matrix array variable.
+!
+!     Adapted from MQC_Print_Matrix_Array_Integer.
+!     H. P. Hratchian, 2025.
+!
 
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Logical,dimension(:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10
+      Character(Len=256)::FormatLine
+!
+!
+ 1000 Format(1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2001 Format(1x,I7,10L14)
+!
+      NRows = Size(Array,1)
+      NCols = Size(Array,2)
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+!
+      IFirst = 1
+ 10   Continue
+      ILast = MIN(IFirst+9,NCols)
+      Write(IOut,1001) (J,J=IFirst,ILast)
+!
+      Do I = 1,NRows
+         Write(IOut,2001) I, (Array(I,J),J=IFirst,ILast)
+      End Do
+!
+      IFirst = ILast+1
+      If(IFirst <= NCols) Go To 10
+!
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Matrix_Array_Logical
+
+!
 !PROCEDURE MQC_Print_Vector_Array_Integer
       subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,FormatStr)

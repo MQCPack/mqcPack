@@ -5700,6 +5700,7 @@
 !     include:
 !       energy
 !       scfenergy
+!       scfs2
 !
 !
 !     H. P. Hratchian, 2023.
@@ -5767,6 +5768,8 @@
         value_out = fileinfo%gaussianScalars(43)
       case('scfenergy')
         value_out = fileinfo%gaussianScalars(32)
+      case('scfs2')
+        value_out = fileinfo%gaussianScalars(44)
       case default
         call mqc_error_A('Failure finding requested real value in Gaussian matrix file', 6, &
           'mylabel', mylabel )
