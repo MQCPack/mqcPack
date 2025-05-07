@@ -2790,6 +2790,12 @@
 !>        Scalar is Class(MQC_Scalar)
 !>        The MQC_Scalar to be tested.
 !>    \endverbatim
+!>
+!>    \param[in] Thresh_Inp
+!>    \verbatim
+!>        Thresh_Inp is Type(MQC_Scalar)
+!>        The threshold for determining the phase.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
@@ -2801,7 +2807,7 @@
 !     Variable Declarations
       Implicit None
       Class(MQC_Scalar),Intent(In)::Scalar
-      Type(MQC_Scalar),optional::thresh_inp
+      Type(MQC_Scalar),optional,Intent(In)::thresh_inp
       Type(MQC_Scalar)::Output
       real::thresh
 

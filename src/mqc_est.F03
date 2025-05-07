@@ -2376,7 +2376,11 @@
 !>    \verbatim
 !>
 !>    MQC_Integral_Allocate is used to allocate a MQC SCF integral type variable of 
-!>    the MQC_SCF_Integral class. The following options are available:
+!>    the MQC_SCF_Integral class. The implicit dimension of a block can be set using 
+!>    the optional arguments nDimA1, nDimA2, nDimB1 and nDimB2 but these must agree in
+!>    dimension with any of the optional input matrix blocks if they are provided. 
+!>    Implicitly dimensioned blocks are used to set blocks to zero without explicit 
+!>    allocation. The following options are available:
 !>
 !>    1. ArrayType = 'space' declares the MQC_SCF_Integral variable contains 
 !>                   restricted spin blocks.
@@ -2435,11 +2439,35 @@
 !>        AlphaBeta is type(mqc_matrix),optional
 !>        The beta-alpha spin block integrals.
 !>    \endverbatim
+!>
+!>    \param[in] nDimA1
+!>    \verbatim
+!>        nDimA1 is integer(kind=int64),optional
+!>        The rows of the alpha block
+!>    \endverbatim
+!>
+!>    \param[in] nDimA2
+!>    \verbatim
+!>        nDimA2 is integer(kind=int64),optional
+!>        The columns of the alpha block.
+!>    \endverbatim
+!>
+!>    \param[in] nDimB1
+!>    \verbatim
+!>        nDimB1 is integer(kind=int64),optional
+!>        The rows of the beta block.
+!>    \endverbatim
+!>
+!>    \param[in] nDimB2
+!>    \verbatim
+!>        nDimB2 is integer(kind=int64),optional
+!>        The columns of the beta block.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2016
+!>    \date 2016, 2025
 !
       subroutine mqc_integral_allocate(integral,arrayName,arrayType,alpha, &
           beta,alphaBeta,betaAlpha,nDimA1,nDimA2,nDimB1,nDimB2) 
@@ -4049,6 +4077,13 @@
 !>        The MQC_SCF_integrals variable with the virtual orbital set.
 !>    \endverbatim
 !>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!>    
 !>    \param[in] arrayNameIn
 !>    \verbatim
 !>        arrayNameIn is character(len=*),intent(in),optional 
@@ -4405,15 +4440,15 @@
 !>        The MQC_SCF_integrals variable with new orbitals.
 !>    \endverbatim
 !>    
-!>    \param[in] AlphaOrbsIn
+!>    \param[in] AlphaOrbs
 !>    \verbatim
-!>        AlphaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        AlphaOrbs is integer(kind=int64),dimension(:)
 !>        Alpha/restricted vectors to update.
 !>    \endverbatim
 !>    
-!>    \param[in] BetaOrbsIn
+!>    \param[in] BetaOrbs
 !>    \verbatim
-!>        BetaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        BetaOrbs is integer(kind=int64),dimension(:)
 !>        Beta vectors to update.
 !>    \endverbatim
 !>    
@@ -4434,7 +4469,7 @@
       implicit none
       class(mqc_scf_integral),intent(in)::integral1
       type(mqc_scf_integral),intent(in)::integral2
-      integer(kind=int64),dimension(:)::alphaOrbs,betaOrbs
+      integer(kind=int64),dimension(:),intent(in)::alphaOrbs,betaOrbs
       integer(kind=int64),intent(in),optional::axis
       type(mqc_scf_integral)::integralOut,tempIntA,tempIntB
       integer(kind=int64)::i,j,my_axis,start
