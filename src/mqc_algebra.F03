@@ -26838,71 +26838,66 @@
       storFlag = A%Storage
  1050 Format( A, I10 )
 !
-      if(storFlag.eq.'StorDiag') return
+      if(storFlag.eq.'StorDiag') call mqc_matrix_diag2Full(A)
       if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
         storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
         call mqc_matrix_symm2Full(A)
-      if(storFlag.eq.'StorFull') then
-        if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
-          if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
-          Allocate(A_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),A_UVecs(NDim1,NDim1), &
-            A_VVecs(NDim2,NDim2),Work(1))
-          A_Temp = A
-          Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
-            NDim2,Work,Work_Length,IError)
-          Work_Length = Int(Work(1))
-          DeAllocate(Work)
-          Allocate(Work(Work_Length))
-          Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
-            NDim2,Work,Work_Length,IError)
-          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
-          DeAllocate(Work)
-          Work_Length = -1
-        elseIf(typeFlag.eq.'Complex') then
-          Allocate(AC_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),AC_UVecs(NDim1,NDim1), &
-            AC_VVecs(NDim2,NDim2),WorkC(1),Work(5*min(NDim1,NDim2)))
-          AC_Temp = A
-          Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
-            NDim2,WorkC,Work_Length,Work,IError)
-          Work_Length = Int(WorkC(1))
-          DeAllocate(WorkC)
-          Allocate(WorkC(Work_Length))
-          Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
-            NDim2,WorkC,Work_Length,Work,IError)
-          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
-          DeAllocate(WorkC,Work)
-          Work_Length = -1
-        else
-          call mqc_error_a('typeFlag not recognised in mqc_matrix_svd', 6, &
-               'typeFlag', typeFlag )
-        endIf
-!
-        if(present(EVals)) EVals = A_SVals
-        if(present(EUVecs)) then
-          if(allocated(A_UVecs)) EUVecs = A_UVecs
-          if(allocated(AC_UVecs)) EUVecs = AC_UVecs
-        endIf
-        if(present(EVVecs)) then
-          if(allocated(A_VVecs)) EVVecs = A_VVecs
-          if(allocated(AC_VVecs)) EVVecs = AC_VVecs
-        endIf
-        if(allocated(A_SVals)) deallocate(A_SVals)
-        if(allocated(A_UVecs)) deallocate(A_UVecs)
-        if(allocated(AC_UVecs)) deallocate(AC_UVecs)
-        if(allocated(A_VVecs)) deallocate(A_VVecs)
-        if(allocated(AC_VVecs)) deallocate(AC_VVecs)
-        if(allocated(A_Temp)) deallocate(A_Temp)
-        if(allocated(AC_Temp)) deallocate(AC_Temp)
-!
+      if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
+        if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
+        Allocate(A_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),A_UVecs(NDim1,NDim1), &
+          A_VVecs(NDim2,NDim2),Work(1))
+        A_Temp = A
+        Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
+          NDim2,Work,Work_Length,IError)
+        Work_Length = Int(Work(1))
+        DeAllocate(Work)
+        Allocate(Work(Work_Length))
+        Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
+          NDim2,Work,Work_Length,IError)
+        If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
+        DeAllocate(Work)
+        Work_Length = -1
+      elseIf(typeFlag.eq.'Complex') then
+        Allocate(AC_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),AC_UVecs(NDim1,NDim1), &
+          AC_VVecs(NDim2,NDim2),WorkC(1),Work(5*min(NDim1,NDim2)))
+        AC_Temp = A
+        Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
+          NDim2,WorkC,Work_Length,Work,IError)
+        Work_Length = Int(WorkC(1))
+        DeAllocate(WorkC)
+        Allocate(WorkC(Work_Length))
+        Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
+          NDim2,WorkC,Work_Length,Work,IError)
+        If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
+        DeAllocate(WorkC,Work)
+        Work_Length = -1
       else
-        call mqc_error_a('storFlag not recognised in mqc_matrix_svd', 6, &
-             'storFlag', storFlag )
-     endIf
+        call mqc_error_a('typeFlag not recognised in mqc_matrix_svd', 6, &
+             'typeFlag', typeFlag )
+      endIf
+!
+      if(present(EVals)) EVals = A_SVals
+      if(present(EUVecs)) then
+        if(allocated(A_UVecs)) EUVecs = A_UVecs
+        if(allocated(AC_UVecs)) EUVecs = AC_UVecs
+      endIf
+      if(present(EVVecs)) then
+        if(allocated(A_VVecs)) EVVecs = A_VVecs
+        if(allocated(AC_VVecs)) EVVecs = AC_VVecs
+      endIf
+      if(allocated(A_SVals)) deallocate(A_SVals)
+      if(allocated(A_UVecs)) deallocate(A_UVecs)
+      if(allocated(AC_UVecs)) deallocate(AC_UVecs)
+      if(allocated(A_VVecs)) deallocate(A_VVecs)
+      if(allocated(AC_VVecs)) deallocate(AC_VVecs)
+      if(allocated(A_Temp)) deallocate(A_Temp)
+      if(allocated(AC_Temp)) deallocate(AC_Temp)
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
       if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
         storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
         call mqc_matrix_full2Symm(A)
+      if(storFlag.eq.'StorDiag') call mqc_matrix_full2diag(A)
 !
       Return
       End Subroutine MQC_Matrix_SVD
