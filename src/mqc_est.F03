@@ -125,7 +125,9 @@
         Procedure, Public::powerf => mqc_scf_integral_power_func
 !>      \brief <b> Psuedo inverse of an MQC_SCF_Integral object</b>
         Procedure, Public::pinv => mqc_scf_integral_pinv
+!>      \brief <b> Updates an element of an MQC_SCF_Integral object</b>
         Procedure, Public::put => mqc_integral_put
+!>      \brief <b> Returns an element of an MQC_SCF_Integral object</b>
         Procedure, Public::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
@@ -179,6 +181,9 @@
 !>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
 !>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
+!>      \brief <b> Updates the value of a specified element in an MQC_SCF_Eigenvalues 
+!>      object</b>
+        Procedure, Public::put => mqc_eigenvalues_put
 !>      \brief <b> Outer Product of two variables into a SCF Integral</b>
         Procedure, Public::outer => mqc_eigen_eigen_outer_product
 !>      \brief <b> Returns the minimum value in MQC_SCF_Eigenvalues</b>
@@ -14610,6 +14615,127 @@
 !      endIf
 
       end function mqc_eigenvalues_at
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Put
+!
+!>    \brief <b> MQC_Eigenvalues_Put is a function that updates the value of an element
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Put is a function that updates the value of (I)th element of a
+!>    MQC eigenvalues variable as an MQC scalar. If I is negative, the (N-I+1)th
+!>    index is selected. Optional argument SpinBlock specifies the spin block of MQC
+!>    eigenvalues. If I is greater than the dimension of the alpha spin block, the
+!>    remainder is used as the index of the beta spin block. The following options
+!>    are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] eigenvalues
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Eigenvalues)
+!>        The MQC eigenvalues to return the value of the (I)th
+!>        element.
+!>    \endverbatim
+!>
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Type(mqc_scalar)
+!>        The value to put in the integral.
+!>    \endverbatim
+!>
+!>    \param[in] I
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC eigenvalues
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>
+!>    \param[in,out] SpinBlockIn
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_put(eigenvalues,element,i,spinBlockIn)
+!
+      implicit none
+      class(mqc_scf_eigenvalues)::eigenvalues
+      class(*),intent(in)::i
+      integer(kind=int64)::myI
+      type(mqc_scalar)::element
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      select type (i)
+      type is (integer)
+        myI = i
+      type is (mqc_scalar)
+        myI = i
+      class default
+        call mqc_error('index type not defined in MQC_twoERIs_put')
+      end select
+
+      if(myI.gt.eigenvalues%blockSize('alpha')+eigenvalues%blockSize('beta')) &
+        call mqc_error('Requested I dimension out of bounds in mqc_eigenvalues_put')
+
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
+        if(eigenvalues%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(spinBlock.eq.'alpha') then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseif(spinblock.eq.'beta') then
+            if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      else
+        if(eigenvalues%array_type.eq.'space') then
+          if(myI.le.eigenvalues%blockSize('alpha')) then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
+            myI = myI - eigenvalues%blockSize('alpha')
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(myI.le.eigenvalues%blockSize('alpha')) then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
+            myI = myI - eigenvalues%blockSize('alpha')
+            if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      endIf
+      end subroutine mqc_eigenvalues_put
 !
 !
 !     PROCEDURE MQC_SCF_Transformation_Matrix
