@@ -130,6 +130,7 @@
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+        Procedure, Public::ipad => mqc_integral_pad
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::esum => MQC_Integral_Sum_Elements
         Procedure, Public::pesum => MQC_Integral_Partial_Sum_Elements
@@ -6176,6 +6177,173 @@
       end function mqc_matrix_integral_multiply
 !
 !
+!     PROCEDURE MQC_Integral_Pad
+!
+!>    \brief <b> MQC_Integral_Pad is used to increase the dimension
+!>    of a MQC integral variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Pad is used to multiply an MQC matrix type variable
+!>    with a MQC integral and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        Initial MQC integral variable.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis1
+!>    \verbatim
+!>        Axis1 is integer(kind=int64)
+!>        Size of padded data.
+!>        If Axis2 is present, Axis1 is used only for rows.
+!>        Otherwise  Axis1 is used both for rows and columns.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis2
+!>    \verbatim
+!>        Axis2 is integer(kind=int64),optional
+!>        Size of padded columns.
+!>    \endverbatim
+!>
+!>    \param[in] BlockName
+!>    \verbatim
+!>        BlockName is Character(Len=*),optional,default='full'
+!>        Define which set of spin-orbitals should be modiffied.
+!>        In the general case, the off-diagonal blocks (alpha-beta 
+!>        and beta-alpha) are modified based on the alpha-alpha and
+!>        beta-beta dimensions.
+!>
+!>    1.  BlockName = 'full' outputs the full MQC_TwoERIs variable.
+!>    2.  BlockName = 'alpha', 'alpha-alpha' or 'aaaa' outputs the alpha-alpha spin block. 
+!>    3.  BlockName = 'beta', 'beta-beta' or 'bbbb' outputs the beta-beta spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function mqc_integral_pad(integral,axis1,axis2,blockname) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      integer(kind=int64),intent(in)::axis1
+      integer(kind=int64),optional,intent(in)::axis2
+      Character(Len=*),optional,intent(in)::blockname
+      integer(kind=int64)::ax1,ax2
+      type(mqc_scf_integral)::integralOut
+
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      Character(Len=64)::myLabel
+!
+      if(present(blockname)) then
+        call string_change_case(blockname,'l',myLabel)
+      else
+        myLabel = 'full'
+      endIf
+
+      ax1 = axis1
+      if(present(axis2)) then
+        ax2 = axis2
+      else
+        ax2 = axis1
+      endIf
+       
+      select case(integral%array_type)
+      case('space')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'space',tmpMatrixAlpha)
+        case('alpha')
+          tmpMatrixBeta = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = tmpMatrixAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case('spin')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('alpha')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case('general')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,ax2)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('alpha')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(integral%nBRows,ax2)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,integral%nBCols)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,integral%nACols)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(integral%nARows,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_pad', 6, &
+          'integral%array_type', integral%array_type )
+      end select     
+!
+      end function mqc_integral_pad
+!
+!
 !     PROCEDURE MQC_Integral_Sum
 !
 !>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
@@ -11446,8 +11614,8 @@
           call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
           call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat5,leigenvecs=tmpMat6)
           If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
-          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','space',tmpMat3,tmpMat4) 
-          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','space',tmpMat5,tmpMat6)
+          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat3,tmpMat4) 
+          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat6)
         endIf
       elseIf(integralA%type().eq.'general') then
         nDimAlpha1 = integralA%blockSize('alpha',1) 

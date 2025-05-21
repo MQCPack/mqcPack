@@ -264,7 +264,9 @@
 !>      \brief <b> Updates the specified submatrix of the MQC Matrix to the specified
 !>      matrix</b>
         Procedure, Public::mput => MQC_Matrix_Matrix_Put
-!>      \brief <b> Updates the specified element of the MQC Matrix to the specified
+!>      \brief <b> Increases a MQC Matrix dimension and fill the additional elements with
+!>      with zeros.</b>
+        Procedure, Public::mpad => MQC_Matrix_Pad
 !>      value</b>
       End Type MQC_Matrix
 !     
@@ -15712,6 +15714,90 @@
 !
       return
       end subroutine MQC_Matrix_SymmMatrix_Put_Complex
+!
+!
+!     PROCEDURE MQC_Matrix_Pad
+!
+!>    \brief <b> MQC_Matrix_Pad is a function that increases the dimension of a 
+!>    MQC matrix and set the new elements to zero.</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Matrix_Pad is a function that increases the dimension of a 
+!>    MQC matrix and set the new elements to zero. Each dimension of the
+!>    final MQC matrix cannot be smaller that the input one.
+!>    To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix from which the dimension will be increased.
+!>    \endverbatim
+!>    
+!>    \param[in] Rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The specification of the number of rows after padding.
+!>        The final number of rows must be larger or equal to the initial.
+!>        Otherwise the rows of the final matrix is the same as the initial 
+!>        one. To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>        If Rows > Matrix%NRow
+!>          The MatrixOut%Row = Rows
+!>        else
+!>          The MatrixOut%Row = Matrix%Row
+!>    \endverbatim
+!>    
+!>    \param[in] Cols  
+!>    \verbatim
+!>        Cols is Integer(kind=int64)
+!>        The specification of the number of columns after padding.
+!>        The final number of columns must be larger or equal to the initial.
+!>        Otherwise the columns of the final matrix is the same as the initial 
+!>        one. To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>        If Cols > Matrix%NCol
+!>          The MatrixOut%Col = Cols
+!>        else
+!>          The MatrixOut%Col = Matrix%Col
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function MQC_Matrix_Pad(Matrix,Rows,Cols) result(MatrixOut)
+!
+      Implicit None
+      Class(MQC_Matrix),Intent(In)::Matrix
+      Integer(kind=int64),Intent(In)::Rows,Cols
+      Type(MQC_Matrix)::MatrixOut
+
+      if (Rows.le.Matrix%NRow) then
+        if (Cols.le.Matrix%NCol) then
+          MatrixOut = Matrix
+        else
+          call MatrixOut%init(Matrix%NRow,Cols) 
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        end if
+      else
+        if (Cols.le.Matrix%NCol) then
+          call MatrixOut%init(Rows,Matrix%NCol)
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        else
+          call MatrixOut%init(Rows,Cols) 
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        end if
+      end if
+!
+      end function MQC_Matrix_Pad
+!
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Put
