@@ -125,7 +125,9 @@
         Procedure, Public::powerf => mqc_scf_integral_power_func
 !>      \brief <b> Psuedo inverse of an MQC_SCF_Integral object</b>
         Procedure, Public::pinv => mqc_scf_integral_pinv
+!>      \brief <b> Updates an element of an MQC_SCF_Integral object</b>
         Procedure, Public::put => mqc_integral_put
+!>      \brief <b> Returns an element of an MQC_SCF_Integral object</b>
         Procedure, Public::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
@@ -428,6 +430,11 @@
         Module Procedure MQC_Integral_Scalar_Multiply
       End Interface
 !
+!>    \brief <b> Computes the element-wise product of two objects</b>
+      Interface Operator (.ewp.)
+        Module Procedure MQC_Element_Integral_Multiply
+      End Interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -677,29 +684,85 @@
       call string_change_case(integral%array_type,'L')
       if(integral%array_type.eq.'space') then
         if(present(formatStr)) then
-          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'',formatStr=formatStr)
+          if(integral%hasAlpha()) then
+            call mqc_print(integral%alpha,iout,'',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'',formatStr=formatStr)
+          endIf
         else
-          if(integral%hasAlpha()) call mqc_print(integral%alpha,iout,'')
+          if(integral%hasAlpha()) then
+            call mqc_print(integral%alpha,iout,'')
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'')
+          endIf
         endIf
       elseif(integral%array_type.eq.'spin') then
         if(present(formatStr)) then
-          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array',formatStr=formatStr)
-          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array',formatStr=formatStr)
+          if(integral%hasAlpha()) then
+            call integral%alpha%print(iout,'Alpha Array',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'Alpha Array',formatStr=formatStr)
+          endIf
+          if(integral%hasBeta()) then
+            call integral%beta%print(iout,'Beta Array',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('beta'),iout,'Beta Array',formatStr=formatStr)
+          endIf
         else
-          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha Array')
-          if(integral%hasBeta()) call integral%beta%print(iout,'Beta Array')
+          if(integral%hasAlpha()) then
+            call integral%alpha%print(iout,'Alpha Array')
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'Alpha Array')
+          endIf
+          if(integral%hasBeta()) then
+            call integral%beta%print(iout,'Beta Array')
+          else
+            call mqc_print(integral%getBlock('beta'),iout,'Beta Array')
+          endIf
         endIf
       elseif(integral%array_type.eq.'general') then
         if(present(formatStr)) then
-          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block',formatStr=formatStr)
-          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block',formatStr=formatStr)
-          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block',formatStr=formatStr)
-          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block',formatStr=formatStr)
+          if(integral%hasAlpha()) then
+            call integral%alpha%print(iout,'Alpha-Alpha Block',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'Alpha-Alpha Block',formatStr=formatStr)
+          endIf
+          if(integral%hasBeta()) then
+            call integral%beta%print(iout,'Beta-Beta Block',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('beta'),iout,'Beta-Beta Block',formatStr=formatStr)
+          endIf
+          if(integral%hasAlphaBeta()) then
+            call integral%alphabeta%print(iout,'Alpha-Beta Block',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('alphabeta'),iout,'Alpha-Beta Block',formatStr=formatStr)
+          endIf
+          if(integral%hasBetaAlpha()) then
+            call integral%betaalpha%print(iout,'Beta-Alpha Block',formatStr=formatStr)
+          else
+            call mqc_print(integral%getBlock('betaalpha'),iout,'Beta-Alpha Block',formatStr=formatStr)
+          endIf
         else
-          if(integral%hasAlpha()) call integral%alpha%print(iout,'Alpha-Alpha Block')
-          if(integral%hasBeta()) call integral%beta%print(iout,'Beta-Beta Block')
-          if(integral%hasAlphaBeta()) call integral%alphabeta%print(iout,'Alpha-Beta Block')
-          if(integral%hasBetaAlpha()) call integral%betaalpha%print(iout,'Beta-Alpha Block')
+          if(integral%hasAlpha()) then 
+            call integral%alpha%print(iout,'Alpha-Alpha Block')
+          else
+            call mqc_print(integral%getBlock('alpha'),iout,'Alpha-Alpha Block')
+          endIf
+          if(integral%hasBeta()) then
+            call integral%beta%print(iout,'Beta-Beta Block')
+          else
+            call mqc_print(integral%getBlock('beta'),iout,'Beta-Beta Block')
+          endIf
+          if(integral%hasAlphaBeta()) then 
+            call integral%alphabeta%print(iout,'Alpha-Beta Block')
+          else
+            call mqc_print(integral%getBlock('alphabeta'),iout,'Alpha-Beta Block')
+          endIf
+          if(integral%hasBetaAlpha()) then
+            call integral%betaalpha%print(iout,'Beta-Alpha Block')
+          else
+            call mqc_print(integral%getBlock('betaalpha'),iout,'Beta-Alpha Block')
+          endIf
         endIf
       else
         call mqc_error_A('Array type unrecogised in mqc_print_integral', 6, &
@@ -2322,7 +2385,11 @@
 !>    \verbatim
 !>
 !>    MQC_Integral_Allocate is used to allocate a MQC SCF integral type variable of 
-!>    the MQC_SCF_Integral class. The following options are available:
+!>    the MQC_SCF_Integral class. The implicit dimension of a block can be set using 
+!>    the optional arguments nDimA1, nDimA2, nDimB1 and nDimB2 but these must agree in
+!>    dimension with any of the optional input matrix blocks if they are provided. 
+!>    Implicitly dimensioned blocks are used to set blocks to zero without explicit 
+!>    allocation. The following options are available:
 !>
 !>    1. ArrayType = 'space' declares the MQC_SCF_Integral variable contains 
 !>                   restricted spin blocks.
@@ -2381,11 +2448,35 @@
 !>        AlphaBeta is type(mqc_matrix),optional
 !>        The beta-alpha spin block integrals.
 !>    \endverbatim
+!>
+!>    \param[in] nDimA1
+!>    \verbatim
+!>        nDimA1 is integer(kind=int64),optional
+!>        The rows of the alpha block
+!>    \endverbatim
+!>
+!>    \param[in] nDimA2
+!>    \verbatim
+!>        nDimA2 is integer(kind=int64),optional
+!>        The columns of the alpha block.
+!>    \endverbatim
+!>
+!>    \param[in] nDimB1
+!>    \verbatim
+!>        nDimB1 is integer(kind=int64),optional
+!>        The rows of the beta block.
+!>    \endverbatim
+!>
+!>    \param[in] nDimB2
+!>    \verbatim
+!>        nDimB2 is integer(kind=int64),optional
+!>        The columns of the beta block.
+!>    \endverbatim
 !
 !     Authors:
 !     ========
 !>    \author L. M. Thompson
-!>    \date 2016
+!>    \date 2016, 2025
 !
       subroutine mqc_integral_allocate(integral,arrayName,arrayType,alpha, &
           beta,alphaBeta,betaAlpha,nDimA1,nDimA2,nDimB1,nDimB2) 
@@ -3995,6 +4086,13 @@
 !>        The MQC_SCF_integrals variable with the virtual orbital set.
 !>    \endverbatim
 !>    
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is integer(kind=int64),optional
+!>        = 1: specifies the row vector subset is selected. 
+!>        = 2: specifies the column vector subset is selected (default). 
+!>    \endverbatim
+!>    
 !>    \param[in] arrayNameIn
 !>    \verbatim
 !>        arrayNameIn is character(len=*),intent(in),optional 
@@ -4351,15 +4449,15 @@
 !>        The MQC_SCF_integrals variable with new orbitals.
 !>    \endverbatim
 !>    
-!>    \param[in] AlphaOrbsIn
+!>    \param[in] AlphaOrbs
 !>    \verbatim
-!>        AlphaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        AlphaOrbs is integer(kind=int64),dimension(:)
 !>        Alpha/restricted vectors to update.
 !>    \endverbatim
 !>    
-!>    \param[in] BetaOrbsIn
+!>    \param[in] BetaOrbs
 !>    \verbatim
-!>        BetaOrbsIn is integer(kind=int64),dimension(:),optional
+!>        BetaOrbs is integer(kind=int64),dimension(:)
 !>        Beta vectors to update.
 !>    \endverbatim
 !>    
@@ -4380,7 +4478,7 @@
       implicit none
       class(mqc_scf_integral),intent(in)::integral1
       type(mqc_scf_integral),intent(in)::integral2
-      integer(kind=int64),dimension(:)::alphaOrbs,betaOrbs
+      integer(kind=int64),dimension(:),intent(in)::alphaOrbs,betaOrbs
       integer(kind=int64),intent(in),optional::axis
       type(mqc_scf_integral)::integralOut,tempIntA,tempIntB
       integer(kind=int64)::i,j,my_axis,start
@@ -5304,7 +5402,7 @@
       else
         myReplace = .true.
       endIf
-      if(present(replace)) then
+      if(present(replaceAll)) then
         myReplaceAll = replaceAll
       else
         myReplaceAll = .false.
@@ -17537,7 +17635,7 @@
         Do P = 1, NBasis
           Do Q = 1, NBasis
             X = ERIs%alpha%mat([P],[Q],[0],[0]) 
-            X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+            X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
             Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
           EndDo
         EndDo
@@ -17555,7 +17653,7 @@
         Do R = 1, NBasis
           Do S = 1, NBasis
             X = tmpR4Tensor%mat([0],[0],[R],[S])
-            X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+            X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
             Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
           EndDo
         EndDo
@@ -17576,7 +17674,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0]) 
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17594,7 +17692,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17613,7 +17711,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17631,7 +17729,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+              X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17652,7 +17750,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -17670,7 +17768,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -17696,7 +17794,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0]) 
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17714,7 +17812,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alpha).dot.X.dot.MO_Coeff%alpha
+              X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17733,7 +17831,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%alpha).dot.X.dot.MO_Coeff%alpha
+              X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17751,7 +17849,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17770,7 +17868,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17788,7 +17886,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17808,7 +17906,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17826,7 +17924,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17845,7 +17943,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17863,7 +17961,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%beta).dot.X.dot.MO_Coeff%beta
+              X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17882,7 +17980,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17900,7 +17998,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17920,7 +18018,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17938,7 +18036,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alpha).dot.X.dot.MO_Coeff%alpha
+              X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17957,7 +18055,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta 
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta ')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -17975,7 +18073,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -17994,7 +18092,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18012,7 +18110,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18033,7 +18131,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18051,7 +18149,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%beta).dot.X.dot.MO_Coeff%beta
+                X = Dagger(MO_Coeff_2%getBlock('beta')).dot.X.dot.MO_Coeff%getBlock('beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18070,7 +18168,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%alpha).dot.X.dot.MO_Coeff%alpha
+                X = Dagger(MO_Coeff_2%getBlock('alpha')).dot.X.dot.MO_Coeff%getBlock('alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18088,7 +18186,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18107,7 +18205,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18125,7 +18223,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%betaAlpha).dot.X.dot.MO_Coeff%betaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('betaAlpha')).dot.X.dot.MO_Coeff%getBlock('betaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18146,7 +18244,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18164,7 +18262,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18183,7 +18281,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18201,7 +18299,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18220,7 +18318,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18238,7 +18336,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18257,7 +18355,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18275,7 +18373,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18296,7 +18394,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18314,7 +18412,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18333,7 +18431,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18351,7 +18449,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18370,7 +18468,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18388,7 +18486,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18407,7 +18505,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18425,7 +18523,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18446,7 +18544,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18464,7 +18562,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18483,7 +18581,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18501,7 +18599,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18520,7 +18618,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18538,7 +18636,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18557,7 +18655,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18575,7 +18673,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18596,7 +18694,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18614,7 +18712,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18633,7 +18731,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18651,7 +18749,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18670,7 +18768,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18688,7 +18786,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18707,7 +18805,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18725,7 +18823,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18746,7 +18844,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18764,7 +18862,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18783,7 +18881,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18801,7 +18899,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18820,7 +18918,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18838,7 +18936,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18857,7 +18955,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -18875,7 +18973,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -18896,7 +18994,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18914,7 +19012,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18933,7 +19031,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18951,7 +19049,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -18970,7 +19068,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -18988,7 +19086,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19007,7 +19105,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19025,7 +19123,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%alphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('alphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19047,7 +19145,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19065,7 +19163,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19084,7 +19182,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19102,7 +19200,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19121,7 +19219,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19139,7 +19237,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19158,7 +19256,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19176,7 +19274,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19198,7 +19296,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19216,7 +19314,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19235,7 +19333,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19253,7 +19351,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19272,7 +19370,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19290,7 +19388,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19309,7 +19407,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19327,7 +19425,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19349,7 +19447,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19367,7 +19465,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19386,7 +19484,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19404,7 +19502,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19423,7 +19521,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19441,7 +19539,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19460,7 +19558,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19478,7 +19576,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19500,7 +19598,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19518,7 +19616,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19537,7 +19635,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19555,7 +19653,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19574,7 +19672,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19592,7 +19690,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19611,7 +19709,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19629,7 +19727,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19651,7 +19749,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19669,7 +19767,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19688,7 +19786,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19706,7 +19804,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%Alpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('Alpha')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19725,7 +19823,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+                X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19743,7 +19841,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19762,7 +19860,7 @@
             Do P = 1, NBasis
               Do Q = 1, NBasis
                 X = ERIs%alpha%mat([P],[Q],[0],[0])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
                 Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
               EndDo
             EndDo
@@ -19780,7 +19878,7 @@
             Do R = 1, NBasis
               Do S = 1, NBasis
                 X = tmpR4Tensor%mat([0],[0],[R],[S])
-                X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%AlphaBeta
+                X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('AlphaBeta')
                 Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
               EndDo
             EndDo
@@ -19801,7 +19899,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -19819,7 +19917,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -19838,7 +19936,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -19856,7 +19954,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%Alpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('Alpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -19875,7 +19973,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%BetaAlpha).dot.X.dot.MO_Coeff%BetaAlpha
+              X = Dagger(MO_Coeff_2%getBlock('BetaAlpha')).dot.X.dot.MO_Coeff%getBlock('BetaAlpha')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -19893,7 +19991,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%AlphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('AlphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
@@ -19912,7 +20010,7 @@
           Do P = 1, NBasis
             Do Q = 1, NBasis
               X = ERIs%alpha%mat([P],[Q],[0],[0])
-              X = Dagger(MO_Coeff_2%Beta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('Beta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[P],[Q],[0],[0])
             EndDo
           EndDo
@@ -19930,7 +20028,7 @@
           Do R = 1, NBasis
             Do S = 1, NBasis
               X = tmpR4Tensor%mat([0],[0],[R],[S])
-              X = Dagger(MO_Coeff_2%alphaBeta).dot.X.dot.MO_Coeff%Beta
+              X = Dagger(MO_Coeff_2%getBlock('alphaBeta')).dot.X.dot.MO_Coeff%getBlock('Beta')
               Call tmpR4TensorLoc%mput(X,[0],[0],[R],[S])
             EndDo
           EndDo
