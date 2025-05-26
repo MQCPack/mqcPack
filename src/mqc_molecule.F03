@@ -1,3 +1,24 @@
+!>    \brief <b> MQC Molecule contains objects for assessing and manipulating  
+!>    information related to the nuclei </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC molecule contains objects that store and manipulate information related
+!>    to nuclei and the nuclear structure of molecules in Fortran. The objects 
+!>    enable straightforward retrieval of information such as the nucler-nuclear
+!>    reulsion energy or printing of the nuclear coordinates. The MQC derived types
+!>    defined in this package are
+!>
+!>    1. MQC_Molecule_Data:     EST object containing nuclear structure information
+!>
+!>    This module is level 2 in the MQC hierarchy and so depends on level 0 and 1
+!>    modules. 
+!>
+!>    \endverbatim
+!
       Module MQC_Molecule
 !
 !     ***********************************************************************
@@ -33,18 +54,23 @@
       Use MQC_DataStructures
       Use MQC_Files
 !
-!     MQC_Molecule_Data
+!>    \brief <b> Nuclear structure information object</b>
       Type MQC_Molecule_Data
         Type(MQC_Scalar)::NAtoms
         Type(MQC_Vector)::Atomic_Numbers,Atomic_Masses,Nuclear_Charges
         Type(MQC_Matrix)::Cartesian_Coordinates
       Contains 
+!>      \brief <b> Print the nuclear geometry in a pretty table</b>
         Procedure, Public::print => MQC_Print_Nuclear_Geometry
+!>      \brief <b> Return the classical nuclear-nuclear repulsion energy </b>
         Procedure, Public::getNucRep => MQC_Get_Nuclear_Repulsion
+!>      \brief <b> Return the number of atoms</b>
         Procedure, Public::getNumAtoms => MQC_Molecule_Data_GetNAtoms
+!>      \brief <b> Update the information in the MQC_Molecule_Data object</b>
         Procedure, Public::updateMolData => MQC_Update_Mol_Data
       End Type MQC_Molecule_Data
 !
+!>    \brief <b> Print the nuclear geometry in a pretty table</b>
       Interface MQC_Print
         Module Procedure MQC_Print_Nuclear_Geometry
       End Interface
@@ -52,15 +78,43 @@
       CONTAINS
 !
 !     PROCEDURE MQC_Molecule_Data_Allocate
+!
+!>    \brief <b> This subroutine is used to set the NAtoms element of an
+!>     MQC_Molecule_Data object and to allocate all of the object's array
+!>     elements</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine is used to set the NAtoms element of an
+!>    MQC_Molecule_Data object and to allocate all of the object's array
+!>    elements.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inOut] MQC_Molecule_Data_Object
+!>    \verbatim
+!>        MQC_Molecule_Data_Object is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data that is allocated.
+!>    \endverbatim
+!>
+!>    \param[in] NAtomsIn
+!>    \verbatim
+!>        NAtomsIn is Type(MQC_Scalar) 
+!>        The number of Atoms. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Molecule_Data_Allocate(MQC_Molecule_Data_Object,  &
         NAtomsIn)
-!
-!     This subroutine is used to set the NAtoms element of an
-!     MQC_Molecule_Data object and to allocate all of the object's array
-!     elements.
-!
-!     -H. P. Hratchian, 2016
-!
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(InOut)::MQC_Molecule_Data_Object
@@ -78,18 +132,36 @@
       EndIf
 !
       End Subroutine MQC_Molecule_Data_Allocate
-
-
+!
 !
 !     PROCEDURE MQC_Molecule_Data_DeAllocate
+!
+!>    \brief <b> This subroutine is used to deallocate all of the object's 
+!>    array elements</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine is used to deallocate all of the object's array elements.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inOut] MQC_Molecule_Data_Object
+!>    \verbatim
+!>        MQC_Molecule_Data_Object is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data that is deallocated.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Molecule_Data_DeAllocate(MQC_Molecule_Data_Object)
-!
-!     This subroutine is used to set the NAtoms element of an
-!     MQC_Molecule_Data object and to deallocate all of the object's array
-!     elements.
-!
-!     -H. P. Hratchian, 2016
-!
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(InOut)::MQC_Molecule_Data_Object
@@ -101,17 +173,37 @@
       Call MQC_Deallocate_Matrix(MQC_Molecule_Data_Object%Cartesian_Coordinates)
 !
       End Subroutine MQC_Molecule_Data_DeAllocate
-
-
+!
 !
 !     PROCEDURE MQC_Molecule_Data_GetNAtoms
+!
+!>    \brief <b> This function returns the number of atoms associated with the
+!>    MQC_Molecule_Data object MQC_Molecular_Data_Object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This function returns the number of atoms associated with the
+!>    MQC_Molecule_Data object MQC_Molecular_Data_Object.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inOut] MQC_Molecule_Data_Object
+!>    \verbatim
+!>        MQC_Molecule_Data_Object is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which NAtoms is obtained.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Function MQC_Molecule_Data_GetNAtoms(MQC_Molecule_Data_Object)
-!
-!     This function returns the number of atoms associated with the
-!     MQC_Molecule_Data object MQC_Molecular_Data_Object.
-!
-!     -H. P. Hratchian, 2016
-!
 !
       Implicit None
       Type(MQC_Scalar)::MQC_Molecule_Data_GetNAtoms
@@ -124,17 +216,68 @@
 !
 !
 !     PROCEDURE MQC_Molecule_Data_Fill
+!
+!>    \brief <b> This subroutine is used to put data into an MQC_Molecule_Data 
+!>    object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine is used to put data into an MQC_Molecule_Data object.
+!>    All dummy arguments, after the first, are optional. Note that if the
+!>    number of atoms in the data changes wrt to previous data in the
+!>    object, the entire object is reset.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inOut] MQC_Molecule_Data_Object
+!>    \verbatim
+!>        MQC_Molecule_Data_Object is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which NAtoms is obtained.
+!>    \endverbatim
+!>
+!>    \param[in] NAtomsIn
+!>    \verbatim
+!>        NAtomsIn is Integer,Optional
+!>        The number of atoms.
+!>    \endverbatim
+!>
+!>    \param[in] Atomic_Numbers
+!>    \verbatim
+!>        Atomic_Numbers is Integer,Dimension(:),Optional
+!>        The list of atomic numbers.
+!>    \endverbatim
+!>
+!>    \param[in] Atomic_Masses
+!>    \verbatim
+!>        Atomic_Masses is Real,Dimension(:),Optional
+!>        The list of atomic masses.
+!>    \endverbatim
+!>
+!>    \param[in] Nuclear_Charges 
+!>    \verbatim
+!>        Nuclear_Charges is Real,Dimension(:),Optional
+!>        The list of nuclear charges.
+!>    \endverbatim
+!>
+!>    \param[in] Cartesian_Coordinates
+!>    \verbatim
+!>        Cartesian_Coordinates is Real,Dimension(:,:),Optional
+!>        The list of nuclear Cartesian coordinates.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author H. P. Hratchian
+!>    \date 2016
+!
       Subroutine MQC_Molecule_Data_Fill(MQC_Molecule_Data_Object,  &
         NAtomsIn,Atomic_Numbers,Atomic_Masses,Nuclear_Charges,  &
         Cartesian_Coordinates)
-!
-!     This subroutine is used to put data into an MQC_Molecule_Data object.
-!     All dummy arguments, after the first, are optional. Note that if the
-!     number of atoms in the data changes wrt to previous data in the
-!     object, the entire object is reset.
-!
-!     -H. P. Hratchian, 2016
-!
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(InOut)::MQC_Molecule_Data_Object
@@ -150,7 +293,6 @@
 !     Get NAtoms_Object and NAtoms_Sent set. Then allocate the object if
 !     the two values do NOT agree or NAtoms_Object=0.
 !
-
       NAtoms_Object =  &
         MQC_Molecule_Data_GetNAtoms(MQC_Molecule_Data_Object)
       If(Present(NAtomsIn)) NAtoms_Sent = NAtomsIn
@@ -208,16 +350,67 @@
       End Subroutine MQC_Molecule_Data_Fill
 !
 !
-!
 !     PROCEDURE MQC_Molecule_Data_Output
+!
+!>    \brief <b> This subroutine is used to output data from an 
+!>    MQC_Molecule_Data object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine is used to output data from an MQC_Molecule_Data object.
+!>    All dummy arguments, after the first, are optional.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MQC_Molecule_Data_Object
+!>    \verbatim
+!>        MQC_Molecule_Data_Object is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which NAtoms is obtained.
+!>    \endverbatim
+!>
+!>    \param[inOut] NAtomsIn
+!>    \verbatim
+!>        NAtomsIn is Integer,Optional
+!>        The number of atoms.
+!>    \endverbatim
+!>
+!>    \param[inOut] Atomic_Numbers
+!>    \verbatim
+!>        Atomic_Numbers is Integer,Dimension(:),Optional
+!>        The list of atomic numbers.
+!>    \endverbatim
+!>
+!>    \param[inOut] Atomic_Masses
+!>    \verbatim
+!>        Atomic_Masses is Real,Dimension(:),Optional
+!>        The list of atomic masses.
+!>    \endverbatim
+!>
+!>    \param[inOut] Nuclear_Charges 
+!>    \verbatim
+!>        Nuclear_Charges is Real,Dimension(:),Optional
+!>        The list of nuclear charges.
+!>    \endverbatim
+!>
+!>    \param[inOut] Cartesian_Coordinates
+!>    \verbatim
+!>        Cartesian_Coordinates is Real,Dimension(:,:),Optional
+!>        The list of nuclear Cartesian coordinates.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2020
+!
       Subroutine MQC_Molecule_Data_Output(MQC_Molecule_Data_Object,  &
         NAtoms,Atomic_Numbers,Atomic_Masses,Nuclear_Charges,  &
         Cartesian_Coordinates)
-!
-!     This subroutine is used to output data from an MQC_Molecule_Data object.
-!     All dummy arguments, after the first, are optional.
-!
-!     L. M. Thompson, 2020
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(In)::MQC_Molecule_Data_Object
@@ -238,13 +431,34 @@
 !
 !
 !     PROCEDURE MQC_GET_NUCLEAR_REPULSION 
+!
+!>    \brief <b> This subroutine is used to output data from an 
+!>    MQC_Molecule_Data object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine is used to output data from an MQC_Molecule_Data object.
+!>    All dummy arguments, after the first, are optional.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Molecule_Info
+!>    \verbatim
+!>        Molecule_Info is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which nuclear repulsion is determined.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2020
+!
       Function MQC_Get_Nuclear_Repulsion(Molecule_Info) Result(Vnn)  
-!
-!     This function returns the nuclear repulsion energy given the 
-!     molecular data object.
-!
-!     Lee M. Thompson, 2017.
-!
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(In)::Molecule_Info
@@ -270,13 +484,34 @@
 !
 !
 !     PROCEDURE MQC_GET_NUCLEAR_SYMBOLS
+!
+!>    \brief <b> This subroutine is used to output a list of nuclear symbols 
+!>    for each element in the MQC_Molecule_Data object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This function is used to output a list of nuclear symbols for each element 
+!>    in the MQC_Molecule_Data object.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Molecule_Info
+!>    \verbatim
+!>        Molecule_Info is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which nuclear symbols are obtained.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2017
+!
       Function MQC_Get_Nuclear_Symbols(Molecule_Info) Result(Symbols)  
-!
-!     This function returns the nuclear repulsion energy given the 
-!     molecular data object.
-!
-!     Lee M. Thompson, 2017.
-!
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(In)::Molecule_Info
@@ -292,14 +527,48 @@
 !
 !
 !     PROCEDURE MQC_PRINT_NUCLEAR_GEOMETRY
+!
+!>    \brief <b> This subroutine prints the nuclear geometry given the molecular 
+!>    data object. Default units are Angstrom unless optional argument bohr is 
+!>    passed as true</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine prints the nuclear geometry given the molecular data object. 
+!>    Default units are Angstrom unless optional argument bohr is passed as true.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Molecule_Info
+!>    \verbatim
+!>        Molecule_Info is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data from which information is obtained.
+!>    \endverbatim
+!>
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is integer
+!>        The output file number to which the the information is printed.
+!>    \endverbatim
+!>
+!>    \param[in] Bohr
+!>    \verbatim
+!>        Bohr is logical,optional
+!>        If true, the output coordinates are given in Bohr, otherwise, then
+!>        are given in Angstrom (default).
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2019
+!
       subroutine mqc_print_nuclear_geometry(molecule_info,iOut,bohr) 
-!
-!     This subroutine prints the nuclear geometry given the 
-!     molecular data object. Default units are Angstrom unless
-!     optional argument bohr is passed as true.
-!
-!     Lee M. Thompson, 2019.
-!
 !
       implicit none
       class(mqc_molecule_data),intent(in)::molecule_info
@@ -350,13 +619,33 @@
 !
 !
 !     PROCEDURE MQC_ELEMENT_SYMBOL
+!
+!>    \brief <b> This function returns the nuclear element string given the 
+!>    atomic number</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This function returns the nuclear element string given the atomic number.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Atomic_Number
+!>    \verbatim
+!>        Atomic_Number is Class(*)
+!>        The atomic number from which the element symbol is obtained.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2019
+!
       function mqc_element_symbol(atomic_number) result(element)  
-!
-!     This function returns the nuclear element string given the 
-!     atomic number.
-!
-!     Lee M. Thompson, 2019.
-!
 !
       implicit none
       class(*),intent(in)::atomic_number
@@ -605,12 +894,33 @@
 !
 !
 !     PROCEDURE MQC_ATOMIC_NUMBER 
+!
+!>    \brief <b> This function returns the atomic number given the nuclear element 
+!>    string</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This function returns the atomic number given the nuclear element string.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Element_Symbol
+!>    \verbatim
+!>        Element_Symbol is character(len=*)
+!>        The element symbol from which the atomic number is obtained.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2020
+!
       function mqc_atomic_number(element_symbol) result(atomic_number)  
-!
-!     This function returns the atomic number given the nuclear element string.
-!
-!     Lee M. Thompson, 2020.
-!
 !
       implicit none
       character(len=*),intent(in)::element_symbol
@@ -852,24 +1162,75 @@
 !
 !
 !     PROCEDURE MQC_UPDATE_MOL_DATA
+!
+!>    \brief <b> This subroutine updates the molecule data object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    This subroutine updates the molecule data object. Only one of the optional
+!>    MQC_Scalar, MQC_Vector, or MQC_Matrix arrays should be provided. The 
+!>    recognized labels and their meaning include:
+!>    1. Label = 'natoms'          update the number of atoms.
+!>    2. Label = 'atomic numbers'  update the atomic number vector.
+!>    3. Label = 'atomic masses'   update the atomic mass vector.
+!>    4. Label = 'nuclear charges' update the nuclear charge vector.
+!>    5. Label = 'cartesians'      update the cartesian coordinate matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[inOut] Molecule_Info
+!>    \verbatim
+!>        Molecule_Info is Class(MQC_Molecule_Data)
+!>        The MQC_Molecule_Data that will be updated.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is character(len=*)
+!>        The label indicating the data to update.
+!>        = 'natoms'          update the number of atoms.
+!>        = 'atomic numbers'  update the atomic number vector.
+!>        = 'atomic masses'   update the atomic mass vector.
+!>        = 'nuclear charges' update the nuclear charge vector.
+!>        = 'cartesians'      update the cartesian coordinate matrix.
+!>    \endverbatim
+!>
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Type(MQC_Scalar),Optional
+!>        The name of the MQC_Scalar variable.
+!>    \endverbatim
+!>
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Type(MQC_Vector),Optional
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Matrix is Type(MQC_Matrix),Optional
+!>        The name of the MQC_Matrix variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2020
+!
       Subroutine MQC_Update_Mol_Data(Molecule_Info,label,scalar,vector,matrix) 
-!
-!     This subroutine updates the molecule data object. The recognized labels and
-!     their meaning include:
-!           'natoms'          update the number of atoms.
-!           'atomic numbers'  update the atomic number vector.
-!           'atomic masses'   update the atomic mass vector.
-!           'nuclear charges' update the nuclear charge vector.
-!           'cartesians'      update the cartesian coordinate matrix.
-!
-!     Lee M. Thompson, 2020.
 !
       Implicit None
       Class(MQC_Molecule_Data),Intent(InOut)::Molecule_Info
       character(len=*),intent(in)::label
-      Type(MQC_Scalar),optional::scalar
-      Type(MQC_Vector),optional::vector
-      Type(MQC_Matrix),optional::matrix
+      Type(MQC_Scalar),optional,intent(in)::scalar
+      Type(MQC_Vector),optional,intent(in)::vector
+      Type(MQC_Matrix),optional,intent(in)::matrix
       character(len=64)::myLabel
       Integer::nInputArrays
 !

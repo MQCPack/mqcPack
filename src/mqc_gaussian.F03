@@ -5398,7 +5398,7 @@
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inOut)::fileinfo
       character(len=*),intent(in)::label
-      type(mqc_twoERISet),intent(out)::ERISet
+      type(mqc_twoERISet),intent(inOut)::ERISet
       character(len=*),intent(in),optional::filename
       logical,optional,intent(out)::foundERI
       logical,optional,intent(in)::replace

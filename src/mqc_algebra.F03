@@ -97,6 +97,8 @@
         Procedure, Public::log => MQC_Scalar_Log
 !>      \brief <b> Return a random value to the MQC Scalar</b>
         Procedure, Public::random => MQC_Scalar_Get_Random_Value
+!>      \brief <b> Take the phase of the MQC Scalar</b>
+        Procedure, Public::phase => MQC_Scalar_Get_Phase
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -262,8 +264,9 @@
 !>      \brief <b> Updates the specified submatrix of the MQC Matrix to the specified
 !>      matrix</b>
         Procedure, Public::mput => MQC_Matrix_Matrix_Put
-!>      \brief <b> Updates the specified element of the MQC Matrix to the specified
-!>      value</b>
+!>      \brief <b> Increases a MQC Matrix dimension and fill the additional elements with
+!>      with zeros.</b>
+        Procedure, Public::mpad => MQC_Matrix_Pad
       End Type MQC_Matrix
 !     
 !>    \brief <b> Rank 4 array variable</b>
@@ -2762,6 +2765,66 @@
 !
       return
       END FUNCTION MQC_Scalar_Get_ABS_Value
+!
+!
+!     PROCEDURE MQC_Scalar_Get_Phase
+!
+!>    \brief <b> MQC_Scalar_Get_Phase is a function that returns the
+!>    phase angle in radian of MQC_scalar variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Scalar_Get_Phase is a function that returns the phase angle (p)
+!>    in radian of MQC_scalar variable. Such as:
+!>    Scalar=exp(-ip)*abs(Scalar)=abs(Scalar)(cos(p)-i sin(p))
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Scalar
+!>    \verbatim
+!>        Scalar is Class(MQC_Scalar)
+!>        The MQC_Scalar to be tested.
+!>    \endverbatim
+!>
+!>    \param[in] Thresh_Inp
+!>    \verbatim
+!>        Thresh_Inp is Type(MQC_Scalar)
+!>        The threshold for determining the phase.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M.M.F. Moraes
+!>    \date 2025
+!
+      Function MQC_Scalar_Get_Phase(Scalar,thresh_inp) Result(Output)
+!
+!     Variable Declarations
+      Implicit None
+      Class(MQC_Scalar),Intent(In)::Scalar
+      Type(MQC_Scalar),optional,Intent(In)::thresh_inp
+      Type(MQC_Scalar)::Output
+      real::thresh
+
+      if(present(thresh_inp)) then
+       thresh=thresh_inp%rval()
+      else
+        thresh=1.0E-8
+      end if
+
+      if (abs(Scalar).lt.thresh) then
+        output = 0.0
+      else
+        output = acos(Scalar%rval()/abs(Scalar))
+      end if
+      return
+!
+      END FUNCTION MQC_Scalar_Get_Phase
 !
 !
 !     PROCEDURE MQC_Scalar_Log
@@ -15789,7 +15852,7 @@
       If (IndL.lt.0) IndL = Mat%NCol + IndL + 1
       LenRow = IndJ-IndI+1
       LenCol = IndL-IndK+1
-      If (LenRow.le.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
+      If (LenRow.lt.0.or.LenRow.gt.Mat%NRow.or.LenRow.ne.MatrixIn%NRow) Call MQC_Error_I('Row length badly &
      &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow, &
@@ -15804,7 +15867,7 @@
      'IndJ', IndJ, &
      'LenRow', LenRow, &
      'Mat%NRow', Mat%NRow )
-      If (LenCol.le.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
+      If (LenCol.lt.0.or.LenCol.gt.Mat%NCol.or.LenCol.ne.MatrixIn%NCol) Call MQC_Error_I('Column length badly &
      &  defined in MQC_Matrix_Matrix_Put', 6, &
      'LenCol', LenCol, &
      'Mat%NCol', Mat%NCol, &
@@ -15873,8 +15936,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
-                  Mat%MatI(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -15882,8 +15945,8 @@
               L = 1
               Do M = 1, LenCol
                 Do N = 1, M
-                  Mat%MatI(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
-                  Mat%MatI(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+N-1,IndK+M-1) = (-1)*MatrixIn%MatR(L,1)
+                  Mat%MatR(IndI+M-1,IndK+N-1) = MatrixIn%MatR(L,1)
                   L = L + 1
                 endDo
               endDo
@@ -16314,6 +16377,89 @@
       EndIf
 
       End Subroutine MQC_Matrix_Matrix_Put
+!
+!
+!     PROCEDURE MQC_Matrix_Pad
+!
+!>    \brief <b> MQC_Matrix_Pad is a function that increases the dimension of a
+!>    MQC matrix and set the new elements to zero.</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Pad is a function that increases the dimension of a
+!>    MQC matrix and set the new elements to zero. Each dimension of the
+!>    final MQC matrix cannot be smaller that the input one.
+!>    To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix
+!>    \verbatim
+!>        Mat is Class(MQC_Matrix)
+!>        The MQC matrix from which the dimension will be increased.
+!>    \endverbatim
+!>
+!>    \param[in] Rows
+!>    \verbatim
+!>        Rows is Integer(kind=int64)
+!>        The specification of the number of rows after padding.
+!>        The final number of rows must be larger or equal to the initial.
+!>        Otherwise the rows of the final matrix is the same as the initial
+!>        one. To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>        If Rows > Matrix%NRow
+!>          The MatrixOut%Row = Rows
+!>        else
+!>          The MatrixOut%Row = Matrix%Row
+!>    \endverbatim
+!>
+!>    \param[in] Cols
+!>    \verbatim
+!>        Cols is Integer(kind=int64)
+!>        The specification of the number of columns after padding.
+!>        The final number of columns must be larger or equal to the initial.
+!>        Otherwise the columns of the final matrix is the same as the initial
+!>        one. To reduce the dimension of a MQC matrix use MQC_Matrix_Matrix_At.
+!>        If Cols > Matrix%NCol
+!>          The MatrixOut%Col = Cols
+!>        else
+!>          The MatrixOut%Col = Matrix%Col
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function MQC_Matrix_Pad(Matrix,Rows,Cols) result(MatrixOut)
+!
+      Implicit None
+      Class(MQC_Matrix),Intent(In)::Matrix
+      Integer(kind=int64),Intent(In)::Rows,Cols
+      Type(MQC_Matrix)::MatrixOut
+
+      if (Rows.le.Matrix%NRow) then
+        if (Cols.le.Matrix%NCol) then
+          MatrixOut = Matrix
+        else
+          call MatrixOut%init(Matrix%NRow,Cols)
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        end if
+      else
+        if (Cols.le.Matrix%NCol) then
+          call MatrixOut%init(Rows,Matrix%NCol)
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        else
+          call MatrixOut%init(Rows,Cols)
+          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
+        end if
+      end if
+!
+      end function MQC_Matrix_Pad
 !
 !
 !     PROCEDURE SymIndexHash
@@ -19959,7 +20105,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Class(MQC_Matrix),Intent(InOut)::Matrix
+      Class(MQC_Matrix),Intent(In)::Matrix
       Logical::isAllocated
 !
       isAllocated = .False.
