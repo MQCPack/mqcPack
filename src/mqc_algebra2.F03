@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.3.0                           **
-!     **                          March 25, 2025                           **
+!     **                          Version 25.5.0                           **
+!     **                           May 25, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -1275,7 +1275,7 @@
            'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
-        mqcVariable%realArray(k) = Float(valueMQC)
+        mqcVariable%realArray(k) = float(valueMQC)
       case('INTEGER')
         mqcVariable%integerArray(k) = Int(valueMQC)
       case default
@@ -3112,7 +3112,7 @@
 !     Based on the sign of <realPower>, we now do the work.
 !
       mqcVariableOut = mqcVariable
-      if(realPower.ge.float(0)) then
+      if(realPower.ge.mqc_float(0)) then
         select case(typeCode)
         case(2)
           mqcVariableOut%realArray = mqcVariableOut%realArray**realPower
