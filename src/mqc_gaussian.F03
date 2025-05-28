@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.5.0                           **
-!     **                           May 25, 2025                            **
+!     **                          Version 25.5.1                           **
+!     **                           May 28, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -5603,6 +5603,8 @@
 !       nelectrons
 !       nalpha
 !       nbeta
+!       nshlao
+!       nprmao
 !
 !
 !     H. P. Hratchian, 2017.
@@ -5680,6 +5682,10 @@
         value_out = (fileinfo%nelectrons + fileinfo%multiplicity - 1)/2 
       case('nbeta')
         value_out = (fileinfo%nelectrons - fileinfo%multiplicity + 1)/2 
+      case('nshlao')
+        value_out = fileinfo%NShlAO
+      case('nprmao')
+        value_out = fileinfo%NPrmAO
       case default
         call mqc_error_A('Failure finding requested integer value in Gaussian matrix file', 6, &
           'mylabel', mylabel )
