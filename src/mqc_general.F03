@@ -180,7 +180,7 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 06
+      if(PRESENT(minor))         minor         = 6
       if(PRESENT(revision))      revision      = 0
       if(PRESENT(versionString)) versionString = '25.6.0'
 !
