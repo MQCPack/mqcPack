@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.5.1                           **
-!     **                           May 28, 2025                            **
+!     **                          Version 25.6.1                           **
+!     **                           June 2, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -180,9 +180,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 5
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '25.5.1'
+      if(PRESENT(minor))         minor         = 6
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.6.0'
 !
       return
       end subroutine mqc_version
@@ -936,7 +936,7 @@
 !
 !PROCEDURE MQC_Print_Matrix_Array_Real
       Subroutine MQC_Print_Matrix_Array_Real(Array,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
+        Blank_At_Bottom,FormatStr,PrintGT)
 !
 !     This subroutine is used to print a real Matrix array variable.
 !
@@ -950,9 +950,11 @@
       Real(kind=real64),dimension(:,:),Intent(In)::Array
       Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      real(kind=real64),intent(in),optional::PrintGT
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10
       Character(Len=256)::FormatLine
+      logical::printLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -971,11 +973,16 @@
         ILast = Min(IFirst+ColWidth-1,NCols)
         Write(IOut,1001) (I,I=IFirst,ILast)
         do I = 1,NRows
+          if(present(PrintGT)) then
+            printLine = MAXVAL(Array(I,:)).gt.PrintGT
+          else
+            printLine = .true.
+          endIf
           If(present(FormatStr)) then
             FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
-            Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
+            if(printLine) Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
           else
-            Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
+            if(printLine) Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
           endIf
         enddo
       EndDo
@@ -1143,7 +1150,7 @@
 
 !PROCEDURE MQC_Print_Vector_Array_Real
       Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
+        Blank_At_Bottom,FormatStr,PrintGT)
 !
 !     This subroutine is used to print a Vector array type variable.
 !
@@ -1157,8 +1164,10 @@
       Real(kind=real64),Dimension(:),Intent(In)::Vector
       Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      real(kind=real64),intent(in),optional::PrintGT
       Integer(kind=int64)::I,Length
       Character(Len=256)::FormatLine
+      logical::printLine
 !
  1000 Format(1x,A)
  1002 Format(1x,I7,2X,F14.6)
@@ -1170,11 +1179,16 @@
       Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
       Do I = 1, Length
+        if(present(PrintGT)) then
+          printLine = Vector(I).gt.PrintGT
+        else
+          printLine = .true.
+        endIf
         If(present(FormatStr)) then
           FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
-          Write(IOut,trim(FormatLine)) I, Vector(I)
+          if(printLine) Write(IOut,trim(FormatLine)) I, Vector(I)
         Else
-          Write(IOut,1002) I, Vector(I)
+          if(printLine) Write(IOut,1002) I, Vector(I)
         endIf
       EndDo
 
