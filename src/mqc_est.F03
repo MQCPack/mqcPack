@@ -98,6 +98,8 @@
         Procedure, Public::getLabel => mqc_integral_array_name
 !>      \brief <b> Set the label of the MQC_SCF_Integral object</b>
         Procedure, Public::addLabel => mqc_integral_add_name
+!>      \brief <b> Return a new MQC_SCF_Integral object with distinct Array_type</b>
+        Procedure, Public::changeType => mqc_integral_change_type
 !>      \brief <b> Return a spin block of MQC_SCF_Integral object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_integral_output_block
 !>      \brief <b> Set an MQC_SCF_Integral object as the identity matrix</b>
@@ -169,6 +171,8 @@
         Procedure, Private::hasBeta => mqc_eigenvalues_has_beta
         Procedure, Private::type => mqc_eigenvalues_array_type
         Procedure, Private::blockSize => mqc_eigenvalues_dimension 
+!>      \brief <b> Initilizes the MQC_SCF_Eigenvalues object</b>
+        Procedure, Public::init => mqc_eigenvalues_initialize
 !>      \brief <b> Return the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::getLabel => mqc_eigenvalues_array_name
 !>      \brief <b> Set the label of the MQC_SCF_Eigenvalues object</b>
@@ -180,6 +184,9 @@
 !>      \brief <b> Alters the value of a specified element in an MQC_SCF_Eigenvalues 
 !>      object</b>
         Procedure, Public::put => mqc_eigenvalues_put
+!>      \brief <b> Appends the specified value to the end of the MQC_SCF_Eigenvalues 
+!>      object</b>
+        Procedure, Public::push => mqc_eigenvalues_push
 !>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
 !>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
@@ -1771,6 +1778,106 @@
       end subroutine mqc_integral_add_name
 !
 !
+!
+!     PROCEDURE MQC_Integral_Change_Type
+!
+!>    \brief <b> MQC_Integral_Change_Type is a function that copy a MQC_Integral with a  
+!>    less restrict typing. </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Change_Type is a function that copy a MQC_Integral with a  
+!>    less restrict typing: 'space' -> 'spin' or 'general; 'spin' -> 'general'
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] newType
+!>    \verbatim
+!>        newType is Character(Len=*)
+!>        The new type of the MQC_SCF_Integral:
+!>        'space', 'spin' or 'general'
+!>    \endverbatim
+!>
+!>    \param[out] IntegralOut
+!>    \verbatim
+!>        Integral is Type(MQC_SCF_Integral)
+!>        IntegralOut has the same orbitals as Integral, with newType type.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function mqc_integral_change_type(integral,newType) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      type(mqc_scf_integral)::integralOut
+      character(Len=*)::newType
+      character(Len=64)::newArrayType,oldArrayType
+      integer(kind=int64)::nDimAlpha1=0,nDimBeta1=0,nDimTotal1=0,nDimAlpha2=0,nDimBeta2=0,nDimTotal2=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
+      type(mqc_matrix)::aa,bb,ab,ba
+!
+      call string_change_case(newType,'L',newArrayType)
+      oldArrayType = integral%Array_Type
+      if (oldArrayType.eq.newArrayType) then
+        integralOut = integral
+        return
+      end if
+
+      nDimAlpha1 = integral%blockSize('Alpha',1)
+      nDimBeta1 = integral%blockSize('Beta',1)
+      nDimTotal1 = nDimAlpha1 + nDimBeta1
+      nDimAlpha2 = integral%blockSize('Alpha',2)
+      nDimBeta2 = integral%blockSize('Beta',2)
+      nDimTotal2 = nDimAlpha2 + nDimBeta2
+
+      select case (newArrayType)
+      case ('space')
+        call mqc_error_a('New type is more restrictive than the original one in mqc_integral_change_type',&
+          6,'Original Type:',oldArrayType,'New Type:',newArrayType)
+      case ('spin')
+        if (oldArrayType.eq.'general') &
+           call mqc_error_a('New type is more restrictive than the original one in mqc_integral_change_type',&
+                             6,'Original Type:',oldArrayType,'New Type:',newArrayType)
+        aa = integral%getBlock('alpha')
+        call mqc_integral_allocate(integralOut,integral%Array_Name,'spin',aa,aa)
+      case ('general')
+        if (oldArrayType.eq.'space') then
+          aa = integral%getBlock('alpha')
+          bb = aa
+        else
+          aa = integral%getBlock('alpha')
+          bb = integral%getBlock('beta')
+        end if
+        call ab%init(nDimBeta1,nDimAlpha2,zeroR)
+        call ba%init(nDimAlpha1,nDimBeta2,zeroR)
+        call mqc_integral_allocate(integralOut,integral%Array_Name,'general',aa,bb,ab,ba)
+      case default
+        call mqc_error_A('Unrecognised integral type in mqc_integral_change_type', 6, &
+             'New Type:', newArrayType )
+      end select
+
+!
+      end function mqc_integral_change_type
+!
+!
 !     PROCEDURE MQC_eigenvalues_Add_Name    
 !
 !>    \brief <b> MQC_Eigenvalues_Add_Name is a function that sets the label of an MQC 
@@ -1994,6 +2101,94 @@
       end select 
 !
       end function mqc_eigenvalues_dimension 
+
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Initialize
+!
+!>    \brief <b> MQC_Eigenvalues_Initialize is a subroutine that initializes a MQC_SCF_Eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_Initialize is a subroutine that initializes a MQC_SCF_Eigenvalues. Default
+!>    element values are 0.0 in a 'space' type object, or otherwise vector can be initialized with optional
+!>    argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] eigenvalues
+!>    \verbatim
+!>        Vector is Class(MQC_Eigenvalues_Initialize)
+!>        The MQC_Eigenvalues_Initialize to intialize.
+!>    \endverbatim
+!>
+!>    \param[in] length
+!>    \verbatim
+!>        Length is Integer(kind=int64)
+!>        The length to initialize eigenvalues object
+!>    \endverbatim
+!>
+!>
+!>    \param[in] scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        Value to set each element of Vector. If not present,
+!>        the value is set to 0.0. Can be of type integer, real,
+!>        complex or MQC_Scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_initialize(eigenvalues,length,scalar,lengthBeta)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Real(kind=real64)::Zero=0.0d0
+      Character(Len=64)::eigenvaluesType 
+      Integer(kind=int64)::lenAlpha,lenBeta
+      Integer(kind=int64),Intent(In)::length
+      type(mqc_vector)::vecAlpha,vecBeta
+      Class(*),Optional::scalar
+      Integer(kind=int64),Optional::lengthBeta
+      Class(mqc_scf_eigenvalues),Intent(InOut)::eigenvalues
+      
+      If(Present(lengthBeta)) then
+        eigenvaluesType='spin'
+        lenAlpha = length
+        lenBeta = lengthBeta
+      else
+        eigenvaluesType='space'
+        lenAlpha = length
+      endif
+      eigenvalues%Array_Type = eigenvaluesType
+
+      If(Present(Scalar)) then
+        call vecAlpha%init(lenAlpha,Scalar)
+        if(eigenvaluesType.eq.'spin') then
+          call vecBeta%init(lenBeta,Scalar)
+        endif
+      else
+        call vecAlpha%init(lenAlpha)
+        if(eigenvaluesType.eq.'spin') then
+          call vecBeta%init(lenBeta)
+        endif
+      endIf
+      eigenvalues%Alpha = vecAlpha
+      if(eigenvaluesType.eq.'spin') eigenvalues%Beta = vecBeta
+
+      end subroutine mqc_eigenvalues_initialize
+
+
+
 !
 !
 !     PROCEDURE MQC_ERIs_Dimension
@@ -7461,9 +7656,21 @@
       nBB1 = size(integralB,'beta',1)
       nBB2 = size(integralB,'beta',2)
 
-      if(nAA2.ne.nBA1.or.nAB2.ne.nBB1) call mqc_error_i('Integral dimensions are &
+      if (nAA2.eq.0.or.nBA1.eq.0) then
+        if (nAB2.ne.0.and.nBB1.ne.0) then
+          if (nAB2.ne.nBB1) call mqc_error_i('Integral dimensions are &
+          &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
+          'nAB2',nAB2,'nBB1',nBB1)
+        end if
+      elseif (nAB2.eq.0.or.nBB1.eq.0) then
+        if (nAA2.ne.nBA1) call mqc_error_i('Integral dimensions are &
+          &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
+          'nAB2',nAB2,'nBB1',nBB1)
+      elseif(nAA2.ne.nBA1.or.nAB2.ne.nBB1) then 
+        call mqc_error_i('Integral dimensions are &
         &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
         'nAB2',nAB2,'nBB1',nBB1)
+      end if
 
       select case (integralA%array_type)
       case('space')
@@ -11709,8 +11916,8 @@
         else
           tmpMat1 = integralA%getblock('alpha')
           tmpMat2 = integralA%getblock('beta')
-          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
-          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat5,leigenvecs=tmpMat6)
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat5)
+          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat4,leigenvecs=tmpMat6)
           If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
           If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat3,tmpMat4) 
           If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat6)
@@ -14237,18 +14444,30 @@
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(integral%array_type.eq.'space') then
-          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+          if(spinBlock.eq.'alpha') then
+            integral = integral%changeType('spin')
             if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
-          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          else if(spinBlock.eq.'beta') then
+            integral = integral%changeType('spin')
+            call integral%beta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'alphabeta') then
+            integral = integral%changeType('general')
+            call integral%alphabeta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'betaalpha') then
+            integral = integral%changeType('general')
+            call integral%betaalpha%put(element,myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'spin') then
           if(spinBlock.eq.'alpha') then
             if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
           elseif(spinblock.eq.'beta') then
             if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
-          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          elseIf(spinBlock.ne.'alphabeta') then
+            integral = integral%changeType('general')
+            call integral%alphabeta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'betaalpha') then
+            integral = integral%changeType('general')
+            call integral%betaalpha%put(element,myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'general') then
           if(spinBlock.eq.'alpha') then
@@ -14742,6 +14961,128 @@
       endIf
       end subroutine mqc_eigenvalues_put
 
+!
+!     PROCEDURE MQC_Eigenvalues_Push
+!
+!>    \brief <b> MQC_Eigenvalues_Put is a function that adds a value to the end 
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_Push is a function that adds a value at the end of a MQC vector 
+!>    of a MQC eigenvalues variable as an MQC scalar. Optional argument SpinBlock 
+!>    specifies the spin block of MQC eigenvalues. The following options are available:
+!>
+!>    1. SpinBlock = 'alpha' the value is added to the alpha spin block.
+!>    2. SpinBlock = 'beta' the value is added to the beta spin block.
+!>    3. SpinBlock = 'both' the value is added to the both alpha and beta spin blocks.
+!>
+!>    If MQC_Eigenvalues Type is 'space'
+!>      SpinBlock equal to 'alpha' or 'beta' will convert it to 'spin'
+!>      SpinBlock equal to 'both' or absent will keep the 'space' type
+!>    eseIf MQC_Eigenvalues Type is 'spin'
+!>      SpinBlock equal to 'alpha' or absent will append to the alpha block
+!>      SpinBlock equal to 'beta' will append to the beta block
+!>      SpinBlock equal to 'both' will append to the alpha and beta blocks
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] eigenvalues
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Eigenvalues)
+!>        The MQC eigenvalues to return the value of the (I)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Class(*)
+!>        The value to put in the integral.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlockIn
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':   alpha spin block
+!>        = 'beta':    beta spin block
+!>        = 'both':    alpha and beta spin blocks
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_push(eigenvalues,element,spinBlockIn)
+!
+      implicit none
+      class(mqc_scf_eigenvalues)::eigenvalues
+      type(mqc_scalar)::my_element
+      class(*),intent(in)::element
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      select type (element)
+      type is (integer)
+        my_element = element
+      type is (real)
+        my_element = element
+      type is (complex)
+        my_element = element
+      type is (mqc_scalar)
+        my_element = element
+      class default
+        call mqc_error('Scalar type not defined in mqc_vector_push',6)
+      end select
+
+
+
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
+        if(eigenvalues%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha') then
+            eigenvalues%beta = eigenvalues%alpha
+            eigenvalues%array_type = 'spin'
+            call eigenvalues%alpha%push(my_element)
+          else if (spinBlock.eq.'beta') then
+            eigenvalues%beta = eigenvalues%alpha
+            eigenvalues%array_type = 'spin'
+            call eigenvalues%beta%push(my_element)
+          else if (spinBlock.eq.'both') then
+            call eigenvalues%alpha%push(my_element)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(spinBlock.eq.'alpha') then
+            call eigenvalues%alpha%push(my_element)
+          elseif(spinblock.eq.'beta') then
+            call eigenvalues%beta%push(my_element)
+          else if (spinBlock.eq.'both') then
+            call eigenvalues%alpha%push(my_element)
+            call eigenvalues%beta%push(my_element)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      else
+        if(eigenvalues%array_type.eq.'space'.or.eigenvalues%array_type.eq.'spin') then
+          call eigenvalues%alpha%push(my_element)
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      endIf
+      end subroutine mqc_eigenvalues_push
+
+!
 !
 !
 !     PROCEDURE MQC_SCF_Transformation_Matrix
