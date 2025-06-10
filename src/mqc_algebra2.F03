@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.3.0                           **
-!     **                          March 25, 2025                           **
+!     **                          Version 25.6.0                           **
+!     **                           June 2, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -1275,7 +1275,7 @@
            'MQC_Variable_getLength(mqcVariable)', MQC_Variable_getLength(mqcVariable))
       select case(TRIM(MQC_Variable_getType(mqcVariable)))
       case('REAL')
-        mqcVariable%realArray(k) = Float(valueMQC)
+        mqcVariable%realArray(k) = float(valueMQC)
       case('INTEGER')
         mqcVariable%integerArray(k) = Int(valueMQC)
       case default
@@ -3112,41 +3112,33 @@
 !     Based on the sign of <realPower>, we now do the work.
 !
       mqcVariableOut = mqcVariable
-      if(realPower.ge.float(0)) then
-        select case(typeCode)
-        case(2)
-          mqcVariableOut%realArray = mqcVariableOut%realArray**realPower
-        case(3)
-          mqcVariableOut%integerArray = mqcVariableOut%integerArray**realPower
-        case default
-          call mqc_error_I(  &
-          'MQC_Variable_realPower: mqcVariableOut is of UNKNOWN type.',6, &
-          'typeCode',typeCode)
-        end select
-      else
-        select case(typeCode)
-        case(2)
-          nDim = SIZE(mqcVariableOut%realArray)
-          do i = 1,nDim
-            if(ABS(mqcVariableOut%realArray(i)).gt.MQC_small)  &
-              mqcVariableOut%realArray(i) = mqcVariableOut%realArray(i)**realPower
-          endDo
-        case(3)
-          nDim = SIZE(mqcVariableOut%integerArray)
-          do i = 1,nDim
-            if(ABS(mqcVariableOut%integerArray(i)).gt.MQC_small)  &
-              mqcVariableOut%integerArray(i) = mqcVariableOut%integerArray(i)**realPower
-          endDo
-        case default
-          call mqc_error_I(  &
-          'MQC_Variable_realPower: mqcVariable is of UNKNOWN type.',6, &
-          'typeCode',typeCode)
-        end select
-      endIf
+      select case(typeCode)
+      case(2)
+        nDim = SIZE(mqcVariableOut%realArray)
+        do i = 1,nDim
+          if(ABS(mqcVariableOut%realArray(i)).lt.MQC_small) then
+            mqcVariableOut%realArray(i) = mqc_float(0)
+          else
+            if(mqcVariableOut%realArray(i).lt.mqc_float(0))  &
+              call mqc_error('RPower: Real array value is < 0.')
+            mqcVariableOut%realArray(i) = mqcVariableOut%realArray(i)**realPower
+          endIf
+        endDo
+      case(3)
+        nDim = SIZE(mqcVariableOut%integerArray)
+        do i = 1,nDim
+          if(mqcVariableOut%realArray(i).lt.0)  &
+            call mqc_error('RPower: Integer array value is < 0.')
+          mqcVariableOut%integerArray(i) = mqcVariableOut%integerArray(i)**realPower
+        endDo
+      case default
+        call mqc_error_I(  &
+        'MQC_Variable_realPower: mqcVariable is of UNKNOWN type.',6, &
+        'typeCode',typeCode)
+      end select
 !
       return
       end function MQC_Variable_RealPower
-
 
 !
 !PROCEDURE MQC_Variable_Array_Sum
