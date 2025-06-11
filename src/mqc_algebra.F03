@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.3.0                           **
-!     **                          March 25, 2025                           **
+!     **                          Version 25.6.1                           **
+!     **                           June 2, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -89,6 +89,8 @@
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
 !>      \brief <b> Take the absolute value of the MQC Scalar</b>
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+!>      \brief <b> Take the phase of the MQC Scalar</b>
+        Procedure, Public::phase => MQC_Scalar_Get_Phase
 !>      \brief <b> Take the square root of the MQC Scalar</b>
         Procedure, Public::sqrt => MQC_Scalar_Sqrt
 !>      \brief <b> Take the exponential of the MQC Scalar</b>
@@ -97,8 +99,6 @@
         Procedure, Public::log => MQC_Scalar_Log
 !>      \brief <b> Return a random value to the MQC Scalar</b>
         Procedure, Public::random => MQC_Scalar_Get_Random_Value
-!>      \brief <b> Take the phase of the MQC Scalar</b>
-        Procedure, Public::phase => MQC_Scalar_Get_Phase
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -132,6 +132,12 @@
         Generic,   Public::at => at_sca, at_int
 !>      \brief <b> Returns the subvector between specified element of the MQC Vector</b>
         Procedure, Public::vat => MQC_Vector_Vector_At
+!>      \brief <b> Returns the VecI element of the MQC Vector</b>
+        Procedure, Public::getArrayI => MQC_Vector_Integer_Get_Array
+!>      \brief <b> Returns the VecR element of the MQC Vector</b>
+        Procedure, Public::getArrayR => MQC_Vector_Real_Get_Array
+!>      \brief <b> Returns the VecC element of the MQC Vector</b>
+        Procedure, Public::getArrayC => MQC_Vector_Complex_Get_Array
         Procedure, Private::put_sca => MQC_Vector_Scalar_Put_Scalar
         Procedure, Private::put_int => MQC_Vector_Scalar_Put_Int
 !>      \brief <b> Updates the specified element of the MQC_Vector with the specified value</b>
@@ -2816,8 +2822,7 @@
       else
         thresh=1.0E-8
       end if
-
-      if (abs(Scalar).lt.thresh) then
+      if (abs(Scalar).lt.thresh) then 
         output = 0.0
       else
         output = acos(Scalar%rval()/abs(Scalar))
@@ -8193,6 +8198,140 @@
       Vector%Column = Vec%Column
 
       End Function
+
+!
+!
+!     PROCEDURE MQC_Vector_Integer_Get_Array
+!
+!>    \brief <b> MQC_Vector_Integer_Get_Array is a function that returns the VecI variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Integer_Get_Array is a function that returns the VecI variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecI variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Integer_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None 
+      Class(MQC_Vector)::Vec
+      Integer(kind=int64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Integer') then
+        ArrayOut = Vec%VecI
+      else
+        Call MQC_Error_A('Vector is not an Integer Data_Type in MQC_Vector_Integer_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Integer_Get_Array
+!
+!
+!     PROCEDURE MQC_Vector_Real_Get_Array
+!
+!>    \brief <b> MQC_Vector_Real_Get_Array is a function that returns the VecR variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Real_Get_Array is a function that returns the VecR variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecR variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Real_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None
+      Class(MQC_Vector)::Vec
+      Real(kind=real64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Real') then
+        ArrayOut = Vec%VecR
+      else
+        Call MQC_Error_A('Vector is not a Real Data_Type in MQC_Vector_Real_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Real_Get_Array
+!
+!
+!     PROCEDURE MQC_Vector_Complex_Get_Array
+!
+!>    \brief <b> MQC_Vector_Complex_Get_Array is a function that returns the VecC variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Complex_Get_Array is a function that returns the VecC variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecC variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Complex_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None
+      Class(MQC_Vector)::Vec
+      Complex(kind=real64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Complex') then
+        ArrayOut = Vec%VecC
+      else
+        Call MQC_Error_A('Vector is not a Complex Data_Type in MQC_Vector_Complex_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Complex_Get_Array
+ 
 !
 !
 !     PROCEDURE MQC_Set_Vector2IntegerArray
@@ -15721,6 +15860,7 @@
       end subroutine MQC_Matrix_SymmMatrix_Put_Complex
 !
 !
+!
 !     PROCEDURE MQC_Matrix_Matrix_Put
 !
 !>    \brief <b> MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the
@@ -23166,6 +23306,11 @@
       Type(MQC_Matrix)::MC
       Type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
       integer(kind=int64)::i,j
+ 
+      If (MA%NCol.eq.0.or.MB%NRow.eq.0) then
+          Call MQC_Allocate_Matrix(0,0,MC,'Real','StorFull')
+          return
+      end if
 
       If (MA%NCol /= MB%NRow) call MQC_Error_I('The two matrices are not conformable for multiplication', 6, &
            'MA%NCol', MA%NCol, &
@@ -24132,7 +24277,7 @@
       If (VA%Column .or. VA%Length /= MB%NRow) then
         Call MQC_Error_i('Matrix and vector are not conformable for multiplication', 6, &
              'VA%Length', VA%Length, &
-             'MB%NRow', MB%NRow )
+             'MB%NRow', MB%NRow)
       EndIf
 
       If (MQC_Matrix_HaveReal(MB) .and. MQC_Vector_HaveReal(VA)) then
@@ -27319,6 +27464,7 @@
 !>        Matrix2 is type(mqc_matrix)
 !>        The second matrix in the outer product.
 !>    \endverbatim
+!>
 !
 !     Authors:
 !     ========
@@ -27337,9 +27483,9 @@
       N = size(matrix1,2)
       O = size(matrix2,1)
       P = size(matrix2,2)
-
+      
       call outer%init(M,N,O,P)
-
+      
       do i = 1,M
         do j = 1,N
           do k = 1,O
@@ -28046,8 +28192,8 @@
         call mqc_error_I('P type not defined in MQC_Vector_Power',6)
       end select
 !
-!      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
-      call A%diag(evals=sVals,evecs=uMatrix)
+      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+!      call A%diag(evals=sVals,evecs=uMatrix)
       call sVals%power(scalar)
       call sVals%diag(A)
       A = matmul(matmul(uMatrix,A),dagger(uMatrix))

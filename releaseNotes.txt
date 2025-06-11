@@ -8,6 +8,23 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+June 2, 2025
+* MQCPack version set to 25.6.0.
+* Added a fix for the rpower function in MQC_Algebra2 that was causing some
+  matrix exponentiation cases to result in inf's and nan's.
+
+May 28, 2025
+* MQCPack version set to 25.5.1.
+* Added a fix for l>=2 in the OS overlap recursions in MQC_Integrals.
+* Added functionality in MQC_Integrals to evaluate basis functions at a
+  point in space.
+
+May 26, 2025
+* MQCPack version set to 25.5.0.
+* Added major updates to MQC_Integrals for OS recursion solver for overlap
+  integrals.
+* Added a general MQC_Float wrapper in MQC_General.
+
 March 25, 2025
 * MQCPack version set to 25.3.0.
 * Added matrix-vector MatMul functionality to MQC_Algebra2.
