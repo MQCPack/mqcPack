@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.1                           **
-!     **                           June 2, 2025                            **
+!     **                          Version 25.6.2                           **
+!     **                           June 16, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -181,8 +181,8 @@
 !
       if(PRESENT(major))         major         = 25
       if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.6.0'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '25.6.2'
 !
       return
       end subroutine mqc_version
@@ -1647,7 +1647,8 @@
       Subroutine mqc_vectorTrimZero(vectorIn,vectorOut,small)
 !
 !     This subroutine accepts a vector, <vectorIn>, and sets all entries that
-!     have absolute values below a threshold to float(0).
+!     have absolute values below a threshold to float(0). Arguments <vectorIn>
+!     and <vectorOut> CANNOT be the same.
 !
 !     If the optional dummy argument <vectorOut> is sent, then <vectorIn> is
 !     left unchanged and the zero-d version of the vector is returned in
