@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.1                           **
-!     **                           June 2, 2025                            **
+!     **                          Version 25.6.2                           **
+!     **                           June 16, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -181,8 +181,8 @@
 !
       if(PRESENT(major))         major         = 25
       if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.6.0'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '25.6.2'
 !
       return
       end subroutine mqc_version
@@ -1647,7 +1647,8 @@
       Subroutine mqc_vectorTrimZero(vectorIn,vectorOut,small)
 !
 !     This subroutine accepts a vector, <vectorIn>, and sets all entries that
-!     have absolute values below a threshold to float(0).
+!     have absolute values below a threshold to float(0). Arguments <vectorIn>
+!     and <vectorOut> CANNOT be the same.
 !
 !     If the optional dummy argument <vectorOut> is sent, then <vectorIn> is
 !     left unchanged and the zero-d version of the vector is returned in
@@ -1762,7 +1763,7 @@
       return
       end subroutine mqc_vectorPhase
 
-
+!
 !PROCEDURE mqc_outerProduct_real
       Function mqc_outerProduct_real(vector1,vector2,scalar) result(matrixOut)
 !
@@ -1805,7 +1806,7 @@
       return
       end function mqc_outerProduct_real
 
-
+!
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
         matrixFull,upperLower)
@@ -1883,7 +1884,7 @@
       return
       end Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer
 
-
+!
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_real
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_real(matrixSymmetric,  &
         matrixFull,upperLower)
@@ -1961,7 +1962,7 @@
       return
       end Subroutine mqc_packedSymmetricMatrix2FullMatrix_real
 
-
+!
 !PROCEDURE mqc_matrixSymm2Full_integer
       function mqc_matrixSymm2Full_integer(matrixSymmetric,upperLower) result(matrixFull)
 !
@@ -2003,7 +2004,7 @@
       return
       end Function mqc_matrixSymm2Full_integer
 
-
+!
 !PROCEDURE mqc_matrixSymm2Full_real
       function mqc_matrixSymm2Full_real(matrixSymmetric,upperLower) result(matrixFull)
 !
@@ -2045,7 +2046,7 @@
       return
       end Function mqc_matrixSymm2Full_real
 
-
+!
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_integer
       Subroutine mqc_packedDiagonalMatrix2FullMatrix_integer(matrixDiagonal,  &
         matrixFull)
@@ -2080,7 +2081,7 @@
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_integer
 
-
+!
 !PROCEDURE mqc_packedDiagonalMatrix2FullMatrix_real
       subroutine mqc_packedDiagonalMatrix2FullMatrix_real(matrixDiagonal,  &
         matrixFull)
@@ -2113,7 +2114,7 @@
 !
       return
       end Subroutine mqc_packedDiagonalMatrix2FullMatrix_real
-!
+
 !
 !PROCEDURE mqc_packedSymmetricSymmetricR4Tensor2Full_real
       subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real(r4TensorSymSym,  &
@@ -2180,7 +2181,7 @@
 !
       return
       end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
-!
+
 !
 !PROCEDURE mqc_matrixTrace
       function mqc_matrixTrace(matrix) result(trace)
@@ -2207,7 +2208,7 @@
 !
       return
       end function mqc_matrixTrace
-!
+
 !
 !PROCEDURE mqc_diagMatrixTimesFullMatrix
       subroutine mqc_diagMatrixTimesFullMatrix(diagMatrix,fullMatrix,outputMatrix)
@@ -2255,7 +2256,7 @@
 !
       return
       end subroutine mqc_diagMatrixTimesFullMatrix
-!
+
 !
 !PROCEDURE mqc_matrixInverse_symmFull
       subroutine mqc_matrixInverse_symmFull(matrix,matrixInverse,  &
@@ -2330,6 +2331,45 @@
       end subroutine mqc_matrixInverse_symmFull
 !
 
+!
+!PROCEDURE MQC_leastSquaresFit
+      subroutine MQC_leastSquaresFit(x,y,slope,intercept,rSquared)
+!
+!     This subroutine evaluates a 1D least squares fit for the data set x and
+!     y(x). The output of the routine is the slope, intercept, and R**2 value.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::x,y
+      real(kind=real64),intent(out)::slope,intercept,rSquared
+      integer(kind=int64)::n,i
+      real(kind=real64)::xMean,yMean
+      real(kind=real64)::SSxy,SSxx,SSyy,SSR
+!
+!     Set n, the number of data points, and then do error trapping.
+!
+      n = size(x)
+      if(n.ne.size(y))  &
+        call mqc_error('Error: x and y arrays must have the same size.')
+      if(n.lt.2)  &
+        call mqc_error('Error: At least two points required for least-squares fitting.')
+!
+!     Solve the linear least squares problem.
+!
+      xMean     = sum(x)/mqc_float(n)
+      yMean     = sum(y)/mqc_float(n)
+      SSxy      = sum((x-xMean)*(y-yMean))
+      SSxx      = sum((x-xMean)**2)
+      SSyy      = sum((y-yMean)**2)
+      slope     = SSxy/SSxx
+      intercept = yMean-slope*xMean
+      SSR       = SSxx*slope**2
+      rSquared  = SSR/SSyy
+!
+      return
+      end subroutine MQC_leastSquaresFit
 
 !
 !
