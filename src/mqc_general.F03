@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.2                           **
-!     **                           June 16, 2025                           **
+!     **                          Version 25.6.3                           **
+!     **                           June 18, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -54,13 +54,12 @@
       implicit none
       real(kind=real64),public,parameter::angPBohr=0.52917706d0                                                          ! Angstom per Bohr
       real(kind=real64),public,parameter::kGPAMU=1.660538921d-27                                                         ! Kilograms per atomic mass unit
-      real(kind=real64),public,parameter::planck=6.62606957d-34                                                          ! Planck constant
+      real(kind=real64),public,parameter::planck=6.62606957d-34                                                          ! Planck constant (J.s)
       real(kind=real64),public,parameter::avogadro=6.02214129d+23                                                        ! Avogadro's number
       real(kind=real64),public,parameter::jPCal=4.184d00                                                                 ! Joules per calorie
       real(kind=real64),public,parameter::jPHartree=4.35974434d-18                                                       ! Joules per Hartree
       real(kind=real64),public,parameter::evPHartree=27.211399d0                                                         ! eV per Hartree
       real(kind=real64),public,parameter::cmM1PHartree=219474.63d0                                                       ! cm^-1 per Hartree
-      real(kind=real64),public,parameter::nmPev=1239.831765d0                                                            ! nm per eV
       real(kind=real64),public,parameter::sLight=2.99792458d10                                                           ! Speed of light
       real(kind=real64),public,parameter::boltzman=1.3806488d-23                                                         ! Boltzman Constant
       real(kind=real64),public,parameter::molVol=22.4139679d-3                                                           ! Molar volume of ideal gass in m**3 at 273.15 K 
