@@ -389,6 +389,11 @@
         Module Procedure MQC_Eigenvalues_MinLoc
       End Interface
 !
+!>    \brief <b> Returns the identity MQC_SCF_Integral of the specified size</b>
+      interface intiden
+        module procedure MQC_Integral_Identity_Func
+      end interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -3160,6 +3165,93 @@
       endIf
 !
       end subroutine mqc_integral_identity  
+!
+!
+!     PROCEDURE MQC_Integral_Identity_Func
+!
+!>    \brief <b> MQC_Integral_Identity_Func returns an MQC integral type variable
+!>    as the identity matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Identity returns an MQC integral type variable of the as the 
+!>    identity matrix. Optional argument label allows a description to be carried 
+!>    around with the variable. Optional arguments nAlpha2 and nBeta2 allow the 
+!>    columns of spin blocks to be sized differently to the rows.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NAlpha
+!>    \verbatim
+!>        NAlpha is integer
+!>        The dimension of the alpha spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] NBeta
+!>    \verbatim
+!>        NBeta is integer
+!>        The dimension of the beta spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),Optional
+!>        Description of the MQC_SCF_Integral contents.
+!>    \endverbatim
+!>
+!>    \param[in] NAlpha2
+!>    \verbatim
+!>        NAlpha2 is Integer,Optional
+!>        The column number of the alpha spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!>
+!>    \param[in] NBeta2
+!>    \verbatim
+!>        NBeta2 is Integer,Optional
+!>        The column number of the beta spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_integral_identity_func(nAlpha,nBeta,label,nAlpha2,nBeta2) result(integral) 
+!
+      implicit none
+      type(mqc_scf_integral)::integral
+      integer,intent(in)::nAlpha,nBeta
+      integer,intent(in),optional::nAlpha2,nBeta2
+      character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+      integer::my_nAlpha2,my_nBeta2
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+      if(.not.present(nAlpha2)) then
+        my_nAlpha2 = nAlpha
+      else
+        my_nAlpha2 = nAlpha2
+      endIf
+      if(.not.present(nBeta2)) then
+        my_nBeta2 = nBeta
+      else
+        my_nBeta2 = nBeta2
+      endIf
+!
+      call integral%identity(nAlpha,nBeta,myLabel,my_nAlpha2,my_nBeta2)
+!
+      end function mqc_integral_identity_func 
 !
 !
 !     PROCEDURE MQC_Integral_Initialize
@@ -11704,8 +11796,8 @@
         else
           tmpMat1 = integralA%getblock('alpha')
           tmpMat2 = integralA%getblock('beta')
-          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
-          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat5,leigenvecs=tmpMat6)
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat5)
+          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat4,leigenvecs=tmpMat6)
           If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
           If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat3,tmpMat4) 
           If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat6)
@@ -21463,8 +21555,7 @@
 !>        Slater Condon rules. The spatial molecular orbital basis
 !>        overlap (i.e. do not multiply by spin overlap which 
 !>        always leads to zero alpha-beta blocks) must be provided
-!>        in MO_Core_Ham argument if this option is used) must be provided
-!>        in MO_Core_Ham argument if this option is used..
+!>        in MO_Core_Ham argument if this option is used.
 !>    \endverbatim
 !>    
 !     Authors:
@@ -21781,7 +21872,609 @@
 
       End Subroutine MQC_Build_CI_Hamiltonian
 !
+!=====================================================================
+!     
+!     PROCEDURE MQC_BUILD_INDEX_DETERMINANT_STRINGS
 !
+!>    \brief <b> MQC_BUILD_INDEX_DETERMINANT_STRINGS is a subroutine that
+!>    a set of alpha and beta determinant strings, possibly different for
+!>    bra and ket, along with infomration about substitution levels etc. 
+!>    It returns the alpha and beta determinant string for each index in the
+!>    operator matrix.</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_INDEX_DETERMINANT_STRINGS is a subroutine that a set of alpha 
+!>    and beta determinant strings, possibly different for bra and ket, along 
+!>    with infomration about substitution levels etc. It returns the alpha and 
+!>    beta determinant string for each index in the operator matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[out] L_Alpha_Strings
+!>    \verbatim
+!>        L_Alpha_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The left alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[out] R_Alpha_Strings
+!>    \verbatim
+!>        R_Alpha_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The right alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[out] L_Beta_Strings
+!>    \verbatim
+!>        L_Beta_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The left beta string array.
+!>    \endverbatim
+!>    
+!>    \param[out] R_Beta_Strings
+!>    \verbatim
+!>        R_Beta_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The right alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] SymmFlagOut
+!>    \verbatim
+!>        SymmFlagOut is Logical,Optional
+!>        Logical flag to flag whether the left and right strings 
+!>        correspond to a symmetric determinant basis.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Build_Index_Determinant_Strings(L_Alpha_Strings,R_Alpha_Strings,&
+        L_Beta_Strings,R_Beta_Strings,IOut,IPrint,Determinants,Dets2,SubsAIn,SubsBIn,Subs2AIn,&
+        Subs2BIn,SymmFlagOut)
+!
+      Implicit None
+      Type(MQC_Bits),Dimension(:),Allocatable,Intent(Out)::L_Alpha_Strings,R_Alpha_Strings,&
+        L_Beta_Strings,R_Beta_Strings
+      Integer(kind=int64),Intent(In)::IOut,IPrint
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Logical,Optional,Intent(Out)::SymmFlagOut
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
+        NDets1A,NDets1B,NDets2A,NDets2B
+      Type(MQC_Vector),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
+      Logical::SymmFlag
+!
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .True.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .False.
+      EndIf
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      Call MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
+!
+!     Allocate and fill determinant string arrays
+!
+      Allocate(L_Alpha_Strings(NDets1T),L_Beta_Strings(NDets1T),R_Alpha_Strings(NDets2T),&
+        R_Beta_Strings(NDets2T))
+      
+      Do L_Index = 1, NDets1T
+        call mqc_get_string_from_substring(iout,iprint,l_index,determinants,&
+        nDets1,lsubsA,lSubsB,lSubsT,l_alpha_strings(l_index),l_beta_strings(l_index))
+      EndDo
+
+      if(symmFlag) then
+        r_alpha_strings = l_alpha_strings
+        r_beta_strings = l_beta_strings
+      else
+        Do R_Index = 1, NDets2T
+          call mqc_get_string_from_substring(iout,iprint,r_index,determinants2,&
+          nDets2,rsubsA,rSubsB,rSubsT,r_alpha_strings(r_index),r_beta_strings(r_index))
+        EndDo
+      endIf
+
+      if(present(symmFlagOut)) symmFlagOut = symmFlag
+
+      End Subroutine MQC_Build_Index_Determinant_Strings
+!
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_SUBSTRING_CI_PARAMETERS
+!
+!>    \brief <b> MQC_GET_SUBSTRING_CI_PARAMETERS is a subroutine that
+!>    returns information about substitution levels and number of 
+!>    determinants based on input arguments</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_SUBSTRING_CI_PARAMETERS is a subroutine that returns information 
+!>    about substitution levels and number of determinants based on input 
+!>    arguments.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[out] LSubsT
+!>    \verbatim
+!>        LSubsT is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of total substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsT
+!>    \verbatim
+!>        RSubsT is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of total substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] LSubsA
+!>    \verbatim
+!>        LSubsA is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of alpha substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsA
+!>    \verbatim
+!>        RSubsA is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of alpha substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] LSubsB
+!>    \verbatim
+!>        LSubsB is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of beta substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsB
+!>    \verbatim
+!>        RSubsB is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of beta substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1
+!>    \verbatim
+!>        NDets1 is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2
+!>    \verbatim
+!>        NDets2 is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1A
+!>    \verbatim
+!>        NDets1A is Integer(kind=int64),Dimension(:)
+!>        The number of alpha strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2A
+!>    \verbatim
+!>        NDets2A is Integer(kind=int64),Dimension(:)
+!>        The number of alpha strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1B
+!>    \verbatim
+!>        NDets1B is Integer(kind=int64),Dimension(:)
+!>        The number of beta strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2B
+!>    \verbatim
+!>        NDets2B is Integer(kind=int64),Dimension(:)
+!>        The number of beta strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] SymmFlag
+!>    \verbatim
+!>        SymmFlagOut is Logical
+!>        Logical flag to flag whether the left and right strings 
+!>        correspond to a symmetric determinant basis.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1T
+!>    \verbatim
+!>        NDets1A is Integer(kind=int64)
+!>        The total number of determinants given the permitted 
+!>        substitutions for the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2T
+!>    \verbatim
+!>        NDets2T is Integer(kind=int64),Dimension(:)
+!>        The total number of determinants given the permitted 
+!>        substitutions for the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
+!
+      Implicit None
+      Type(MQC_Vector),Dimension(:),Allocatable,Intent(Out)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,&
+        rSubsB
+      Integer(kind=int64),Dimension(:),Allocatable,Intent(Out)::NDets1,NDets2,NDets1A,NDets1B,&
+        NDets2A,NDets2B
+      Integer(kind=int64),Intent(Out)::NDets1T,NDets2T
+      Logical,Intent(Out)::SymmFlag
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Integer(kind=int64)::I,LDetSize,RDetSize
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
+!
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .True.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .False.
+      EndIf
+
+      LDetSize = Size(Determinants)
+      RDetSize = Size(Determinants2)
+      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
+        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
+        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      NDets1T = 1
+      do i = 1, LDetSize
+        if(present(subsAIn)) then
+          subsA = subsAIn(i)
+        else
+          subsA = [integer::]
+        endIf
+        if(present(subsBIn)) then
+          subsB = subsBIn(i)
+        else
+          subsB = [integer::]
+        endIf
+        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
+        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
+          NDets1(i),NDets1A(i),NDets1B(i))
+        NDets1T = NDets1T*NDets1(i)
+      endDo
+
+      NDets2T = 1
+      do i = 1, RDetSize
+        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+          if(present(subsAIn)) then
+            subs2A = subsAIn(i)
+          else
+            subs2A = [integer::]
+          endIf
+          if(present(subsBIn)) then
+            subs2B = subsBIn(i)
+          else
+            subs2B = [integer::]
+          endIf
+        elseIf(.not.present(subs2BIn)) then
+          subs2A = subs2AIn(i)
+          subs2B = [integer::]
+          symmFlag = .False.
+        elseIf(.not.present(subs2AIn)) then
+          subs2A = [integer::]
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        else
+          subs2A = subs2AIn(i)
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        endIf
+        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
+        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
+          NDets2(i),NDets2A(i),NDets2B(i))
+        NDets2T = NDets2T*NDets2(i)
+      endDo
+
+      End Subroutine MQC_Get_Substring_CI_Parameters
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_STRING_FROM_SUBSTRING
+!
+!>    \brief <b> MQC_GET_STRING_FROM_SUBSTRING is a subroutine that returns
+!>    an alpha and beta determinant string, given substrings and substitution
+!>    level information</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRING_FROM_SUBSTRING is a subroutine that returns an alpha and 
+!>    beta determinant string, given substrings and substitution level 
+!>    information.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] Ind
+!>    \verbatim
+!>        Ind is Integer(kind=int64)
+!>        The Index in the determinant basis.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. 
+!>    \endverbatim
+!>    
+!>    \param[in] NDetsArr
+!>    \verbatim
+!>        NDetsArr is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions.
+!>    \endverbatim
+!>    
+!>    \param[in] ASubsArr
+!>    \verbatim
+!>        ASubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the alpha substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[in] BSubsArr
+!>    \verbatim
+!>        BSubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the beta substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[in] TSubsArr
+!>    \verbatim
+!>        TSubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the total substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[out] Alpha_String
+!>    \verbatim
+!>        Alpha_String is Type(MQC_Bits)
+!>        The composite alpha sting at the specified index.
+!>    \endverbatim
+!>    
+!>    \param[out] Beta_String
+!>    \verbatim
+!>        Beta_String is Type(MQC_Bits)
+!>        The composite beta string at the specified index.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Get_String_From_Substring(iout,iprint,ind,determinants,&
+        NDetsArr,ASubsArr,BSubsArr,TSubsArr,alpha_string,beta_string)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,Ind
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Integer(kind=int64),Dimension(:),Intent(In)::NDetsArr 
+      Type(MQC_Vector),Dimension(:),Intent(In)::TSubsArr,ASubsArr,BSubsArr
+      Type(MQC_Bits),Intent(Out)::Alpha_String,Beta_String
+      Integer(kind=int64)::I,J
+      Type(MQC_Bits)::alphaStrTemp,betaStrTemp
+!
+      alpha_string = mqc_bits(0)
+      beta_string = mqc_bits(0)
+      Do I = 1, size(Determinants)
+        J = mod((Ind-1)/product(NDetsArr(1:i-1)),NDetsArr(i))+1
+        call mqc_strings_at_index(iout,iprint,j,Determinants(i),ASubsArr(i),&
+          BSubsArr(i),TSubsArr(i),AlphaStrTemp,BetaStrTemp)
+        alpha_string = MQC_concatenate_bits(alphaStrTemp,alpha_string)
+        beta_string = MQC_concatenate_bits(betaStrTemp,beta_string)
+      EndDo
+
+      End Subroutine MQC_Get_String_From_Substring
 !
 !=====================================================================
 !     
@@ -21936,7 +22629,7 @@
       Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::Operator_Matrix
-      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End,LDetSize,RDetSize
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
         NDets1A,NDets1B,NDets2A,NDets2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,alphaStrTemp,&
@@ -21962,57 +22655,13 @@
         Determinants2 = Determinants
         SymmFlag = .True.
       EndIf
-
-      LDetSize = Size(Determinants)
-      RDetSize = Size(Determinants2)
-      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
-        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
-        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
 !
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
 !
-      NDets1T = 1
-      do i = 1, LDetSize
-        if(present(subsAIn)) then
-          subsA = subsAIn(i)
-        else
-          subsA = [integer::]
-        endIf
-        if(present(subsBIn)) then
-          subsB = subsBIn(i)
-        else
-          subsB = [integer::]
-        endIf
-        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
-        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
-          NDets1(i),NDets1A(i),NDets1B(i))
-        NDets1T = NDets1T*NDets1(i)
-      endDo
-
-      NDets2T = 1
-      do i = 1, RDetSize
-        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
-          subs2A = subsA
-          subs2B = subsB
-        elseIf(.not.present(subs2BIn)) then
-          subs2A = subs2AIn(i)
-          subs2B = [integer::]
-          symmFlag = .False.
-        elseIf(.not.present(subs2AIn)) then
-          subs2A = [integer::]
-          subs2B = subs2BIn(i)
-          symmFlag = .False.
-        else
-          subs2A = subs2AIn(i)
-          subs2B = subs2BIn(i)
-          symmFlag = .False.
-        endIf
-        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
-        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
-          NDets2(i),NDets2A(i),NDets2B(i))
-        NDets2T = NDets2T*NDets2(i)
-      endDo
+      Call MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
 !
 !     Allocate output operator matrix
 !
@@ -22032,25 +22681,11 @@
         Else
           R_Index_End = NDets2T
         EndIf
-        alpha_string_1 = mqc_bits(0)
-        beta_string_1 = mqc_bits(0)
-        Do I = 1, LDetSize
-          J = mod((L_Index-1)/product(NDets1(1:i-1)),NDets1(i))+1
-          call mqc_strings_at_index(iout,iprint,j,Determinants(i),lsubsA(i),lSubsB(i),&
-            lSubsT(i),AlphaStrTemp,BetaStrTemp)
-          alpha_string_1 = MQC_concatenate_bits(alphaStrTemp,alpha_string_1)
-          beta_string_1 = MQC_concatenate_bits(betaStrTemp,beta_string_1)
-        EndDo
+        call mqc_get_string_from_substring(iout,iprint,l_index,determinants,&
+        nDets1,lsubsA,lSubsB,lSubsT,alpha_string_1,beta_string_1)
         Do R_Index = 1, R_Index_End
-          alpha_string_2 = mqc_bits(0)
-          beta_string_2 = mqc_bits(0)
-          Do I = 1, RDetSize
-            J = mod((R_Index-1)/product(NDets2(1:i-1)),NDets2(i))+1
-            call mqc_strings_at_index(iout,iprint,j,Determinants2(i),rsubsA(i),rSubsB(i),&
-              rSubsT(i),AlphaStrTemp,BetaStrTemp)
-            alpha_string_2 = MQC_concatenate_bits(alphaStrTemp,alpha_string_2)
-            beta_string_2 = MQC_concatenate_bits(betaStrTemp,beta_string_2)
-          EndDo
+          call mqc_get_string_from_substring(iout,iprint,r_index,determinants2,&
+          nDets2,rsubsA,rSubsB,rSubsT,alpha_string_2,beta_string_2)
 !          write(*,*) '-------------------------------------------'
 !          write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !          write(*,*) '-------------------------------------------'

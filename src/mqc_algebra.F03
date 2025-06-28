@@ -653,12 +653,12 @@
         module procedure MQC_R4Tensor_Put_Int 
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Returns the identity matrix of the specified size</b>
       interface identity
         module procedure MQC_Matrix_Identity_Func
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Initializes a matrix of the specified size</b>
       interface init
         module procedure MQC_Matrix_Initialize_Func
       end interface
