@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.1                           **
-!     **                           June 2, 2025                            **
+!     **                          Version 25.6.3                           **
+!     **                           June 18, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -659,12 +659,12 @@
         module procedure MQC_R4Tensor_Put_Int 
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Returns the identity matrix of the specified size</b>
       interface identity
         module procedure MQC_Matrix_Identity_Func
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Initializes a matrix of the specified size</b>
       interface init
         module procedure MQC_Matrix_Initialize_Func
       end interface

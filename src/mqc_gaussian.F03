@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.1                           **
-!     **                           June 2, 2025                            **
+!     **                          Version 25.6.3                           **
+!     **                           June 18, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -919,7 +919,7 @@
 !
 !     Local temp variables.
       character(len=256)::my_filename
-      logical::DEBUG=.true.,ok,openbool
+      logical::DEBUG=.false.,ok,openbool
 !
 !
 !     Format statements.
@@ -1076,11 +1076,11 @@
       fileinfo%CurrentlyOpen = .true.
       fileinfo%header_written   = .true.
 !      
-      if(DEBUG) write(IOut,1010) TRIM(fileinfo%LabFil),  &
-        TRIM(fileinfo%GVers),TRIM(fileinfo%Title),fileinfo%natoms,  &
-        fileinfo%NBasis,fileinfo%nbasisUse,fileinfo%ICharge,  &
-        fileinfo%Multiplicity,fileinfo%nelectrons,  &
-        IOpCl,fileinfo%ICGU
+      if(DEBUG.or.MQC_Gaussian_DEBUG) write(IOut,1010)  &
+        TRIM(fileinfo%LabFil),TRIM(fileinfo%GVers),  &
+        TRIM(fileinfo%Title),fileinfo%natoms,fileinfo%NBasis,  &
+        fileinfo%nbasisUse,fileinfo%ICharge,fileinfo%Multiplicity,  &
+        fileinfo%nelectrons,IOpCl,fileinfo%ICGU
 !
       return
       end subroutine MQC_Gaussian_Unformatted_Matrix_Write_Header
