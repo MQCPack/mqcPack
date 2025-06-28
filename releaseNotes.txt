@@ -8,6 +8,16 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+June 18, 2025
+* MQCPack version set to 25.6.3.
+* Removed nmPeV in MQC_General. This is NOT a proper conversion factor.
+
+June 16, 2025
+* MQCPack version set to 25.6.2.
+* Added a couple of debug flag fixes that were hardwired to TRUE.
+* Added new routines for linear least squares fitting.
+* Added additional functionality to MQC_Integrals.
+
 June 2, 2025
 * MQCPack version set to 25.6.0.
 * Added a fix for the rpower function in MQC_Algebra2 that was causing some
