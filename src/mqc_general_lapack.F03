@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.3.0                           **
-!     **                          March 25, 2025                           **
+!     **                          Version 25.6.1                           **
+!     **                           June 2, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -52,7 +52,7 @@
       real(kind=real64),dimension(:),allocatable,intent(out)::eigenValues
       real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::eigenVectors
 !
-      integer::i,N,INFO,LWORK
+      integer::i,j,N,INFO,LWORK
       real(kind=real64),dimension(:,:),allocatable::matrixCopy
       real(kind=real64),dimension(:),allocatable::Work
       real(kind=real64),dimension(1)::WorkTmp
@@ -95,12 +95,12 @@
 !     Call LAPCK routine DSYEV. 
 !
       Info = 0
-      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,WorkTmp,-1,INFO)    
+      call dsyev(JOBZ,'L',N,matrixCopy,N,eigenValues,WorkTmp,-1,INFO)    
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_symmMatrixFull: Failure in DSYEV getting WORK length.')
       LWork = WorkTmp(1)
       Allocate(Work(LWork))
-      call dsyev(JOBZ,'U',N,matrixCopy,N,eigenValues,Work,LWork,INFO)    
+      call dsyev(JOBZ,'L',N,matrixCopy,N,eigenValues,Work,LWork,INFO)    
       if(INFO.ne.0) call mqc_error(  &
         'mqc_eigensystem_symmMatrixFull: Failure in DSYEV diagonalizing matrix.')
       if(PRESENT(eigenVectors)) then

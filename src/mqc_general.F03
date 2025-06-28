@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.3.0                           **
-!     **                          March 25, 2025                           **
+!     **                          Version 25.6.1                           **
+!     **                           June 2, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -92,6 +92,7 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+        module procedure MQC_Print_Matrix_Array_Logical
         module procedure MQC_Print_R4Tensor_Array_Integer
         module procedure MQC_Print_R4Tensor_Array_Real
         module procedure MQC_Print_R4Tensor_Array_Complex
@@ -113,6 +114,7 @@
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
+        module procedure MQC_Print_Matrix_Array_Logical
       end interface
 !
       interface mqc_print_r4tensor
@@ -178,9 +180,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 2
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '25.2.1'
+      if(PRESENT(minor))         minor         = 6
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.6.0'
 !
       return
       end subroutine mqc_version
@@ -934,7 +936,7 @@
 !
 !PROCEDURE MQC_Print_Matrix_Array_Real
       Subroutine MQC_Print_Matrix_Array_Real(Array,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
+        Blank_At_Bottom,FormatStr,PrintGT)
 !
 !     This subroutine is used to print a real Matrix array variable.
 !
@@ -948,9 +950,11 @@
       Real(kind=real64),dimension(:,:),Intent(In)::Array
       Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      real(kind=real64),intent(in),optional::PrintGT
       Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
       Integer(kind=int64),Parameter::ColWidth=10
       Character(Len=256)::FormatLine
+      logical::printLine
 !
  1000 Format(1x,A)
  1001 Format(5x,10(7x,I7))
@@ -969,11 +973,16 @@
         ILast = Min(IFirst+ColWidth-1,NCols)
         Write(IOut,1001) (I,I=IFirst,ILast)
         do I = 1,NRows
+          if(present(PrintGT)) then
+            printLine = MAXVAL(Array(I,:)).gt.PrintGT
+          else
+            printLine = .true.
+          endIf
           If(present(FormatStr)) then
             FormatLine = '(1x,I7,2x,10'//trim(FormatStr)//')'
-            Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
+            if(printLine) Write(IOut,trim(FormatLine)) I, (Array(I,J),J=IFirst,ILast)
           else
-            Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
+            if(printLine) Write(IOut,2002) I, (Array(I,J),J=IFirst,ILast)
           endIf
         enddo
       EndDo
@@ -1038,7 +1047,61 @@
       Return
       End Subroutine MQC_Print_Matrix_Array_Complex
 
+!
+!PROCEDURE MQC_Print_Matrix_Array_Logical
+      Subroutine MQC_Print_Matrix_Array_Logical(Array,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a logical Matrix array variable.
+!
+!     Adapted from MQC_Print_Matrix_Array_Integer.
+!     H. P. Hratchian, 2025.
+!
 
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Logical,dimension(:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,J,NCols,NRows,IFirst,ILast
+      Integer(kind=int64),Parameter::ColWidth=10
+      Character(Len=256)::FormatLine
+!
+!
+ 1000 Format(1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2001 Format(1x,I7,10L14)
+!
+      NRows = Size(Array,1)
+      NCols = Size(Array,2)
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+!
+      IFirst = 1
+ 10   Continue
+      ILast = MIN(IFirst+9,NCols)
+      Write(IOut,1001) (J,J=IFirst,ILast)
+!
+      Do I = 1,NRows
+         Write(IOut,2001) I, (Array(I,J),J=IFirst,ILast)
+      End Do
+!
+      IFirst = ILast+1
+      If(IFirst <= NCols) Go To 10
+!
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Matrix_Array_Logical
+
+!
 !PROCEDURE MQC_Print_Vector_Array_Integer
       subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,FormatStr)
@@ -1087,7 +1150,7 @@
 
 !PROCEDURE MQC_Print_Vector_Array_Real
       Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
+        Blank_At_Bottom,FormatStr,PrintGT)
 !
 !     This subroutine is used to print a Vector array type variable.
 !
@@ -1101,8 +1164,10 @@
       Real(kind=real64),Dimension(:),Intent(In)::Vector
       Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      real(kind=real64),intent(in),optional::PrintGT
       Integer(kind=int64)::I,Length
       Character(Len=256)::FormatLine
+      logical::printLine
 !
  1000 Format(1x,A)
  1002 Format(1x,I7,2X,F14.6)
@@ -1114,11 +1179,16 @@
       Write(IOut,1000) TRIM(Header)
       Length = Size(Vector)
       Do I = 1, Length
+        if(present(PrintGT)) then
+          printLine = Vector(I).gt.PrintGT
+        else
+          printLine = .true.
+        endIf
         If(present(FormatStr)) then
           FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
-          Write(IOut,trim(FormatLine)) I, Vector(I)
+          if(printLine) Write(IOut,trim(FormatLine)) I, Vector(I)
         Else
-          Write(IOut,1002) I, Vector(I)
+          if(printLine) Write(IOut,1002) I, Vector(I)
         endIf
       EndDo
 
@@ -1520,6 +1590,30 @@
 !----------------------------------------------------------------
 !
 !
+!PROCEDURE mqc_float
+      function mqc_float(valIn) result(valOut)
+!
+!     This function is a wrapper for the float function.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64)::valIn
+      real(kind=real64)::valOut
+!
+#ifdef PGI
+      valOut = dfloat(valIn)
+#else
+      valOut = float(valIn)
+#endif
+!
+      return
+      end function mqc_float
+!
+!
 !PROCEDURE mqc_normalizeVector
       Subroutine mqc_normalizeVector(vector)
 !
@@ -1643,33 +1737,25 @@
 !     Do phase correction and trim work.
 !
       if(myTrimZero.and.(abs(vector(1)).lt.MQC_small))  &
-#ifdef PGI
-        vector(1) = dfloat(0)
-#else
-        vector(1) = float(0)
-#endif
+        vector(1) = mqc_float(0)
       largestMagnitudeValue = abs(vector(1)) + MQC_small
       largestMagnitudePosition = 1
       do i = 2,SIZE(vector)
         if(myTrimZero.and.(abs(vector(i)).lt.MQC_small))  &
-#ifdef PGI
-          vector(i) = dfloat(0)
-#else
-          vector(i) = float(0)
-#endif
+          vector(i) = mqc_float(0)
         if(abs(vector(i)).gt.largestMagnitudeValue) then
           largestMagnitudeValue = abs(vector(i)) + MQC_small
           largestMagnitudePosition = i
         endIf
       endDo
       if(myLargestPositive) then
-        if(vector(largestMagnitudePosition).lt.float(0)) vector = -vector
+        if(vector(largestMagnitudePosition).lt.mqc_float(0)) vector = -vector
       else
-        if(vector(largestMagnitudePosition).gt.float(0)) vector = -vector
+        if(vector(largestMagnitudePosition).gt.mqc_float(0)) vector = -vector
       endIf
       if(myTrimZero) then
         do i = 1,SIZE(vector)
-          if(abs(vector(i)).lt.MQC_small) vector(i) = float(0)
+          if(abs(vector(i)).lt.MQC_small) vector(i) = mqc_float(0)
         endDo
       endIf
 !
@@ -1847,11 +1933,7 @@
 !
 !     Convert the symmetric matrix to full storage.
 !
-#ifdef PGI
-      matrixFull = dfloat(0)
-#else
-      matrixFull = float(0)
-#endif
+      matrixFull = mqc_float(0)
       select case(myUpperLower)
       case('u','U')
         k = 0
@@ -2024,11 +2106,7 @@
         'nDim', nDim, &
         'SIZE(matrixFull,1)', SIZE(matrixFull,1), &
         'SIZE(matrixFull,2)', SIZE(matrixFull,2))
-#ifdef PGI
-      matrixFull = dfloat(0)
-#else
-      matrixFull = float(0)
-#endif
+      matrixFull = mqc_float(0)
       do i = 1,nDim
         matrixFull(i,i) = matrixDiagonal(i)
       endDo
@@ -2122,7 +2200,7 @@
 !
       if(Size(matrix,1).ne.Size(matrix,2))  &
         call mqc_error('mqc_matrixTrace: Non-square matrix sent.')
-      trace = float(0)
+      trace = mqc_float(0)
       do i = 1,Size(matrix,1)
         trace = trace + matrix(i,i)
       endDo
@@ -2524,11 +2602,7 @@
       integer(kind=int64)::iResult
       real(kind=real64)::tmp
 !
-#ifdef PGI
-      tmp = dfloat(iArg)
-#else
-      tmp = float(iArg)
-#endif
+      tmp = mqc_float(iArg)
       iResult = int(sqrt(tmp))
 !
       return
