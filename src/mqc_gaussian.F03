@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.3                           **
-!     **                           June 18, 2025                           **
+!     **                          Version 25.7.0                           **
+!     **                           July 1, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -3038,7 +3038,6 @@
           endIf
         endIf
       endIf
-
 !
 !     Do the work...
 !
@@ -5030,7 +5029,63 @@
 
       end subroutine MQC_Gaussian_Unformatted_Matrix_Get_EST_Object 
 
+!
+!PROCEDURE MQC_Gaussian_FAF_Get_3DQuadratureGrid
+      subroutine MQC_Gaussian_FAF_Get_3DQuadratureGrid(fileinfo,  &
+        weights,xyzGrid,found)
+!
+!     This subroutine reads the 3D cartesian quadrature grid and weights stored
+!     for DFT calculations on a FAF. The array label is hardcoded as "3D
+!     Quadrature Grid". The weights and Cartesian grid points are returned here
+!     in intrinsic dummy arguments <weights> and <xyzGrid>. These two arrays are
+!     assumed to be allocatable and <xyzGrid> is returned 3xNGridPoints. Dummy
+!     argument <found> is an optional logical variable that is returned as TRUE
+!     is the grid is found on the FAF and FALSE if it is not found. If <found>
+!     isn't sent, then the routine calls MQC_Error is the quadrature grid isn't
+!     available on the FAF.
+!
+!
+!     - H. P. Hratchian, 2025.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      real(kind=real64),dimension(:),allocatable::weights
+      real(kind=real64),dimension(:,:),allocatable::xyzGrid
+      logical,optional::found
+!
+      integer(kind=int64)::i
+      logical::myFound
+      type(MQC_Variable)::tmpVar
+!
+!     Load the quadrature data from the FAF.
+!
+      call fileinfo%getArray(label='3D Quadrature Grid',  &
+        mqcVarOut=tmpVar,foundOut=myFound)
+      if(PRESENT(found)) then
+        found = myFound
+      elseIf(.not.myFound) then
+        call MQC_Error('3D Quadrature Grid NOT found on FAF.')
+      endIf
+!
+!     Loop over the number of grid points and fill the output dummy arguments
+!     <weights> and <xyzGrid>.
+!
+      Allocate(weights(SIZE(tmpVar,2)),xyzGrid(3,SIZE(tmpVar,2)))
+!      iWeight = 1
+!      iX = 2
+!      iY = 3
+!      yZ = 4
+      do i = 1,SIZE(tmpVar,2)
+        weights(i) = tmpVar%getVal([ 1,i ])
+        xyzGrid(1,i) = tmpVar%getVal([ 2,i ])
+        xyzGrid(2,i) = tmpVar%getVal([ 3,i ])
+        xyzGrid(3,i) = tmpVar%getVal([ 4,i ])
+      endDo
 
+!
+      return
+      end subroutine MQC_Gaussian_FAF_Get_3DQuadratureGrid
+      
 !
 !=====================================================================
 !
