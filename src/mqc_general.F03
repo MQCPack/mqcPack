@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.3                           **
-!     **                           June 18, 2025                           **
+!     **                          Version 25.7.0                           **
+!     **                           July 1, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -179,9 +179,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '25.6.3'
+      if(PRESENT(minor))         minor         = 7
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.7.0'
 !
       return
       end subroutine mqc_version
