@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.0                           **
-!     **                           July 1, 2025                            **
+!     **                          Version 25.7.1                           **
+!     **                           July 6, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -180,8 +180,8 @@
 !
       if(PRESENT(major))         major         = 25
       if(PRESENT(minor))         minor         = 7
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.7.0'
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '25.7.1'
 !
       return
       end subroutine mqc_version
@@ -1761,7 +1761,37 @@
 !
       return
       end subroutine mqc_vectorPhase
-
+!
+!PROCEDURE mqc_crossProduct3D_real
+      function mqc_crossProduct3D_real(vector1,vector2) result(vectorOut)
+!
+!     This function forms the 3D vector cross product between two vectors --
+!     vector1 and vector2. The result is vector vectorOut.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::vector1,vector2
+      real(kind=real64),allocatable,dimension(:)::vectorOut
+!
+      integer(kind=int64)::n1,n2,i,j
+!
+!     Do the work...
+!
+      n1 = SIZE(vector1)
+      n2 = SIZE(vector2)
+      if((n1.ne.3).or.(n2.ne.3))  &
+        call mqc_error('MQC_CrossProduct3D: Vectors are not length 3.')
+      Allocate(vectorOut(n1))
+      vectorOut(1) = vector1(2)*vector2(3)-vector1(3)*vector2(2)
+      vectorOut(2) = vector1(3)*vector2(1)-vector1(1)*vector2(3)
+      vectorOut(3) = vector1(1)*vector2(2)-vector1(2)*vector2(1)
+!
+      return
+      end function mqc_crossProduct3D_real
 !
 !PROCEDURE mqc_outerProduct_real
       Function mqc_outerProduct_real(vector1,vector2,scalar) result(matrixOut)
@@ -1804,6 +1834,71 @@
 !
       return
       end function mqc_outerProduct_real
+!
+!
+!PROCEDURE mqc_matrixTrimZero
+      Subroutine mqc_matrixTrimZero(matrixIn,matrixOut,small)
+!
+!     This subroutine accepts a vector, <matrixIn>, and sets all entries that
+!     have absolute values below a threshold to float(0). Arguments <matrixIn>
+!     and <matrixOut> CANNOT be the same.
+!
+!     If the optional dummy argument <matrixOut> is sent, then <matrixIn> is
+!     left unchanged and the zero-d version of the vector is returned in
+!     <matrixOut>. Otherwise, the zero-ing is done in place in <matrixIn>.
+!
+!     The optional dummy argument <small> may be sent with a user specified
+!     threshold. Otherwise, the threshold is set to the MQC system value of
+!     <MQC_small>.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:),intent(inOut)::matrixIn
+      real(kind=real64),dimension(:,:),allocatable,optional,intent(Out)::matrixOut
+      real(kind=real64),optional,intent(in)::small
+      integer(kind=int64)::i,j
+      real(kind=real64)::mySmall,zero=0.0
+!
+!
+!     Initial set-up code...
+!
+      mySmall = MQC_small
+      if(PRESENT(small)) mySmall = small
+      if(PRESENT(matrixOut)) then
+        if(Allocated(matrixOut)) then
+          if((SIZE(matrixOut,1).ne.SIZE(matrixIn,1)).or.  &
+            (SIZE(matrixOut,2).ne.SIZE(matrixIn,2))) then
+            DeAllocate(matrixOut)
+            Allocate(matrixOut(size(matrixIn,1),size(matrixIn,2)))
+          endIf
+        else
+          Allocate(matrixOut(size(matrixIn,1),size(matrixIn,2)))
+        endIf
+      endIf
+!
+!     Do trim work.
+!
+      if(PRESENT(matrixOut)) then
+        matrixOut = matrixIn
+        do j = 1,SIZE(matrixIn,2)
+          do i = 1,SIZE(matrixIn,1)
+            if(abs(matrixOut(i,j)).lt.mySmall) matrixOut(i,j) = zero
+          endDo
+        endDo
+      else
+        do j = 1,SIZE(matrixIn,2)
+          do i = 1,SIZE(matrixIn,1)
+            if(abs(matrixIn(i,j)).lt.mySmall) matrixIn(i,j) = zero
+          endDo
+        endDo
+      endIf
+!
+      return
+      end Subroutine mqc_matrixTrimZero
 
 !
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
