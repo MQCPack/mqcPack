@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.0                           **
-!     **                           July 1, 2025                            **
+!     **                          Version 25.7.1                           **
+!     **                           July 6, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
