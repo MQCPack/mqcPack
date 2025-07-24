@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.1                           **
-!     **                           July 6, 2025                            **
+!     **                          Version 25.7.2                           **
+!     **                          July 24, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -2800,8 +2800,6 @@
 !
       return
       end function mqc_doubleFactorial
-
-
 !
 !PROCEDURE mqc_seq
       subroutine mqc_seq(list,start,step)
@@ -2835,8 +2833,37 @@
 !
       return
       end subroutine mqc_seq
-
-
+!
+!PROCEDURE mqc_sphericalPolar2xyz
+      subroutine mqc_sphericalPolar2xyz(r,theta,phi,x,y,z,inDegrees)
+!
+!     This routine converts spherical polar coordinates (sent as r, theta, phi)
+!     to Cartesian coordiantes (returned in x, y, z). The logical argument
+!     inDegrees is sent as .TRUE. or .FALSE. if theta and phi are sent in
+!     degrees (TRUE) or radians (FALSE).
+!
+!
+!     H. P. Hratchian, 2025.
+!
+      implicit none
+      real(kind=real64),intent(in)::r,theta,phi
+      real(kind=real64),intent(out)::x,y,z
+      logical,intent(in)::inDegrees
+      real(kind=real64)::deg2rad
+!
+      if(inDegrees) then
+        deg2rad = pi/mqc_float(180)
+        x = r*cos(deg2rad*theta)*sin(deg2rad*phi)
+        y = r*sin(deg2rad*theta)*sin(deg2rad*phi)
+        z = r*cos(deg2rad*phi)
+      else
+        x = r*cos(theta)*sin(phi)
+        y = r*sin(theta)*sin(phi)
+        z = r*cos(phi)
+      endIf
+!
+      return
+      end subroutine mqc_sphericalPolar2xyz
 !
 !
 !----------------------------------------------------------------
