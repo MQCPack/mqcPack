@@ -31,8 +31,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.1                           **
-!     **                           July 6, 2025                            **
+!     **                          Version 25.7.2                           **
+!     **                          July 24, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -313,7 +313,7 @@
       NAtoms = NAtoms_Sent
       If(Present(NAtomsIn)) then
         If(NAtomsIn.ne.NAtoms)  &
-          Call MQC_Error_I('Error in MQC_Molecule_Data_Fill', 6, &
+          Call MQC_Error_I('Error in MQC_Molecule_DataFill', 24, &
           'NAtomsIn', NAtomsIn, &
           'NAtoms', NAtoms )
       endIf
