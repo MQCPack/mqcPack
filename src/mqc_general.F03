@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.6.3                           **
-!     **                           June 18, 2025                           **
+!     **                          Version 25.7.2                           **
+!     **                          July 24, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -179,9 +179,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 6
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '25.6.3'
+      if(PRESENT(minor))         minor         = 7
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '25.7.2'
 !
       return
       end subroutine mqc_version
@@ -1761,7 +1761,37 @@
 !
       return
       end subroutine mqc_vectorPhase
-
+!
+!PROCEDURE mqc_crossProduct3D_real
+      function mqc_crossProduct3D_real(vector1,vector2) result(vectorOut)
+!
+!     This function forms the 3D vector cross product between two vectors --
+!     vector1 and vector2. The result is vector vectorOut.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::vector1,vector2
+      real(kind=real64),allocatable,dimension(:)::vectorOut
+!
+      integer(kind=int64)::n1,n2,i,j
+!
+!     Do the work...
+!
+      n1 = SIZE(vector1)
+      n2 = SIZE(vector2)
+      if((n1.ne.3).or.(n2.ne.3))  &
+        call mqc_error('MQC_CrossProduct3D: Vectors are not length 3.')
+      Allocate(vectorOut(n1))
+      vectorOut(1) = vector1(2)*vector2(3)-vector1(3)*vector2(2)
+      vectorOut(2) = vector1(3)*vector2(1)-vector1(1)*vector2(3)
+      vectorOut(3) = vector1(1)*vector2(2)-vector1(2)*vector2(1)
+!
+      return
+      end function mqc_crossProduct3D_real
 !
 !PROCEDURE mqc_outerProduct_real
       Function mqc_outerProduct_real(vector1,vector2,scalar) result(matrixOut)
@@ -1804,6 +1834,71 @@
 !
       return
       end function mqc_outerProduct_real
+!
+!
+!PROCEDURE mqc_matrixTrimZero
+      Subroutine mqc_matrixTrimZero(matrixIn,matrixOut,small)
+!
+!     This subroutine accepts a vector, <matrixIn>, and sets all entries that
+!     have absolute values below a threshold to float(0). Arguments <matrixIn>
+!     and <matrixOut> CANNOT be the same.
+!
+!     If the optional dummy argument <matrixOut> is sent, then <matrixIn> is
+!     left unchanged and the zero-d version of the vector is returned in
+!     <matrixOut>. Otherwise, the zero-ing is done in place in <matrixIn>.
+!
+!     The optional dummy argument <small> may be sent with a user specified
+!     threshold. Otherwise, the threshold is set to the MQC system value of
+!     <MQC_small>.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:),intent(inOut)::matrixIn
+      real(kind=real64),dimension(:,:),allocatable,optional,intent(Out)::matrixOut
+      real(kind=real64),optional,intent(in)::small
+      integer(kind=int64)::i,j
+      real(kind=real64)::mySmall,zero=0.0
+!
+!
+!     Initial set-up code...
+!
+      mySmall = MQC_small
+      if(PRESENT(small)) mySmall = small
+      if(PRESENT(matrixOut)) then
+        if(Allocated(matrixOut)) then
+          if((SIZE(matrixOut,1).ne.SIZE(matrixIn,1)).or.  &
+            (SIZE(matrixOut,2).ne.SIZE(matrixIn,2))) then
+            DeAllocate(matrixOut)
+            Allocate(matrixOut(size(matrixIn,1),size(matrixIn,2)))
+          endIf
+        else
+          Allocate(matrixOut(size(matrixIn,1),size(matrixIn,2)))
+        endIf
+      endIf
+!
+!     Do trim work.
+!
+      if(PRESENT(matrixOut)) then
+        matrixOut = matrixIn
+        do j = 1,SIZE(matrixIn,2)
+          do i = 1,SIZE(matrixIn,1)
+            if(abs(matrixOut(i,j)).lt.mySmall) matrixOut(i,j) = zero
+          endDo
+        endDo
+      else
+        do j = 1,SIZE(matrixIn,2)
+          do i = 1,SIZE(matrixIn,1)
+            if(abs(matrixIn(i,j)).lt.mySmall) matrixIn(i,j) = zero
+          endDo
+        endDo
+      endIf
+!
+      return
+      end Subroutine mqc_matrixTrimZero
 
 !
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
@@ -2705,8 +2800,6 @@
 !
       return
       end function mqc_doubleFactorial
-
-
 !
 !PROCEDURE mqc_seq
       subroutine mqc_seq(list,start,step)
@@ -2740,8 +2833,37 @@
 !
       return
       end subroutine mqc_seq
-
-
+!
+!PROCEDURE mqc_sphericalPolar2xyz
+      subroutine mqc_sphericalPolar2xyz(r,theta,phi,x,y,z,inDegrees)
+!
+!     This routine converts spherical polar coordinates (sent as r, theta, phi)
+!     to Cartesian coordiantes (returned in x, y, z). The logical argument
+!     inDegrees is sent as .TRUE. or .FALSE. if theta and phi are sent in
+!     degrees (TRUE) or radians (FALSE).
+!
+!
+!     H. P. Hratchian, 2025.
+!
+      implicit none
+      real(kind=real64),intent(in)::r,theta,phi
+      real(kind=real64),intent(out)::x,y,z
+      logical,intent(in)::inDegrees
+      real(kind=real64)::deg2rad
+!
+      if(inDegrees) then
+        deg2rad = pi/mqc_float(180)
+        x = r*cos(deg2rad*theta)*sin(deg2rad*phi)
+        y = r*sin(deg2rad*theta)*sin(deg2rad*phi)
+        z = r*cos(deg2rad*phi)
+      else
+        x = r*cos(theta)*sin(phi)
+        y = r*sin(theta)*sin(phi)
+        z = r*cos(phi)
+      endIf
+!
+      return
+      end subroutine mqc_sphericalPolar2xyz
 !
 !
 !----------------------------------------------------------------
