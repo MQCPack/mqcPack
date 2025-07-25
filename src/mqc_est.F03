@@ -4468,7 +4468,7 @@
           call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
           call alpha%mput(tmp2,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp2,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'space',alpha,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'space',alpha,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4489,7 +4489,7 @@
           call beta%mput(tmp1,[0],[1,size(tmp1,2)])
           call beta%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'space') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4510,7 +4510,7 @@
           call beta%mput(tmp2,[0],[1,size(tmp2,2)])
           call beta%mput(tmp3,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp3,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4532,7 +4532,7 @@
           call beta%mput(tmp2,[0],[1,size(tmp2,2)])
           call beta%mput(tmp4,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp4,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4564,7 +4564,7 @@
           call betaAlpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'space') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4595,7 +4595,7 @@
           call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4627,7 +4627,7 @@
           call betaAlpha%mput(tmp6,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp6,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4659,7 +4659,7 @@
           call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4697,7 +4697,7 @@
           call betaAlpha%mput(tmp8,[0],[size(tmp4,2)+1,size(tmp4,2)+size(tmp8,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       endIf
 !
       end subroutine mqc_integral_combine_orbitals
