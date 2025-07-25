@@ -200,6 +200,8 @@
         Procedure, Public::minloc => MQC_Eigenvalues_MinLoc
 !>      \brief <b> Returns the location of the maximum value in MQC_SCF_Eigenvalues</b>
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
+!>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::abs => MQC_Eigenvalues_Abs
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -393,6 +395,11 @@
 !>    \brief <b> Returns the location of the minimum value in MQC_SCF_Eigenvalues</b>
       Interface minloc
         Module Procedure MQC_Eigenvalues_MinLoc
+      End Interface
+!
+!>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+      Interface abs
+        Module Procedure MQC_Eigenvalues_Abs
       End Interface
 !
 !>    \brief <b> Returns the identity MQC_SCF_Integral of the specified size</b>
@@ -15617,6 +15624,47 @@
       end select 
 !
       end function mqc_eigenvalues_maxloc
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Abs
+!
+!>    \brief <b> MQC_Eigenvalues_Abs is a function that returns the absolute
+!>    values of all elements of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Abs is a function that returns the absolute values of 
+!>    all elements of an MQC_Eigenvalues variable</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_abs(eigenvalues) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scf_eigenvalues)::output
+!
+      output = eigenvalues
+      if(output%hasalpha()) output%alpha = abs(output%alpha)
+      if(output%hasbeta()) output%beta = abs(output%beta)
+!
+      end function mqc_eigenvalues_abs
 !
 !
 !=====================================================================
