@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.2                           **
-!     **                          July 24, 2025                            **
+!     **                          Version 25.7.3                           **
+!     **                          July 30, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -37,7 +37,7 @@
       use MQC_DataStructures
       use iso_fortran_env, only: int64, real64
       implicit none
-      integer(kind=int64),parameter::iOut=6
+      integer(kind=int64),parameter,private::iOut=6
       logical::MQC_Integrals_DEBUG=.false.
 !
 !----------------------------------------------------------------
@@ -46,15 +46,6 @@
 !                                                               |
 !----------------------------------------------------------------
 !
-!     MQC_BasisSet
-!
-!     The MQC_BasisSet class is an object of a list of MQC_CGTF members to build
-!     up a full basis set.
-      type MQC_BasisSet
-        integer(kind=int64)::nBasis=0
-      end type MQC_BasisSet
-
-!
 !     MQC_CGTF
 !
 !     The MQC_CGTF class contains a contracted Gaussian-type function.
@@ -62,7 +53,7 @@
         logical,private::initialized=.false.
         integer(kind=int64),private::angularMomentum
         integer(kind=int64),private::nPrimMax,nPrim,nBasis=0
-        integer(kind=int64),dimension(:,:),allocatable,private::lArrays
+        integer(kind=int64),dimension(:,:),allocatable,public::lArrays
         real(kind=real64),dimension(3)::center
         real(kind=real64),dimension(:),allocatable::coefficient
         real(kind=real64),dimension(:),allocatable::alpha
@@ -74,6 +65,20 @@
         procedure,public::primitiveSelfOverlap  => MQC_CGTF_primitiveSelfOverlap
       end type MQC_CGTF
 !
+!     MQC_BasisSet
+!
+!     The MQC_BasisSet class is an object of a list of MQC_CGTF members to build
+!     up a full basis set.
+      type MQC_basisSet
+        logical::initialized=.false.
+        integer(kind=int64)::nBasis,nShells,mxShells
+        type(mqc_cgtf),dimension(:),allocatable::shells
+      Contains
+        procedure,public::init                  => MQC_basisSet_init
+        procedure,public::print                 => MQC_basisSet_print
+        procedure,public::addShell              => MQC_basisSet_addShell
+      end type MQC_BasisSet
+!
 !
       CONTAINS
 !
@@ -84,7 +89,7 @@
 !--------------------------------------------------------------------------
 !
 !
-!PROCEDURE MQC_CGTG_init
+!PROCEDURE MQC_CGTF_init
       subroutine MQC_CGTF_init(myCGTF,angularMomentum,center,coefficients,  &
         alphas)
 !
@@ -94,8 +99,9 @@
       class(MQC_CGTF)::myCGTF
       integer(kind=int64),intent(in)::angularMomentum
       real(kind=real64),dimension(3),intent(in)::center
-      real(kind=real64),dimension(:)::coefficients,alphas
+      real(kind=real64),dimension(:),intent(in)::coefficients,alphas
       real(kind=real64)::totalNorm
+      real(kind=real64),dimension(:,:),allocatable::basisIntegrals
       integer(kind=int64)::i,j
 !
 !     Begin by making sure the object's allocatable arrays aren't already
@@ -108,6 +114,8 @@
 !     Fill scalars and center array. Also, allocate the allocatable arrays in
 !     the object. Also, set the initialization flage to TRUE.
 !
+      if(angularMomentum.lt.0)  &
+        call mqc_error('MQC_CGTF_init: Negative angular momentum sent.')
       myCGTF%angularMomentum = angularMomentum
       myCGTF%nPrim           = Size(coefficients)
       myCGTF%center          = center
@@ -119,8 +127,6 @@
         call mqc_error('MQC_CGTF_init: Coefficients and exponents must be same size.')
       myCGTF%coefficient = coefficients
       myCGTF%alpha = alphas
-      totalNorm = mqc_float(1)/  &
-        sqrt(dot_product(myCGTF%coefficient,myCGTF%coefficient))
 !
 !     Allocate primitiveNorm and lArrays arrays. Then fill in both arrays.
 !
@@ -133,31 +139,42 @@
             sqrt(myCGTF%primitiveSelfOverlap(j,myCGTF%lArrays(:,i)))
         endDo
       endDo
-      myCGTF%primitiveNorm = myCGTF%primitiveNorm*totalNorm
-      call mqc_print(myCGTF%primitiveNorm,iOut,header='Hrant - In init, primitiveNorm:')
+      if(MQC_Integrals_DEBUG) call mqc_print(myCGTF%primitiveNorm,iOut,  &
+        header='MQC_CGTF_init, primitiveNorm pre-norm:')
 !
 !     Set the initialization flag to TRUE.
 !
       myCGTF%initialized = .true.
+!
+!     Finalize the normalization constant(s).
+!
+      call MQC_Overlap_CGFT(myCGTF,myCGTF,basisIntegrals)
+      do i = 1,myCGTF%nBasis
+        myCGTF%primitiveNorm(:,i) =  &
+          myCGTF%primitiveNorm(:,i)/sqrt(basisIntegrals(i,i))
+      endDo
+      DeAllocate(basisIntegrals)
 !
       return
       end subroutine MQC_CGTF_init
 
 !
 !PROCEDURE MQC_CGTG_print
-      subroutine MQC_CGTF_print(myCGTF,iOut)
+      subroutine MQC_CGTF_print(myCGTF,iOut,header)
 !
 !     This routine prints the data in a MQC_CGTF object.
 !
       implicit none
       class(MQC_CGTF)::myCGTF
       integer(kind=int64),intent(in)::iOut
+      Character(Len=*),Intent(In),optional::header
       integer(kind=int64)::i
 !
  1000 format(1x,'l=',i4,' shell at (',f8.4,',',f8.4,',',f8.4,'). NPrim=',i4)
  2000 format(3x,'Primitive Exponents and Coefficients.')
  2100 format(6x,f15.8,4x,f15.8)
 !
+      if(PRESENT(header)) write(iOut,'(/,1x,A)') TRIM(header)
       write(iOut,1000) myCGTF%angularMomentum,myCGTF%center,myCGTF%nPrim
       write(iOut,2000)
       do i = 1,myCGTF%nPrim
@@ -168,11 +185,226 @@
       end subroutine MQC_CGTF_print
 
 !
+!PROCEDURE MQC_basisSet_init
+      subroutine MQC_basisSet_init(myBasisSet,maxShells)
+!
+!     This routine initializes a basis set of contracted Gaussian-type basis
+!     functions.
+!
+      implicit none
+      class(MQC_basisSet)::myBasisSet
+      integer(kind=int64),intent(in)::maxShells
+!
+!     Check if the init flag is TRUE. If it is, clear things out.
+!
+      if(myBasisSet%initialized) then
+        myBasisSet%initialized=.false.
+        myBasisSet%nbasis=0
+        myBasisSet%nShells=0
+        myBasisSet%mxShells=0
+        if(Allocated(myBasisSet%shells)) DeAllocate(myBasisSet%shells)
+      endIf
+!
+!     Set nBasis, nShells, and mxShells. Then, allocate the basis function
+!     array.
+!
+      myBasisSet%nBasis = 0
+      myBasisSet%nShells = 0
+      myBasisSet%mxShells = maxShells
+      Allocate(myBasisSet%shells(maxShells))
+!
+!     Set the initialization flag to TRUE.
+!
+      myBasisSet%initialized = .true.
+!
+      return
+      end subroutine MQC_basisSet_init
+
+!
+!PROCEDURE MQC_basisSet_addShell
+      subroutine MQC_basisSet_addShell(myBasisSet,angularMomentum,  &
+        center,coefficients,alphas)
+!
+!     This routine adds a shell to the object myBasisSet.
+!
+!
+!     H. P. Hratchian, 2025
+!
+      implicit none
+      class(MQC_basisSet)::myBasisSet
+      integer(kind=int64),intent(in)::angularMomentum
+      real(kind=real64),dimension(3),intent(in)::center
+      real(kind=real64),dimension(:)::coefficients,alphas
+!
+!     Check if the init flag is FALSE.
+!
+      if(.not.myBasisSet%initialized)  &
+        call mqc_error('MQC_basisSet_addShell: basis set object not yet initialized.')
+!
+!     Ensure that adding this shell won't take us past the maximum number of
+!     allowed shells. For now, in such cases we fail out.
+!
+      if(myBasisSet%nShells.ge.myBasisSet%mxShells)  &
+        call mqc_error('MQC_basisSet_addShell: cannot add a new shell.')
+!
+!     Add the next shell to myBasisSet.
+!
+      myBasisSet%nShells = myBasisSet%nShells+1
+      call MQC_CGTF_init(myBasisSet%shells(myBasisSet%nShells),  &
+        angularMomentum,center,coefficients,alphas)
+      myBasisSet%nBasis = myBasisSet%nBasis+  &
+        myBasisSet%shells(myBasisSet%nShells)%shell2nBasis()
+!
+      return
+      end subroutine MQC_basisSet_addShell
+
+!
+!PROCEDURE MQC_basisSet_print
+      subroutine MQC_basisSet_print(myBasisSet,iOut)
+!
+!     This routine prints the data in a MQC_basisSet object.
+!
+      implicit none
+      class(MQC_basisSet)::myBasisSet
+      integer(kind=int64),intent(in)::iOut
+      integer(kind=int64)::i
+!
+ 1000 format(1x,'Shell number ',i5)
+!
+      do i = 1,myBasisSet%nShells
+        write(iOut,1000) i
+        call myBasisSet%shells(i)%print(iOut)
+      endDo
+!
+      return
+      end subroutine MQC_basisSet_print
+
+!
+!PROCEDURE MQC_Integrals_SetDEBUG
+      subroutine MQC_Integrals_SetDEBUG(setDebugValue)
+!
+!     This subroutine is called to set a Module-Wide DEBUG flag to .TRUE. or
+!     .FALSE.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      logical,intent(IN)::setDebugValue
+!
+      MQC_Integrals_DEBUG = setDebugValue
+!
+      return
+      end subroutine MQC_Integrals_SetDEBUG
+!
 !--------------------------------------------------------------------------
 !                                                                         |
 !     HIGH LEVEL PROCEDURES                                               |
 !                                                                         |
 !--------------------------------------------------------------------------
+!
+!PROCEDURE basisSetValuesList
+      function basisSetValuesList(myBasisSet,xyz) result(valuesList)
+!
+!     This function computes the values of each basis function at a position
+!     xyz.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      class(MQC_basisSet),intent(in)::myBasisSet
+      real(kind=real64),dimension(3),intent(in)::xyz
+      real(kind=real64),dimension(:),allocatable::valuesList,  &
+        valuesListPartial
+      integer(kind=int64)::i,iStart,iEnd
+!
+!     Loop over shells in the basis set object and fill the values list in
+!     blocks.
+!
+      Allocate(valuesList(myBasisSet%nBasis))
+      iStart = 1
+      do i = 1,myBasisSet%nShells
+        call MQC_Value_CGFT(myBasisSet%shells(i),xyz,valuesListPartial)
+        iEnd = iStart+Size(valuesListPartial)-1
+        valuesList(iStart:iEnd) = valuesListPartial
+        iStart = iEnd + 1
+      endDo
+!
+      return
+      end function basisSetValuesList
+
+!
+!PROCEDURE basisSetValuesList1
+      subroutine basisSetValuesList1(myBasisSet,xyz,valuesList)
+!
+!     This routine computes the values of each basis function at a position
+!     xyz. This is the same as Function basisSetValuesList, except that
+!     valuesList comes here allocated and it avoids memory allocation costs.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      class(MQC_basisSet),intent(in)::myBasisSet
+      real(kind=real64),dimension(3),intent(in)::xyz
+      real(kind=real64),dimension(:),allocatable::valuesList,  &
+        valuesListPartial
+      integer(kind=int64)::i,iStart,iEnd
+!
+!     Loop over shells in the basis set object and fill the values list in
+!     blocks.
+!
+      if(.not.Allocated(valuesList)) Allocate(valuesList(myBasisSet%nBasis))
+      iStart = 1
+      do i = 1,myBasisSet%nShells
+        call MQC_Value_CGFT(myBasisSet%shells(i),xyz,valuesListPartial)
+        iEnd = iStart+Size(valuesListPartial)-1
+        valuesList(iStart:iEnd) = valuesListPartial
+        iStart = iEnd + 1
+      endDo
+!
+      return
+      end subroutine basisSetValuesList1
+
+!
+!PROCEDURE basisSetOverlapMatrix
+      function basisSetOverlapMatrix(myBasisSet) result(overlapMatrix)
+!
+!     This function computes the overlap matrix based on basisSet in the bra and
+!     ket.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      class(MQC_basisSet)::myBasisSet
+      real(kind=real64),dimension(:,:),allocatable::integralBlock,  &
+        overlapMatrix
+      integer(kind=int64)::i,j,iRowStart,iColumnStart,iRowEnd,iColumnEnd
+!
+!     Loop over shells in the basis set object and fill the overlap matrix in
+!     blocks.
+!
+      Allocate(overlapMatrix(myBasisSet%nBasis,myBasisSet%nBasis))
+      iRowStart = 1
+      do i = 1,myBasisSet%nShells
+        iColumnStart = 1
+        do j = 1,myBasisSet%nShells
+          call MQC_Overlap_CGFT(myBasisSet%shells(i),  &
+            myBasisSet%shells(j),integralBlock)
+          iRowEnd = iRowStart+Size(integralBlock,1)-1
+          iColumnEnd = iColumnStart+Size(integralBlock,2)-1
+          overlapMatrix(iRowStart:iRowEnd,iColumnStart:iColumnEnd) =  &
+            integralBlock
+          iColumnStart = iColumnEnd + 1
+        endDo
+        iRowStart = iRowEnd + 1
+      endDo
+!
+      return
+      end function basisSetOverlapMatrix
+
 !
 !PROCEDURE LinkedList_Return_CGTF_Value
       subroutine LinkedList_Return_CGTF_Value(LL_Cur,Return_Value)
@@ -423,6 +655,106 @@
       end subroutine MQC_Overlap_Distribution_Primitive_XYZ_Constants
 
 !
+!PROCEDURE MQC_Value_CGTF
+      subroutine MQC_Value_CGFT(bfShell,xyz,basisValues)
+!
+!     This subroutine calculates the values of the basis functions associated
+!     with contracted shell bfShell. Dummy argument xyz gives the position where
+!     the function is to be evaluated.
+!
+!     - H. P. Hratchian, 2025.
+!
+      implicit none
+      class(MQC_CGTF),intent(in)::bfShell
+      real(kind=real64),dimension(3),intent(in)::xyz
+      real(kind=real64),dimension(:),allocatable,intent(out)::basisValues
+      integer(kind=int64)::i,j
+      real(kind=real64)::radialValue
+      real(kind=real64),dimension(:,:),allocatable::primCoeffs,  &
+        primBasisValues
+!
+!     Calculate nBasisPairs and nPrimPairs. Then allocate some arrays.
+!
+      if(MQC_Integrals_DEBUG) then
+        write(iOut,*)' In MQC_Value_CGFT, basis shell:'
+        call MQC_CGTF_print(bfShell,iOut)
+      endIf
+      if(Allocated(basisValues)) DeAllocate(basisValues)
+      Allocate(basisValues(bfShell%nBasis),  &
+        primBasisValues(bfShell%nPrim,bfShell%nBasis),  &
+        primCoeffs(bfShell%nPrim,bfShell%nBasis))
+!
+!     Work through the list of basis functions this shell expands to and build
+!     up the function values at position xyz.
+!
+      do i = 1,bfShell%nBasis
+        do j = 1,bfShell%nPrim
+          primCoeffs(j,i) =  &
+            bfShell%primitiveNorm(j,i)*  &
+            bfShell%coefficient(j)
+          radialValue = MQC_Value_Primitive_Radial(xyz,  &
+            bfShell%center,bfShell%alpha(j))
+          primBasisValues(j,i) = radialValue*  &
+            MQC_Value_Primitive_Angular(xyz,bfShell%center,  &
+            bfShell%alpha(j),bfShell%lArrays(:,i))
+        endDo
+      endDo
+      do i = 1,bfShell%nBasis
+        basisValues(i) =  &
+          dot_product(primCoeffs(:,i),primBasisValues(:,i))
+      endDo
+!
+      return
+      end subroutine MQC_Value_CGFT
+
+!
+!PROCEDURE MQC_Value_Primitive_Radial
+      function MQC_Value_Primitive_Radial(xyz,center,alpha)  &
+        Result(primitiveValue)
+!
+!     This function evaluates the radial part of the function value of a
+!     primitive Cartesian gaussian function at position xyz.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      real(kind=real64),dimension(3),intent(in)::xyz,center
+      real(kind=real64),intent(in)::alpha
+      real(kind=real64)::primitiveValue
+      real(kind=real64)::distanceSq
+!
+      distanceSq = dot_product(xyz-center,xyz-center)
+      primitiveValue = exp(-alpha*distanceSq)
+!
+      return
+      end function MQC_Value_Primitive_Radial
+
+!
+!PROCEDURE MQC_Value_Primitive_Angular
+      function MQC_Value_Primitive_Angular(xyz,center,alpha,lArray)  &
+        Result(primitiveValue)
+!
+!     This function evaluates the angular part of the function value of a
+!     primitive Cartesian gaussian function at position xyz.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      real(kind=real64),dimension(3),intent(in)::xyz,center
+      real(kind=real64),intent(in)::alpha
+      integer(kind=int64),dimension(3),intent(in)::lArray
+      real(kind=real64)::primitiveValue
+!
+      primitiveValue = ((xyz(1)-center(1))**lArray(1))*  &
+        ((xyz(2)-center(2))**lArray(2))*  &
+        ((xyz(3)-center(3))**lArray(3))
+!
+      return
+      end function MQC_Value_Primitive_Angular
+
+!
 !PROCEDURE MQC_Overlap_CGTF
       subroutine MQC_Overlap_CGFT(bra,ket,basisIntegrals)
 !
@@ -449,11 +781,19 @@
       real(kind=real64),dimension(:,:,:),allocatable::primBasisInts
       logical,dimension(:,:),allocatable::haveSij
 !
+ 1000 format(1x,'Basis Pair: (',i2,' | ',i2,') = ',f8.5)
+ 1010 format(3x,'iPrim      IntX          IntY          IntZ        IntTot')
+ 1020 format(4x,i3,4x,f8.5,6x,f8.5,6x,f8.5,6x,f8.5)
+ 1021 format(4x,i3,4x,i3,4x,f8.5,6x,f8.5,6x,f8.5,6x,f8.5)
+ 1030 format(/,/)
+!
 !     Calculate nBasisPairs and nPrimPairs. Then allocate some arrays.
 !
-      write(iOut,*)' In MQC_Overlap_CGFT, bra and ket:'
-      call MQC_CGTF_print(bra,iOut)
-      call MQC_CGTF_print(ket,iOut)
+      if(MQC_Integrals_DEBUG) then
+        write(iOut,*)' In MQC_Overlap_CGFT, bra and ket:'
+        call MQC_CGTF_print(bra,iOut)
+        call MQC_CGTF_print(ket,iOut)
+      endIf
       nBasisBra = bra%nBasis
       nBasisKet = ket%nBasis
       nBasisPairs = nBasisBra*nBasisKet
@@ -499,20 +839,13 @@
             ket%coefficient(indexPrimPairs(2,j))
           call MQC_Overlap_Distribution_Primitive_XYZ_Constants(bra,ket, &
             indexPrimPairs(1,j),indexPrimPairs(2,j),mu,p,xAB,xPA,xPB)
-            write(iOut,*)'     mu = ',mu
-            write(iOut,*)'     p  = ',p
-            call mqc_print(xAB,iOut,header='xAB')
-            call mqc_print(xPA,iOut,header='xPA')
-            call mqc_print(xPB,iOut,header='xPB')
           do ixyz = 1,3
-            tmpSij  = -1.0
+            tmpSij  = mqc_float(-1)
             haveSij = .false.
             call MQC_Overlap_Primitive_XYZ_OS(  &
               bra%lArrays(ixyz,indexBasisPairs(1,i)),  &
               ket%lArrays(ixyz,indexBasisPairs(2,i)),  &
               mu,p,xAB(ixyz),xPA(ixyz),xPB(ixyz),tmpSij,haveSij)
-            if(MQC_Integrals_DEBUG)  &
-              call mqc_print(tmpSij,iOut,header='tmpSij in MQC_Overlap_CGTF:')
             primBasisInts(j,ixyz,i) = tmpSij(  &
               bra%lArrays(ixyz,indexBasisPairs(1,i))+1,  &
               ket%lArrays(ixyz,indexBasisPairs(2,i))+1)
@@ -521,31 +854,23 @@
             primBasisInts(j,2,i)*primBasisInts(j,3,i)
         endDo
       endDo
-
-
- 1000 format(1x,'Basis Pair: (',i2,' | ',i2,') = ',f8.5)
- 1010 format(3x,'iPrim      IntX          IntY          IntZ        IntTot')
- 1020 format(4x,i3,4x,f8.5,6x,f8.5,6x,f8.5,6x,f8.5)
-      write(iOut,*)
-      write(iOut,*)' Hrant - Here is primBasisInts...'
-      write(iOut,*)' nBasisPairs = ',nBasisPairs
-      write(iOut,*)' nPrimPairs  = ',nPrimPairs
       do i = 1,nBasisPairs
-        write(iOut,1000) indexBasisPairs(1,i),indexBasisPairs(2,i),  &
+        basisIntegrals(indexBasisPairs(1,i),indexBasisPairs(2,i)) =  &
           dot_product(primCoeffs(:,i),primBasisIntsTot(:,i))
-        write(iOut,1010)
-        do j = 1,nPrimPairs
-          write(iOut,1020) j,primBasisInts(j,1,i),primBasisInts(j,2,i),  &
-            primBasisInts(j,3,i),primBasisIntsTot(j,i)
-        endDo
+        if(MQC_Integrals_DEBUG) then
+          write(iOut,1000) indexBasisPairs(1,i),indexBasisPairs(2,i),  &
+            dot_product(primCoeffs(:,i),primBasisIntsTot(:,i))
+          write(iOut,1010)
+          do j = 1,nPrimPairs
+            write(iOut,1020) j,primBasisInts(j,1,i),primBasisInts(j,2,i),  &
+              primBasisInts(j,3,i),primBasisIntsTot(j,i)
+          endDo
+        endIf
       endDo
-
-      write(iOut,*)
-      write(iOut,*)
-
+      if(MQC_Integrals_DEBUG) write(iOut,1030)
+!
       return
       end subroutine MQC_Overlap_CGFT
-
 
 !
 !PROCEDURE MQC_Overlap_Primitive_XYZ_OS
@@ -569,10 +894,7 @@
 !
 !     0,0
       if(ixyz.eq.0.and.jxyz.eq.0) then
-        if(haveSij(1,1)) then
-          write(*,*)' Hrant - asked for a value I already have (0,0).'
-          return
-        endIf
+        if(haveSij(1,1)) return
         Sij(1,1) = SQRT(pi/p)*exp(-mu*XAB**2)
         haveSij(1,1) = .true.
 !
@@ -645,7 +967,7 @@
           call MQC_Overlap_Primitive_XYZ_OS(ixyz-2,jxyz,mu,p,XAB,XPA,XPB,Sij,haveSij)
         if(.not.haveSij(ixyz,jxyz))  &
           call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,jxyz-1,mu,p,XAB,XPA,XPB,Sij,haveSij)
-        Sij(ixyz+1,jxyz+1) = XPA*Sij(ixyz,jxyz+1)+((ixyz)*Sij(ixyz-1,jxyz+1)+(jxyz+1)*Sij(ixyz,jxyz))/(mqc_float(2)*p)
+        Sij(ixyz+1,jxyz+1) = XPA*Sij(ixyz,jxyz+1)+((ixyz-1)*Sij(ixyz-1,jxyz+1)+(jxyz)*Sij(ixyz,jxyz))/(mqc_float(2)*p)
         haveSij(ixyz+1,jxyz+1) = .true.
 !
 !     Uknown combination...fail out.
@@ -653,9 +975,17 @@
         call mqc_error('MQC_Overlap_Primitive_XYZ_OS: Invalid i and j.')
       endIf
 !
+!     If DEBUG print is on, print out haveSij and Sij.
+!
+      if(MQC_Integrals_DEBUG) then
+        write(iOut,*)
+        call mqc_print(haveSij,iOut,header='haveSij')
+        call mqc_print(Sij,iOut,header='Sij')
+        write(iOut,*)
+      endIf
+!
       return
       end subroutine MQC_Overlap_Primitive_XYZ_OS
-
 !
 !
       end module MQC_Integrals
