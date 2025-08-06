@@ -98,6 +98,8 @@
         Procedure, Public::getLabel => mqc_integral_array_name
 !>      \brief <b> Set the label of the MQC_SCF_Integral object</b>
         Procedure, Public::addLabel => mqc_integral_add_name
+!>      \brief <b> Return a new MQC_SCF_Integral object with distinct Array_type</b>
+        Procedure, Public::changeType => mqc_integral_change_type
 !>      \brief <b> Return a spin block of MQC_SCF_Integral object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_integral_output_block
 !>      \brief <b> Set an MQC_SCF_Integral object as the identity matrix</b>
@@ -125,11 +127,14 @@
         Procedure, Public::powerf => mqc_scf_integral_power_func
 !>      \brief <b> Psuedo inverse of an MQC_SCF_Integral object</b>
         Procedure, Public::pinv => mqc_scf_integral_pinv
+!>      \brief <b> Updates an element of an MQC_SCF_Integral object</b>
         Procedure, Public::put => mqc_integral_put
+!>      \brief <b> Returns an element of an MQC_SCF_Integral object</b>
         Procedure, Public::at => mqc_integral_at
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+        Procedure, Public::ipad => mqc_integral_pad
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::esum => MQC_Integral_Sum_Elements
         Procedure, Public::pesum => MQC_Integral_Partial_Sum_Elements
@@ -151,8 +156,6 @@
         Procedure, Public::crossouter2ERI => mqc_integral_integral_crossouter_product
 !>    \brief <b> Returns the diagonal elements of an MQC_SCF_Integral object</b>
         Procedure, Public::diagonal => mqc_scf_integral_diagonal_elements
-!>    \brief <b> Pads the blocks of an MQC_SCF_Integral object</b>
-        Procedure, Public::ipad => mqc_integral_pad
       End Type
 !
 !>    \brief <b> EST intermediate diagonal matrix variable</b>
@@ -168,6 +171,8 @@
         Procedure, Private::hasBeta => mqc_eigenvalues_has_beta
         Procedure, Private::type => mqc_eigenvalues_array_type
         Procedure, Private::blockSize => mqc_eigenvalues_dimension 
+!>      \brief <b> Initilizes the MQC_SCF_Eigenvalues object</b>
+        Procedure, Public::init => mqc_eigenvalues_initialize
 !>      \brief <b> Return the label of the MQC_SCF_Eigenvalues object</b>
         Procedure, Public::getLabel => mqc_eigenvalues_array_name
 !>      \brief <b> Set the label of the MQC_SCF_Eigenvalues object</b>
@@ -176,6 +181,12 @@
         Procedure, Public::getBlock => mqc_eigenvalues_output_block
 !>      \brief <b> Returns values of an MQC_SCF_Eigenvalues object raised to a power</b>
         Procedure, Public::power => mqc_scf_eigenvalues_power
+!>      \brief <b> Alters the value of a specified element in an MQC_SCF_Eigenvalues 
+!>      object</b>
+        Procedure, Public::put => mqc_eigenvalues_put
+!>      \brief <b> Appends the specified value to the end of the MQC_SCF_Eigenvalues 
+!>      object</b>
+        Procedure, Public::push => mqc_eigenvalues_push
 !>      \brief <b> Returns the value of a specified element in an MQC_SCF_Eigenvalues 
 !>      object</b>
         Procedure, Public::at => mqc_eigenvalues_at
@@ -189,6 +200,8 @@
         Procedure, Public::minloc => MQC_Eigenvalues_MinLoc
 !>      \brief <b> Returns the location of the maximum value in MQC_SCF_Eigenvalues</b>
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
+!>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::abs => MQC_Eigenvalues_Abs
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -384,6 +397,16 @@
         Module Procedure MQC_Eigenvalues_MinLoc
       End Interface
 !
+!>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+      Interface abs
+        Module Procedure MQC_Eigenvalues_Abs
+      End Interface
+!
+!>    \brief <b> Returns the identity MQC_SCF_Integral of the specified size</b>
+      interface intiden
+        module procedure MQC_Integral_Identity_Func
+      end interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -424,6 +447,11 @@
       Interface Operator (*)
         Module Procedure MQC_Scalar_Integral_Multiply
         Module Procedure MQC_Integral_Scalar_Multiply
+      End Interface
+!
+!>    \brief <b> Computes the element-wise product of two objects</b>
+      Interface Operator (.ewp.)
+        Module Procedure MQC_Element_Integral_Multiply
       End Interface
 !
 !
@@ -1762,6 +1790,106 @@
       end subroutine mqc_integral_add_name
 !
 !
+!
+!     PROCEDURE MQC_Integral_Change_Type
+!
+!>    \brief <b> MQC_Integral_Change_Type is a function that copy a MQC_Integral with a  
+!>    less restrict typing. </b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Change_Type is a function that copy a MQC_Integral with a  
+!>    less restrict typing: 'space' -> 'spin' or 'general; 'spin' -> 'general'
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!>    \param[in] newType
+!>    \verbatim
+!>        newType is Character(Len=*)
+!>        The new type of the MQC_SCF_Integral:
+!>        'space', 'spin' or 'general'
+!>    \endverbatim
+!>
+!>    \param[out] IntegralOut
+!>    \verbatim
+!>        Integral is Type(MQC_SCF_Integral)
+!>        IntegralOut has the same orbitals as Integral, with newType type.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function mqc_integral_change_type(integral,newType) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      type(mqc_scf_integral)::integralOut
+      character(Len=*)::newType
+      character(Len=64)::newArrayType,oldArrayType
+      integer(kind=int64)::nDimAlpha1=0,nDimBeta1=0,nDimTotal1=0,nDimAlpha2=0,nDimBeta2=0,nDimTotal2=0,zeroI
+      real(kind=real64)::zeroR
+      complex(kind=real64)::zeroC
+      parameter(zeroI=0,zeroR=0.0,zeroC=(0.0,0.0))
+      type(mqc_matrix)::aa,bb,ab,ba
+!
+      call string_change_case(newType,'L',newArrayType)
+      oldArrayType = integral%Array_Type
+      if (oldArrayType.eq.newArrayType) then
+        integralOut = integral
+        return
+      end if
+
+      nDimAlpha1 = integral%blockSize('Alpha',1)
+      nDimBeta1 = integral%blockSize('Beta',1)
+      nDimTotal1 = nDimAlpha1 + nDimBeta1
+      nDimAlpha2 = integral%blockSize('Alpha',2)
+      nDimBeta2 = integral%blockSize('Beta',2)
+      nDimTotal2 = nDimAlpha2 + nDimBeta2
+
+      select case (newArrayType)
+      case ('space')
+        call mqc_error_a('New type is more restrictive than the original one in mqc_integral_change_type',&
+          6,'Original Type:',oldArrayType,'New Type:',newArrayType)
+      case ('spin')
+        if (oldArrayType.eq.'general') &
+           call mqc_error_a('New type is more restrictive than the original one in mqc_integral_change_type',&
+                             6,'Original Type:',oldArrayType,'New Type:',newArrayType)
+        aa = integral%getBlock('alpha')
+        call mqc_integral_allocate(integralOut,integral%Array_Name,'spin',aa,aa)
+      case ('general')
+        if (oldArrayType.eq.'space') then
+          aa = integral%getBlock('alpha')
+          bb = aa
+        else
+          aa = integral%getBlock('alpha')
+          bb = integral%getBlock('beta')
+        end if
+        call ab%init(nDimBeta1,nDimAlpha2,zeroR)
+        call ba%init(nDimAlpha1,nDimBeta2,zeroR)
+        call mqc_integral_allocate(integralOut,integral%Array_Name,'general',aa,bb,ab,ba)
+      case default
+        call mqc_error_A('Unrecognised integral type in mqc_integral_change_type', 6, &
+             'New Type:', newArrayType )
+      end select
+
+!
+      end function mqc_integral_change_type
+!
+!
 !     PROCEDURE MQC_eigenvalues_Add_Name    
 !
 !>    \brief <b> MQC_Eigenvalues_Add_Name is a function that sets the label of an MQC 
@@ -1985,6 +2113,94 @@
       end select 
 !
       end function mqc_eigenvalues_dimension 
+
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Initialize
+!
+!>    \brief <b> MQC_Eigenvalues_Initialize is a subroutine that initializes a MQC_SCF_Eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_Initialize is a subroutine that initializes a MQC_SCF_Eigenvalues. Default
+!>    element values are 0.0 in a 'space' type object, or otherwise vector can be initialized with optional
+!>    argument.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] eigenvalues
+!>    \verbatim
+!>        Vector is Class(MQC_Eigenvalues_Initialize)
+!>        The MQC_Eigenvalues_Initialize to intialize.
+!>    \endverbatim
+!>
+!>    \param[in] length
+!>    \verbatim
+!>        Length is Integer(kind=int64)
+!>        The length to initialize eigenvalues object
+!>    \endverbatim
+!>
+!>
+!>    \param[in] scalar
+!>    \verbatim
+!>        Scalar is Class(*),Optional
+!>        Value to set each element of Vector. If not present,
+!>        the value is set to 0.0. Can be of type integer, real,
+!>        complex or MQC_Scalar.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_initialize(eigenvalues,length,scalar,lengthBeta)
+!
+!     Variable Declarations.
+!
+      Implicit None
+      Real(kind=real64)::Zero=0.0d0
+      Character(Len=64)::eigenvaluesType 
+      Integer(kind=int64)::lenAlpha,lenBeta
+      Integer(kind=int64),Intent(In)::length
+      type(mqc_vector)::vecAlpha,vecBeta
+      Class(*),Optional::scalar
+      Integer(kind=int64),Optional::lengthBeta
+      Class(mqc_scf_eigenvalues),Intent(InOut)::eigenvalues
+      
+      If(Present(lengthBeta)) then
+        eigenvaluesType='spin'
+        lenAlpha = length
+        lenBeta = lengthBeta
+      else
+        eigenvaluesType='space'
+        lenAlpha = length
+      endif
+      eigenvalues%Array_Type = eigenvaluesType
+
+      If(Present(Scalar)) then
+        call vecAlpha%init(lenAlpha,Scalar)
+        if(eigenvaluesType.eq.'spin') then
+          call vecBeta%init(lenBeta,Scalar)
+        endif
+      else
+        call vecAlpha%init(lenAlpha)
+        if(eigenvaluesType.eq.'spin') then
+          call vecBeta%init(lenBeta)
+        endif
+      endIf
+      eigenvalues%Alpha = vecAlpha
+      if(eigenvaluesType.eq.'spin') eigenvalues%Beta = vecBeta
+
+      end subroutine mqc_eigenvalues_initialize
+
+
+
 !
 !
 !     PROCEDURE MQC_ERIs_Dimension
@@ -2554,6 +2770,8 @@
       if(myArrayType.eq.'general') then
         if(present(alphaBeta).and.allocated(alphaBeta).and.size(alphaBeta,1).ne.0.and.size(alphaBeta,2).ne.0) then
           integral%alphaBeta = alphaBeta
+          if(integral%nBRows.eq.0) integral%nBRows = size(integral%alphaBeta,1)
+          if(integral%nACols.eq.0) integral%nACols = size(integral%alphaBeta,2)
           if(size(integral%alphaBeta,1).ne.integral%nBRows.or.&
             size(integral%alphaBeta,2).ne.integral%nACols) &
             call mqc_error_i('Alpha-beta array size mismatch in &
@@ -2564,6 +2782,8 @@
         endIf
         if(present(betaAlpha).and.allocated(betaAlpha).and.size(betaAlpha,1).ne.0.and.size(betaAlpha,2).ne.0) then
           integral%betaAlpha = betaAlpha
+          if(integral%nARows.eq.0) integral%nARows = size(integral%betaAlpha,1)
+          if(integral%nBCols.eq.0) integral%nBCols = size(integral%betaAlpha,2)
           if(size(integral%betaAlpha,1).ne.integral%nARows.or.&
             size(integral%betaAlpha,2).ne.integral%nBCols) &
             call mqc_error_i('Beta-Alpha array size mismatch in &
@@ -3157,6 +3377,93 @@
       end subroutine mqc_integral_identity  
 !
 !
+!     PROCEDURE MQC_Integral_Identity_Func
+!
+!>    \brief <b> MQC_Integral_Identity_Func returns an MQC integral type variable
+!>    as the identity matrix</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Identity returns an MQC integral type variable of the as the 
+!>    identity matrix. Optional argument label allows a description to be carried 
+!>    around with the variable. Optional arguments nAlpha2 and nBeta2 allow the 
+!>    columns of spin blocks to be sized differently to the rows.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NAlpha
+!>    \verbatim
+!>        NAlpha is integer
+!>        The dimension of the alpha spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] NBeta
+!>    \verbatim
+!>        NBeta is integer
+!>        The dimension of the beta spin block.
+!>    \endverbatim
+!>    
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(len=*),Optional
+!>        Description of the MQC_SCF_Integral contents.
+!>    \endverbatim
+!>
+!>    \param[in] NAlpha2
+!>    \verbatim
+!>        NAlpha2 is Integer,Optional
+!>        The column number of the alpha spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!>
+!>    \param[in] NBeta2
+!>    \verbatim
+!>        NBeta2 is Integer,Optional
+!>        The column number of the beta spin block, if a 
+!>        rectangular spin block is desired.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_integral_identity_func(nAlpha,nBeta,label,nAlpha2,nBeta2) result(integral) 
+!
+      implicit none
+      type(mqc_scf_integral)::integral
+      integer,intent(in)::nAlpha,nBeta
+      integer,intent(in),optional::nAlpha2,nBeta2
+      character(Len=*),optional,intent(in)::label
+      Character(Len=64)::myLabel
+      integer::my_nAlpha2,my_nBeta2
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+      if(.not.present(nAlpha2)) then
+        my_nAlpha2 = nAlpha
+      else
+        my_nAlpha2 = nAlpha2
+      endIf
+      if(.not.present(nBeta2)) then
+        my_nBeta2 = nBeta
+      else
+        my_nBeta2 = nBeta2
+      endIf
+!
+      call integral%identity(nAlpha,nBeta,myLabel,my_nAlpha2,my_nBeta2)
+!
+      end function mqc_integral_identity_func 
+!
+!
 !     PROCEDURE MQC_Integral_Initialize
 !
 !>    \brief <b> MQC_Integral_Initialize is used to initialize an MQC integral type 
@@ -3235,7 +3542,7 @@
       character(Len=*),optional,intent(in)::label
       class(*),optional,intent(in)::Scalar
       integer,intent(in),optional::nAlpha2,nBeta2
-      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       Character(Len=64)::myLabel
       integer::my_nAlpha2,my_nBeta2
 !
@@ -3260,7 +3567,14 @@
           call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
         else 
           call tmpMatrixBeta%init(nBeta,my_nBeta2,scalar)
-          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          if(my_nBeta2.eq.0.or.nBeta.eq.0.or.my_nAlpha2.eq.0.or.nAlpha.eq.0) then
+            call tmpMatrixAlphaBeta%init(nAlpha,my_nBeta2,scalar)
+            call tmpMatrixBetaAlpha%init(nBeta,my_nAlpha2,scalar)
+            call mqc_integral_allocate(integral,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta,&
+              tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          endIf
         endIf
       else
         call tmpMatrixAlpha%init(nAlpha,my_nAlpha2)
@@ -3268,7 +3582,14 @@
           call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
         else 
           call tmpMatrixBeta%init(nBeta,my_nBeta2)
-          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          if(my_nBeta2.eq.0.or.nBeta.eq.0.or.my_nAlpha2.eq.0.or.nAlpha.eq.0) then
+            call tmpMatrixAlphaBeta%init(nAlpha,my_nBeta2)
+            call tmpMatrixBetaAlpha%init(nBeta,my_nAlpha2)
+            call mqc_integral_allocate(integral,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta,&
+              tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          endIf
         endIf
       endIf
 !
@@ -4172,7 +4493,7 @@
           call alpha%mput(tmp1,[0],[1,size(tmp1,2)])
           call alpha%mput(tmp2,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp2,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'space',alpha,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'space',alpha,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4193,7 +4514,7 @@
           call beta%mput(tmp1,[0],[1,size(tmp1,2)])
           call beta%mput(tmp3,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp3,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'space') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4214,7 +4535,7 @@
           call beta%mput(tmp2,[0],[1,size(tmp2,2)])
           call beta%mput(tmp3,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp3,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4236,7 +4557,7 @@
           call beta%mput(tmp2,[0],[1,size(tmp2,2)])
           call beta%mput(tmp4,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp4,2)])
         endIf
-        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA1,&
+        call mqc_integral_allocate(integral,arrayName,'spin',alpha,beta,nDimA1=nTA1,nDimA2=nTA2,&
           nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'space'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
@@ -4268,7 +4589,7 @@
           call betaAlpha%mput(tmp5,[0],[size(tmp1,2)+1,size(tmp1,2)+size(tmp5,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'space') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4299,7 +4620,7 @@
           call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'spin'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4331,7 +4652,7 @@
           call betaAlpha%mput(tmp6,[0],[size(tmp2,2)+1,size(tmp2,2)+size(tmp6,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'spin') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4363,7 +4684,7 @@
           call betaAlpha%mput(tmp4,[0],[1,size(tmp4,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       elseIf(occupieds%type().eq.'general'.and.virtuals%type().eq.'general') then
         tmp1 = occupieds%getBlock('alpha')
         tmp2 = occupieds%getBlock('beta')
@@ -4401,7 +4722,7 @@
           call betaAlpha%mput(tmp8,[0],[size(tmp4,2)+1,size(tmp4,2)+size(tmp8,2)])
         endIf
         call mqc_integral_allocate(integral,arrayName,'general',alpha,beta,alphaBeta,betaAlpha,&
-          nDimA1=nTA1,nDimA2=nTA1,nDimB1=nTB1,nDimB2=nTB2)
+          nDimA1=nTA1,nDimA2=nTA2,nDimB1=nTB1,nDimB2=nTB2)
       endIf
 !
       end subroutine mqc_integral_combine_orbitals
@@ -4726,15 +5047,16 @@
         if (eigenvalues%type().eq.'space') then
           if (eigenvalues%hasAlpha()) then
             if(mqc_vector_haveInteger(eigenvalues%alpha)) then
-              call vectorOut%init(nDimAlpha,zeroI)
+              call vectorOut%init(2*nDimAlpha,zeroI)
             elseif(mqc_vector_haveReal(eigenvalues%alpha)) then
-              call vectorOut%init(nDimAlpha,zeroR)
+              call vectorOut%init(2*nDimAlpha,zeroR)
             elseIf(mqc_vector_haveComplex(eigenvalues%alpha)) then
-              call vectorOut%init(nDimAlpha,zeroC)
+              call vectorOut%init(2*nDimAlpha,zeroC)
             else
               call mqc_error('unrecognized integral data type in mqc_integral_output_block')
             endIf
             call vectorOut%vput(eigenvalues%alpha,1) 
+            call vectorOut%vput(eigenvalues%alpha,nDimAlpha+1)
           else
             call mqc_error_L('block does not exist in mqc_eigenvalues_output_block', 6, &
                  'eigenvalues%hasAlpha()', eigenvalues%hasAlpha() )
@@ -6265,6 +6587,173 @@
       end function mqc_matrix_integral_multiply
 !
 !
+!     PROCEDURE MQC_Integral_Pad
+!
+!>    \brief <b> MQC_Integral_Pad is used to increase the dimension
+!>    of a MQC integral variable</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Pad is used to multiply an MQC matrix type variable
+!>    with a MQC integral and returns an MQC integral.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        Initial MQC integral variable.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis1
+!>    \verbatim
+!>        Axis1 is integer(kind=int64)
+!>        Size of padded data.
+!>        If Axis2 is present, Axis1 is used only for rows.
+!>        Otherwise  Axis1 is used both for rows and columns.
+!>    \endverbatim
+!>    
+!>    \param[in] Axis2
+!>    \verbatim
+!>        Axis2 is integer(kind=int64),optional
+!>        Size of padded columns.
+!>    \endverbatim
+!>
+!>    \param[in] BlockName
+!>    \verbatim
+!>        BlockName is Character(Len=*),optional,default='full'
+!>        Define which set of spin-orbitals should be modiffied.
+!>        In the general case, the off-diagonal blocks (alpha-beta 
+!>        and beta-alpha) are modified based on the alpha-alpha and
+!>        beta-beta dimensions.
+!>
+!>    1.  BlockName = 'full' outputs the full MQC_TwoERIs variable.
+!>    2.  BlockName = 'alpha', 'alpha-alpha' or 'aaaa' outputs the alpha-alpha spin block. 
+!>    3.  BlockName = 'beta', 'beta-beta' or 'bbbb' outputs the beta-beta spin block. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      function mqc_integral_pad(integral,axis1,axis2,blockname) result(integralOut)
+!
+      implicit none
+      class(mqc_scf_integral),intent(in)::integral
+      integer(kind=int64),intent(in)::axis1
+      integer(kind=int64),optional,intent(in)::axis2
+      Character(Len=*),optional,intent(in)::blockname
+      integer(kind=int64)::ax1,ax2
+      type(mqc_scf_integral)::integralOut
+
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
+      Character(Len=64)::myLabel
+!
+      if(present(blockname)) then
+        call string_change_case(blockname,'l',myLabel)
+      else
+        myLabel = 'full'
+      endIf
+
+      ax1 = axis1
+      if(present(axis2)) then
+        ax2 = axis2
+      else
+        ax2 = axis1
+      endIf
+       
+      select case(integral%array_type)
+      case('space')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'space',tmpMatrixAlpha)
+        case('alpha')
+          tmpMatrixBeta = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = tmpMatrixAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case('spin')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('alpha')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case('general')
+        select case(myLabel)
+        case('full')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,ax2)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('alpha')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(integral%nBRows,ax2)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,integral%nBCols)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case('beta')
+          tmpMatrixAlpha = integral%getBlock('alpha')
+          tmpMatrixBeta = integral%getBlock('beta')
+          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
+          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
+          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,integral%nACols)
+          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
+          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(integral%nARows,ax2)
+          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
+            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+        case default
+          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
+            'label', myLabel )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_integral_pad', 6, &
+          'integral%array_type', integral%array_type )
+      end select     
+!
+      end function mqc_integral_pad
+!
+!
 !     PROCEDURE MQC_Integral_Sum
 !
 !>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
@@ -6522,173 +7011,6 @@
       end select
 
       end function mqc_integral_sum
-!
-!
-!     PROCEDURE MQC_Integral_Pad
-!
-!>    \brief <b> MQC_Integral_Pad is used to increase the dimension
-!>    of a MQC integral variable</b>
-!
-!>    \par Purpose:
-!     =============
-!>
-!>    \verbatim
-!>
-!>    MQC_Matrix_Pad is used to multiply an MQC matrix type variable
-!>    with a MQC integral and returns an MQC integral.
-!>
-!>    \endverbatim
-!
-!     Arguments:
-!     ==========
-!>    \param[in] Integral
-!>    \verbatim
-!>        Integral is type(mqc_scf_integral)
-!>        Initial MQC integral variable.
-!>    \endverbatim
-!>
-!>    \param[in] Axis1
-!>    \verbatim
-!>        Axis1 is integer(kind=int64)
-!>        Size of padded data.
-!>        If Axis2 is present, Axis1 is used only for rows.
-!>        Otherwise  Axis1 is used both for rows and columns.
-!>    \endverbatim
-!>
-!>    \param[in] Axis2
-!>    \verbatim
-!>        Axis2 is integer(kind=int64),optional
-!>        Size of padded columns.
-!>    \endverbatim
-!>
-!>    \param[in] BlockName
-!>    \verbatim
-!>        BlockName is Character(Len=*),optional,default='full'
-!>        Define which set of spin-orbitals should be modiffied.
-!>        In the general case, the off-diagonal blocks (alpha-beta
-!>        and beta-alpha) are modified based on the alpha-alpha and
-!>        beta-beta dimensions.
-!>
-!>    1.  BlockName = 'full' outputs the full MQC_TwoERIs variable.
-!>    2.  BlockName = 'alpha', 'alpha-alpha' or 'aaaa' outputs the alpha-alpha spin block.
-!>    3.  BlockName = 'beta', 'beta-beta' or 'bbbb' outputs the beta-beta spin block.
-!>    \endverbatim
-!
-!     Authors:
-!     ========
-!>    \author M. M. F. Moraes
-!>    \date 2025
-!
-      function mqc_integral_pad(integral,axis1,axis2,blockname) result(integralOut)
-!
-      implicit none
-      class(mqc_scf_integral),intent(in)::integral
-      integer(kind=int64),intent(in)::axis1
-      integer(kind=int64),optional,intent(in)::axis2
-      Character(Len=*),optional,intent(in)::blockname
-      integer(kind=int64)::ax1,ax2
-      type(mqc_scf_integral)::integralOut
-
-      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
-      Character(Len=64)::myLabel
-!
-      if(present(blockname)) then
-        call string_change_case(blockname,'l',myLabel)
-      else
-        myLabel = 'full'
-      endIf
-
-      ax1 = axis1
-      if(present(axis2)) then
-        ax2 = axis2
-      else
-        ax2 = axis1
-      endIf
-
-      select case(integral%array_type)
-      case('space')
-        select case(myLabel)
-        case('full')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'space',tmpMatrixAlpha)
-        case('alpha')
-          tmpMatrixBeta = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixBeta%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
-        case('beta')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixBeta = tmpMatrixAlpha%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
-        case default
-          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
-            'label', myLabel )
-        end select
-      case('spin')
-        select case(myLabel)
-        case('full')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
-          tmpMatrixBeta = integral%getBlock('beta')
-          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
-        case('alpha')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
-          tmpMatrixBeta = integral%getBlock('beta')
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
-        case('beta')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixBeta = integral%getBlock('beta')
-          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'spin',tmpMatrixAlpha,tmpMatrixBeta)
-        case default
-          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
-            'label', myLabel )
-        end select
-      case('general')
-        select case(myLabel)
-        case('full')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
-          tmpMatrixBeta = integral%getBlock('beta')
-          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
-          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
-          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,ax2)
-          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
-          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-        case('alpha')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixAlpha = tmpMatrixAlpha%mpad(ax1,ax2)
-          tmpMatrixBeta = integral%getBlock('beta')
-          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
-          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(integral%nBRows,ax2)
-          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
-          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(ax1,integral%nBCols)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-        case('beta')
-          tmpMatrixAlpha = integral%getBlock('alpha')
-          tmpMatrixBeta = integral%getBlock('beta')
-          tmpMatrixBeta = tmpMatrixBeta%mpad(ax1,ax2)
-          tmpMatrixAlphaBeta = integral%getBlock('alphabeta')
-          tmpMatrixAlphaBeta = tmpMatrixAlphaBeta%mpad(ax1,integral%nACols)
-          tmpMatrixBetaAlpha = integral%getBlock('betaalpha')
-          tmpMatrixBetaAlpha = tmpMatrixBetaAlpha%mpad(integral%nARows,ax2)
-          call mqc_integral_allocate(integralOut,integral%getLabel(),'general',tmpMatrixAlpha, &
-            tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
-        case default
-          call mqc_error_A('Unknown label in mqc_integral_pad', 6, &
-            'label', myLabel )
-        end select
-      case default
-        call mqc_error_A('Unknown integral type in mqc_integral_pad', 6, &
-          'integral%array_type', integral%array_type )
-      end select
-!
-      end function mqc_integral_pad
 !
 !
 !     PROCEDURE MQC_ERI_Sum
@@ -7451,9 +7773,21 @@
       nBB1 = size(integralB,'beta',1)
       nBB2 = size(integralB,'beta',2)
 
-      if(nAA2.ne.nBA1.or.nAB2.ne.nBB1) call mqc_error_i('Integral dimensions are &
+      if (nAA2.eq.0.or.nBA1.eq.0) then
+        if (nAB2.ne.0.and.nBB1.ne.0) then
+          if (nAB2.ne.nBB1) call mqc_error_i('Integral dimensions are &
+          &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
+          'nAB2',nAB2,'nBB1',nBB1)
+        end if
+      elseif (nAB2.eq.0.or.nBB1.eq.0) then
+        if (nAA2.ne.nBA1) call mqc_error_i('Integral dimensions are &
+          &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
+          'nAB2',nAB2,'nBB1',nBB1)
+      elseif(nAA2.ne.nBA1.or.nAB2.ne.nBB1) then 
+        call mqc_error_i('Integral dimensions are &
         &not conformable in mqc_integral_integral_multiply',6,'nAA2',nAA2,'nBA1',nBA1,&
         'nAB2',nAB2,'nBB1',nBB1)
+      end if
 
       select case (integralA%array_type)
       case('space')
@@ -11699,11 +12033,11 @@
         else
           tmpMat1 = integralA%getblock('alpha')
           tmpMat2 = integralA%getblock('beta')
-          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat4)
-          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat5,leigenvecs=tmpMat6)
+          call tmpMat1%eigensys(eigenvals=tmpVec1,reigenvecs=tmpMat3,leigenvecs=tmpMat5)
+          call tmpMat2%eigensys(eigenvals=tmpVec2,reigenvecs=tmpMat4,leigenvecs=tmpMat6)
           If(present(eVals)) call mqc_eigenvalues_allocate(eVals,'eigenvalues','spin',tmpVec1,tmpVec2) 
-          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','space',tmpMat3,tmpMat4) 
-          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','space',tmpMat5,tmpMat6)
+          If(present(rEVecs)) call mqc_integral_allocate(rEVecs,'eigenvectors','spin',tmpMat3,tmpMat4) 
+          If(present(lEVecs)) call mqc_integral_allocate(lEVecs,'eigenvectors','spin',tmpMat5,tmpMat6)
         endIf
       elseIf(integralA%type().eq.'general') then
         nDimAlpha1 = integralA%blockSize('alpha',1) 
@@ -14227,18 +14561,30 @@
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(integral%array_type.eq.'space') then
-          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+          if(spinBlock.eq.'alpha') then
+            integral = integral%changeType('spin')
             if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
-          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          else if(spinBlock.eq.'beta') then
+            integral = integral%changeType('spin')
+            call integral%beta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'alphabeta') then
+            integral = integral%changeType('general')
+            call integral%alphabeta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'betaalpha') then
+            integral = integral%changeType('general')
+            call integral%betaalpha%put(element,myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'spin') then
           if(spinBlock.eq.'alpha') then
             if(integral%hasAlpha()) call integral%alpha%put(element,myI,myJ)
           elseif(spinblock.eq.'beta') then
             if(integral%hasBeta()) call integral%beta%put(element,myI,myJ)
-          elseIf(spinBlock.ne.'alphabeta'.and.spinBlock.ne.'betaalpha') then
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          elseIf(spinBlock.ne.'alphabeta') then
+            integral = integral%changeType('general')
+            call integral%alphabeta%put(element,myI,myJ)
+          elseIf(spinBlock.ne.'betaalpha') then
+            integral = integral%changeType('general')
+            call integral%betaalpha%put(element,myI,myJ)
           endIf
         elseIf(integral%array_type.eq.'general') then
           if(spinBlock.eq.'alpha') then
@@ -14610,6 +14956,250 @@
 !      endIf
 
       end function mqc_eigenvalues_at
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Put
+!
+!>    \brief <b> MQC_Eigenvalues_Put is a function that updates the value of an element 
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_Put is a function that updates the value of (I)th element of a 
+!>    MQC eigenvalues variable as an MQC scalar. If I is negative, the (N-I+1)th 
+!>    index is selected. Optional argument SpinBlock specifies the spin block of MQC
+!>    eigenvalues. If I is greater than the dimension of the alpha spin block, the
+!>    remainder is used as the index of the beta spin block. The following options 
+!>    are available:
+!>
+!>    1. SpinBlock = 'alpha' uses the alpha spin block.
+!>    2. SpinBlock = 'beta' uses the beta spin block.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] eigenvalues
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Eigenvalues)
+!>        The MQC eigenvalues to return the value of the (I)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Type(mqc_scalar)
+!>        The value to put in the integral.
+!>    \endverbatim
+!>    
+!>    \param[in] I  
+!>    \verbatim
+!>        I is Integer(kind=int64)
+!>        The first dimension of the element in MQC eigenvalues
+!>          If I>0 row count is from first index
+!>          If I<0 row count is from last index.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlockIn
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':     alpha spin block
+!>        = 'beta':      beta spin block
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_put(eigenvalues,element,i,spinBlockIn)
+!
+      implicit none
+      class(mqc_scf_eigenvalues)::eigenvalues
+      class(*),intent(in)::i
+      integer(kind=int64)::myI
+      type(mqc_scalar)::element
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      select type (i)
+      type is (integer)
+        myI = i
+      type is (mqc_scalar)
+        myI = i
+      class default
+        call mqc_error('index type not defined in MQC_twoERIs_put')
+      end select
+
+      if(myI.gt.eigenvalues%blockSize('alpha')+eigenvalues%blockSize('beta')) &
+        call mqc_error('Requested I dimension out of bounds in mqc_eigenvalues_put')
+
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
+        if(eigenvalues%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(spinBlock.eq.'alpha') then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseif(spinblock.eq.'beta') then
+            if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      else
+        if(eigenvalues%array_type.eq.'space') then
+          if(myI.le.eigenvalues%blockSize('alpha')) then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
+            myI = myI - eigenvalues%blockSize('alpha')
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(myI.le.eigenvalues%blockSize('alpha')) then
+            if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
+          elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
+            myI = myI - eigenvalues%blockSize('alpha')
+            if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      endIf
+      end subroutine mqc_eigenvalues_put
+
+!
+!     PROCEDURE MQC_Eigenvalues_Push
+!
+!>    \brief <b> MQC_Eigenvalues_Put is a function that adds a value to the end 
+!>    of a MQC integral variable</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Eigenvalues_Push is a function that adds a value at the end of a MQC vector 
+!>    of a MQC eigenvalues variable as an MQC scalar. Optional argument SpinBlock 
+!>    specifies the spin block of MQC eigenvalues. The following options are available:
+!>
+!>    1. SpinBlock = 'alpha' the value is added to the alpha spin block.
+!>    2. SpinBlock = 'beta' the value is added to the beta spin block.
+!>    3. SpinBlock = 'both' the value is added to the both alpha and beta spin blocks.
+!>
+!>    If MQC_Eigenvalues Type is 'space'
+!>      SpinBlock equal to 'alpha' or 'beta' will convert it to 'spin'
+!>      SpinBlock equal to 'both' or absent will keep the 'space' type
+!>    eseIf MQC_Eigenvalues Type is 'spin'
+!>      SpinBlock equal to 'alpha' or absent will append to the alpha block
+!>      SpinBlock equal to 'beta' will append to the beta block
+!>      SpinBlock equal to 'both' will append to the alpha and beta blocks
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] eigenvalues
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Eigenvalues)
+!>        The MQC eigenvalues to return the value of the (I)th 
+!>        element.
+!>    \endverbatim
+!>    
+!>    \param[in] Element
+!>    \verbatim
+!>        Element is Class(*)
+!>        The value to put in the integral.
+!>    \endverbatim
+!>    
+!>    \param[in,out] SpinBlockIn
+!>    \verbatim
+!>        SpinBlock is character(len=64),optional
+!>        = 'alpha':   alpha spin block
+!>        = 'beta':    beta spin block
+!>        = 'both':    alpha and beta spin blocks
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      subroutine mqc_eigenvalues_push(eigenvalues,element,spinBlockIn)
+!
+      implicit none
+      class(mqc_scf_eigenvalues)::eigenvalues
+      type(mqc_scalar)::my_element
+      class(*),intent(in)::element
+      character(len=*),optional,intent(in)::spinBlockIn
+      character(len=64)::spinBlock
+      real(kind=real64)::zero=0.0d0
+
+      select type (element)
+      type is (integer)
+        my_element = element
+      type is (real)
+        my_element = element
+      type is (complex)
+        my_element = element
+      type is (mqc_scalar)
+        my_element = element
+      class default
+        call mqc_error('Scalar type not defined in mqc_vector_push',6)
+      end select
+
+
+
+      if(present(spinBlockIn)) then
+        call string_change_case(spinBlockIn,'L',spinBlock)
+        if(eigenvalues%array_type.eq.'space') then
+          if(spinBlock.eq.'alpha') then
+            eigenvalues%beta = eigenvalues%alpha
+            eigenvalues%array_type = 'spin'
+            call eigenvalues%alpha%push(my_element)
+          else if (spinBlock.eq.'beta') then
+            eigenvalues%beta = eigenvalues%alpha
+            eigenvalues%array_type = 'spin'
+            call eigenvalues%beta%push(my_element)
+          else if (spinBlock.eq.'both') then
+            call eigenvalues%alpha%push(my_element)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        elseIf(eigenvalues%array_type.eq.'spin') then
+          if(spinBlock.eq.'alpha') then
+            call eigenvalues%alpha%push(my_element)
+          elseif(spinblock.eq.'beta') then
+            call eigenvalues%beta%push(my_element)
+          else if (spinBlock.eq.'both') then
+            call eigenvalues%alpha%push(my_element)
+            call eigenvalues%beta%push(my_element)
+          else
+            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+          endIf
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      else
+        if(eigenvalues%array_type.eq.'space'.or.eigenvalues%array_type.eq.'spin') then
+          call eigenvalues%alpha%push(my_element)
+        else
+          call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
+        endIf
+      endIf
+      end subroutine mqc_eigenvalues_push
+
+!
 !
 !
 !     PROCEDURE MQC_SCF_Transformation_Matrix
@@ -15052,6 +15642,47 @@
       end select 
 !
       end function mqc_eigenvalues_maxloc
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Abs
+!
+!>    \brief <b> MQC_Eigenvalues_Abs is a function that returns the absolute
+!>    values of all elements of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Abs is a function that returns the absolute values of 
+!>    all elements of an MQC_Eigenvalues variable</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_abs(eigenvalues) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scf_eigenvalues)::output
+!
+      output = eigenvalues
+      if(output%hasalpha()) output%alpha = abs(output%alpha)
+      if(output%hasbeta()) output%beta = abs(output%beta)
+!
+      end function mqc_eigenvalues_abs
 !
 !
 !=====================================================================
@@ -16064,7 +16695,7 @@
       type(mqc_vector)::tmpArray
 
       do i = 0, string%nBits-1 
-        if(btest(string,i)) call tmpArray%push(i)
+        if(btest(string,i)) call tmpArray%push(i+1)
       endDo
       allocate(arrayOut(size(tmpArray)))
       arrayOut = tmpArray
@@ -16369,7 +17000,7 @@
         ISgn = ISgn-2
 
         If(Det(1).eq.Det(2).and.Det(3).eq.Det(4)) then
-!          Write(IOut,*) 'Entering case 1' 
+    !      Write(IOut,*) 'Entering case 1' 
 !          
           If(Spin(1).gt.Spin(2)) ISgn = ISgn+1 
           If(Spin(3).gt.Spin(4)) ISgn = ISgn+1
@@ -21337,8 +21968,7 @@
 !>        Slater Condon rules. The spatial molecular orbital basis
 !>        overlap (i.e. do not multiply by spin overlap which 
 !>        always leads to zero alpha-beta blocks) must be provided
-!>        in MO_Core_Ham argument if this option is used) must be provided
-!>        in MO_Core_Ham argument if this option is used..
+!>        in MO_Core_Ham argument if this option is used.
 !>    \endverbatim
 !>    
 !     Authors:
@@ -21655,7 +22285,609 @@
 
       End Subroutine MQC_Build_CI_Hamiltonian
 !
+!=====================================================================
+!     
+!     PROCEDURE MQC_BUILD_INDEX_DETERMINANT_STRINGS
 !
+!>    \brief <b> MQC_BUILD_INDEX_DETERMINANT_STRINGS is a subroutine that
+!>    a set of alpha and beta determinant strings, possibly different for
+!>    bra and ket, along with infomration about substitution levels etc. 
+!>    It returns the alpha and beta determinant string for each index in the
+!>    operator matrix.</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_BUILD_INDEX_DETERMINANT_STRINGS is a subroutine that a set of alpha 
+!>    and beta determinant strings, possibly different for bra and ket, along 
+!>    with infomration about substitution levels etc. It returns the alpha and 
+!>    beta determinant string for each index in the operator matrix.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[out] L_Alpha_Strings
+!>    \verbatim
+!>        L_Alpha_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The left alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[out] R_Alpha_Strings
+!>    \verbatim
+!>        R_Alpha_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The right alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[out] L_Beta_Strings
+!>    \verbatim
+!>        L_Beta_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The left beta string array.
+!>    \endverbatim
+!>    
+!>    \param[out] R_Beta_Strings
+!>    \verbatim
+!>        R_Beta_Strings is type(MQC_bits),dimension(:),allocatable
+!>        The right alpha string array.
+!>    \endverbatim
+!>    
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
+!>    \endverbatim
+!>    
+!>    \param[out] SymmFlagOut
+!>    \verbatim
+!>        SymmFlagOut is Logical,Optional
+!>        Logical flag to flag whether the left and right strings 
+!>        correspond to a symmetric determinant basis.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Build_Index_Determinant_Strings(L_Alpha_Strings,R_Alpha_Strings,&
+        L_Beta_Strings,R_Beta_Strings,IOut,IPrint,Determinants,Dets2,SubsAIn,SubsBIn,Subs2AIn,&
+        Subs2BIn,SymmFlagOut)
+!
+      Implicit None
+      Type(MQC_Bits),Dimension(:),Allocatable,Intent(Out)::L_Alpha_Strings,R_Alpha_Strings,&
+        L_Beta_Strings,R_Beta_Strings
+      Integer(kind=int64),Intent(In)::IOut,IPrint
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Logical,Optional,Intent(Out)::SymmFlagOut
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
+        NDets1A,NDets1B,NDets2A,NDets2B
+      Type(MQC_Vector),Dimension(:),Allocatable::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,rSubsB
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
+      Logical::SymmFlag
+!
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .True.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .False.
+      EndIf
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      Call MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
+!
+!     Allocate and fill determinant string arrays
+!
+      Allocate(L_Alpha_Strings(NDets1T),L_Beta_Strings(NDets1T),R_Alpha_Strings(NDets2T),&
+        R_Beta_Strings(NDets2T))
+      
+      Do L_Index = 1, NDets1T
+        call mqc_get_string_from_substring(iout,iprint,l_index,determinants,&
+        nDets1,lsubsA,lSubsB,lSubsT,l_alpha_strings(l_index),l_beta_strings(l_index))
+      EndDo
+
+      if(symmFlag) then
+        r_alpha_strings = l_alpha_strings
+        r_beta_strings = l_beta_strings
+      else
+        Do R_Index = 1, NDets2T
+          call mqc_get_string_from_substring(iout,iprint,r_index,determinants2,&
+          nDets2,rsubsA,rSubsB,rSubsT,r_alpha_strings(r_index),r_beta_strings(r_index))
+        EndDo
+      endIf
+
+      if(present(symmFlagOut)) symmFlagOut = symmFlag
+
+      End Subroutine MQC_Build_Index_Determinant_Strings
+!
+!
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_SUBSTRING_CI_PARAMETERS
+!
+!>    \brief <b> MQC_GET_SUBSTRING_CI_PARAMETERS is a subroutine that
+!>    returns information about substitution levels and number of 
+!>    determinants based on input arguments</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_SUBSTRING_CI_PARAMETERS is a subroutine that returns information 
+!>    about substitution levels and number of determinants based on input 
+!>    arguments.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[out] LSubsT
+!>    \verbatim
+!>        LSubsT is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of total substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsT
+!>    \verbatim
+!>        RSubsT is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of total substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] LSubsA
+!>    \verbatim
+!>        LSubsA is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of alpha substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsA
+!>    \verbatim
+!>        RSubsA is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of alpha substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] LSubsB
+!>    \verbatim
+!>        LSubsB is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of beta substitutions allowed in each orbital subset
+!>        of the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] RSubsB
+!>    \verbatim
+!>        RSubsB is Type(MQC_Vector),Dimension(:),Allocatable
+!>        Array of beta substitutions allowed in each orbital subset
+!>        of the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1
+!>    \verbatim
+!>        NDets1 is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2
+!>    \verbatim
+!>        NDets2 is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1A
+!>    \verbatim
+!>        NDets1A is Integer(kind=int64),Dimension(:)
+!>        The number of alpha strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2A
+!>    \verbatim
+!>        NDets2A is Integer(kind=int64),Dimension(:)
+!>        The number of alpha strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1B
+!>    \verbatim
+!>        NDets1B is Integer(kind=int64),Dimension(:)
+!>        The number of beta strings in each orbital subset
+!>        given the permitted substitutions for the left 
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2B
+!>    \verbatim
+!>        NDets2B is Integer(kind=int64),Dimension(:)
+!>        The number of beta strings in each orbital subset
+!>        given the permitted substitutions for the right
+!>        determinant set.
+!>    \endverbatim
+!>    
+!>    \param[out] SymmFlag
+!>    \verbatim
+!>        SymmFlagOut is Logical
+!>        Logical flag to flag whether the left and right strings 
+!>        correspond to a symmetric determinant basis.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets1T
+!>    \verbatim
+!>        NDets1A is Integer(kind=int64)
+!>        The total number of determinants given the permitted 
+!>        substitutions for the left determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] NDets2T
+!>    \verbatim
+!>        NDets2T is Integer(kind=int64),Dimension(:)
+!>        The total number of determinants given the permitted 
+!>        substitutions for the right determinant set.
+!>    \endverbatim
+!>    
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. If 
+!>        opional argument Dets2 is provided Determinants
+!>        variable will contain the row basis strings. One
+!>        determinant object should be provided for each substring 
+!>        set.
+!>    \endverbatim
+!>    
+!>    \param[in] Dets2
+!>    \verbatim
+!>        Dets2 is Type(MQC_Determinant),Dimension(:),Optional
+!>        If provided, gives the binary string occupation number 
+!>        vectors for the column basis, where Determinants variable
+!>        will continue to provide the binary string occupation 
+!>        number vectors for the row basis. One determinant object
+!>        should be provided for each substring set.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsAIn
+!>    \verbatim
+!>        SubsA is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian. One mqc_vector object should be 
+!>        provided for each of the determinant objects given. 
+!>        If not present, all substitutions are included. If SubsB 
+!>        not present, SubsA containes the the total (alpha+beta) 
+!>        substitutions that are permitted. If both SubsA and SubsB 
+!>        provided, SubsA contains the alpha substitutions that are 
+!>        permitted. If Subs2A are provided, Subs1A gives substitutions 
+!>        for the row basis only.
+!>    \endverbatim
+!>    
+!>    \param[in] SubsBIn
+!>    \verbatim
+!>        SubsB is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian. One mqc_vector object should be
+!>        provided for each of the determinant objects given.
+!>    \endverbatim
+!>
+!>    \param[in] Subs2AIn
+!>    \verbatim
+!>        Subs2A is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted substitutions to include 
+!>        in the Hamiltonian for the column basis. One mqc_vector 
+!>        object should be provided for each of the determinant 
+!>        objects given. If not present, column basis substitutions 
+!>        are equal to row basis substitutions provided by variable 
+!>        SubsA and/or SubsB. If Subs2A provided but not Subs2B, 
+!>        Subs2A contains the total (alpha+beta) substitutions that 
+!>        are permitted. If both Subs2A and Subs2B provided, Subs2A 
+!>        containes the alpha substitutions that are permitted.
+!>    \endverbatim
+!>    
+!>    \param[in] Subs2BIn
+!>    \verbatim
+!>        Subs2B is Type(MQC_Vector),Dimension(:),Optional
+!>        If provided, gives the permitted beta substitutions to 
+!>        include in the Hamiltonian for the column basis. One 
+!>        mqc_vector object should be provided for each of the 
+!>        determinant objects given. If not present, column basis 
+!>        substitutions are equal to row basis substitutions.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
+!
+      Implicit None
+      Type(MQC_Vector),Dimension(:),Allocatable,Intent(Out)::lSubsT,lSubsA,lSubsB,rSubsT,rSubsA,&
+        rSubsB
+      Integer(kind=int64),Dimension(:),Allocatable,Intent(Out)::NDets1,NDets2,NDets1A,NDets1B,&
+        NDets2A,NDets2B
+      Integer(kind=int64),Intent(Out)::NDets1T,NDets2T
+      Logical,Intent(Out)::SymmFlag
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Type(MQC_Determinant),Dimension(:),Optional,Intent(In)::Dets2
+      Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
+      Integer(kind=int64)::I,LDetSize,RDetSize
+      Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B
+      Type(MQC_Determinant),Dimension(:),Allocatable::Determinants2
+!
+!
+      If(present(Dets2)) then
+        Determinants2 = Dets2
+        SymmFlag = .True.
+      Else
+        Determinants2 = Determinants
+        SymmFlag = .False.
+      EndIf
+
+      LDetSize = Size(Determinants)
+      RDetSize = Size(Determinants2)
+      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
+        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
+        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
+!
+!     Determine different substitutions requested from input, and number of strings
+!     of different types.
+!
+      NDets1T = 1
+      do i = 1, LDetSize
+        if(present(subsAIn)) then
+          subsA = subsAIn(i)
+        else
+          subsA = [integer::]
+        endIf
+        if(present(subsBIn)) then
+          subsB = subsBIn(i)
+        else
+          subsB = [integer::]
+        endIf
+        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
+        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
+          NDets1(i),NDets1A(i),NDets1B(i))
+        NDets1T = NDets1T*NDets1(i)
+      endDo
+
+      NDets2T = 1
+      do i = 1, RDetSize
+        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
+          if(present(subsAIn)) then
+            subs2A = subsAIn(i)
+          else
+            subs2A = [integer::]
+          endIf
+          if(present(subsBIn)) then
+            subs2B = subsBIn(i)
+          else
+            subs2B = [integer::]
+          endIf
+        elseIf(.not.present(subs2BIn)) then
+          subs2A = subs2AIn(i)
+          subs2B = [integer::]
+          symmFlag = .False.
+        elseIf(.not.present(subs2AIn)) then
+          subs2A = [integer::]
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        else
+          subs2A = subs2AIn(i)
+          subs2B = subs2BIn(i)
+          symmFlag = .False.
+        endIf
+        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
+        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
+          NDets2(i),NDets2A(i),NDets2B(i))
+        NDets2T = NDets2T*NDets2(i)
+      endDo
+
+      End Subroutine MQC_Get_Substring_CI_Parameters
+!
+!=====================================================================
+!     
+!     PROCEDURE MQC_GET_STRING_FROM_SUBSTRING
+!
+!>    \brief <b> MQC_GET_STRING_FROM_SUBSTRING is a subroutine that returns
+!>    an alpha and beta determinant string, given substrings and substitution
+!>    level information</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_GET_STRING_FROM_SUBSTRING is a subroutine that returns an alpha and 
+!>    beta determinant string, given substrings and substitution level 
+!>    information.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] IOut
+!>    \verbatim
+!>        IOut is Integer(kind=int64)
+!>        The FORTRAN file to print to. 
+!>    \endverbatim
+!>    
+!>    \param[in] IPrint
+!>    \verbatim
+!>        IPrint is Integer(kind=int64)
+!>        The print level for the subroutine. 
+!>    \endverbatim
+!>    
+!>    \param[in] Ind
+!>    \verbatim
+!>        Ind is Integer(kind=int64)
+!>        The Index in the determinant basis.
+!>    \endverbatim
+!>
+!>    \param[in] Determinants
+!>    \verbatim
+!>        Determinants is Type(MQC_Determinant),Dimension(:)
+!>        The binary string occupation number vectors. 
+!>    \endverbatim
+!>    
+!>    \param[in] NDetsArr
+!>    \verbatim
+!>        NDetsArr is Integer(kind=int64),Dimension(:)
+!>        The number of total strings in each orbital subset
+!>        given the permitted substitutions.
+!>    \endverbatim
+!>    
+!>    \param[in] ASubsArr
+!>    \verbatim
+!>        ASubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the alpha substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[in] BSubsArr
+!>    \verbatim
+!>        BSubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the beta substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[in] TSubsArr
+!>    \verbatim
+!>        TSubsArr is Type(MQC_Vector),Dimension(:)
+!>        The array of the total substitutions allowed in each
+!>        orbital subset.
+!>    \endverbatim
+!>    
+!>    \param[out] Alpha_String
+!>    \verbatim
+!>        Alpha_String is Type(MQC_Bits)
+!>        The composite alpha sting at the specified index.
+!>    \endverbatim
+!>    
+!>    \param[out] Beta_String
+!>    \verbatim
+!>        Beta_String is Type(MQC_Bits)
+!>        The composite beta string at the specified index.
+!>    \endverbatim
+!>    
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Subroutine MQC_Get_String_From_Substring(iout,iprint,ind,determinants,&
+        NDetsArr,ASubsArr,BSubsArr,TSubsArr,alpha_string,beta_string)
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut,IPrint,Ind
+      Type(MQC_Determinant),Dimension(:),Intent(In)::Determinants
+      Integer(kind=int64),Dimension(:),Intent(In)::NDetsArr 
+      Type(MQC_Vector),Dimension(:),Intent(In)::TSubsArr,ASubsArr,BSubsArr
+      Type(MQC_Bits),Intent(Out)::Alpha_String,Beta_String
+      Integer(kind=int64)::I,J
+      Type(MQC_Bits)::alphaStrTemp,betaStrTemp
+!
+      alpha_string = mqc_bits(0)
+      beta_string = mqc_bits(0)
+      Do I = 1, size(Determinants)
+        J = mod((Ind-1)/product(NDetsArr(1:i-1)),NDetsArr(i))+1
+        call mqc_strings_at_index(iout,iprint,j,Determinants(i),ASubsArr(i),&
+          BSubsArr(i),TSubsArr(i),AlphaStrTemp,BetaStrTemp)
+        alpha_string = MQC_concatenate_bits(alphaStrTemp,alpha_string)
+        beta_string = MQC_concatenate_bits(betaStrTemp,beta_string)
+      EndDo
+
+      End Subroutine MQC_Get_String_From_Substring
 !
 !=====================================================================
 !     
@@ -21810,7 +23042,7 @@
       Type(MQC_Vector),Dimension(:),Optional,Intent(In)::SubsAIn,SubsBIn,Subs2AIn,Subs2BIn
       Logical,Optional,Intent(In)::doS2
       Type(MQC_Matrix),Intent(Out)::Operator_Matrix
-      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End,LDetSize,RDetSize
+      Integer(kind=int64)::I,J,L_Index,R_Index,NDets1T,NDets2T,R_Index_End
       Integer(kind=int64),Dimension(:),Allocatable::SubsA,SubsB,Subs2A,Subs2B,NDets1,NDets2,&
         NDets1A,NDets1B,NDets2A,NDets2B
       Type(MQC_Bits)::Alpha_String_1,Alpha_String_2,Beta_String_1,Beta_String_2,alphaStrTemp,&
@@ -21836,57 +23068,13 @@
         Determinants2 = Determinants
         SymmFlag = .True.
       EndIf
-
-      LDetSize = Size(Determinants)
-      RDetSize = Size(Determinants2)
-      allocate(NDets1(LDetSize),NDets1A(LDetSize),NDets1B(LDetSize),NDets2(RDetSize),&
-        NDets2A(RDetSize),NDets2B(RDetSize),lSubsT(LDetSize),lSubsA(LDetSize),&
-        lSubsB(LDetSize),rSubsT(RDetSize),rSubsA(RDetSize),rSubsB(RDetSize))
 !
 !     Determine different substitutions requested from input, and number of strings
 !     of different types.
 !
-      NDets1T = 1
-      do i = 1, LDetSize
-        if(present(subsAIn)) then
-          subsA = subsAIn(i)
-        else
-          subsA = [integer::]
-        endIf
-        if(present(subsBIn)) then
-          subsB = subsBIn(i)
-        else
-          subsB = [integer::]
-        endIf
-        call get_subLevels(Determinants(i),subsA,subsB,lsubsA(i),lsubsB(i),lsubsT(i))
-        call get_expansion_size(Determinants(i),lSubsT(i),lSubsA(i),lSubsB(i),&
-          NDets1(i),NDets1A(i),NDets1B(i))
-        NDets1T = NDets1T*NDets1(i)
-      endDo
-
-      NDets2T = 1
-      do i = 1, RDetSize
-        if(.not.present(subs2AIn).and..not.present(subs2BIn)) then
-          subs2A = subsA
-          subs2B = subsB
-        elseIf(.not.present(subs2BIn)) then
-          subs2A = subs2AIn(i)
-          subs2B = [integer::]
-          symmFlag = .False.
-        elseIf(.not.present(subs2AIn)) then
-          subs2A = [integer::]
-          subs2B = subs2BIn(i)
-          symmFlag = .False.
-        else
-          subs2A = subs2AIn(i)
-          subs2B = subs2BIn(i)
-          symmFlag = .False.
-        endIf
-        call get_subLevels(Determinants2(i),subs2A,subs2B,rsubsA(i),rsubsB(i),rsubsT(i))
-        call get_expansion_size(Determinants2(i),rSubsT(i),rSubsA(i),rSubsB(i),&
-          NDets2(i),NDets2A(i),NDets2B(i))
-        NDets2T = NDets2T*NDets2(i)
-      endDo
+      Call MQC_Get_Substring_CI_Parameters(LSubsT,RSubsT,LSubsA,RSubsA,LSubsB,RSubsB,&
+        NDets1,NDets2,NDets1A,NDets2A,NDets1B,NDets2B,NDets1T,NDets2T,SymmFlag,Determinants,&
+        Dets2,SubsAIn,SubsBIn,Subs2AIn,Subs2BIn)
 !
 !     Allocate output operator matrix
 !
@@ -21906,25 +23094,11 @@
         Else
           R_Index_End = NDets2T
         EndIf
-        alpha_string_1 = mqc_bits(0)
-        beta_string_1 = mqc_bits(0)
-        Do I = 1, LDetSize
-          J = mod((L_Index-1)/product(NDets1(1:i-1)),NDets1(i))+1
-          call mqc_strings_at_index(iout,iprint,j,Determinants(i),lsubsA(i),lSubsB(i),&
-            lSubsT(i),AlphaStrTemp,BetaStrTemp)
-          alpha_string_1 = MQC_concatenate_bits(alphaStrTemp,alpha_string_1)
-          beta_string_1 = MQC_concatenate_bits(betaStrTemp,beta_string_1)
-        EndDo
+        call mqc_get_string_from_substring(iout,iprint,l_index,determinants,&
+        nDets1,lsubsA,lSubsB,lSubsT,alpha_string_1,beta_string_1)
         Do R_Index = 1, R_Index_End
-          alpha_string_2 = mqc_bits(0)
-          beta_string_2 = mqc_bits(0)
-          Do I = 1, RDetSize
-            J = mod((R_Index-1)/product(NDets2(1:i-1)),NDets2(i))+1
-            call mqc_strings_at_index(iout,iprint,j,Determinants2(i),rsubsA(i),rSubsB(i),&
-              rSubsT(i),AlphaStrTemp,BetaStrTemp)
-            alpha_string_2 = MQC_concatenate_bits(alphaStrTemp,alpha_string_2)
-            beta_string_2 = MQC_concatenate_bits(betaStrTemp,beta_string_2)
-          EndDo
+          call mqc_get_string_from_substring(iout,iprint,r_index,determinants2,&
+          nDets2,rsubsA,rSubsB,rSubsT,alpha_string_2,beta_string_2)
 !          write(*,*) '-------------------------------------------'
 !          write(*,*) ' L_Index: ',L_Index,'   R_Index:   ',R_Index 
 !          write(*,*) '-------------------------------------------'
@@ -21957,9 +23131,9 @@
 !
 !=====================================================================
 !     
-!     PROCEDURE MQC_GET_STRINGS_AT_INDEX
+!     PROCEDURE MQC_STRINGS_AT_INDEX
 !
-!>    \brief <b> MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings
+!>    \brief <b> MQC_STRINGS_AT_INDEX is a subroutine that returns the strings
 !>    corresponding to the index of matrices built by MQC_Build_CI_Hamiltonian</b>
 !>
 !>    \par Purpose:
@@ -21967,7 +23141,7 @@
 !>
 !>    \verbatim
 !>       
-!>    MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
+!>    MQCSTRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
 !>    to the index of matrices built by MQC_Build_CI_Hamiltonian.
 !>
 !>    \endverbatim
@@ -22001,19 +23175,19 @@
 !>
 !>    \param[in] SubsA
 !>    \verbatim
-!>        SubsA is Integer(kind=int64),Dimension(:)
+!>        SubsA is type(mqc_vector)
 !>        Permitted alpha substitutions.
 !>    \endverbatim
 !>
 !>    \param[in] SubsB
 !>    \verbatim
-!>        SubsB is Integer(kind=int64),Dimension(:)
+!>        SubsB is type(mqc_vector)
 !>        Permitted beta substitutions.
 !>    \endverbatim
 !>
 !>    \param[in] SubsT
 !>    \verbatim
-!>        SubsT is Integer(kind=int64),Dimension(:)
+!>        SubsT is type(mqc_vector)
 !>        Permitted total substitutions. 
 !>    \endverbatim
 !>    

@@ -89,6 +89,8 @@
         Procedure, Public::cval => MQC_Scalar_Get_Intrinsic_Complex
 !>      \brief <b> Take the absolute value of the MQC Scalar</b>
         Procedure, Public::abs => MQC_Scalar_Get_ABS_Value
+!>      \brief <b> Take the phase of the MQC Scalar</b>
+        Procedure, Public::phase => MQC_Scalar_Get_Phase
 !>      \brief <b> Take the square root of the MQC Scalar</b>
         Procedure, Public::sqrt => MQC_Scalar_Sqrt
 !>      \brief <b> Take the exponential of the MQC Scalar</b>
@@ -97,8 +99,6 @@
         Procedure, Public::log => MQC_Scalar_Log
 !>      \brief <b> Return a random value to the MQC Scalar</b>
         Procedure, Public::random => MQC_Scalar_Get_Random_Value
-!>      \brief <b> Take the phase of the MQC Scalar</b>
-        Procedure, Public::phase => MQC_Scalar_Get_Phase
       End Type MQC_Scalar
 !
 !     Vectors...
@@ -132,6 +132,12 @@
         Generic,   Public::at => at_sca, at_int
 !>      \brief <b> Returns the subvector between specified element of the MQC Vector</b>
         Procedure, Public::vat => MQC_Vector_Vector_At
+!>      \brief <b> Returns the VecI element of the MQC Vector</b>
+        Procedure, Public::getArrayI => MQC_Vector_Integer_Get_Array
+!>      \brief <b> Returns the VecR element of the MQC Vector</b>
+        Procedure, Public::getArrayR => MQC_Vector_Real_Get_Array
+!>      \brief <b> Returns the VecC element of the MQC Vector</b>
+        Procedure, Public::getArrayC => MQC_Vector_Complex_Get_Array
         Procedure, Private::put_sca => MQC_Vector_Scalar_Put_Scalar
         Procedure, Private::put_int => MQC_Vector_Scalar_Put_Int
 !>      \brief <b> Updates the specified element of the MQC_Vector with the specified value</b>
@@ -653,12 +659,12 @@
         module procedure MQC_R4Tensor_Put_Int 
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Returns the identity matrix of the specified size</b>
       interface identity
         module procedure MQC_Matrix_Identity_Func
       end interface
 !
-!>    \brief <b> Puts a value in the R4tensor at the specied index</b>
+!>    \brief <b> Initializes a matrix of the specified size</b>
       interface init
         module procedure MQC_Matrix_Initialize_Func
       end interface
@@ -2816,8 +2822,7 @@
       else
         thresh=1.0E-8
       end if
-
-      if (abs(Scalar).lt.thresh) then
+      if (abs(Scalar).lt.thresh) then 
         output = 0.0
       else
         output = acos(Scalar%rval()/abs(Scalar))
@@ -8193,6 +8198,140 @@
       Vector%Column = Vec%Column
 
       End Function
+
+!
+!
+!     PROCEDURE MQC_Vector_Integer_Get_Array
+!
+!>    \brief <b> MQC_Vector_Integer_Get_Array is a function that returns the VecI variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Integer_Get_Array is a function that returns the VecI variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecI variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Integer_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None 
+      Class(MQC_Vector)::Vec
+      Integer(kind=int64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Integer') then
+        ArrayOut = Vec%VecI
+      else
+        Call MQC_Error_A('Vector is not an Integer Data_Type in MQC_Vector_Integer_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Integer_Get_Array
+!
+!
+!     PROCEDURE MQC_Vector_Real_Get_Array
+!
+!>    \brief <b> MQC_Vector_Real_Get_Array is a function that returns the VecR variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Real_Get_Array is a function that returns the VecR variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecR variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Real_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None
+      Class(MQC_Vector)::Vec
+      Real(kind=real64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Real') then
+        ArrayOut = Vec%VecR
+      else
+        Call MQC_Error_A('Vector is not a Real Data_Type in MQC_Vector_Real_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Real_Get_Array
+!
+!
+!     PROCEDURE MQC_Vector_Complex_Get_Array
+!
+!>    \brief <b> MQC_Vector_Complex_Get_Array is a function that returns the VecC variable
+!>    of a MQC vector</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Vector_Complex_Get_Array is a function that returns the VecC variable of a MQC 
+!>    vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vec
+!>    \verbatim
+!>        Vec is Class(MQC_Vector)
+!>        The MQC_Vector to extract the VecC variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_Vector_Complex_Get_Array(Vec) Result(ArrayOut)
+!
+      Implicit None
+      Class(MQC_Vector)::Vec
+      Complex(kind=real64),Dimension(:),Allocatable::ArrayOut
+
+      if (Vec%Data_Type.eq.'Complex') then
+        ArrayOut = Vec%VecC
+      else
+        Call MQC_Error_A('Vector is not a Complex Data_Type in MQC_Vector_Complex_Get_Array', 6, &
+             'Vec%Data_Type', Vec%Data_Type )
+      EndIf
+      End Function MQC_Vector_Complex_Get_Array
+ 
 !
 !
 !     PROCEDURE MQC_Set_Vector2IntegerArray
@@ -15721,6 +15860,7 @@
       end subroutine MQC_Matrix_SymmMatrix_Put_Complex
 !
 !
+!
 !     PROCEDURE MQC_Matrix_Matrix_Put
 !
 !>    \brief <b> MQC_Matrix_Matrix_Put is a subroutine that writes a submatrix to the
@@ -23166,6 +23306,11 @@
       Type(MQC_Matrix)::MC
       Type(MQC_Matrix)::MAreal,MBreal,Tmp1,Tmp2
       integer(kind=int64)::i,j
+ 
+      If (MA%NCol.eq.0.or.MB%NRow.eq.0) then
+          Call MQC_Allocate_Matrix(0,0,MC,'Real','StorFull')
+          return
+      end if
 
       If (MA%NCol /= MB%NRow) call MQC_Error_I('The two matrices are not conformable for multiplication', 6, &
            'MA%NCol', MA%NCol, &
@@ -24132,7 +24277,7 @@
       If (VA%Column .or. VA%Length /= MB%NRow) then
         Call MQC_Error_i('Matrix and vector are not conformable for multiplication', 6, &
              'VA%Length', VA%Length, &
-             'MB%NRow', MB%NRow )
+             'MB%NRow', MB%NRow)
       EndIf
 
       If (MQC_Matrix_HaveReal(MB) .and. MQC_Vector_HaveReal(VA)) then
@@ -26838,71 +26983,66 @@
       storFlag = A%Storage
  1050 Format( A, I10 )
 !
-      if(storFlag.eq.'StorDiag') return
+      if(storFlag.eq.'StorDiag') call mqc_matrix_diag2Full(A)
       if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
         storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
         call mqc_matrix_symm2Full(A)
-      if(storFlag.eq.'StorFull') then
-        if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
-          if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
-          Allocate(A_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),A_UVecs(NDim1,NDim1), &
-            A_VVecs(NDim2,NDim2),Work(1))
-          A_Temp = A
-          Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
-            NDim2,Work,Work_Length,IError)
-          Work_Length = Int(Work(1))
-          DeAllocate(Work)
-          Allocate(Work(Work_Length))
-          Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
-            NDim2,Work,Work_Length,IError)
-          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
-          DeAllocate(Work)
-          Work_Length = -1
-        elseIf(typeFlag.eq.'Complex') then
-          Allocate(AC_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),AC_UVecs(NDim1,NDim1), &
-            AC_VVecs(NDim2,NDim2),WorkC(1),Work(5*min(NDim1,NDim2)))
-          AC_Temp = A
-          Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
-            NDim2,WorkC,Work_Length,Work,IError)
-          Work_Length = Int(WorkC(1))
-          DeAllocate(WorkC)
-          Allocate(WorkC(Work_Length))
-          Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
-            NDim2,WorkC,Work_Length,Work,IError)
-          If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
-          DeAllocate(WorkC,Work)
-          Work_Length = -1
-        else
-          call mqc_error_a('typeFlag not recognised in mqc_matrix_svd', 6, &
-               'typeFlag', typeFlag )
-        endIf
-!
-        if(present(EVals)) EVals = A_SVals
-        if(present(EUVecs)) then
-          if(allocated(A_UVecs)) EUVecs = A_UVecs
-          if(allocated(AC_UVecs)) EUVecs = AC_UVecs
-        endIf
-        if(present(EVVecs)) then
-          if(allocated(A_VVecs)) EVVecs = A_VVecs
-          if(allocated(AC_VVecs)) EVVecs = AC_VVecs
-        endIf
-        if(allocated(A_SVals)) deallocate(A_SVals)
-        if(allocated(A_UVecs)) deallocate(A_UVecs)
-        if(allocated(AC_UVecs)) deallocate(AC_UVecs)
-        if(allocated(A_VVecs)) deallocate(A_VVecs)
-        if(allocated(AC_VVecs)) deallocate(AC_VVecs)
-        if(allocated(A_Temp)) deallocate(A_Temp)
-        if(allocated(AC_Temp)) deallocate(AC_Temp)
-!
+      if(typeFlag.eq.'Real'.or.typeFlag.eq.'Integer') then
+        if(typeFlag.eq.'Integer') call mqc_matrix_copy_int2Real(A)
+        Allocate(A_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),A_UVecs(NDim1,NDim1), &
+          A_VVecs(NDim2,NDim2),Work(1))
+        A_Temp = A
+        Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
+          NDim2,Work,Work_Length,IError)
+        Work_Length = Int(Work(1))
+        DeAllocate(Work)
+        Allocate(Work(Work_Length))
+        Call DGESVD('A','A',NDim1,NDim2,A_Temp,NDim1,A_SVals,A_UVecs,NDim1,A_VVecs, &
+          NDim2,Work,Work_Length,IError)
+        If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
+        DeAllocate(Work)
+        Work_Length = -1
+      elseIf(typeFlag.eq.'Complex') then
+        Allocate(AC_Temp(NDim1,NDim2),A_SVals(Min(NDim1,NDim2)),AC_UVecs(NDim1,NDim1), &
+          AC_VVecs(NDim2,NDim2),WorkC(1),Work(5*min(NDim1,NDim2)))
+        AC_Temp = A
+        Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
+          NDim2,WorkC,Work_Length,Work,IError)
+        Work_Length = Int(WorkC(1))
+        DeAllocate(WorkC)
+        Allocate(WorkC(Work_Length))
+        Call ZGESVD('A','A',NDim1,NDim2,AC_Temp,NDim1,A_SVals,AC_UVecs,NDim1,AC_VVecs, &
+          NDim2,WorkC,Work_Length,Work,IError)
+        If(IError.ne.0) Write(*,1050)' SVD FAILED: IError = ',IError
+        DeAllocate(WorkC,Work)
+        Work_Length = -1
       else
-        call mqc_error_a('storFlag not recognised in mqc_matrix_svd', 6, &
-             'storFlag', storFlag )
-     endIf
+        call mqc_error_a('typeFlag not recognised in mqc_matrix_svd', 6, &
+             'typeFlag', typeFlag )
+      endIf
+!
+      if(present(EVals)) EVals = A_SVals
+      if(present(EUVecs)) then
+        if(allocated(A_UVecs)) EUVecs = A_UVecs
+        if(allocated(AC_UVecs)) EUVecs = AC_UVecs
+      endIf
+      if(present(EVVecs)) then
+        if(allocated(A_VVecs)) EVVecs = A_VVecs
+        if(allocated(AC_VVecs)) EVVecs = AC_VVecs
+      endIf
+      if(allocated(A_SVals)) deallocate(A_SVals)
+      if(allocated(A_UVecs)) deallocate(A_UVecs)
+      if(allocated(AC_UVecs)) deallocate(AC_UVecs)
+      if(allocated(A_VVecs)) deallocate(A_VVecs)
+      if(allocated(AC_VVecs)) deallocate(AC_VVecs)
+      if(allocated(A_Temp)) deallocate(A_Temp)
+      if(allocated(AC_Temp)) deallocate(AC_Temp)
 !
       if(typeFlag.eq.'Integer') call mqc_matrix_copy_real2Int(A)
       if(storFlag.eq.'StorSymm'.or.storFlag.eq.'StorAsym'.or.&
         storFlag.eq.'StorHerm'.or.storFlag.eq.'StorAhrm') &
         call mqc_matrix_full2Symm(A)
+      if(storFlag.eq.'StorDiag') call mqc_matrix_full2diag(A)
 !
       Return
       End Subroutine MQC_Matrix_SVD
@@ -27324,6 +27464,7 @@
 !>        Matrix2 is type(mqc_matrix)
 !>        The second matrix in the outer product.
 !>    \endverbatim
+!>
 !
 !     Authors:
 !     ========
@@ -27342,9 +27483,9 @@
       N = size(matrix1,2)
       O = size(matrix2,1)
       P = size(matrix2,2)
-
+      
       call outer%init(M,N,O,P)
-
+      
       do i = 1,M
         do j = 1,N
           do k = 1,O
@@ -28051,8 +28192,8 @@
         call mqc_error_I('P type not defined in MQC_Vector_Power',6)
       end select
 !
-!      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
-      call A%diag(evals=sVals,evecs=uMatrix)
+      call A%eigensys(eigenvals=sVals,reigenvecs=uMatrix)
+!      call A%diag(evals=sVals,evecs=uMatrix)
       call sVals%power(scalar)
       call sVals%diag(A)
       A = matmul(matmul(uMatrix,A),dagger(uMatrix))
