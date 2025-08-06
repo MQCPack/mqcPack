@@ -38,8 +38,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.2                           **
-!     **                          July 24, 2025                            **
+!     **                          Version 25.7.3                           **
+!     **                          July 30, 2025                            **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -200,6 +200,8 @@
         Procedure, Public::minloc => MQC_Eigenvalues_MinLoc
 !>      \brief <b> Returns the location of the maximum value in MQC_SCF_Eigenvalues</b>
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
+!>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+        Procedure, Public::abs => MQC_Eigenvalues_Abs
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -393,6 +395,11 @@
 !>    \brief <b> Returns the location of the minimum value in MQC_SCF_Eigenvalues</b>
       Interface minloc
         Module Procedure MQC_Eigenvalues_MinLoc
+      End Interface
+!
+!>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
+      Interface abs
+        Module Procedure MQC_Eigenvalues_Abs
       End Interface
 !
 !>    \brief <b> Returns the identity MQC_SCF_Integral of the specified size</b>
@@ -2763,6 +2770,8 @@
       if(myArrayType.eq.'general') then
         if(present(alphaBeta).and.allocated(alphaBeta).and.size(alphaBeta,1).ne.0.and.size(alphaBeta,2).ne.0) then
           integral%alphaBeta = alphaBeta
+          if(integral%nBRows.eq.0) integral%nBRows = size(integral%alphaBeta,1)
+          if(integral%nACols.eq.0) integral%nACols = size(integral%alphaBeta,2)
           if(size(integral%alphaBeta,1).ne.integral%nBRows.or.&
             size(integral%alphaBeta,2).ne.integral%nACols) &
             call mqc_error_i('Alpha-beta array size mismatch in &
@@ -2773,6 +2782,8 @@
         endIf
         if(present(betaAlpha).and.allocated(betaAlpha).and.size(betaAlpha,1).ne.0.and.size(betaAlpha,2).ne.0) then
           integral%betaAlpha = betaAlpha
+          if(integral%nARows.eq.0) integral%nARows = size(integral%betaAlpha,1)
+          if(integral%nBCols.eq.0) integral%nBCols = size(integral%betaAlpha,2)
           if(size(integral%betaAlpha,1).ne.integral%nARows.or.&
             size(integral%betaAlpha,2).ne.integral%nBCols) &
             call mqc_error_i('Beta-Alpha array size mismatch in &
@@ -3531,7 +3542,7 @@
       character(Len=*),optional,intent(in)::label
       class(*),optional,intent(in)::Scalar
       integer,intent(in),optional::nAlpha2,nBeta2
-      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta
+      type(mqc_matrix)::tmpMatrixAlpha,tmpMatrixBeta,tmpMatrixAlphaBeta,tmpMatrixBetaAlpha
       Character(Len=64)::myLabel
       integer::my_nAlpha2,my_nBeta2
 !
@@ -3556,7 +3567,14 @@
           call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
         else 
           call tmpMatrixBeta%init(nBeta,my_nBeta2,scalar)
-          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          if(my_nBeta2.eq.0.or.nBeta.eq.0.or.my_nAlpha2.eq.0.or.nAlpha.eq.0) then
+            call tmpMatrixAlphaBeta%init(nAlpha,my_nBeta2,scalar)
+            call tmpMatrixBetaAlpha%init(nBeta,my_nAlpha2,scalar)
+            call mqc_integral_allocate(integral,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta,&
+              tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          endIf
         endIf
       else
         call tmpMatrixAlpha%init(nAlpha,my_nAlpha2)
@@ -3564,7 +3582,14 @@
           call mqc_integral_allocate(integral,myLabel,'space',tmpMatrixAlpha)
         else 
           call tmpMatrixBeta%init(nBeta,my_nBeta2)
-          call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          if(my_nBeta2.eq.0.or.nBeta.eq.0.or.my_nAlpha2.eq.0.or.nAlpha.eq.0) then
+            call tmpMatrixAlphaBeta%init(nAlpha,my_nBeta2)
+            call tmpMatrixBetaAlpha%init(nBeta,my_nAlpha2)
+            call mqc_integral_allocate(integral,myLabel,'general',tmpMatrixAlpha,tmpMatrixBeta,&
+              tmpMatrixAlphaBeta,tmpMatrixBetaAlpha)
+          else
+            call mqc_integral_allocate(integral,myLabel,'spin',tmpMatrixAlpha,tmpMatrixBeta)
+          endIf
         endIf
       endIf
 !
@@ -15619,6 +15644,47 @@
       end function mqc_eigenvalues_maxloc
 !
 !
+!     PROCEDURE MQC_Eigenvalues_Abs
+!
+!>    \brief <b> MQC_Eigenvalues_Abs is a function that returns the absolute
+!>    values of all elements of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Abs is a function that returns the absolute values of 
+!>    all elements of an MQC_Eigenvalues variable</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_eigenvalues_abs(eigenvalues) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scf_eigenvalues)::output
+!
+      output = eigenvalues
+      if(output%hasalpha()) output%alpha = abs(output%alpha)
+      if(output%hasbeta()) output%beta = abs(output%beta)
+!
+      end function mqc_eigenvalues_abs
+!
+!
 !=====================================================================
 !
 !     POST-SCF ROUTINES
@@ -16629,7 +16695,7 @@
       type(mqc_vector)::tmpArray
 
       do i = 0, string%nBits-1 
-        if(btest(string,i)) call tmpArray%push(i)
+        if(btest(string,i)) call tmpArray%push(i+1)
       endDo
       allocate(arrayOut(size(tmpArray)))
       arrayOut = tmpArray
@@ -23065,9 +23131,9 @@
 !
 !=====================================================================
 !     
-!     PROCEDURE MQC_GET_STRINGS_AT_INDEX
+!     PROCEDURE MQC_STRINGS_AT_INDEX
 !
-!>    \brief <b> MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings
+!>    \brief <b> MQC_STRINGS_AT_INDEX is a subroutine that returns the strings
 !>    corresponding to the index of matrices built by MQC_Build_CI_Hamiltonian</b>
 !>
 !>    \par Purpose:
@@ -23075,7 +23141,7 @@
 !>
 !>    \verbatim
 !>       
-!>    MQC_GET_STRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
+!>    MQCSTRINGS_AT_INDEX is a subroutine that returns the strings corresponding 
 !>    to the index of matrices built by MQC_Build_CI_Hamiltonian.
 !>
 !>    \endverbatim
@@ -23109,19 +23175,19 @@
 !>
 !>    \param[in] SubsA
 !>    \verbatim
-!>        SubsA is Integer(kind=int64),Dimension(:)
+!>        SubsA is type(mqc_vector)
 !>        Permitted alpha substitutions.
 !>    \endverbatim
 !>
 !>    \param[in] SubsB
 !>    \verbatim
-!>        SubsB is Integer(kind=int64),Dimension(:)
+!>        SubsB is type(mqc_vector)
 !>        Permitted beta substitutions.
 !>    \endverbatim
 !>
 !>    \param[in] SubsT
 !>    \verbatim
-!>        SubsT is Integer(kind=int64),Dimension(:)
+!>        SubsT is type(mqc_vector)
 !>        Permitted total substitutions. 
 !>    \endverbatim
 !>    
