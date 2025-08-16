@@ -389,15 +389,15 @@
         JOBVT = 'N'
         LDVT = 1
       endIf
-!
-!----- Workspace query
       INFO = 0
       if(JOBU.eq.'N') then
-        Utmp(1,1) = 0.0_real64
+        Utmp(1,1) = mqc_float(0)
       endIf
       if(JOBVT.eq.'N') then
-        VTtmp(1,1) = 0.0_real64
+        VTtmp(1,1) = mqc_float(0)
       endIf
+!
+!     Call LAPack routine DGESVD.
 !
       call dgesvd(JOBU,JOBVT,M,N,matrixCopy,M,singularValues,  &
         merge(leftSingularVectors,Utmp, PRESENT(leftSingularVectors)),LDU,  &
@@ -405,12 +405,9 @@
         WorkTmp,-1,INFO)
       if(INFO.ne.0) call mqc_error(  &
         'mqc_dgesvd_svd_Full: Failure in DGESVD getting WORK length.')
-!
-!----- Allocate optimal workspace and compute
       LWORK = int(WorkTmp(1))
       if(LWORK.lt.1) LWORK = 1
       Allocate(Work(LWORK))
-!
       call dgesvd(JOBU,JOBVT,M,N,matrixCopy,M,singularValues,  &
         merge(leftSingularVectors,Utmp, PRESENT(leftSingularVectors)),LDU,  &
         merge(rightSingularVectorsT,VTtmp, PRESENT(rightSingularVectorsT)),LDVT,  &
@@ -420,9 +417,7 @@
       elseIf(INFO.lt.0) then
         call mqc_error('mqc_dgesvd_svd_Full: Illegal argument in DGESVD call.')
       endIf
-!
-!----- Cleanup
       DeAllocate(matrixCopy,Work)
+!
       return
       end subroutine mqc_dgesvd_svd_Full
-

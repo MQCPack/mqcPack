@@ -1,5 +1,5 @@
 AC_INIT([MQC_Pack], [25.8.0], [hhratchian@ucmerced.edu])
-AM_INIT_AUTOMAugust 1, 2025
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/mqc_general.F03])
 AC_LANG([Fortran])
 AC_PROG_CPP
