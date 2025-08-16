@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.3                           **
-!     **                          July 30, 2025                            **
+!     **                          Version 25.8.0                           **
+!     **                          August 1, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -113,7 +113,6 @@
 !
       return
       end subroutine mqc_dsyev_eigensystem_symmFull
-
 
 !
 !PROCEDURE mqc_dgeev_eigensystem_Full
@@ -318,3 +317,107 @@
 !      return
 !      end subroutine mqc_eigensystem_symmFull
 !hph
+
+
+
+! 
+!PROCEDURE mqc_dgesvd_svd_Full
+      subroutine mqc_dgesvd_svd_Full(matrix,singularValues,  &
+        leftSingularVectors,rightSingularVectorsT)
+!
+!     This subroutine wraps the LAPACK SVD routine DGESVD for a general real
+!     rectangular matrix A. If the optional outputs are PRESENT, it returns full
+!     U (M×M) and full VT (N×N).
+!
+!     H. P. Hratchian, 2025.
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrix
+      real(kind=real64),dimension(:),allocatable,intent(out)::singularValues
+      real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::leftSingularVectors
+      real(kind=real64),dimension(:,:),allocatable,OPTIONAL,intent(out)::rightSingularVectorsT
+!
+      integer::M,N,LDU,LDVT,INFO,LWORK
+      real(kind=real64),dimension(:,:),allocatable::matrixCopy
+      real(kind=real64),dimension(:),allocatable::Work
+      real(kind=real64),dimension(1)::WorkTmp
+      real(kind=real64),dimension(1,1)::Utmp,VTtmp
+      character(len=1)::JOBU,JOBVT
+!
+!     Do initial checks and figure out dimensions for arrays needed below. Then
+!     allocate space and figure out a few LAPack flags.
+!
+      M = SIZE(matrix,1)
+      N = SIZE(matrix,2)
+      Allocate(matrixCopy(M,N))
+      matrixCopy = matrix
+      if(Allocated(singularValues)) then
+        if(SIZE(singularValues).ne.min(M,N)) then
+          DeAllocate(singularValues)
+          Allocate(singularValues(min(M,N)))
+        endIf
+      else
+        Allocate(singularValues(min(M,N)))
+      endIf
+      if(PRESENT(leftSingularVectors)) then
+        JOBU = 'A'
+        LDU = M
+        if(Allocated(leftSingularVectors)) then
+          if(SIZE(leftSingularVectors,1).ne.M.or.SIZE(leftSingularVectors,2).ne.M) then
+            DeAllocate(leftSingularVectors)
+            Allocate(leftSingularVectors(M,M))
+          endIf
+        else
+          Allocate(leftSingularVectors(M,M))
+        endIf
+      else
+        JOBU = 'N'
+        LDU = 1
+      endIf
+      if(PRESENT(rightSingularVectorsT)) then
+        JOBVT = 'A'
+        LDVT = N
+        if(Allocated(rightSingularVectorsT)) then
+          if(SIZE(rightSingularVectorsT,1).ne.N.or.SIZE(rightSingularVectorsT,2).ne.N) then
+            DeAllocate(rightSingularVectorsT)
+            Allocate(rightSingularVectorsT(N,N))
+          endIf
+        else
+          Allocate(rightSingularVectorsT(N,N))
+        endIf
+      else
+        JOBVT = 'N'
+        LDVT = 1
+      endIf
+      INFO = 0
+      if(JOBU.eq.'N') then
+        Utmp(1,1) = mqc_float(0)
+      endIf
+      if(JOBVT.eq.'N') then
+        VTtmp(1,1) = mqc_float(0)
+      endIf
+!
+!     Call LAPack routine DGESVD.
+!
+      call dgesvd(JOBU,JOBVT,M,N,matrixCopy,M,singularValues,  &
+        merge(leftSingularVectors,Utmp, PRESENT(leftSingularVectors)),LDU,  &
+        merge(rightSingularVectorsT,VTtmp, PRESENT(rightSingularVectorsT)),LDVT,  &
+        WorkTmp,-1,INFO)
+      if(INFO.ne.0) call mqc_error(  &
+        'mqc_dgesvd_svd_Full: Failure in DGESVD getting WORK length.')
+      LWORK = int(WorkTmp(1))
+      if(LWORK.lt.1) LWORK = 1
+      Allocate(Work(LWORK))
+      call dgesvd(JOBU,JOBVT,M,N,matrixCopy,M,singularValues,  &
+        merge(leftSingularVectors,Utmp, PRESENT(leftSingularVectors)),LDU,  &
+        merge(rightSingularVectorsT,VTtmp, PRESENT(rightSingularVectorsT)),LDVT,  &
+        Work,LWORK,INFO)
+      if(INFO.gt.0) then
+        call mqc_error('mqc_dgesvd_svd_Full: DGESVD did not converge.')
+      elseIf(INFO.lt.0) then
+        call mqc_error('mqc_dgesvd_svd_Full: Illegal argument in DGESVD call.')
+      endIf
+      DeAllocate(matrixCopy,Work)
+!
+      return
+      end subroutine mqc_dgesvd_svd_Full

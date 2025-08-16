@@ -8,6 +8,11 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+August 16, 2025
+* MQCPack version set to 25.8.0.
+* Minor updates for printing logical arrays made to MQC_General.
+* Merged in updates from the Thompson Group.
+
 July 30, 2025
 * MQCPack version set to 25.7.3.
 * Several updates to MQC_Integrals.

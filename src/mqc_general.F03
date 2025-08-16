@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.7.3                           **
-!     **                          July 30, 2025                            **
+!     **                          Version 25.8.0                           **
+!     **                          August 1, 2025                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -179,9 +179,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 7
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '25.7.3'
+      if(PRESENT(minor))         minor         = 8
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '25.8.0'
 !
       return
       end subroutine mqc_version
@@ -1242,6 +1242,46 @@
 !
       Return
       End Subroutine MQC_Print_Vector_Array_Complex
+
+!
+!PROCEDURE MQC_Print_Vector_Array_Logical
+      subroutine MQC_Print_Vector_Array_Logical(Vector,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a Vector array type variable.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),Intent(In)::IOut
+      logical,Dimension(:),Intent(In)::Vector
+      character(Len=*),Intent(In),Optional::Header
+      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
+!
+ 1000 Format(1x,A)
+ 1001 Format(1x,I7,2x,L14)
+ 1002 Format(1x,I7,2X,F14.6)
+ 1003 Format(1x,I7,2x,A)
+ 1020 Format(' ')
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if(Present(Header)) Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        Write(IOut,1001) I, Vector(I)
+      EndDo
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Vector_Array_Logical
 
 !
 !PROCEDURE MQC_Print_R4Tensor_Array_Integer
