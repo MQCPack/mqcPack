@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.8.0                           **
-!     **                          August 1, 2025                           **
+!     **                          Version 25.9.0                           **
+!     **                        September 10, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -179,9 +179,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 8
+      if(PRESENT(minor))         minor         = 9
       if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.8.0'
+      if(PRESENT(versionString)) versionString = '25.9.0'
 !
       return
       end subroutine mqc_version
@@ -2315,6 +2315,123 @@
 !
       return
       end subroutine mqc_packedSymmetricSymmetricR4Tensor2Full_real
+
+!
+!PROCEDURE mqc_FullMatrix2packedSymmetricMatrix_real
+      subroutine mqc_FullMatrix2packedSymmetricMatrix_real(matrixFull,  &
+        matrixSymmetric,upperLower)
+!
+!     This subroutine accepts a full matrix that is assumed to be symmetric and
+!     returns and packed symmetric form. Note that <matrixSymmetric> is
+!     initialized in this routine. Furthermore, <matrixSymmetric> must be
+!     allocated prior to calling this routine.
+!
+!     Optional input dummy argument <upperLower> is a character string with 'U'
+!     or 'L' to denote whether <matrixSymmetric> is sent in an upper- or
+!     lower-symmetric column-wise storage format. If not sent, the default value
+!     for <upperLower> is 'U'.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrixFull
+      real(kind=real64),dimension(:),intent(out)::matrixSymmetric
+      integer(kind=int64)::i,j,k,nDim,nSymm
+      character(len=*),intent(in),optional::upperLower
+      character(len=1)::myUpperLower
+!
+!
+!     Error traps...
+!
+      if(SIZE(matrixFull,1).ne.SIZE(matrixFull,2))  &
+        call mqc_error_i('mqc_packedSymmetricMatrix2FullMatrix_real: matrixFull array is NOT square!',  &
+        6,'nDim(1)',SIZE(matrixFull,1),'nDim(2)',SIZE(matrixFull,2))
+      nDim = SIZE(matrixFull,1)
+      nSymm = (nDim*(nDim+1))/2
+      if(nSymm.ne.SIZE(matrixSymmetric,1))  &
+        call mqc_error_i('mqc_packedSymmetricMatrix2FullMatrix_real: matrixSymmetric has wrong dimension!',  &
+        6,'nSymm',nSymm,'SIZE(matrixSymmetric)',SIZE(matrixSymmetric,1))
+!
+!     Set-up myUpperLower.
+!
+      if(PRESENT(upperLower)) then
+        myUpperLower = TRIM(upperLower)
+      else
+        myUpperLower = 'U'
+      endIf
+!
+!     Convert the full matrix into packed/linearized storage.
+!
+      matrixSymmetric = mqc_float(0)
+      select case(myUpperLower)
+      case('u','U')
+        k = 0
+        do i = 1,nDim
+          do j = 1,i
+            k = k+1
+            matrixSymmetric(k) = (matrixFull(i,j)+matrixFull(j,i))/  &
+              mqc_float(2)
+          endDo
+        endDo
+      case('l','L')
+        k = 0
+        do i = 1,nDim
+          do j = i,nDim
+            k = k+1
+            matrixSymmetric(k) = (matrixFull(i,j)+matrixFull(j,i))/  &
+              mqc_float(2)
+          endDo
+        endDo
+      case default
+        call mqc_error('mqc_FullMatrix2packedSymmetricMatrix_real: Invalid upperLower.'//  &
+          ' upperLower='//TRIM(upperLower)//'.')
+      end select
+!
+      return
+      end subroutine mqc_FullMatrix2packedSymmetricMatrix_real
+
+!
+!PROCEDURE mqc_matrixFull2Symm_real
+      function mqc_matrixFull2Symm_real(matrixFull,upperLower) result(matrixSymmetric)
+!
+!     This function accepts a 2-dimensional input array of a symmetric matrix
+!     (input dummy argument <matrixFull>) and returns a linearized packed form.
+!
+!     Optional input dummy argument <upperLower> is a character string with 'U'
+!     or 'L' to denote whether the linearized form should be written in an
+!     upper- or lower-symmetric column-wise storage format. If not sent, the
+!     default value for <upperLower> is 'U'.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::matrixFull
+      real(kind=real64),dimension(:),allocatable::matrixSymmetric
+      integer(kind=int64)::nDim,nSymm
+      character(len=*),intent(in),optional::upperLower
+      character(len=1)::myUpperLower
+!
+!     Set-up myUpperLower and alloacte matrixSymmetric.
+!
+      if(PRESENT(upperLower)) then
+        myUpperLower = TRIM(upperLower)
+      else
+        myUpperLower = 'U'
+      endIf
+      nDim = SIZE(matrixFull,1)
+      nSymm = (nDim*(nDim+1))/2
+      allocate(matrixSymmetric(nSymm))
+      call mqc_FullMatrix2packedSymmetricMatrix_real(matrixFull,  &
+        matrixSymmetric,myUpperLower)
+!
+      return
+      end Function mqc_matrixFull2Symm_real
 
 !
 !PROCEDURE mqc_matrixTrace

@@ -8,6 +8,11 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+September 10, 2025
+* MQCPack version set to 25.9.0.
+* Added initial support for symmetric matrices stored in MQC variables to
+be written in linear packed form to FAFs.
+
 August 16, 2025
 * MQCPack version set to 25.8.0.
 * Minor updates for printing logical arrays made to MQC_General.
