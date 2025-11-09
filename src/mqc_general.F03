@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.9.0                           **
-!     **                        September 10, 2025                         **
+!     **                          Version 25.11.0                          **
+!     **                         November 8, 2025                          **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -152,6 +152,11 @@
         module procedure mqc_flattenR4Real
       end interface
 !
+!     Interface intrinsic full contraction.
+      interface contraction
+        module procedure mqc_contraction_full_real
+      end interface
+!
 !
 !     Subroutines/Functions...
 !
@@ -179,9 +184,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 9
+      if(PRESENT(minor))         minor         = 11
       if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.9.0'
+      if(PRESENT(versionString)) versionString = '25.11.0'
 !
       return
       end subroutine mqc_version
@@ -1939,7 +1944,37 @@
 !
       return
       end Subroutine mqc_matrixTrimZero
-
+!
+!
+!PROCEDURE mqc_contraction_full_real
+      function mqc_contraction_full_real(a1,a2) result(a1a2)
+!
+!     This function carries out full contraction of two matrices.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      real(kind=real64),dimension(:,:),intent(in)::a1,a2
+      real(kind=real64)::a1a2
+      integer(kind=int64)::n,m
+!
+!     Start by ensuring the two matrices are conformable.
+!
+      n = SIZE(a1,1)
+      m = SIZE(a1,2)
+      if(n.ne.SIZE(a2,1)) call mqc_error(  &
+        'mqc_contraction_full_real: Matrices are not conformable!')
+      if(m.ne.SIZE(a2,2)) call mqc_error(  &
+        'mqc_contraction_full_real: Matrices are not conformable!')
+!
+!     Carry out the contraction.
+!
+      a1a2 = dot_product(RESHAPE(a1,[ n*m ]),RESHAPE(a2,[n*m]))
+!
+      return
+      end function mqc_contraction_full_real
 !
 !PROCEDURE mqc_packedSymmetricMatrix2FullMatrix_integer
       Subroutine mqc_packedSymmetricMatrix2FullMatrix_integer(matrixSymmetric,  &
