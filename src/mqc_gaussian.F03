@@ -5772,6 +5772,7 @@
 !       energy
 !       scfenergy
 !       scfs2
+!       nuclearRepulsion
 !
 !
 !     H. P. Hratchian, 2023.
@@ -5841,6 +5842,8 @@
         value_out = fileinfo%gaussianScalars(32)
       case('scfs2')
         value_out = fileinfo%gaussianScalars(44)
+      case('nuclearrepulsion')
+        value_out = fileinfo%gaussianScalars(41)
       case default
         call mqc_error_A('Failure finding requested real value in Gaussian matrix file', 6, &
           'mylabel', mylabel )
