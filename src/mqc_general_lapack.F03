@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.0                          **
-!     **                         November 8, 2025                          **
+!     **                          Version 25.11.1                          **
+!     **                         November 10, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -560,14 +560,3 @@
 !
       return
       end subroutine mqc_dgesv_vec
-!
-!
-!! Collect under a single generic name
-!interface mqc_dgesv
-!  module procedure mqc_dgesv_mat
-!  module procedure mqc_dgesv_vec
-!end interface mqc_dgesv
-!hph-
-
-
-
