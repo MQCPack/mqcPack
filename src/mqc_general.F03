@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.0                          **
-!     **                         November 8, 2025                          **
+!     **                          Version 25.11.1                          **
+!     **                         November 10, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -157,6 +157,13 @@
         module procedure mqc_contraction_full_real
       end interface
 !
+!     Interfaces for procedures in MQC_General_LAPack
+!
+      interface mqc_dgesv
+        module procedure mqc_dgesv_mat
+        module procedure mqc_dgesv_vec
+      end interface mqc_dgesv
+!
 !
 !     Subroutines/Functions...
 !
@@ -185,8 +192,8 @@
 !
       if(PRESENT(major))         major         = 25
       if(PRESENT(minor))         minor         = 11
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '25.11.0'
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '25.11.1'
 !
       return
       end subroutine mqc_version

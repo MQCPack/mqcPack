@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.0                          **
-!     **                         November 8, 2025                          **
+!     **                          Version 25.11.1                          **
+!     **                         November 10, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -421,3 +421,142 @@
 !
       return
       end subroutine mqc_dgesvd_svd_Full
+
+
+
+!PROCEDURE mqc_dgesv_mat
+      subroutine mqc_dgesv_mat(A,B,X,infoOut)
+!
+!     This routine is a wrapper for the LAPack routine DGESV for cases where the
+!     right hand side of the linear system of equations is a matrix (or multiple
+!     vectors).
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      real(kind=real64),intent(in)::A(:,:)
+      real(kind=real64),intent(in)::B(:,:)
+      real(kind=real64),allocatable,intent(out)::X(:,:)
+      integer,intent(out),optional::infoOut
+!
+      integer::N,NRHS,LDA,LDB,INFO
+      integer,dimension(:),allocatable::IPIV
+      real(kind=real64),dimension(:,:),allocatable::Acopy,Bcopy
+!
+!     Carry out shape checks.
+!
+      if(SIZE(A,1).ne.SIZE(A,2)) call mqc_error('mqc_dgesv: A must be square.')
+      N = SIZE(A,1)
+      if (SIZE(B,1).ne.N) call mqc_error('mqc_dgesv: B has incompatible row dimension.')
+      NRHS = SIZE(B,2)
+      if (NRHS < 1) call mqc_error('mqc_dgesv: NRHS must be >= 1.')
+!
+!     Allocate and then fill working copies of A and B.
+!
+      allocate(Acopy(N,N),Bcopy(N,NRHS))
+      Acopy = A
+      Bcopy = B
+!
+!     Allocate output space.
+!
+      if(allocated(X)) then
+        if(SIZE(X,1).ne.N .or. SIZE(X,2).ne.NRHS) then
+          deallocate(X)
+          allocate(X(N,NRHS))
+        endIf
+      else
+        allocate(X(N,NRHS))
+      endIf
+!
+!     Call DGESV...
+!
+      LDA = N
+      LDB = N
+      allocate(IPIV(N))
+      INFO = 0
+      call dgesv(N, NRHS, Acopy, LDA, IPIV, Bcopy, LDB, INFO)
+!
+!     Check for errors in the LAPack run.
+!
+      if(present(infoOut)) infoOut = INFO
+      if(INFO.ne.0)  &
+        call mqc_error('mqc_dgesv: DGESV failed (INFO /= 0).')
+!
+!     Move Bcopy into the output argument X. Then, DeAllocate the temporary
+!     memory space this routine has allocated.
+!
+      X = Bcopy
+      deallocate(Acopy, Bcopy, IPIV)
+!
+      return
+      end subroutine mqc_dgesv_mat
+
+
+!PROCEDURE mqc_dgesv_vec
+      subroutine mqc_dgesv_vec(A, b, x, infoOut)
+!
+!     This routine is a wrapper for the LAPack routine DGESV for cases where the
+!     right hand side of the linear system of equations is a vector.
+!
+!
+!     H. P. Hratchian, 2025.
+!
+!
+      implicit none
+      real(kind=real64),intent(in)::A(:,:)
+      real(kind=real64),intent(in)::b(:)
+      real(kind=real64),allocatable,intent(out)::x(:)
+      integer(kind=int64),intent(out),optional::infoOut
+!
+      integer(kind=int64)::N,NRHS,LDA,LDB,INFO
+      integer(kind=int64),allocatable::IPIV(:)
+      real(kind=real64),allocatable::Acopy(:,:),Bcopy(:,:)
+!
+!     Carry out shape checks.
+!
+      if(SIZE(A,1).ne.SIZE(A,2)) call mqc_error('mqc_dgesv: A must be square.')
+      N = SIZE(A,1)
+      if(SIZE(b).ne.N) call mqc_error('mqc_dgesv: b has incompatible length.')
+!
+!     Allocate and then fill working copies of A and B.
+!
+      NRHS = 1
+      allocate(Acopy(N,N),Bcopy(N,NRHS))
+      Acopy = A
+      Bcopy(:,1) = b
+!
+!     Allocate output space.
+!
+      if(allocated(x)) then
+        if(SIZE(x).ne.N) then
+          deallocate(x)
+          allocate(x(N))
+        endIf
+      else
+        allocate(x(N))
+      endIf
+!
+!     Call DGESV...
+!
+      LDA = N
+      LDB = N
+      allocate(IPIV(N))
+      INFO = 0
+      call dgesv(N, NRHS, Acopy, LDA, IPIV, Bcopy, LDB, INFO)
+!
+!     Check for errors in the LAPack run.
+!
+      if(present(infoOut)) infoOut = INFO
+      if(INFO.ne.0)  &
+        call mqc_error('mqc_dgesv: DGESV failed (INFO /= 0).')
+!
+!     Move Bcopy into the output argument X. Then, DeAllocate the temporary
+!     memory space this routine has allocated.
+!
+      x = Bcopy(:,1)
+      deallocate(Acopy, Bcopy, IPIV)
+!
+      return
+      end subroutine mqc_dgesv_vec
