@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.8.0                           **
-!     **                          August 1, 2025                           **
+!     **                          Version 25.11.2                          **
+!     **                         November 11, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -68,7 +68,8 @@
 !                       object as "INTEGER", "REAL", or "COMPLEX".
       type MQC_Variable
         integer(kind=int64),private::rank=-1
-        character(len=64),private::dataType,storageFormat
+!hph        character(len=64),private::dataType,storageFormat
+        character(len=64),public::dataType,storageFormat
         integer(kind=int64),dimension(10),private::dimensions=0
         real(kind=real64),dimension(:),allocatable::realArray
         complex(kind=real64),dimension(:),allocatable::complexArray

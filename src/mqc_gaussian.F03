@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.8.0                           **
-!     **                          August 1, 2025                           **
+!     **                          Version 25.11.2                          **
+!     **                         November 11, 2025                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -1718,6 +1718,7 @@
 !
 !       matrix...
         case(2)
+          if(my_storage.eq.'l') call mqc_error('Write_Array2: storage=l NYI.')
           Allocate(intVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
           intMatrixTmp = mqcVariable
           intVectorTmp = RESHAPE(intMatrixTmp,[SIZE(intMatrixTmp)])
@@ -1744,14 +1745,24 @@
 !
 !       matrix...
         case(2)
-          Allocate(realVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
-          realMatrixTmp = mqcVariable
-          realVectorTmp = RESHAPE(realMatrixTmp,[SIZE(realMatrixTmp)])
-          call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
-            SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
-            realVectorTmp)
-          DeAllocate(realMatrixTmp)
-          DeAllocate(realVectorTmp)
+          if(my_storage.eq.'l') then
+            realMatrixTmp = mqcVariable
+            realVectorTmp = mqc_matrixFull2Symm_real(realMatrixTmp,'u')
+            call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+              -SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
+              realVectorTmp)
+            DeAllocate(realMatrixTmp)
+            DeAllocate(realVectorTmp)
+          else
+            Allocate(realVectorTmp(SIZE(mqcVariable,1)*SIZE(mqcVariable,2)))
+            realMatrixTmp = mqcVariable
+            realVectorTmp = RESHAPE(realMatrixTmp,[SIZE(realMatrixTmp)])
+            call wr_LRBuf(fileinfo%UnitNumber,TRIM(tmpLabel),IOne,LenBuf,  &
+              SIZE(mqcVariable,1),SIZE(mqcVariable,2),0,0,0,.False.,  &
+              realVectorTmp)
+            DeAllocate(realMatrixTmp)
+            DeAllocate(realVectorTmp)
+          endIf
         case default
           call mqc_error('Invalid mqcVariable rank sent to '//  &
             'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
@@ -5761,6 +5772,7 @@
 !       energy
 !       scfenergy
 !       scfs2
+!       nuclearRepulsion
 !
 !
 !     H. P. Hratchian, 2023.
@@ -5830,6 +5842,8 @@
         value_out = fileinfo%gaussianScalars(32)
       case('scfs2')
         value_out = fileinfo%gaussianScalars(44)
+      case('nuclearrepulsion')
+        value_out = fileinfo%gaussianScalars(41)
       case default
         call mqc_error_A('Failure finding requested real value in Gaussian matrix file', 6, &
           'mylabel', mylabel )

@@ -182,7 +182,7 @@ do
 		fi
 		MQC_L_INTEGER_Compiler_Flag="-i8"
 	    else
-		echo "Cannot use NVidia option.  nvfortran/pgfortran not found in path"
+		echo "Cannot use NVidia option: nvfortran not found in path"
 	    fi
 	fi
     elif [ "${MQC_Compiler}" = "I" ] || [ "${MQC_Compiler}" = "i" ]; then
