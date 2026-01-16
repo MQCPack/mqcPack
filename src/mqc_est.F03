@@ -3186,7 +3186,8 @@
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=4
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0 
+      !!! TODO: make iOut and iPrint NOT static values!!
 
       call string_change_case(integralType,'l',my_integralType)
       if(present(transform)) transform = .true.
