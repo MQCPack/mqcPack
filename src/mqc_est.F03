@@ -16834,7 +16834,7 @@
 !     Add core strings if NCore present
 !
       if(present(NCoreIn)) then
-        Write(iOut,'(A,I4,A)') ' Adding ',NCore,' core orbitals to string'
+        If(IPrint.ge.4) Write(iOut,'(A,I4,A)') ' Adding ',NCore,' core orbitals to string'
         alpha_core = mqc_bits(nCore)
         Do I = 0, NCore-1
           Alpha_Core = IBSet(Alpha_Core,I)
@@ -17050,7 +17050,7 @@
         class default
           call mqc_error('NCoreIn type is not integer or MQC scalar')
         end Select
-        write(iOut,'(A,I4,A)') ' Adding ',nCore,' core orbitals to string.'
+        If(IPrint.ge.4) write(iOut,'(A,I4,A)') ' Adding ',nCore,' core orbitals to string.'
       else 
         nCore = 0
       endIf
@@ -17064,7 +17064,7 @@
         class default
           call mqc_error('NVirtIn type is not integer or MQC scalar')
         end Select
-        write(iOut,'(A,I4,A)') ' Adding ',nVirt,' virtual orbitals to string.'
+        If(IPrint.ge.4) write(iOut,'(A,I4,A)') ' Adding ',nVirt,' virtual orbitals to string.'
       else 
         nVirt = 0
       endIf

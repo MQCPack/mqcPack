@@ -15170,7 +15170,7 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -15185,7 +15185,7 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
@@ -15199,11 +15199,11 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+          Call MQC_Error_A('Mat type not defined in MQC_Matrix_Vector_Put', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
@@ -16454,7 +16454,7 @@
                    'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -16607,7 +16607,7 @@
                    'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
@@ -16759,11 +16759,11 @@
                    'MatrixIn%Storage', MatrixIn%Storage)
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+          Call MQC_Error_A('Mat type not defined in MQC_Matrix_Matrix_Put', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
@@ -16864,19 +16864,19 @@
       if (Rows.le.Matrix%NRow) then
         if (Cols.le.Matrix%NCol) then
           MatrixOut = Matrix
+          return
         else
           call MatrixOut%init(Matrix%NRow,Cols)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         end if
       else
         if (Cols.le.Matrix%NCol) then
           call MatrixOut%init(Rows,Matrix%NCol)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         else
           call MatrixOut%init(Rows,Cols)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         end if
       end if
+      if(Matrix%NRow.gt.0.and.Matrix%NCol.gt.0) &
+        call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
 !
       end function MQC_Matrix_Pad
 !
