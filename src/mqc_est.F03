@@ -204,6 +204,8 @@
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
 !>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
         Procedure, Public::abs => MQC_Eigenvalues_Abs
+!>      \brief <b> Returns a mqc_scf_integral with values specified by the mqc_scf_eigenvalues</b>
+        Procedure, Public::diagf => mqc_eigenvalues_to_integral
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -460,6 +462,11 @@
 !>    \brief <b> Computes the element-wise product of two objects</b>
       Interface Operator (.ewp.)
         Module Procedure MQC_Element_Integral_Multiply
+      End Interface
+!
+!>    \brief <b> Exponentiates a variable to the power of another</b>
+      Interface Operator (**)
+        Module Procedure MQC_eigenvalues_Power_func 
       End Interface
 !
 !
@@ -16654,6 +16661,134 @@
       end function mqc_eigenvalues_abs
 !
 !
+!     PROCEDURE MQC_Eigenvalues_to_Integral
+!
+!>    \brief <b> MQC_Eigenvalues_to_integral is a function that returns
+!>    an MQC_SCF_Integral object with the MQC_SCF_Eigenvalues values
+!>    on the diagonal</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_to_integral is a function that returns an 
+!>    MQC_SCF_Integral object with the MQC_SCF_Eigenvalues values
+!>    on the diagonal.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      function mqc_eigenvalues_to_integral(eigenvalues) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scf_integral)::output
+!
+      select case(eigenvalues%array_type)
+      case('space')
+        call mqc_integral_allocate(output,'','space',&
+          MQC_Matrix_DiagMatrix_Put_Vector_Func(eigenvalues%getBlock('alpha')))
+      case('spin','general')
+        call mqc_integral_allocate(output,'','spin',&
+          MQC_Matrix_DiagMatrix_Put_Vector_Func(eigenvalues%getBlock('alpha')),&
+          MQC_Matrix_DiagMatrix_Put_Vector_Func(eigenvalues%getBlock('beta')))
+      case default
+        call mqc_error_a('Unrecognized data type in &
+          &mqc_eigenvalues_to_integral',6,'eigenvalues%array_type',&
+          eigenvalues%array_type)
+      end select
+!
+      end function mqc_eigenvalues_to_integral
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Power_Func
+!
+!>    \brief <b> MQC_Eigenvalues_Power_Func is a function that returns the value of all
+!>    elements of an MQC Eigenvalues raised to a power</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Power_Func is a function that returns the value of all elements of 
+!>    an MQC Eigenvalues raised to a power. The power can be integer, real, complex or an
+!>    MQC scalar.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_SCF_Eigenvalues)
+!>        The name of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      function mqc_eigenvalues_power_func(A,P) result(AOut)
+!
+      Implicit None
+      class(mqc_scf_eigenvalues),intent(in)::A
+      class(*),intent(in)::P
+      type(mqc_scf_eigenvalues)::AOut
+
+      type(mqc_scalar)::scalar
+!
+!     Do the work.
+!
+      select type(P)
+      type is (integer)
+        scalar = P
+      type is (real)
+        scalar = P
+      type is (complex)
+        scalar = P
+      type is (mqc_scalar)
+        scalar = P
+      class default
+        call mqc_error_I('P type not defined in MQC_Eigenvalues_Power_Func',6)
+      end select
+!
+      AOut = A
+      call AOut%power(P)
+!      case select (A%array_type())
+!      case ('space')
+!        AOut%alpha = A%alpha**scalar
+!      case ('spin','general')
+!        AOut%alpha = A%alpha**scalar
+!        AOut%beta = A%beta**scalar
+!      case default
+!        call mqc_error_a('Unrecognized A array type in MQC_Eigenvalues_Power_Func',6,&
+!          'A%array_type()',A%array_type())
+!      end select
+!
+      end function mqc_eigenvalues_power_func
+!
+!
 !=====================================================================
 !
 !     POST-SCF ROUTINES
@@ -24401,7 +24536,7 @@
 !     Figure out what substitution level the index refers to and the start and end strings 
 !     associated with that substitution level
 !     Compute composite substitution level offset 
-!     X_{k} = sum_{l in Kallowed, l<k}T_{l} 
+!     X_{k} = sum_{l in K allowed, l<k}T_{l} 
 !     where T_{k} = sum_{k_i+k_j=k} N_{alpha}^{k_i}+N_{beta}^{k_j}
 
       Xk = 0
@@ -24468,7 +24603,7 @@
         EndDo
       EndDo indexSearch
 
-      If(iPrint.ge.3) then
+      If(iPrint.ge.20) then
         write(iOut,'(A)') ' Determinant at index '//trim(num2char(IndIn))//' = '//&
           trim(mqc_detstring_print(aString,bString))
       EndIf

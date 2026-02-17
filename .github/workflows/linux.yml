@@ -33,12 +33,23 @@ jobs:
 
       - name: Install GauOpen and create the mqc-install directory
         run: |
-          mkdir gauopen
+          set -e
+          mkdir -p gauopen
           cd gauopen
-          wget http://gaussian.com/g16/gauopen_v2.zip
+          echo "Downloading GauOpen..."
+          curl --http1.1 -L -f \
+            --retry 5 --retry-delay 3 --retry-all-errors \
+            -H "User-Agent: Mozilla/5.0" \
+            -H "Accept: */*" \
+            -o gauopen_v2.zip \
+            https://gaussian.com/g16/gauopen_v2.zip
+          echo "Verifying zip file..."
+          file gauopen_v2.zip
+          unzip -t gauopen_v2.zip > /dev/null
+          echo "Extracting..."
           unzip gauopen_v2.zip
           cd ..
-          mkdir mqc-install
+          mkdir -p mqc-install
 
       - name: Build mqcPack with gfortran
         run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
