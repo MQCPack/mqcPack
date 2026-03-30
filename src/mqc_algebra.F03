@@ -11736,7 +11736,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Class(MQC_Vector),Intent(InOut)::Vector
+      Class(MQC_Vector),Intent(In)::Vector
       Logical::isAllocated
 !
       isAllocated = .False.
@@ -26721,23 +26721,24 @@
 !
       integer(kind=int64)::iUse,jUse
 !
+      call a%print(6,'LMTLMT in mqc_matrix_cofactor')
       if(abs(i).gt.mqc_matrix_rows(a)) &
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'i',i)
       if(abs(j).gt.mqc_matrix_columns(a)) &
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'j',j)
       if(i.lt.0) then
         iUse = mqc_matrix_rows(a)+i+1
       elseif(i.gt.0) then
         iUse = i
       else
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'i',i)
       endIf
       if(j.lt.0) then
         jUse = mqc_matrix_columns(a)+j+1
       elseif(i.gt.0) then
         jUse = j
       else
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'j',j)
       endIf
 
       cofactor = (-1)**(iUse+jUse)*a%minor(iUse,jUse)

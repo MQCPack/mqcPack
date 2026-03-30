@@ -101,6 +101,8 @@
         Procedure, Public::addLabel => mqc_integral_add_name
 !>      \brief <b> Return a new MQC_SCF_Integral object with distinct Array_type</b>
         Procedure, Public::changeType => mqc_integral_change_type
+!>      \brief <b> Returns an MQC_SCF_Integral object with maximum symmetry</b>
+        Procedure, Public::updateType => mqc_integral_update_type
 !>      \brief <b> Return a spin block of MQC_SCF_Integral object as an MQC matrix</b>
         Procedure, Public::getBlock => mqc_integral_output_block
 !>      \brief <b> Set an MQC_SCF_Integral object as the identity matrix</b>
@@ -136,6 +138,7 @@
         Procedure, Public::setEList => mqc_integral_set_energy_list
         Procedure, Public::getEList => mqc_integral_get_energy_list
         Procedure, Public::deleteEList => mqc_integral_delete_energy_list
+        Procedure, Public::hasEList => mqc_integral_has_energy_list
         Procedure, Public::ipad => mqc_integral_pad
 !>      \brief <b> Returns the sum of elements in the MQC_Matrix</b>
         Procedure, Public::esum => MQC_Integral_Sum_Elements
@@ -206,6 +209,9 @@
         Procedure, Public::abs => MQC_Eigenvalues_Abs
 !>      \brief <b> Returns a mqc_scf_integral with values specified by the mqc_scf_eigenvalues</b>
         Procedure, Public::diagf => mqc_eigenvalues_to_integral
+!>      \brief <b> Returns the eigenvalues sorted from low to high unless vector specifying
+!>      index order is provided</b>
+        Procedure, Public::sort => mqc_eigenvalues_sort
       End Type
 !
 !>    \brief <b> EST intermediates of single determinant wavefunctions</b>
@@ -415,6 +421,12 @@
         module procedure MQC_Integral_Identity_Func
       end interface
 !
+!>    \brief <b> Returns the eigenvalues sorted from low to high unless vector specifying
+!>    index order is provided</b>
+      interface sort
+        module procedure mqc_eigenvalues_sort
+      end interface
+!
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -431,6 +443,7 @@
         Module Procedure MQC_Eigenvalues_Output_Array
         Module Procedure mqc_2ERIs_output_array
         Module Procedure mqc_set_integral2integral
+        Module Procedure mqc_set_eigs2eigs
       End Interface
 !
 !>    \brief <b> Sums two variables</b>
@@ -1986,6 +1999,75 @@
 
 !
       end function mqc_integral_change_type
+!
+!
+!     PROCEDURE MQC_Integral_Update_Type
+!
+!>    \brief <b> MQC_Integral_Update_Type is a subroutine that updates an MQC_Integral 
+!>    to a reduced symmetry if possible</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Update_Type is a subroutine that updates an MQC_Integral to a reduced 
+!>    symmetry if possible.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The name of the MQC_SCF_Integral variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      subroutine mqc_integral_update_type(integral) 
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      real(kind=real64)::zeroThresh
+      parameter(zeroThresh=1.0e-14)
+!
+      select case(integral%array_Type)
+      case ('space')
+        return
+      case('spin')
+        if(integral%blockSize('Alpha',1).ne.integral%blockSize('Beta',1).or.&
+          integral%blockSize('Alpha',2).ne.integral%blockSize('Beta',2)) return
+        if(MQC_Matrix_Norm(integral%getBlock('aa')-integral%getBlock('bb')).lt.1.0e-14) &
+          call mqc_integral_allocate(integral,'','space',integral%getBlock('aa'))
+        return
+      case('general')
+        if(integral%blockSize('Alpha',1).eq.integral%blockSize('Beta',1).and.&
+          integral%blockSize('Alpha',2).eq.integral%blockSize('Beta',2)) then
+          if(MQC_Matrix_Norm(integral%getBlock('aa')-integral%getBlock('bb')).lt.zeroThresh.and.&
+            MQC_Matrix_Norm(integral%getBlock('ab')).lt.zeroThresh.and.&
+            MQC_Matrix_Norm(integral%getBlock('ba')).lt.zeroThresh) then
+            call mqc_integral_allocate(integral,'','space',integral%getBlock('aa'))
+          elseIf(MQC_Matrix_Norm(integral%getBlock('ab')).lt.zeroThresh.and.&
+              MQC_Matrix_Norm(integral%getBlock('ba')).lt.zeroThresh) then
+            call mqc_integral_allocate(integral,'','spin',integral%getBlock('aa'),integral%getBlock('bb'))
+          endIf
+        elseIf(MQC_Matrix_Norm(integral%getBlock('ab')).lt.zeroThresh.and.&
+            MQC_Matrix_Norm(integral%getBlock('ba')).lt.zeroThresh) then
+          call mqc_integral_allocate(integral,'','spin',integral%getBlock('aa'),integral%getBlock('bb'))
+        endIf
+        return
+      case default
+        call mqc_error_A('Unrecognised integral type in mqc_integral_update_type', 6, &
+             'integral%array_Type',integral%Array_Type)
+      end select
+!
+      end subroutine mqc_integral_update_type
 !
 !
 !     PROCEDURE MQC_eigenvalues_Add_Name    
@@ -6155,6 +6237,57 @@
       end function mqc_2ERISet_get_erinum
 !
 !
+!     PROCEDURE MQC_Set_Eigs2Eigs
+!
+!>    \brief <b> MQC_Set_Eigs2Eigs is used to output an MQC eigenvalues type
+!>    variable to another MQC eigenvalues type</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Set_Eigs2Eigs is used to output an MQC eigenvalues type variable to 
+!>    another MQC eigenvalues type.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] EigsOut 
+!>    \verbatim
+!>        EigsOut is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues variable to output.
+!>    \endverbatim
+!>    
+!>    \param[in] EigsIn
+!>    \verbatim
+!>        EigsIn is Class(MQC_SCF_Eigenvalues)
+!>        MQC eigenvalues variable input.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      subroutine mqc_set_eigs2eigs(eigsOut,eigsIn) 
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigsIn
+      type(mqc_scf_eigenvalues),intent(out)::eigsOut
+!
+      EigsOut%Array_Name = EigsIn%Array_Name
+      EigsOut%Array_Type = EigsIn%Array_Type
+
+      if(allocated(EigsIn%alpha)) &
+        EigsOut%alpha = EigsIn%alpha
+      if(allocated(EigsIn%beta)) &
+        EigsOut%beta = EigsIn%beta
+!
+      end subroutine mqc_set_eigs2eigs
+!
+!
 !     PROCEDURE MQC_Set_Integral2Integral
 !
 !>    \brief <b> MQC_Set_Integral2Integral is used to output an MQC integral type
@@ -9834,7 +9967,7 @@
 !>    \author A. D. Mahler
 !>    \date 2017, 2018
 !
-      subroutine mqc_matrix_spinBlockGHF(array,nelec,multi,elist)
+      subroutine mqc_matrix_spinBlockGHF(array,nelec,multi,elist,doRowsIn)
 !
       implicit none
       integer(kind=int64)::i,j,k,rows,columns,blockSize,acols,bcols,nalphas,nbetas, &
@@ -9846,6 +9979,8 @@
       character(len=1),dimension(:),allocatable::abarray
       integer(kind=int64),optional::nelec,multi
       integer(kind=int64),dimension(:),allocatable,optional::elist
+      logical,optional,intent(in)::doRowsIn
+      logical::doRows
 !
 !     Check that both optional arguments are defined or both
 !     are absent
@@ -9853,6 +9988,11 @@
         call mqc_error_I('NElectrons, Multiplicity, or energy list missing &
      &    in mqc_matrix_spinBlockGHF', 6)
       end if
+      if(present(doRowsIn)) then
+        doRows = doRowsIn
+      else
+        doRows = .true.
+      endIf
 !
 !
 !     Do the work...
@@ -9883,21 +10023,25 @@
           blockSize = rows/2
           allocate(abarray(columns))
           if(present(elist)) allocate(elist(columns))
-          call tmpMatrix%init(rows,columns)
-          j = 1
-          k = rows/2+1
-          do i = 1,rows
-            if(mod(i,2).eq.1) then
-              call tmpMatrix%vput(array%vat([i],[0]),[j],[0])
-              j = j+1
-            elseIf(mod(i,2).eq.0) then
-              call tmpMatrix%vput(array%vat([i],[0]),[k],[0])
-              k = k+1
-            else
-              call mqc_error_i('mqc_matrix_spinBlockGHF is confused.', 6, &
-                  'mod(i,2)', mod(i,2) )
-            endIf
-          endDo
+          if(doRows) then
+            call tmpMatrix%init(rows,columns)
+            j = 1
+            k = rows/2+1
+            do i = 1,rows
+              if(mod(i,2).eq.1) then
+                call tmpMatrix%vput(array%vat([i],[0]),[j],[0])
+                j = j+1
+              elseIf(mod(i,2).eq.0) then
+                call tmpMatrix%vput(array%vat([i],[0]),[k],[0])
+                k = k+1
+              else
+                call mqc_error_i('mqc_matrix_spinBlockGHF is confused.', 6, &
+                    'mod(i,2)', mod(i,2) )
+              endIf
+            endDo
+          else 
+            tmpMatrix = array
+          endIf
 !
 !     Begin new column ordering procedure for columns
 !     and intialize spin ordering array
@@ -10034,6 +10178,80 @@
 !
       return
       end subroutine mqc_matrix_spinBlockGHF
+!
+!
+!     PROCEDURE MQC_Integral_SpinBlockGHF
+!
+!>    \brief <b> MQC_Integral_SpinBlockGHF is used to reorder a mqc_scf_integral 
+!>    object so that it is properly spin blocked</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_SpinBlockGHF is used to reorder a mqc_scf_integral 
+!>    object so that it is properly spin blocked. Ideally this routine should never 
+!>    be used, but there are cases where a routine cannot know that the output
+!>    integral should be spin blocked (e.g. SVD) where this routine is required.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Integral
+!>    \verbatim
+!>        Integral is type(mqc_scf_integral)
+!>        The MQC integral to be spin reordered.
+!>    \endverbatim
+!>
+!>    \param[in] NElec
+!>    \verbatim
+!>        NElec is integer
+!>        The number of electrons. 
+!>    \endverbatim
+!>     
+!>    \param[in] Multi
+!>    \verbatim
+!>        Multi is integer
+!>        The multiplicity. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      subroutine mqc_integral_spinBlockGHF(integral,nelec,multi)
+!
+      implicit none
+      type(mqc_scf_integral),intent(inOut)::integral
+      integer(kind=int64),intent(in)::nelec,multi
+
+      integer(kind=int64)::nDimAlpha1=0,nDimAlpha2=0,nDimBeta1=0,nDimBeta2=0
+      type(mqc_matrix)::tmpMat,tmpMat2,tmpMat3,tmpMat4
+      integer(kind=int64),dimension(:),allocatable::elist
+!
+!     Do the work...
+!
+      if(integral%type().eq.'general') then
+        nDimAlpha1 = integral%blockSize('alpha',1) 
+        nDimAlpha2 = integral%blockSize('alpha',2) 
+        nDimBeta1 = integral%blockSize('beta',1) 
+        nDimBeta2 = integral%blockSize('beta',2) 
+        tmpMat = integral%getBlock('full')
+        call mqc_matrix_spinBlockGHF(tmpMat,nelec,multi,elist,.false.)
+        tmpMat2 = tmpMat%mat([1,NDimAlpha1],[1,NDimAlpha1])
+        tmpMat3 = tmpMat%mat([NDimAlpha1+1,-1],[1,NDimAlpha1])
+        tmpMat4 = tmpMat%mat([1,NDimAlpha1],[NDimAlpha1+1,-1])
+        tmpMat = tmpMat%mat([NDimAlpha1+1,-1],[NDimAlpha1+1,-1])
+        call mqc_integral_allocate(integral,'','general',tmpMat2,&
+          tmpMat,tmpMat3,tmpMat4)
+        call integral%setEList(elist)
+      endIf
+!
+      return
+      end subroutine mqc_integral_spinBlockGHF
 !
 !
 !     PROCEDURE MQC_Matrix_UndoSpinBlockGHF_Eigenvalues
@@ -13766,6 +13984,46 @@
       end subroutine mqc_integral_delete_energy_list
 !
 !
+!     PROCEDURE MQC_Integral_Has_Energy_List
+!
+!>    \brief <b> MQC_Integral_Has_Energy_List is a function that returns true
+!>    if the energy list object of an MQC integral is allocated</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Integral_Has_Energy_List is a function that returns true
+!>    if the energy list object of an MQC integral is allocated.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Integral is Class(MQC_SCF_Integral)
+!>        The MQC integral. 
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      function mqc_integral_has_energy_list(integral) result(hasEList)
+!
+      implicit none
+      class(mqc_scf_integral)::integral
+      logical::hasEList
+
+      hasEList = .false.
+      if(allocated(integral%Energy_List)) hasEList = .true.
+!
+      end function mqc_integral_has_energy_list
+!
+!
 !     PROCEDURE MQC_Integral_Sum_Elements
 !
 !>    \brief <b> MQC_Integral_Sum_Elements is a function that returns the sum of all elements 
@@ -16016,13 +16274,14 @@
 
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
-        if(eigenvalues%array_type.eq.'space') then
+        select case (eigenvalues%array_type)
+        case ('space') 
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           else
             call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
           endIf
-        elseIf(eigenvalues%array_type.eq.'spin') then
+        case ('spin','general')
           if(spinBlock.eq.'alpha') then
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           elseif(spinblock.eq.'beta') then
@@ -16030,27 +16289,28 @@
           else
             call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
           endIf
-        else
+        case default
           call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
-        endIf
+        end select
       else
-        if(eigenvalues%array_type.eq.'space') then
+        select case (eigenvalues%array_type)
+        case ('space') 
           if(myI.le.eigenvalues%blockSize('alpha')) then
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
             myI = myI - eigenvalues%blockSize('alpha')
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           endIf
-        elseIf(eigenvalues%array_type.eq.'spin') then
+        case ('spin','general')
           if(myI.le.eigenvalues%blockSize('alpha')) then
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           elseIf(myI.gt.eigenvalues%blockSize('alpha')) then
             myI = myI - eigenvalues%blockSize('alpha')
             if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
           endIf
-        else
+        case default
           call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
-        endIf
+        end select
       endIf
       end subroutine mqc_eigenvalues_put
 
@@ -16787,6 +17047,157 @@
 !      end select
 !
       end function mqc_eigenvalues_power_func
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Sort
+!
+!>    \brief <b> MQC_Eigenvalues_Sort is a function that returns the value of all
+!>    elements of an MQC Eigenvalues sorted from low to high unless optional 
+!>    argument idx is present which gives the new order of the eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Sort is a function that returns the value of all
+!>    elements of an MQC Eigenvalues sorted from low to high unless optional 
+!>    argument idx is present which gives the new order of the eigenvalues.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] A
+!>    \verbatim
+!>        A is Class(MQC_SCF_Eigenvalues)
+!>        The name of the MQC_SCF_Eigenvalues variable.
+!>    \endverbatim
+!>
+!>    \param[in] P
+!>    \verbatim
+!>        P is Class(*)
+!>        The power to raise elements of the MQC vector.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      subroutine mqc_eigenvalues_sort(Eigs,idxA,idxB) 
+!
+      Implicit None
+      class(mqc_scf_eigenvalues),intent(inOut)::Eigs
+      type(mqc_vector),optional,intent(in)::idxA,idxB
+      type(mqc_scf_eigenvalues)::EigsOut
+      type(mqc_vector)::tmpVecA,tmpVecB
+!
+!     Do the work.
+!
+      if(present(idxA)) then
+        if(size(idxA).ne.Eigs%blocksize('alpha')) then
+          if(size(idxA).ne.Eigs%blocksize('full')) &
+            call mqc_error_i('idxA must be length of Eigs alpha block or &
+            &full block',6,'size(idxA)',size(idxA),'Eigs%blocksize("alpha")',&
+            Eigs%blocksize('alpha'),'Eigs%blocksize("full")',Eigs%blocksize('full'))
+          if(present(idxB)) &
+            call mqc_error_i('Combined length of idxA and idxB not equal to full &
+            &block',6,'size(idxA)',size(idxA),'size(idxB)',size(idxB),&
+            'Eigs%blocksize("full")',Eigs%blocksize('full'))
+        else
+          if(present(idxB)) then
+            if(size(idxB).ne.Eigs%blocksize('beta')) &
+              call mqc_error_i('Combined length of idxA and idxB not equal to full &
+              &block',6,'size(idxA)',size(idxA),'size(idxB)',size(idxB),&
+              'Eigs%blocksize("full")',Eigs%blocksize('full'))
+          endIf
+        endIf
+      endIf
+
+      if(present(idxB)) then
+        if(size(idxB).ne.Eigs%blocksize('beta')) &
+          call mqc_error_i('idxB must be length of Eigs beta block',&
+          6,'size(idxB)',size(idxB),'Eigs%blocksize("beta")',Eigs%blocksize('beta'))
+      endIf
+
+      select case (Eigs%type())
+      case ('space')
+        if(present(idxA).and.present(idxB)) then
+          if(all(int(idxA).eq.int(idxB))) then 
+            tmpVecA = Eigs%getBlock('alpha')
+            call tmpVecA%sort(idxA)
+            call mqc_eigenvalues_allocate(EigsOut,'','space',tmpVecA)
+          else
+            tmpVecA = Eigs%getBlock('alpha')
+            tmpVecB = Eigs%getBlock('beta')
+            call tmpVecA%sort(idxA)
+            call tmpVecB%sort(idxB)
+            call mqc_eigenvalues_allocate(EigsOut,'','spin',tmpVecA,tmpVecB)
+          endIf
+        elseIf(present(idxA)) then
+          if(size(idxA).eq.Eigs%blocksize('alpha')) then
+            tmpVecA = Eigs%getBlock('alpha')
+            call tmpVecA%sort(idxA)
+            call mqc_eigenvalues_allocate(EigsOut,'','spin',tmpVecA,&
+              Eigs%alpha)
+          else
+            tmpVecA = Eigs%getBlock('full')
+            call tmpVecA%sort(idxA)
+            call mqc_eigenvalues_allocate(EigsOut,'','spin',&
+              tmpVecA%vat(1,Eigs%blocksize('alpha')),&
+              tmpVecA%vat(Eigs%blocksize('alpha')+1,-1))
+          endIf
+        elseIf(present(idxB)) then
+          tmpVecB = Eigs%getBlock('beta')
+          call tmpVecB%sort(idxB)
+          call mqc_eigenvalues_allocate(EigsOut,'','spin',Eigs%alpha,&
+            tmpVecB)
+        else
+          tmpVecA = Eigs%getBlock('alpha')
+          call tmpVecA%sort()
+          call mqc_eigenvalues_allocate(EigsOut,'','space',tmpVecA)
+        endIf
+      case ('spin','general')
+        if(present(idxA).and.present(idxB)) then
+          tmpVecA = Eigs%getBlock('alpha')
+          tmpVecB = Eigs%getBlock('beta')
+          call tmpVecA%sort(idxA)
+          call tmpVecB%sort(idxB)
+          call mqc_eigenvalues_allocate(EigsOut,'','spin',tmpVecA,tmpVecB)
+        elseIf(present(idxA)) then
+          if(size(idxA).eq.Eigs%blocksize('alpha')) then
+            tmpVecA = Eigs%getBlock('alpha')
+            call tmpVecA%sort(idxA)
+            call mqc_eigenvalues_allocate(EigsOut,'','spin',tmpVecA,&
+              Eigs%beta)
+          else
+            tmpVecA = Eigs%getBlock('full')
+            call tmpVecA%sort(idxA)
+            call mqc_eigenvalues_allocate(EigsOut,'','spin',&
+              tmpVecA%vat(1,Eigs%blocksize('alpha')),&
+              tmpVecA%vat(Eigs%blocksize('alpha')+1,-1))
+          endIf
+        elseIf(present(idxB)) then
+          tmpVecB = Eigs%getBlock('beta')
+          call tmpVecB%sort(idxB)
+          call mqc_eigenvalues_allocate(EigsOut,'','spin',Eigs%alpha,&
+            tmpVecB)
+        else
+          tmpVecA = Eigs%getBlock('alpha')
+          tmpVecB = Eigs%getBlock('beta')
+          call tmpVecA%sort()
+          call tmpVecB%sort()
+          call mqc_eigenvalues_allocate(EigsOut,'','spin',tmpVecA,&
+            tmpVecB)
+        endIf
+      case default
+        call mqc_error_a('Unrecognized array type in MQC_Eigenvalues_Sort',6,&
+          'Eigs%type()',Eigs%type())
+      end select
+      Eigs = EigsOut
+!
+      end subroutine mqc_eigenvalues_sort
 !
 !
 !=====================================================================
