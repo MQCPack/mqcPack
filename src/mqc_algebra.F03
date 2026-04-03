@@ -26721,7 +26721,6 @@
 !
       integer(kind=int64)::iUse,jUse
 !
-      call a%print(6,'LMTLMT in mqc_matrix_cofactor')
       if(abs(i).gt.mqc_matrix_rows(a)) &
         call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'i',i)
       if(abs(j).gt.mqc_matrix_columns(a)) &
