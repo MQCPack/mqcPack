@@ -293,6 +293,8 @@
 !>      \brief <b> Return a spin block of MQC_TwoERIs object as an MQC rank-4 tensor</b>
         procedure, public:: getBlock => mqc_2eris_output_block
         procedure, public::type => mqc_eris_array_type
+!>      \brief <b> Return a specified interaction of a MQC_TwoERIs</b>
+        procedure, public::interaction => mqc_eri_interaction
       end type mqc_twoERIs
 !
 !     Parent Type
@@ -8856,16 +8858,16 @@
       endif
       if(intType.eq.'general') then 
         if(integralA%array_type.eq.'general') then
-          AlBeA=integralA%getBlock('alphabeta')
-          BeAlA=integralA%getBlock('betaalpha')
+          AlBeA=integralA%getBlock('betaalpha')
+          BeAlA=integralA%getBlock('alphabeta')
           abaa = AlBeA.outer.AlphaB
           baaa = BeAlA.outer.AlphaB
           abbb = AlBeA.outer.BetaB
           babb = BeAlA.outer.BetaB
         end if
         if(integralB%array_type.eq.'general') then
-          AlBeB=integralB%getBlock('alphabeta')
-          BeAlB=integralB%getBlock('betaalpha')
+          AlBeB=integralB%getBlock('betaalpha')
+          BeAlB=integralB%getBlock('alphabeta')
           aaab = AlphaA.outer.AlBeB
           aaba = AlphaA.outer.BeAlB
           bbab =  BetaA.outer.AlBeB
@@ -12092,15 +12094,23 @@
                      eris2%blockSize('alpha',kb),eris2%blockSize('beta',lb))
       call bbba%init(eris1%blockSize('beta',ka),eris1%blockSize('beta',la),&
                      eris2%blockSize('beta',kb),eris2%blockSize('alpha',lb))
+      call baaa%init(eris1%blockSize('beta',ka),eris1%blockSize('alpha',la),&
+                     eris2%blockSize('alpha',kb),eris2%blockSize('alpha',lb))
+      call abaa%init(eris1%blockSize('alpha',ka),eris1%blockSize('beta',la),&
+                     eris2%blockSize('alpha',kb),eris2%blockSize('alpha',lb))
+      call aaba%init(eris1%blockSize('alpha',ka),eris1%blockSize('alpha',la),&
+                     eris2%blockSize('beta',kb),eris2%blockSize('alpha',lb))
+      call aaab%init(eris1%blockSize('alpha',ka),eris1%blockSize('alpha',la),&
+                     eris2%blockSize('alpha',kb),eris2%blockSize('beta',lb))
 
       eriType='spin'
       do i=1,16
-        active_conf_1=full_array(i)
-        str1=mqc_index_to_string([ia,ja,ka,la],active_conf_1)
+        str1=full_array(i)
+        active_conf_1=mqc_index_to_string([ia,ja,ka,la],str1)
         do j=1,16
-          active_conf_2=full_array(j)
+          str2=full_array(j)
+          active_conf_2=mqc_index_to_string([ib,jb,kb,lb],str2)
           active_conf=trim(active_conf_1(3:4))//trim(active_conf_2(3:4))
-          str2=mqc_index_to_string([ib,jb,kb,lb],active_conf_2)
           if (active_conf_1(1:2).eq.active_conf_2(1:2)) then
             select case (active_conf)
             case('aaaa') 
@@ -12146,6 +12156,22 @@
             case('bbba') 
               eriType='general'
               bbba = bbba +  MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            case('baaa') 
+              eriType='general'
+              baaa = baaa +  MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            case('abaa') 
+              eriType='general'
+              abaa = abaa +  MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            case('aaba') 
+              eriType='general'
+              aaba = aaba +  MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(&
+                   eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
+            case('aaab') 
+              eriType='general'
+              aaab = aaab +  MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(&
                    eris1%getBlock(str1),eris2%getBlock(str2),index1,index2)
             end select  
           end if
@@ -12575,7 +12601,7 @@
       function mqc_eri_interaction(eris,label) result(output)
 !
       implicit none
-      type(mqc_twoERIs),intent(in)::eris
+      class(mqc_twoERIs),intent(in)::eris
       character(len=*),optional,intent(in)::label
       type(mqc_twoERIs)::output
       character(len=64)::mylabel
