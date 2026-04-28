@@ -322,6 +322,8 @@
         procedure, public::type => mqc_eris_array_type
         procedure, public::storType => mqc_eris_storage_type
         procedure, public::swap => mqc_eri_dimension_swap
+!>      \brief <b> Return a specified interaction of a MQC_TwoERIs</b>
+        procedure, public::interaction => mqc_eri_interaction
       end type mqc_twoERIs
 !
 !     Parent Type
@@ -14777,7 +14779,7 @@
       function mqc_eri_interaction(eris,label) result(output)
 !
       implicit none
-      type(mqc_twoERIs),intent(in)::eris
+      class(mqc_twoERIs),intent(in)::eris
       character(len=*),optional,intent(in)::label
       type(mqc_twoERIs)::output
       character(len=64)::mylabel
