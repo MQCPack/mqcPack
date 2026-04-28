@@ -9908,18 +9908,18 @@
         call M%init(VA%length,VB%length,(0.0,0.0))
         if (mqc_have_int(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_int(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         else
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         endif
       endif
 
@@ -33125,6 +33125,7 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,va,[i],[j]))
+              !tmpR = dagger(RA%mat(vb,va,[i],[j]))
             case(3)      
               tmpR = RA%mat([i],va,vb,[j])
             case(4)
@@ -33134,8 +33135,10 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],va,[j]))
+              !tmpR = dagger(RA%mat(vb,[i],va,[j]))
             case(2)      
               tmpR = transpose(RA%mat([i],vb,va,[j]))
+              !tmpR = dagger(RA%mat([i],vb,va,[j]))
             case(4)
               tmpR = RA%mat([i],[j],va,vb)
             end select      
@@ -33143,10 +33146,13 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],[j],va))
+              !tmpR = dagger(RA%mat(vb,[i],[j],va))
             case(2)       
               tmpR = transpose(RA%mat([i],vb,[j],va))
+              !tmpR = dagger(RA%mat([i],vb,[j],va))
             case(3)       
               tmpR = transpose(RA%mat([i],[j],vb,va))
+              !tmpR = dagger(RA%mat([i],[j],vb,va))
             end select      
           end select      
           call MC%put(Contraction(tmpR,MB),i,j)

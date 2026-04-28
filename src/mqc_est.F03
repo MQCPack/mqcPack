@@ -111,6 +111,7 @@
         Procedure, Public::init => mqc_integral_initialize 
 !>      \brief <b> Diagonalizes an MQC_SCF_Integral object</b>
         Procedure, Public::diag => mqc_scf_integral_diagonalize
+
 !>      \brief <b> Performs SVD on an MQC_SCF_Integral object</b>
         Procedure, Public::svd => mqc_scf_integral_svd
 !>      \brief <b> Solves a generalized eigenvalue problem involving an 
@@ -314,6 +315,8 @@
 !>      \brief <b> Print the MQC_TwoERIs object</b>
         procedure, public::print => mqc_print_twoERIs
         procedure, public::at => mqc_twoERIs_at
+!>      \brief <b> Initilizes the MQC_twoERIs object</b>
+        Procedure, Public::init => mqc_twoERIs_initialize
 !>      \brief <b> Return the spin block dimention of the MQC_TwoERIs object</b>
         procedure, public::blockSize => mqc_eris_dimension
         procedure, private::hasSpinBlock => mqc_eris_has_spinBlock
@@ -3419,7 +3422,8 @@
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=4
+      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0 
+      !!! TODO: make iOut and iPrint NOT static values!!
 
       call string_change_case(integralType,'l',my_integralType)
       if(present(transform)) transform = .true.
@@ -3924,6 +3928,123 @@
 !
 !
       end subroutine mqc_integral_initialize
+!
+!     PROCEDURE MQC_twoERIs_Initialize
+!
+!>    \brief <b> MQC_twoERIs_Initialize is used to initialize an MQC twoERIs type 
+!>    variable with each element equal to a chosen value</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_twoERIs_Initialize is used to initialize an MQC twoERIs type 
+!>    variable with each element equal to a chosen value
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] ERI
+!>    \verbatim
+!>        ERI is class(mqc__twoERIs)
+!>        The MQC__twoERIs variable to initialize.
+!>    \endverbatim
+!>    
+!
+!     Authors:
+!     ========
+!>    \author  M. M. F. Moraes
+!>    \date 2026
+!
+      subroutine mqc_twoERIs_initialize(ERIOut,nAlpha,nBeta,label,&
+                                     nAlpha2,nBeta2,nAlpha3,nBeta3,nAlpha4,nBeta4) 
+!
+      implicit none
+      class(mqc_twoERIs),intent(inOut)::ERIOut
+      integer,intent(in)::nAlpha,nBeta
+      character(Len=*),optional,intent(in)::label
+      integer,intent(in),optional::nAlpha2,nBeta2,nAlpha3,nBeta3,nAlpha4,nBeta4
+      type(MQC_R4Tensor)::aaaa,aaab,aaba,abaa,baaa,aabb,abab,baab,abba,baba,bbaa,&
+                          abbb,babb,bbab,bbba,bbbb
+      Character(Len=64)::myLabel,eriType 
+      integer::my_nAlpha2,my_nBeta2,my_nAlpha3,my_nBeta3,my_nAlpha4,my_nBeta4
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+      if(.not.present(nAlpha2)) then
+        my_nAlpha2 = nAlpha
+      else
+        my_nAlpha2 = nAlpha2
+      endIf
+      if(.not.present(nBeta2)) then
+        my_nBeta2 = nBeta
+      else
+        my_nBeta2 = nBeta2
+      endIf
+      if(.not.present(nAlpha3)) then
+        my_nAlpha3 = nAlpha
+      else
+        my_nAlpha3 = nAlpha3
+      endIf
+      if(.not.present(nBeta3)) then
+        my_nBeta3 = nBeta
+      else
+        my_nBeta3 = nBeta3
+      endIf
+      if(.not.present(nAlpha4)) then
+        my_nAlpha4 = nAlpha
+      else
+        my_nAlpha4 = nAlpha4
+      endIf
+      if(.not.present(nBeta4)) then
+        my_nBeta4 = nBeta
+      else
+        my_nBeta4 = nBeta4
+      endIf
+
+      call aaaa%init(nAlpha,my_nAlpha2,my_nAlpha3,my_nAlpha4)
+      if (nAlpha.eq.nBeta.and.my_nAlpha2.eq.my_nBeta2&
+         .and.my_nAlpha3.eq.my_nBeta3.and.my_nAlpha4.eq.my_nBeta4) then
+        eriType = 'space'
+      else 
+        eriType = 'general'
+        call bbbb%init(nBeta,my_nBeta2,my_nBeta3,my_nBeta4)
+        call bbba%init(nBeta,my_nBeta2,my_nBeta3,my_nAlpha4)
+        call bbab%init(nBeta,my_nBeta2,my_nAlpha3,my_nBeta4)
+        call bbaa%init(nBeta,my_nBeta2,my_nAlpha3,my_nAlpha4)
+        call babb%init(nBeta,my_nAlpha2,my_nBeta3,my_nBeta4)
+        call baba%init(nBeta,my_nAlpha2,my_nBeta3,my_nAlpha4)
+        call baab%init(nBeta,my_nAlpha2,my_nAlpha3,my_nBeta4)
+        call baaa%init(nBeta,my_nAlpha2,my_nAlpha3,my_nAlpha4)
+        call abbb%init(nAlpha,my_nBeta2,my_nBeta3,my_nBeta4)
+        call abba%init(nAlpha,my_nBeta2,my_nBeta3,my_nAlpha4)
+        call abab%init(nAlpha,my_nBeta2,my_nAlpha3,my_nBeta4)
+        call abaa%init(nAlpha,my_nBeta2,my_nAlpha3,my_nAlpha4)
+        call aabb%init(nAlpha,my_nAlpha2,my_nBeta3,my_nBeta4)
+        call aaba%init(nAlpha,my_nAlpha2,my_nBeta3,my_nAlpha4)
+        call aaab%init(nAlpha,my_nAlpha2,my_nAlpha3,my_nBeta4)
+      endIf
+
+
+
+      if (eriType.eq.'space') then
+         call mqc_twoeris_allocate(eriOut,'full','space',aaaa)
+      elseif (eriType.eq.'spin') then
+        call mqc_twoeris_allocate(eriOut,'full','spin',aaaa,bbbb,aabb,bbaa)
+      elseif (eriType.eq.'general') then
+        call mqc_twoeris_allocate(eriOut,'full','general',aaaa,bbbb,aabb,bbaa,&
+                                  abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,&
+                                  bbab,babb,abbb)
+      endif
+
+!
+!
+      end subroutine mqc_twoERIs_initialize
 !
 !
 !     PROCEDURE MQC_Integral_Output_Block
@@ -21388,6 +21509,7 @@
 !
       Implicit None
       Integer(kind=int64)::IOut,IPrint,NBasis,P,Q,R,S,Mu,Nu,Lambda,Sigma,IErr
+      Integer(kind=int64)::NL1,NL2,NR1,NR2
       real(kind=real64)::Zero=0.0d0
       Logical::DoON5
       Type(MQC_Matrix)::X,Y
@@ -21400,8 +21522,15 @@
       Type(MQC_TwoERIs),Intent(InOut)::MO_ERIs
       Type(MQC_SCF_Integral),Intent(In)::MO_Coeff
       Type(MQC_SCF_Integral),Optional,Intent(In)::Right_MOs
-      Type(MQC_SCF_Integral)::MO_Coeff_2
+      Type(MQC_SCF_Integral)::MO_Coeff_2,MO_Coeff_3,MO_Coeff_4
       Character(len=15)::storage,intType
+      Integer(kind=int64)::NPAlpha,NPBeta,NQAlpha,NQBeta,NRAlpha,NRBeta,NSAlpha,NSBeta
+      Integer(kind=int64)::NMuAlpha,NNuAlpha,NLambdaAlpha,NSigmaAlpha,NMuBeta,NNuBeta,NLambdaBeta,NSigmaBeta 
+
+
+
+
+
 !
  1000 Format(1x,'(',I3,',',I3,'|',I3,',',I3,') = ',F15.8)
  2000 Format(1x,'Doing O(N**8) integral transformation algorithm')
@@ -21411,8 +21540,6 @@
 !
       DoON5 = .True.
 !
-      If(ERIs%type().ne.'regular') call mqc_error_A('TwoERI_trans only implemented for &
-        & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
 !
       If(Present(Right_MOs))then
         MO_Coeff_2 = Right_MOs
@@ -21420,9 +21547,23 @@
         MO_Coeff_2 = MO_Coeff
       EndIf
 !
-      If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general') then
+     !If(Present(Right_MO2))then
+     !  MO_Coeff_3 = Right_MO2
+     !Else
+     !  MO_Coeff_3 = MO_Coeff
+     !EndIf
+!
+     !If(Present(Left_MO2))then
+     !  MO_Coeff_4 = Left_MO2
+     !Else
+     !  MO_Coeff_4 = MO_Coeff_2
+     !EndIf
+!
+      If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general'.or.&
+       MO_Coeff_3%type().eq.'general'.or.MO_Coeff_4%type().eq.'general') then
         intType = 'general'
-      ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin') then
+      ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin'.or.&
+           MO_Coeff_2%type().eq.'spin'.or.MO_Coeff_4%type().eq.'spin') then
         intType = 'spin'
       Else
         intType = 'space'
@@ -21436,28 +21577,70 @@
 
       NBasis = MQC_Matrix_Rows(MO_Coeff%Alpha) 
 
-      call tmpR4TensorAlpha%init(NBasis,NBasis,NBasis,NBasis)
+      NPAlpha = NBasis
+      NQAlpha = NBasis
+      NRAlpha = NBasis
+      NSAlpha = NBasis
+                   
+      NPBeta = NBasis
+      NQBeta = NBasis
+      NRBeta = NBasis
+      NSBeta = NBasis
+                   
+      NMuAlpha = NBasis
+      NNuAlpha = NBasis
+      NLambdaAlpha =NBasis
+      NSigmaAlpha =NBasis
+                   
+      NMuBeta = NBasis
+      NNuBeta = NBasis
+      NLambdaBeta =NBasis
+      NSigmaBeta = NBasis
+
+     !NPAlpha = MQC_Matrix_Rows(MO_Coeff%Alpha)
+     !NQAlpha = MQC_Matrix_Rows(MO_Coeff_3%Alpha)
+     !NRAlpha = MQC_Matrix_Rows(MO_Coeff_2%Alpha)
+     !NSAlpha = MQC_Matrix_Rows(MO_Coeff_4%Alpha)
+
+     !NPBeta = MQC_Matrix_Rows(MO_Coeff%Beta)
+     !NQBeta = MQC_Matrix_Rows(MO_Coeff_3%Beta)
+     !NRBeta = MQC_Matrix_Rows(MO_Coeff_2%Beta)
+     !NSBeta = MQC_Matrix_Rows(MO_Coeff_4%Beta)
+
+     !NMuAlpha = MQC_Matrix_Cols(MO_Coeff%Alpha)
+     !NNuAlpha = MQC_Matrix_Cols(MO_Coeff_3%Alpha)
+     !NLambdaAlpha = MQC_Matrix_Cols(MO_Coeff_2%Alpha)
+     !NSigmaAlpha = MQC_Matrix_Cols(MO_Coeff_4%Alpha)
+
+     !NMuBeta = MQC_Matrix_Cols(MO_Coeff%Beta)
+     !NNuBeta = MQC_Matrix_Cols(MO_Coeff_3%Beta)
+     !NLambdaBeta = MQC_Matrix_Cols(MO_Coeff_2%Beta)
+     !NSigmaBeta = MQC_Matrix_Cols(MO_Coeff_4%Beta)
+
+      call tmpR4TensorAlpha%init(NPAlpha,NQAlpha,NRAlpha,NSAlpha)
       If(intType.eq.'spin'.or.intType.eq.'general') then
-        call tmpR4TensorBeta%init(NBasis,NBasis,NBasis,NBasis)
-        call tmpR4TensorAlphaBeta%init(NBasis,NBasis,NBasis,NBasis)
-        If(storage.eq.'full') call tmpR4TensorBetaAlpha%init(NBasis,NBasis,NBasis,NBasis)
+        call tmpR4TensorBeta%init(NPBeta,NQBeta,NRBeta,NSBeta)
+        call tmpR4TensorAlphaBeta%init(NPAlpha,NQAlpha,NRBeta,NSBeta)
+        If(storage.eq.'full') call tmpR4TensorBetaAlpha%init(NPBeta,NQBeta,NRAlpha,NSAlpha)
       EndIf
       If(intType.eq.'general') then
-        call tmpR4TensorABAB%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBABA%init(NBasis,NBasis,NBasis,NBasis) 
-        call tmpR4TensorABBA%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBAAB%init(NBasis,NBasis,NBasis,NBasis) 
-        call tmpR4TensorAAAB%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorAABA%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorABAA%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBAAA%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBBBA%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBBAB%init(NBasis,NBasis,NBasis,NBasis) 
-        If(storage.eq.'full') call tmpR4TensorBABB%init(NBasis,NBasis,NBasis,NBasis) 
-        call tmpR4TensorABBB%init(NBasis,NBasis,NBasis,NBasis) 
+        call tmpR4TensorABAB%init(NPAlpha,NQBeta,NRAlpha,NSBeta) 
+        If(storage.eq.'full') call tmpR4TensorBABA%init(NPBeta,NQAlpha,NRBeta,NSAlpha) 
+        call tmpR4TensorABBA%init(NPAlpha,NQBeta,NRBeta,NSAlpha) 
+        If(storage.eq.'full') call tmpR4TensorBAAB%init(NPBeta,NQAlpha,NRAlpha,NSBeta) 
+        call tmpR4TensorAAAB%init(NPAlpha,NQAlpha,NRAlpha,NSBeta) 
+        If(storage.eq.'full') call tmpR4TensorAABA%init(NPAlpha,NQAlpha,NRBeta,NSAlpha) 
+        If(storage.eq.'full') call tmpR4TensorABAA%init(NPAlpha,NQBeta,NRAlpha,NSAlpha) 
+        If(storage.eq.'full') call tmpR4TensorBAAA%init(NPBeta,NQAlpha,NRAlpha,NSAlpha) 
+        If(storage.eq.'full') call tmpR4TensorBBBA%init(NPBeta,NQBeta,NRBeta,NSAlpha) 
+        If(storage.eq.'full') call tmpR4TensorBBAB%init(NPBeta,NQBeta,NRAlpha,NSBeta) 
+        If(storage.eq.'full') call tmpR4TensorBABB%init(NPBeta,NQAlpha,NRBeta,NSBeta) 
+        call tmpR4TensorABBB%init(NPAlpha,NQBeta,NRBeta,NSBeta) 
       EndIf
 !
       If(.not.DoON5) then
+        If(ERIs%type().ne.'regular') call mqc_error_A('TwoERI_trans only implemented for &
+          & regular stored 2ERIs',6,'ERIs%type()',ERIs%type())
 
         If(IPrint.ge.4) Write(IOut,2000) 
         Do P = 1, NBasis
