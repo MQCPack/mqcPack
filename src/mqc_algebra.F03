@@ -29448,7 +29448,7 @@
             Do K = 1, Tensor%K
               Do l = 1, Tensor%L
                 If(short_print) then
-                  If(abs(Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)).gt.print_threshold ) then
+                  If(abs(Tensor%at(I,J,K,L)).gt.print_threshold ) then
                     If(Tensor%Data_Type.eq.'Integer') then
                       Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
                     ElseIf(Tensor%Data_Type.eq.'Real') then
@@ -31105,7 +31105,7 @@
 !>    
 !>    \verbatim
 !>
-!>    MQC_R4Tensor_R4Tensor_At is a function that returns the vector between indices 
+!>    MQC_R4Tensor_Vector_At is a function that returns the vector between indices 
 !>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
 !>    index is counted back from the final element. 
 !>
@@ -31927,8 +31927,8 @@
 !     Authors:
 !     ========
 !
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2026
 !
       Function MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2,D3,D4) Result(TensorOut)
 !
@@ -31985,56 +31985,56 @@
       If (IndI.lt.0) IndI = Size(TensorIn,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(TensorIn,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
+      If (Len1.lt.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1) )
-      If (IndI.le.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
+      If (IndI.lt.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
            Size(TensorIn,1),'Len1', Len1 )
       If (IndJ.lt.Len1.or.IndJ.gt.Size(TensorIn,1)) Call MQC_Error_I('Index J out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1))
       IndK = K
       IndL = L
       If (IndK.lt.0) IndK = Size(TensorIn,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(TensorIn,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
+      If (Len2.lt.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
+      If (IndK.lt.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
            Size(TensorIn,2),'Len2', Len2 )
       If (IndL.lt.Len2.or.IndL.gt.Size(TensorIn,2)) Call MQC_Error_I('Index L out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2))
       IndM = M
       IndN = N
       If (IndM.lt.0) IndM = Size(TensorIn,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(TensorIn,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
+      If (Len3.lt.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
+      If (IndM.lt.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
            Size(TensorIn,3),'Len3', Len3 )
       If (IndN.lt.Len3.or.IndN.gt.Size(TensorIn,3)) Call MQC_Error_I('Index N out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3))
       IndO = O
       IndP = P
       If (IndO.lt.0) IndO = Size(TensorIn,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(TensorIn,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
+      If (Len4.lt.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
+      If (IndO.lt.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
            Size(TensorIn,4),'Len4', Len4 )
       If (IndP.lt.Len4.or.IndP.gt.Size(TensorIn,4)) Call MQC_Error_I('Index P out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4))
 
       If (MQC_R4Tensor_HaveFull(TensorIn)) then
@@ -33314,8 +33314,8 @@
 !$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
 !$OMP       ib,jb,lb,kb,MC,dimAl,dimAk),&
 !$OMP PRIVATE(tmpRA,tmpRB,k,l)
-      do k=1,dimAl
-        do l=1,dimAk
+      do k=1,dimAk
+        do l=1,dimAl
           select case(ia)
           case(1)      
             select case(ja)
@@ -33366,7 +33366,7 @@
               if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
             end select      
           end select      
-         select case(ib)
+          select case(ib)
           case(1)
             select case(jb)
             case(2)
@@ -33380,7 +33380,7 @@
               if(kb.eq.3) tmpRB = RB%mat(vi,[l],[k],vj)
             end select
           case(2)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[k],[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[l],[k]))
@@ -33392,7 +33392,7 @@
               if(kb.eq.3) tmpRB = RB%mat([l],vi,[k],vj)
             end select
           case(3)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],vi,[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[l],vi,[k]))
@@ -33404,7 +33404,7 @@
               if(kb.eq.2) tmpRB = RB%mat([l],[k],vi,vj)
             end select
           case(4)
-            select case(ib)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],[l],vi))
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[l],[k],vi))
@@ -33696,8 +33696,8 @@
 !$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
 !$OMP       ib,jb,lb,kb,RC,dimAl,dimAk,dimBl,dimBk),&
 !$OMP PRIVATE(tmpRA,tmpRB,k,l,p,q)
-      do k=1,dimAl
-        do l=1,dimAk
+      do k=1,dimAk
+        do l=1,dimAl
           select case(ia)
           case(1)      
             select case(ja)
@@ -33716,6 +33716,8 @@
             case(1)      
               if(ka.eq.3) tmpRA = transpose(RA%mat(vj,vi,[k],[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat(vj,vi,[l],[k]))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,vi,[k],[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,vi,[l],[k]))
             case(3)      
               if(ka.eq.1) tmpRA = RA%mat([k],vi,vj,[l])
               if(ka.eq.4) tmpRA = RA%mat([l],vi,vj,[k])
@@ -33728,9 +33730,13 @@
             case(1)      
               if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],vi,[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat(vj,[l],vi,[k]))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,[l],vi,[k]))
             case(2)      
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,vi,[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat([l],vj,vi,[k]))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat([l],vj,vi,[k]))
             case(4)
               if(ka.eq.1) tmpRA = RA%mat([k],[l],vi,vj)
               if(ka.eq.2) tmpRA = RA%mat([l],[k],vi,vj)
@@ -33740,16 +33746,22 @@
             case(1)      
               if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],[l],vi))
               if(ka.eq.3) tmpRA = transpose(RA%mat(vj,[l],[k],vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,[l],[k],vi))
             case(2)       
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,[l],vi))
               if(ka.eq.3) tmpRA = transpose(RA%mat([l],vj,[k],vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat([l],vj,[k],vi))
             case(3)       
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],[l],vj,vi))
               if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],[l],vj,vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat([l],[k],vj,vi))
             end select      
           end select      
-          do p=1,dimBl
-            do q=1,dimBk
+          do p=1,dimBk
+            do q=1,dimBl
              select case(ib)
              case(1)
                select case(jb)
@@ -33768,6 +33780,8 @@
                case(1)
                  if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[p],[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[q],[p]))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,vi,[p],[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,vi,[q],[p]))
                case(3)
                  if(kb.eq.1) tmpRB = RB%mat([p],vi,vj,[q])
                  if(kb.eq.4) tmpRB = RB%mat([q],vi,vj,[p])
@@ -33780,9 +33794,13 @@
                case(1)
                  if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],vi,[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[q],vi,[p]))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,[q],vi,[p]))
                case(2)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,vi,[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat([q],vj,vi,[p]))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat([q],vj,vi,[p]))
                case(4)
                  if(kb.eq.1) tmpRB = RB%mat([p],[q],vi,vj)
                  if(kb.eq.2) tmpRB = RB%mat([q],[p],vi,vj)
@@ -33792,12 +33810,18 @@
                case(1)
                  if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],[q],vi))
                  if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[q],[p],vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,[q],[p],vi))
                case(2)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,[q],vi))
                  if(kb.eq.3) tmpRB = transpose(RB%mat([q],vj,[p],vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat([q],vj,[p],vi))
                case(3)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],[q],vj,vi))
                  if(kb.eq.2) tmpRB = transpose(RB%mat([q],[p],vj,vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],[q],vj,vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat([q],[p],vj,vi))
                end select
              end select
              call RC%put(Contraction(tmpRA,tmpRB),k,l,p,q)
