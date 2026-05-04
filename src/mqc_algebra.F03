@@ -32278,10 +32278,10 @@
       If (IndI.lt.0) IndI = Size(Ten,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(Ten,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
+      If (Len1.lt.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
         Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
         6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1),'Size(Ten,1)',Size(Ten,1))
-      If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+      If (IndI.lt.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
         'Len1', Len1 )
       If (IndJ.gt.Size(Ten,1)) Call MQC_Error_I('Index J out of bounds in  &
@@ -32291,10 +32291,10 @@
       If (IndK.lt.0) IndK = Size(Ten,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(Ten,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
+      If (Len2.lt.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
         Call MQC_Error_I('Dimension 2 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2),'Size(Ten,2)',Size(Ten,2) )
+      If (IndK.lt.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndK',IndK,'Size(Ten,2)', &
         Size(Ten,2),'Len2', Len2 )
       If (IndL.gt.Size(Ten,2)) Call MQC_Error_I('Index L out of bounds in &
@@ -32304,10 +32304,10 @@
       If (IndM.lt.0) IndM = Size(Ten,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(Ten,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
+      If (Len3.lt.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
         Call MQC_Error_I('Dimension 3 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3),'Size(Ten,3)',Size(Ten,3) )
+      If (IndM.lt.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndM',IndM,'Size(Ten,3)', Size(Ten,3), &
         'Len3', Len3 )
       If (IndN.gt.Size(Ten,3)) Call MQC_Error_I('Index N out of bounds in &
@@ -32317,10 +32317,10 @@
       If (IndO.lt.0) IndO = Size(Ten,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(Ten,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
+      If (Len4.lt.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
         Call MQC_Error_I('Dimension 4 length badly defined in MQC_R4Tensor_R4Tensor_Put',6, &
-        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4),'Size(Ten,4)',Size(Ten,4)  )
+      If (IndO.lt.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndO',IndO,'Size(Ten,4)', Size(Ten,4), &
         'Len4', Len4 )
       If (IndP.gt.Size(Ten,4)) Call MQC_Error_I('Index P out of bounds in &
