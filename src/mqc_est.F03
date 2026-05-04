@@ -321,7 +321,7 @@
         procedure, public::blockSize => mqc_eris_dimension
         procedure, private::hasSpinBlock => mqc_eris_has_spinBlock
 !>      \brief <b> Return a spin block of MQC_TwoERIs object as an MQC rank-4 tensor</b>
-        procedure, public:: getBlock => mqc_2eris_output_block
+        procedure, public::getBlock => mqc_2eris_output_block
         procedure, public::type => mqc_eris_array_type
         procedure, public::storType => mqc_eris_storage_type
         procedure, public::swap => mqc_eri_dimension_swap
@@ -7640,10 +7640,6 @@
       type(mqc_r4tensor)::aaaa,bbbb,aabb,bbaa,abab,abba,baab,baba,&
                           aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
 !
-      write(*,*) 'Debug SUM:'
-      write(*,*) 'ERIA => ',ERIA%integraltype,ERIA%storagetype
-      write(*,*) 'ERIB => ',ERIB%integraltype,ERIB%storagetype
-      
       if(ERIA%integraltype.eq.'empty') then
         ERIOut = ERIB
         return
@@ -13407,109 +13403,685 @@
         myLabel = 'doublebar'
       endIf
 !
-       if (eris1%blockSize('alpha',1).ne.eris2%blockSize('alpha',1).or.&
+     if(myLabel.ne.'coulomb'.and.myLabel.ne.'exchange'.and.myLabel.ne.'doublebar') &
+        call mqc_error_a('Unrecognized 2ERI integral interaction specified',&
+                          6,'myLabel',myLabel)
+     if(myLabel.ne.'exchange'.and.&
+           (eris1%blockSize('alpha',1).ne.eris2%blockSize('alpha',1).or.&
            eris1%blockSize('alpha',2).ne.eris2%blockSize('alpha',2).or.&
            eris1%blockSize('alpha',3).ne.eris2%blockSize('alpha',3).or.&
-           eris1%blockSize('alpha',4).ne.eris2%blockSize('alpha',4))&
+           eris1%blockSize('alpha',4).ne.eris2%blockSize('alpha',4)))&
            call mqc_error_i('2ERIs not correctly dimensioned in mqc_eri_eri_contraction',6,&
             'dim1',eris1%blockSize('alpha',1)-eris2%blockSize('alpha',1),&
             'dim2',eris1%blockSize('alpha',2)-eris2%blockSize('alpha',2),&
             'dim3',eris1%blockSize('alpha',3)-eris2%blockSize('alpha',3),&
             'dim4',eris1%blockSize('alpha',4)-eris2%blockSize('alpha',4))
+     if(myLabel.ne.'coulomb'.and.&
+         (eris1%blockSize('alpha',1).ne.eris2%blockSize('alpha',1).or.&
+           eris1%blockSize('alpha',4).ne.eris2%blockSize('alpha',2).or.&
+           eris1%blockSize('alpha',3).ne.eris2%blockSize('alpha',3).or.&
+           eris1%blockSize('alpha',2).ne.eris2%blockSize('alpha',4)))&
+           call mqc_error_i('2ERIs not correctly dimensioned in mqc_eri_eri_contraction',6,&
+            'dim1',eris1%blockSize('alpha',1)-eris2%blockSize('alpha',1),&
+            'dim2',eris1%blockSize('alpha',4)-eris2%blockSize('alpha',2),&
+            'dim3',eris1%blockSize('alpha',3)-eris2%blockSize('alpha',3),&
+            'dim4',eris1%blockSize('alpha',2)-eris2%blockSize('alpha',4))
 
-      select case (myLabel)
-      case ('coulomb')
-        temp = eris1
-      case ('exchange')
-        temp = mqc_eri_interaction(eris1,'exchange')
-      case ('doublebar')
-        temp = mqc_eri_interaction(eris1,'doublebar')
-      case default
-        call mqc_error_a('Unrecognized 2ERI integral interaction specified',&
-                          6,'myLabel',myLabel)
-      end select
+     !select case (myLabel)
+     !case ('coulomb')
+     !  temp = eris1
+     !case ('exchange')
+     !  temp = mqc_eri_interaction(eris1,'exchange')
+     !case ('doublebar')
+     !  temp = mqc_eri_interaction(eris1,'doublebar')
+     !case default
+     !  call mqc_error_a('Unrecognized 2ERI integral interaction specified',&
+     !                    6,'myLabel',myLabel)
+     !end select
 
+      if(myLabel.ne.'coulomb') temp = eris1%swap(2,4)
       output = 0.0
+      if(eris1%storType().eq.'empty'.or.eris2%storType().eq.'empty') return
+      if(myLabel.ne.'exchange') &
+        output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+      if(myLabel.ne.'coulomb') &
+        output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
       select case (eris1%type())
       case ('space','regular')
-        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
         select case (eris2%type())
         case ('space','regular')
-          if(myLabel.eq.'coulomb')  output = 4*output
-          if(myLabel.eq.'exchange') output = 2*output
-          if(myLabel.eq.'doublebar') &
-              output = 2*output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+          if(eris1%storType().eq.eris2%storType()) then
+            if((eris1%storType().eq.'coulomb'.or.eris1%storType().eq.'symm').or.eris1%storType().eq.'exchange') then
+              if(myLabel.eq.'coulomb')  output = 4*output
+              if(myLabel.eq.'exchange') output = 2*output
+              if(myLabel.eq.'doublebar') &
+                  output = 2*output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+            else if(eris1%storType().eq.'inverted') then
+              if(myLabel.eq.'coulomb'.or.myLabel.eq.'exchange')  output = 4*output
+              if(myLabel.eq.'doublebar') &
+                  output = 2*output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+            end if
+          else if(eris1%storType().eq.'coulomb'.or.eris2%storType().eq.'coulomb'.or. &      
+                  eris1%storType().eq.'symm'.or.eris2%storType().eq.'symm') then
+            if(eris1%storType().eq.'exchange'.or.eris2%storType().eq.'exchange') then
+              if(myLabel.eq.'coulomb')  output = 2*output
+              if(myLabel.eq.'exchange') output = 4*output
+              if(myLabel.eq.'doublebar') &
+               output = 2*output - 2*contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+            else if(eris1%storType().eq.'inverted'.or.eris2%storType().eq.'inverted') then
+              output = 2*output
+            else
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype(), 'ERIs2%stortype', ERIs2%stortype())
+            end if
+          else if(eris1%storType().eq.'exchange'.or.eris2%storType().eq.'exchange') then
+            if(eris1%storType().eq.'inverted'.or.eris2%storType().eq.'inverted') then
+              output = 2*output
+            else
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype(), 'ERIs2%stortype', ERIs2%stortype())
+            end if
+          else
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype(), 'ERIs2%stortype', ERIs2%stortype())
+          end if
         case ('spin')
-          output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
-          if(myLabel.ne.'exchange') then
-            output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb'))
-            output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
-          end if
+          if(myLabel.ne.'exchange') &
+             output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'coulomb') & 
+            output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          select case(eris1%storType())
+          case ('coulomb','sym')
+            select case(eris2%storType())
+            case ('sym')
+              if(myLabel.ne.'exchange') &
+                 output = output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) 
+            case ('coulomb')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
+            case ('exchange')
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baab'))
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baab'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baab'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('exchange')
+            select case(eris2%storType())
+            case ('symm')
+              if(myLabel.ne.'coulomb') &
+                 output = output - 2*contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb')) 
+            case ('coulomb')
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
+            case ('exchange')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab'))
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('inverted')
+            select case(eris2%storType())
+            case ('coulomb','symm','exchange','doublebar')
+              ! Done
+            case ('inverted')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baba'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baba'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype())
+          end select
         case ('general')
-          output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
-          if(myLabel.ne.'exchange') then
-            output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb'))
-            output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
-          end if
-          if(myLabel.ne.'coulomb') then
-            output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba'))
-            output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('baab'))
-          end if
+          if(myLabel.ne.'exchange') &
+             output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          if(myLabel.ne.'coulomb') & 
+            output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
+          select case(eris1%storType())
+          case ('coulomb','symm')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('aaaa'),eris2%getBlock('bbaa'))
+            if(myLabel.ne.'coulomb') &
+               output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abba')) &
+                               - contraction(temp%getBlock('aaaa'),eris2%getBlock('baab'))
+          case ('exchange')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab'))
+            if(myLabel.ne.'coulomb') &
+               output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('aabb')) &
+                               - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbaa'))
+          case ('inverted')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('abab')) &
+                                 - contraction(temp%getBlock('aaaa'),eris2%getBlock('baba'))
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype())
+          end select
+        case default
+          call mqc_error_A('Unknown or not implemented twoERI type in mqc_eri_eri_contraction', 6, &
+                 'ERIs2%type', ERIs2%type())
         end select
       case ('spin')
-        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        if(myLabel.ne.'exchange') &
+           output = output + contraction(eris1%getBlock('bbbb'),eris2%getBlock('bbbb'))
+        if(myLabel.ne.'coulomb') & 
+          output = output - contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
         select case (eris2%type())
         case ('space','regular')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('aaaa'))
-          if(myLabel.ne.'exchange') then
-            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa'))
-            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
-          end if
+          select case(eris2%storType())
+          case ('coulomb','symm')
+            select case(eris1%storType())
+            case ('coulomb')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('aaaa'))
+            case ('exchange')
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('abba'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('baab'),eris2%getBlock('aaaa'))
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('abba'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('baab'),eris2%getBlock('aaaa'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('abba'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('baab'),eris2%getBlock('aaaa'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs1%stortype', ERIs1%stortype())
+            end select
+          case ('exchange')
+            select case(eris1%storType())
+            case ('coulomb','symm')
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+            case ('exchange')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba''aaaa')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab''aaaa'))
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output - contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                                 - contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs1%stortype', ERIs1%stortype())
+            end select
+          case ('inverted')
+            select case(eris1%storType())
+            case ('coulomb','symm','exchange','doublebar')
+              ! Done
+            case ('inverted')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &                                                   
+                 output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('aaaa')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('aaaa'))
+            case ('ms')                                                                    
+              if(myLabel.ne.'exchange') &                                                  
+                 output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('aaaa')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('aaaa'))
+              if(myLabel.ne.'coulomb') &                                                   
+                 output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('aaaa')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('aaaa'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs1%stortype', ERIs1%stortype())
+            end select
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs2%stortype', ERIs2%stortype())
+          end select
         case ('spin')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
-          if(myLabel.ne.'exchange') then
-            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
-            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
-          end if
+          select case(eris1%storType())
+          case ('coulomb','symm')
+            select case(eris2%storType())
+            case ('coulomb','symm')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            case ('exchange')                                       
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('exchange')
+            select case(eris2%storType())
+            case ('coulomb','symm')
+              if(myLabel.ne.'coulomb') &
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            case ('exchange')                                       
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+            case ('inverted')                                       
+              ! Done                                                
+            case ('doublebar')                                      
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            case ('ms')                                             
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('inverted')
+            select case(eris2%storType())
+            case ('coulomb','symm')
+              ! Done
+            case ('exchange')
+              ! Done
+            case ('inverted')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+            case ('doublebar')                                      
+              ! Done                                                
+            case ('ms')                                             
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('doublebar')
+            select case(eris2%storType())
+            case ('coulomb','symm')
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) 
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) & 
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) 
+            case ('exchange')
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) 
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) 
+            case ('inverted')
+              ! Done
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                                 + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) 
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                                 -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &                           
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                                 + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) 
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                                 -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case ('ms')
+            select case(eris2%storType())
+            case ('coulomb','symm')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            case ('exchange')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) 
+              if(myLabel.ne.'coulomb') &
+                 output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) 
+            case ('inverted')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &                            
+                 output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+            case ('doublebar')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                                 + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+              if(myLabel.ne.'coulomb') &
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                                 -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+            case ('ms')
+              if(myLabel.ne.'exchange') &
+                 output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                                 + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                                 + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                                 + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+              if(myLabel.ne.'coulomb') &
+                 output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                                 -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                                 -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                                 -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) &
+                                 -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                                 -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+            case default
+              call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                     'ERIs2%stortype', ERIs2%stortype())
+            end select
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype())
+          end select
         case ('general')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
-          if(myLabel.ne.'exchange') then
-            output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
-            output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
-          end if
-          if(myLabel.ne.'coulomb') then
-            output = output + contraction(temp%getBlock('abba'),eris2%getBlock('abba'))
-            output = output + contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
-          end if
+          select case(eris1%storType())
+          case ('coulomb','symm')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            if(myLabel.ne.'coulomb') &                            
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+          case ('exchange')                                       
+            if(myLabel.ne.'exchange') &                           
+               output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+            if(myLabel.ne.'coulomb') &                            
+               output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          case ('inverted')                                       
+            if(myLabel.ne.'exchange') &                           
+               output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                               + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+            if(myLabel.ne.'coulomb') &                            
+               output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                               -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+          case ('doublebar')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) &
+                               -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          case ('ms')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                               + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                               + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) &
+                               -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                               -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs1%stortype', ERIs1%stortype())
+          end select
+        case default
+          call mqc_error_A('Unknown or not implemented twoERI type in mqc_eri_eri_contraction', 6, &
+                 'ERIs2%type', ERIs2%type())
         end select
       case ('general')
-        output = output + contraction(temp%getBlock('aaaa'),eris2%getBlock('aaaa'))
+        if(myLabel.ne.'exchange') &
+           output = output + contraction(eris1%getBlock('bbbb'),eris2%getBlock('bbbb'))
+        if(myLabel.ne.'coulomb') & 
+          output = output -  contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
         select case (eris2%type())
         case ('space','regular')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('aaaa'))
-          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa'))
-          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+          select case(eris2%storType())
+          case ('coulomb','symm')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('aaaa'))
+            if(myLabel.ne.'coulomb') &                                                   
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('aaaa')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('aaaa'))
+          case ('exchange')                                                              
+            if(myLabel.ne.'exchange') &                                                  
+               output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('aaaa')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('aaaa'))
+            if(myLabel.ne.'coulomb') &                                                   
+               output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aaaa')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
+          case ('inverted')                                                              
+            if(myLabel.ne.'exchange') &                                                  
+               output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('aaaa')) &
+                               + contraction(eris1%getBlock('baba'),eris2%getBlock('aaaa'))
+            if(myLabel.ne.'coulomb') &                                                   
+               output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('aaaa')) &
+                               -  contraction(temp%getBlock('baba'),eris2%getBlock('aaaa'))
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs2%stortype', ERIs2%stortype())
+          end select
         case ('spin')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
-          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
-          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          select case(eris2%storType())
+          case ('coulomb','symm')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
+          case ('exchange')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          case ('inverted')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                               + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                               -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+          case ('doublebar')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) &
+                               -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
+          case ('ms')
+            if(myLabel.ne.'exchange') &
+               output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               + contraction(eris1%getBlock('abba'),eris2%getBlock('abba')) &
+                               + contraction(eris1%getBlock('baab'),eris2%getBlock('baab')) &
+                               + contraction(eris1%getBlock('abab'),eris2%getBlock('abab')) &
+                               + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))
+            if(myLabel.ne.'coulomb') &
+               output = output -  contraction(temp%getBlock('abba'),eris2%getBlock('abba')) &
+                               -  contraction(temp%getBlock('baab'),eris2%getBlock('baab')) &
+                               -  contraction(temp%getBlock('aabb'),eris2%getBlock('aabb')) &
+                               -  contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa')) &
+                               -  contraction(temp%getBlock('abab'),eris2%getBlock('abab')) &
+                               -  contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
+          case default
+            call mqc_error_A('Unknown or not implemented twoERI storage type in mqc_eri_eri_contraction', 6, &
+                   'ERIs2%stortype', ERIs2%stortype())
+          end select
         case ('general')
-          output = output + contraction(temp%getBlock('bbbb'),eris2%getBlock('bbbb'))
-          output = output + contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))
-          output = output + contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))
-          output = output + contraction(temp%getBlock('baab'),eris2%getBlock('baab'))
-          output = output + contraction(temp%getBlock('abba'),eris2%getBlock('abba'))
-          output = output + contraction(temp%getBlock('baba'),eris2%getBlock('baba'))
-          output = output + contraction(temp%getBlock('abab'),eris2%getBlock('abab'))
-          output = output + contraction(temp%getBlock('aaab'),eris2%getBlock('aaab'))
-          output = output + contraction(temp%getBlock('aaba'),eris2%getBlock('aaba'))
-          output = output + contraction(temp%getBlock('abaa'),eris2%getBlock('abaa'))
-          output = output + contraction(temp%getBlock('baaa'),eris2%getBlock('baaa'))
-          output = output + contraction(temp%getBlock('bbba'),eris2%getBlock('bbba'))
-          output = output + contraction(temp%getBlock('bbab'),eris2%getBlock('bbab'))
-          output = output + contraction(temp%getBlock('babb'),eris2%getBlock('babb'))
-          output = output + contraction(temp%getBlock('abbb'),eris2%getBlock('abbb'))
+          if(myLabel.ne.'exchange') &
+            output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aabb'))&
+                            + contraction(eris1%getBlock('bbaa'),eris2%getBlock('bbaa'))&
+                            + contraction(eris1%getBlock('baab'),eris2%getBlock('baab'))&
+                            + contraction(eris1%getBlock('abba'),eris2%getBlock('abba'))&
+                            + contraction(eris1%getBlock('baba'),eris2%getBlock('baba'))&
+                            + contraction(eris1%getBlock('abab'),eris2%getBlock('abab'))&
+                            + contraction(eris1%getBlock('aaab'),eris2%getBlock('aaab'))&
+                            + contraction(eris1%getBlock('aaba'),eris2%getBlock('aaba'))&
+                            + contraction(eris1%getBlock('abaa'),eris2%getBlock('abaa'))&
+                            + contraction(eris1%getBlock('baaa'),eris2%getBlock('baaa'))&
+                            + contraction(eris1%getBlock('bbba'),eris2%getBlock('bbba'))&
+                            + contraction(eris1%getBlock('bbab'),eris2%getBlock('bbab'))&
+                            + contraction(eris1%getBlock('babb'),eris2%getBlock('babb'))&
+                            + contraction(eris1%getBlock('abbb'),eris2%getBlock('abbb'))
+          if(myLabel.ne.'coulomb') &
+            output = output - contraction(temp%getBlock('aabb'),eris2%getBlock('aabb'))&
+                            - contraction(temp%getBlock('bbaa'),eris2%getBlock('bbaa'))&
+                            - contraction(temp%getBlock('baab'),eris2%getBlock('baab'))&
+                            - contraction(temp%getBlock('abba'),eris2%getBlock('abba'))&
+                            - contraction(temp%getBlock('baba'),eris2%getBlock('baba'))&
+                            - contraction(temp%getBlock('abab'),eris2%getBlock('abab'))&
+                            - contraction(temp%getBlock('aaab'),eris2%getBlock('aaab'))&
+                            - contraction(temp%getBlock('aaba'),eris2%getBlock('aaba'))&
+                            - contraction(temp%getBlock('abaa'),eris2%getBlock('abaa'))&
+                            - contraction(temp%getBlock('baaa'),eris2%getBlock('baaa'))&
+                            - contraction(temp%getBlock('bbba'),eris2%getBlock('bbba'))&
+                            - contraction(temp%getBlock('bbab'),eris2%getBlock('bbab'))&
+                            - contraction(temp%getBlock('babb'),eris2%getBlock('babb'))&
+                            - contraction(temp%getBlock('abbb'),eris2%getBlock('abbb'))
+        case default
+          call mqc_error_A('Unknown or not implemented twoERI type in mqc_eri_eri_contraction', 6, &
+                 'ERIs2%type', ERIs2%type())
         end select
+      case default
+        call mqc_error_A('Unknown or not implemented twoERI type in mqc_eri_eri_contraction', 6, &
+               'ERIs1%type', ERIs1%type())
       end select
 !
       end function mqc_eri_eri_contraction
