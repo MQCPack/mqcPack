@@ -8092,12 +8092,6 @@
             call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                  'ERIA%storagetype', ERIA%stortype() )
           end select
-          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('aaaa')
-          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aaaa')
-          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('aaaa')
-          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
-                                                         aabb,bbaa)
         case('spin')
           select case(ERIA%storType())
           case('coulomb')
@@ -8143,7 +8137,7 @@
               abba = ERIB%getBlock('abba')
               baab = ERIB%getBlock('baab')
               abab = ERIB%getBlock('abab')
-              baba = ERIA%getBlock('baba')
+              baba = ERIB%getBlock('baba')
               call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
                                                abba=abba,baab=baab,abab=abab,baba=baba)
             case default
@@ -8372,12 +8366,6 @@
             call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                  'ERIA%storagetype', ERIA%stortype() )
           end select
-          aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
-          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
-                                                         aabb,bbaa)
         case('general')
           select case(ERIA%storType())
           case('coulomb')
@@ -8989,28 +8977,277 @@
       type(mqc_r4tensor)::aaaa,bbbb,aabb,bbaa,abab,abba,baab,baba,&
                           aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
 !
+      if(ERIA%integraltype.eq.'empty') then
+        ERIOut = (-1)*ERIB
+        return
+      elseif(ERIB%integraltype.eq.'empty') then
+        ERIOut = ERIA
+        return
+      end if
       select case(ERIA%integraltype)
       case('space')
         select case (ERIB%integraltype)
         case('space')
-          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
-          call mqc_twoeris_allocate(ERIOut,'full','space',aaaa)
+          select case(ERIA%storType())
+          case('coulomb')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'coulomb','space',aaaa)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('aaaa')
+              abba = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',&
+                            aaaa,aaaa,aabb,bbaa,abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('aaaa')
+              abab = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',&
+                             aaaa,aaaa,aabb,bbaa,baba=baba,abab=abab)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('exchange')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              aabb = (-1)*ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',&
+                            aaaa,aaaa,aabb,bbaa,abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'exchange','space',aaaa)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('aaaa')
+              abab = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',&
+                       aaaa,aaaa,abba=abba,baab=baab,baba=baba,abab=abab)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('inverted')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              aabb = (-1)*ERIB%getBlock('aaaa')
+              abab = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',&
+                             aaaa,aaaa,aabb,bbaa,baba=baba,abab=abab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              abba = (-1)*ERIB%getBlock('aaaa')
+              abab = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',&
+                       aaaa,aaaa,abba=abba,baab=baab,baba=baba,abab=abab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'inverted','space',aaaa)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
         case('spin')
-          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
-          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
-                                                         aabb,bbaa)
+          select case(ERIA%storType())
+          case('coulomb')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+              bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+              call mqc_twoeris_allocate(ERIOut,'coulomb','spin',aaaa,bbbb,aabb,bbaa)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('aaaa')
+              aabb = ERIA%getBlock('aaaa')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('aaaa')
+              aabb = ERIA%getBlock('aaaa')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                           abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype())
+            end select
+          case('exchange')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('aaaa')
+              aabb = (-1)*ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('abba')
+              bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('abba')
+              call mqc_twoeris_allocate(ERIOut,'exchange','spin',aaaa,bbbb,aabb,bbaa)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              baab = ERIA%getBlock('aaaa')
+              abba = ERIA%getBlock('aaaa')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              abba = ERIA%getBlock('aaaa')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('aaaa')-ERIB%getBlock('baab')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                   abba=abba,baab=baab)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('aaaa')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('aaaa')-ERIB%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('inverted')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abab = ERIA%getBlock('aaaa')
+              baba = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                           abab=abab,baba=baba)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              baab = (-1)*ERIB%getBlock('baab')
+              abba = (-1)*ERIB%getBlock('abba')
+              abab = ERIA%getBlock('aaaa')
+              baba = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('abab')
+              bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'inverted','spin',aaaa,bbbb,&
+                                                                 abab,baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abab = ERIA%getBlock('aaaa')
+              baba = ERIA%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abab = ERIA%getBlock('aaaa')-ERIB%getBlock('abab')
+              baba = ERIA%getBlock('aaaa')-ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
         case('general')                        
           aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
           bbbb = ERIA%getBlock('aaaa')-ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+          select case(ERIA%storType())
+          case('coulomb')
+            aabb = ERIA%getBlock('aaaa')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('aaaa')-ERIB%getBlock('bbaa')
+            abab = (-1)*ERIB%getBlock('abab')
+            baba = (-1)*ERIB%getBlock('baba')
+            baab = (-1)*ERIB%getBlock('baab')
+            abba = (-1)*ERIB%getBlock('abba')
+          case('exchange')
+            aabb = (-1)*ERIB%getBlock('aabb')
+            bbaa = (-1)*ERIB%getBlock('bbaa')
+            abab = (-1)*ERIB%getBlock('abab')
+            baba = (-1)*ERIB%getBlock('baba')
+            baab = ERIA%getBlock('aaaa')-ERIB%getBlock('baab')
+            abba = ERIA%getBlock('aaaa')-ERIB%getBlock('abba')
+          case('inverted')
+            aabb = (-1)*ERIB%getBlock('aabb')
+            bbaa = (-1)*ERIB%getBlock('bbaa')
+            abab = ERIA%getBlock('aaaa')-ERIB%getBlock('abab')
+            baba = ERIA%getBlock('aaaa')-ERIB%getBlock('baba')
+            baab = (-1)*ERIB%getBlock('baab')
+            abba = (-1)*ERIB%getBlock('abba')
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
           call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
                                                             aabb,bbaa,&
-                (-1)*ERIB%getBlock('abab'),(-1)*ERIB%getBlock('abba'),&
-                (-1)*ERIB%getBlock('baab'),(-1)*ERIB%getBlock('baba'),&
+                                                            abab,abba,&
+                                                            baab,baba,&
                 (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
                 (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
                 (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
@@ -9022,32 +9259,527 @@
       case('spin')
         select case (ERIB%integraltype)
         case('space')
-          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
-          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
-          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
-          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
-                                                         aabb,bbaa)
+          select case(ERIA%storType())
+          case('coulomb')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'coulomb','spin',aaaa,bbbb,aabb,bbaa)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = (-1)*ERIB%getBlock('aaaa')
+              aabb = (-1)*ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = (-1)*ERIB%getBlock('aaaa')
+              aabb = (-1)*ERIB%getBlock('aaaa')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                           abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('exchange')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('aaaa')
+              aabb = ERIA%getBlock('aaaa')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('abba')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('abba')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'exchange','spin',aaaa,bbbb,aabb,bbaa)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              baab = ERIB%getBlock('aaaa')
+              abba = ERIB%getBlock('aaaa')
+              abab = (-1)*ERIA%getBlock('abab')
+              baba = (-1)*ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('inverted')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abab = (-1)*ERIB%getBlock('aaaa')
+              baba = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                           abab=abab,baba=baba)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              baab = ERIA%getBlock('baab')
+              abba = ERIA%getBlock('abba')
+              abab = (-1)*ERIB%getBlock('aaaa')
+              baba = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('abab')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('baba')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'inverted','spin',aaaa,bbbb,&
+                                                                 abab,baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('doublebar')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                  abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('aaaa')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                   abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abab = (-1)*ERIB%getBlock('aaaa')
+              baba = (-1)*ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('ms')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('aaaa')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('aaaa')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abab = ERIA%getBlock('abab')-ERIB%getBlock('aaaa')
+              baba = ERIA%getBlock('baba')-ERIB%getBlock('aaaa')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                         abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
         case('spin')
-          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
-          call mqc_twoeris_allocate(ERIOut,'full','spin',aaaa,bbbb,&
-                                                         aabb,bbaa)
+          select case(ERIA%storType())
+          case('coulomb')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              call mqc_twoeris_allocate(ERIOut,'coulomb','spin',aaaa,bbbb,aabb,bbaa)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('exchange')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              bbaa = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'exchange','spin',aaaa,bbbb,aabb,bbaa)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              abab = ERIB%getBlock('abab')
+              baba = ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('inverted')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abab=abab,baba=baba)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+              bbaa = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+              call mqc_twoeris_allocate(ERIOut,'inverted','spin',aaaa,bbbb,aabb,bbaa)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = (-1)*ERIB%getBlock('bbaa')
+              aabb = (-1)*ERIB%getBlock('aabb')
+              abba = (-1)*ERIB%getBlock('abba')
+              baab = (-1)*ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+              baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('doublebar')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              call mqc_twoeris_allocate(ERIOut,'doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              abab = (-1)*ERIB%getBlock('abab')
+              baba = (-1)*ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case('ms')
+            select case(ERIB%storType())
+            case('coulomb')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('exchange')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('inverted')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')
+              abba = ERIA%getBlock('abba')
+              baab = ERIA%getBlock('baab')
+              abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+              baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case('ms')
+              aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+              bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+              aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+              baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+              baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                               abba=abba,baab=baab,abab=abab,baba=baba)
+            case default
+              call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                   'ERIB%storagetype', ERIB%stortype() )
+            end select
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
         case('general')
-          aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
-          bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
-          call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
-                                                            aabb,bbaa,&
-                (-1)*ERIB%getBlock('abab'),(-1)*ERIB%getBlock('abba'),&
-                (-1)*ERIB%getBlock('baab'),(-1)*ERIB%getBlock('baba'),&
-                (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
-                (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
-                (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
-                (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          select case(ERIA%storType())
+          case('coulomb')
+            aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+            bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                                              aabb,bbaa,&
+                  (-1)*ERIB%getBlock('abab'),(-1)*ERIB%getBlock('abba'),&
+                  (-1)*ERIB%getBlock('baab'),(-1)*ERIB%getBlock('baba'),&
+                  (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                  (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                  (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                  (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          case('exchange')
+            aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+            bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                  (-1)*ERIB%getBlock('aabb'),(-1)*ERIB%getBlock('bbaa'),&
+                  (-1)*ERIB%getBlock('abab'),     abba,&
+                                        baab,(-1)*ERIB%getBlock('baba'),&
+                  (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                  (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                  (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                  (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          case('inverted')
+            aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+            bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+            abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+            baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+            call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                  (-1)*ERIB%getBlock('aabb'),(-1)*ERIB%getBlock('bbaa'),&
+                                        abab,(-1)*ERIB%getBlock('abba'),&
+                  (-1)*ERIB%getBlock('baab'),                     baba,&
+                  (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                  (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                  (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                  (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          case('doublebar')
+            aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+            bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                      aabb  ,                    bbaa  ,&
+                                      abab  ,(-1)*ERIB%getBlock('abba'),&
+                  (-1)*ERIB%getBlock('baab'),                    baba  ,&
+                  (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                  (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                  (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                  (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          case('ms')
+            aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
+            bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+            baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+            call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
+                                      aabb  ,                    bbaa  ,&
+                                      abab  ,                    abba  ,&
+                                      baab  ,                    baba  ,&
+                  (-1)*ERIB%getBlock('aaab'),(-1)*ERIB%getBlock('aaba'),&
+                  (-1)*ERIB%getBlock('abaa'),(-1)*ERIB%getBlock('baaa'),&
+                  (-1)*ERIB%getBlock('bbba'),(-1)*ERIB%getBlock('bbab'),&
+                  (-1)*ERIB%getBlock('babb'),(-1)*ERIB%getBlock('abbb'))
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIA%storagetype', ERIA%stortype() )
+          end select
         case default
           call mqc_error_A('Unknown twoERI type in mqc_eri_difference', 6, &
                'ERIB%integraltype', ERIB%integraltype )
@@ -9057,12 +9789,36 @@
         case('space')
           aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
           bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('aaaa')
-          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
-          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+          select case(ERIB%storType())
+          case('coulomb')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aaaa')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('aaaa')
+            abab = ERIA%getBlock('abab')
+            baba = ERIA%getBlock('baba')
+            baab = ERIA%getBlock('baab')
+            abba = ERIA%getBlock('abba')
+          case('exchange')
+            aabb = ERIA%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')
+            baba = ERIA%getBlock('baba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('aaaa')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('aaaa')
+          case('inverted')
+            aabb = ERIA%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')-ERIB%getBlock('aaaa')
+            baba = ERIA%getBlock('baba')-ERIB%getBlock('aaaa')
+            baab = ERIA%getBlock('baab')
+            abba = ERIA%getBlock('abba')
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIB%storagetype', ERIB%stortype() )
+          end select
           call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
                                                             aabb,bbaa,&
-                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
-                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                                                            abab,abba,&
+                                                            baab,baba,&
                      ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
                      ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
                      ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
@@ -9070,12 +9826,50 @@
         case('spin')
           aaaa = ERIA%getBlock('aaaa')-ERIB%getBlock('aaaa')
           bbbb = ERIA%getBlock('bbbb')-ERIB%getBlock('bbbb')
-          aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
-          bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+          select case(ERIB%storType())
+          case('coulomb')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')
+            baba = ERIA%getBlock('baba')
+            baab = ERIA%getBlock('baab')
+            abba = ERIA%getBlock('abba')
+          case('exchange')
+            aabb = ERIA%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')
+            baba = ERIA%getBlock('baba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+          case('inverted')
+            aabb = ERIA%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+            baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+            baab = ERIA%getBlock('baab')
+            abba = ERIA%getBlock('abba')
+          case('doublebar')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')
+            baba = ERIA%getBlock('baba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+          case('ms')
+            aabb = ERIA%getBlock('aabb')-ERIB%getBlock('aabb')
+            bbaa = ERIA%getBlock('bbaa')-ERIB%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')-ERIB%getBlock('abab')
+            baba = ERIA%getBlock('baba')-ERIB%getBlock('baba')
+            baab = ERIA%getBlock('baab')-ERIB%getBlock('baab')
+            abba = ERIA%getBlock('abba')-ERIB%getBlock('abba')
+          case default
+            call mqc_error_A('Unknown twoERI storage type in mqc_eri_difference', 6, &
+                 'ERIB%storagetype', ERIB%stortype() )
+          end select
           call mqc_twoeris_allocate(ERIOut,'full','general',aaaa,bbbb,&
                                                             aabb,bbaa,&
-                     ERIA%getBlock('abab'),     ERIA%getBlock('abba'),&
-                     ERIA%getBlock('baab'),     ERIA%getBlock('baba'),&
+                                                            abab,abba,&
+                                                            baab,baba,&
                      ERIA%getBlock('aaab'),     ERIA%getBlock('aaba'),&
                      ERIA%getBlock('abaa'),     ERIA%getBlock('baaa'),&
                      ERIA%getBlock('bbba'),     ERIA%getBlock('bbab'),&
@@ -13439,6 +14233,10 @@
      !                    6,'myLabel',myLabel)
      !end select
 
+      write(*,*) 'DEBUG: ERI_ERI Contraction' 
+      write(*,*) 'ERIs 1',eris1%Type(),eris1%storType()
+      write(*,*) 'ERIs 2',eris2%Type(),eris2%storType()
+
       if(myLabel.ne.'coulomb') temp = eris1%swap(2,4)
       output = 0.0
       if(eris1%storType().eq.'empty'.or.eris2%storType().eq.'empty') return
@@ -13463,7 +14261,13 @@
             end if
           else if(eris1%storType().eq.'coulomb'.or.eris2%storType().eq.'coulomb'.or. &      
                   eris1%storType().eq.'symm'.or.eris2%storType().eq.'symm') then
-            if(eris1%storType().eq.'exchange'.or.eris2%storType().eq.'exchange') then
+            if(eris1%storType().eq.'coulomb'.or.eris2%storType().eq.'coulomb'.or. &      
+                  eris1%storType().eq.'symm'.or.eris2%storType().eq.'symm') then
+              if(myLabel.eq.'coulomb')  output = 4*output
+              if(myLabel.eq.'exchange') output = 2*output
+              if(myLabel.eq.'doublebar') &
+                  output = 2*output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aaaa'))
+            else if(eris1%storType().eq.'exchange'.or.eris2%storType().eq.'exchange') then
               if(myLabel.eq.'coulomb')  output = 2*output
               if(myLabel.eq.'exchange') output = 4*output
               if(myLabel.eq.'doublebar') &
@@ -13491,9 +14295,9 @@
           if(myLabel.ne.'coulomb') & 
             output = output - contraction(temp%getBlock('aaaa'),eris2%getBlock('bbbb'))
           select case(eris1%storType())
-          case ('coulomb','sym')
+          case ('coulomb','symm')
             select case(eris2%storType())
-            case ('sym')
+            case ('symm')
               if(myLabel.ne.'exchange') &
                  output = output + 2*contraction(eris1%getBlock('aaaa'),eris2%getBlock('aabb')) 
             case ('coulomb')
@@ -13628,7 +14432,7 @@
           select case(eris2%storType())
           case ('coulomb','symm')
             select case(eris1%storType())
-            case ('coulomb')
+            case ('coulomb','symm')
               if(myLabel.ne.'exchange') &
                  output = output + contraction(eris1%getBlock('aabb'),eris2%getBlock('aaaa')) &
                                  + contraction(eris1%getBlock('bbaa'),eris2%getBlock('aaaa'))
