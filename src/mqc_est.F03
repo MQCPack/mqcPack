@@ -1074,7 +1074,8 @@
         if(twoERIs%hasSpinBlock('bbbb')) &
            call twoERIs%beta%print(iout,'(bb|bb)',short_print_threshold=print_threshold)
         if((twoERIs%storageType.eq.'coulomb'.or.twoERIs%storageType.eq.'doublebar'&
-           .or.twoERIs%storageType.eq.'ms').and.twoERIs%hasSpinBlock('aabb')) &
+           .or.twoERIs%storageType.eq.'ms'.or.twoERIs%storageType.eq.'symm').and.&
+           twoERIs%hasSpinBlock('aabb')) &
            call twoERIs%alphaBeta%print(iout,'(aa|bb)',short_print_threshold=print_threshold)
         if((twoERIs%storageType.eq.'coulomb'.or.twoERIs%storageType.eq.'doublebar'&
            .or.twoERIs%storageType.eq.'ms').and.twoERIs%hasSpinBlock('bbaa')) &
@@ -23793,11 +23794,9 @@
      !  MO_Coeff_4 = MO_Coeff_2
      !EndIf
 !
-      If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general'.or.&
-       MO_Coeff_3%type().eq.'general'.or.MO_Coeff_4%type().eq.'general') then
+      If(MO_Coeff%type().eq.'general'.or.MO_Coeff_2%type().eq.'general') then
         intType = 'general'
-      ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin'.or.&
-           MO_Coeff_2%type().eq.'spin'.or.MO_Coeff_4%type().eq.'spin') then
+      ElseIf(MO_Coeff%type().eq.'spin'.or.MO_Coeff_2%type().eq.'spin') then
         intType = 'spin'
       Else
         intType = 'space'
@@ -26616,9 +26615,9 @@
       EndIf
       
       If(intType.eq.'space') then
-        call mqc_twoeris_allocate(mo_eris,'full','space',tmpR4TensorAlpha)
+        call mqc_twoeris_allocate(mo_eris,'coulomb','space',tmpR4TensorAlpha)
       ElseIf(intType.eq.'spin'.and.storage.eq.'full') then
-        call mqc_twoeris_allocate(mo_eris,'full','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
+        call mqc_twoeris_allocate(mo_eris,'coulomb','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
           tmpR4TensorAlphaBeta,tmpR4TensorBetaAlpha)
       ElseIf(intType.eq.'spin'.and.storage.eq.'symm') then
         call mqc_twoeris_allocate(mo_eris,'symm','spin',tmpR4TensorAlpha,tmpR4TensorBeta, &
