@@ -640,6 +640,14 @@
         module procedure MQC_R4Tensor_IsAllocated
       end interface
 !
+!>    \brief <b> Deallocates an object</b>
+      interface Deallocate
+        module procedure MQC_Deallocate_Scalar
+        module procedure MQC_Deallocate_Vector
+        module procedure MQC_Deallocate_Matrix
+        module procedure MQC_Deallocate_R4Tensor
+      end interface
+!
 !>    \brief <b> Returns the value of the vector at the specied index</b>
       interface MQC_Vector_Scalar_At
         module procedure MQC_Vector_Scalar_At_Scalar
