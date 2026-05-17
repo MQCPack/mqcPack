@@ -173,6 +173,112 @@
         nfail = nfail+1
       endIf
 !
+!--------------------------------------------------------------------
+!     Tests 5-8: space/coulomb and space/exchange cross-type operations.
+!     Physical identities: C-E=DB, C-DB=E, DB-C=E, DB+E=C.
+!
+!     coulomb ERI: aaaa=2 (tA)
+!     exchange ERI: aaaa=3 (tB)
+!     doublebar ERI: aaaa=4 (tAB), aabb=5 (tBB), abba=6 (tABBA)
+!--------------------------------------------------------------------
+!
+      call mqc_twoeris_allocate(eriA,'full-coulomb','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-exchange','space',tB)
+      call mqc_twoeris_allocate(eriC,'full-doublebar','space',tAB, &
+        alphaBeta=tBB,abba=tABBA)
+!
+!--------------------------------------------------------------------
+!     Test 5: space/coulomb - space/exchange = space/doublebar
+!     C-E: aaaa=2-3=-1, aabb=C.aaaa=2, abba=-E.aaaa=-3
+!--------------------------------------------------------------------
+!
+      eriC = eriA - eriB
+!
+      blk = eriC%getBlock('aaaa')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = -1.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb-exchange: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb-exchange: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriC%getBlock('aabb')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb-exchange: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb-exchange: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriC%getBlock('abba')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = -3.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb-exchange: abba(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb-exchange: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Test 6: space/coulomb - space/doublebar = space/exchange
+!     C-DB: aaaa=2-4=-2
+!--------------------------------------------------------------------
+!
+      call mqc_twoeris_allocate(eriA,'full-coulomb','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-doublebar','space',tAB, &
+        alphaBeta=tBB,abba=tABBA)
+      eriC = eriA - eriB
+!
+      blk = eriC%getBlock('aaaa')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = -2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb-doublebar: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb-doublebar: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Test 7: space/doublebar - space/coulomb = space/exchange
+!     DB-C: aaaa=4-2=2
+!--------------------------------------------------------------------
+!
+      eriC = eriB - eriA
+!
+      blk = eriC%getBlock('aaaa')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar-coulomb: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar-coulomb: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Test 8: space/doublebar + space/exchange = space/coulomb
+!     DB+E: aaaa=4+3=7
+!--------------------------------------------------------------------
+!
+      call mqc_twoeris_allocate(eriA,'full-exchange','space',tB)
+      eriC = eriB + eriA
+!
+      blk = eriC%getBlock('aaaa')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar+exchange: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar+exchange: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
 !
