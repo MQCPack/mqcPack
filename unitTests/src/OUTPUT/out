@@ -1,0 +1,10 @@
+ PASS  space/doublebar+doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar+doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar+doublebar: abba(1,1,1,1)
+ PASS  space/doublebar-doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar-doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar-doublebar: abba(1,1,1,1)
+ PASS  space/ms+ms: aaaa(1,1,1,1)
+ PASS  space/ms-ms: aaaa(1,1,1,1)
+
+ Tests completed: 0 failure(s)
