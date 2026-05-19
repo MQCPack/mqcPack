@@ -480,6 +480,7 @@
 !
 !>    \brief <b> Sums two variables</b>
       Interface Operator (+)
+        Module Procedure MQC_Eigenvalues_Sum
         Module Procedure MQC_Integral_Sum
         Module Procedure MQC_ERI_Sum 
       End Interface
@@ -498,6 +499,8 @@
 !
 !>    \brief <b> Multiplies two variables</b>
       Interface Operator (*)
+        Module Procedure MQC_Scalar_eigenvalues_Multiply
+        Module Procedure MQC_eigenvalues_Scalar_Multiply
         Module Procedure MQC_Scalar_Integral_Multiply
         Module Procedure MQC_Integral_Scalar_Multiply
         Module Procedure MQC_Scalar_twoERIs_Multiply
@@ -7340,6 +7343,145 @@
       end function mqc_integral_pad
 !
 !
+!     PROCEDURE MQC_Eigenvalues_Sum
+!
+!>    \brief <b> MQC_Eigenvalues_Sum is used to sum two MQC Eigenvalues type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Sum is used to sum two MQC Eigenvalues type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigA
+!>    \verbatim
+!>        EigA is type(mqc_scf_Eigenvalues)
+!>        The first MQC Eigenvalues variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] EigB
+!>    \verbatim
+!>        EigB is type(mqc_scf_Eigenvalues)
+!>        The second MQC Eigenvalues variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2026
+!
+      function mqc_Eigenvalues_sum(EigA,EigB) result(EigOut)
+!
+      implicit none
+      type(mqc_scf_Eigenvalues),intent(in)::EigA,EigB
+      type(mqc_scf_Eigenvalues)::EigOut
+      type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
+!
+      if(size(EigA,'alpha').ne.size(EigB,'alpha').or.&
+         size(EigA,'beta').ne.size(EigA,'beta')) call mqc_error_i('Integral blocks are &
+        &not conformable in mqc_Eigenvalues_sum',6,&
+        'size(EigA,alpha)',size(EigA,'alpha'),&
+        'size(EigB,alpha)',size(EigB,'alpha'),&
+        'size(EigA,beta)',size(EigA,'beta'),&
+        'size(EigB,beta)',size(EigB,'beta'))
+!
+      select case(EigA%array_type)
+      case('space')
+        select case (EigB%array_type)
+        case('space')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha+EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','space',tmpVectorAlpha)
+        case('spin')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha+EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha
+          end if
+          if(EigA%hasAlpha()) then
+            if(EigB%hasBeta()) then
+              tmpVectorBeta = EigA%alpha+EigB%beta
+            else
+              tmpVectorBeta = EigA%alpha
+            end if
+          else
+            if(EigB%hasBeta()) tmpVectorBeta = EigB%beta
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_eigenvalues_sum', 6, &
+               'EigB%array_type', EigB%array_type )
+        end select
+      case('spin')
+        select case (EigB%array_type)
+        case('space')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha+EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha
+          end if
+          if(EigA%hasBeta()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorBeta = EigA%beta+EigB%alpha
+            else
+              tmpVectorBeta = EigA%beta
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorBeta = EigB%alpha
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case('spin')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha+EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha
+          end if
+          if(EigA%hasBeta()) then
+            if(EigB%hasBeta()) then
+              tmpVectorBeta = EigA%beta+EigB%beta
+            else
+              tmpVectorBeta = EigA%beta
+            end if
+          else
+            if(EigB%hasBeta()) tmpVectorBeta = EigB%beta
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_eigenvalues_sum', 6, &
+               'EigB%array_type', EigB%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_eigenvalues_sum', 6, &
+             'EigA%array_type', EigA%array_type )
+      end select
+!
+      end function mqc_eigenvalues_sum
+!
+!
 !     PROCEDURE MQC_Integral_Sum
 !
 !>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
@@ -7595,7 +7737,7 @@
         call mqc_error_A('Unknown integral type in mqc_integral_sum', 6, &
              'integralA%array_type', integralA%array_type )
       end select
-
+!
       end function mqc_integral_sum
 !
 !
@@ -10223,6 +10365,174 @@
       end select
 !
       end function mqc_scalar_integral_multiply
+!
+!
+!     PROCEDURE MQC_Scalar_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Scalar_Eigenvalues_Multiply is used to multiply an MQC integral 
+!>    type variable with an MQC scalar and returns an MQC Eigenvalues</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Scalar_Eigenvalues_Multiply is used to multiply an MQC integral type variable 
+!>    with an MQC scalar and returns an MQC Eigenvalues. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is class(*)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] EigB
+!>    \verbatim
+!>        Eig is type(mqc_scf_Eigenvalues)
+!>        The MQC Eigenvalues variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moras
+!>    \date 2026
+!
+      function mqc_scalar_eigenvalues_multiply(scalarIn,eigB) result(eigOut)
+!
+      implicit none
+      type(mqc_scf_Eigenvalues),intent(in)::eigB
+      class(*),intent(in)::scalarIn
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_Eigenvalues)::eigOut
+      type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
+      type(mqc_scalar)::scalar
+      Character(Len=64)::myLabel
+      integer(kind=int64)::nA1,nA2,nB1,nB2
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_Eigenvalues_scalar_multiply',6)
+      end select
+
+      select case (EigB%array_type)
+      case('space')
+          if(EigB%hasAlpha()) &
+            tmpVectorAlpha = scalar*EigB%alpha
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVectorAlpha)
+      case('spin')
+          if(EigB%hasAlpha()) &
+            tmpVectorAlpha = scalar*EigB%alpha
+          if(EigB%hasBeta()) &
+            tmpVectorBeta = scalar*EigB%beta
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'spin',tmpVectorAlpha,tmpVectorBeta)
+      case default
+        call mqc_error_A('Unknown integral type in mqc_Eigenvalues_scalar_multiply', 6, &
+             'EigB%array_type', EigB%array_type )
+      end select
+!
+      end function mqc_scalar_eigenvalues_multiply
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Scalar_Multiply
+!
+!>    \brief <b> MQC_Eigenvalues_Scalar_Multiply is used to multiply an MQC integral 
+!>    type variable with an MQC scalar and returns an MQC Eigenvalues</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Scalar_Multiply is used to multiply an MQC integral type variable 
+!>    with an MQC scalar and returns an MQC Eigenvalues. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Eig
+!>    \verbatim
+!>        Eig is type(mqc_scf_Eigenvalues)
+!>        The MQC Eigenvalues variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] ScalarIn
+!>    \verbatim
+!>        ScalarIn is class(*)
+!>        The MQC scalar type variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moras
+!>    \date 2026
+!
+      function mqc_eigenvalues_scalar_multiply(eig,scalarIn) result(eigOut)
+!
+      implicit none
+      type(mqc_scf_Eigenvalues),intent(in)::eig
+      class(*),intent(in)::scalarIn
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_Eigenvalues)::eigOut
+      type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
+      type(mqc_scalar)::scalar
+      Character(Len=64)::myLabel
+      integer(kind=int64)::nA1,nA2,nB1,nB2
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+      select type(scalarIn)
+      type is (integer)
+        scalar = scalarIn
+      type is (real)
+        scalar = scalarIn
+      type is (complex)
+        scalar = scalarIn
+      type is (mqc_scalar)
+        scalar = scalarIn
+      class default
+        call mqc_error_I('scalarIn type not defined in mqc_Eigenvalues_scalar_multiply',6)
+      end select
+
+      select case (Eig%array_type)
+      case('space')
+          if(Eig%hasAlpha()) &
+            tmpVectorAlpha = scalar*Eig%alpha
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVectorAlpha)
+      case('spin')
+          if(Eig%hasAlpha()) &
+            tmpVectorAlpha = scalar*Eig%alpha
+          if(Eig%hasBeta()) &
+            tmpVectorBeta = scalar*Eig%beta
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'spin',tmpVectorAlpha,tmpVectorBeta)
+      case default
+        call mqc_error_A('Unknown integral type in mqc_Eigenvalues_scalar_multiply', 6, &
+             'Eig%array_type', Eig%array_type )
+      end select
+!
+      end function mqc_eigenvalues_scalar_multiply
+!
 !
 !
 !     PROCEDURE MQC_Integral_Scalar_Multiply
@@ -14232,10 +14542,6 @@
      !  call mqc_error_a('Unrecognized 2ERI integral interaction specified',&
      !                    6,'myLabel',myLabel)
      !end select
-
-      write(*,*) 'DEBUG: ERI_ERI Contraction' 
-      write(*,*) 'ERIs 1',eris1%Type(),eris1%storType()
-      write(*,*) 'ERIs 2',eris2%Type(),eris2%storType()
 
       if(myLabel.ne.'coulomb') temp = eris1%swap(2,4)
       output = 0.0
@@ -20262,7 +20568,7 @@
       type is (mqc_scalar)
         myI = i
       class default
-        call mqc_error('index type not defined in MQC_twoERIs_put')
+        call mqc_error('index type not defined in MQC_integral_put')
       end select
       select type (j)
       type is (integer)
@@ -20270,7 +20576,7 @@
       type is (mqc_scalar)
         myJ = j
       class default
-        call mqc_error('index type not defined in MQC_twoERIs_put')
+        call mqc_error('index type not defined in MQC_integral_put')
       end select
 
       if(myI.gt.integral%blockSize('alpha',1)+integral%blockSize('beta',1)) &
@@ -20435,7 +20741,7 @@
       character(len=*),optional,intent(in)::spinBlockIn
       character(len=64)::spinBlock
       real(kind=real64)::zero=0.0d0
-
+!
       element = zero
       select type (i)  
       type is (integer)
@@ -20443,7 +20749,7 @@
       type is (mqc_scalar)
         myI = i
       class default 
-        call mqc_error('index type not defined in MQC_twoERIs_at')
+        call mqc_error('index type not defined in MQC_integral_at')
       end select
       select type (j)  
       type is (integer)
@@ -20451,14 +20757,14 @@
       type is (mqc_scalar)
         myJ = j
       class default 
-        call mqc_error('index type not defined in MQC_twoERIs_at')
+        call mqc_error('index type not defined in MQC_integral_at')
       end select
-
+!
       if(myI.gt.integral%blockSize('alpha',1)+integral%blockSize('beta',1)) &
         call mqc_error('Requested I dimension out of bounds in mqc_integral_at')
       if(myJ.gt.integral%blockSize('alpha',2)+integral%blockSize('beta',2)) &
         call mqc_error('Requested J dimension out of bounds in mqc_integral_at')
-
+!
       if(present(spinBlockIn)) then
         call string_change_case(spinBlockIn,'L',spinBlock)
         if(integral%array_type.eq.'space') then
@@ -20525,7 +20831,7 @@
           call mqc_error_A('Array type not valid in MQC_Integral_At',6,'Array_Type',integral%array_type)
         endIf
       endIf
-
+!
       end function mqc_integral_at
 !
 !
@@ -20708,14 +21014,14 @@
       character(len=*),optional,intent(in)::spinBlockIn
       character(len=64)::spinBlock
       real(kind=real64)::zero=0.0d0
-
+!
       select type (i)
       type is (integer)
         myI = i
       type is (mqc_scalar)
         myI = i
       class default
-        call mqc_error('index type not defined in MQC_twoERIs_put')
+        call mqc_error('index type not defined in MQC_eigenvalues_put')
       end select
 
       if(myI.gt.eigenvalues%blockSize('alpha')+eigenvalues%blockSize('beta')) &
@@ -20728,7 +21034,7 @@
           if(spinBlock.eq.'alpha'.or.spinBlock.eq.'beta') then
             if(eigenvalues%hasAlpha()) call eigenvalues%alpha%put(element,myI)
           else
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+            call mqc_error_A('SpinBlock type not valid in MQC_eigenvalues_Put',6,'SpinBlock',SpinBlock)
           endIf
         case ('spin','general')
           if(spinBlock.eq.'alpha') then
@@ -20736,7 +21042,7 @@
           elseif(spinblock.eq.'beta') then
             if(eigenvalues%hasBeta()) call eigenvalues%beta%put(element,myI)
           else
-            call mqc_error_A('SpinBlock type not valid in MQC_Integral_Put',6,'SpinBlock',SpinBlock)
+            call mqc_error_A('SpinBlock type not valid in MQC_eigenvalues_Put',6,'SpinBlock',SpinBlock)
           endIf
         case default
           call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
@@ -20761,12 +21067,12 @@
           call mqc_error_A('Array type not valid in MQC_Eigenvalues_Put',6,'Array_Type',eigenvalues%array_type)
         end select
       endIf
+!
       end subroutine mqc_eigenvalues_put
-
 !
 !     PROCEDURE MQC_Eigenvalues_Push
 !
-!>    \brief <b> MQC_Eigenvalues_Put is a function that adds a value to the end 
+!>    \brief <b> MQC_Eigenvalues_Push is a function that adds a value to the end 
 !>    of a MQC integral variable</b>
 !>
 !>    \par Purpose:
