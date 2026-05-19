@@ -6419,6 +6419,20 @@
               call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
             endIf
           endIf
+        elseIf (eris%type().eq.'spin'.and.eris%intType().eq.'ms') then
+          If (eris%storType().eq.'symm') then
+            If (eris%hasSpinBlock('abab')) then
+              r4tOut = eris%abab
+            else
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          else
+            If (eris%hasSpinBlock('baba')) then
+              r4tOut = eris%baba
+            else
+              call r4tOut%init(NDimBeta1,NDimAlpha2,NDimBeta3,NDimAlpha4,zeroR)
+            endIf
+          endIf
         elseIf(eris%storType().eq.'symm') then
           If (eris%hasSpinBlock('abab')) then
             r4tOut = eris%abab

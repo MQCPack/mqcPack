@@ -664,6 +664,16 @@
         nfail = nfail+1
       endIf
 !
+      blk = eriC%getBlock('baba')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+spin/ms: baba(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+spin/ms: baba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
 !--------------------------------------------------------------------
 !     Test 18: space/ms(aaaa=2)
 !            - spin/ms_symm(aaaa=8,bbbb=9,aabb=10,abba=11,abab=12)
@@ -709,6 +719,16 @@
         write(*,1000) 'space/ms-spin/ms: abab(1,1,1,1)'
       else
         write(*,1010) 'space/ms-spin/ms: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriC%getBlock('baba')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = -10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms-spin/ms: baba(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms-spin/ms: baba(1,1,1,1)',got,expected
         nfail = nfail+1
       endIf
 !
@@ -767,6 +787,16 @@
         write(*,1000) 'spin/ms getBlock: abab(1,1,1,1)'
       else
         write(*,1010) 'spin/ms getBlock: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriA%getBlock('baba')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms getBlock: baba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms getBlock: baba(1,1,1,1)',got,expected
         nfail = nfail+1
       endIf
 !
