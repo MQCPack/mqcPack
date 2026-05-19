@@ -6318,7 +6318,9 @@
             call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)
           endIf
         elseIf (eris%type().eq.'spin') then
-          If (eris%hasSpinBlock('aabb')) then
+          If (eris%intType().eq.'ms'.and.eris%hasSpinBlock('abab')) then
+            r4tOut = eris%abab
+          elseIf (eris%hasSpinBlock('aabb')) then
             r4tOut = eris%alphaBeta
           else
             call r4tOut%init(NDimAlpha1,NDimBeta2,NDimAlpha3,NDimBeta4,zeroR)

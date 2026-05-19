@@ -606,7 +606,7 @@
 !--------------------------------------------------------------------
 !     Test 17: space/ms(aaaa=2)
 !            + spin/ms_symm(aaaa=8,bbbb=9,aabb=10,abba=11,abab=12)
-!     Expected output spin/ms_symm: aaaa=10, bbbb=11, aabb=12, abba=13
+!     Expected output spin/ms_symm: aaaa=10, bbbb=11, aabb=12, abba=13, abab=14
 !     (verifies output type fix: ms+ms → ms, not doublebar)
 !--------------------------------------------------------------------
 !
@@ -654,10 +654,20 @@
         nfail = nfail+1
       endIf
 !
+      blk = eriC%getBlock('abab')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+spin/ms: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+spin/ms: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
 !--------------------------------------------------------------------
 !     Test 18: space/ms(aaaa=2)
 !            - spin/ms_symm(aaaa=8,bbbb=9,aabb=10,abba=11,abab=12)
-!     Expected: aaaa=-6, aabb=-8, abba=-9
+!     Expected: aaaa=-6, aabb=-8, abba=-9, abab=-10
 !--------------------------------------------------------------------
 !
       eriC = eriA - eriB
@@ -689,6 +699,16 @@
         write(*,1000) 'space/ms-spin/ms: abba(1,1,1,1)'
       else
         write(*,1010) 'space/ms-spin/ms: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriC%getBlock('abab')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = -10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms-spin/ms: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms-spin/ms: abab(1,1,1,1)',got,expected
         nfail = nfail+1
       endIf
 !
@@ -737,6 +757,16 @@
         write(*,1000) 'spin/ms getBlock: abba(1,1,1,1)'
       else
         write(*,1010) 'spin/ms getBlock: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+      blk = eriA%getBlock('abab')
+      sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms getBlock: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms getBlock: abab(1,1,1,1)',got,expected
         nfail = nfail+1
       endIf
 !
