@@ -9518,76 +9518,105 @@
             bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
             aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
             bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
-            call mqc_twoeris_allocate(ERIOut,'full-coulomb','general',aaaa,bbbb,&
-                                                              aabb,bbaa,&
-                       ERIB%getBlock('abab'),     ERIB%getBlock('abba'),&
-                       ERIB%getBlock('baab'),     ERIB%getBlock('baba'),&
-                       ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
-                       ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
-                       ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
-                       ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+            abab = ERIB%getBlock('abab')
+            abba = ERIB%getBlock('abba')
+            baab = ERIB%getBlock('baab')
+            baba = ERIB%getBlock('baba')
+            select case(ERIB%intType())
+            case('coulomb')
+              outIntType = 'coulomb'
+            case('exchange','doublebar')
+              outIntType = 'doublebar'
+            case('inverted','ms')
+              outIntType = 'ms'
+            case default
+              call mqc_error_A('Unknown twoERI intType in mqc_eri_sum', 6, &
+                   'ERIB%inttype', ERIB%inttype())
+            end select
           case('exchange')
             aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
             bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+            aabb = ERIB%getBlock('aabb')
+            bbaa = ERIB%getBlock('bbaa')
+            abab = ERIB%getBlock('abab')
             abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
             baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
-            call mqc_twoeris_allocate(ERIOut,'full-exchange','general',aaaa,bbbb,&
-                       ERIB%getBlock('aabb'),     ERIB%getBlock('bbaa'),&
-                       ERIB%getBlock('abab'),     abba,&
-                                        baab,     ERIB%getBlock('baba'),&
-                       ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
-                       ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
-                       ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
-                       ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+            baba = ERIB%getBlock('baba')
+            select case(ERIB%intType())
+            case('exchange')
+              outIntType = 'exchange'
+            case('coulomb','doublebar')
+              outIntType = 'doublebar'
+            case('inverted','ms')
+              outIntType = 'ms'
+            case default
+              call mqc_error_A('Unknown twoERI intType in mqc_eri_sum', 6, &
+                   'ERIB%inttype', ERIB%inttype())
+            end select
           case('inverted')
             aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
             bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+            aabb = ERIB%getBlock('aabb')
+            bbaa = ERIB%getBlock('bbaa')
             abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
+            abba = ERIB%getBlock('abba')
+            baab = ERIB%getBlock('baab')
             baba = ERIA%getBlock('baba')+ERIB%getBlock('baba')
-            call mqc_twoeris_allocate(ERIOut,'full-inverted','general',aaaa,bbbb,&
-                       ERIB%getBlock('aabb'),     ERIB%getBlock('bbaa'),&
-                                        abab,     ERIB%getBlock('abba'),&
-                       ERIB%getBlock('baab'),                     baba,&
-                       ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
-                       ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
-                       ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
-                       ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+            select case(ERIB%intType())
+            case('inverted')
+              outIntType = 'inverted'
+            case('coulomb','exchange','doublebar','ms')
+              outIntType = 'ms'
+            case default
+              call mqc_error_A('Unknown twoERI intType in mqc_eri_sum', 6, &
+                   'ERIB%inttype', ERIB%inttype())
+            end select
           case('doublebar')
             aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
             bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
             aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
             bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+            abab = ERIB%getBlock('abab')
             abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
             baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
-            call mqc_twoeris_allocate(ERIOut,'full-doublebar','general',aaaa,bbbb,&
-                                      aabb,bbaa,&
-                                      ERIB%getBlock('abab'),abba,&
-                                      baab,ERIB%getBlock('baba'),&
-                       ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
-                       ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
-                       ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
-                       ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+            baba = ERIB%getBlock('baba')
+            select case(ERIB%intType())
+            case('coulomb','exchange','doublebar')
+              outIntType = 'doublebar'
+            case('inverted','ms')
+              outIntType = 'ms'
+            case default
+              call mqc_error_A('Unknown twoERI intType in mqc_eri_sum', 6, &
+                   'ERIB%inttype', ERIB%inttype())
+            end select
           case('ms')
             aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
             bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
             aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
             bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+            abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
             abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
             baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
-            abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
             baba = ERIA%getBlock('baba')+ERIB%getBlock('baba')
-            call mqc_twoeris_allocate(ERIOut,'full-ms','general',aaaa,bbbb,&
-                                      aabb  ,                    bbaa  ,&
-                                      abab  ,                    abba  ,&
-                                      baab  ,                    baba  ,&
-                       ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
-                       ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
-                       ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
-                       ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+            outIntType = 'ms'
           case default
             call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                  'ERIA%inttype', ERIA%inttype() )
           end select
+          if(ERIA%storType().eq.'symm'.and.ERIB%storType().eq.'symm') then
+            outIntType = 'symm-'//trim(outIntType)
+            call mqc_twoeris_allocate(ERIOut,outIntType,'general',aaaa,bbbb,&
+                                      alphaBeta=aabb,abab=abab,abba=abba,&
+                         aaab=ERIB%getBlock('aaab'),abbb=ERIB%getBlock('abbb'))
+          else
+            outIntType = 'full-'//trim(outIntType)
+            call mqc_twoeris_allocate(ERIOut,outIntType,'general',aaaa,bbbb,&
+                                      aabb,bbaa,abab,abba,baab,baba,&
+                         ERIB%getBlock('aaab'),     ERIB%getBlock('aaba'),&
+                         ERIB%getBlock('abaa'),     ERIB%getBlock('baaa'),&
+                         ERIB%getBlock('bbba'),     ERIB%getBlock('bbab'),&
+                         ERIB%getBlock('babb'),     ERIB%getBlock('abbb'))
+          endIf
         case default
           call mqc_error_A('Unknown twoERI type in mqc_eri_sum', 6, &
                'ERIB%integraltype', ERIB%integraltype )
@@ -19551,11 +19580,6 @@
       character(len=*),optional,intent(in)::spinBlockIn,interactionIn
       character(len=64)::spinBlock,interaction
       real(kind=real64)::zero=0.0d0
-
-      if(twoeris%intType().ne.'coulomb') &
-        call mqc_error_a('mqc_twoeris_at function only implemented for coulomb &
-        &interaction types. Please consider implementing this subroutine for other types',&
-        6,'twoeris%intType()',twoeris%intType())
 
       element = zero
       select type (i)  
