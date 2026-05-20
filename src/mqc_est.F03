@@ -8819,6 +8819,37 @@
               baba = ERIA%getBlock('baba')
               call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                                            abab=abab,baba=baba)
+            case('doublebar')
+              !spin/coulomb + space/doublebar
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')
+                call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                   abba=abba,baab=baab)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
+              endIf
+            case('ms')
+              !spin/coulomb + space/ms
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')
+              abab = ERIB%getBlock('abab')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')
+                baba = ERIB%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,&
+                                                 abba=abba,abab=abab)
+              endIf
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                    'ERIB%inttype', ERIB%inttype() )
@@ -8849,6 +8880,37 @@
               baba = ERIA%getBlock('baba')
               call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,&
                                          abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              !spin/exchange + space/doublebar
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                   abba=abba,baab=baab)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
+              endIf
+            case('ms')
+              !spin/exchange + space/ms
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              abab = ERIB%getBlock('abab')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                baba = ERIB%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,&
+                                                 abba=abba,abab=abab)
+              endIf
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                    'ERIB%inttype', ERIB%inttype() )
@@ -8880,6 +8942,30 @@
               bbaa = ERIB%getBlock('aaaa')+ERIA%getBlock('baba')
               call mqc_twoeris_allocate(ERIOut,'full-inverted','spin',aaaa,bbbb,&
                                                                  abab,baba)
+            case('doublebar')
+              !spin/inverted + space/doublebar
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')
+              bbaa = ERIB%getBlock('bbaa')
+              abba = ERIB%getBlock('abba')
+              baab = ERIB%getBlock('baab')
+              abab = ERIA%getBlock('abab')
+              baba = ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+            case('ms')
+              !spin/inverted + space/ms
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')
+              bbaa = ERIB%getBlock('bbaa')
+              abba = ERIB%getBlock('abba')
+              baab = ERIB%getBlock('baab')
+              abab = ERIB%getBlock('abab')+ERIA%getBlock('abab')
+              baba = ERIB%getBlock('baba')+ERIA%getBlock('baba')
+              call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                    'ERIB%inttype', ERIB%inttype() )
@@ -8915,6 +9001,37 @@
               baba = ERIB%getBlock('aaaa')
               call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                          abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              !spin/doublebar + space/doublebar
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
+                                                                   abba=abba,baab=baab)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
+              endIf
+            case('ms')
+              !spin/doublebar + space/ms
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              abab = ERIB%getBlock('abab')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                baba = ERIB%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,&
+                                                 abba=abba,abab=abab)
+              endIf
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                    'ERIB%inttype', ERIB%inttype() )
@@ -8954,6 +9071,40 @@
               baba = ERIB%getBlock('aaaa')+ERIA%getBlock('baba')
               call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                          abba=abba,baab=baab,abab=abab,baba=baba)
+            case('doublebar')
+              !spin/ms + space/doublebar
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              abab = ERIA%getBlock('abab')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                baba = ERIA%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,&
+                                                 abba=abba,abab=abab)
+              endIf
+            case('ms')
+              !spin/ms + space/ms
+              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
+              bbbb = ERIB%getBlock('bbbb')+ERIA%getBlock('bbbb')
+              aabb = ERIB%getBlock('aabb')+ERIA%getBlock('aabb')
+              abba = ERIB%getBlock('abba')+ERIA%getBlock('abba')
+              abab = ERIB%getBlock('abab')+ERIA%getBlock('abab')
+              if(ERIA%storType().eq.'full') then
+                bbaa = ERIB%getBlock('bbaa')+ERIA%getBlock('bbaa')
+                baab = ERIB%getBlock('baab')+ERIA%getBlock('baab')
+                baba = ERIB%getBlock('baba')+ERIA%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
+                                                 abba=abba,baab=baab,abab=abab,baba=baba)
+              elseIf(ERIA%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,&
+                                                 abba=abba,abab=abab)
+              endIf
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
                    'ERIB%inttype', ERIB%inttype() )
