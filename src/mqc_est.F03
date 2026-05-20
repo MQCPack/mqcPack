@@ -8186,12 +8186,10 @@
               call mqc_twoeris_allocate(ERIOut,'full-doublebar','space',aaaa,alphaBeta=aabb,abba=abba)
             case('doublebar')
               !space/exchange + space/doublebar
-              !LMTLMT need to think if this is right as makes assumptions about what is stored in 
-              !doublebar
-              !LMTLMT This assumes strictly doublebar C-E. Should we always assume doublebar is 
-              !  C-E or anything that can be stored in the structure?
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
-              call mqc_twoeris_allocate(ERIOut,'full-coulomb','space',aaaa)
+              aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
+              call mqc_twoeris_allocate(ERIOut,'full-doublebar','space',aaaa,alphaBeta=aabb,abba=abba)
             case('inverted','ms')
               !space/exchange + space/inverted/ms
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
@@ -8233,7 +8231,9 @@
             case('exchange')
               !space/doublebar + space/exchange
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
-              call mqc_twoeris_allocate(ERIOut,'full-coulomb','space',aaaa)
+              aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
+              call mqc_twoeris_allocate(ERIOut,'full-doublebar','space',aaaa,alphaBeta=aabb,abba=abba)
             case('coulomb')
               !space/doublebar + space/coulomb
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
