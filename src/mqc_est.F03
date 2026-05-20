@@ -3054,11 +3054,6 @@
         twoERIs%integralType.ne.'general') &
         call mqc_error_a('Unrecognized integral type in mqc_twoeris_allocate',6,&
         'twoERIs%integralType',twoERIs%integralType)
-      if(twoERIs%interactionType.eq.'inverted'.and.&
-        twoERIs%storageType.eq.'symm'.and.(twoERIs%integralType.eq.'spin'.or.&
-        twoERIs%integralType.eq.'general')) &
-        call mqc_error('Attempting to allocate symmetric packed inverted ERIs in &
-        &mqc_twoeris_allocate')
       if(twoERIs%storageType.ne.'full'.and.(twoERIs%integralType.ne.'spin'.and.&
         twoERIs%integralType.ne.'general')) twoERIs%storageType = 'full'
 
@@ -9320,8 +9315,12 @@
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
               bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
               aabb = ERIA%getBlock('abab')+ERIB%getBlock('abab')
-              bbaa = ERIA%getBlock('abab')+ERIB%getBlock('abab')
-              call mqc_twoeris_allocate(ERIOut,'full-inverted','spin',aaaa,bbbb,aabb,bbaa)
+              if(ERIA%storType().eq.'symm'.and.ERIB%storType().eq.'symm') then
+                call mqc_twoeris_allocate(ERIOut,'symm-inverted','spin',aaaa,bbbb,aabb)
+              else
+                bbaa = ERIA%getBlock('baba')+ERIB%getBlock('baba')
+                call mqc_twoeris_allocate(ERIOut,'full-inverted','spin',aaaa,bbbb,aabb,bbaa)
+              endIf
             case('doublebar')
               aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
               bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
@@ -10712,6 +10711,9 @@
               bbaa = scalar*eris%getBlock('baba')
             call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//myInt,'spin',aaaa,bbbb,&
                 aabb,bbaa)
+          elseif(eris%storType().eq.'symm') then
+            call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//myInt,'spin',aaaa,bbbb,&
+              aabb)
           else
             call mqc_error_A('Unknown storage type in mqc_twoeris_scalar_multiply', 6, &
               'twoeris%storType()',eris%storType())
