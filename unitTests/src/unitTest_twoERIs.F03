@@ -800,6 +800,827 @@
         nfail = nfail+1
       endIf
 !
+!--------------------------------------------------------------------
+!     Tests 20-24: spin+spin same-type, symm+symm → symm output.
+!     ERI A (symm): aaaa=8, bbbb=9, aabb/abba/abab=10/11/12
+!     ERI B (symm): aaaa=2, bbbb=3, aabb/abba/abab=4/6/7
+!--------------------------------------------------------------------
+!
+!     Test 20: spin/coulomb_symm + spin/coulomb_symm → symm-coulomb
+!     Expected: aaaa=10, bbbb=12, aabb=14
+!
+      call mqc_twoeris_allocate(eriA,'symm-coulomb','spin',tC,tD,tE)
+      call mqc_twoeris_allocate(eriB,'symm-coulomb','spin',tA,tB,tAB)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+coulomb_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+coulomb_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('bbbb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+coulomb_s: bbbb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+coulomb_s: bbbb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+coulomb_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+coulomb_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 21: spin/exchange_symm + spin/exchange_symm → symm-exchange
+!     Expected: aaaa=10, bbbb=12, abba=17
+!
+      call mqc_twoeris_allocate(eriA,'symm-exchange','spin',tC,tD,tF)
+      call mqc_twoeris_allocate(eriB,'symm-exchange','spin',tA,tB,tABBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+exchange_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+exchange_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+exchange_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+exchange_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 22: spin/inverted_symm + spin/inverted_symm → symm-inverted
+!     Expected: aaaa=10, bbbb=12, abab=19
+!
+      call mqc_twoeris_allocate(eriA,'symm-inverted','spin',tC,tD,tG)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tA,tB,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/inverted_s+inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/inverted_s+inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/inverted_s+inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/inverted_s+inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 23: spin/doublebar_symm + spin/doublebar_symm → symm-doublebar
+!     Expected: aaaa=10, bbbb=12, aabb=14, abba=17
+!
+      call mqc_twoeris_allocate(eriA,'symm-doublebar','spin',tC,tD,tE,abba=tF)
+      call mqc_twoeris_allocate(eriB,'symm-doublebar','spin',tA,tB,tAB,abba=tABBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+doublebar_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+doublebar_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+doublebar_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+doublebar_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+doublebar_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+doublebar_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 24: spin/ms_symm + spin/ms_symm → symm-ms
+!     Expected: aaaa=10, bbbb=12, aabb=14, abba=17, abab=19
+!
+      call mqc_twoeris_allocate(eriA,'symm-ms','spin',tC,tD,tE,abba=tF,abab=tG)
+      call mqc_twoeris_allocate(eriB,'symm-ms','spin',tA,tB,tAB,abba=tABBA,abab=tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_s+ms_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_s+ms_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_s+ms_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_s+ms_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_s+ms_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_s+ms_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_s+ms_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_s+ms_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Tests 25-29: spin+spin same-type, full+full → full output.
+!     ERI A (full): aaaa=8,bbbb=9; aabb/bbaa or abba/baab or abab/baba = 10/11/12
+!     ERI B (full): aaaa=2,bbbb=3; aabb/bbaa or abba/baab or abab/baba = 4/6/7
+!     For full-exchange/inverted, the 3rd/4th positional args store
+!     abba/baab and abab/baba respectively (in alphaBeta/betaAlpha).
+!--------------------------------------------------------------------
+!
+!     Test 25: spin/coulomb_full + spin/coulomb_full → full-coulomb
+!     Expected: aaaa=10, bbbb=12, aabb=14, bbaa=14
+!
+      call mqc_twoeris_allocate(eriA,'full-coulomb','spin',tC,tD,tE,tE)
+      call mqc_twoeris_allocate(eriB,'full-coulomb','spin',tA,tB,tAB,tAB)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_f+coulomb_f: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_f+coulomb_f: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_f+coulomb_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_f+coulomb_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('bbaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_f+coulomb_f: bbaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_f+coulomb_f: bbaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 26: spin/exchange_full + spin/exchange_full → full-exchange
+!     Positional 3/4 store abba/baab. Expected: aaaa=10, abba=17, baab=17
+!
+      call mqc_twoeris_allocate(eriA,'full-exchange','spin',tC,tD,tF,tF)
+      call mqc_twoeris_allocate(eriB,'full-exchange','spin',tA,tB,tABBA,tABBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_f+exchange_f: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_f+exchange_f: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_f+exchange_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_f+exchange_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_f+exchange_f: baab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_f+exchange_f: baab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 27: spin/inverted_full + spin/inverted_full → full-inverted
+!     Positional 3/4 store abab/baba. Expected: aaaa=10, abab=19, baba=19
+!
+      call mqc_twoeris_allocate(eriA,'full-inverted','spin',tC,tD,tG,tG)
+      call mqc_twoeris_allocate(eriB,'full-inverted','spin',tA,tB,tBBBA,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/inverted_f+inverted_f: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/inverted_f+inverted_f: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/inverted_f+inverted_f: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/inverted_f+inverted_f: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/inverted_f+inverted_f: baba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/inverted_f+inverted_f: baba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 28: spin/doublebar_full + spin/doublebar_full → full-doublebar
+!     Expected: aaaa=10, bbbb=12, aabb=14, bbaa=14, abba=17, baab=17
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','spin',tC,tD,tE,tE,abba=tF,baab=tF)
+      call mqc_twoeris_allocate(eriB,'full-doublebar','spin',tA,tB,tAB,tAB,abba=tABBA,baab=tABBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_f+doublebar_f: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_f+doublebar_f: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_f+doublebar_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_f+doublebar_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_f+doublebar_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_f+doublebar_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_f+doublebar_f: baab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_f+doublebar_f: baab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 29: spin/ms_full + spin/ms_full → full-ms
+!     Expected: aaaa=10, aabb=14, bbaa=14, abba=17, baab=17, abab=19, baba=19
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','spin',tC,tD,tE,tE,abba=tF,baab=tF,abab=tG,baba=tG)
+      call mqc_twoeris_allocate(eriB,'full-ms','spin',tA,tB,tAB,tAB,abba=tABBA,baab=tABBA,&
+        abab=tBBBA,baba=tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_f+ms_f: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_f+ms_f: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_f+ms_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_f+ms_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_f+ms_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_f+ms_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_f+ms_f: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_f+ms_f: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 19.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/ms_f+ms_f: baba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/ms_f+ms_f: baba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Tests 30-36: spin+spin cross-type, symm inputs.
+!     A: aaaa=8,bbbb=9,aabb/abba/abab=10/11/12
+!     B: aaaa=2,bbbb=3,aabb/abba/abab=4/6/7
+!--------------------------------------------------------------------
+!
+!     Test 30: spin/coulomb_symm(A) + spin/exchange_symm(B) → symm-doublebar
+!     aaaa=10, bbbb=12, aabb=A.aabb=10, abba=B.abba=6
+!
+      call mqc_twoeris_allocate(eriA,'symm-coulomb','spin',tC,tD,tE)
+      call mqc_twoeris_allocate(eriB,'symm-exchange','spin',tA,tB,tABBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+exchange_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+exchange_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+exchange_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+exchange_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+exchange_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+exchange_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 31: spin/coulomb_symm(A) + spin/inverted_symm(B) → full-ms
+!     aaaa=10, bbbb=12, aabb=A.aabb=10, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-coulomb','spin',tC,tD,tE)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tA,tB,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+inverted_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+inverted_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 32: spin/coulomb_symm(A) + spin/ms_symm(B) → symm-ms
+!     aaaa=10, aabb=A.aabb+B.aabb=14, abba=B.abba=6, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-coulomb','spin',tC,tD,tE)
+      call mqc_twoeris_allocate(eriB,'symm-ms','spin',tA,tB,tAB,abba=tABBA,abab=tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+ms_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+ms_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+ms_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+ms_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+ms_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+ms_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/coulomb_s+ms_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/coulomb_s+ms_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 33: spin/exchange_symm(A) + spin/inverted_symm(B) → full-ms
+!     aaaa=10, abba=A.abba=11, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-exchange','spin',tC,tD,tF)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tA,tB,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+inverted_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+inverted_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 34: spin/exchange_symm(A) + spin/ms_symm(B) → symm-ms
+!     aaaa=10, aabb=B.aabb=4, abba=A.abba+B.abba=17, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-exchange','spin',tC,tD,tF)
+      call mqc_twoeris_allocate(eriB,'symm-ms','spin',tA,tB,tAB,abba=tABBA,abab=tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 4.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+ms_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+ms_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+ms_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+ms_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/exchange_s+ms_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/exchange_s+ms_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 35: spin/doublebar_symm(A) + spin/inverted_symm(B) → full-ms
+!     aaaa=10, aabb=A.aabb=10, abba=A.abba=11, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-doublebar','spin',tC,tD,tE,abba=tF)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tA,tB,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+inverted_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+inverted_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+inverted_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+inverted_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 36: spin/doublebar_symm(A) + spin/ms_symm(B) → symm-ms
+!     aaaa=10, aabb=A.aabb+B.aabb=14, abba=A.abba+B.abba=17, abab=B.abab=7
+!
+      call mqc_twoeris_allocate(eriA,'symm-doublebar','spin',tC,tD,tE,abba=tF)
+      call mqc_twoeris_allocate(eriB,'symm-ms','spin',tA,tB,tAB,abba=tABBA,abab=tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+ms_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+ms_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 14.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+ms_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+ms_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 17.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+ms_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+ms_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'spin/doublebar_s+ms_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'spin/doublebar_s+ms_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Tests 37-43: space+spin cross-type combinations not yet covered.
+!--------------------------------------------------------------------
+!
+!     Test 37: space/coulomb(aaaa=2) + spin/exchange_symm(8,9,abba=11) → full-doublebar
+!     aaaa=10, bbbb=11, aabb=2 (space/coulomb), abba=11 (spin/exchange)
+!
+      call mqc_twoeris_allocate(eriA,'full-coulomb','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-exchange','spin',tC,tD,tF)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb+spin/exchange_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb+spin/exchange_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb+spin/exchange_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb+spin/exchange_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/coulomb+spin/exchange_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'space/coulomb+spin/exchange_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 38: space/exchange(aaaa=2) + spin/coulomb_symm(8,9,aabb=10) → symm-doublebar
+!     aaaa=10, bbbb=11, aabb=spin/coulomb.aabb=10, abba=space/exchange.abba=2
+!
+      call mqc_twoeris_allocate(eriA,'full-exchange','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-coulomb','spin',tC,tD,tE)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/exchange+spin/coulomb_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/exchange+spin/coulomb_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/exchange+spin/coulomb_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/exchange+spin/coulomb_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/exchange+spin/coulomb_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'space/exchange+spin/coulomb_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 39: space/doublebar(aaaa=2,aabb=4,abba=6) + spin/inverted_symm(8,9,abab=7)
+!     → full-ms: aaaa=10, aabb=4, abba=6, abab=7
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','space',tA,alphaBeta=tAB,abba=tABBA)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tC,tD,tBBBA)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar+spin/inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar+spin/inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 4.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar+spin/inverted_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar+spin/inverted_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar+spin/inverted_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar+spin/inverted_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/doublebar+spin/inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/doublebar+spin/inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 40: space/ms(aaaa=2) + spin/coulomb_symm(8,9,aabb=10) → symm-ms
+!     aaaa=10, bbbb=11, aabb=2+10=12, abba=2, abab=2
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-coulomb','spin',tC,tD,tE)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+spin/coulomb_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+spin/coulomb_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+spin/coulomb_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+spin/coulomb_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+spin/coulomb_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+spin/coulomb_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 41: space/inverted(aaaa=2) + spin/coulomb_symm(8,9,aabb=10) → symm-ms
+!     aaaa=10, bbbb=11, aabb=spin/coulomb.aabb=10, abab=space/inverted.abab=2
+!
+      call mqc_twoeris_allocate(eriA,'full-inverted','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-coulomb','spin',tC,tD,tE)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+spin/coulomb_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+spin/coulomb_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+spin/coulomb_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+spin/coulomb_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+spin/coulomb_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+spin/coulomb_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!--------------------------------------------------------------------
+!     Tests 42-43: space+space cross-type with inverted and ms.
+!--------------------------------------------------------------------
+!
+!     Test 42: space/inverted(aaaa=2) + space/coulomb(aaaa=3) → symm-ms spin
+!     aaaa=5, aabb=0+3=3 (inverted.aabb=0, coulomb.aabb=3), abab=2+0=2
+!
+      call mqc_twoeris_allocate(eriA,'full-inverted','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-coulomb','space',tB)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 5.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+space/coulomb: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+space/coulomb: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 3.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+space/coulomb: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+space/coulomb: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/inverted+space/coulomb: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/inverted+space/coulomb: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 43: space/ms(aaaa=2) + space/inverted(aaaa=3) → symm-ms spin
+!     aaaa=5, aabb=2+0=2, abba=2+0=2, abab=2+3=5
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-inverted','space',tB)
+      eriC = eriA + eriB
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 5.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+space/inverted: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+space/inverted: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+space/inverted: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+space/inverted: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 5.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'space/ms+space/inverted: abab(1,1,1,1)'
+      else
+        write(*,1010) 'space/ms+space/inverted: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
 !
