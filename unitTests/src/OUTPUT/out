@@ -180,5 +180,9 @@
  PASS  contraction space/ms x spin/inverted (J)
  PASS  contraction space/ms x spin/ms (J)
  PASS  contraction space/ms x spin/inverted (K)
+ PASS  contraction space/doublebar x general/ms (J)
+ PASS  contraction space/ms x general/ms (J)
+ PASS  contraction general/ms x space/doublebar (J)
+ PASS  contraction general/ms x space/ms (J)
 
  Tests completed: 0 failure(s)

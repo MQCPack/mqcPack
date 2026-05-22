@@ -2214,6 +2214,72 @@
         nfail = nfail+1
       endIf
 !
+!     Test 65: space/doublebar(aaaa=2) x general(aabb=10,bbaa=10,abba=11,baab=11),
+!              label='coulomb'
+!     New path: space(doublebar) x general, case('doublebar')
+!     Expected: eris1.aaaa*(aabb+bbaa+abba+baab) = 2*(10+10+11+11) = 84
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-ms','general',tZ,tZ,tE,tE,abba=tF,baab=tF)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 84.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/doublebar x general/ms (J)'
+      else
+        write(*,1010) 'contraction space/doublebar x general/ms (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 66: space/ms(aaaa=2) x general(aabb=10,bbaa=10,abba=11,baab=11,abab=12,baba=12),
+!              label='coulomb'
+!     New path: space(ms) x general, case('ms')
+!     Expected: eris1.aaaa*(aabb+bbaa+abba+baab+abab+baba) = 2*(10+10+11+11+12+12) = 132
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'full-ms','general',tZ,tZ,tE,tE,abba=tF,baab=tF,  &
+        abab=tG,baba=tG)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 132.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/ms x general/ms (J)'
+      else
+        write(*,1010) 'contraction space/ms x general/ms (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 67: general(aabb=10,bbaa=10,abba=11,baab=11) x space/doublebar(aaaa=2),
+!              label='coulomb'
+!     New path: general x space(doublebar), case('doublebar')
+!     Expected: (aabb+bbaa+abba+baab)*eris2.aaaa = (10+10+11+11)*2 = 84
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','general',tZ,tZ,tE,tE,abba=tF,baab=tF)
+      call mqc_twoeris_allocate(eriB,'full-doublebar','space',tA)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 84.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction general/ms x space/doublebar (J)'
+      else
+        write(*,1010) 'contraction general/ms x space/doublebar (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 68: general(aabb=10,bbaa=10,abba=11,baab=11,abab=12,baba=12) x space/ms(aaaa=2),
+!              label='coulomb'
+!     New path: general x space(ms), case('ms')
+!     Expected: (aabb+bbaa+abba+baab+abab+baba)*eris2.aaaa = (10+10+11+11+12+12)*2 = 132
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','general',tZ,tZ,tE,tE,abba=tF,baab=tF,  &
+        abab=tG,baba=tG)
+      call mqc_twoeris_allocate(eriB,'full-ms','space',tA)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 132.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction general/ms x space/ms (J)'
+      else
+        write(*,1010) 'contraction general/ms x space/ms (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
 !
