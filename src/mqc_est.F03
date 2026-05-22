@@ -8800,13 +8800,13 @@
               endIf
             case('exchange')
               !spin/coulomb + space/exchange
-              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
-              bbbb = ERIB%getBlock('aaaa')+ERIA%getBlock('bbbb')
-              aabb = ERIB%getBlock('aaaa')
-              abba = ERIA%getBlock('abba')
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
               if(ERIA%storType().eq.'full') then
-                bbaa = ERIB%getBlock('aaaa')
-                baab = ERIA%getBlock('baab')
+                bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+                baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
                 call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
                                                                     abba=abba,baab=baab)
               elseIf(ERIA%storType().eq.'symm') then
@@ -8814,18 +8814,17 @@
               endIf
             case('inverted')
               !spin/coulomb + space/inverted
-              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
-              bbbb = ERIB%getBlock('aaaa')+ERIA%getBlock('bbbb')
-              aabb = ERIB%getBlock('aaaa')
-              abba = ERIA%getBlock('abba')
-              abab = ERIA%getBlock('abab')
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+              abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
               if(ERIA%storType().eq.'full') then
-                bbaa = ERIB%getBlock('aaaa')
-                baba = ERIA%getBlock('baba')
+                bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+                baba = ERIA%getBlock('baba')+ERIB%getBlock('baba')
                 call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                                                abab=abab,baba=baba)
               elseIf(ERIA%storType().eq.'symm') then
-                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abba=abba,abab=abab)
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abab=abab)
               endIf
             case('doublebar')
               !spin/coulomb + space/doublebar
@@ -8865,36 +8864,39 @@
           case('exchange')
             select case(ERIB%intType())
             case('coulomb')
-              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
-              bbbb = ERIB%getBlock('aaaa')+ERIA%getBlock('bbbb')
-              aabb = ERIA%getBlock('aaaa')
-              abba = ERIB%getBlock('abba')
+              !spin/exchange + space/coulomb
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('aabb')+ERIB%getBlock('aabb')
+              abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
               if(ERIA%storType().eq.'full') then
-                bbaa = ERIA%getBlock('aaaa')
-                baab = ERIB%getBlock('baab')
+                bbaa = ERIA%getBlock('bbaa')+ERIB%getBlock('bbaa')
+                baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
                 call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
                                                                     abba=abba,baab=baab)
               elseIf(ERIA%storType().eq.'symm') then
                 call mqc_twoeris_allocate(ERIOut,'symm-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
               endIf
             case('exchange')
-              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
-              bbbb = ERIB%getBlock('aaaa')+ERIA%getBlock('bbbb')
-              aabb = ERIB%getBlock('aaaa')+ERIA%getBlock('abba')
+              !spin/exchange + space/exchange
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              aabb = ERIA%getBlock('abba')+ERIB%getBlock('abba')
               if(ERIA%storType().eq.'full') then
-                bbaa = ERIB%getBlock('aaaa')+ERIA%getBlock('abba')
+                bbaa = ERIA%getBlock('baab')+ERIB%getBlock('baab')
                 call mqc_twoeris_allocate(ERIOut,'full-exchange','spin',aaaa,bbbb,aabb,bbaa)
               elseIf(ERIA%storType().eq.'symm') then
                 call mqc_twoeris_allocate(ERIOut,'symm-exchange','spin',aaaa,bbbb,aabb)
               endIf
             case('inverted')
-              aaaa = ERIB%getBlock('aaaa')+ERIA%getBlock('aaaa')
-              bbbb = ERIB%getBlock('aaaa')+ERIA%getBlock('bbbb')
-              abba = ERIB%getBlock('aaaa')
-              abab = ERIA%getBlock('abab')
+              !spin/exchange + space/inverted
+              aaaa = ERIA%getBlock('aaaa')+ERIB%getBlock('aaaa')
+              bbbb = ERIA%getBlock('bbbb')+ERIB%getBlock('bbbb')
+              abba = ERIA%getBlock('abba')+ERIB%getBlock('abba')
+              abab = ERIA%getBlock('abab')+ERIB%getBlock('abab')
               if(ERIA%storType().eq.'full') then
-                baab = ERIB%getBlock('aaaa')
-                baba = ERIA%getBlock('baba')
+                baab = ERIA%getBlock('baab')+ERIB%getBlock('baab')
+                baba = ERIA%getBlock('baba')+ERIB%getBlock('baba')
                 call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,&
                                            abba=abba,baab=baab,abab=abab,baba=baba)
               elseIf(ERIA%storType().eq.'symm') then
