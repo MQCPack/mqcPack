@@ -27073,7 +27073,7 @@
       else
         myLabel = ERIs%interactionType 
       endIf
-      myLabel = ERIs%storageType//'-'//mylabel
+      myLabel = trim(ERIs%storageType)//'-'//trim(mylabel)
 
       select case (ERIs%integralType)
       case('regular','raffenetti1','raffenetti2','raffenetti3','space')

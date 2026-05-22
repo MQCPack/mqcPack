@@ -1867,6 +1867,241 @@
         nfail = nfail+1
       endIf
 !
+!
+!--------------------------------------------------------------------
+!     Tests 51-58: Dagger (mqc_twoeris_conjugate_transpose) for spin
+!     intTypes. Tests 52-56 cover the fixed bug: the old code read
+!     getBlock('bbaa') for all intTypes, which returns 0 for exchange
+!     and inverted, leaving all cross-spin blocks zero.
+!--------------------------------------------------------------------
+!
+!     Test 51: spin/coulomb symm Dagger — regression: aabb preserved
+!     Input: aaaa=8, bbbb=9, aabb=10; output aabb=dagger(bbaa)=dagger(alphaBeta)=10
+!
+      call mqc_twoeris_allocate(eriA,'symm-coulomb','spin',tC,tD,tE)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 8.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/coulomb_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/coulomb_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/coulomb_s: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/coulomb_s: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 52: spin/coulomb full Dagger — shows aabb<->bbaa swap
+!     Input: aaaa=8, bbbb=9, aabb=10, bbaa=11; output aabb=11, bbaa=10
+!
+      call mqc_twoeris_allocate(eriA,'full-coulomb','spin',tC,tD,tE,tF)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/coulomb_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/coulomb_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('bbaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/coulomb_f: bbaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/coulomb_f: bbaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 53: spin/exchange symm Dagger — was broken (returned 0 for abba)
+!     Input: aaaa=8, bbbb=9, abba=11; abba is self-conjugate so output abba=11
+!
+      call mqc_twoeris_allocate(eriA,'symm-exchange','spin',tC,tD,tF)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 8.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/exchange_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/exchange_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/exchange_s: abba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/exchange_s: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 54: spin/exchange full Dagger — was broken (returned 0 for abba/baab)
+!     Input: aaaa=8, bbbb=9, abba=11, baab=12; both self-conjugate
+!
+      call mqc_twoeris_allocate(eriA,'full-exchange','spin',tC,tD,tF,tG)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/exchange_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/exchange_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/exchange_f: baab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/exchange_f: baab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 55: spin/inverted symm Dagger — was broken (returned 0 for abab)
+!     Input: aaaa=8, bbbb=9, abab=12; for symm baba=abab so abab preserved
+!
+      call mqc_twoeris_allocate(eriA,'symm-inverted','spin',tC,tD,tG)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aaaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 8.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/inverted_s: aaaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/inverted_s: aaaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/inverted_s: abab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/inverted_s: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 56: spin/inverted full Dagger — was broken; shows abab<->baba swap
+!     Input: aaaa=8, bbbb=9, abab=12, baba=6; output abab=6, baba=12
+!
+      call mqc_twoeris_allocate(eriA,'full-inverted','spin',tC,tD,tG,tABBA)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/inverted_f: abab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/inverted_f: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 12.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/inverted_f: baba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/inverted_f: baba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 57: spin/doublebar full Dagger — aabb<->bbaa swap + abba/baab self
+!     Input: aaaa=8, bbbb=9, aabb=10, bbaa=11, abba=6, baab=7
+!     Output: aabb=11, bbaa=10, abba=6, baab=7
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','spin',tC,tD,tE,tF,&
+                                abba=tABBA,baab=tBBBA)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/doublebar_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/doublebar_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('bbaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/doublebar_f: bbaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/doublebar_f: bbaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/doublebar_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/doublebar_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/doublebar_f: baab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/doublebar_f: baab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 58: spin/ms full Dagger — all 6 cross-spin blocks
+!     Input: aaaa=8, bbbb=9, aabb=10, bbaa=11, abab=6, abba=7, baab=2, baba=3
+!     Output: aabb=11, bbaa=10, abba=7(self), baab=2(self), abab=3(swap), baba=6(swap)
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','spin',tC,tD,tE,tF,tABBA,tBBBA,tA,tB)
+      eriC = Dagger(eriA)
+      blk = eriC%getBlock('aabb') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 11.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: aabb(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: aabb(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('bbaa') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 10.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: bbaa(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: bbaa(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 7.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: abba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: abba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 2.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: baab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: baab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('abab') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 3.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: abab(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: abab(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+      blk = eriC%getBlock('baba') ; sc = blk%at(1,1,1,1)
+      got = sc%rval() ; expected = 6.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'Dagger spin/ms_f: baba(1,1,1,1)'
+      else
+        write(*,1010) 'Dagger spin/ms_f: baba(1,1,1,1)',got,expected
+        nfail = nfail+1
+      endIf
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
 !
