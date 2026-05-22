@@ -8298,7 +8298,7 @@
                 call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,bbaa,&
                                                                     abba=abba,baab=baab)
               elseIf(ERIB%storType().eq.'symm') then
-                call mqc_twoeris_allocate(ERIOut,'full-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
+                call mqc_twoeris_allocate(ERIOut,'symm-doublebar','spin',aaaa,bbbb,aabb,abba=abba)
               endIf
             case('inverted')
               !space/coulomb + spin/inverted
@@ -8313,7 +8313,7 @@
                 call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                                              abab=abab,baba=baba)
               elseIf(ERIB%storType().eq.'symm') then
-                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abba,abab=abab)
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abab=abab)
               endIf
             case('doublebar')
               !space/coulomb + spin/doublebar
@@ -8343,7 +8343,7 @@
                 call mqc_twoeris_allocate(ERIOut,'full-ms','spin',aaaa,bbbb,aabb,bbaa,&
                                                  abba=abba,baab=baab,abab=abab,baba=baba)
               elseIf(ERIB%storType().eq.'symm') then
-                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abba,abab=abab)
+                call mqc_twoeris_allocate(ERIOut,'symm-ms','spin',aaaa,bbbb,aabb,abba=abba,abab=abab)
               endIf
             case default
               call mqc_error_A('Unknown twoERI storage type in mqc_eri_sum', 6, &
