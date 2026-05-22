@@ -14598,10 +14598,6 @@
      !                    6,'myLabel',myLabel)
      !end select
 
-      write(*,*) 'DEBUG: ERI_ERI Contraction' 
-      write(*,*) 'ERIs 1',eris1%Type(),eris1%intType()
-      write(*,*) 'ERIs 2',eris2%Type(),eris2%intType()
-
       if(myLabel.ne.'coulomb') temp = eris1%swap(2,4)
       output = 0.0
       if(.not.allocated(eris1).or..not.allocated(eris2)) return
@@ -14831,8 +14827,8 @@
                                  - contraction(temp%getBlock('bbaa'),eris2%getBlock('aaaa'))
             case ('exchange')
               if(myLabel.ne.'exchange') &
-                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba''aaaa')) &
-                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab''aaaa'))
+                 output = output + contraction(eris1%getBlock('aaaa'),eris2%getBlock('abba')) &
+                                 + contraction(eris1%getBlock('aaaa'),eris2%getBlock('baab'))
             case ('inverted')
               ! Done
             case ('doublebar')
