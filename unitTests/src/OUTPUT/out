@@ -174,5 +174,11 @@
  PASS  Dagger spin/ms_f: baab(1,1,1,1)
  PASS  Dagger spin/ms_f: abab(1,1,1,1)
  PASS  Dagger spin/ms_f: baba(1,1,1,1)
+ PASS  contraction space/doublebar x spin/coulomb (J)
+ PASS  contraction space/doublebar x spin/exchange (J)
+ PASS  contraction space/doublebar x spin/doublebar (J)
+ PASS  contraction space/ms x spin/inverted (J)
+ PASS  contraction space/ms x spin/ms (J)
+ PASS  contraction space/ms x spin/inverted (K)
 
  Tests completed: 0 failure(s)

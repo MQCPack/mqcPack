@@ -2102,6 +2102,118 @@
         nfail = nfail+1
       endIf
 !
+!
+!--------------------------------------------------------------------
+!     Tests 59-64: mqc_eri_eri_contraction for newly implemented
+!     space/doublebar and space/ms eris1 types.
+!
+!     Setup: eris1 is space type with aaaa=tA(2).
+!            eris2 is spin type with aaaa=bbbb=tZ(0) so the
+!            baseline aaaa*aaaa and aaaa*bbbb terms vanish,
+!            isolating the cross-spin contributions from the new code.
+!
+!     Contraction sums: for n=2 with only (1,1,1,1) nonzero,
+!     contraction(A,B) = A(1,1,1,1)*B(1,1,1,1).
+!     For symm type, bXXX blocks equal the stored aXXX block.
+!--------------------------------------------------------------------
+!
+!     Test 59: space/doublebar(aaaa=2) x spin/coulomb_symm(aabb=10),
+!              label='coulomb'
+!     New path: case('doublebar')/case('coulomb')
+!     Expected: eris1.aaaa*(eris2.aabb+eris2.bbaa) = 2*(10+10) = 40
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-coulomb','spin',tZ,tZ,tE)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 40.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/doublebar x spin/coulomb (J)'
+      else
+        write(*,1010) 'contraction space/doublebar x spin/coulomb (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 60: space/doublebar(aaaa=2) x spin/exchange_symm(abba=11),
+!              label='coulomb'
+!     New path: case('doublebar')/case('exchange')
+!     Expected: eris1.aaaa*(eris2.abba+eris2.baab) = 2*(11+11) = 44
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-exchange','spin',tZ,tZ,tF)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 44.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/doublebar x spin/exchange (J)'
+      else
+        write(*,1010) 'contraction space/doublebar x spin/exchange (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 61: space/doublebar(aaaa=2) x spin/doublebar_symm(aabb=10,abba=11),
+!              label='coulomb'
+!     New path: case('doublebar')/case('doublebar')
+!     Expected: eris1.aaaa*(aabb+bbaa+abba+baab) = 2*(10+10+11+11) = 84
+!
+      call mqc_twoeris_allocate(eriA,'full-doublebar','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-doublebar','spin',tZ,tZ,tE,abba=tF)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 84.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/doublebar x spin/doublebar (J)'
+      else
+        write(*,1010) 'contraction space/doublebar x spin/doublebar (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 62: space/ms(aaaa=2) x spin/inverted_symm(abab=12),
+!              label='coulomb'
+!     New path: case('ms')/case('inverted') — previously would error
+!     Expected: eris1.aaaa*(eris2.abab+eris2.baba) = 2*(12+12) = 48
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tZ,tZ,tG)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 48.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/ms x spin/inverted (J)'
+      else
+        write(*,1010) 'contraction space/ms x spin/inverted (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 63: space/ms(aaaa=2) x spin/ms_symm(aabb=10,abba=11,abab=12),
+!              label='coulomb'
+!     New path: case('ms')/case('ms') — all 6 cross-spin channels
+!     Expected: eris1.aaaa*(aabb+bbaa+abba+baab+abab+baba)
+!             = 2*(10+10+11+11+12+12) = 132
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-ms','spin',tZ,tZ,tE,abba=tF,abab=tG)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'coulomb')
+      got = sc%rval() ; expected = 132.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/ms x spin/ms (J)'
+      else
+        write(*,1010) 'contraction space/ms x spin/ms (J)',got,expected
+        nfail = nfail+1
+      endIf
+!
+!     Test 64: space/ms(aaaa=2) x spin/inverted_symm(abab=12),
+!              label='exchange'
+!     New path: case('ms')/case('inverted') with exchange label
+!     Expected: -(eris1.aaaa*(abab+baba)) = -(2*(12+12)) = -48
+!
+      call mqc_twoeris_allocate(eriA,'full-ms','space',tA)
+      call mqc_twoeris_allocate(eriB,'symm-inverted','spin',tZ,tZ,tG)
+      sc = mqc_eri_eri_contraction(eriA,eriB,'exchange')
+      got = sc%rval() ; expected = -48.0d0
+      if(abs(got-expected).le.tol) then
+        write(*,1000) 'contraction space/ms x spin/inverted (K)'
+      else
+        write(*,1010) 'contraction space/ms x spin/inverted (K)',got,expected
+        nfail = nfail+1
+      endIf
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
 !
