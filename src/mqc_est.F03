@@ -27083,14 +27083,64 @@
          ! nDimB1=size(integral,'beta',2),nDimB2=size(integral,'beta',1))
       case('spin')
         tmpaaaa = dagger(ERIs%getblock('aaaa'))
-        tmpaabb = dagger(ERIs%getblock('bbaa'))
         tmpbbbb = dagger(ERIs%getblock('bbbb'))
-        if(ERIs%storageType.eq.'full') then
-          tmpbbaa = dagger(ERIs%getblock('aabb'))
-          call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa)!, &
-        else
-          call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb)!, &
-        endIf
+        select case(ERIs%intType())
+        case('coulomb')
+          tmpaabb = dagger(ERIs%getblock('bbaa'))
+          if(ERIs%storageType.eq.'full') then
+            tmpbbaa = dagger(ERIs%getblock('aabb'))
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa)
+          else
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb)
+          endIf
+        case('exchange')
+          !abba is self-conjugate under dagger; baab is self-conjugate
+          tmpaabb = dagger(ERIs%getblock('abba'))
+          if(ERIs%storageType.eq.'full') then
+            tmpbbaa = dagger(ERIs%getblock('baab'))
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa)
+          else
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb)
+          endIf
+        case('inverted')
+          !abab and baba swap under dagger
+          tmpaabb = dagger(ERIs%getblock('baba'))
+          if(ERIs%storageType.eq.'full') then
+            tmpbbaa = dagger(ERIs%getblock('abab'))
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa)
+          else
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb)
+          endIf
+        case('doublebar')
+          tmpaabb = dagger(ERIs%getblock('bbaa'))
+          tmpabba = dagger(ERIs%getblock('abba'))
+          if(ERIs%storageType.eq.'full') then
+            tmpbbaa = dagger(ERIs%getblock('aabb'))
+            tmpbaab = dagger(ERIs%getblock('baab'))
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa,&
+                                                              abba=tmpabba,baab=tmpbaab)
+          else
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,&
+                                                              abba=tmpabba)
+          endIf
+        case('ms')
+          tmpaabb = dagger(ERIs%getblock('bbaa'))
+          tmpabba = dagger(ERIs%getblock('abba'))
+          tmpabab = dagger(ERIs%getblock('baba'))
+          if(ERIs%storageType.eq.'full') then
+            tmpbbaa = dagger(ERIs%getblock('aabb'))
+            tmpbaab = dagger(ERIs%getblock('baab'))
+            tmpbaba = dagger(ERIs%getblock('abab'))
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,tmpbbaa,&
+                                                              tmpabab,tmpabba,tmpbaab,tmpbaba)
+          else
+            call mqc_twoeris_allocate(ERIsOut,myLabel,'spin',tmpaaaa,tmpbbbb,tmpaabb,&
+                                                              abab=tmpabab,abba=tmpabba)
+          endIf
+        case default
+          call mqc_error_A('Unknown intType in mqc_twoeris_conjugate_transpose', 6, &
+               'ERIs%intType()', ERIs%intType())
+        end select
       case('general')
         tmpaaaa = dagger(ERIs%getblock('aaaa'))
         tmpaabb = dagger(ERIs%getblock('bbaa'))
