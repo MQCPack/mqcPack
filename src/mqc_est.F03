@@ -1,4 +1,4 @@
-!>    \brief <b> MQC EST contains objects for the manipulation of intermediates used
+!>    \brief <b> MQC EST contains objects for the manipulation of intermediates used in
 !>    electronic structure theory </b>
 !
 !>    \par Purpose:
@@ -18,7 +18,7 @@
 !>    2. MQC_SCF_Eigenvalues:    EST intermediate diagonal matrix variable
 !>    3. MQC_Wavefunction:       EST intermediates of single determinant wavefunctions
 !>    4. MQC_PSCF_Wavefunction:  EST intermediates of post-Hartree-Fock methods 
-!>    5. MQC_Determinant:        Binary strings reresenting occupation number vectors
+!>    5. MQC_Determinant:        Binary strings representing occupation number vectors
 !>    6. MQC_TwoERIs:            Two-electron resonance integrals
 !>    7. MQC_TwoERIset:          Set of two-electron resonance integrals
 !>
@@ -1394,7 +1394,7 @@
 !     ==========
 !>    \param[in] Determinant
 !>    \verbatim
-!>        Integral is Class(MQC_Determinant)
+!>        Determinant is Class(MQC_Determinant)
 !>        The name of the MQC_Determinant variable.
 !>    \endverbatim
 !
@@ -1419,7 +1419,7 @@
 !
 !     PROCEDURE MQC_TwoERIs_isAllocated
 !
-!>    \brief <b> MQC_ERIs_isAllocated is a function that returns TRUE if an MQC
+!>    \brief <b> MQC_TwoERIs_isAllocated is a function that returns TRUE if an MQC
 !>    TwoERIs object is allocated and FALSE if it is not</b>
 !
 !>    \par Purpose:
@@ -1907,7 +1907,7 @@
 !     PROCEDURE MQC_ERIs_Array_Type
 !
 !>    \brief <b> MQC_ERIs_Array_Type is a function that returns whether an MQC 2ERIs
-!>    variable is of AO (regular, raffenettit1, raffenetti2, raffenetti3) or MO 
+!>    variable is of AO (regular, raffenetti1, raffenetti2, raffenetti3) or MO 
 !>    (restricted, unrestricted, general) type</b>
 !
 !>    \par Purpose:
@@ -1916,16 +1916,16 @@
 !>    \verbatim
 !>
 !>    \brief <b> MQC_ERIs_Array_Type is a function that returns whether an MQC 2ERIs
-!>    variable is of AO (regular, raffenettit1, raffenetti2, raffenetti3) or MO 
+!>    variable is of AO (regular, raffenetti1, raffenetti2, raffenetti3) or MO 
 !>    (restricted, unrestricted, general) type</b>
 !>
 !>    \endverbatim
 !
 !     Arguments:
 !     ==========
-!>    \param[in,out] ERIs
+!>    \param[in] ERIs
 !>    \verbatim
-!>        Integral is Class(MQC_TwoERIs)
+!>        ERIs is Class(MQC_TwoERIs)
 !>        The name of the MQC_TwoERIs variable.
 !>    \endverbatim
 !
@@ -23264,25 +23264,25 @@
 !>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
-!>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Alpha_String_1 is Type(MQC_Bits),Intent(In)
 !>        The left alpha string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Beta_String_1
 !>    \verbatim
-!>        Beta_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Beta_String_1 is Type(MQC_Bits),Intent(In)
 !>        The left beta string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Alpha_String_2
 !>    \verbatim
-!>        Alpha_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Alpha_String_2 is Type(MQC_Bits),Intent(In)
 !>        The right alpha string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Beta_String_2
 !>    \verbatim
-!>        Beta_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Beta_String_2 is Type(MQC_Bits),Intent(In)
 !>        The right beta string.
 !>    \endverbatim
 !>    
@@ -27423,25 +27423,25 @@
 !>    
 !>    \param[in] Alpha_String_1
 !>    \verbatim
-!>        Alpha_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Alpha_String_1 is Type(MQC_Bits),Intent(In)
 !>        The left alpha string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Beta_String_1
 !>    \verbatim
-!>        Beta_String_1 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Beta_String_1 is Type(MQC_Bits),Intent(In)
 !>        The left beta string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Alpha_String_2
 !>    \verbatim
-!>        Alpha_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Alpha_String_2 is Type(MQC_Bits),Intent(In)
 !>        The right alpha string.
 !>    \endverbatim
-!>    
+!>
 !>    \param[in] Beta_String_2
 !>    \verbatim
-!>        Beta_String_2 is Integer(kind=int64),Dimension(:),Allocatable
+!>        Beta_String_2 is Type(MQC_Bits),Intent(In)
 !>        The right beta string.
 !>    \endverbatim
 !>    
@@ -28657,7 +28657,7 @@
 !>    
 !>    \param[in] SubsAIn
 !>    \verbatim
-!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        SubsAIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian. If not present, all substitutions are 
 !>        included. If SubsB not present, SubsA containes the the 
@@ -28669,14 +28669,14 @@
 !>    
 !>    \param[in] SubsBIn
 !>    \verbatim
-!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        SubsBIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
 !>        include in the Hamiltonian. 
 !>    \endverbatim
 !>
 !>    \param[in] Subs2AIn
 !>    \verbatim
-!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2AIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian for the column basis. If not present, 
 !>        column basis substitutions are equal to row basis 
@@ -28689,7 +28689,7 @@
 !>    
 !>    \param[in] Subs2BIn
 !>    \verbatim
-!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2BIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
 !>        include in the Hamiltonian for the column basis. If not 
 !>        present, column basis substitutions are equal to row basis 
@@ -31031,7 +31031,7 @@
 !>    
 !>    \param[in] SubsAIn
 !>    \verbatim
-!>        SubsA is Integer(kind=int64),Dimension(:),Optional
+!>        SubsAIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian. If not present, all substitutions are 
 !>        included. If SubsB not present, SubsA containes the the 
@@ -31043,14 +31043,14 @@
 !>    
 !>    \param[in] SubsBIn
 !>    \verbatim
-!>        SubsB is Integer(kind=int64),Dimension(:),Optional
+!>        SubsBIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
 !>        include in the Hamiltonian. 
 !>    \endverbatim
 !>
 !>    \param[in] Subs2AIn
 !>    \verbatim
-!>        Subs2A is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2AIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted substitutions to include 
 !>        in the Hamiltonian for the column basis. If not present, 
 !>        column basis substitutions are equal to row basis 
@@ -31063,7 +31063,7 @@
 !>    
 !>    \param[in] Subs2BIn
 !>    \verbatim
-!>        Subs2B is Integer(kind=int64),Dimension(:),Optional
+!>        Subs2BIn is Integer(kind=int64),Dimension(:),Optional
 !>        If provided, gives the permitted beta substitutions to 
 !>        include in the Hamiltonian for the column basis. If not 
 !>        present, column basis substitutions are equal to row basis 
