@@ -11194,10 +11194,10 @@
             aabb = scalar*eris%getBlock('aabb')
           if(eris%hasSpinBlock('abba')) &
             abba = scalar*eris%getBlock('abba')
-          call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'space',aaaa,alphaBeta=aabb,abba=abba)
+          call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'space',aaaa,alphaBeta=aabb,abba=abba)
         elseif(eris%intType().eq.'coulomb'.or.eris%intType().eq.'exchange'.or.&
           eris%intType().eq.'inverted'.or.eris%intType().eq.'ms') then
-          call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'space',aaaa)
+          call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'space',aaaa)
         else 
           call mqc_error_A('Unknown twoERI storage type in mqc_scalar_twoeris_multiply',&
             6,'ERIS%inttype()',ERIS%inttype())
@@ -11223,15 +11223,15 @@
             if(eris%intType().eq.'ms') then
               if(eris%hasSpinBlock('baba')) &
                 baba = scalar*eris%getBlock('baba')
-              call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+              call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
                 aabb,bbaa,abab,abba,baab,baba)
             else
-              call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+              call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
                 aabb,bbaa,abba=abba,baab=baab)
             endIf
           elseif(eris%intType().eq.'coulomb'.or.eris%intType().eq.'exchange'.or.&
             eris%intType().eq.'inverted') then
-            call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+            call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
                 aabb,bbaa)
           else 
             call mqc_error_A('Unknown twoERI storage type in mqc_scalar_twoeris_multiply',&
@@ -11239,14 +11239,14 @@
           endIf
         elseif(eris%storType().eq.'symm') then
           if(eris%intType().eq.'ms') then
-            call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+            call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
               aabb,abab=abab,abba=abba)
           elseif(eris%intType().eq.'doublebar') then
-            call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+            call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
               aabb,abba=abba)
           elseif(eris%intType().eq.'coulomb'.or.eris%intType().eq.'exchange'.or.&
             eris%intType().eq.'inverted') then
-            call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'spin',aaaa,bbbb,&
+            call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'spin',aaaa,bbbb,&
               aabb)
           else 
             call mqc_error_A('Unknown twoERI storage type in mqc_scalar_twoeris_multiply',&
@@ -11290,10 +11290,10 @@
             bbab = scalar*eris%getBlock('bbab')
           if(eris%hasSpinBlock('babb')) &
             babb = scalar*eris%getBlock('babb')
-          call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'general',aaaa,bbbb,aabb,bbaa,&
+          call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'general',aaaa,bbbb,aabb,bbaa,&
             abab,abba,baab,baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb)
         elseif(eris%storType().eq.'symm') then
-          call mqc_twoeris_allocate(erisOut,myLabel//'-'//myInt,'general',aaaa,bbbb,aabb,&
+          call mqc_twoeris_allocate(erisOut,trim(myLabel)//'-'//trim(myInt),'general',aaaa,bbbb,aabb,&
             abab=abab,abba=abba,aaab=aaab,abbb=abbb)
         else
           call mqc_error_A('Unknown storage type in mqc_twoeris_scalar_multiply', 6, &
