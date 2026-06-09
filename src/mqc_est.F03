@@ -207,6 +207,8 @@
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
 !>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
         Procedure, Public::abs => MQC_Eigenvalues_Abs
+!>      \brief <b> Returns the exponential of MQC_SCF_Eigenvalues</b>
+        Procedure, Public::exp => MQC_Eigenvalues_exp
 !>      \brief <b> Returns a mqc_scf_integral with values specified by the mqc_scf_eigenvalues</b>
         Procedure, Public::diagf => mqc_eigenvalues_to_integral
 !>      \brief <b> Returns the eigenvalues sorted from low to high unless vector specifying
@@ -494,6 +496,11 @@
         Module Procedure MQC_Eigenvalues_MinLoc
       End Interface
 !
+!>    \brief <b> Returns the exponent</b>
+      Interface exp
+        Module Procedure MQC_Eigenvalues_exp_func
+      End Interface
+!
 !>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
       Interface abs
         Module Procedure MQC_Eigenvalues_Abs
@@ -522,8 +529,8 @@
 !
 !>    \brief <b> Assigns a variable to the value of another</b>
       Interface Assignment (=)
-        Module Procedure MQC_Integral_Output_Array
         Module Procedure MQC_Eigenvalues_Output_Array
+        Module Procedure MQC_Integral_Output_Array
         Module Procedure mqc_2ERIs_output_array
         Module Procedure mqc_set_integral2integral
         Module Procedure mqc_set_eigs2eigs
@@ -543,9 +550,10 @@
 !
 !>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
+        Module Procedure MQC_Eigenvalues_Difference
         Module Procedure MQC_Integral_Difference
         Module Procedure MQC_Matrix_Integral_Difference
-        Module Procedure MQC_ERI_Difference 
+        Module Procedure MQC_ERI_Difference
       End Interface
 !
 !>    \brief <b> Multiplies two variables</b>
@@ -7961,6 +7969,144 @@
       end function mqc_eigenvalues_sum
 !
 !
+!     PROCEDURE MQC_Eigenvalues_Difference
+!
+!>    \brief <b> MQC_Eigenvalues_Difference is used to subtract two MQC Eigenvalues type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Difference is used to subtract two MQC Eigenvalues type variables.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] EigA
+!>    \verbatim
+!>        EigA is type(mqc_scf_Eigenvalues)
+!>        The first MQC Eigenvalues variable to subtract.
+!>    \endverbatim
+!>    
+!>    \param[in] EigB
+!>    \verbatim
+!>        EigB is type(mqc_scf_Eigenvalues)
+!>        The second MQC Eigenvalues variable to sutract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_Eigenvalues_Difference(EigA,EigB) result(EigOut)
+!
+      implicit none
+      type(mqc_scf_Eigenvalues),intent(in)::EigA,EigB
+      type(mqc_scf_Eigenvalues)::EigOut
+      type(mqc_vector)::tmpVectorAlpha,tmpVectorBeta
+!
+      if(size(EigA,'alpha').ne.size(EigB,'alpha').or.&
+         size(EigA,'beta').ne.size(EigA,'beta')) call mqc_error_i('Integral blocks are &
+        &not conformable in mqc_Eigenvalues_Difference',6,&
+        'size(EigA,alpha)',size(EigA,'alpha'),&
+        'size(EigB,alpha)',size(EigB,'alpha'),&
+        'size(EigA,beta)',size(EigA,'beta'),&
+        'size(EigB,beta)',size(EigB,'beta'))
+!
+      select case(EigA%array_type)
+      case('space')
+        select case (EigB%array_type)
+        case('space')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha-EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha*(-1)
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','space',tmpVectorAlpha)
+        case('spin')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha-EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha*(-1)
+          end if
+          if(EigA%hasAlpha()) then
+            if(EigB%hasBeta()) then
+              tmpVectorBeta = EigA%alpha-EigB%beta
+            else
+              tmpVectorBeta = EigA%alpha
+            end if
+          else
+            if(EigB%hasBeta()) tmpVectorBeta = EigB%beta*(-1)
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_eigenvalues_Difference', 6, &
+               'EigB%array_type', EigB%array_type )
+        end select
+      case('spin')
+        select case (EigB%array_type)
+        case('space')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha-EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha*(-1)
+          end if
+          if(EigA%hasBeta()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorBeta = EigA%beta-EigB%alpha
+            else
+              tmpVectorBeta = EigA%beta
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorBeta = EigB%alpha*(-1)
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case('spin')
+          if(EigA%hasAlpha()) then
+            if(EigB%hasAlpha()) then
+              tmpVectorAlpha = EigA%alpha-EigB%alpha
+            else
+              tmpVectorAlpha = EigA%alpha
+            end if
+          else
+            if(EigB%hasAlpha()) tmpVectorAlpha = EigB%alpha*(-1)
+          end if
+          if(EigA%hasBeta()) then
+            if(EigB%hasBeta()) then
+              tmpVectorBeta = EigA%beta-EigB%beta
+            else
+              tmpVectorBeta = EigA%beta
+            end if
+          else
+            if(EigB%hasBeta()) tmpVectorBeta = EigB%beta*(-1)
+          end if
+          call mqc_eigenvalues_allocate(EigOut,'','spin',tmpVectorAlpha,tmpVectorBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_eigenvalues_Difference', 6, &
+               'EigB%array_type', EigB%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_eigenvalues_Difference', 6, &
+             'EigA%array_type', EigA%array_type )
+      end select
+!
+      end function mqc_eigenvalues_Difference
+!
 !     PROCEDURE MQC_Integral_Sum
 !
 !>    \brief <b> MQC_Integral_Sum is used to sum two MQC integral type variables</b> 
@@ -10882,7 +11028,7 @@
 !
 !     Authors:
 !     ========
-!>    \author M. M. F. Moras
+!>    \author M. M. F. Moraes
 !>    \date 2026
 !
       function mqc_scalar_eigenvalues_multiply(scalarIn,eigB) result(eigOut)
@@ -10966,7 +11112,7 @@
 !
 !     Authors:
 !     ========
-!>    \author M. M. F. Moras
+!>    \author M. M. F. Moraes
 !>    \date 2026
 !
       function mqc_eigenvalues_scalar_multiply(eig,scalarIn) result(eigOut)
@@ -22038,6 +22184,85 @@
 !
       end function mqc_eigenvalues_maxloc
 !
+!
+!     PROCEDURE MQC_Eigenvalues_exp_func
+!
+!>    \brief <b> MQC_Eigenvalues_exp_func is a function that returns the
+!>    exponential of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_exp_func is a function that returns the exponential 
+!>    of an MQC_Eigenvalues variable</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_eigenvalues_exp_func(eigenvalues) result(output)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eigenvalues
+      type(mqc_scf_eigenvalues)::output
+!
+      output = eigenvalues
+      if(output%hasalpha()) output%alpha = exp(output%alpha)
+      if(output%hasbeta()) output%beta = exp(output%beta)
+!
+      end function mqc_eigenvalues_exp_func   
+!
+!     PROCEDURE MQC_Eigenvalues_exp
+!
+!>    \brief <b> MQC_Eigenvalues_exp is a subroutine that returns the
+!>    exponential of an MQC_Eigenvalues variable</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_exp is a subroutine that returns the exponential 
+!>    of an MQC_Eigenvalues variable</b>
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      subroutine mqc_eigenvalues_exp(eigenvalues)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(inOut)::eigenvalues
+!
+      if(eigenvalues%hasalpha()) eigenvalues%alpha = exp(eigenvalues%alpha)
+      if(eigenvalues%hasbeta()) eigenvalues%beta = exp(eigenvalues%beta)
+!
+      end subroutine  mqc_eigenvalues_exp
+  
 !
 !     PROCEDURE MQC_Eigenvalues_Abs
 !
