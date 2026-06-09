@@ -207,6 +207,8 @@
         Procedure, Public::maxloc => MQC_Eigenvalues_MaxLoc
 !>      \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
         Procedure, Public::abs => MQC_Eigenvalues_Abs
+!>      \brief <b> Returns the exponential of the MQC_SCF_Eigenvalues</b>
+        Procedure, Public::exp => MQC_Eigenvalues_Exp
 !>      \brief <b> Returns a mqc_scf_integral with values specified by the mqc_scf_eigenvalues</b>
         Procedure, Public::diagf => mqc_eigenvalues_to_integral
 !>      \brief <b> Returns the eigenvalues sorted from low to high unless vector specifying
@@ -441,6 +443,11 @@
 !>    \brief <b> Returns the location of the minimum value in MQC_SCF_Eigenvalues</b>
       Interface minloc
         Module Procedure MQC_Eigenvalues_MinLoc
+      End Interface
+!
+!>    \brief <b> Returns the exponential</b>
+      Interface Exp 
+        Module Procedure MQC_Eigenvalues_Exp_Func 
       End Interface
 !
 !>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
@@ -14233,10 +14240,6 @@
      !                    6,'myLabel',myLabel)
      !end select
 
-      write(*,*) 'DEBUG: ERI_ERI Contraction' 
-      write(*,*) 'ERIs 1',eris1%Type(),eris1%storType()
-      write(*,*) 'ERIs 2',eris2%Type(),eris2%storType()
-
       if(myLabel.ne.'coulomb') temp = eris1%swap(2,4)
       output = 0.0
       if(eris1%storType().eq.'empty'.or.eris2%storType().eq.'empty') return
@@ -21329,6 +21332,94 @@
       end function mqc_eigenvalues_maxloc
 !
 !
+!     PROCEDURE MQC_Eigenvalues_Exp_Func
+!
+!>    \brief <b> MQC_Eigenvalues_Exp is a function that returns the exponential of all
+!>    elements of an MQC_SCF_Eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Exp_Func is a function that returns the exponential of all
+!>    elements of an MQC_SCF_Eigenvalues
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_scf_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2026
+!
+      function mqc_eigenvalues_exp_func(Eigenvalues) result(output)
+!
+      Implicit None
+      class(mqc_scf_eigenvalues),intent(in)::Eigenvalues
+      type(mqc_scf_eigenvalues)::output
+      integer(kind=int64)::i
+!
+      output = Eigenvalues
+      if(Eigenvalues%hasalpha()) output%alpha = exp(Eigenvalues%alpha)
+      if(Eigenvalues%hasbeta()) output%beta = exp(Eigenvalues%beta)
+!
+      end function mqc_eigenvalues_exp_func
+!
+!
+!
+!     PROCEDURE MQC_Eigenvalues_Exp 
+!
+!>    \brief <b> MQC_Eigenvalues_Exp is a subroutine that returns the exponential of all
+!>    elements of an MQC_SCF_Eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Eigenvalues_Exp is a subroutine that returns the exponential of all
+!>    elements of an MQC_SCF_Eigenvalues
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] Eigenvalues
+!>    \verbatim
+!>        Eigenvalues is Class(MQC_scf_Eigenvalues)
+!>        The name of the MQC_Eigenvalues variable.
+!>    \endverbatim
+!
+!     Authors:
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2026
+!
+      subroutine mqc_eigenvalues_exp(Eigenvalues)
+!
+      Implicit None
+      class(mqc_scf_eigenvalues),intent(inOut)::Eigenvalues
+      integer(kind=int64)::i
+!
+      if(Eigenvalues%hasalpha()) Eigenvalues%alpha = exp(Eigenvalues%alpha)
+      if(Eigenvalues%hasbeta()) Eigenvalues%beta = exp(Eigenvalues%beta)
+!
+      end subroutine mqc_eigenvalues_exp
+!
+!
+!
 !     PROCEDURE MQC_Eigenvalues_Abs
 !
 !>    \brief <b> MQC_Eigenvalues_Abs is a function that returns the absolute
@@ -21348,7 +21439,7 @@
 !     ==========
 !>    \param[in,out] Eigenvalues
 !>    \verbatim
-!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        Eigenvalues is Class(MQC_scf_Eigenvalues)
 !>        The name of the MQC_Eigenvalues variable.
 !>    \endverbatim
 !
