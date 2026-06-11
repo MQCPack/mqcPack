@@ -154,6 +154,12 @@
         Module Procedure MQC_Scalar_NEFR4_Multiply
         Module Procedure MQC_NEFR4_Scalar_Multiply
       End Interface
+
+      !>    \brief <b> Subtracts two variables</b>
+      Interface Operator (-)
+        Module Procedure MQC_NEF_Vector_Difference
+      End Interface
+
 !    
 !
 !
@@ -1122,8 +1128,8 @@
         'NEFVecB%NumSpace',NEFVecB%NumSpace)
 !
       do col = 1, NEFVecA%NumSpace
-        if (NEFVecA%Size_vector_alpha(col).ne.&
-            NEFVecB%Size_vector_alpha(col)) &
+        if (NEFVecA%Size_vector_alpha(col).ne.NEFVecB%Size_vector_alpha(col) .or. &
+                NEFVecA%Size_vector_beta(col) .ne.NEFVecB%Size_vector_beta(col)) &
           call mqc_error_i('NEF subspace dimensions are &
            &not conformable in mqc_nef_vector_sum',6,&
           'Sub-space index (col)', col,&
@@ -1933,6 +1939,74 @@
       end function mqc_nefr4_scalar_multiply
 !
 !
+!
+!     PROCEDURE MQC_NEF_Vector_Difference
+!
+!>    \brief <b> MQC_NEF_Vector_Difference is used to subtract two MQC NEF Vector type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_Vector_Difference is used to subtract two MQC NEF vector type variables
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NEFVecA
+!>    \verbatim
+!>        NEFVecA is type(mqc_nef_vector)
+!>        The first MQC NEF Vector variable to subtract.
+!>    \endverbatim
+!>    
+!>    \param[in] NEFVecB
+!>    \verbatim               
+!>        NEFVecB is type(mqc_nef_vector)
+!>        The second MQC NEF Vector variable to subtract.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_nef_vector_difference(NEFVecA,NEFVecB) result(NEFVecOut)
+!
+      implicit none
+      type(mqc_nef_vector),intent(in)::NEFVecA,NEFVecB
+      type(mqc_nef_vector)::NEFVecOut
+      type(mqc_nef_vector)::tmpVectorAlpha,tmpVectorBeta
+      integer::col
+!
+      if(NEFVecA%NumSpace.ne.NEFVecB%NumSpace) &
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nef_vector_difference',6,&
+        'NEFVecA%NumSpace',NEFVecA%NumSpace,&
+        'NEFVecB%NumSpace',NEFVecB%NumSpace)
+!
+        do col = 1, NEFVecA%NumSpace
+          if (NEFVecA%Size_vector_alpha(col).ne.NEFVecB%Size_vector_alpha(col) .or. &
+              NEFVecA%Size_vector_beta(col) .ne.NEFVecB%Size_vector_beta(col)) &
+                call mqc_error_i('NEF subspace dimensions are not conformable &
+                        &in mqc_nef_vector_difference',6,&
+                        'Sub-space index (col)', col,&
+                        'NEFVecA%Size_vector_alpha(col)',NEFVecA%Size_vector_alpha(col),&
+                        'NEFVecB%Size_vector_alpha(col)',NEFVecB%Size_vector_alpha(col),&
+                        'NEFVecA%Size_vector_beta(col)',NEFVecA%Size_vector_beta(col),&
+                        'NEFVecB%Size_vector_beta(col)',NEFVecB%Size_vector_beta(col))      
+        end do
+!
+      call NEFVecOut%init(NEFVecA%Map_Matrix)
+      do col = 1, NEFVecB%NumSpace
+        NEFVecOut%Main_Vector(col) = NEFVecA%Main_Vector(col) - NEFVecB%Main_Vector(col)
+      end do
+!
+!
+      end function mqc_nef_vector_difference
+!
+!
 !     PROCEDURE MQC_Print_NEF_R4
 !
 !>    \brief <b> MQC_Print_NEF_R4 is a subroutine used to print an MQC
@@ -2016,6 +2090,7 @@
 !
  1000 Format(1x,A)
  1020 Format( " " )
+!  
 !  
       if(present(blank_at_top)) then
         if(blank_at_top) write(iout,1020)
@@ -6324,23 +6399,10 @@
                                    [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
                 fsizeKet = fsizeKet + size2
               else if (myBlockName.eq.'beta') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1)                    
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2)                    
-                if (size1.gt.0.and.size2.gt.0) &                                      
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('beta'),&       
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])     
-                fsizeKet = fsizeKet + size2                                           
-              else if (myBlockName.eq.'alphabeta') then                               
-                size1 = nefMat%Main_matrix(id)%blockSize('alpha',1)                   
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2)                    
-                if (size1.gt.0.and.size2.gt.0) &                                      
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alphabeta'),&  
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])     
                 fsizeKet = fsizeKet + size2                                           
               else if (myBlockName.eq.'betaalpha') then                               
                 size1 = nefMat%Main_matrix(id)%blockSize('beta',1)                    
                 size2 = nefMat%Main_matrix(id)%blockSize('alpha',2)                   
-                if (size1.gt.0.and.size2.gt.0) &                                      
                   call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&  
                                    [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])     
                 fsizeKet = fsizeKet + size2                                           
