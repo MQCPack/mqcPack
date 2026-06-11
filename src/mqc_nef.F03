@@ -158,6 +158,8 @@
       !>    \brief <b> Subtracts two variables</b>
       Interface Operator (-)
         Module Procedure MQC_NEF_Vector_Difference
+        Module Procedure MQC_NEFMatrix_Difference
+        Module Procedure MQC_NEF_R4_Difference
       End Interface
 
 !    
@@ -2005,6 +2007,221 @@
 !
 !
       end function mqc_nef_vector_difference
+!
+
+!
+!     PROCEDURE MQC_NEFMatrix_Difference
+!
+!>    \brief <b> MQC_NEFMatrix_Difference is used to subtract two MQC NEF matrix type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEFMatrix_Difference is used to subtract two MQC NEF matrix type variables
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NEFMatA
+!>    \verbatim
+!>        NEFMatA is type(mqc_nef_matrix)
+!>        The first MQC NEF Matrix variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] NEFMatB
+!>    \verbatim               
+!>        NEFMatB is type(mqc_nef_matrix)
+!>        The second MQC NEF Matrix variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_nefmatrix_difference(NEFMatA,NEFMatB) result(NEFMatOut)
+!
+      implicit none
+      type(mqc_nef_matrix),intent(in)::NEFMatA,NEFMatB
+      type(mqc_nef_matrix)::NEFMatOut
+      integer::col,row,id
+!
+      if(NEFMatA%NumSpace_col.ne.NEFMatB%NumSpace_col.or.&
+         NEFMatA%NumSpace_row.ne.NEFMatB%NumSpace_row) &
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nefmatrix_difference',6,&
+        'NEFMatA%NumSpace_col',NEFMatA%NumSpace_col,&
+        'NEFMatB%NumSpace_col',NEFMatB%NumSpace_col,&
+        'NEFMatA%NumSpace_row',NEFMatA%NumSpace_row,&
+        'NEFMatB%NumSpace_row',NEFMatB%NumSpace_row)
+
+      do col = 1, NEFMatA%NumSpace_col
+        if(NEFMatA%Size_vector_alpha_col(col)&
+           .ne.NEFMatB%Size_vector_alpha_col(col).or. &
+               NEFMatA%Size_vector_beta_col(col)  &
+           .ne.NEFMatB%Size_vector_beta_col(col)) &
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nefmatrix_difference',6,&
+          'Sub-space index (col)', col,&
+          'NEFMatA%Size_vector_alpha_col(col)',NEFMatA%Size_vector_alpha_col(col),&
+          'NEFMatB%Size_vector_alpha_col(col)',NEFMatB%Size_vector_alpha_col(col),&
+          'NEFMatA%Size_vector_beta_col(col)',NEFMatA%Size_vector_beta_col(col),&
+          'NEFMatB%Size_vector_beta_col(col)',NEFMatB%Size_vector_beta_col(col))
+      end do
+      do row = 1, NEFMatA%NumSpace_row
+        if(NEFMatA%Size_vector_alpha_row(row)&
+           .ne.NEFMatB%Size_vector_alpha_row(row).or. &
+               NEFMatA%Size_vector_beta_row(row)  &
+           .ne.NEFMatB%Size_vector_beta_row(row)) &
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nefmatrix_difference',6,&
+          'Sub-space index (row)', row,&
+          'NEFMatA%Size_vector_alpha_row(row)',NEFMatA%Size_vector_alpha_row(row),&
+          'NEFMatB%Size_vector_alpha_row(row)',NEFMatB%Size_vector_alpha_row(row),&
+          'NEFMatA%Size_vector_beta_row(row)',NEFMatA%Size_vector_beta_row(row),&
+          'NEFMatB%Size_vector_beta_row(row)',NEFMatB%Size_vector_beta_row(row))
+      end do
+
+      call NEFMatOut%init(NEFMatA%Map_Matrix_Row,&
+          initial_map_matrix_col=NEFMatB%Map_Matrix_Col)
+      do row = 1, NEFMatA%NumSpace_row
+        do col = 1, NEFMatB%NumSpace_col
+          id = NEFMatOut%blockIndex([1,row],[2,col])
+          NEFMatOut%Main_Matrix(id) = NEFMatA%Main_Matrix(id)-NEFMatB%Main_Matrix(id)
+        end do
+      end do
+      end function mqc_nefmatrix_difference
+!
+!
+!     PROCEDURE MQC_NEF_R4_Difference
+!
+!>    \brief <b> MQC_NEF_R4_Difference is used to subtract two MQC NEF R4 type variables</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_R4_Difference is used to subtract two MQC NEF R4 type variables
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] NEFR4A
+!>    \verbatim
+!>        NEFR4A is type(mqc_nef_r4)
+!>        The first MQC NEF R4 variable to sum.
+!>    \endverbatim
+!>    
+!>    \param[in] NEFR4B
+!>    \verbatim
+!>        NEFR4B is type(mqc_nef_r4)
+!>        The second MQC NEF R4 variable to sum.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_nef_r4_difference(NEFR4A,NEFR4B) result(NEFR4Out)
+!
+      implicit none
+      type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
+      type(mqc_nef_r4)::NEFR4Out
+      integer::id1,id2,id3,id4,id
+!
+      if(NEFR4A%NumSpace_1.ne.NEFR4B%NumSpace_1)&
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nef_r4_difference',6,&
+        'NEFR4A%NumSpace_1',NEFR4A%NumSpace_1,&
+        'NEFR4B%NumSpace_1',NEFR4B%NumSpace_1)
+      if(NEFR4A%NumSpace_2.ne.NEFR4B%NumSpace_2)&
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nef_r4_difference',6,&
+        'NEFR4A%NumSpace_2',NEFR4A%NumSpace_2,&
+        'NEFR4B%NumSpace_2',NEFR4B%NumSpace_2)
+      if(NEFR4A%NumSpace_3.ne.NEFR4B%NumSpace_3)&
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nef_r4_difference',6,&
+        'NEFR4A%NumSpace_3',NEFR4A%NumSpace_3,&
+        'NEFR4B%NumSpace_3',NEFR4B%NumSpace_3)
+      if(NEFR4A%NumSpace_4.ne.NEFR4B%NumSpace_4)&
+        call mqc_error_i('NEF number of subspaces are &
+        &not conformable in mqc_nef_r4_difference',6,&
+        'NEFR4A%NumSpace_4',NEFR4A%NumSpace_4,&
+        'NEFR4B%NumSpace_4',NEFR4B%NumSpace_4)
+     
+      do id1 = 1, NEFR4A%NumSpace_1
+        if(NEFR4A%Size_vector_alpha_1(id1)&
+           .ne.NEFR4B%Size_vector_alpha_1(id1).or.&
+           NEFR4A%Size_vector_beta_1(id1)&
+           .ne.NEFR4B%Size_vector_beta_1(id1))&
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nef_r4_difference',6,&
+          'Sub-space index (id1)', id1,&
+          'NEFR4A%Size_vector_alpha_1(id1)',NEFR4A%Size_vector_alpha_1(id1),&
+          'NEFR4B%Size_vector_alpha_1(id1)',NEFR4B%Size_vector_alpha_1(id1),&
+          'NEFR4A%Size_vector_beta_1(id1)',NEFR4A%Size_vector_beta_1(id1),&
+          'NEFR4B%Size_vector_beta_1(id1)',NEFR4B%Size_vector_beta_1(id1))
+      end do
+      do id2 = 1, NEFR4A%NumSpace_2
+        if(NEFR4A%Size_vector_alpha_2(id2)&
+           .ne.NEFR4B%Size_vector_alpha_2(id2).or.&
+           NEFR4A%Size_vector_beta_2(id2)&
+           .ne.NEFR4B%Size_vector_beta_2(id2))&
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nef_r4_difference',6,&
+          'Sub-space index (id2)', id2,&
+          'NEFR4A%Size_vector_alpha_2(id2)',NEFR4A%Size_vector_alpha_2(id2),&
+          'NEFR4B%Size_vector_alpha_2(id2)',NEFR4B%Size_vector_alpha_2(id2),&
+           'NEFR4A%Size_vector_beta_2(id2)', NEFR4A%Size_vector_beta_2(id2),&
+           'NEFR4B%Size_vector_beta_2(id2)', NEFR4B%Size_vector_beta_2(id2))
+      end do
+      do id3 = 1, NEFR4A%NumSpace_3
+        if(NEFR4A%Size_vector_alpha_3(id3)&
+           .ne.NEFR4B%Size_vector_alpha_3(id3).or.&
+           NEFR4A%Size_vector_beta_3(id3)&
+           .ne.NEFR4B%Size_vector_beta_3(id3))&
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nef_r4_difference',6,&
+          'Sub-space index (id3)', id3,&
+          'NEFR4A%Size_vector_alpha_3(id3)',NEFR4A%Size_vector_alpha_3(id3),&
+          'NEFR4B%Size_vector_alpha_3(id3)',NEFR4B%Size_vector_alpha_3(id3),&
+           'NEFR4A%Size_vector_beta_3(id3)', NEFR4A%Size_vector_beta_3(id3),&
+           'NEFR4B%Size_vector_beta_3(id3)', NEFR4B%Size_vector_beta_3(id3))
+      end do
+      do id4 = 1, NEFR4A%NumSpace_4
+        if(NEFR4A%Size_vector_alpha_4(id4)&
+           .ne.NEFR4B%Size_vector_alpha_4(id4).or.&
+           NEFR4A%Size_vector_beta_4(id4)&
+           .ne.NEFR4B%Size_vector_beta_4(id4))&
+          call mqc_error_i('NEF subspace dimensions are &
+           &not conformable in mqc_nef_r4_difference',6,&
+          'Sub-space index (id4)', id4,&
+          'NEFR4A%Size_vector_alpha_4(id4)',NEFR4A%Size_vector_alpha_4(id4),&
+          'NEFR4B%Size_vector_alpha_4(id4)',NEFR4B%Size_vector_alpha_4(id4),&
+           'NEFR4A%Size_vector_beta_4(id4)', NEFR4A%Size_vector_beta_4(id4),&
+           'NEFR4B%Size_vector_beta_4(id4)', NEFR4B%Size_vector_beta_4(id4))
+      end do
+
+
+      NEFR4Out = NEFR4A
+      do id1 = 1, NEFR4Out%NumSpace_1
+        do id2 = 1, NEFR4Out%NumSpace_2
+          do id3 = 1, NEFR4Out%NumSpace_3
+            do id4 = 1, NEFR4Out%NumSpace_4
+              id = NEFR4Out%blockIndex([4,id4],[3,id3],[2,id2],[1,id1])
+              NEFR4Out%Main_R4(id) = NEFR4A%Main_R4(id) - NEFR4B%Main_R4(id)
+           end do
+          end do
+        end do
+      end do
+      end function mqc_nef_r4_difference
 !
 !
 !     PROCEDURE MQC_Print_NEF_R4
