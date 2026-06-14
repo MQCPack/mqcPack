@@ -184,5 +184,121 @@
  PASS  contraction space/ms x general/ms (J)
  PASS  contraction general/ms x space/doublebar (J)
  PASS  contraction general/ms x space/ms (J)
+ PASS  at/space-coul-full/aaaa/J
+ PASS  at/space-coul-full/aaaa/K
+ PASS  at/space-exch-full/aaaa/J
+ PASS  at/space-exch-full/aaaa/K
+ PASS  at/space-dbar-full/aaaa/JK
+ PASS  at/space-ms-full/aaaa/J
+ PASS  at/space-inv-full/aaaa/J
+ PASS  at/space-coul-symm/aaaa/J
+ PASS  at/space-exch-symm/aaaa/K
+ PASS  at/space-ms-symm/aaaa/JK
+ PASS  at/spin-coul-full/aaaa/J
+ PASS  at/spin-coul-full/aabb/J
+ PASS  at/spin-coul-full/bbaa/J=0
+ PASS  at/spin-coul-symm/aaaa/K
+ PASS  at/spin-coul-symm/bbaa/J
+ PASS  at/spin-exch-full/aaaa/K
+ PASS  at/spin-exch-full/abba/K
+ PASS  at/spin-exch-symm/baab/K
+ PASS  at/spin-dbar-full/aaaa/JK
+ PASS  at/spin-dbar-full/aabb/JK
+ PASS  at/spin-dbar-full/abba/JK
+ PASS  at/spin-ms-full/aaaa/J
+ PASS  at/spin-ms-full/bbbb/J
+ PASS  at/spin-ms-full/aabb/J
+ PASS  at/spin-ms-symm/bbaa/J
+ PASS  at/spin-inv-full/aaaa/J
+ PASS  at/spin-inv-full/aabb/J
+ PASS  at/spin-inv-symm/aabb/J
+ PASS  at/spin-ms-full/abab/J
+ PASS  at/spin-ms-full/noSpinBlk-abab/J
+ PASS  at/gen-coul-full/aaaa/J
+ PASS  at/gen-coul-full/aabb/J
+ PASS  at/gen-coul-symm/bbaa/J
+ PASS  at/gen-exch-full/aaaa/K
+ PASS  at/gen-exch-full/abba/J
+ PASS  at/gen-exch-symm/baab/J
+ PASS  at/gen-dbar-full/aaaa/JK
+ PASS  at/gen-dbar-full/aabb/JK
+ PASS  at/gen-dbar-symm/bbaa/JK
+ PASS  at/gen-ms-full/abab/J
+ PASS  at/gen-ms-full/abab/K
+ PASS  at/gen-ms-full/abab/JK=0
+ PASS  at/gen-ms-symm/baba/J
+ PASS  at/gen-inv-full/aaaa/J
+ PASS  at/gen-inv-full/abab/J
+ PASS  at/gen-inv-symm/baba/J
+ PASS  at/gen-ms-full/spinBlk-babb/JK
+ PASS  at/gen-ms-full/noSpinBlk-babb/JK
+ PASS  at/space-ms/noSpinBlk-aaaa/J
+ PASS  at/space-ms/noSpinBlk-aaaa/K
+ PASS  at/spin-ms/noSpinBlk-aaaa/J
+ PASS  at/spin-ms/noSpinBlk-aaaa/K
+ PASS  at/spin-ms/noSpinBlk-bbbb/J
+ PASS  at/spin-ms/noSpinBlk-aabb/J
+ PASS  at/spin-ms/noSpinBlk-abba/K
+ PASS  at/spin-ms/noSpinBlk-abab/J
+ PASS  at/gen-ms/noSpinBlk-aabb/J
+ PASS  at/gen-ms/noSpinBlk-abba/J
+ PASS  at/gen-ms/noSpinBlk-abab/J
+ PASS  at/gen-ms/noSpinBlk-aabb/JK
+ PASS  IC/space x space/same=T: aa
+ PASS  IC/space x spin/same=T: aa
+ PASS  IC/space x spin/same=F [1,3]: aa
+ PASS  IC/space x spin/same=F [1,3]: bb
+ PASS  IC/space x general/same=T: aa
+ PASS  IC/space x general/same=F [1,3]: aa
+ PASS  IC/space x general/same=F [1,3]: bb
+ PASS  IC/space x general/same=F [1,3]: ab
+ PASS  IC/space x general/same=F [1,3]: ba
+ PASS  IC/spin-symm x space/same=T [1,2]: aa
+ PASS  IC/spin-symm x space/same=T [1,2]: bb
+ PASS  IC/spin-full x space/same=T [3,4]: aa
+ PASS  IC/spin-full x space/same=T [3,4]: bb
+ PASS  IC/spin x spin/same=T: aa
+ PASS  IC/spin x spin/same=T: bb
+ PASS  IC/spin x general/same=T: aa (ab/ba of intGen unused)
+ PASS  IC/spin x general/same=T: bb (ab/ba of intGen unused)
+ PASS  IC/spin x general/same=F [1,3]: aa
+ PASS  IC/spin x general/same=F [1,3]: bb
+ PASS  IC/spin x general/same=F [1,3]: ab
+ PASS  IC/spin x general/same=F [1,3]: ba (bbaa not aaaa)
+ PASS  IC/spin x general/same=F [3,1]: ab (aabb*M_ba)
+ PASS  IC/spin x general/same=F [3,1]: ba (bbaa*M_ab)
+ PASS  IC/gen+SF x space/same=T [1,2]: aa
+ PASS  IC/gen+SF x space/same=T [1,2]: bb
+ PASS  IC/gen+SF x space/same=T [1,2]: ab (aaab contribution)
+ PASS  IC/gen+SF x space/same=T [1,2]: ba (bbba contribution)
+ PASS  IC/gen x spin/same=T: aa
+ PASS  IC/gen x spin/same=T: bb
+ PASS  IC/gen+SF x spin/same=F [3,1]: aa
+ PASS  IC/gen+SF x spin/same=F [3,1]: bb
+ PASS  IC/gen+SF x spin/same=F [3,1]: ab (aaab*M_aa, not bbba)
+ PASS  IC/gen+SF x spin/same=F [3,1]: ba (bbba*M_bb)
+ PASS  IC/gen x general/same=T: aa
+ PASS  IC/gen x general/same=T: bb
+ PASS  IC/gen x general/same=T: ab
+ PASS  IC/gen x general/same=T: ba
+ PASS  IC/gen x general/same=F [1,3]: aa
+ PASS  IC/gen x general/same=F [1,3]: bb
+ PASS  IC/gen x general/same=F [1,3]: ab
+ PASS  IC/gen x general/same=F [1,3]: ba
+ PASS  IC/gen x general/same=F [3,1]: ab
+ PASS  IC/gen x general/same=F [3,1]: ba
+ PASS  R4T/space/1x/coulomb
+ PASS  R4T/space/1x/exchange
+ PASS  R4T/space/1x/doublebar
+ PASS  R4T/space/2x/coulomb
+ PASS  R4T/spin/2x/coulomb (intType=label)
+ PASS  R4T/spin/2x/doublebar (intType=label)
+ PASS  R4T/general/2x/coulomb (intType=label)
+ PASS  R4T/space/1x/inverted
+ PASS  R4T/space/1x/ms
+ PASS  R4T/space/2x/inverted
+ PASS  R4T/space/2x/ms
+ PASS  R4T/spin/2x/coulomb→inverted
+ PASS  R4T/spin/2x/coulomb→ms
 
  Tests completed: 0 failure(s)

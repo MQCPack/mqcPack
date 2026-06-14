@@ -3117,6 +3117,23 @@
         'integralType',twoERIs%integralType,'interactionType',twoERIs%interactionType,&
         'storageType',twoERIs%storageType)
 
+      call MQC_Deallocate_R4Tensor(twoERIs%alpha)
+      call MQC_Deallocate_R4Tensor(twoERIs%beta)
+      call MQC_Deallocate_R4Tensor(twoERIs%alphaBeta)
+      call MQC_Deallocate_R4Tensor(twoERIs%betaAlpha)
+      call MQC_Deallocate_R4Tensor(twoERIs%abab)
+      call MQC_Deallocate_R4Tensor(twoERIs%abba)
+      call MQC_Deallocate_R4Tensor(twoERIs%baab)
+      call MQC_Deallocate_R4Tensor(twoERIs%baba)
+      call MQC_Deallocate_R4Tensor(twoERIs%aaab)
+      call MQC_Deallocate_R4Tensor(twoERIs%aaba)
+      call MQC_Deallocate_R4Tensor(twoERIs%abaa)
+      call MQC_Deallocate_R4Tensor(twoERIs%baaa)
+      call MQC_Deallocate_R4Tensor(twoERIs%bbba)
+      call MQC_Deallocate_R4Tensor(twoERIs%bbab)
+      call MQC_Deallocate_R4Tensor(twoERIs%babb)
+      call MQC_Deallocate_R4Tensor(twoERIs%abbb)
+
       if(present(alpha).and.allocVec(1)) twoERIs%alpha = alpha
       if(present(beta).and.allocVec(2))  twoERIs%beta = beta
       if(present(alphaBeta).and.allocVec(3)) twoERIs%alphaBeta = alphaBeta
@@ -13853,12 +13870,12 @@
             if (ia.lt.ib) then
               ab=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aabb'),&
                                 integral%getBlock('ab'),ind)
-              ba=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aaaa'),&
+              ba=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('bbaa'),&
                                 integral%getBlock('ba'),ind)
             else
-              ba=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aaaa'),&
+              ba=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('bbaa'),&
                                 integral%getBlock('ab'),ind)
-              ab=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aaaa'),&
+              ab=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aabb'),&
                                 integral%getBlock('ba'),ind)
             endif
             FinalType='general'
@@ -14051,7 +14068,7 @@
               if (ia.eq.3) then
                 ab=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('aaab'),&
                                                integral%getBlock('aa'),ind)
-                ab=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('bbba'),&
+                ba=MQC_R4Tensor_Matrix_Contraction(eris%getBlock('bbba'),&
                                                integral%getBlock('bb'),ind)
               endif
               if(ib.eq.1.and.ia.eq.3) then
@@ -14421,11 +14438,10 @@
       character(len=*),optional,intent(in)::label
       type(mqc_scalar)::output
       character(len=64)::mylabel
-      integer(kind=int64)::r4t1,r4t2,r4t3,r4t4,nB1,nB2,nB3,nB4
-      type(mqc_r4tensor)::temp
-!      integer(kind=int64)::k,l,m,n,nBasis
-!      character(len=64)::mylabel
-!      real(kind=real64)::zero=1.0d-10
+      integer(kind=int64)::r4t1,r4t2,r4t3,r4t4,nB1,nB2,nB3,nB4,nB1b,nB2b,nB3b,nB4b
+      integer(kind=int64)::nBasis,i,j
+      type(mqc_r4tensor)::temp,temp2
+      type(mqc_twoERIs)::tempERI
 !     
       if(present(label)) then
         call string_change_case(label,'L',myLabel)
@@ -14437,21 +14453,22 @@
       r4t2 = size(r4tensor,2)
       r4t3 = size(r4tensor,3)
       r4t4 = size(r4tensor,4)
-      if(eris%type().eq.'regular') then
+      if(eris%type().eq.'regular'.or.eris%type().eq.'raffenetti1'.or.&
+        eris%type().eq.'raffenetti2'.or.eris%type().eq.'raffenetti3') then
         nB1 = eris%blockSize('alpha',1)
         nB2 = eris%blockSize('alpha',2)
         nB3 = eris%blockSize('alpha',3)
         nB4 = eris%blockSize('alpha',4)
         if(r4t1.eq.nB1.and.r4t2.eq.nB2.and.r4t3.eq.nB3.and.r4t4.eq.nB4) then
           select case (myLabel)
-          case ('coulomb')
+          case ('coulomb','inverted','ms')
             temp = eris
             output = contraction(temp,r4tensor)
           case ('exchange')
-            temp = mqc_eri_interaction(eris,'exchange') 
+            temp = mqc_eri_interaction(eris,'exchange')
             output = contraction(temp,r4tensor)
           case ('doublebar')
-            temp = mqc_eri_interaction(eris,'doublebar') 
+            temp = mqc_eri_interaction(eris,'doublebar')
             output = contraction(temp,r4tensor)
           case default
             call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
@@ -14459,27 +14476,43 @@
         elseIf(r4t1.eq.2*nB1.and.r4t2.eq.2*nB2.and.r4t3.eq.2*nB3.and.r4t4.eq.2*nB4) then
           select case (myLabel)
           case ('coulomb')
-            temp = eris 
+            temp = eris
             output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
             output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
           case ('exchange')
-            temp = mqc_eri_interaction(eris,'exchange') 
+            temp = mqc_eri_interaction(eris,'exchange')
             output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
             output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
           case ('doublebar')
-            temp = mqc_eri_interaction(eris,'doublebar') 
+            temp = mqc_eri_interaction(eris,'doublebar')
             output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
-            temp = mqc_eri_interaction(eris,'coulomb') 
+            temp = mqc_eri_interaction(eris,'coulomb')
             output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
             output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
-            temp = mqc_eri_interaction(eris,'exchange') 
+            temp = mqc_eri_interaction(eris,'exchange')
             output = output - contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
             output = output - contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+          case ('inverted')
+            temp = eris
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[nB3+1,nB3*2],[1,nB4]))
+          case ('ms')
+            temp = eris
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[nB3+1,nB3*2],[1,nB4]))
           case default
             call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
           end select
@@ -14488,8 +14521,170 @@
             & mqc_eri_r4tensor_contraction',6,'r4t1-nB1',r4t1-nB1,'r4t2-nB2',r4t2-nB2,'r4t3-nB3',r4t3-nB3,'r4t4-nB4', &
             r4t4-nB4)
         endIf
+      else if(eris%type().eq.'space') then
+        nB1 = eris%blockSize('alpha',1)
+        nB2 = eris%blockSize('alpha',2)
+        nB3 = eris%blockSize('alpha',3)
+        nB4 = eris%blockSize('alpha',4)
+        if(r4t1.eq.nB1.and.r4t2.eq.nB2.and.r4t3.eq.nB3.and.r4t4.eq.nB4) then
+          select case (myLabel)
+          case ('coulomb','inverted','ms')
+            temp = eris%getBlock('aaaa')
+            output = contraction(temp,r4tensor)
+          case ('exchange')
+            tempERI = mqc_eri_interaction(eris,'exchange')
+            temp = tempERI%getBlock('aaaa')
+            output = contraction(temp,r4tensor)
+          case ('doublebar')
+            tempERI = mqc_eri_interaction(eris,'doublebar')
+            temp = tempERI%getBlock('aaaa')
+            output = contraction(temp,r4tensor)
+          case default
+            call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
+          end select
+        elseIf(r4t1.eq.2*nB1.and.r4t2.eq.2*nB2.and.r4t3.eq.2*nB3.and.r4t4.eq.2*nB4) then
+          select case (myLabel)
+          case ('coulomb')
+            temp = eris%getBlock('aaaa')
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+          case ('exchange')
+            tempERI = mqc_eri_interaction(eris,'exchange')
+            temp = tempERI%getBlock('aaaa')
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+          case ('doublebar')
+            tempERI = mqc_eri_interaction(eris,'doublebar')
+            temp = tempERI%getBlock('aaaa')
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            tempERI = mqc_eri_interaction(eris,'coulomb')
+            temp = tempERI%getBlock('aaaa')
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            tempERI = mqc_eri_interaction(eris,'exchange')
+            temp = tempERI%getBlock('aaaa')
+            output = output - contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output - contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+          case ('inverted')
+            temp = eris%getBlock('aaaa')
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[nB3+1,nB3*2],[1,nB4]))
+          case ('ms')
+            temp = eris%getBlock('aaaa')
+            output = contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[1,nB2],[nB3+1,nB3*2],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[nB2+1,nB2*2],[1,nB3],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[nB3+1,nB3*2],[1,nB4]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([1,nB1],[nB2+1,nB2*2],[1,nB3],[nB4+1,nB4*2]))
+            output = output + contraction(temp,r4tensor%tat([nB1+1,nB1*2],[1,nB2],[nB3+1,nB3*2],[1,nB4]))
+          case default
+            call mqc_error_a('Unrecognized 2ERI integral interaction specified',6,'myLabel',myLabel)
+          end select
+        else
+          call mqc_error_i('2ERIs and rank-4 tensor not correctly dimensioned in &
+            & mqc_eri_r4tensor_contraction',6,'r4t1-nB1',r4t1-nB1,'r4t2-nB2',r4t2-nB2,&
+            'r4t3-nB3',r4t3-nB3,'r4t4-nB4',r4t4-nB4)
+        endIf
+      else if(eris%type().eq.'spin'.or.eris%type().eq.'general') then
+        nB1 = eris%blockSize('alpha',1)
+        nB2 = eris%blockSize('alpha',2)
+        nB3 = eris%blockSize('alpha',3)
+        nB4 = eris%blockSize('alpha',4)
+        nB1b = eris%blockSize('beta',1)
+        nB2b = eris%blockSize('beta',2)
+        nB3b = eris%blockSize('beta',3)
+        nB4b = eris%blockSize('beta',4)
+        if(r4t1.eq.nB1+nB1b.and.r4t2.eq.nB2+nB2b.and.r4t3.eq.nB3+nB3b.and.r4t4.eq.nB4+nB4b) then
+          if(myLabel.eq.eris%intType()) then
+            temp = eris
+            output = contraction(temp,r4tensor)
+          elseIf(eris%intType().eq.'coulomb') then
+            if(eris%type().eq.'spin'.and.&
+               (myLabel.eq.'inverted'.or.myLabel.eq.'ms')) then
+              nBasis = nB2
+              call temp%init(2*nBasis,2*nBasis,2*nBasis,2*nBasis)
+              ! Build full SO coulomb tensor (aaaa,bbbb,aabb,bbaa blocks).
+              ! temp2 = eris calls getBlock('full') which populates bbaa from
+              ! alphaBeta for symm storage, so all cases are handled uniformly.
+              temp2 = eris
+              select case(myLabel)
+              case('inverted')
+                ! K_inv(P,Q,R,S) = J_SO(P,R,Q,S): swap SO dims 2 and 3.
+                ! For each (i=Q, j=R): temp(:,i,j,:) = J_SO(:,j,i,:)
+                do i = 1, 2*nBasis
+                  do j = 1, 2*nBasis
+                    call temp%tput(temp2%tat([0],[j,j],[i,i],[0]),&
+                      [0],[i,i],[j,j],[0])
+                  endDo
+                endDo
+              case('ms')
+                ! Copy coulomb blocks (aaaa,bbbb,aabb,bbaa) then add cross-spin
+                ! exchange (abba,baab) and inverted (abab,baba) contributions.
+                temp = temp2
+                ! abba (exchange of aabb): K^ab(p,q,r,s)=J^ab(p,s,r,q)
+                ! temp(p,i+n,r+n,j) = J_SO(p,j,r+n,i+n)  [i=q, j=s]
+                do i = 1, nBasis
+                  do j = 1, nBasis
+                    call temp%tput(temp2%tat([1,nBasis],[j,j],&
+                      [nBasis+1,2*nBasis],[i+nBasis,i+nBasis]),&
+                      [1,nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],[j,j])
+                  endDo
+                endDo
+                ! baab (exchange of bbaa): K^ba(p,q,r,s)=J_SO(p+n,s+n,r,q)
+                ! temp(p+n,i,r,j+n) = J_SO(p+n,j+n,r,i)  [i=q alpha, j=s beta-offset]
+                do i = 1, nBasis
+                  do j = 1, nBasis
+                    call temp%tput(temp2%tat([nBasis+1,2*nBasis],&
+                      [j+nBasis,j+nBasis],[1,nBasis],[i,i]),&
+                      [nBasis+1,2*nBasis],[i,i],[1,nBasis],[j+nBasis,j+nBasis])
+                  endDo
+                endDo
+                ! abab (inverted of aabb): K_inv^ab(p,q,r,s)=J^ab(p,r,q,s)
+                ! temp(p,i+n,j,s+n) = J_SO(p,j,i+n,s+n)  [i=q, j=r]
+                do i = 1, nBasis
+                  do j = 1, nBasis
+                    call temp%tput(temp2%tat([1,nBasis],[j,j],&
+                      [i+nBasis,i+nBasis],[nBasis+1,2*nBasis]),&
+                      [1,nBasis],[i+nBasis,i+nBasis],[j,j],[nBasis+1,2*nBasis])
+                  endDo
+                endDo
+                ! baba (inverted of bbaa): K_inv^ba(p,q,r,s)=J_SO(p+n,r+n,q,s)
+                ! temp(p+n,i,j+n,s) = J_SO(p+n,j+n,i,s)  [i=q alpha, j=r beta-offset]
+                do i = 1, nBasis
+                  do j = 1, nBasis
+                    call temp%tput(temp2%tat([nBasis+1,2*nBasis],&
+                      [j+nBasis,j+nBasis],[i,i],[1,nBasis]),&
+                      [nBasis+1,2*nBasis],[i,i],[j+nBasis,j+nBasis],[1,nBasis])
+                  endDo
+                endDo
+              end select
+              output = contraction(temp,r4tensor)
+            else
+              tempERI = mqc_eri_interaction(eris,myLabel)
+              temp = tempERI
+              output = contraction(temp,r4tensor)
+            endIf
+          else
+            call mqc_error_a('mqc_eri_r4tensor_contraction: label/intType mismatch only &
+              &supported when intType is coulomb',6,'eris%intType()',eris%intType(),&
+              'myLabel',myLabel)
+          endIf
+        else
+          call mqc_error_i('2ERIs and rank-4 tensor not correctly dimensioned in &
+            & mqc_eri_r4tensor_contraction',6,'r4t1',r4t1,'nB1+nB1b',nB1+nB1b,&
+            'r4t2',r4t2,'nB2+nB2b',nB2+nB2b)
+        endIf
       else
-        call mqc_error_a('mqc_eri_r4tensor_contraction only implemented with regular 2ERIs', &
+        call mqc_error_a('2ERI type not yet implemented in mqc_eri_r4tensor_contraction',&
           6,'eris%type()',eris%type())
       endIf
 !
@@ -17648,6 +17843,7 @@
       character(len=64)::mylabel
       integer(kind=int64)::nBasis,i,j
       type(mqc_r4tensor)::temp,temp2
+      type(mqc_twoERIs)::eriCopy
 !     
       if(eris%intType().ne.'coulomb') &
         call mqc_error_a('mqc_eri_interaction function only implemented for coulomb &
@@ -17672,7 +17868,7 @@
         end if
       end if
       select case (eris%type())
-      case ('regular')
+      case ('regular','raffenetti1','raffenetti2','raffenetti3')
         select case (myLabel)
         case('coulomb')
           output = eris
@@ -17699,7 +17895,7 @@
           call mqc_twoeris_allocate(output,'full-coulomb','regular',temp)
         case default
           call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
-            6,'myLabel',myLabel) 
+            6,'myLabel',myLabel)
         end select
       case ('space')
         select case (myLabel)
@@ -17849,9 +18045,146 @@
               aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
               abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
           endIf
+        case('inverted')
+          nBasis = eris%blockSize('alpha',2)
+          call temp%init(2*nBasis,2*nBasis,2*nBasis,2*nBasis)
+          select type(eris)
+          type is (mqc_twoERIs)
+            temp2 = eris%alpha
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                  [1,nBasis],[j,j],[i,i],[1,nBasis])
+              endDo
+            endDo
+            temp2 = eris%beta
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                  [nBasis+1,2*nBasis],[j+nBasis,j+nBasis],[i+nBasis,i+nBasis],&
+                  [nBasis+1,2*nBasis])
+              endDo
+            endDo
+            temp2 = eris%alphaBeta
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                  [1,nBasis],[j+nBasis,j+nBasis],[i,i],[nBasis+1,2*nBasis])
+              endDo
+            endDo
+            if(eris%storageType.eq.'full') then
+              temp2 = eris%betaAlpha
+              do i = 1, nBasis
+                do j = 1, nBasis
+                  call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                    [nBasis+1,2*nBasis],[j,j],[i+nBasis,i+nBasis],[1,nBasis])
+                endDo
+              endDo
+            endIf
+          end select
+          if(eris%storageType.eq.'full') then
+            call mqc_twoeris_allocate(output,'full-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          else
+            call mqc_twoeris_allocate(output,'symm-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              abab=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abba=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          endIf
+        case('ms')
+          nBasis = eris%blockSize('alpha',2)
+          call temp%init(2*nBasis,2*nBasis,2*nBasis,2*nBasis)
+          select type(eris)
+          type is (mqc_twoERIs)
+            temp2 = eris%alpha
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                  [1,nBasis],[i,i],[1,nBasis],[j,j])
+              endDo
+            endDo
+            temp2 = eris%beta
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                  [nBasis+1,2*nBasis],[i+nBasis,i+nBasis],[nBasis+1,2*nBasis],[j+nBasis,j+nBasis])
+              endDo
+            endDo
+            temp2 = eris%alphaBeta
+            do i = 1, nBasis
+              do j = 1, nBasis
+                call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                  [1,nBasis],[i,i],[nBasis+1,2*nBasis],[j+nBasis,j+nBasis])
+                call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                  [1,nBasis],[j+nBasis,j+nBasis],[nBasis+1,2*nBasis],[i,i])
+                call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                  [1,nBasis],[j+nBasis,j+nBasis],[i,i],[nBasis+1,2*nBasis])
+              endDo
+            endDo
+            if(eris%storageType.eq.'full') then
+              temp2 = eris%betaAlpha
+              do i = 1, nBasis
+                do j = 1, nBasis
+                  call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                    [nBasis+1,2*nBasis],[i+nBasis,i+nBasis],[1,nBasis],[j,j])
+                  call temp%tput(temp2%tat([0],[i,i],[0],[j,j]),&
+                    [nBasis+1,2*nBasis],[j,j],[1,nBasis],[i+nBasis,i+nBasis])
+                  call temp%tput(temp2%tat([0],[i,i],[j,j],[0]),&
+                    [nBasis+1,2*nBasis],[j,j],[i+nBasis,i+nBasis],[1,nBasis])
+                endDo
+              endDo
+            endIf
+          end select
+          if(eris%storageType.eq.'full') then
+            call mqc_twoeris_allocate(output,'full-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          else
+            call mqc_twoeris_allocate(output,'symm-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              abab=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abba=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          endIf
         case default
           call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
-            6,'myLabel',myLabel) 
+            6,'myLabel',myLabel)
         end select
       case ('general')
         select case (myLabel)
@@ -18032,13 +18365,53 @@
               aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
               abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
           endIf
+        case('inverted')
+          nBasis = eris%blockSize('alpha',2)
+          call temp%init(2*nBasis,2*nBasis,2*nBasis,2*nBasis)
+          temp2 = eris
+          do i = 1, 2*nBasis
+            do j = 1, 2*nBasis
+              call temp%tput(temp2%tat([1,2*nBasis],[i,i],[j,j],[1,2*nBasis]),&
+                [1,2*nBasis],[j,j],[i,i],[1,2*nBasis])
+            endDo
+          endDo
+          if(eris%storageType.eq.'full') then
+            call mqc_twoeris_allocate(output,'full-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          else
+            call mqc_twoeris_allocate(output,'symm-coulomb','general',&
+              temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[1,nBasis]),&
+              temp%tat([nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              temp%tat([1,nBasis],[1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]),&
+              abab=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abba=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[1,nBasis]),&
+              aaab=temp%tat([1,nBasis],[1,nBasis],[1,nBasis],[nBasis+1,2*nBasis]),&
+              abbb=temp%tat([1,nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis],[nBasis+1,2*nBasis]))
+          endIf
+        case('ms')
+          output = eris
         case default
           call mqc_error_a('Interaction type not recognized in mqc_eri_interaction',&
-            6,'myLabel',myLabel) 
+            6,'myLabel',myLabel)
         end select
       case default
         call mqc_error_a('2ERI type either not recognized or not yet implemented in &
-          & mqc_eri_interaction',6,'eris%type()',eris%type()) 
+          & mqc_eri_interaction',6,'eris%type()',eris%type())
       end select
 
       end function mqc_eri_interaction
@@ -19886,6 +20259,54 @@
                 endIf
               endIf
             endIf
+          elseif(spinBlock.eq.'abab') then
+            if(twoERIs%hasSpinBlock('abab')) then
+              if(interaction.eq.'coulomb') then
+                element = twoeris%abab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoeris%abab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL) - twoERIs%abab%at(myI,myL,myK,myJ)
+              endIf
+            elseif(twoERIs%hasSpinBlock('aabb')) then
+              if(interaction.eq.'coulomb') then
+                element = twoeris%alphaBeta%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoeris%alphaBeta%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%alphaBeta%at(myI,myJ,myK,myL) - twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          elseif(spinBlock.eq.'baba') then
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abab')) then
+                if(interaction.eq.'coulomb') then
+                  element = conjg(twoeris%abab%at(myJ,myI,myL,myK))
+                elseif(interaction.eq.'exchange') then
+                  element = conjg(twoeris%abab%at(myL,myI,myJ,myK))
+                elseif(interaction.eq.'doublebar') then
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK)) - conjg(twoERIs%abab%at(myL,myI,myJ,myK))
+                endIf
+              elseif(twoERIs%hasSpinBlock('aabb')) then
+                if(interaction.eq.'coulomb') then
+                  element = twoeris%alphaBeta%at(myK,myL,myI,myJ)
+                elseif(interaction.eq.'exchange') then
+                  element = twoeris%alphaBeta%at(myK,myJ,myI,myL)
+                elseif(interaction.eq.'doublebar') then
+                  element = twoERIs%alphaBeta%at(myK,myL,myI,myJ) - twoERIs%alphaBeta%at(myK,myJ,myI,myL)
+                endIf
+              endIf
+            else
+              if(twoERIs%hasSpinBlock('baba')) then
+                if(interaction.eq.'coulomb') then
+                  element = twoeris%baba%at(myI,myJ,myK,myL)
+                elseif(interaction.eq.'exchange') then
+                  element = twoeris%baba%at(myI,myL,myK,myJ)
+                elseif(interaction.eq.'doublebar') then
+                  element = twoERIs%baba%at(myI,myJ,myK,myL) - twoERIs%baba%at(myI,myL,myK,myJ)
+                endIf
+              endIf
+            endIf
           endIf
 !       GENERAL
         elseIf(twoERIs%integralType.eq.'general') then
@@ -20168,8 +20589,8 @@
               elseif(interaction.eq.'exchange') then
                 if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
               elseif(interaction.eq.'doublebar') then
-                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL) 
-                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL)
+                if(twoERIs%hasSpinBlock('bbba')) element = element - twoeris%bbba%at(myI,myL,myK,myJ)
               endIf
             endIf
           elseif(spinBlock.eq.'abbb') then
@@ -20354,6 +20775,54 @@
                 if(twoERIs%hasSpinBlock('bbaa')) element = twoERIs%betaAlpha%at(myI,myL,myK,myJ)
               elseIf(interaction.eq.'doublebar') then
                 if(twoERIs%hasSpinBlock('bbaa')) element = (-1)*twoERIs%betaAlpha%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          !ABAB
+          elseIf(myI.le.twoERIs%blockSize('alpha',1).and.myJ.gt.twoERIs%blockSize('alpha',2).and. &
+            myK.le.twoERIs%blockSize('alpha',3).and.myL.gt.twoERIs%blockSize('alpha',4)) then
+            myJ = myJ - twoERIs%blockSize('alpha',2)
+            myL = myL - twoERIs%blockSize('alpha',4)
+            if(twoERIs%hasSpinBlock('abab')) then
+              if(interaction.eq.'coulomb') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                element = twoERIs%abab%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                element = twoERIs%abab%at(myI,myJ,myK,myL) - twoERIs%abab%at(myI,myL,myK,myJ)
+              endIf
+            else
+              if(interaction.eq.'coulomb') then
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL)
+              elseif(interaction.eq.'exchange') then
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+              elseif(interaction.eq.'doublebar') then
+                if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myI,myJ,myK,myL) - &
+                  twoERIs%alphaBeta%at(myI,myL,myK,myJ)
+              endIf
+            endIf
+          !BABA
+          elseIf(myI.gt.twoERIs%blockSize('alpha',1).and.myJ.le.twoERIs%blockSize('alpha',2).and. &
+            myK.gt.twoERIs%blockSize('alpha',3).and.myL.le.twoERIs%blockSize('alpha',4)) then
+            myI = myI - twoERIs%blockSize('alpha',1)
+            myK = myK - twoERIs%blockSize('alpha',3)
+            if(twoERIs%storageType.eq.'symm') then
+              if(twoERIs%hasSpinBlock('abab')) then
+                if(interaction.eq.'coulomb') then
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK))
+                elseif(interaction.eq.'exchange') then
+                  element = conjg(twoERIs%abab%at(myL,myI,myJ,myK))
+                elseif(interaction.eq.'doublebar') then
+                  element = conjg(twoERIs%abab%at(myJ,myI,myL,myK)) - conjg(twoERIs%abab%at(myL,myI,myJ,myK))
+                endIf
+              else
+                if(interaction.eq.'coulomb') then
+                  if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myL,myI,myJ)
+                elseif(interaction.eq.'exchange') then
+                  if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myJ,myI,myL)
+                elseif(interaction.eq.'doublebar') then
+                  if(twoERIs%hasSpinBlock('aabb')) element = twoERIs%alphaBeta%at(myK,myL,myI,myJ) - &
+                    twoERIs%alphaBeta%at(myK,myJ,myI,myL)
+                endIf
               endIf
             endIf
           endIf
@@ -20661,7 +21130,7 @@
                 if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
               elseif(interaction.eq.'doublebar') then
                 if(twoERIs%hasSpinBlock('babb')) element = twoeris%babb%at(myI,myJ,myK,myL)
-                if(twoERIs%hasSpinBlock('bbba')) element = twoeris%bbba%at(myI,myL,myK,myJ)
+                if(twoERIs%hasSpinBlock('bbba')) element = element - twoeris%bbba%at(myI,myL,myK,myJ)
               endIf
             endIf
           !ABBB
