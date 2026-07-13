@@ -20241,6 +20241,10 @@
       Real(kind=real64)::Thresh=1e-14
 
       Diagonal = .True.
+      If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
+        Diagonal = .False.
+        Return
+      EndIf
       If(Matrix%Storage.eq.'StorDiag') then
         Return
       ElseIf(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or.&
