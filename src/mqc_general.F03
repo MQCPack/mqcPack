@@ -1586,7 +1586,7 @@
       else
         myFormatString = 'f20.5'
       endIf
-      myFormatString = '('//TRIM(myFormatString)//',SP,'//TRIM(myFormatString)//'"i")'
+      myFormatString = '('//TRIM(myFormatString)//',SP,'//TRIM(myFormatString)//',"i")'
       write(complexString,myFormatString) complexIn
       complexString = ADJUSTL(complexString)
 !
