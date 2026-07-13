@@ -640,6 +640,14 @@
         module procedure MQC_R4Tensor_IsAllocated
       end interface
 !
+!>    \brief <b> Deallocates an object</b>
+      interface Deallocate
+        module procedure MQC_Deallocate_Scalar
+        module procedure MQC_Deallocate_Vector
+        module procedure MQC_Deallocate_Matrix
+        module procedure MQC_Deallocate_R4Tensor
+      end interface
+!
 !>    \brief <b> Returns the value of the vector at the specied index</b>
       interface MQC_Vector_Scalar_At
         module procedure MQC_Vector_Scalar_At_Scalar
@@ -971,6 +979,10 @@
 !
       Interface Operator (.crossouter.)
         Module Procedure MQC_Matrix_Matrix_Cross_Outer
+      End Interface
+!
+      Interface Operator (.kron.)
+        Module Procedure MQC_Matrix_Matrix_Kronecker_Product
       End Interface
 !
 !     Rank 4 tensor operators...
@@ -27819,7 +27831,7 @@
 !>    \verbatim
 !>
 !>    MQC_Matrix_Matrix_Cross_Outer is a function that returns the rank-4 tensor containing 
-!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices </b>.
+!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices.
 !>
 !>    \endverbatim
 !
@@ -27869,8 +27881,64 @@
       endDo
 
       end function MQC_Matrix_Matrix_Cross_Outer
+!
+!
+!     PROCEDURE MQC_Matrix_Matrix_Kronecker_Product
+!
+!>    \brief <b> MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of
+!>    two matrices </b>.
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of two
+!>    matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the kronecker product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the kronecker product.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2026
+!
+      Function MQC_Matrix_Matrix_Kronecker_Product(matrix1,matrix2) result(kron)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_matrix)::kron
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::i,j,iStart,iEnd,jStart,jEnd
 
+      call kron%init(size(matrix1,1)*size(matrix2,1),size(matrix1,2)*size(matrix2,2))
 
+      do i = 1,size(matrix1,1)
+        iStart = size(matrix1,1)*(i-1)+1
+        iEnd = size(matrix1,1)*i
+        do j = 1,size(matrix1,2)
+          jStart = size(matrix1,2)*(j-1)+1
+          jEnd = size(matrix1,2)*j
+          call kron%mput(matrix1%at(i,j)*matrix2,[iStart,iEnd],[jStart,jEnd])
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Kronecker_Product
 !
 !
 !     PROCEDURE MQC_Matrix_Complex_RealPart
