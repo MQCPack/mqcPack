@@ -11,6 +11,13 @@ unformatted MatrixFile/FAF data. `MQC_MatWrapper` adapts MQCPack-prefixed
 operations to unmodified external GauOpen sources and centralizes raw record
 layout.
 
+`MQC_MatWrapper` is an internal backend boundary, not a supported downstream
+API. Its prefixed adapter procedures are public only so `MQC_Gaussian` and
+focused MQCPack tests can use the selected real or stub implementation. The
+obsolete unprefixed wrapper procedures and copied GauOpen helper routines are
+not compatibility interfaces. Downstream code should use the file types and
+type-bound operations in `MQC_Gaussian`.
+
 Configure MatrixFile support explicitly with
 `--with-gauopen=/path/to/gauopen --with-gauopen-integer-bytes=8`. Use
 `--without-gauopen` for the FormChk-only configuration. The integer ABI is part

@@ -165,6 +165,9 @@ MatrixFile builds compile the external, unmodified GauOpen `qcmatrix.F` and
 separate from MQCPack's Fortran flags. The supported GauOpen integer ABI is
 currently selected at configure time and limited to 8 bytes; one installed
 library does not dispatch between 4-byte and 8-byte MatrixFiles at runtime.
+Treat `MQC_MatWrapper` as an internal real/stub backend boundary. Downstream
+code should use `MQC_Gaussian`; the wrapper's low-level adapter procedures are
+not a supported compatibility API.
 
 In a FormChk-only build, `MQC_Gaussian` and its formatted-checkpoint API remain
 linkable. The MatrixFile type remains declared for compile-time source
