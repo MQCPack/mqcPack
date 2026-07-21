@@ -11,6 +11,9 @@ TESTS += ../fullci/testit.sh ../hartreefock/testit.sh \
   ../WriteTest/testit.sh unitTest03 unitTest04
 check_PROGRAMS += ../fullci/fullci ../hartreefock/hartreefock \
   ../WriteTest/ReadWrite unitTest03 unitTest04
+else
+TESTS += unitTest05 test_no_gauopen_matrixfile.sh
+check_PROGRAMS += unitTest05 unitTest06
 endif
 
 ___algebra2_algebra_fun_SOURCES = ../algebra2/algebra_fun.F03
@@ -21,6 +24,10 @@ unitTest01_SOURCES = ../../unitTests/src/unitTest01.f03
 unitTest02_SOURCES = ../../unitTests/src/unitTest02.f03
 unitTest03_SOURCES = ../../unitTests/src/unitTest03.f03
 unitTest04_SOURCES = ../../unitTests/src/unitTest04.f03
+unitTest05_SOURCES = ../../unitTests/src/unitTest05.f03
+unitTest06_SOURCES = ../../unitTests/src/unitTest06.f03
+
+EXTRA_DIST = test_no_gauopen_matrixfile.sh
 
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 

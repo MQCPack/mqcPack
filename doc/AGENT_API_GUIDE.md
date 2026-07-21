@@ -160,6 +160,12 @@ with `--with-gauopen=DIR`; FormChk-only builds use `--without-gauopen`. Do not
 select a build variant by replacing or symlinking `configure.ac` or
 `Makefile.am` files.
 
+In a FormChk-only build, `MQC_Gaussian` and its formatted-checkpoint API remain
+linkable. The MatrixFile type remains declared for compile-time source
+compatibility, but MatrixFile operations terminate with a clear unsupported-
+feature diagnostic. Record the configuration explicitly instead of testing
+MatrixFile availability by calling an operation.
+
 ## Guidance to place in a dependent repository
 
 ```text

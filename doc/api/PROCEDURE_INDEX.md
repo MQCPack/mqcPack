@@ -8,8 +8,8 @@ pages. Many MQCPack modules do not declare a module-wide `private` default, so
 a technically accessible implementation routine is not automatically a supported
 downstream interface.
 
-The current inventory contains 895 Fortran/C procedure definitions
-and 257 type-bound procedure or generic bindings.
+The current inventory contains 920 Fortran/C procedure definitions
+and 259 type-bound procedure or generic bindings.
 
 The scanner recognizes free-form Fortran declarations and ordinary C function
 definitions. Conditional compilation can change which entries are built, and
@@ -1428,6 +1428,50 @@ generic overload membership must still be checked in the source interface block.
 - `Wr_ChBuf` — `Subroutine` ([source](../../src/mqc_matwrapper.F03#L2540))
 - `Rd_CBuf` — `Subroutine` ([source](../../src/mqc_matwrapper.F03#L2569))
 - `Wr_CBuf` — `Subroutine` ([source](../../src/mqc_matwrapper.F03#L2594))
+
+## `src/mqc_matwrapper_stub.F03`
+
+### Modules
+
+- `MQC_MatWrapper` ([source](../../src/mqc_matwrapper_stub.F03#L1))
+
+### Derived types
+
+- `MQC_MatrixFile_Layout` ([source](../../src/mqc_matwrapper_stub.F03#L27))
+- `MQC_MatrixFile_Character_Record_Layout` ([source](../../src/mqc_matwrapper_stub.F03#L39))
+
+### Type-bound bindings
+
+- `MQC_MatrixFile_Layout%set` — `MQC_MatrixFile_Layout_Set` ([source](../../src/mqc_matwrapper_stub.F03#L35))
+- `MQC_MatrixFile_Layout%setForWrite` — `MQC_MatrixFile_Layout_Set_For_Write` ([source](../../src/mqc_matwrapper_stub.F03#L36))
+
+### Procedure definitions
+
+- `MQC_MatrixFile_Unsupported` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L51))
+- `MQC_MatrixFile_Layout_Set` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L65))
+- `MQC_MatrixFile_Layout_Set_For_Write` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L76))
+- `MQC_MatrixFile_Get_Character_Record_Layout` — `function` ([source](../../src/mqc_matwrapper_stub.F03#L84))
+- `MQC_MatrixFile_Get_Character_Write_Layout` — `function` ([source](../../src/mqc_matwrapper_stub.F03#L95))
+- `Open_Read` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L106))
+- `Open_Write` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L119))
+- `Close_MatF` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L132))
+- `LenArr` — `function` ([source](../../src/mqc_matwrapper_stub.F03#L140))
+- `Rd_Head` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L150))
+- `Wr_Head` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L169))
+- `Rd_Labl_TypeA` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L188))
+- `Wr_Labl_TypeA` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L201))
+- `Rd_ChBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L212))
+- `Wr_ChBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L221))
+- `Rd_IBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L230))
+- `Rd_RBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L239))
+- `Rd_CBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L248))
+- `Rd_2EN` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L257))
+- `Rd_RInd` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L268))
+- `Rd_Skip` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L280))
+- `Wr_LAO2E` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L288))
+- `Wr_LRBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L299))
+- `Wr_LIBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L312))
+- `Wr_LCBuf` — `subroutine` ([source](../../src/mqc_matwrapper_stub.F03#L325))
 
 ## `src/mqc_gaussian.F03`
 

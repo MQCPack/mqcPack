@@ -26,6 +26,7 @@ FORTRAN_SOURCES = (
     "src/mqc_molecule.F03",
     "src/mqc_est.F03",
     "src/mqc_matwrapper.F03",
+    "src/mqc_matwrapper_stub.F03",
     "src/mqc_gaussian.F03",
     "src/mqc_FullWavefunction.F03",
     "src/mqc_interface.F03",

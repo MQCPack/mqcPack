@@ -106,7 +106,11 @@ make install MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
 ```
 
 Use `--without-gauopen` for a FormChk-only configuration; that path does not
-need the GauOpen helper objects. A Git checkout may need
+need the GauOpen helper objects and produces a library that can link and use
+the `MQC_Gaussian` formatted-checkpoint interface. MatrixFile types remain
+available at compile time for shared source compatibility, but a MatrixFile
+operation reports that GauOpen support was not configured and terminates.
+A Git checkout may need
 `autoreconf --install` once to generate `configure`; release source archives
 normally include generated Autotools files. Direct compilation of unmodified
 external GauOpen sources will replace the temporary transformed-object step in
