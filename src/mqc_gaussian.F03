@@ -37,7 +37,30 @@
       USE MQC_Algebra2
       USE MQC_EST
       USE MQC_molecule
-      USE MQC_matwrapper
+      use MQC_MatWrapper, only: MQC_MatrixFile_Layout,  &
+        MQC_MatrixFile_Character_Record_Layout,  &
+        MQC_MatrixFile_Get_Character_Record_Layout,  &
+        MQC_MatrixFile_Get_Character_Write_Layout,  &
+        Close_MatF => MQC_MatrixFile_Close,  &
+        Open_Read => MQC_MatrixFile_Open_Read,  &
+        Open_Write => MQC_MatrixFile_Open_Write,  &
+        LenArr => MQC_MatrixFile_Len_Array,  &
+        Rd_Head => MQC_MatrixFile_Read_Header,  &
+        Wr_Head => MQC_MatrixFile_Write_Header,  &
+        Rd_Labl_TypeA => MQC_MatrixFile_Read_Label,  &
+        Wr_Labl_TypeA => MQC_MatrixFile_Write_Label,  &
+        Rd_ChBuf => MQC_MatrixFile_Read_Character_Buffer,  &
+        Wr_ChBuf => MQC_MatrixFile_Write_Character_Buffer,  &
+        Rd_IBuf => MQC_MatrixFile_Read_Integer_Buffer,  &
+        Rd_RBuf => MQC_MatrixFile_Read_Real_Buffer,  &
+        Rd_CBuf => MQC_MatrixFile_Read_Complex_Buffer,  &
+        Rd_2EN => MQC_MatrixFile_Read_Two_Electron,  &
+        Rd_RInd => MQC_MatrixFile_Read_Indexed_Real,  &
+        Rd_Skip => MQC_MatrixFile_Skip,  &
+        Wr_LAO2E => MQC_MatrixFile_Write_AO_Two_Electron,  &
+        Wr_LRBuf => MQC_MatrixFile_Write_Real_Array,  &
+        Wr_LIBuf => MQC_MatrixFile_Write_Integer_Array,  &
+        Wr_LCBuf => MQC_MatrixFile_Write_Complex_Array
       USE iso_fortran_env
 !
 !----------------------------------------------------------------

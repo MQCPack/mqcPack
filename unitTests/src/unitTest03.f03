@@ -11,7 +11,9 @@
       use iso_fortran_env, only: int64
       use mqc_general
       use mqc_algebra2
-      use mqc_matwrapper, only: Wr_Labl_TypeA,Wr_ChBuf
+      use MQC_MatWrapper, only:  &
+        Wr_Labl_TypeA => MQC_MatrixFile_Write_Label,  &
+        Wr_ChBuf => MQC_MatrixFile_Write_Character_Buffer
       use mqc_gaussian
       implicit none
 !

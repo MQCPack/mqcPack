@@ -1,19 +1,24 @@
 # Gaussian file interfaces
 
 Source authority: [`src/mqc_gaussian.F03`](../../src/mqc_gaussian.F03), the
-GauOpen backend in [`src/mqc_matwrapper.F03`](../../src/mqc_matwrapper.F03),
+GauOpen backend in
+[`src/mqc_matwrapper_direct.F03`](../../src/mqc_matwrapper_direct.F03),
 and the FormChk-only boundary in
 [`src/mqc_matwrapper_stub.F03`](../../src/mqc_matwrapper_stub.F03).
 
 `MQC_Gaussian` is the public boundary for Gaussian formatted-checkpoint and
-unformatted MatrixFile/FAF data. `MQC_MatWrapper` dispatches to GauOpen's
-4-byte or 8-byte integer implementations and centralizes raw record layout.
+unformatted MatrixFile/FAF data. `MQC_MatWrapper` adapts MQCPack-prefixed
+operations to unmodified external GauOpen sources and centralizes raw record
+layout.
 
 Configure MatrixFile support explicitly with
 `--with-gauopen=/path/to/gauopen --with-gauopen-integer-bytes=8`. Use
 `--without-gauopen` for the FormChk-only configuration. The integer ABI is part
 of the installed library's compatibility contract; do not mix the resulting
 library or module files with artifacts from another compiler or configuration.
+The supported build currently uses one configured 8-byte GauOpen ABI; it does
+not dispatch between 4-byte and 8-byte MatrixFiles at runtime. GauOpen's legacy
+source flags are isolated from the stricter flags used for MQCPack sources.
 
 The FormChk-only library remains linkable through `MQC_Gaussian`, including
 `MQC_Gaussian_FChk_File` and the FChk search routines. The MatrixFile type is

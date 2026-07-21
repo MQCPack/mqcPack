@@ -39,24 +39,28 @@ AM_CONDITIONAL([WITH_GAUOPEN],
   [test "x$mqc_with_gauopen" = xyes])
 
 MQC_SPECIFIC_FCFLAGS=
+MQC_GAUOPEN_FCFLAGS=
 MQC_CPPFLAGS=
 MQC_LDFLAGS=
 
 AS_CASE([$FC],
   [*pgfortran*|*nvfortran*], [
     MQC_SPECIFIC_FCFLAGS="-r8 -i8 -Mallocatable=03 -module $PWD/src"
+    MQC_GAUOPEN_FCFLAGS="-r8 -i8 -DUSE_I8"
     MQC_CPPFLAGS="-DPGI"
     AS_IF([test "x$mqc_with_gauopen" = xyes],
       [MQC_SPECIFIC_FCFLAGS="$MQC_SPECIFIC_FCFLAGS -mp"])
   ],
   [*gfortran*], [
     MQC_SPECIFIC_FCFLAGS="-std=f2008 -fdefault-real-8 -fdefault-integer-8 -J$PWD/src"
+    MQC_GAUOPEN_FCFLAGS="-std=legacy -fallow-argument-mismatch -fdefault-real-8 -fdefault-integer-8 -DUSE_I8"
     MQC_CPPFLAGS="-DGNU"
     AS_IF([test "x$mqc_with_gauopen" = xyes],
       [MQC_SPECIFIC_FCFLAGS="$MQC_SPECIFIC_FCFLAGS -fopenmp"])
   ],
   [*ifort*], [
     MQC_SPECIFIC_FCFLAGS="-stand f03 -real-size 64 -integer-size 64 -module $PWD/src"
+    MQC_GAUOPEN_FCFLAGS="-real-size 64 -integer-size 64 -DUSE_I8"
     MQC_CPPFLAGS="-DINTEL"
     AS_IF([test "x$mqc_with_gauopen" = xyes],
       [MQC_SPECIFIC_FCFLAGS="$MQC_SPECIFIC_FCFLAGS -openmp"])
@@ -76,6 +80,7 @@ AS_IF([test "x$mqc_with_gauopen" = xyes], [
 ])
 
 AC_SUBST([MQC_SPECIFIC_FCFLAGS])
+AC_SUBST([MQC_GAUOPEN_FCFLAGS])
 AC_SUBST([MQC_CPPFLAGS])
 AC_SUBST([MQC_LDFLAGS])
 AC_SUBST([MQC_GAUOPEN_DIR])

@@ -91,10 +91,10 @@ The interactive installer remains available:
 ./mqc_install
 ```
 
-After `mqc_install` has prepared the current transformed GauOpen helper
-objects, the same build can be reconfigured directly. Enable MatrixFile
-support with the GauOpen source directory and the currently supported 8-byte
-integer ABI:
+Enable MatrixFile support with the external GauOpen source directory and the
+currently supported 8-byte integer ABI. The build compiles the unmodified
+`qcmatrix.F` and `qcmatrixio.F` files directly with isolated legacy-source
+flags:
 
 ```sh
 ./configure --prefix=/path/to/install \
@@ -106,15 +106,13 @@ make install MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
 ```
 
 Use `--without-gauopen` for a FormChk-only configuration; that path does not
-need the GauOpen helper objects and produces a library that can link and use
+need the GauOpen sources and produces a library that can link and use
 the `MQC_Gaussian` formatted-checkpoint interface. MatrixFile types remain
 available at compile time for shared source compatibility, but a MatrixFile
 operation reports that GauOpen support was not configured and terminates.
 A Git checkout may need
 `autoreconf --install` once to generate `configure`; release source archives
-normally include generated Autotools files. Direct compilation of unmodified
-external GauOpen sources will replace the temporary transformed-object step in
-a later restructuring phase.
+normally include generated Autotools files.
 
 # Licence
   This project is licensed under the Apache License - see the LICENSE file for details

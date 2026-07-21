@@ -33,7 +33,7 @@ or Git commit on which a downstream repository depends.
 | Scalars, vectors, matrices, rank-4 tensors, operators, eigensystems, SVD | [Algebra objects](api/algebra.md) | `src/mqc_algebra.F03` |
 | Rank-changing numerical or character values | [MQC_Variable](api/algebra2.md) | `src/mqc_algebra2.F03` |
 | SCF/post-SCF intermediates, spin blocks, determinants, two-electron integrals | [Electronic-structure objects](api/est.md) | `src/mqc_est.F03` |
-| FChk or FAF/MatrixFile reading and writing | [Gaussian interfaces](api/gaussian.md) | `src/mqc_gaussian.F03`, `src/mqc_matwrapper.F03` |
+| FChk or FAF/MatrixFile reading and writing | [Gaussian interfaces](api/gaussian.md) | `src/mqc_gaussian.F03`, `src/mqc_matwrapper_direct.F03` |
 | Text files, linked lists, basis functions, molecule data, C interoperability | [Supporting modules](api/files-and-integrals.md) | corresponding files under `src/` |
 | Find an exact declaration or type-bound implementation | [Generated procedure index](api/PROCEDURE_INDEX.md) | all principal `src/*.F03` files and `src/mqc_util.c` |
 
@@ -159,6 +159,12 @@ MQCPack has one tracked Autotools configuration. MatrixFile builds are selected
 with `--with-gauopen=DIR`; FormChk-only builds use `--without-gauopen`. Do not
 select a build variant by replacing or symlinking `configure.ac` or
 `Makefile.am` files.
+
+MatrixFile builds compile the external, unmodified GauOpen `qcmatrix.F` and
+`qcmatrixio.F` sources directly. Dependency-only legacy flags are kept
+separate from MQCPack's Fortran flags. The supported GauOpen integer ABI is
+currently selected at configure time and limited to 8 bytes; one installed
+library does not dispatch between 4-byte and 8-byte MatrixFiles at runtime.
 
 In a FormChk-only build, `MQC_Gaussian` and its formatted-checkpoint API remain
 linkable. The MatrixFile type remains declared for compile-time source

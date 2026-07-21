@@ -79,7 +79,6 @@ do
 		else
 		    MQC_INTEGER_Compiler_Flag=" "
 		fi
-		MQC_L_INTEGER_Compiler_Flag="-fdefault-integer-8"
 		MQC_Compiler="GNU"
 	    else
 		echo "gfortran not found in path"
@@ -121,7 +120,6 @@ do
 		else
 		    MQC_INTEGER_Compiler_Flag=" "
 		fi
-		MQC_L_INTEGER_Compiler_Flag="-i8"
 	    else
 		echo "Cannot use NVidia option: nvfortran not found in path"
 	    fi
@@ -154,7 +152,6 @@ do
 		else
 		    MQC_INTEGER_Compiler_Flag=" "
 		fi
-		MQC_L_INTEGER_Compiler_Flag="-integer-size 64"
 	    else
 		echo "Cannot use Intel option.  ifort not found in path"
 	    fi
@@ -182,9 +179,6 @@ if [ "${MQC_CLEAN}" != "0" ]; then
     cd ${MQC_HOME}/src
     ${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
     ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
-    cd ${MQC_HOME}/src/GauOpen > ${mqc_tmpfile} 2>&1
-    ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
-    rm -f qcmatrixio_4.F qcmatrix_4.F qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
     cd ${MQC_HOME}/examples/Build_Tests > ${mqc_tmpfile} 2>&1
     ${MQC_HOME}/.other_libs/build_fcns/rm_all .o > ${mqc_tmpfile} 2>&1
     cd ${MQC_HOME}
@@ -373,25 +367,16 @@ do
     fi
 done
 
-# Start making objects.  Make the GauOpen objects first.
-# Remove the library.  So that is contains only what the build wants to add.
+# Remove the library so it contains only the objects selected by configure.
 rm -f ${MQC_HOME}/src/libmqc.a
 
-if [ ! -d "${MQC_HOME}/src/GauOpen" ]; then
-    mkdir ${MQC_HOME}/src/GauOpen
-fi
 if [ "${MQC_Use_GauOpen}" = "y" ]; then
 #
-# We are going to add MatrixFile ability to the MQC library
+# Find the external, unmodified GauOpen sources. Configure and make compile
+# these files directly with their dependency-specific legacy flags.
 #
-# Build the gauopen objects that MQC requires.  These objects
-# will be added to the MQC library
-#
-    cd ${MQC_HOME}/src/GauOpen > ${mqc_tmpfile} 2>&1
-
-    MQC_INTERFACE="g"
-# First find out where the gauopen sources reside
-    while [ "$MQC_INTERFACE" = "g" ]
+    MQC_GAUOPEN_SOURCES_FOUND="n"
+    while [ "${MQC_GAUOPEN_SOURCES_FOUND}" = "n" ]
     do
 	if [ -f ${MQC_HOME}/.other_libs/gauopen/default ]; then
 	    echo "Enter the path to the gauopen directory"
@@ -405,86 +390,13 @@ if [ "${MQC_Use_GauOpen}" = "y" ]; then
 		MQC_GAUOPEN_DIR="`cat ${MQC_HOME}/.other_libs/gauopen/default`"
 	    fi
 	fi
-# Copy and use just 2 gauopen files to a local directory.  If all three files are not 
-# in the directory, ask again.
-	found="t"
-	if [ -d ${MQC_GAUOPEN_DIR} ]; then
-# Copy qcmatrixio.F in if the local copy is different from the source
-	    if [ -f ${MQC_GAUOPEN_DIR}/qcmatrixio.F  ] &&
-	       [ -f ${MQC_GAUOPEN_DIR}/qcmatrix.F ]; then
-		if [ -f qcmatrixio.F ] &&
-		   [ -f qcmatrix.F ]; then
-# Check that the gauopen sources are right
-		    diff ${MQC_GAUOPEN_DIR}/qcmatrixio.F qcmatrixio.F  > ${mqc_tmpfile} 2>&1
-		    if [ ! -s ${mqc_tmpfile} ]; then
-			diff ${MQC_GAUOPEN_DIR}/qcmatrix.F qcmatrix.F > ${mqc_tmpfile} 2>&1
-		    fi
-# if the gauopen files are right, but the processed sources don't exist:
-		    if [ ! -s ${mqc_tmpfile} ]; then
-			if [ ! -s qcmatrixio_4.F ] ||
-			    [ ! -s qcmatrix_4.F ] ||
-			    [ ! -s qcmatrixio_8.F ] ||
-			    [ ! -s qcmatrix_8.F ]; then
-			    cp qcmatrix.F ${mqc_tmpfile}
-			fi
-		    fi
-
-		    if [ -s ${mqc_tmpfile} ]; then
-			cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
-			cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-			chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific  > ${mqc_tmpfile} 2>&1
-			${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
-		    fi
-		else
-		    cp ${MQC_GAUOPEN_DIR}/qcmatrixio.F .
-		    cp ${MQC_GAUOPEN_DIR}/qcmatrix.F .
-		    chmod 755 ${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
-		    ${MQC_HOME}/.other_libs/gauopen/Int_specific > ${mqc_tmpfile} 2>&1
-		fi
-	    else
-		found="f"
-	    fi
-# Copy qcmatrix.F in if the local copy is different from the source
-	    if [ "${found}" = "t" ]; then
-		${FC} -c -g -O0 qcmatrixio_4.F qcmatrix_4.F > ${mqc_tmpfile} 2>&1
-		${FC} -c -g -O0 -Duse_i8 ${MQC_L_INTEGER_Compiler_Flag} qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
-		if [ ! -f qcmatrixio_4.o ]; then
-		    rm -f qcmatrixio_8.o qcmatrix_4.o qcmatrix_8.o
-		elif [ ! -f qcmatrixio_8.o ]; then
-		    rm -f qcmatrix_4.o qcmatrix_4.o qcmatrix_8.o
-		elif [ ! -f qcmatrix_4.o ]; then
-		    rm -f qcmatrix_4.o qcmatrixio_8.o qcmatrix_8.o
-		elif [ ! -f qcmatrix_8.o ]; then
-		    rm -f qcmatrix_4.o qcmatrixio_8.o qcmatrix_4.o
-		fi
-		if [ -f qcmatrix_4.o ]; then
-		    MQC_INTERFACE="y"
-		    echo ${MQC_GAUOPEN_DIR}  > ${MQC_HOME}/.other_libs/gauopen/default 2>&1
-		else
-		    echo ""
-		    echo "Failed to build the required gauopen routines."
-		    echo "The next `wc -l ${mqc_tmpfile}` lines are the output of make:"
-		    cat ${mqc_tmpfile}
-		    echo ""
-		    echo ""
-		fi
-		rm -r ${mqc_tmpfile}
-	    else 
-		echo ""
-		echo "Did not find required gauopen sources." 
-		echo "Please check that the directory that you supplied" 
-		echo "is readable and contains:"
-		echo "     qcmatrixio.F "
-		echo "     qcmatrix.F"
-		echo "If you need to get gauopen:"
-		echo "  - Go to http://gaussian.com/interfacing/"
-		echo "  - Choose the Download tab"
-		echo "  - Choose to Download"
-		echo ""
-	    fi
+	if [ -f "${MQC_GAUOPEN_DIR}/qcmatrixio.F" ] &&
+	   [ -f "${MQC_GAUOPEN_DIR}/qcmatrix.F" ]; then
+	    MQC_GAUOPEN_SOURCES_FOUND="y"
+	    echo "${MQC_GAUOPEN_DIR}" > ${MQC_HOME}/.other_libs/gauopen/default
 	else
 	    echo ""
-	    echo "You entered \'${MQC_GAUOPEN_DIR}\' which is not a directory"
+	    echo "The GauOpen directory must contain qcmatrixio.F and qcmatrix.F."
 	    echo "If you need to get gauopen:"
 	    echo "  - Go to http://gaussian.com/interfacing/"
 	    echo "  - Choose the Download tab"
@@ -492,9 +404,6 @@ if [ "${MQC_Use_GauOpen}" = "y" ]; then
 	    echo ""
 	fi
     done
-#
-# Done building gauopen
-#
 fi
 
 cd ${MQC_HOME}

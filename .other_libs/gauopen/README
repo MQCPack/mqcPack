@@ -1,1 +1,2 @@
-This file contains things put in it by the Install script - gauopen sources, objects, data files
+The installer stores the selected external GauOpen directory in the ignored
+`default` file. GauOpen sources and objects are not copied into this directory.
