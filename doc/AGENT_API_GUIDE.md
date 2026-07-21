@@ -145,7 +145,8 @@ repository should record at least:
 
 - MQCPack version and preferably source commit;
 - compiler family and version;
-- FormChk-only or MatrixFile/GauOpen build variant;
+- `--without-gauopen` or the exact `--with-gauopen=DIR` configuration;
+- GauOpen integer ABI, currently `--with-gauopen-integer-bytes=8`;
 - integer/real-size and OpenMP flags;
 - BLAS/LAPACK link line;
 - installation prefix providing the matching `libmqc.a` and `.mod` files.
@@ -153,6 +154,11 @@ repository should record at least:
 Changing a public derived type changes its compiled module layout. Rebuild all
 dependent objects after such a change; a stale object can compile cleanly and
 then fail at runtime.
+
+MQCPack has one tracked Autotools configuration. MatrixFile builds are selected
+with `--with-gauopen=DIR`; FormChk-only builds use `--without-gauopen`. Do not
+select a build variant by replacing or symlinking `configure.ac` or
+`Makefile.am` files.
 
 ## Guidance to place in a dependent repository
 

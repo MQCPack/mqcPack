@@ -87,3 +87,6 @@ doc/*
 doc/api/*
 !doc/api/*.md
 !doc/api/generate_procedure_index.py
+!configure.ac
+!Makefile.am
+!examples/Build_Tests/Makefile.am

@@ -7,6 +7,12 @@ Source authority: [`src/mqc_gaussian.F03`](../../src/mqc_gaussian.F03) and
 unformatted MatrixFile/FAF data. `MQC_MatWrapper` dispatches to GauOpen's
 4-byte or 8-byte integer implementations and centralizes raw record layout.
 
+Configure MatrixFile support explicitly with
+`--with-gauopen=/path/to/gauopen --with-gauopen-integer-bytes=8`. Use
+`--without-gauopen` for the FormChk-only configuration. The integer ABI is part
+of the installed library's compatibility contract; do not mix the resulting
+library or module files with artifacts from another compiler or configuration.
+
 ## Public file types
 
 ### `MQC_Gaussian_FChk_File`

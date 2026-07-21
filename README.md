@@ -85,9 +85,32 @@ software is, your program will work without any modifications.
 
 ## Installing
 
-  To build:
-   1. ./mqc_install
-   1. {Answer questions}
+The interactive installer remains available:
+
+```sh
+./mqc_install
+```
+
+After `mqc_install` has prepared the current transformed GauOpen helper
+objects, the same build can be reconfigured directly. Enable MatrixFile
+support with the GauOpen source directory and the currently supported 8-byte
+integer ABI:
+
+```sh
+./configure --prefix=/path/to/install \
+  --with-gauopen=/path/to/gauopen \
+  --with-gauopen-integer-bytes=8
+make MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
+make check MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
+make install MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
+```
+
+Use `--without-gauopen` for a FormChk-only configuration; that path does not
+need the GauOpen helper objects. A Git checkout may need
+`autoreconf --install` once to generate `configure`; release source archives
+normally include generated Autotools files. Direct compilation of unmodified
+external GauOpen sources will replace the temporary transformed-object step in
+a later restructuring phase.
 
 # Licence
   This project is licensed under the Apache License - see the LICENSE file for details

@@ -8,8 +8,8 @@ mqc_tmpfile="${MQC_HOME}/.other_libs/build_fcns/tmp"
 
 cd ${MQC_HOME}
 #
-# Developers need to add to or modify the makefiles
-# This needs to be done by developers only:
+# Regenerate the conventional Autotools outputs when their tracked inputs are
+# newer or the generated support files are absent.
 #
 
 chmod 755 ${MQC_HOME}/.other_libs/build_fcns/chmod_all ${MQC_HOME}/.other_libs/build_fcns/cp_all ${MQC_HOME}/.other_libs/build_fcns/rm_all ${MQC_HOME}/.other_libs/build_fcns/remove_Gau_pid ${MQC_HOME}/.other_libs/build_fcns/remove_SCRDIR > ${mqc_tmpfile} 2>&1
@@ -18,22 +18,13 @@ if [ ! -f test-driver ] ||
    [ ! -f install-sh ] ||
    [ ! -f missing ] ||
    [ ! -f depcomp ] ||
+   [ ! -f configure ] ||
+   [ ! -f Makefile.in ] ||
    [ ! -f src/Makefile.in ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
-   [ ! -f ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
-   [ ! -L ${MQC_HOME}/configure ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK ] ||
-   [ ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile -nt ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile ] ||
-   [ examples/Build_Tests/Makefile.am_MatrixFile -nt examples/Build_Tests/Makefile.in ] ||
-   [ examples/Build_Tests/Makefile.am_FormCHK -nt examples/Build_Tests/Makefile.in ] ||
+   [ ! -f examples/Build_Tests/Makefile.in ] ||
+   [ configure.ac -nt configure ] ||
+   [ Makefile.am -nt Makefile.in ] ||
+   [ examples/Build_Tests/Makefile.am -nt examples/Build_Tests/Makefile.in ] ||
    [ src/Makefile.am -nt src/Makefile.in ]; then
     if [ -f Makefile ]; then
 	make clean > ${mqc_tmpfile} 2>&1
@@ -41,47 +32,16 @@ if [ ! -f test-driver ] ||
     cd ${MQC_HOME}/src
     ${MQC_HOME}/.other_libs/build_fcns/rm_all .mod > ${mqc_tmpfile} 2>&1
     cd ${MQC_HOME}
-    rm -f  Makefile.in src/Makefile.in examples/Build_Tests/Makefile.in > ${mqc_tmpfile} 2>&1
-    rm -f  Makefile src/Makefile examples/Build_Tests/Makefile > ${mqc_tmpfile} 2>&1
-    rm -f  configure.ac Makefile.am configure > ${mqc_tmpfile} 2>&1
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK configure.ac
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK Makefile.am
-    cd ${MQC_HOME}/examples/Build_Tests
-    rm -f Makefile.am Makefile.in > ${mqc_tmpfile} 2>&1
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK Makefile.am
-    cd ${MQC_HOME}
     rm -rf autom4te.cache > ${mqc_tmpfile} 2>&1
-    autoreconf --install
-    mv configure ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK
-    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK
-    rm -f  configure.ac Makefile.am > ${mqc_tmpfile} 2>&1
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile configure.ac
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile Makefile.am
-    cd ${MQC_HOME}/examples/Build_Tests
-    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK
-    rm -f Makefile.am > ${mqc_tmpfile} 2>&1
-    ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile Makefile.am
-    cd ${MQC_HOME}
-    rm -rf autom4te.cache > ${mqc_tmpfile} 2>&1
-    rm -f ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile > ${mqc_tmpfile} 2>&1
-    autoreconf --install
-    mv configure ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile
-    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile
-    cd ${MQC_HOME}/examples/Build_Tests
-    mv Makefile.in ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile
-    cd ${MQC_HOME}
+    autoreconf --install --force
 fi
-
-#
-# Done with developers only section
-#
 
 #
 # Should we add MatrixFile ability to the MQCPack library?
 #
 echo "MatrixFile specific information"
 echo ""
-echo "MACPack requires gauopen to process MatrixFiles."
+echo "MQCPack requires GauOpen to process MatrixFiles."
 echo "(If you don't have it there are instructions"
 echo "on how to obtain it below.)"
 echo ""
@@ -93,28 +53,9 @@ do
     echo ""
     if [ "$INTERFACE" = "y" ]; then
 	MQC_Use_GauOpen="y"
-	rm -f Makefile.in Makefile.am configure configure.ac > ${mqc_tmpfile} 2>&1
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_MatrixFile configure
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_MatrixFile configure.ac
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_MatrixFile Makefile.in
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_MatrixFile Makefile.am
-	cd ${MQC_HOME}/examples/Build_Tests
-	rm -f Makefile.in Makefile.am > ${mqc_tmpfile} 2>&1
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_MatrixFile Makefile.in
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_MatrixFile Makefile.am
     elif [ "$INTERFACE" = "n" ]; then
-	rm -f Makefile.in Makefile.am configure configure.ac > ${mqc_tmpfile} 2>&1
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure_FormCHK configure
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/configure.ac_FormCHK configure.ac
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_FormCHK Makefile.in
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_FormCHK Makefile.am
-	cd ${MQC_HOME}/examples/Build_Tests
-	rm -f Makefile.in Makefile.am > ${mqc_tmpfile} 2>&1
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.in_example_FormCHK Makefile.in
-	ln -s ${MQC_HOME}/.other_libs/build_fcns/Makefile.am_example_FormCHK Makefile.am
 	MQC_Use_GauOpen="n"
     fi
-    cd ${MQC_HOME}
 done
 
 export FC="g"
@@ -554,15 +495,6 @@ if [ "${MQC_Use_GauOpen}" = "y" ]; then
 #
 # Done building gauopen
 #
-else
-    cd ${MQC_HOME}/src/GauOpen
-    rm -f qcmatrixio.F qcmatrix.F > ${mqc_tmpfile} 2>&1
-    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrixio_4.F .
-    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrix_4.F .
-    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrixio_8.F .
-    cp ${MQC_HOME}/.other_libs/gauopen/qcmatrix_8.F .
-    ${FC} -c -g -O0 qcmatrixio_4.F qcmatrix_4.F > ${mqc_tmpfile} 2>&1
-    ${FC} -c -g -O0 -Duse_i8 ${MQC_L_INTEGER_Compiler_Flag} qcmatrixio_8.F qcmatrix_8.F > ${mqc_tmpfile} 2>&1
 fi
 
 cd ${MQC_HOME}
@@ -570,7 +502,16 @@ cd ${MQC_HOME}
 # Now build the MQCPack library.
 #
 chmod 755 ./configure  > ${mqc_tmpfile} 2>&1
-./configure --prefix=${MQC_INSTALLATIONDIR}  --silent
+if [ "${MQC_Use_GauOpen}" = "y" ]; then
+    MQC_CONFIGURE_GAUOPEN_ARGS=(
+        "--with-gauopen=${MQC_GAUOPEN_DIR}"
+        "--with-gauopen-integer-bytes=8"
+    )
+else
+    MQC_CONFIGURE_GAUOPEN_ARGS=("--without-gauopen")
+fi
+./configure --prefix=${MQC_INSTALLATIONDIR} \
+    "${MQC_CONFIGURE_GAUOPEN_ARGS[@]}" --silent
 make  MQC_LAPACK=${MQC_LAPACK} MQC_BLAS=${MQC_BLAS}
 stat=$?
 if [ $stat -ne 0 ] ; then 
@@ -770,4 +711,3 @@ rm -f ${mqc_tmpfile}
 
 echo "Successfully Finished! with installation and testing"
 exit
-
