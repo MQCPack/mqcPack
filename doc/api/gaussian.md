@@ -1,0 +1,104 @@
+# Gaussian file interfaces
+
+Source authority: [`src/mqc_gaussian.F03`](../../src/mqc_gaussian.F03) and
+[`src/mqc_matwrapper.F03`](../../src/mqc_matwrapper.F03).
+
+`MQC_Gaussian` is the public boundary for Gaussian formatted-checkpoint and
+unformatted MatrixFile/FAF data. `MQC_MatWrapper` dispatches to GauOpen's
+4-byte or 8-byte integer implementations and centralizes raw record layout.
+
+## Public file types
+
+### `MQC_Gaussian_FChk_File`
+
+Extends `MQC_Text_FileInfo` and records the title, job type, method, and basis.
+Its `OpenFile` binding opens and initializes formatted-checkpoint parsing.
+`Find_FChk_Entry` and related module procedures locate typed scalar or array
+entries. Treat FChk entry tags as stable compatibility keys.
+
+### `MQC_Gaussian_Unformatted_Matrix_File`
+
+Extends `MQC_FileInfo`. Preferred type-bound operations are:
+
+- lifecycle: `OpenFile`, `CloseFile`, `load`, `create`, `updateHeader`;
+- wavefunction classification: `isRestricted`, `isUnrestricted`, `isGeneral`,
+  `isComplex`;
+- molecule/basis access: `getAtomicNumbers`, `getAtomCarts`, `getAtomWeights`,
+  `getAtomInfo`, `getBasisInfo`, `getBasisArray`, `getBasisData`, `getMolData`;
+- typed data: `getVal`, `getValReal`, `getArray`, `getESTObj`, `get2ERIs`;
+- writing: `writeArray`, `writeArray2`, `writeBasisData`, `writeESTObj`,
+  `write2ERIs`.
+
+Use the exact signature in the source because several routines have multiple
+optional destinations or dispatch according to the supplied MQCPack object.
+
+## Connection ownership and assignment
+
+Defined assignment copies persistent MatrixFile header, molecular, layout, and
+cached-scalar metadata into independent destination storage. It deliberately
+does not copy a live GauOpen connection. The destination is left disconnected:
+blank filename, closed state, zero unit, blank read/write mode, and unset header
+I/O flags.
+
+Assigning over an open destination closes that destination first. It must not
+alter the source connection. Code that needs a connected destination must open
+or create it explicitly after assignment.
+
+## Character FAF records
+
+Character data is exposed through `getArray(...,mqcVarOut=...)` and
+`writeArray2`. Logical values are character scalars or rank-1 fixed-width
+vectors represented by `MQC_Variable`.
+
+Do not interpret raw positive `TypeA` as the element width without
+normalization:
+
+```text
+payloadCharacters = Len4L * NTot
+elementWidth       = payloadCharacters  when raw TypeA = 1
+                     raw TypeA           when raw TypeA > 1
+elementCount       = payloadCharacters / elementWidth
+bufferCharacters   = Len4L * LenBuf
+```
+
+Raw `TypeA=1` is Gaussian's legacy marker for one scalar spanning the complete
+payload. Values greater than one are explicit fixed element widths. The
+translation belongs in
+`MQC_MatrixFile_Get_Character_Record_Layout`; outgoing translation belongs in
+`MQC_MatrixFile_Get_Character_Write_Layout`.
+
+When scanning past an unrequested character record, the reader must consume it
+with `Rd_ChBuf`, not a numeric skip routine, or later label reads become
+desynchronized.
+
+Outgoing exact-shape encoding currently requires:
+
+- element width greater than one, because `TypeA=1` has legacy scalar meaning;
+- positive element count and buffer word count;
+- total payload characters divisible by the target file's `Len4L`.
+
+These are file-format constraints, not general `MQC_Variable` restrictions.
+When packing a deferred-length character buffer, initialize the full declared
+length; assignment of a one-character blank can reallocate it to length one.
+
+## MatrixFile layout types
+
+`MQC_MatrixFile_Layout` stores the active integer width, file version, header
+record count, `Len12L`, `Len4L`, and raw-format flag. Its `set` and
+`setForWrite` methods establish per-file metadata.
+
+`MQC_MatrixFile_Character_Record_Layout` holds logical element count/width and
+payload/buffer sizes in both characters and file words. Keep word arithmetic
+at this boundary rather than leaking it into algebra objects.
+
+## Validation standard
+
+For binary encoding changes, passing an MQCPack round trip alone is not enough.
+Validate both:
+
+1. public MQCPack write/read behavior, including skip and rewind/rescan paths;
+2. independent Gaussian `dumpbaf` inspection when it is available.
+
+Initialize the Gaussian/GDV/MQCPack shell environment with the repository's
+documented `gdvcode2026` setup before build or Gaussian work. Never combine
+GauOpen objects or `.mod` files from different compilers.
