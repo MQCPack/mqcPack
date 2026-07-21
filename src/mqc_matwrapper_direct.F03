@@ -1,9 +1,16 @@
+#if defined(MQC_GAUOPEN_API_PUBLIC) && defined(MQC_GAUOPEN_API_FRONTIER)
+#error "Only one GauOpen API family may be selected."
+#elif !defined(MQC_GAUOPEN_API_PUBLIC) && !defined(MQC_GAUOPEN_API_FRONTIER)
+#error "A GauOpen API family must be selected by configure."
+#endif
+
       module MQC_MatWrapper
 !
 !     This module is the MQCPack-owned adapter for unmodified GauOpen
-!     qcmatrix.F and qcmatrixio.F sources compiled with 8-byte integers.
+!     qcmatrix.F and qcmatrixio.F sources compiled with 8-byte integers. It
+!     normalizes the public version-2 ASym API and the frontier TypeA API.
 !     Raw GauOpen procedure names remain external and unmodified; prefixed
-!     adapter names keep them separate from MQCPack's public module symbols.
+!     adapter names keep them separate from MQCPack's module symbols.
 !
 !     H. P. Hratchian, 2026.
 !
@@ -30,6 +37,11 @@
       public::MQC_MatrixFile_Write_Real_Array
       public::MQC_MatrixFile_Write_Integer_Array
       public::MQC_MatrixFile_Write_Complex_Array
+!
+      character(len=*),parameter::publicCharacterError =  &
+        'Character FAF I/O requires the GauOpen frontier TypeA API; '//  &
+        'the configured public GauOpen API does not provide character '//  &
+        'record support.'
 !
       type MQC_MatrixFile_Layout
         integer(kind=int32)::integerBytes=0
@@ -73,6 +85,12 @@
       if(len4Bytes.ne.8_int64)  &
         call mqc_error_i('MatrixFile Len4L is incompatible with the '//  &
           'configured 8-byte GauOpen ABI.',6_int64,'len4Bytes',len4Bytes)
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      if(fileVersion.ge.3_int64)  &
+        call mqc_error_i('The configured public GauOpen API cannot safely '//  &
+          'identify character records in a frontier version-3 FAF.',  &
+          6_int64,'fileVersion',fileVersion)
+#endif
 !
       layout%integerBytes = 8_int32
       layout%fileVersion = fileVersion
@@ -95,7 +113,11 @@
       class(MQC_MatrixFile_Layout),intent(inout)::layout
 !
       layout%integerBytes = 8_int32
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      layout%fileVersion = 2_int64
+#else
       layout%fileVersion = 3_int64
+#endif
       layout%nHeaderRecords = 11_int64
       layout%len12Bytes = 8_int64
       layout%len4Bytes = 8_int64
@@ -118,6 +140,10 @@
       type(MQC_MatrixFile_Character_Record_Layout)::recordLayout
       integer(kind=int64)::rawElementCount
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call mqc_error(publicCharacterError,6_int64)
+      return
+#else
       if(layout%len4Bytes.le.0)  &
         call mqc_error_i('Character FAF record has invalid Len4L.',  &
           6_int64,'layout%len4Bytes',layout%len4Bytes)
@@ -150,6 +176,7 @@
         recordLayout%elementWidth
       recordLayout%bufferCharacters = layout%len4Bytes*lenBuf
       recordLayout%bufferWords = lenBuf
+#endif
 !
       return
       end function MQC_MatrixFile_Get_Character_Record_Layout
@@ -167,6 +194,10 @@
       integer(kind=int64),intent(in)::elementCount,elementWidth,bufferWords
       type(MQC_MatrixFile_Character_Record_Layout)::recordLayout
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call mqc_error(publicCharacterError,6_int64)
+      return
+#else
       if(layout%len4Bytes.le.0)  &
         call mqc_error_i('Character FAF write has invalid Len4L.',  &
           6_int64,'layout%len4Bytes',layout%len4Bytes)
@@ -191,6 +222,7 @@
         layout%len4Bytes
       recordLayout%bufferWords = bufferWords
       recordLayout%bufferCharacters = layout%len4Bytes*bufferWords
+#endif
 !
       return
       end function MQC_MatrixFile_Get_Character_Write_Layout
@@ -239,7 +271,11 @@
       implicit none
       integer(kind=int64),intent(in)::iUnit
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Close_MatF(iUnit)
+#else
       call Close_FAF(.false.,iUnit)
+#endif
       return
       end subroutine MQC_MatrixFile_Close
 !
@@ -311,9 +347,19 @@
       integer(kind=int64),intent(out)::nInteger,nReal,nTotal,bufferLength,  &
         n1,n2,n3,n4,n5,typeA,nRealInteger
       logical,intent(out)::endOfFile
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      logical::asymmetric
+#endif
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Rd_Labl(iUnit,iVers,label,nInteger,nReal,nTotal,bufferLength,  &
+        n1,n2,n3,n4,n5,asymmetric,nRealInteger,endOfFile)
+      typeA = 0_int64
+      if(asymmetric) typeA = -1_int64
+#else
       call Rd_Labl(iUnit,iVers,label,nInteger,nReal,nTotal,bufferLength,  &
         n1,n2,n3,n4,n5,typeA,nRealInteger,endOfFile)
+#endif
       return
       end subroutine MQC_MatrixFile_Read_Label
 !
@@ -324,15 +370,23 @@
       integer(kind=int64),intent(in)::iUnit,nInteger,nReal,nTotal,  &
         bufferLength,n1,n2,n3,n4,n5,typeA
       character(len=*),intent(in)::label
-      integer(kind=int64)::storedRealCount
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      logical::asymmetric
+#endif
 !
       if(nReal.lt.0)  &
         call mqc_error('MQC_MatrixFile_Write_Label: nReal must be '//  &
           'nonnegative.',6_int64)
-      storedRealCount = nReal
-      if(typeA.lt.0) storedRealCount = -nReal
-      call Wr_Labl(iUnit,label,nInteger,storedRealCount,nTotal,bufferLength,  &
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      if(typeA.ne.0_int64.and.typeA.ne.-1_int64)  &
+        call mqc_error(publicCharacterError,6_int64)
+      asymmetric = typeA.eq.-1_int64
+      call Wr_Labl(iUnit,label,nInteger,nReal,nTotal,bufferLength,  &
+        n1,n2,n3,n4,n5,asymmetric)
+#else
+      call Wr_Labl(iUnit,label,nInteger,nReal,nTotal,bufferLength,  &
         n1,n2,n3,n4,n5,typeA)
+#endif
       return
       end subroutine MQC_MatrixFile_Write_Label
 !
@@ -343,7 +397,11 @@
       integer(kind=int64),intent(in)::iUnit,nCharacters,bufferLength
       character(len=*),intent(inout)::characterArray
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call mqc_error(publicCharacterError,6_int64)
+#else
       call Rd_ChBuf(iUnit,nCharacters,bufferLength,characterArray)
+#endif
       return
       end subroutine MQC_MatrixFile_Read_Character_Buffer
 !
@@ -354,7 +412,11 @@
       integer(kind=int64),intent(in)::iUnit,nCharacters,bufferLength
       character(len=*),intent(in)::characterArray
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call mqc_error(publicCharacterError,6_int64)
+#else
       call Wr_ChBuf(iUnit,nCharacters,bufferLength,characterArray)
+#endif
       return
       end subroutine MQC_MatrixFile_Write_Character_Buffer
 !
@@ -413,9 +475,14 @@
       integer(kind=int64),intent(out)::nNonzero
       real(kind=real64),dimension(:),intent(out)::array
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Rd_RInd(iUnit,nReal,recordLength,nTotal,bufferLength,nNonzero,  &
+        array)
+#else
       call Rd_RInd(iUnit,nReal,recordLength,nReal*recordLength,nTotal,  &
         bufferLength,array)
       nNonzero = nTotal
+#endif
       return
       end subroutine MQC_MatrixFile_Read_Indexed_Real
 !
@@ -449,12 +516,19 @@
         n4,n5
       logical,intent(in)::asymmetric
       real(kind=real64),dimension(:),intent(inout)::array
+#ifdef MQC_GAUOPEN_API_FRONTIER
       integer(kind=int64)::typeA
+#endif
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Wr_LRBuf(iUnit,label,nReal,bufferLength,n1,n2,n3,n4,n5,  &
+        asymmetric,array)
+#else
       typeA = 0_int64
-      if(asymmetric) typeA = 1_int64
+      if(asymmetric) typeA = -1_int64
       call Wr_LRBuf(iUnit,label,nReal,bufferLength,n1,n2,n3,n4,n5,typeA,  &
         array)
+#endif
       return
       end subroutine MQC_MatrixFile_Write_Real_Array
 !
@@ -467,12 +541,19 @@
         n3,n4,n5
       logical,intent(in)::asymmetric
       integer(kind=int64),dimension(:),intent(in)::array
+#ifdef MQC_GAUOPEN_API_FRONTIER
       integer(kind=int64)::typeA
+#endif
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Wr_LIBuf(iUnit,label,nInteger,bufferLength,n1,n2,n3,n4,n5,  &
+        asymmetric,array)
+#else
       typeA = 0_int64
-      if(asymmetric) typeA = 1_int64
+      if(asymmetric) typeA = -1_int64
       call Wr_LIBuf(iUnit,label,nInteger,bufferLength,n1,n2,n3,n4,n5,  &
         typeA,array)
+#endif
       return
       end subroutine MQC_MatrixFile_Write_Integer_Array
 !
@@ -485,12 +566,19 @@
         n4,n5
       logical,intent(in)::asymmetric
       complex(kind=real64),dimension(:),intent(inout)::array
+#ifdef MQC_GAUOPEN_API_FRONTIER
       integer(kind=int64)::typeA
+#endif
 !
+#ifdef MQC_GAUOPEN_API_PUBLIC
+      call Wr_LCBuf(iUnit,label,nReal,bufferLength,n1,n2,n3,n4,n5,  &
+        asymmetric,array)
+#else
       typeA = 0_int64
-      if(asymmetric) typeA = 1_int64
-      call Wr_LCBuf(iUnit,label,nReal,bufferLength,n1,n2,n3,n4,n5,typeA,  &
-        array)
+      if(asymmetric) typeA = -1_int64
+      call Wr_LCBuf(iUnit,label,ABS(nReal),bufferLength,n1,n2,n3,n4,n5,  &
+        typeA,array)
+#endif
       return
       end subroutine MQC_MatrixFile_Write_Complex_Array
 !

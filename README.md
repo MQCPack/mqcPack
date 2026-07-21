@@ -94,7 +94,8 @@ The interactive installer remains available:
 Enable MatrixFile support with the external GauOpen source directory and the
 currently supported 8-byte integer ABI. The build compiles the unmodified
 `qcmatrix.F` and `qcmatrixio.F` files directly with isolated legacy-source
-flags:
+flags. Configure identifies the supported public or frontier GauOpen API from
+the selected sources:
 
 ```sh
 ./configure --prefix=/path/to/install \
@@ -104,6 +105,16 @@ make MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
 make check MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
 make install MQC_LAPACK="-llapack" MQC_BLAS="-lblas"
 ```
+
+The default `--with-gauopen-api=auto` can be replaced by
+`--with-gauopen-api=public` or `--with-gauopen-api=frontier` after verifying
+the source interface. Public GauOpen supports numerical MatrixFile records but
+does not provide character-record routines; MQCPack character FAF operations
+therefore terminate with an explicit unsupported-feature diagnostic. Frontier
+GauOpen provides the `TypeA` and character-buffer interface used for character
+scalar and fixed-width-vector FAF records. To prevent positive `TypeA` records
+from being silently treated as integers, the public profile also rejects
+frontier version-3 FAF files.
 
 Use `--without-gauopen` for a FormChk-only configuration; that path does not
 need the GauOpen sources and produces a library that can link and use

@@ -8,9 +8,16 @@ check_PROGRAMS = ../algebra2/algebra_fun unitTest01 unitTest02
 
 if WITH_GAUOPEN
 TESTS += ../fullci/testit.sh ../hartreefock/testit.sh \
-  ../WriteTest/testit.sh unitTest03 unitTest04
+  ../WriteTest/testit.sh
 check_PROGRAMS += ../fullci/fullci ../hartreefock/hartreefock \
-  ../WriteTest/ReadWrite unitTest03 unitTest04
+  ../WriteTest/ReadWrite
+if GAUOPEN_FRONTIER
+TESTS += unitTest03 unitTest04
+check_PROGRAMS += unitTest03 unitTest04
+else
+TESTS += test_public_gauopen_character.sh
+check_PROGRAMS += unitTest03
+endif
 else
 TESTS += unitTest05 test_no_gauopen_matrixfile.sh
 check_PROGRAMS += unitTest05 unitTest06
@@ -27,7 +34,7 @@ unitTest04_SOURCES = ../../unitTests/src/unitTest04.f03
 unitTest05_SOURCES = ../../unitTests/src/unitTest05.f03
 unitTest06_SOURCES = ../../unitTests/src/unitTest06.f03
 
-EXTRA_DIST = test_no_gauopen_matrixfile.sh
+EXTRA_DIST = test_no_gauopen_matrixfile.sh test_public_gauopen_character.sh
 
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 

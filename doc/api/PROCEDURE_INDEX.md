@@ -1348,44 +1348,44 @@ generic overload membership must still be checked in the source interface block.
 
 ### Modules
 
-- `MQC_MatWrapper` ([source](../../src/mqc_matwrapper_direct.F03#L1))
+- `MQC_MatWrapper` ([source](../../src/mqc_matwrapper_direct.F03#L7))
 
 ### Derived types
 
-- `MQC_MatrixFile_Layout` ([source](../../src/mqc_matwrapper_direct.F03#L34))
-- `MQC_MatrixFile_Character_Record_Layout` ([source](../../src/mqc_matwrapper_direct.F03#L46))
+- `MQC_MatrixFile_Layout` ([source](../../src/mqc_matwrapper_direct.F03#L46))
+- `MQC_MatrixFile_Character_Record_Layout` ([source](../../src/mqc_matwrapper_direct.F03#L58))
 
 ### Type-bound bindings
 
-- `MQC_MatrixFile_Layout%set` — `MQC_MatrixFile_Layout_Set` ([source](../../src/mqc_matwrapper_direct.F03#L42))
-- `MQC_MatrixFile_Layout%setForWrite` — `MQC_MatrixFile_Layout_Set_For_Write` ([source](../../src/mqc_matwrapper_direct.F03#L43))
+- `MQC_MatrixFile_Layout%set` — `MQC_MatrixFile_Layout_Set` ([source](../../src/mqc_matwrapper_direct.F03#L54))
+- `MQC_MatrixFile_Layout%setForWrite` — `MQC_MatrixFile_Layout_Set_For_Write` ([source](../../src/mqc_matwrapper_direct.F03#L55))
 
 ### Procedure definitions
 
-- `MQC_MatrixFile_Layout_Set` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L58))
-- `MQC_MatrixFile_Layout_Set_For_Write` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L88))
-- `MQC_MatrixFile_Get_Character_Record_Layout` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L108))
-- `MQC_MatrixFile_Get_Character_Write_Layout` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L158))
-- `MQC_MatrixFile_Open_Read` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L199))
-- `MQC_MatrixFile_Open_Write` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L219))
-- `MQC_MatrixFile_Close` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L238))
-- `MQC_MatrixFile_Len_Array` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L247))
-- `MQC_MatrixFile_Read_Header` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L259))
-- `MQC_MatrixFile_Write_Header` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L282))
-- `MQC_MatrixFile_Read_Label` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L305))
-- `MQC_MatrixFile_Write_Label` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L321))
-- `MQC_MatrixFile_Read_Character_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L340))
-- `MQC_MatrixFile_Write_Character_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L351))
-- `MQC_MatrixFile_Read_Integer_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L362))
-- `MQC_MatrixFile_Read_Real_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L373))
-- `MQC_MatrixFile_Read_Complex_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L384))
-- `MQC_MatrixFile_Read_Two_Electron` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L395))
-- `MQC_MatrixFile_Read_Indexed_Real` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L408))
-- `MQC_MatrixFile_Skip` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L423))
-- `MQC_MatrixFile_Write_AO_Two_Electron` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L432))
-- `MQC_MatrixFile_Write_Real_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L444))
-- `MQC_MatrixFile_Write_Integer_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L462))
-- `MQC_MatrixFile_Write_Complex_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L480))
+- `MQC_MatrixFile_Layout_Set` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L70))
+- `MQC_MatrixFile_Layout_Set_For_Write` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L106))
+- `MQC_MatrixFile_Get_Character_Record_Layout` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L130))
+- `MQC_MatrixFile_Get_Character_Write_Layout` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L185))
+- `MQC_MatrixFile_Open_Read` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L231))
+- `MQC_MatrixFile_Open_Write` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L251))
+- `MQC_MatrixFile_Close` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L270))
+- `MQC_MatrixFile_Len_Array` — `function` ([source](../../src/mqc_matwrapper_direct.F03#L283))
+- `MQC_MatrixFile_Read_Header` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L295))
+- `MQC_MatrixFile_Write_Header` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L318))
+- `MQC_MatrixFile_Read_Label` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L341))
+- `MQC_MatrixFile_Write_Label` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L367))
+- `MQC_MatrixFile_Read_Character_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L394))
+- `MQC_MatrixFile_Write_Character_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L409))
+- `MQC_MatrixFile_Read_Integer_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L424))
+- `MQC_MatrixFile_Read_Real_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L435))
+- `MQC_MatrixFile_Read_Complex_Buffer` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L446))
+- `MQC_MatrixFile_Read_Two_Electron` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L457))
+- `MQC_MatrixFile_Read_Indexed_Real` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L470))
+- `MQC_MatrixFile_Skip` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L490))
+- `MQC_MatrixFile_Write_AO_Two_Electron` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L499))
+- `MQC_MatrixFile_Write_Real_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L511))
+- `MQC_MatrixFile_Write_Integer_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L536))
+- `MQC_MatrixFile_Write_Complex_Array` — `subroutine` ([source](../../src/mqc_matwrapper_direct.F03#L561))
 
 ## `src/mqc_matwrapper_stub.F03`
 

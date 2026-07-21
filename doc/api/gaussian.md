@@ -19,12 +19,24 @@ not compatibility interfaces. Downstream code should use the file types and
 type-bound operations in `MQC_Gaussian`.
 
 Configure MatrixFile support explicitly with
-`--with-gauopen=/path/to/gauopen --with-gauopen-integer-bytes=8`. Use
-`--without-gauopen` for the FormChk-only configuration. The integer ABI is part
-of the installed library's compatibility contract; do not mix the resulting
-library or module files with artifacts from another compiler or configuration.
-The supported build currently uses one configured 8-byte GauOpen ABI; it does
-not dispatch between 4-byte and 8-byte MatrixFiles at runtime. GauOpen's legacy
+`--with-gauopen=/path/to/gauopen --with-gauopen-integer-bytes=8`. Configure
+detects one of two supported source interfaces and defines the corresponding
+adapter profile:
+
+- public: version-2 files, logical `ASym`, `Close_MatF`, and the older
+  `Rd_RInd` signature;
+- frontier: version-3 files, integer `TypeA`, `Close_FAF`, the newer
+  `Rd_RInd` signature, and `Rd_ChBuf`/`Wr_ChBuf`.
+
+`--with-gauopen-api=auto` is the default. An explicitly verified source tree
+can be selected with `--with-gauopen-api=public` or
+`--with-gauopen-api=frontier`; a requested profile that conflicts with a
+recognized source interface is rejected. Use `--without-gauopen` for the
+FormChk-only configuration. The integer ABI and API profile are part of the
+installed library's compatibility contract; do not mix the resulting library
+or module files with artifacts from another compiler or configuration. The
+supported build currently uses one configured 8-byte GauOpen ABI; it does not
+dispatch between 4-byte and 8-byte MatrixFiles at runtime. GauOpen's legacy
 source flags are isolated from the stricter flags used for MQCPack sources.
 
 The FormChk-only library remains linkable through `MQC_Gaussian`, including
@@ -75,7 +87,14 @@ or create it explicitly after assignment.
 
 Character data is exposed through `getArray(...,mqcVarOut=...)` and
 `writeArray2`. Logical values are character scalars or rank-1 fixed-width
-vectors represented by `MQC_Variable`.
+vectors represented by `MQC_Variable`. These operations require the frontier
+GauOpen profile. Public GauOpen does not export character-buffer operations;
+attempted character FAF layout or buffer operations terminate with a clear
+unsupported-feature diagnostic rather than writing a partial character
+record. Numerical MatrixFile operations remain supported in the public
+profile for its version-2 files. Because the legacy label reader discards raw
+positive `TypeA`, the public profile rejects version-3 FAF files rather than
+risk silently treating a frontier character record as an integer array.
 
 Do not interpret raw positive `TypeA` as the element width without
 normalization:
@@ -107,6 +126,9 @@ Outgoing exact-shape encoding currently requires:
 These are file-format constraints, not general `MQC_Variable` restrictions.
 When packing a deferred-length character buffer, initialize the full declared
 length; assignment of a one-character blank can reallocate it to length one.
+For real or complex array metadata, frontier `TypeA=-1` means
+antisymmetric/anti-Hermitian while `TypeA=1` means symmetric/Hermitian; do not
+collapse those signs when writing externally consumed records.
 
 ## MatrixFile layout types
 

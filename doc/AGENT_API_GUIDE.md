@@ -136,6 +136,11 @@ end program read_faf_title
 MatrixFile support must be present in the configured MQCPack build. Preserve
 the exact record label and verify binary-format changes with both the public API
 and an independent Gaussian-aware reader such as `dumpbaf` when available.
+Character FAF operations additionally require the frontier GauOpen API
+profile. A public GauOpen build supports numerical MatrixFile records but
+reports character FAF operations as unsupported. It rejects frontier
+version-3 FAF files because its legacy label interface cannot distinguish a
+positive character `TypeA` from ordinary integer metadata safely.
 
 ## Build and ABI compatibility
 
@@ -146,6 +151,7 @@ repository should record at least:
 - MQCPack version and preferably source commit;
 - compiler family and version;
 - `--without-gauopen` or the exact `--with-gauopen=DIR` configuration;
+- detected or selected GauOpen API profile: `public` or `frontier`;
 - GauOpen integer ABI, currently `--with-gauopen-integer-bytes=8`;
 - integer/real-size and OpenMP flags;
 - BLAS/LAPACK link line;
@@ -165,6 +171,11 @@ MatrixFile builds compile the external, unmodified GauOpen `qcmatrix.F` and
 separate from MQCPack's Fortran flags. The supported GauOpen integer ABI is
 currently selected at configure time and limited to 8 bytes; one installed
 library does not dispatch between 4-byte and 8-byte MatrixFiles at runtime.
+Configure normally detects the API family from procedure capabilities:
+`Close_MatF` and the older indexed-reader signature select the public profile;
+`Close_FAF`, the newer indexed-reader signature, and character-buffer routines
+select the frontier profile. Use `--with-gauopen-api=public` or `frontier` only
+as an explicit override for a source tree whose interface has been verified.
 Treat `MQC_MatWrapper` as an internal real/stub backend boundary. Downstream
 code should use `MQC_Gaussian`; the wrapper's low-level adapter procedures are
 not a supported compatibility API.
