@@ -1,55 +1,74 @@
-      Program unitTest01
+      program unitTest01
 !
-!     unitTest01: This unit test program tests the version reporting and
-!     checking routines in MQC_General.
+!     Validate MQCPack version reporting and inclusive version comparisons.
+!     Every expectation is checked directly so Automake receives a nonzero
+!     status if the version routines become inconsistent.
 !
-!     -H. P. Hratchian, 2020.
+!     H. P. Hratchian, 2020, 2026.
 !
-!
-!     USE Connections
-!
+      use iso_fortran_env, only: int64
       use mqc_general
-!
-!     Variable Declarations
-!
       implicit none
+!
       integer(kind=int64)::major,minor,revision
       character(len=512)::versionString
-!
-!     Format Statements
-!
- 1000 Format(1x,'Major Version Number: ',I2,/,  &
-        1x,'Minor Version Number: ',I2,2x,'Revision Number: ',I2)
- 1100 Format(/,1x,'Full Version String: <',A,'>',/)
- 2000 Format(1x,'Is 2020:     ',L1)
- 2010 Format(1x,'Is 2020.5:   ',L1)
- 2020 Format(1x,'Is 2020.5.1: ',L1)
- 2100 Format(1x,'Is 2020:     ',L1)
- 2110 Format(1x,'Is 2020.4:   ',L1)
- 2120 Format(1x,'Is 2020.4.0: ',L1)
- 3000 Format(1x,'Is NEWER than 2018: ',L1)
- 3100 Format(1x,'Is OLDER than 2018: ',L1)
- 9000 Format(/,1x,'END OF unitTest01')
-
-!
+      character(len=64)::expectedVersion
 !
       call mqc_version(major,minor,revision,versionString)
-      write(*,1000) major,minor,revision
-      write(*,1100) TRIM(versionString)
+      write(expectedVersion,'(I0,".",I0,".",I0)') major,minor,revision
 !
+      call assertTrue(major.ge.0_int64.and.major.le.99_int64,  &
+        'The major version is not a two-digit calendar year.')
+      call assertTrue(minor.ge.1_int64.and.minor.le.12_int64,  &
+        'The minor version is not a calendar month.')
+      call assertTrue(revision.ge.0_int64,  &
+        'The revision counter is negative.')
+      call assertTrue(TRIM(versionString).eq.TRIM(expectedVersion),  &
+        'The full version string disagrees with its components.')
 !
-      write(*,2000) mqc_version_check(isMajor=20)
-      write(*,2010) mqc_version_check(isMajor=20,isMinor=5)
-      write(*,2020) mqc_version_check(isMajor=20,isMinor=5,isRevision=1)
+      call assertTrue(mqc_version_check(isMajor=major),  &
+        'The exact major-version check failed.')
+      call assertTrue(mqc_version_check(isMajor=major,isMinor=minor),  &
+        'The exact major/minor-version check failed.')
+      call assertTrue(mqc_version_check(isMajor=major,isMinor=minor,  &
+        isRevision=revision),'The exact full-version check failed.')
+      call assertTrue(.not.mqc_version_check(isMajor=major,isMinor=minor,  &
+        isRevision=revision+1_int64),  &
+        'An incorrect revision was accepted as an exact match.')
 !
+!     Older-than and newer-than comparisons are inclusive.
 !
-      write(*,2100) mqc_version_check(isMajor=20)
-      write(*,2110) mqc_version_check(isMajor=20,isMinor=4)
-      write(*,2120) mqc_version_check(isMajor=20,isMinor=4,isRevision=0)
+      call assertTrue(mqc_version_check(newerThanMajor=major),  &
+        'The inclusive newer-than check rejected the current major version.')
+      call assertTrue(mqc_version_check(olderThanMajor=major),  &
+        'The inclusive older-than check rejected the current major version.')
+      call assertTrue(mqc_version_check(newerThanMajor=major-1_int64),  &
+        'The newer-than check rejected an older major version.')
+      call assertTrue(mqc_version_check(olderThanMajor=major+1_int64),  &
+        'The older-than check rejected a newer major version.')
+      call assertTrue(.not.mqc_version_check(newerThanMajor=  &
+        major+1_int64),'The newer-than check accepted a newer version.')
+      call assertTrue(.not.mqc_version_check(olderThanMajor=  &
+        major-1_int64),'The older-than check accepted an older version.')
 !
+      write(*,'(1x,A)') 'unitTest01: PASS'
 !
-      write(*,3000) mqc_version_check(newerThanMajor=18)
-      write(*,3100) mqc_version_check(olderThanMajor=18)
+      contains
+
+
+!PROCEDURE assertTrue
+      subroutine assertTrue(condition,message)
+      implicit none
+      logical,intent(in)::condition
+      character(len=*),intent(in)::message
 !
-      write(*,9000)
+      if(.not.condition) then
+        write(*,'(1x,A)') 'FAIL: '//TRIM(message)
+        error stop 1
+      endIf
+!
+      return
+      end subroutine assertTrue
+
+
       end program unitTest01

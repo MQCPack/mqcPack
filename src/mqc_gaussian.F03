@@ -1155,6 +1155,10 @@
         allocate(fileinfo%basisFunction2Atom(fileinfo%NBasis))
         fileinfo%basisFunction2Atom = 0
       endIf
+      if(.not.allocated(fileinfo%IBasisFunctionType)) then
+        allocate(fileinfo%IBasisFunctionType(fileinfo%NBasis))
+        fileinfo%IBasisFunctionType = 0
+      endIf
      
       if(fileinfo%icgu.eq.111) then
         iopcl = 0 

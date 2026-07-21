@@ -1584,10 +1584,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTL(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTL(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustl_character_vector
@@ -1626,10 +1630,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTR(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTR(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustr_character_vector
