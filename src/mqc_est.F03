@@ -2578,7 +2578,8 @@
 !>    \param[in] length
 !>    \verbatim
 !>        Length is Integer(kind=int64)
-!>        The length to initialize eigenvalues object
+!>        The length to initialize eigenvalues object. If length beta is
+!>        not given, length is the length of both alpha and beta
 !>    \endverbatim
 !>
 !>
@@ -2589,6 +2590,13 @@
 !>        the value is set to 0.0. Can be of type integer, real,
 !>        complex or MQC_Scalar.
 !>    \endverbatim
+!>
+!>    \param[in] lengthBeta
+!>    \verbatim
+!>        Length is Integer(kind=int64), Optional
+!>        The length of the beta block.
+!>    \endverbatim
+!>
 !
 !     Authors:
 !     ========

@@ -25,6 +25,8 @@
         Procedure, public::getBlockVec => mqc_nef_vector_output_block_vector
         Procedure, Public::impv => mqc_nef_vector_import_vector
         Procedure, Public::expand => mqc_nef_vector_dimention_expand
+        Procedure, Public::ins => mqc_nef_vector_insert
+        Procedure, Public::dimen => mqc_nef_vector_dimension
       End Type
 !
 !>    \brief <b> </b>
@@ -45,6 +47,7 @@
         Procedure, Public::export => mqc_nef_matrix_export_integral
         Procedure, Public::slice => mqc_nef_matrix_dimention_slice
         Procedure, Public::collapse => mqc_nef_matrix_dimention_collapse
+        Procedure, Public::dimen => mqc_nef_matrix_dimension
 !>    \brief <b> Outer Product of two variables into a two NEF R4</b>
         Procedure, Public::outer2R4 => mqc_NEFMatrix_NEFMatrix_outer_product
 !>    \brief <b> Outer Product of two variables into a NEF R4</b>
@@ -3097,6 +3100,234 @@
       end function mqc_nef_matrix_dimention_slice
 !
 !
+!     PROCEDURE MQC_NEF_VECTOR_DIMENSION
+!
+!>    \brief <b> MQC_NEF_VECTOR_Dimension is a function that returns the size of a dimension
+!>    MQC NEF VECTOR object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_VECTOR_Dimension is a function that returns the size of a dimension or subdimension 
+!>    of an MQC NEF VECTOR object. The required argument label specifies which block is queried. 
+!>    The optional arguments axis, subaxis and spin specifies which dimension is returned. 
+!>    The following options are available:
+!>
+!>    1. .not.present(SubAxis) returns the dimension of sub-spaceS (default).
+!>    2. SubAxis = 'n' selects the n-th dimension of sub-spaces.
+!>
+!>    1. Spin = returns the 'alpha' dimension of the n-th dimension of  sub-spaces in <Axis> (default).
+!>    2. Spin = returns the 'beta' dimension of the n-th dimension of  sub-spaces in <Axis>.
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatIn
+!>    \verbatim
+!>        VecIn is Class(MQC_NEF_VECTOR)
+!>        The name of the MQC NEF VECTOR variable.
+!>    \endverbatim
+!>
+!>    \param[in] SubAxis
+!>    \verbatim
+!>        SubAxis is Integer(kind=int64),Optional
+!>       .not.present(SubAxis) returns the dimension of sub-spaces(default).
+!>       SubAxis = 'n' selects the n-th dimension of sub-spaces.
+!>    \endverbatim
+!>
+!>    \param[in] 
+!>    \verbatim Spin
+!>        Spin is Character(Len=*),optional
+!>        The spin block to query.
+!>        = 'alpha','a': alpha axis dimension.
+!>        = 'beta','b':  beta axis dimension.
+!>        Returns an error if present while subaxis is not present
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_nef_vector_dimension(VecIn,subaxis,spin) result(dimBlock)
+!
+      implicit none
+      class(mqc_nef_vector),intent(in)::VecIn
+      integer(kind=int64)::dimBlock
+      Character(Len=*),intent(in),optional::spin
+      integer(kind=int64),intent(in),optional::subaxis
+      Character(Len=64)::my_spin
+      integer(kind=int64)::my_sub_axis
+      logical::do_sub
+!
+      if(present(subaxis)) then
+        my_sub_axis = subaxis
+        do_sub=.true.
+      else
+        do_sub=.false.
+      endIf
+      if(present(spin)) then
+        if (.not.do_sub) &
+           call mqc_error('Spin specified without subaxis in MQC_NEF_Vector_Dimension',6)
+        call string_change_case(spin,'l',my_spin)
+      end if
+!     
+      if (do_sub) then
+        select case(my_spin)
+        case('alpha','a')
+            if (my_sub_axis.gt.VecIn%NumSpace) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Vector_Dimension',6,&
+                'VecIn%NumSpace',VecIn%NumSpace,'my_sub_axis',my_sub_axis)
+            dimBlock = VecIn%Size_vector_alpha(my_sub_axis)
+        case('beta','b')
+            if (my_sub_axis.gt.VecIn%NumSpace) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Vector_Dimension',6,&
+                'VecIn%NumSpace_col',VecIn%NumSpace,'my_sub_axis',my_sub_axis)
+            dimBlock = VecIn%Size_vector_beta(my_sub_axis)
+        case default
+          call mqc_error_A('Spin label not valid in mqc_nef_matrix_dimension', 6, &
+               'my_spin', my_spin )
+        end select
+      else
+          dimBlock = VecIn%NumSpace
+      end if
+      end function mqc_nef_vector_dimension
+!
+!     PROCEDURE MQC_NEF_MATRIX_DIMENSION
+!
+!>    \brief <b> MQC_NEF_MATRIX_Dimension is a function that returns the size of a dimension
+!>    MQC NEF MATRIX object</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_MATRIX_Dimension is a function that returns the size of a dimension or subdimension 
+!>    of an MQC NEF MATRIX object. The required argument label specifies which block is queried. 
+!>    The optional arguments axis, subaxis and spin specifies which dimension is returned. 
+!>    The following options are available:
+!>
+!>    1. Axis = '1' selects the first dimension (column)(default).
+!>    2. Axis = '2' selects the second dimension (row).
+!>
+!>    1. .not.present(SubAxis) returns the dimension of sub-spaces in <Axis> (default).
+!>    2. SubAxis = 'n' selects the n-th dimension of sub-spaces in <Axis>.
+!>
+!>    1. Spin = returns the 'alpha' dimension of the n-th dimension of  sub-spaces in <Axis> (default).
+!>    2. Spin = returns the 'beta' dimension of the n-th dimension of  sub-spaces in <Axis>.
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in,out] MatIn
+!>    \verbatim
+!>        MatIn is Class(MQC_NEF_MATRIX)
+!>        The name of the MQC NEF MATRIX variable.
+!>    \endverbatim
+!>
+!>    \param[in] Axis
+!>    \verbatim
+!>        Axis is Integer(kind=int64),Optional
+!>        The spin block axis to return.
+!>        = 1: number of first dimension (column)(default).
+!>        = 2: number of second dimension (row).
+!>    \endverbatim
+!>
+!>    \param[in] SubAxis
+!>    \verbatim
+!>        SubAxis is Integer(kind=int64),Optional
+!>       .not.present(SubAxis) returns the dimension of sub-spaces in <Axis> (default).
+!>       SubAxis = 'n' selects the n-th dimension of sub-spaces in <Axis>.
+!>    \endverbatim
+!>
+!>    \param[in] 
+!>    \verbatim Spin
+!>        Spin is Character(Len=*),optional
+!>        The spin block to query.
+!>        = 'alpha','a': alpha axis dimension.
+!>        = 'beta','b':  beta axis dimension.
+!>        Returns an error if present while subaxis is not present
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      function mqc_nef_matrix_dimension(MatIn,axis,subaxis,spin) result(dimBlock)
+!
+      implicit none
+      class(mqc_nef_matrix),intent(in)::MatIn
+      integer(kind=int64)::dimBlock
+      Character(Len=*),intent(in),optional::spin
+      integer(kind=int64),intent(in),optional::axis,subaxis
+      Character(Len=64)::my_spin
+      integer(kind=int64)::my_axis,my_sub_axis
+      logical::do_sub
+!
+      if(present(axis)) then
+        my_axis = axis
+      else
+        my_axis = 1
+      endIf
+      if(my_axis.le.0.or.my_axis.gt.2) &
+        call mqc_error_I('Unknown axis specified in MQC_NEF_Matrix_Dimension',6,'my_axis',my_axis)
+
+      if(present(subaxis)) then
+        my_sub_axis = subaxis
+        do_sub=.true.
+      else
+        do_sub=.false.
+      endIf
+      if(present(spin)) then
+        if (.not.do_sub) &
+           call mqc_error('Spin specified without subaxis in MQC_NEF_Matrix_Dimension',6)
+        call string_change_case(spin,'l',my_spin)
+      end if
+!     
+      if (do_sub) then
+        select case(my_spin)
+        case('alpha','a')
+          if(my_axis.eq.1) then
+            if (my_sub_axis.gt.MatIn%NumSpace_col) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Matrix_Dimension',6,&
+                'MatIn%NumSpace_col',MatIn%NumSpace_col,'my_sub_axis',my_sub_axis)
+            dimBlock = MatIn%Size_vector_alpha_col(my_sub_axis)
+          else if(my_axis.eq.2) then
+            if (my_sub_axis.gt.MatIn%NumSpace_row) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Matrix_Dimension',6,&
+                'MatIn%NumSpace_row',MatIn%NumSpace_row,'my_sub_axis',my_sub_axis)
+            dimBlock = MatIn%Size_vector_alpha_row(my_sub_axis)
+          end if
+        case('beta','b')
+          if(my_axis.eq.1) then
+            if (my_sub_axis.gt.MatIn%NumSpace_col) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Matrix_Dimension',6,&
+                'MatIn%NumSpace_col',MatIn%NumSpace_col,'my_sub_axis',my_sub_axis)
+            dimBlock = MatIn%Size_vector_beta_col(my_sub_axis)
+          else if(my_axis.eq.2) then
+            if (my_sub_axis.gt.MatIn%NumSpace_row) &
+               call mqc_error_I('Subaxis out of bounds in MQC_NEF_Matrix_Dimension',6,&
+                'MatIn%NumSpace_row',MatIn%NumSpace_row,'my_sub_axis',my_sub_axis)
+            dimBlock = MatIn%Size_vector_beta_row(my_sub_axis)
+          end if
+        case default
+          call mqc_error_A('Spin label not valid in mqc_nef_matrix_dimension', 6, &
+               'my_spin', my_spin )
+        end select
+      else
+        if(my_axis.eq.1) then
+          dimBlock = MatIn%NumSpace_col
+        else if(my_axis.eq.2) then
+          dimBlock = MatIn%NumSpace_row
+        end if
+      end if
+    end function mqc_nef_matrix_dimension
+!
+!
 !     PROCEDURE MQC_NEF_R4_NEF_R4_Partial_Contraction_2R4
 !
 !>    \brief <b> MQC_NEF_R4_NEF_R4_Contraction_2R4 is used to return the contraction of 
@@ -4974,6 +5205,337 @@
       end select  
 !
       end function mqc_nef_vector_dimention_expand
+!      
+!     PROCEDURE MQC_NEF_Vector_Insert
+!
+!
+!>    \brief <b> MQC_NEF_Vector_Insert is used to insert eigenvalues into a NEF vector </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_Vector_Insert is used to insert eigenvalues into a NEF vector
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VecIn
+!>    \verbatim
+!>        VecIn is type(mqc_nef_vector) 
+!>        VecIn is the vector you initially have, and insert the eigenvalues into
+!>    \endverbatim
+!>
+!>    \param[in] idI
+!>    \verbatim
+!>            idI is the index or location that you would like to place the eigenvalues into
+!>    \endverbatim!>    
+!>    
+!>    \param[in] ExtMap
+!>    \verbatim
+!>            ExtMap is the map matrix of the extra block of eigenvalues being added, it is optional
+!>    \endverbatim
+!
+!>    \param[in] ExtVec
+!>    \verbatim
+!>            ExtVec is the block of extra eigenvalues you want to add, it is optional
+!>    \endverbatim
+!
+!
+!
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      Subroutine MQC_NEF_Vector_Insert(VecIn,idI,ExtMap,ExtVec)
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_nef_vector),intent(inOut)::VecIn
+      type(mqc_scf_eigenvalues)::ExtI
+      integer::idI
+      integer::i
+      integer::zero
+      type(mqc_scf_eigenvalues),Optional::ExtMap,ExtVec
+      type(mqc_scf_eigenvalues)::EmptyBlock
+      type(mqc_scf_eigenvalues),dimension(:),allocatable::tempMain,tempMap
+      zero=0
+      allocate(tempMain(VecIn%Numspace+1),tempMap(VecIn%Numspace+1))
+      if(present(ExtMap)) then
+        EmptyBlock=ExtMap
+        if(present(ExtVec)) then
+          !! Both Vec and Map are given
+          ExtI=ExtVec
+          
+          if ((ExtI%blockSize("alpha")).ne.(EmptyBlock%blockSize("alpha"))) &
+            call mqc_error_i("Dimensionality between Map and Input Block not conformable in mqc_nef_vector_insert",&
+            6,"ExtI%blockSize(alpha)",ExtI%blockSize("alpha"),"EmptyBlock%blockSize(alpha)",EmptyBlock%blockSize("alpha")) 
+          if ((ExtI%blockSize("beta")).ne.(EmptyBlock%blockSize("beta"))) &
+            call mqc_error_i("Dimensionality between Map and Input Block not conformable in mqc_nef_vector_insert",&
+            6,"ExtI%blockSize(beta)",ExtI%blockSize("beta"),"EmptyBlock%blockSize(beta)",EmptyBlock%blockSize("beta")) 
+        else
+          !! Only Map is given
+          if(EmptyBlock%type().eq."space") then
+            call ExtI%init(EmptyBlock%blockSize("alpha"),zero)
+          else
+            call ExtI%init(EmptyBlock%blockSize("alpha"),zero,EmptyBlock%blockSize("beta"))
+          end if
+        end if 
+      else
+        if(present(ExtVec)) then
+          !! Only Vec is given
+          ExtI=ExtVec
+          if(ExtI%type().eq."space") then
+            call EmptyBlock%init(ExtI%blockSize("alpha"),zero)
+          else
+            call EmptyBlock%init(ExtI%blockSize("alpha"),zero,ExtI%blockSize("beta"))
+          end if
+        else
+          !! Nothing is given
+          call mqc_error("No input given to mqc_nef_vector_insert",6)
+        end if
+      end if
+      do i=1,idI-1
+        tempMain(i)=VecIn%Main_vector(i)
+        tempMap(i)=VecIn%Map_matrix(i)
+      end do
+      tempMain(idI)=ExtI
+      tempMap(idI)=EmptyBlock
+      do i=idI+1,(VecIn%Numspace)+1
+        tempMain(i)=VecIn%Main_vector(i-1)
+        tempMap(i)=VecIn%Map_matrix(i-1)
+      end do
+!
+      call VecIn%init(tempMap)
+      VecIn%Main_vector=tempMain
+!
+      end subroutine MQC_NEF_Vector_Insert
+!
+!     PROCEDURE MQC_NEF_Matrix_Insert
+!
+!
+!>    \brief <b> MQC_NEF_Matrix_Insert is used to insert eigenvalues or NEF vector into a NEF matrix </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_Matrix_Insert is used to insert eigenvalues or NEF vector into a NEF matrix
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VecIn
+!>    \verbatim
+!>        VecIn is type(mqc_nef_vector) 
+!>        VecIn is the vector you initially have, and insert the eigenvalues into
+!>    \endverbatim
+!>
+!>    \param[in] idI
+!>    \verbatim
+!>            idI is the index or location that you would like to place the eigenvalues into
+!>    \endverbatim!>    
+!>    
+!>    \param[in] ExtMap
+!>    \verbatim
+!>            ExtMap is the map matrix of the extra block of eigenvalues being added, it is optional
+!>    \endverbatim
+!
+!>    \param[in] ExtVec
+!>    \verbatim
+!>            ExtVec is the block of extra eigenvalues you want to add, it is optional
+!>    \endverbatim
+!
+!
+!
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+!
+      Subroutine MQC_NEF_Matrix_Insert(MatIn,idIRow,idICol,ExtSCFI,ExtMapC,ExtMapR)
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_nef_matrix),intent(inOut)::MatIn
+      type(mqc_scf_integral),allocatable::ExtI
+      integer,optional,intent(in)::idIRow,idICol
+      integer::myidIRow,myidICol
+      integer::i,j,zero
+      integer::newNrow,newNcol,extendRow,extendCol
+      integer::costRow,costCol
+      type(mqc_scf_integral)::EmptyBlockIntegral
+      type(mqc_scf_integral),optional,intent(in)::ExtSCFI
+      type(mqc_scf_eigenvalues),optional,intent(in)::ExtMapC,ExtMapR
+      type(mqc_scf_eigenvalues)::EmptyBlockRow,EmptyBlockCol
+      type(mqc_scf_integral),dimension(:),allocatable::tempMain
+      type(mqc_scf_eigenvalues),dimension(:),allocatable::tempMapRow,tempMapCol
+      zero = 0
+write(*,*) 'test3'
+!
+      if (present(ExtMapR) .or. present(ExtMapC)) then
+        if (present(ExtMapR)) then
+          EmptyBlockRow = ExtMapR
+          extendRow = 1
+          newNrow = (mqc_nef_matrix_dimension(MatIn,2))+1
+        else
+          extendRow = 0
+          newNrow = mqc_nef_matrix_dimension(MatIn,2)
+        end if
+        if (present(ExtMapC)) then
+          EmptyBlockCol = ExtMapC
+          extendCol = 1
+          newNcol = (mqc_nef_matrix_dimension(MatIn,1))+1
+        else
+          extendCol = 0
+          newNcol = mqc_nef_matrix_dimension(MatIn,1)  
+        end if
+!        
+      allocate(tempMain(newNrow*newNcol))
+      allocate(tempMapRow(newNrow))
+      allocate(tempMapCol(newNcol))
+      allocate(ExtI)
+!
+        write(*,*) 'newtest4'
+        if (present(ExtSCFI)) then
+          ExtI = ExtSCFI
+          write(*,*) 'newtest1'
+          if ((ExtI%blockSize("alpha")) .ne. (EmptyBlockRow%blockSize("alpha"))) &
+            call mqc_error_i("Dimensionality between Map and Input Block not conformable" // &
+            " in mqc_nef_matrix_insert",6, &
+            "ExtI%blockSize(alpha)",ExtI%blockSize("alpha"), &
+            "EmptyBlockRow%blockSize(alpha)",EmptyBlockRow%blockSize("alpha"))
+          if ((ExtI%blockSize("beta")) .ne. (EmptyBlockRow%blockSize("beta"))) &
+            call mqc_error_i("Dimensionality between Map and Input Block not conformable" // &
+            " in mqc_nef_matrix_insert",6, &
+            "ExtI%blockSize(beta)",ExtI%blockSize("beta"), &
+            "EmptyBlockRow%blockSize(beta)",EmptyBlockRow%blockSize("beta"))
+        else
+          write(*,*) 'newtest2'
+          if (extendRow .eq. 1) then
+          if (EmptyBlockRow%type() .eq. "space") then
+                  write(*,*) 'codealpha'
+            call ExtI%init(EmptyBlockRow%blockSize("alpha"),zero)
+          else
+                   write(*,*) 'codebeta'
+            call ExtI%init(EmptyBlockRow%blockSize("alpha"),zero, &
+                EmptyBlockRow%blockSize("beta"))
+          end if
+          end if
+          if (extendCol .eq. 1) then
+          if (EmptyBlockCol%type() .eq. "space") then
+                  write(*,*) 'codecharlie'
+            call ExtI%init(EmptyBlockCol%blockSize("alpha"),zero)
+          else
+                   write(*,*) 'codedelta'
+            call ExtI%init(EmptyBlockCol%blockSize("alpha"),zero, &
+                EmptyBlockCol%blockSize("beta"))
+                
+        !add a duplicate of this block for columns
+          end if
+         end if 
+        end if
+      else
+        if (present(ExtSCFI)) then
+          ExtI = ExtSCFI
+          write(*,*) 'newtest3'
+          if (ExtI%type() .eq. "space") then
+            call EmptyBlockRow%init(ExtI%blockSize("alpha"),zero)
+            call EmptyBlockCol%init(ExtI%blockSize("alpha"),zero)
+          else
+            call EmptyBlockRow%init(ExtI%blockSize("alpha"),zero, &
+                ExtI%blockSize("beta"))
+            call EmptyBlockCol%init(ExtI%blockSize("alpha"),zero, &
+                ExtI%blockSize("beta"))
+          end if
+        else
+          call mqc_error("No input given to mqc_nef_matrix_insert",6)
+        end if
+      end if
+!
+ write(*,*) 'test4'
+      if (extendRow .eq. 1) then
+        if (idIRow>1) then
+          do i = 1,idIRow-1
+            tempMapRow(i) = MatIn%Map_Matrix_Row(i)
+          end do
+        else
+            tempMapRow(1) = MatIn%Map_Matrix_Row(idIRow)  
+        end if
+        tempMapRow(idIRow) = EmptyBlockRow
+        do i = idIRow+1,newNrow
+          tempMapRow(i) = MatIn%Map_Matrix_Row(i-1)
+        end do
+        if (extendCol .eq. 0) then
+          do j = 1,newNcol
+            tempMapCol(j) = MatIn%Map_Matrix_Col(j)
+          end do
+        end if
+      end if
+!
+ write(*,*) 'test9'
+
+      if (extendCol .eq. 1) then
+       if (idICol>1) then      
+         do j = 1,idICol-1
+           tempMapCol(j) = MatIn%Map_Matrix_Col(j)
+         end do
+       else
+         tempMapCol(1)=MatIn%Map_Matrix_Col(idICol)
+       end if  
+         tempMapCol(idICol) = EmptyBlockCol
+         do j = idICol+1,newNcol
+           tempMapCol(j) = MatIn%Map_Matrix_Col(j-1)
+         end do
+        if (extendRow .eq. 0) then 
+           do i = 1,newNRow
+             tempMapRow(i) = MatIn%Map_Matrix_Row(i)
+           end do
+        end if   
+      end if
+ 
+
+ write(*,*) 'test6'
+
+
+do i=1, newNrow
+  do j=1,newNcol
+    if (i==idIRow .or. j==idICol) then
+      call EmptyBlockIntegral%init(size(tempMapRow(i),'alpha'),size(tempMapRow(i),'beta'),&
+           0,'',size(tempMapCol(j),'alpha'), size(tempMapCol(j),'beta'))
+      tempMain(((i-1)*newNcol)+j) = &
+           EmptyBlockIntegral
+    else if (i > idIRow .and. idIRow>0) then
+      if (j>idICol .and. idICol>0) then
+        tempMain(((i-1)*newNcol)+j) = &
+               MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j-1]))
+      else
+        tempMain(((i-1)*newNcol)+j) = &
+               MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j]))
+      end if
+    else 
+      if (j>idICol .and. idICol>0) then
+        tempMain(((i-1)*newNcol)+j) = &
+               MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j-1]))
+      else
+        tempMain(((i-1)*newNcol)+j) = &
+               MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j]))
+      end if
+    end if
+  end do 
+end do   
+      call MatIn%init(tempMapRow, initial_map_matrix_col=tempMapCol)
+      MatIn%main_matrix = tempMain
+!
+      end subroutine MQC_NEF_Matrix_Insert
+!
 !
 !
 !     PROCEDURE MQC_NEF_Matrix_Dimension_Collapse
@@ -6620,6 +7182,9 @@
               else if (myBlockName.eq.'betaalpha') then                               
                 size1 = nefMat%Main_matrix(id)%blockSize('beta',1)                    
                 size2 = nefMat%Main_matrix(id)%blockSize('alpha',2)                   
+                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&  
+                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])     
+                fsizeKet = fsizeKet + size2                                           
                   call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&  
                                    [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])     
                 fsizeKet = fsizeKet + size2                                           
