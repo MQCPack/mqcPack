@@ -467,6 +467,7 @@
 !>    \brief <b> Returns the complex conjugate</b>
       Interface Conjg
         Module Procedure mqc_scf_integral_conjg
+        Module Procedure mqc_scf_eigenvalues_conjg
       End Interface
 !
 !>    \brief <b> Returns the block length along the specified dimension</b>
@@ -496,9 +497,9 @@
         Module Procedure MQC_Eigenvalues_MinLoc
       End Interface
 !
-!>    \brief <b> Returns the exponent</b>
-      Interface exp
-        Module Procedure MQC_Eigenvalues_exp_func
+!>    \brief <b> Returns the exponential</b>
+      Interface Exp 
+        Module Procedure MQC_Eigenvalues_Exp_Func 
       End Interface
 !
 !>    \brief <b> Returns the absolute values of elements in MQC_SCF_Eigenvalues</b>
@@ -569,6 +570,7 @@
 !>    \brief <b> Computes the element-wise product of two objects</b>
       Interface Operator (.ewp.)
         Module Procedure MQC_Element_Integral_Multiply
+        Module Procedure MQC_Element_Eigenvalues_Multiply
       End Interface
 !
 !>    \brief <b> Exponentiates a variable to the power of another</b>
@@ -11521,6 +11523,109 @@
       end function mqc_scalar_twoERIs_multiply
 !
 !
+!     PROCEDURE MQC_Element_Eigenvalues_Multiply
+!
+!>    \brief <b> MQC_Element_Eigenvalues_Multiply is used to multiply term-by-term two MQC  
+!>    Eigenvalues an MQC integral</b> 
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Element_Eigenvalues_Multiply is used to multiply term-by-term two MQC Eigenvalues
+!>    type variable and returns an MQC integral. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Eig1
+!>    \verbatim
+!>        Integral is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues variable to multiply.
+!>    \endverbatim
+!>    
+!>    \param[in] Eig2
+!>    \verbatim
+!>        Integral is type(mqc_scf_eigenvalues)
+!>        The MQC eigenvalues variable to multiply.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2026
+!
+      function mqc_element_eigenvalues_multiply(eig1,eig2) result(eigOut)
+!
+      implicit none
+      type(mqc_scf_eigenvalues),intent(in)::eig1,eig2
+!      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_eigenvalues)::eigOut
+      type(mqc_vector)::tmpVecAlpha,tmpVecBeta
+      type(mqc_scalar)::scalar
+      Character(Len=64)::myLabel
+      integer(kind=int64)::n1A,n1B,n2A,n2B
+!
+!      if(present(label)) then
+!        call string_change_case(label,'l',myLabel)
+!      else
+        myLabel = ''
+!      endIf
+
+      n1A = size(eig1,'alpha')
+      n1B = size(eig1,'beta')
+      n2A = size(eig2,'alpha')
+      n2B = size(eig2,'beta')
+
+      if(n1A.ne.n2A.or.n1B.ne.n2B) &
+        call mqc_error_i('Integral blocks are not conformable in mqc_element_eigenvalues_multiply',6,&
+        'n1A',n1A,'n2A',n2A,'n1B',n1B,'n2B',n2B)
+
+      select case (eig1%array_type)
+      case('space')
+        select case (eig2%array_type)
+        case('space')
+          if(eig1%hasAlpha().and.eig2%hasAlpha()) & 
+            tmpVecAlpha=eig1%getBlock('alpha').ewp.eig2%getBlock('alpha')
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVecAlpha)
+        case('spin')
+          if(eig1%hasAlpha().and.eig2%hasAlpha()) & 
+            tmpVecAlpha=eig1%getBlock('alpha').ewp.eig2%getBlock('alpha')
+          if(eig1%hasAlpha().and.eig2%hasBeta()) & 
+            tmpVecBeta=eig1%getBlock('alpha').ewp.eig2%getBlock('beta')
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVecAlpha,tmpVecBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_element_eigenvalues_multiply', 6, &
+             'eig2%array_type', eig2%array_type )
+        end select
+      case('spin')
+        select case (eig2%array_type)
+        case('space')
+          if(eig1%hasAlpha().and.eig2%hasAlpha()) & 
+            tmpVecAlpha=eig1%getBlock('alpha').ewp.eig2%getBlock('alpha')
+          if(eig1%hasBeta().and.eig2%hasAlpha()) & 
+            tmpVecBeta=eig1%getBlock('beta').ewp.eig2%getBlock('alpha')
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVecAlpha,tmpVecBeta)
+        case('spin')
+          if(eig1%hasAlpha().and.eig2%hasAlpha()) & 
+            tmpVecAlpha=eig1%getBlock('alpha').ewp.eig2%getBlock('alpha')
+          if(eig1%hasBeta().and.eig2%hasBeta()) & 
+            tmpVecBeta=eig1%getBlock('beta').ewp.eig2%getBlock('beta')
+          call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVecAlpha,tmpVecBeta)
+        case default
+          call mqc_error_A('Unknown integral type in mqc_element_eigenvalues_multiply', 6, &
+             'eig2%array_type', eig2%array_type )
+        end select
+      case default
+        call mqc_error_A('Unknown integral type in mqc_element_eigenvalues_multiply', 6, &
+             'eig1%array_type', eig1%array_type )
+      end select
+      end function mqc_element_eigenvalues_multiply
+!
+!
+!
 !     PROCEDURE MQC_Element_Integral_Multiply
 !
 !>    \brief <b> MQC_Element_Integral_Multiply is used to multiply term-by-term two MQC integral 
@@ -19093,6 +19198,67 @@
       end function mqc_scf_integral_determinant
 !
 !
+!     PROCEDURE MQC_SCF_Eigenvalues_Conjg
+!
+!>    \brief <b> MQC_SCF_Eigenvalues_Conjg is a function that returns the complex conjugate 
+!>    of an MQC SCF Eigenvalues</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_SCF_Eigenvalues_Conjg is a function that returns the complex conjugate of an  MQC SCF 
+!>    Eigenvalues.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Integral
+!>    \verbatim
+!>        Eig is Class(MQC_SCF_Eigenvalues)
+!>        The MQC Eigenvalues which will be evaluated.
+!>    \endverbatim
+!>
+!>    \param[in] Label
+!>    \verbatim
+!>        Label is Character(Len=*),optional
+!>        Label for the output SCF Eigenvalues.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2026
+!
+      function mqc_scf_eigenvalues_conjg(eig,label) result(eigOut)
+!
+      implicit none
+      class(mqc_scf_eigenvalues),intent(in)::eig
+      Character(Len=*),optional,intent(in)::label
+      type(mqc_scf_eigenvalues)::eigOut
+      type(mqc_vector)::tmpVec1,tmpVec2
+      Character(Len=64)::myLabel
+!
+      if(present(label)) then
+        call string_change_case(label,'l',myLabel)
+      else
+        myLabel = ''
+      endIf
+
+      if(eig%type().eq.'space') then
+        tmpVec1 = conjg(eig%getblock('alpha'))
+        call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVec1)
+      elseIf(eig%type().eq.'spin') then
+        tmpVec1 = conjg(eig%getblock('alpha'))
+        tmpVec2 = conjg(eig%getblock('beta'))
+        call mqc_eigenvalues_allocate(eigOut,myLabel,'space',tmpVec1,tmpVec2)
+      endIf
+!
+      end function mqc_scf_eigenvalues_conjg
+!
+!
 !     PROCEDURE MQC_SCF_Integral_Conjg
 !
 !>    \brief <b> MQC_SCF_Integral_Conjg is a function that returns the complex conjugate 
@@ -22270,7 +22436,6 @@
       if(eigenvalues%hasbeta()) eigenvalues%beta = exp(eigenvalues%beta)
 !
       end subroutine  mqc_eigenvalues_exp
-  
 !
 !     PROCEDURE MQC_Eigenvalues_Abs
 !
@@ -22291,7 +22456,7 @@
 !     ==========
 !>    \param[in,out] Eigenvalues
 !>    \verbatim
-!>        Eigenvalues is Class(MQC_Eigenvalues)
+!>        Eigenvalues is Class(MQC_scf_Eigenvalues)
 !>        The name of the MQC_Eigenvalues variable.
 !>    \endverbatim
 !
