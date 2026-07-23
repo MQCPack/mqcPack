@@ -5315,41 +5315,52 @@
 !
       end subroutine MQC_NEF_Vector_Insert
 !
-!     PROCEDURE MQC_NEF_Matrix_Insert
+!     PROCEDURE MQC_NEF_Matrix_Map_Insert
 !
 !
-!>    \brief <b> MQC_NEF_Matrix_Insert is used to insert eigenvalues or NEF vector into a NEF matrix </b>
+!>    \brief <b> MQC_NEF_Matrix_Map_Insert is used to insert eigenvalues or NEF vector into a NEF map matrix </b>
 !>
 !>    \par Purpose:
 !     =============
 !>
 !>    \verbatim
 !>
-!>    MQC_NEF_Matrix_Insert is used to insert eigenvalues or NEF vector into a NEF matrix
+!>    MQC_NEF_Matrix_Map_Insert is used to insert eigenvalues or NEF vector into a NEF map matrix
 !>
 !>    \endverbatim
 !
 !     Arguments:
 !     ==========
-!>    \param[in] VecIn
+!>    \param[in] MatIn
 !>    \verbatim
-!>        VecIn is type(mqc_nef_vector) 
-!>        VecIn is the vector you initially have, and insert the eigenvalues into
+!>        MatIn is type(mqc_nef_matrix) 
+!>        MatIn is the map matrix you initially have, and insert the new blocks into
 !>    \endverbatim
 !>
-!>    \param[in] idI
+!>    \param[in] idIRow
 !>    \verbatim
-!>            idI is the index or location that you would like to place the eigenvalues into
-!>    \endverbatim!>    
-!>    
-!>    \param[in] ExtMap
+!>            idI is the index or location on the row axis that you would like to place the block(s) into
+!>    \endverbatim!>   
+!>
+!>    \param[in] idICol
 !>    \verbatim
-!>            ExtMap is the map matrix of the extra block of eigenvalues being added, it is optional
+!>            idI is the index or location on the column axis that you would like to place the block(s) into
+!>    \endverbatim!>  
+!>
+!>    \param[in] ExtMapC
+!>    \verbatim
+!>            ExtMapC is a column of a map matrix that you want to be added to MatIn, it is optional
 !>    \endverbatim
-!
-!>    \param[in] ExtVec
+!>
+!>    \param[in] ExtMapR
 !>    \verbatim
-!>            ExtVec is the block of extra eigenvalues you want to add, it is optional
+!>            ExtMapR is a row of a map matrix that you want to be added to MatIn, it is optional
+!>    \endverbatim
+!>
+!>    \param[in] ExtSCFI
+!>    \verbatim
+!>            ExtSCFI is a block of SCF integrals, it is used to &
+!>            determine dimensions of empty blocks, it is optional
 !>    \endverbatim
 !
 !
@@ -5360,7 +5371,7 @@
 !>    \author N. J. Woolery
 !>    \date 2026
 !
-      Subroutine MQC_NEF_Matrix_Insert(MatIn,idIRow,idICol,ExtSCFI,ExtMapC,ExtMapR)
+      Subroutine MQC_NEF_Matrix_Map_Insert(MatIn,idIRow,idICol,ExtSCFI,ExtMapC,ExtMapR)
 !
 !     Variable Declarations.
       implicit none
@@ -5378,7 +5389,6 @@
       type(mqc_scf_integral),dimension(:),allocatable::tempMain
       type(mqc_scf_eigenvalues),dimension(:),allocatable::tempMapRow,tempMapCol
       zero = 0
-write(*,*) 'test3'
 !
       if (present(ExtMapR) .or. present(ExtMapC)) then
         if (present(ExtMapR)) then
@@ -5403,18 +5413,17 @@ write(*,*) 'test3'
       allocate(tempMapCol(newNcol))
       allocate(ExtI)
 !
-        write(*,*) 'newtest4'
         if (present(ExtSCFI)) then
           ExtI = ExtSCFI
           write(*,*) 'newtest1'
           if ((ExtI%blockSize("alpha")) .ne. (EmptyBlockRow%blockSize("alpha"))) &
             call mqc_error_i("Dimensionality between Map and Input Block not conformable" // &
-            " in mqc_nef_matrix_insert",6, &
+            " in mqc_nef_matrix_map_insert",6, &
             "ExtI%blockSize(alpha)",ExtI%blockSize("alpha"), &
             "EmptyBlockRow%blockSize(alpha)",EmptyBlockRow%blockSize("alpha"))
           if ((ExtI%blockSize("beta")) .ne. (EmptyBlockRow%blockSize("beta"))) &
             call mqc_error_i("Dimensionality between Map and Input Block not conformable" // &
-            " in mqc_nef_matrix_insert",6, &
+            " in mqc_nef_matrix_map_insert",6, &
             "ExtI%blockSize(beta)",ExtI%blockSize("beta"), &
             "EmptyBlockRow%blockSize(beta)",EmptyBlockRow%blockSize("beta"))
         else
@@ -5438,14 +5447,12 @@ write(*,*) 'test3'
             call ExtI%init(EmptyBlockCol%blockSize("alpha"),zero, &
                 EmptyBlockCol%blockSize("beta"))
                 
-        !add a duplicate of this block for columns
           end if
          end if 
         end if
       else
         if (present(ExtSCFI)) then
           ExtI = ExtSCFI
-          write(*,*) 'newtest3'
           if (ExtI%type() .eq. "space") then
             call EmptyBlockRow%init(ExtI%blockSize("alpha"),zero)
             call EmptyBlockCol%init(ExtI%blockSize("alpha"),zero)
@@ -5456,11 +5463,10 @@ write(*,*) 'test3'
                 ExtI%blockSize("beta"))
           end if
         else
-          call mqc_error("No input given to mqc_nef_matrix_insert",6)
+          call mqc_error("No input given to mqc_nef_matrix_map_insert",6)
         end if
       end if
 !
- write(*,*) 'test4'
       if (extendRow .eq. 1) then
         if (idIRow>1) then
           do i = 1,idIRow-1
@@ -5480,7 +5486,6 @@ write(*,*) 'test3'
         end if
       end if
 !
- write(*,*) 'test9'
 
       if (extendCol .eq. 1) then
        if (idICol>1) then      
@@ -5502,40 +5507,97 @@ write(*,*) 'test3'
       end if
  
 
- write(*,*) 'test6'
 
 
-do i=1, newNrow
-  do j=1,newNcol
-    if (i==idIRow .or. j==idICol) then
-      call EmptyBlockIntegral%init(size(tempMapRow(i),'alpha'),size(tempMapRow(i),'beta'),&
-           0,'',size(tempMapCol(j),'alpha'), size(tempMapCol(j),'beta'))
-      tempMain(((i-1)*newNcol)+j) = &
+  do i=1, newNrow
+    do j=1,newNcol
+      if (i==idIRow .or. j==idICol) then
+        call EmptyBlockIntegral%init(size(tempMapRow(i),'alpha'),size(tempMapRow(i),'beta'),&
+             0,'',size(tempMapCol(j),'alpha'), size(tempMapCol(j),'beta'))
+        tempMain(((i-1)*newNcol)+j) = &
            EmptyBlockIntegral
-    else if (i > idIRow .and. idIRow>0) then
-      if (j>idICol .and. idICol>0) then
-        tempMain(((i-1)*newNcol)+j) = &
-               MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j-1]))
-      else
-        tempMain(((i-1)*newNcol)+j) = &
-               MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j]))
+      else if (i > idIRow .and. idIRow>0) then
+        if (j>idICol .and. idICol>0) then
+          tempMain(((i-1)*newNcol)+j) = &
+                 MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j-1]))
+        else
+          tempMain(((i-1)*newNcol)+j) = &
+                 MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j]))
+        end if
+      else 
+        if (j>idICol .and. idICol>0) then
+          tempMain(((i-1)*newNcol)+j) = &
+                 MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j-1]))
+        else
+          tempMain(((i-1)*newNcol)+j) = &
+                 MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j]))
+        end if
       end if
-    else 
-      if (j>idICol .and. idICol>0) then
-        tempMain(((i-1)*newNcol)+j) = &
-               MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j-1]))
-      else
-        tempMain(((i-1)*newNcol)+j) = &
-               MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j]))
-      end if
-    end if
-  end do 
-end do   
+    end do 
+  end do   
       call MatIn%init(tempMapRow, initial_map_matrix_col=tempMapCol)
       MatIn%main_matrix = tempMain
 !
-      end subroutine MQC_NEF_Matrix_Insert
+      end subroutine MQC_NEF_Matrix_Map_Insert
+!    
+!     PROCEDURE MQC_NEF_Matrix_Main_Insert
 !
+!
+!>    \brief <b> MQC_NEF_Matrix_Main_Insert is used to insert SCF integral block(s) into a NEF matrix </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_NEF_Matrix_Main_Insert is used to insert SCF integral block(s) into a NEF matrix
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] MatIn
+!>    \verbatim
+!>        MatIn is type(mqc_nef_vector) 
+!>        MatIn is the map matrix you initially have, and insert the new blocks into
+!>    \endverbatim
+!>
+!>    \param[in] idIRow
+!>    \verbatim
+!>            idI is the index or location on the row axis that you would like to place the block(s) into
+!>    \endverbatim!>   
+!>
+!>    \param[in] idICol
+!>    \verbatim
+!>            idI is the index or location on the column axis that you would like to place the block(s) into
+!>    \endverbatim!>  
+!>
+!>    \param[in] ExtMapC
+!>    \verbatim
+!>            ExtMapC is a column of a map matrix that you want to be added to MatIn, it is optional
+!>    \endverbatim
+!>
+!>    \param[in] ExtMapR
+!>    \verbatim
+!>            ExtMapR is a row of a map matrix that you want to be added to MatIn, it is optional
+!>    \endverbatim
+!>
+!>    \param[in] ExtSCFI
+!>    \verbatim
+!>            ExtSCFI is a block of SCF integrals, it is used to &
+!>            determine dimensions of empty blocks, it is optional
+!>    \endverbatim
+!
+!
+!
+!
+!     Authors:
+!     ========
+!>    \author N. J. Woolery
+!>    \date 2026
+
+!      subroutine MQC_NEF_Matrix_Main_Insert
+              
 !
 !
 !     PROCEDURE MQC_NEF_Matrix_Dimension_Collapse
@@ -6996,158 +7058,6 @@ end do
                 if (size1.gt.0.and.size2.gt.0) &
                   call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&
                                    [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else
-                call mqc_error_a('block name and order pair unrecognized in&
-                                 & mqc_nef_matrix_output_block_matrix',6,&
-                     'myBlockName',myBlockName,'myBlockOrder',myBlockOrder)
-              end if
-            end do
-          else
-            fsizeKet = 1
-            do k = 1, size(myidKet)
-              j = myidKet(k)
-              id = nefMat%blockIndex([1,i],[2,j])
-              if(myBlockOrder.eq.'alpha'.and.myBlockName.eq.'full') then      
-                size1 = nefMat%Main_matrix(id)%blockSize('full',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('full',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('full'),&
-                                      [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'full') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                size3 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size4 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('beta'),&
-                                         [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                if (size3.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&
-                               [fsize+size1,fsize+size1+size3-1],[fsizeKet,fsizeKet+size2-1])
-                if (size1.gt.0.and.size4.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alphabeta'),&
-                               [fsize,fsize+size1-1],[fsizeKet+size2,fsizeKet+size2+size4-1])
-                if (size3.gt.0.and.size4.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alpha'),&
-                   [fsize+size1,fsize+size1+size3-1],[fsizeKet+size2,fsizeKet+size2+size4-1])
-                fsizeKet = fsizeKet + size2 + size4
-                size1 = size1 + size3
-              else if (myBlockName.eq.'alpha') then
-                size1 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alpha'),&
-                                     [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'beta') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('beta'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'alphabeta') then
-                size1 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alphabeta'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'betaalpha') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else
-                call mqc_error_a('block name and order pair unrecognized in&
-                                 & mqc_nef_matrix_output_block_matrix',6,&
-                     'myBlockName',myBlockName,'myBlockOrder',myBlockOrder)
-              end if                                                                               
-            end do
-          end if  
-          fsize = fsize + size1
-        end do
-      else
-        fsize = 1
-        do k = 1, size(myid)
-          i = myid(k)
-          if (fullKet) then
-            fsizeKet = 1
-            do j = 1, nefMat%NumSpace_row
-              id = nefMat%blockIndex([1,i],[2,j])
-              if(myBlockOrder.eq.'alpha'.and.myBlockName.eq.'full') then      
-                size1 = nefMat%Main_matrix(id)%blockSize('full',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('full',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('full'),&
-                                     [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'full') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                size3 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size4 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('beta'),&
-                                         [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                if (size3.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&
-                               [fsize+size1,fsize+size1+size3-1],[fsizeKet,fsizeKet+size2-1])
-                if (size1.gt.0.and.size4.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alphabeta'),&
-                               [fsize,fsize+size1-1],[fsizeKet+size2,fsizeKet+size2+size4-1])
-                if (size3.gt.0.and.size4.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alpha'),&
-                   [fsize+size1,fsize+size1+size3-1],[fsizeKet+size2,fsizeKet+size2+size4-1])
-                fsizeKet = fsizeKet + size2 + size4
-                size1 = size1 + size3
-              else if (myBlockName.eq.'alpha') then
-                size1 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alpha'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'beta') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('beta'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'alphabeta') then
-                size1 = nefMat%Main_matrix(id)%blockSize('alpha',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('beta',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('alphabeta'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else if (myBlockName.eq.'betaalpha') then
-                size1 = nefMat%Main_matrix(id)%blockSize('beta',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('alpha',2) 
-                if (size1.gt.0.and.size2.gt.0) &
-                  call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('betaalpha'),&
-                                   [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
-                fsizeKet = fsizeKet + size2
-              else
-                call mqc_error_a('block name and order pair unrecognized in&
-                                 & mqc_nef_matrix_output_block_matrix',6,&
-                     'myBlockName',myBlockName,'myBlockOrder',myBlockOrder)
-              end if
-            end do
-          else
-            fsizeKet = 1
-            do p = 1, size(myidKet)
-              j = myidKet(p)
-              id = nefMat%blockIndex([1,i],[2,j])
-              if(myBlockOrder.eq.'alpha'.and.myBlockName.eq.'full') then      
-                size1 = nefMat%Main_matrix(id)%blockSize('full',1) 
-                size2 = nefMat%Main_matrix(id)%blockSize('full',2) 
-                if (size1.gt.0.and.size2.gt.0) &
                   call MatrixOut%mput(nefMat%Main_matrix(id)%getBlock('full'),&
                                [fsize,fsize+size1-1],[fsizeKet,fsizeKet+size2-1])
                 fsizeKet = fsizeKet + size2
