@@ -11311,8 +11311,16 @@
           aaaa = scalar*eris%getBlock('aaaa')
         if(eris%hasSpinBlock('bbbb')) &
           bbbb = scalar*eris%getBlock('bbbb')
-        if(eris%hasSpinBlock('aabb')) &
-          aabb = scalar*eris%getBlock('aabb')
+        if(eris%intType().eq.'exchange') then
+          if(eris%hasSpinBlock('aabb')) &
+            aabb = scalar*eris%getBlock('abba')
+        elseIf(eris%intType().eq.'inverted') then
+          if(eris%hasSpinBlock('aabb')) &
+            aabb = scalar*eris%getBlock('abab')
+        else
+          if(eris%hasSpinBlock('aabb')) &
+            aabb = scalar*eris%getBlock('aabb')
+        endIf
         if((eris%intType().eq.'doublebar'.or.eris%intType().eq.'ms').and.&
           eris%hasSpinBlock('abba')) &
           abba = scalar*eris%getBlock('abba')
