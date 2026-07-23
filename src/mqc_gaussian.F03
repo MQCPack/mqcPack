@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.2                          **
-!     **                         November 11, 2025                         **
+!     **                          Version 26.7.1                           **
+!     **                           July 13, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -67,6 +67,7 @@
           gaussianScalars_read=.false.
         character(len=1)::readWriteMode=' '
         character(len=64)::LabFil=' ',GVers=' ',Title=' '
+        type(MQC_MatrixFile_Layout)::matrixFileLayout
         integer,allocatable::natoms,nbasis,nbasisUse,icharge,multiplicity,nelectrons,icgu, &
           NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
         integer,dimension(:),allocatable::atomicNumbers,atomTypes,basisFunction2Atom, &
@@ -125,6 +126,19 @@
 !     Interface BasisType2FunctionInfo...
       interface basisType2FunctionInfo
         module procedure MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
+      end interface
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     OPERATOR INTERFACES                                       |
+!                                                               |
+!----------------------------------------------------------------
+!
+!
+!     Assignment interface (=).
+      interface assignment (=)
+        module procedure MQC_Gaussian_Unformatted_Matrix_Assign
       end interface
 !
 !
@@ -693,32 +707,40 @@
 !
 !     This Routine is used to close a Gaussian unformatted matrix file.
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
 !
       implicit none
       class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfo
+      integer(kind=int64)::unitNumber
 !
 !
 !     Close the matrix file using the gauopen routines.
 !
-      if(fileinfo%isOpen()) call Close_MatF(fileinfo%UnitNumber)
+      unitNumber = fileinfo%UnitNumber
+      if(fileinfo%isOpen()) then
+        call Close_MatF(unitNumber)
+        call MQC_setOff_unitNumbersOpened(unitNumber)
+      endIf
       fileinfo%filename       = ' '
       fileinfo%CurrentlyOpen  = .false.
       fileinfo%UnitNumber     = 0
       fileinfo%declared       = .false.
       fileinfo%header_read    = .false.
       fileinfo%header_written = .false.
+      fileinfo%gaussianScalars_read = .false.
       fileinfo%readWriteMode  = ' '
       fileinfo%LabFil         = ' '
       fileinfo%GVers          = ' '
       fileinfo%Title          = ' '
+      fileinfo%matrixFileLayout = MQC_MatrixFile_Layout()
       if(allocated(fileinfo%atomicNumbers)) deallocate(fileinfo%atomicNumbers)
       if(allocated(fileinfo%atomTypes)) deallocate(fileinfo%atomTypes)
       if(allocated(fileinfo%basisFunction2Atom)) deallocate(fileinfo%basisFunction2Atom)
       if(allocated(fileinfo%IBasisFunctionType)) deallocate(fileinfo%IBasisFunctionType)
+      if(allocated(fileinfo%IgaussianScalars)) deallocate(fileinfo%IgaussianScalars)
       if(allocated(fileinfo%atomicCharges)) deallocate(fileinfo%atomicCharges)
       if(allocated(fileinfo%atomicWeights)) deallocate(fileinfo%atomicWeights)
       if(allocated(fileinfo%cartesians)) deallocate(fileinfo%cartesians)
@@ -739,10 +761,97 @@
       if(allocated(fileinfo%NPrmDB)) deallocate(fileinfo%NPrmDB)
       if(allocated(fileinfo%NBTot)) deallocate(fileinfo%NBTot)
       if(allocated(fileinfo%gaussianScalars)) deallocate(fileinfo%gaussianScalars)
-      call MQC_setOff_unitNumbersOpened(fileinfo%UnitNumber)
 !
       return
       end Subroutine MQC_Gaussian_Unformatted_Matrix_Close
+
+
+!=====================================================================
+!
+!PROCEDURE MQC_Gaussian_Unformatted_Matrix_Assign
+      subroutine MQC_Gaussian_Unformatted_Matrix_Assign(fileinfoOut,  &
+        fileinfoIn)
+!
+!     Copy the persistent header and molecular metadata from one Gaussian
+!     unformatted matrix-file object to another. The output object is left
+!     disconnected so it can safely be associated with a different file.
+!     In particular, filename, unit number, open state, read/write mode, and
+!     header I/O state retain their default values.
+!
+!     H. P. Hratchian, 2026.
+!
+      implicit none
+      type(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::fileinfoOut
+      type(MQC_Gaussian_Unformatted_Matrix_File),intent(in)::fileinfoIn
+!
+!     Clear any existing connection and data owned by the output object.
+!
+      call fileinfoOut%closeFile()
+!
+!     Copy fixed header and file-layout metadata.
+!
+      fileinfoOut%gaussianScalars_read = fileinfoIn%gaussianScalars_read
+      fileinfoOut%LabFil = fileinfoIn%LabFil
+      fileinfoOut%GVers = fileinfoIn%GVers
+      fileinfoOut%Title = fileinfoIn%Title
+      fileinfoOut%matrixFileLayout = fileinfoIn%matrixFileLayout
+!
+!     Copy allocatable header scalars and arrays. Intrinsic allocatable
+!     assignment gives the output object independent storage.
+!
+      if(allocated(fileinfoIn%natoms))  &
+        fileinfoOut%natoms = fileinfoIn%natoms
+      if(allocated(fileinfoIn%nbasis))  &
+        fileinfoOut%nbasis = fileinfoIn%nbasis
+      if(allocated(fileinfoIn%nbasisUse))  &
+        fileinfoOut%nbasisUse = fileinfoIn%nbasisUse
+      if(allocated(fileinfoIn%icharge))  &
+        fileinfoOut%icharge = fileinfoIn%icharge
+      if(allocated(fileinfoIn%multiplicity))  &
+        fileinfoOut%multiplicity = fileinfoIn%multiplicity
+      if(allocated(fileinfoIn%nelectrons))  &
+        fileinfoOut%nelectrons = fileinfoIn%nelectrons
+      if(allocated(fileinfoIn%icgu))  &
+        fileinfoOut%icgu = fileinfoIn%icgu
+      if(allocated(fileinfoIn%NFC))  &
+        fileinfoOut%NFC = fileinfoIn%NFC
+      if(allocated(fileinfoIn%NFV))  &
+        fileinfoOut%NFV = fileinfoIn%NFV
+      if(allocated(fileinfoIn%ITran))  &
+        fileinfoOut%ITran = fileinfoIn%ITran
+      if(allocated(fileinfoIn%IDum9))  &
+        fileinfoOut%IDum9 = fileinfoIn%IDum9
+      if(allocated(fileinfoIn%NShlAO))  &
+        fileinfoOut%NShlAO = fileinfoIn%NShlAO
+      if(allocated(fileinfoIn%NPrmAO))  &
+        fileinfoOut%NPrmAO = fileinfoIn%NPrmAO
+      if(allocated(fileinfoIn%NShlDB))  &
+        fileinfoOut%NShlDB = fileinfoIn%NShlDB
+      if(allocated(fileinfoIn%NPrmDB))  &
+        fileinfoOut%NPrmDB = fileinfoIn%NPrmDB
+      if(allocated(fileinfoIn%NBTot))  &
+        fileinfoOut%NBTot = fileinfoIn%NBTot
+      if(allocated(fileinfoIn%atomicNumbers))  &
+        fileinfoOut%atomicNumbers = fileinfoIn%atomicNumbers
+      if(allocated(fileinfoIn%atomTypes))  &
+        fileinfoOut%atomTypes = fileinfoIn%atomTypes
+      if(allocated(fileinfoIn%basisFunction2Atom))  &
+        fileinfoOut%basisFunction2Atom = fileinfoIn%basisFunction2Atom
+      if(allocated(fileinfoIn%IBasisFunctionType))  &
+        fileinfoOut%IBasisFunctionType = fileinfoIn%IBasisFunctionType
+      if(allocated(fileinfoIn%IgaussianScalars))  &
+        fileinfoOut%IgaussianScalars = fileinfoIn%IgaussianScalars
+      if(allocated(fileinfoIn%atomicCharges))  &
+        fileinfoOut%atomicCharges = fileinfoIn%atomicCharges
+      if(allocated(fileinfoIn%atomicWeights))  &
+        fileinfoOut%atomicWeights = fileinfoIn%atomicWeights
+      if(allocated(fileinfoIn%cartesians))  &
+        fileinfoOut%cartesians = fileinfoIn%cartesians
+      if(allocated(fileinfoIn%gaussianScalars))  &
+        fileinfoOut%gaussianScalars = fileinfoIn%gaussianScalars
+!
+      return
+      end subroutine MQC_Gaussian_Unformatted_Matrix_Assign
 
 
 !=====================================================================
@@ -767,7 +876,7 @@
 !     routine first. In that case, this routine will first call
 !     Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -779,7 +888,7 @@
       integer::iout=6
 !
 !     Temporary local variables used when calling the gauopen routines.
-      integer::IVers,NLab,Len12L,Len4L,IOpCl
+      integer(kind=int64)::IVers,NLab,Len12L,Len4L,IOpCl
 !      integer::NFC,NFV,ITran,IDum9,NShlAO,NPrmAO,NShlDB,NPrmDB,NBTot
       character(len=64)::cBuffer
 !
@@ -853,6 +962,7 @@
           fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
           fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,len12l,  &
           len4l,iopcl,fileinfo%icgu)
+        call fileinfo%matrixFileLayout%set(IVers,NLab,Len12L,Len4L)
         call MQC_setOn_unitNumbersOpened(fileinfo%UnitNumber)
         allocate(fileinfo%atomicNumbers(fileinfo%natoms),  &
           fileinfo%atomTypes(fileinfo%natoms),  &
@@ -902,6 +1012,7 @@
 !     the filename in fileinfo is used.
 !
 !     L. M. Thompson, 2017.
+!     H. P. Hratchian, 2026.
 !
 !
 !     Variable Declarations.
@@ -1066,6 +1177,7 @@
         fileinfo%natoms,fileinfo%nbasis,fileinfo%nbasisUse,  &
         fileinfo%icharge,fileinfo%multiplicity,fileinfo%nelectrons,iopcl, &
         fileinfo%icgu)
+      call fileinfo%matrixFileLayout%setForWrite()
 !
       call Wr_Head(fileinfo%unitNumber,fileinfo%natoms,nAt3,fileinfo%nbasis,  &
         fileinfo%atomicNumbers,fileinfo%atomTypes,fileinfo%atomicCharges,  &
@@ -1115,7 +1227,7 @@
 !     label. Currently only implemented for the case '2ERIS-SYMSYMR4TENSOR' so
 !     that we can access Raffenetti 2 and Raffenetti 3 integrals.
 !
-!     H. P. Hratchian, 2017, 2018.
+!     H. P. Hratchian, 2017, 2018, 2026.
 !     L. M. Thompson, 2017, 2020
 !
 !     Variable Declarations.
@@ -1134,20 +1246,24 @@
       integer::iout=6
 !
 !     Temporary local variables used when calling the gauopen routines.
-      integer::IVers,NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,NRI,LR
+      integer(kind=int64)::NI,NR,NTot,LenBuf,N1,N2,N3,N4,N5,NRI,LR,TypeA
       character(len=64)::cBuffer,tmpLabel
       logical::EOF,ASym
 !
 !     Local temp variables.
-      integer::i,nOutputArrays,LNZ,myArrayNum
+      integer(kind=int64)::i,nOutputArrays,LNZ,myArrayNum,iCharacter,  &
+        firstCharacter,lastCharacter
 !      integer,external::LenArr
-      integer,allocatable,dimension(:)::integerTmp
+      integer(kind=int64),allocatable,dimension(:)::integerTmp
       real,allocatable,dimension(:)::arrayTmp
       complex(kind=8),allocatable,dimension(:)::complexTmp
+      character(len=:),allocatable::characterBuffer
+      character(len=:),dimension(:),allocatable::characterTmp
       character(len=256)::my_filename,errorMsg
       logical::DEBUG=.false.,ok,found
       integer::nBasis
       real,allocatable,dimension(:,:,:,:)::arrayTmp2
+      type(MQC_MatrixFile_Character_Record_Layout)::characterRecordLayout
 !
 !
 !     Format statements.
@@ -1155,7 +1271,7 @@
  1000 format(' MQC_Gaussian_Read is looking for array ',A,  &
         ' in matrix file.')
  1010 format(' Label ',A48,' NI=',I2,' NR=',I2,' NRI=',I1,' NTot=',  &
-        I8,' LenBuf=',I8,' N=',5I6,' ASym=',L1,' LR=',I5)
+        I8,' LenBuf=',I8,' N=',5I6,' TypeA=',I8,' ASym=',L1,' LR=',I5)
  1020 Format( " " )!
  1040 Format( A, I15 )
  1050 Format( 2A )
@@ -1224,11 +1340,13 @@
       found = .false.
       outerLoop:do i = 1,2
         EOF = .false.
-        Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
-          N1,N2,N3,N4,N5,ASym,NRI,EOF)
+        Call Rd_Labl_TypeA(fileinfo%UnitNumber,  &
+          fileinfo%matrixFileLayout%fileVersion,cBuffer,NI,NR,NTot,  &
+          LenBuf,N1,N2,N3,N4,N5,TypeA,NRI,EOF)
+        ASym = TypeA.ne.0
         LR = LenArr(N1,N2,N3,N4,N5)
         if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
-          N1,N2,N3,N4,N5,ASym,LR
+          N1,N2,N3,N4,N5,TypeA,ASym,LR
         do while(.not.EOF)
           call String_Change_Case(cBuffer,'u')
           if(TRIM(tmpLabel) == TRIM(cBuffer)) then
@@ -1254,12 +1372,40 @@
               write(IOut,*)   &
                 ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
                 MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,  &
-                N2,N3,N4,N5,NRI,ASym)
+                N2,N3,N4,N5,NRI,ASym,TypeA)
               write(IOut,*)  &
                 ' MQC_Gaussian_Unformatted_Matrix_Array_Type = ',  &
-                MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
+                MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA)
             endIf
-            select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
+            select case(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA))
+            case('CHARACTER')
+              if(.not.Present(mqcVarOut))  &
+                call mqc_error('Reading a character array from a Gaussian '//  &
+                  'matrix file requires mqcVarOut.',6)
+              characterRecordLayout =  &
+                MQC_MatrixFile_Get_Character_Record_Layout(  &
+                  fileinfo%matrixFileLayout,NTot,LenBuf,N1,N2,N3,N4,N5,  &
+                  TypeA)
+              allocate(character(len=characterRecordLayout%payloadCharacters)::  &
+                characterBuffer)
+              call Rd_ChBuf(fileinfo%unitNumber,  &
+                characterRecordLayout%payloadCharacters,  &
+                characterRecordLayout%bufferCharacters,characterBuffer)
+              allocate(character(len=characterRecordLayout%elementWidth)::  &
+                characterTmp(characterRecordLayout%elementCount))
+              do iCharacter = 1,characterRecordLayout%elementCount
+                firstCharacter = (iCharacter-1)*  &
+                  characterRecordLayout%elementWidth+1
+                lastCharacter = iCharacter*characterRecordLayout%elementWidth
+                characterTmp(iCharacter) =  &
+                  characterBuffer(firstCharacter:lastCharacter)
+              endDo
+              if(characterRecordLayout%elementCount.eq.1) then
+                mqcVarOut = characterTmp(1)
+              else
+                mqcVarOut = characterTmp
+              endIf
+              deallocate(characterTmp,characterBuffer)
             case('INTEGER-VECTOR')
               allocate(integerTmp(LR))
               call Rd_IBuf(fileinfo%unitNumber,NTot,LenBuf,integerTmp)
@@ -1468,8 +1614,8 @@
               write(*,1020)
               call mqc_error_a('No general way to load mixed types as of yet &
       &         We are doing it case-by-case at the moment and this does not match.', 6, &
-      'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
-      MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
+      'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA)', &
+      MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA) )
             case('2ERIS-SYMSYMR4TENSOR')
               if(Present(r4TensorOut)) then
                 if(NRI.eq.1) then
@@ -1549,22 +1695,37 @@
               deallocate(arrayTmp)
 !
             case default
-              write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym))
+              write(*,1050)' Matrix type: ',Trim(MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA))
               call mqc_error_A('Found strange matrix type in Gaussian matrix read routine.', 6, &
-                   'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)', &
-                   MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym) )
+                   'MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA)', &
+                   MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym,TypeA) )
             end select
             found = .true.
             exit outerLoop
           elseIf(NTot.gt.0) then
-            Call Rd_Skip(fileinfo%UnitNumber,NTot,LenBuf)
+            if(NI.eq.1.and.NR.eq.0.and.TypeA.gt.0) then
+              characterRecordLayout =  &
+                MQC_MatrixFile_Get_Character_Record_Layout(  &
+                  fileinfo%matrixFileLayout,NTot,LenBuf,N1,N2,N3,N4,N5,  &
+                  TypeA)
+              allocate(character(len=characterRecordLayout%payloadCharacters)::  &
+                characterBuffer)
+              call Rd_ChBuf(fileinfo%unitNumber,  &
+                characterRecordLayout%payloadCharacters,  &
+                characterRecordLayout%bufferCharacters,characterBuffer)
+              deallocate(characterBuffer)
+            else
+              Call Rd_Skip(fileinfo%UnitNumber,NTot,LenBuf)
+            endIf
           endIf
-          Call Rd_Labl(fileinfo%UnitNumber,IVers,cBuffer,NI,NR,NTot,LenBuf,  &
-            N1,N2,N3,N4,N5,ASym,NRI,EOF)
+          Call Rd_Labl_TypeA(fileinfo%UnitNumber,  &
+            fileinfo%matrixFileLayout%fileVersion,cBuffer,NI,NR,NTot,  &
+            LenBuf,N1,N2,N3,N4,N5,TypeA,NRI,EOF)
+          ASym = TypeA.ne.0
           LR = LenArr(N1,N2,N3,N4,N5)
           EOF = EOF.or.cBuffer.eq.'END'
           if(DEBUG) write(IOut,1010) TRIM(cBuffer),NI,NR,NRI,NTot,LenBuf,  &
-            N1,N2,N3,N4,N5,ASym,LR
+            N1,N2,N3,N4,N5,TypeA,ASym,LR
         endDo
         if(i==1) then
           my_filename = TRIM(fileinfo%filename)
@@ -1613,7 +1774,7 @@
 !     this routine will first call Routine MQC_Gaussian_Unformatted_Matrix_Open.
 !
 !     L. M. Thompson, 2017.
-!     H. P. Hratchian, 2022.
+!     H. P. Hratchian, 2022, 2026.
 !
 !
 !     Variable Declarations.
@@ -1627,12 +1788,11 @@
       integer::iout=6
 !
 !     Temporary local variables used when calling the gauopen routines.
-      integer::LenBuf
       character(len=64)::tmpLabel
 !
 !     Local temp variables.
       integer::i,nInputArrays
-      integer,parameter::IOne=1
+      integer(kind=int64),parameter::IOne=1_int64,LenBuf=4000_int64
       real,allocatable,dimension(:,:)::realMatrixTmp
       real,pointer,dimension(:)::realMatrixTmpV
       integer,allocatable,dimension(:,:)::intMatrixTmp
@@ -1640,10 +1800,14 @@
       real,allocatable,dimension(:)::realVectorTmp
       integer,allocatable,dimension(:)::intVectorTmp
       complex(kind=real64),allocatable,dimension(:)::compVectorTmp
+      character(len=:),allocatable::characterBuffer,characterScalarTmp
+      character(len=:),dimension(:),allocatable::characterVectorTmp
       type(MQC_Matrix)::matrixInUse 
+      type(MQC_MatrixFile_Character_Record_Layout)::characterRecordLayout
+      integer(kind=int64)::characterElementCount,characterElementWidth,  &
+        iCharacter,firstCharacter,lastCharacter
       character(len=256)::my_filename,my_storage
       logical::DEBUG=.false.,ok
-      Parameter(LenBuf=4000)
 !
 !     Format statements.
 !
@@ -1704,6 +1868,51 @@
 !
       call String_Change_Case(label,'u',tmpLabel)
       select case(MQC_Variable_getTypeCode(mqcVariable))
+!
+!     Character scalar or fixed-width vector.
+      case(4)
+        characterElementWidth = LEN(mqcVariable)
+        select case(RANK(mqcVariable))
+        case(0)
+          characterElementCount = 1
+        case(1)
+          characterElementCount = SIZE(mqcVariable)
+        case default
+          call mqc_error('Invalid character mqcVariable rank sent to '//  &
+            'MQC_Gaussian_Unformatted_Matrix_Write_Array2.')
+        end select
+        characterRecordLayout =  &
+          MQC_MatrixFile_Get_Character_Write_Layout(  &
+            fileinfo%matrixFileLayout,characterElementCount,  &
+            characterElementWidth,LenBuf)
+        allocate(character(len=characterRecordLayout%payloadCharacters)::  &
+          characterBuffer)
+        characterBuffer = REPEAT(' ',  &
+          characterRecordLayout%payloadCharacters)
+        if(RANK(mqcVariable).eq.0) then
+          allocate(character(len=characterElementWidth)::characterScalarTmp)
+          characterScalarTmp = mqcVariable
+          characterBuffer = characterScalarTmp
+          deallocate(characterScalarTmp)
+        else
+          characterVectorTmp = mqcVariable
+          do iCharacter = 1,characterElementCount
+            firstCharacter = (iCharacter-1)*characterElementWidth+1
+            lastCharacter = iCharacter*characterElementWidth
+            characterBuffer(firstCharacter:lastCharacter) =  &
+              characterVectorTmp(iCharacter)
+          endDo
+          deallocate(characterVectorTmp)
+        endIf
+        call Wr_Labl_TypeA(fileinfo%unitNumber,TRIM(tmpLabel),1_int64,  &
+          0_int64,characterRecordLayout%payloadWords,  &
+          characterRecordLayout%bufferWords,  &
+          characterRecordLayout%payloadWords,1_int64,1_int64,1_int64,  &
+          1_int64,characterRecordLayout%elementWidth)
+        call Wr_ChBuf(fileinfo%unitNumber,  &
+          characterRecordLayout%payloadCharacters,  &
+          characterRecordLayout%bufferCharacters,characterBuffer)
+        deallocate(characterBuffer)
 !
 !     Integer Array
       case(3)
@@ -5830,6 +6039,7 @@
         if(Allocated(fileinfo%gaussianScalars))  &
           call MQC_Error('Logic error loading gaussianScalars.')
         fileinfo%gaussianScalars = mqcTmp
+        fileinfo%gaussianScalars_read = .true.
       endIf
 !
 !     Do the work...
@@ -5857,7 +6067,8 @@
 !=====================================================================
 !
 !PROCEDURE MQC_Gaussian_Unformatted_Matrix_Array_Type
-      Function MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,N3,N4,N5,NRI,ASym)
+      Function MQC_Gaussian_Unformatted_Matrix_Array_Type(NI,NR,N1,N2,  &
+        N3,N4,N5,NRI,ASym,TypeA)
 !
 !     This function returns a character string indicating the type of array
 !     found in a Gaussian matrix file. This is done using NI, NR, N1, N2, N3,
@@ -5873,18 +6084,20 @@
 !           "SYMMATRIXN"      Multiple (N) symmetric/hermitian matrix.
 !           "ASYMMATRIXN"     Multiple (N) asymmetric/antihermitian matrix.
 !
+!     Character records are identified by NI=1, NR=0, and positive TypeA/IType.
+!
 !     If the input flags do not uniquely identify a known array type, then this
 !     function returns "UNKNOWN".
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !     L. M. Thompson, 2018.
 !
 !
 !     Variable Declarations.
 !
       implicit none
-      integer::NI,NR,N1,N2,N3,N4,N5,NRI
+      integer::NI,NR,N1,N2,N3,N4,N5,NRI,TypeA
       logical::Asym
       character(len=64)::MQC_Gaussian_Unformatted_Matrix_Array_Type
 !
@@ -5893,6 +6106,10 @@
 !
       MQC_Gaussian_Unformatted_Matrix_Array_Type = "UNKNOWN"
       if(NR.lt.0.or.NI.lt.0) return
+      if(NI.eq.1.and.NR.eq.0.and.TypeA.gt.0) then
+        MQC_Gaussian_Unformatted_Matrix_Array_Type = "CHARACTER"
+        return
+      endIf
       if(NR.gt.0.and.NI.gt.0) then
         MQC_Gaussian_Unformatted_Matrix_Array_Type = "MIXED"
         if(NR.eq.1.and.NI.eq.1) then

@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.2                          **
-!     **                         November 11, 2025                         **
+!     **                          Version 26.7.1                           **
+!     **                           July 13, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -82,9 +82,11 @@
 !
 !
       interface mqc_print
+        module procedure MQC_Print_Scalar_Character
         module procedure MQC_Print_Scalar_Integer
         module procedure MQC_Print_Scalar_Real
         module procedure MQC_Print_Scalar_Complex
+        module procedure MQC_Print_Vector_Array_Character
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Vector_Array_Complex
@@ -98,12 +100,14 @@
       end interface
 !
       interface mqc_print_scalar
+        module procedure MQC_Print_Scalar_Character
         module procedure MQC_Print_Scalar_Integer
         module procedure MQC_Print_Scalar_Real
         module procedure MQC_Print_Scalar_Complex
       end interface
 !
       interface mqc_print_vector
+        module procedure MQC_Print_Vector_Array_Character
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Vector_Array_Complex
@@ -136,6 +140,25 @@
         module procedure integer2character
         module procedure real2character
         module procedure complex2character
+      end interface
+!
+      interface mqc_adjustl
+        module procedure mqc_adjustl_character_scalar
+        module procedure mqc_adjustl_character_vector
+      end interface
+!
+      interface mqc_adjustr
+        module procedure mqc_adjustr_character_scalar
+        module procedure mqc_adjustr_character_vector
+      end interface
+!
+      interface mqc_len_trim
+        module procedure mqc_len_trim_character_scalar
+        module procedure mqc_len_trim_character_vector
+      end interface
+!
+      interface mqc_trim
+        module procedure mqc_trim_character_scalar
       end interface
 !
       interface sort
@@ -182,18 +205,18 @@
 !     This subroutine returns the current MQC version number. The full MQC
 !     version number is comprised of three components: major.minor.revision. The
 !     major version indicated is given by the last two digits of the versioning
-!     year; the minor label is two digits indicating a versioning month; and the
-!     last digit gives a revision number.
+!     year; the minor label indicates a versioning month; and the final
+!     component gives a revision number.
 !
 !
       implicit none
       integer,OPTIONAL,intent(out)::major,minor,revision
       character(len=*),OPTIONAL,intent(out)::versionString
 !
-      if(PRESENT(major))         major         = 25
-      if(PRESENT(minor))         minor         = 11
-      if(PRESENT(revision))      revision      = 2
-      if(PRESENT(versionString)) versionString = '25.11.2'
+      if(PRESENT(major))         major         = 26
+      if(PRESENT(minor))         minor         = 7
+      if(PRESENT(revision))      revision      = 1
+      if(PRESENT(versionString)) versionString = '26.7.1'
 !
       return
       end subroutine mqc_version
@@ -716,6 +739,48 @@
 !----------------------------------------------------------------
 !
 !
+!PROCEDURE MQC_Print_Scalar_Character
+      subroutine MQC_Print_Scalar_Character(scalar,iOut,header,blank_at_top, &
+        blank_at_bottom,formatStr)
+!
+!     This subroutine is used to print a character scalar.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::scalar
+      integer(kind=int64),intent(in)::iOut
+      character(len=*),intent(in),optional::header,formatStr
+      logical,intent(in),optional::blank_at_top,blank_at_bottom
+!
+      character(len=256)::formatLine
+!
+!
+      if(PRESENT(blank_at_top)) then
+        if(blank_at_top) write(iOut,'(" ")')
+      endIf
+      if(PRESENT(formatStr)) then
+        formatLine = '(1x,A,1x,'//TRIM(formatStr)//')'
+        if(PRESENT(header)) then
+          write(iOut,TRIM(formatLine)) TRIM(header),scalar
+        else
+          write(iOut,TRIM(formatLine)) '',scalar
+        endIf
+      elseIf(PRESENT(header)) then
+        write(iOut,'(1x,A,1x,A)') TRIM(header),TRIM(scalar)
+      else
+        write(iOut,'(1x,A)') TRIM(scalar)
+      endIf
+      if(PRESENT(blank_at_bottom)) then
+        if(blank_at_bottom) write(iOut,'(" ")')
+      endIf
+!
+      return
+      end subroutine MQC_Print_Scalar_Character
+
+
+!
 !PROCEDURE MQC_Print_Scalar_Integer
       Subroutine MQC_Print_Scalar_Integer(scalar,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,formatStr)
@@ -1113,6 +1178,46 @@
       End Subroutine MQC_Print_Matrix_Array_Logical
 
 !
+!PROCEDURE MQC_Print_Vector_Array_Character
+      subroutine MQC_Print_Vector_Array_Character(vector,iOut,header, &
+        blank_at_top,blank_at_bottom,formatStr)
+!
+!     This subroutine is used to print a character vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),dimension(:),intent(in)::vector
+      integer(kind=int64),intent(in)::iOut
+      character(len=*),intent(in),optional::header,formatStr
+      logical,intent(in),optional::blank_at_top,blank_at_bottom
+!
+      integer(kind=int64)::i
+      character(len=256)::formatLine
+!
+!
+      if(PRESENT(blank_at_top)) then
+        if(blank_at_top) write(iOut,'(" ")')
+      endIf
+      if(PRESENT(header)) write(iOut,'(1x,A)') TRIM(header)
+      do i=1,SIZE(vector)
+        if(PRESENT(formatStr)) then
+          formatLine = '(1x,I7,2x,'//TRIM(formatStr)//')'
+          write(iOut,TRIM(formatLine)) i,vector(i)
+        else
+          write(iOut,'(1x,I7,2x,A)') i,TRIM(vector(i))
+        endIf
+      endDo
+      if(PRESENT(blank_at_bottom)) then
+        if(blank_at_bottom) write(iOut,'(" ")')
+      endIf
+!
+      return
+      end subroutine MQC_Print_Vector_Array_Character
+
+
+!
 !PROCEDURE MQC_Print_Vector_Array_Integer
       subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom,FormatStr)
@@ -1446,6 +1551,152 @@
 !                                                               |
 !----------------------------------------------------------------
 !
+!
+!PROCEDURE mqc_adjustl_character_scalar
+      function mqc_adjustl_character_scalar(stringIn) result(stringOut)
+!
+!     This function applies the Fortran ADJUSTL intrinsic to a character
+!     scalar while preserving its declared length.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::stringIn
+      character(len=LEN(stringIn))::stringOut
+!
+!
+      stringOut = ADJUSTL(stringIn)
+!
+      return
+      end function mqc_adjustl_character_scalar
+
+
+!
+!PROCEDURE mqc_adjustl_character_vector
+      function mqc_adjustl_character_vector(stringIn) result(stringOut)
+!
+!     This function applies the Fortran ADJUSTL intrinsic elementally to a
+!     fixed-width character vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),dimension(:),intent(in)::stringIn
+      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+!
+!
+      stringOut = ADJUSTL(stringIn)
+!
+      return
+      end function mqc_adjustl_character_vector
+
+
+!
+!PROCEDURE mqc_adjustr_character_scalar
+      function mqc_adjustr_character_scalar(stringIn) result(stringOut)
+!
+!     This function applies the Fortran ADJUSTR intrinsic to a character
+!     scalar while preserving its declared length.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::stringIn
+      character(len=LEN(stringIn))::stringOut
+!
+!
+      stringOut = ADJUSTR(stringIn)
+!
+      return
+      end function mqc_adjustr_character_scalar
+
+
+!
+!PROCEDURE mqc_adjustr_character_vector
+      function mqc_adjustr_character_vector(stringIn) result(stringOut)
+!
+!     This function applies the Fortran ADJUSTR intrinsic elementally to a
+!     fixed-width character vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),dimension(:),intent(in)::stringIn
+      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+!
+!
+      stringOut = ADJUSTR(stringIn)
+!
+      return
+      end function mqc_adjustr_character_vector
+
+
+!
+!PROCEDURE mqc_len_trim_character_scalar
+      function mqc_len_trim_character_scalar(stringIn) result(lengthOut)
+!
+!     This function applies the Fortran LEN_TRIM intrinsic to a character
+!     scalar and returns the result using the MQCPack integer kind.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::stringIn
+      integer(kind=int64)::lengthOut
+!
+!
+      lengthOut = LEN_TRIM(stringIn)
+!
+      return
+      end function mqc_len_trim_character_scalar
+
+
+!
+!PROCEDURE mqc_len_trim_character_vector
+      function mqc_len_trim_character_vector(stringIn) result(lengthOut)
+!
+!     This function applies the Fortran LEN_TRIM intrinsic elementally to a
+!     fixed-width character vector and returns MQCPack-kind integers.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),dimension(:),intent(in)::stringIn
+      integer(kind=int64),dimension(SIZE(stringIn))::lengthOut
+!
+!
+      lengthOut = LEN_TRIM(stringIn)
+!
+      return
+      end function mqc_len_trim_character_vector
+
+
+!
+!PROCEDURE mqc_trim_character_scalar
+      function mqc_trim_character_scalar(stringIn) result(stringOut)
+!
+!     This function applies the Fortran TRIM intrinsic to a character scalar.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::stringIn
+      character(len=:),allocatable::stringOut
+!
+!
+      stringOut = TRIM(stringIn)
+!
+      return
+      end function mqc_trim_character_scalar
+
+
 !
 !PROCEDURE String_Change_Case
       Subroutine String_Change_Case(string,upperlower,stringOut)

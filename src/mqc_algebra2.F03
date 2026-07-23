@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.2                          **
-!     **                         November 11, 2025                         **
+!     **                          Version 26.7.1                           **
+!     **                           July 13, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -43,8 +43,8 @@
 !MD-
 
 !
-      Use MQC_General
-      use iso_fortran_env, only: int64, real64
+      Use MQC_General, String_Change_Case_Intrinsic => String_Change_Case
+      use iso_fortran_env,only:int64,real64
 !
 !----------------------------------------------------------------
 !                                                               |
@@ -54,18 +54,19 @@
 !
 !     Variable...
 !
-!     The MQC_Variable class is a flexible numerical structure. MQC_Variable
+!     The MQC_Variable class is a flexible data structure. MQC_Variable
 !     objects may represent scalars, vectors, matrices, or general tensors.
 !     Additionally, MQC_Variable objects may represent such structures as
-!     integer, real, or complex types. The goal is for such objects to be used
-!     in general form, abstracting away storage format and the like.
+!     integer, real, complex, or character types. The goal is for such objects
+!     to be used in general form, abstracting away storage format and the like.
 !
 !     Elements of the MQC_Variable class include:
 !       - rank          The rank of the numerical array structure. This value
 !                       defaults to -1 to indicate that the object has not yet
 !                       been initialized.
 !       - dataType      This character string encodes the data type of the
-!                       object as "INTEGER", "REAL", or "COMPLEX".
+!                       object as "INTEGER", "REAL", "COMPLEX", or
+!                       "CHARACTER".
       type MQC_Variable
         integer(kind=int64),private::rank=-1
 !hph        character(len=64),private::dataType,storageFormat
@@ -74,25 +75,36 @@
         real(kind=real64),dimension(:),allocatable::realArray
         complex(kind=real64),dimension(:),allocatable::complexArray
         integer(kind=int64),dimension(:),allocatable,private::integerArray
+        character(len=:),dimension(:),allocatable,private::characterArray
         logical,private::initialized=.false.
       Contains
         procedure,public::init          => MQC_Variable_initialize
         procedure,private::MQC_Variable_clear_mqc
         procedure,private::MQC_Variable_clear_integer
         procedure,private::MQC_Variable_clear_real
+        procedure,private::MQC_Variable_clear_character
         generic,public   ::clear        => MQC_Variable_clear_mqc,  &
                                            MQC_Variable_clear_integer,  &
-                                           MQC_Variable_clear_real
+                                           MQC_Variable_clear_real,  &
+                                           MQC_Variable_clear_character
         procedure,private::MQC_Variable_put_MQC
         procedure,private::MQC_Variable_put_intrinsicInteger
         procedure,private::MQC_Variable_put_intrinsicReal
+        procedure,private::MQC_Variable_put_intrinsicCharacter
         procedure,public ::putMQC       => MQC_Variable_put_MQC
         generic,public   ::put          => MQC_Variable_put_MQC,  &
                                            MQC_Variable_put_intrinsicInteger,  &
-                                           MQC_Variable_put_intrinsicReal
+                                           MQC_Variable_put_intrinsicReal,  &
+                                           MQC_Variable_put_intrinsicCharacter
         procedure,public ::getVal        => MQC_Variable_get_MQC
         procedure,public ::getRank       => MQC_Variable_getRank
         procedure,public ::getType       => MQC_Variable_getType
+        procedure,public ::getCharacterLength => MQC_Variable_getCharacterLength
+        procedure,public ::change_case   => MQC_Variable_Change_Case
+        procedure,public ::adjustl       => MQC_Variable_AdjustL
+        procedure,public ::adjustr       => MQC_Variable_AdjustR
+        procedure,public ::len_trim      => MQC_Variable_Len_Trim
+        procedure,public ::trim          => MQC_Variable_Trim
         procedure,public ::print         => MQC_Print_mqcVariable
         procedure,public ::isConformable => MQC_Variable_isConformable
         procedure,public ::trimZero      => mqc_variable_trimZero
@@ -129,8 +141,34 @@
         module procedure MQC_Variable_reshape
       end interface
 !
-!     Interface intrinsic real/integer to MQC variable.
+!     Interface character MQC Variables to the LEN intrinsic function.
+      interface len
+        module procedure MQC_Variable_getCharacterLength
+      end interface
+!
+!     Interface character MQC Variables to intrinsic character functions.
+      interface adjustl
+        module procedure MQC_Variable_AdjustL
+      end interface
+      interface adjustr
+        module procedure MQC_Variable_AdjustR
+      end interface
+      interface len_trim
+        module procedure MQC_Variable_Len_Trim
+      end interface
+      interface trim
+        module procedure MQC_Variable_Trim
+      end interface
+!
+!     Extend String_Change_Case to operate on MQC Variables.
+      interface String_Change_Case
+        procedure String_Change_Case_Intrinsic
+        module procedure MQC_Variable_Change_Case
+      end interface
+!
+!     Interface intrinsic character/real/integer to MQC variable.
       interface mqc
+        module procedure MQC_Variable_from_intrinsicCharacter
         module procedure MQC_Variable_from_intrinsicInteger
         module procedure MQC_Variable_from_intrinsicReal
       end interface
@@ -166,14 +204,17 @@
 !     Interface routines that clear MQC variable objects.
       interface MQC_Variable_clear
         module procedure MQC_Variable_clear_mqc
+        module procedure MQC_Variable_clear_character
         module procedure MQC_Variable_clear_integer
         module procedure MQC_Variable_clear_real
       end interface
 !
 !     Interface routines that fill MQC variable objects.
       interface mqc_variable_fillVal
+        module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_character
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_integer
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_real
+        module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_character
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_integer
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
@@ -184,6 +225,7 @@
 !     Interface routines that fill specific elements of MQC variable objects.
       interface mqc_variable_put
         module procedure MQC_Variable_put_MQC
+        module procedure MQC_Variable_put_intrinsicCharacter
         module procedure MQC_Variable_put_intrinsicInteger
         module procedure MQC_Variable_put_intrinsicReal
       end interface
@@ -219,8 +261,10 @@
 !
 !     Assignment and type conversion interface (=).
       interface assignment (=)
+        module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_character
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_integer
         module procedure MQC_Variable_setVal_intrinsicScalar2mqcScalar_real
+        module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_character
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_integer
         module procedure MQC_Variable_setVal_intrinsicVector2mqcVector_real
         module procedure MQC_Variable_setVal_intrinsicMatrix2mqcMatrix_integer
@@ -233,6 +277,8 @@
         module procedure MQC_Variable_mqc2intrinsicInteger2Array
         module procedure MQC_Variable_mqc2intrinsicReal2Array
         module procedure MQC_Variable_mqc2intrinsicReal4Array
+        module procedure MQC_Variable_mqc2intrinsicCharacterScalar
+        module procedure MQC_Variable_mqc2intrinsicCharacter1Array
       end interface
 !
 !     Whole-array addition (+).
@@ -368,12 +414,12 @@
 !
 !PROCEDURE MQC_Variable_initialize
       subroutine MQC_Variable_initialize(mqcVariable,dataType,dimensions,  &
-        rank,storageFormat,debug)
+        rank,storageFormat,debug,characterLength)
 !
 !     This subroutine is used to initialize an MQC_Variable object.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -384,9 +430,10 @@
       integer(kind=int64),intent(in),optional::rank
       character(len=*),intent(in),optional::storageFormat
       logical,intent(in),optional::debug
+      integer(kind=int64),intent(in),optional::characterLength
 !
       character(len=64)::myDataType
-      integer(kind=int64)::myRank,myLength
+      integer(kind=int64)::myRank,myLength,myCharacterLength
       character(len=64)::myStorageFormat
       logical::myDebug
 !
@@ -433,10 +480,15 @@
         mqcVariable%dataType = 'REAL'
       case('INTEGER','INT','I')
         mqcVariable%dataType = 'INTEGER'
+      case('CHARACTER','CHAR','C')
+        mqcVariable%dataType = 'CHARACTER'
       case default
         call MQC_Error_A('Initializing MQC_Variable with unknown'//  &
           ' data type.', 6,'myDataType', myDataType)
       end select
+      if(mqcVariable%dataType.eq.'CHARACTER'.and.myRank.gt.1)  &
+        call MQC_Error_I('Character MQC_Variable objects currently support '//  &
+          'only scalars and vectors.',6,'myRank',myRank)
 !
 !     Take care of rank and dimensions.
 !
@@ -474,8 +526,12 @@
 
       select case(mqcVariable%dataType)
       case('REAL')
+        if(Allocated(mqcVariable%complexArray))  &
+          DeAllocate(mqcVariable%complexArray)
         if(Allocated(mqcVariable%integerArray))  &
           DeAllocate(mqcVariable%integerArray)
+        if(Allocated(mqcVariable%characterArray))  &
+          DeAllocate(mqcVariable%characterArray)
         if(.not.Allocated(mqcVariable%realArray)) then
           Allocate(mqcVariable%realArray(myLength))
         elseIf(Size(mqcVariable%realArray).ne.myLength) then
@@ -483,13 +539,41 @@
           Allocate(mqcVariable%realArray(myLength))
         endIf
       case('INTEGER')
+        if(Allocated(mqcVariable%complexArray))  &
+          DeAllocate(mqcVariable%complexArray)
         if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
+        if(Allocated(mqcVariable%characterArray))  &
+          DeAllocate(mqcVariable%characterArray)
         if(.not.Allocated(mqcVariable%integerArray)) then
           Allocate(mqcVariable%integerArray(myLength))
         elseIf(Size(mqcVariable%integerArray).ne.myLength) then
           DeAllocate(mqcVariable%integerArray)
           Allocate(mqcVariable%integerArray(myLength))
         endIf
+      case('CHARACTER')
+        if(PRESENT(characterLength)) then
+          myCharacterLength = characterLength
+        else
+          call mqc_error('MQC_Variable_initialize: characterLength is '//  &
+            'required for CHARACTER variables.',6)
+          myCharacterLength = 0
+        endIf
+        if(myCharacterLength.lt.0)  &
+          call MQC_Error_I('MQC_Variable_initialize: characterLength must '//  &
+            'not be negative.',6,'myCharacterLength',myCharacterLength)
+        if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
+        if(Allocated(mqcVariable%complexArray))  &
+          DeAllocate(mqcVariable%complexArray)
+        if(Allocated(mqcVariable%integerArray))  &
+          DeAllocate(mqcVariable%integerArray)
+        if(Allocated(mqcVariable%characterArray)) then
+          if(Size(mqcVariable%characterArray).ne.myLength.or.  &
+            LEN(mqcVariable%characterArray).ne.myCharacterLength)  &
+            DeAllocate(mqcVariable%characterArray)
+        endIf
+        if(.not.Allocated(mqcVariable%characterArray))  &
+          Allocate(character(len=myCharacterLength)::  &
+            mqcVariable%characterArray(myLength))
       case default
         call MQC_Error_A('MQC_Variable_initialize is confused in '//  &
           'allocation block.',6,'mqcVariable%dataType',  &
@@ -593,6 +677,32 @@
 
 
 !
+!PROCEDURE MQC_Variable_getCharacterLength
+      function MQC_Variable_getCharacterLength(mqcVariable) result(myLen)
+!
+!     This function returns the declared element length of a character
+!     MQC_Variable scalar or vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      integer(kind=int64)::myLen
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot call LEN for an uninitialized MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('LEN is only defined for character MQC_Variable '//  &
+          'objects.',6,'mqcVariable%getType()',mqcVariable%getType())
+      myLen = LEN(mqcVariable%characterArray)
+!
+      return
+      end function MQC_Variable_getCharacterLength
+
+
+!
 !PROCEDURE MQC_Variable_getRank
       function MQC_Variable_getRank(mqcVariable) result(myRank)
 !
@@ -670,7 +780,7 @@
 !     This function reshapes an MQC variable array.
 !
 !
-!     H. P. Hratchian, 2025.
+!     H. P. Hratchian, 2025, 2026.
 !
 !
 !     Variable Declarations.
@@ -682,6 +792,10 @@
 !
       if(PRODUCT(newShape).ne.SIZE(mqcVariable))  &
         call mqc_error('RESHAPE: Inconsistend new shape and size.')
+      if(TRIM(mqcVariable%getType()).eq.'CHARACTER'.and.  &
+        SIZE(newShape).gt.1)  &
+        call mqc_error('RESHAPE: Character MQC_Variable objects currently '//  &
+          'support only scalars and vectors.',6)
       mqcVariableNew = mqcVariable
       mqcVariableNew%dimensions=0
       mqcVariableNew%dimensions(1:SIZE(newShape))=newShape
@@ -701,9 +815,10 @@
 !           'UNKNOWN'   ...   Indicates an unknown data type has been found.
 !           'REAL'      ...   Indicates the type of mqcVariable is real.
 !           'INTEGER'   ...   Indicates the type of mqcVariable is integer.
+!           'CHARACTER' ...   Indicates the type of mqcVariable is character.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -720,6 +835,8 @@
         myType = 'REAL'
       case('INTEGER')
         myType = 'INTEGER'
+      case('CHARACTER')
+        myType = 'CHARACTER'
       case default
         myType = 'UNKNOWN'
       end select
@@ -737,18 +854,18 @@
 !     This function is only used in this module to make type mixing/conversion
 !     during operations consistent throughout the module.
 !
-!     NOTE: The type codes returned by this function are ordered by actual
-!     underlying typing such that lower valued codes indicated higher-precedent
-!     types. In other words, type-code 3 can always be treated as a type-code 2
-!     value, but the reverse is not generally true.
+!     NOTE: Numerical type codes 2 and 3 are ordered such that the lower code
+!     has higher precedence. Character type code 4 does not participate in
+!     numerical promotion.
 !
 !     The output values are:
 !           0 ... UNKNOWN
 !           2 ... REAL
 !           3 ... INTEGER
+!           4 ... CHARACTER
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -764,6 +881,8 @@
         myTypeCode = 2
       case('INTEGER')
         myTypeCode = 3
+      case('CHARACTER')
+        myTypeCode = 4
       case default
         myTypeCode = 0
       end select
@@ -866,6 +985,195 @@
 
 
 !
+!PROCEDURE MQC_Variable_AdjustL
+      function MQC_Variable_AdjustL(mqcVariable) result(mqcVariableOut)
+!
+!     This function applies ADJUSTL to a character MQC_Variable scalar or
+!     vector through the intrinsic-character kernel in MQC_General.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable)::mqcVariableOut
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot apply ADJUSTL to an uninitialized '//  &
+          'MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('ADJUSTL requires a character MQC_Variable.',6,  &
+          'mqcVariable%getType()',mqcVariable%getType())
+!
+      mqcVariableOut = mqcVariable
+      select case(RANK(mqcVariable))
+      case(0)
+        mqcVariableOut%characterArray(1) =  &
+          mqc_adjustl(mqcVariable%characterArray(1))
+      case(1)
+        mqcVariableOut%characterArray =  &
+          mqc_adjustl(mqcVariable%characterArray)
+      case default
+        call mqc_error_i('ADJUSTL found an unsupported character '//  &
+          'MQC_Variable rank.',6,'RANK(mqcVariable)',RANK(mqcVariable))
+      end select
+!
+      return
+      end function MQC_Variable_AdjustL
+
+
+!
+!PROCEDURE MQC_Variable_AdjustR
+      function MQC_Variable_AdjustR(mqcVariable) result(mqcVariableOut)
+!
+!     This function applies ADJUSTR to a character MQC_Variable scalar or
+!     vector through the intrinsic-character kernel in MQC_General.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable)::mqcVariableOut
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot apply ADJUSTR to an uninitialized '//  &
+          'MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('ADJUSTR requires a character MQC_Variable.',6,  &
+          'mqcVariable%getType()',mqcVariable%getType())
+!
+      mqcVariableOut = mqcVariable
+      select case(RANK(mqcVariable))
+      case(0)
+        mqcVariableOut%characterArray(1) =  &
+          mqc_adjustr(mqcVariable%characterArray(1))
+      case(1)
+        mqcVariableOut%characterArray =  &
+          mqc_adjustr(mqcVariable%characterArray)
+      case default
+        call mqc_error_i('ADJUSTR found an unsupported character '//  &
+          'MQC_Variable rank.',6,'RANK(mqcVariable)',RANK(mqcVariable))
+      end select
+!
+      return
+      end function MQC_Variable_AdjustR
+
+
+!
+!PROCEDURE MQC_Variable_Len_Trim
+      function MQC_Variable_Len_Trim(mqcVariable) result(mqcVariableOut)
+!
+!     This function applies LEN_TRIM to a character MQC_Variable. The result is
+!     an integer MQC_Variable with the same scalar or vector rank.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable)::mqcVariableOut
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot apply LEN_TRIM to an uninitialized '//  &
+          'MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('LEN_TRIM requires a character MQC_Variable.',6,  &
+          'mqcVariable%getType()',mqcVariable%getType())
+!
+      select case(RANK(mqcVariable))
+      case(0)
+        mqcVariableOut = mqc_len_trim(mqcVariable%characterArray(1))
+      case(1)
+        mqcVariableOut = mqc_len_trim(mqcVariable%characterArray)
+      case default
+        call mqc_error_i('LEN_TRIM found an unsupported character '//  &
+          'MQC_Variable rank.',6,'RANK(mqcVariable)',RANK(mqcVariable))
+      end select
+!
+      return
+      end function MQC_Variable_Len_Trim
+
+
+!
+!PROCEDURE MQC_Variable_Trim
+      function MQC_Variable_Trim(mqcVariable) result(mqcVariableOut)
+!
+!     This function applies TRIM to a character MQC_Variable scalar through
+!     the intrinsic-character kernel in MQC_General.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(in)::mqcVariable
+      type(MQC_Variable)::mqcVariableOut
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot apply TRIM to an uninitialized '//  &
+          'MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('TRIM requires a character MQC_Variable.',6,  &
+          'mqcVariable%getType()',mqcVariable%getType())
+      if(RANK(mqcVariable).ne.0)  &
+        call mqc_error_i('TRIM currently requires a character scalar '//  &
+          'MQC_Variable.',6,'RANK(mqcVariable)',RANK(mqcVariable))
+!
+      mqcVariableOut = mqc_trim(mqcVariable%characterArray(1))
+!
+      return
+      end function MQC_Variable_Trim
+
+
+!
+!PROCEDURE MQC_Variable_Change_Case
+      subroutine MQC_Variable_Change_Case(mqcVariable,upperLower,  &
+        mqcVariableOut)
+!
+!     This routine changes the case of every element of a character
+!     MQC_Variable. If mqcVariableOut is present, the input object is retained
+!     and the changed copy is returned through mqcVariableOut.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      character(len=1),intent(in)::upperLower
+      type(MQC_Variable),intent(out),optional::mqcVariableOut
+!
+      integer(kind=int64)::i
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot change case of an uninitialized '//  &
+          'MQC_Variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('MQC_Variable_Change_Case requires a character '//  &
+          'MQC_Variable.',6,'mqcVariable%getType()',mqcVariable%getType())
+!
+      if(PRESENT(mqcVariableOut)) then
+        mqcVariableOut = mqcVariable
+        do i=1,SIZE(mqcVariableOut%characterArray)
+          call String_Change_Case_Intrinsic(  &
+            mqcVariableOut%characterArray(i),upperLower)
+        endDo
+      else
+        do i=1,SIZE(mqcVariable%characterArray)
+          call String_Change_Case_Intrinsic(  &
+            mqcVariable%characterArray(i),upperLower)
+        endDo
+      endIf
+!
+      return
+      end subroutine MQC_Variable_Change_Case
+
+
+!
 !----------------------------------------------------------------
 !                                                               |
 !     MQC_Variable PRINTING PROCEDURES                          |
@@ -887,7 +1195,7 @@
 !
 !
 !     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017, 2020.
+!     H. P. Hratchian, 2017, 2020, 2026.
 !
 !
 !     Variable Declarations.
@@ -934,6 +1242,23 @@
             call mqc_print_scalar(mqcVariable%integerArray(1),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
+        case('CHARACTER')
+          if(PRESENT(header).and.PRESENT(formatString)) then
+            call mqc_print_scalar(mqcVariable%characterArray(1),myIOut,  &
+              header,Blank_At_Top=myBlankAtTop,  &
+              Blank_At_Bottom=myBlankAtBottom,formatStr=formatString)
+          elseIf(PRESENT(header)) then
+            call mqc_print_scalar(mqcVariable%characterArray(1),myIOut,  &
+              header,Blank_At_Top=myBlankAtTop,  &
+              Blank_At_Bottom=myBlankAtBottom)
+          elseIf(PRESENT(formatString)) then
+            call mqc_print_scalar(mqcVariable%characterArray(1),myIOut,  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom,  &
+              formatStr=formatString)
+          else
+            call mqc_print_scalar(mqcVariable%characterArray(1),myIOut,  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          endIf
         case default
           call mqc_error_a('MQC variable print requested for unknown type.', 6, &
           'mqcVariable%getType()', mqcVariable%getType())
@@ -956,6 +1281,23 @@
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           else
             call mqc_print_vector(mqcVariable%integerArray(:),myIOut,  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
+          endIf
+        case('CHARACTER')
+          if(PRESENT(header).and.PRESENT(formatString)) then
+            call mqc_print_vector(mqcVariable%characterArray(:),myIOut,  &
+              header,Blank_At_Top=myBlankAtTop,  &
+              Blank_At_Bottom=myBlankAtBottom,formatStr=formatString)
+          elseIf(PRESENT(header)) then
+            call mqc_print_vector(mqcVariable%characterArray(:),myIOut,  &
+              header,Blank_At_Top=myBlankAtTop,  &
+              Blank_At_Bottom=myBlankAtBottom)
+          elseIf(PRESENT(formatString)) then
+            call mqc_print_vector(mqcVariable%characterArray(:),myIOut,  &
+              Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom,  &
+              formatStr=formatString)
+          else
+            call mqc_print_vector(mqcVariable%characterArray(:),myIOut,  &
               Blank_At_Top=myBlankAtTop,Blank_At_Bottom=myBlankAtBottom)
           endIf
         case default
@@ -1035,7 +1377,7 @@
 !     array element is sent in dummy argument <arrayElement>.
 !
 !
-!     H. P. Hratchian, 2018.
+!     H. P. Hratchian, 2018, 2026.
 !
 !
 !     Variable Declarations.
@@ -1063,6 +1405,8 @@
         valueMQC = mqcVariable%realArray(k)
       case('INTEGER')
         valueMQC = mqcVariable%integerArray(k)
+      case('CHARACTER')
+        valueMQC = mqcVariable%characterArray(k)
       case default
         call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
           'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
@@ -1249,7 +1593,7 @@
 !     <arrayElement>.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -1279,6 +1623,12 @@
         mqcVariable%realArray(k) = float(valueMQC)
       case('INTEGER')
         mqcVariable%integerArray(k) = Int(valueMQC)
+      case('CHARACTER')
+        if(TRIM(valueMQC%getType()).ne.'CHARACTER')  &
+          call mqc_error_a('MQC_Variable_Put: A character destination '//  &
+            'requires a character value.',6,'valueMQC%getType()',  &
+            valueMQC%getType())
+        mqcVariable%characterArray(k) = valueMQC%characterArray(1)
       case default
         call mqc_error_a('MQC_Variable_Put: Unknown MQC variable type.', 6, &
              'TRIM(MQC_Variable_getType(mqcVariable))', TRIM(MQC_Variable_getType(mqcVariable)) )
@@ -1379,6 +1729,47 @@
 !
       return
       end subroutine MQC_Variable_put_intrinsicReal
+
+
+!
+!PROCEDURE MQC_Variable_put_intrinsicCharacter
+      subroutine MQC_Variable_put_intrinsicCharacter(mqcVariable,  &
+        valueCharacter,arrayElement)
+!
+!     This subroutine puts an intrinsic character value into a specified
+!     element of a character MQC_Variable array.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      character(len=*),intent(in)::valueCharacter
+      integer(kind=int64),dimension(:),intent(in)::arrayElement
+!
+      integer(kind=int64)::k
+!
+!
+      if(.not.mqcVariable%initialized)  &
+        call mqc_error('Cannot use MQC_Variable_Put with an uninitialized '//  &
+          'MQC variable.',6)
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('MQC_Variable_Put: Character values require a '//  &
+          'character MQC_Variable.',6,'mqcVariable%getType()',  &
+          mqcVariable%getType())
+      if(mqcVariable%rank.ne.SIZE(arrayElement))  &
+        call mqc_error_i('MQC_Variable_Put: Rank does not match the number '//  &
+          'of array indices.',6,'mqcVariable%rank',mqcVariable%rank,  &
+          'SIZE(arrayElement)',SIZE(arrayElement))
+      k = MQC_Variable_getArrayPosition(mqcVariable,arrayElement)
+      if(k.gt.MQC_Variable_getLength(mqcVariable))  &
+        call mqc_error_i('MQC_Variable_Put: Invalid array index.',6,  &
+          'k',k,'MQC_Variable_getLength(mqcVariable)',  &
+          MQC_Variable_getLength(mqcVariable))
+      mqcVariable%characterArray(k) = valueCharacter
+!
+      return
+      end subroutine MQC_Variable_put_intrinsicCharacter
 
 
 !
@@ -1484,7 +1875,7 @@
 !     as a scalar.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -1513,6 +1904,14 @@
         else
           call MQC_Variable_clear_general(mqcVariable,  &
             valueInteger=valueMQC%integerArray(1))
+        endIf
+      case('CHARACTER')
+        if(PRESENT(dimensions)) then
+          call MQC_Variable_clear_character(mqcVariable,  &
+            valueMQC%characterArray(1),dimensions)
+        else
+          call MQC_Variable_clear_character(mqcVariable,  &
+            valueMQC%characterArray(1))
         endIf
       case default
         call mqc_error_A(  &
@@ -1599,6 +1998,39 @@
 
 
 !
+!PROCEDURE MQC_Variable_clear_character
+      subroutine MQC_Variable_clear_character(mqcVariable,valueCharacter,  &
+        dimensions)
+!
+!     This routine initializes a character MQC_Variable and fills every
+!     element with valueCharacter.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      character(len=*),intent(in)::valueCharacter
+      integer(kind=int64),dimension(:),intent(in),optional::dimensions
+!
+      integer(kind=int64)::myRank
+!
+!
+      if(PRESENT(dimensions)) then
+        myRank = SIZE(dimensions)
+        call mqcVariable%init('CHARACTER',dimensions=dimensions,rank=myRank,  &
+          storageFormat='FULL',characterLength=LEN(valueCharacter))
+      else
+        call mqcVariable%init('CHARACTER',  &
+          characterLength=LEN(valueCharacter))
+      endIf
+      mqcVariable%characterArray = valueCharacter
+!
+      return
+      end subroutine MQC_Variable_clear_character
+
+
+!
 !PROCEDURE MQC_Variable_mqc2mqc_subroutine
       subroutine MQC_Variable_mqc2mqc_subroutine(mqcVariable,mqcIn)
 !
@@ -1608,7 +2040,7 @@
 !     that calls it.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -1620,7 +2052,11 @@
 !     Do the work...
 !
       if(Allocated(mqcVariable%realArray)) DeAllocate(mqcVariable%realArray)
+      if(Allocated(mqcVariable%complexArray))  &
+        DeAllocate(mqcVariable%complexArray)
       if(Allocated(mqcVariable%integerArray)) DeAllocate(mqcVariable%integerArray)
+      if(Allocated(mqcVariable%characterArray))  &
+        DeAllocate(mqcVariable%characterArray)
       mqcVariable%rank = mqcIn%rank
       mqcVariable%dataType = mqcIn%dataType
       mqcVariable%storageFormat = mqcIn%storageFormat
@@ -1632,6 +2068,10 @@
       case('INTEGER')
         Allocate(mqcVariable%integerArray(SIZE(mqcIn%integerArray(:))))
         mqcVariable%integerArray = mqcIn%integerArray
+      case('CHARACTER')
+        Allocate(character(len=LEN(mqcIn%characterArray))::  &
+          mqcVariable%characterArray(SIZE(mqcIn%characterArray)))
+        mqcVariable%characterArray = mqcIn%characterArray
       case default
         call mqc_error_A('MQC_Variable_mqc2mqc: Confused by data type.',  &
            6,'TRIM(mqcIn%getType())', TRIM(mqcIn%getType()) )
@@ -1649,16 +2089,17 @@
 !     This function sets a new MQC_Variable equal to the one sent here.
 !
 !
-!     H. P. Hratchian, 2018.
+!     H. P. Hratchian, 2018, 2026.
 !
 !
 !     Variable Declarations.
+      implicit none
       class(MQC_Variable),intent(in)::mqcVariableIn
       type(MQC_Variable)::mqcVariableOut
 !
 !
 !     Call Routine MQC_Variable_mqc2mqc_subroutine...
-      call MQC_Variable_mqc2mqc_subroutine(mqcVariableIn,mqcVariableOut)
+      call MQC_Variable_mqc2mqc_subroutine(mqcVariableOut,mqcVariableIn)
 !
       return
       end function MQC_Variable_mqc2mqc
@@ -1667,15 +2108,16 @@
 !
 !PROCEDURE MQC_Variable_setVal
       subroutine MQC_Variable_setVal(mqcVariable,scalarIntegerIn,  &
-        scalarRealIn,arrayIntegerIn,arrayRealIn,dimensions,DEBUGPRINT)
+        scalarRealIn,arrayIntegerIn,arrayRealIn,dimensions,DEBUGPRINT,  &
+        scalarCharacterIn,arrayCharacterIn)
 !
 !     This subroutine is used to set one or more values in the packed storage
-!     array of MQC_Variable dummy argument <mqcVariable> to an scalar or array
-!     given by one of <scalarRealIn>, <scalarIntegerIn>, <arrayRealIn>, or
-!     <arrayIntegerIn>.
+!     array of MQC_Variable dummy argument <mqcVariable> to a scalar or array
+!     given by one of the intrinsic character, real, or integer input
+!     arguments.
 !
 !
-!     H. P. Hratchian, 2017.
+!     H. P. Hratchian, 2017, 2026.
 !
 !
 !     Variable Declarations.
@@ -1687,10 +2129,13 @@
       real(kind=real64),dimension(:),optional::arrayRealIn
       integer(kind=int64),dimension(:),optional::dimensions
       logical,optional::DEBUGPRINT
+      character(len=*),intent(in),optional::scalarCharacterIn
+      character(len=*),dimension(:),intent(in),optional::arrayCharacterIn
 !
       integer(kind=int64)::i,nInputs,myRank
       integer(kind=int64),dimension(:),allocatable::myDimensions
-      logical::DEBUG,fillInteger,fillReal,fillScalar,fillArray
+      integer(kind=int64)::myCharacterLength
+      logical::DEBUG,fillInteger,fillReal,fillCharacter,fillScalar,fillArray
       character(len=64)::myDataType
 !
 !
@@ -1712,8 +2157,12 @@
         write(*,*)' INPUT ARGUMENTS:'
         write(*,*)'   PRESENT(scalarIntegerIn) = ',PRESENT(scalarIntegerIn)
         write(*,*)'   PRESENT(scalarRealIn)    = ',PRESENT(scalarRealIn)
+        write(*,*)'   PRESENT(scalarCharacterIn) = ',  &
+          PRESENT(scalarCharacterIn)
         write(*,*)'   PRESENT(arrayIntegerIn)  = ',PRESENT(arrayIntegerIn)
         write(*,*)'   PRESENT(arrayRealIn)     = ',PRESENT(arrayRealIn)
+        write(*,*)'   PRESENT(arrayCharacterIn) = ',  &
+          PRESENT(arrayCharacterIn)
         write(*,*)'   PRESENT(dimensions)      = ',PRESENT(dimensions)
         write(*,*)
         flush(MQC_Algebra2_IOut)
@@ -1721,8 +2170,10 @@
       nInputs = 0
       if(Present(scalarIntegerIn)) nInputs = nInputs+1
       if(Present(scalarRealIn)) nInputs = nInputs+1
+      if(Present(scalarCharacterIn)) nInputs = nInputs+1
       if(Present(arrayIntegerIn)) nInputs = nInputs+1
       if(Present(arrayRealIn)) nInputs = nInputs+1
+      if(Present(arrayCharacterIn)) nInputs = nInputs+1
       if(nInputs.gt.1)  &
         call MQC_Error_I('MQC_Variable_setVal Error: Multiple input values sent.', 6, &
         "nInputs", nInputs )
@@ -1731,11 +2182,16 @@
         "nInputs", nInputs )
       fillInteger = Present(scalarIntegerIn).or.Present(arrayIntegerIn)
       fillReal = Present(scalarRealIn).or.Present(arrayRealIn)
-      fillScalar = Present(scalarIntegerIn).or.Present(scalarRealIn)
-      fillArray = Present(arrayIntegerIn).or.Present(arrayRealIn)
+      fillCharacter = Present(scalarCharacterIn).or.  &
+        Present(arrayCharacterIn)
+      fillScalar = Present(scalarIntegerIn).or.Present(scalarRealIn).or.  &
+        Present(scalarCharacterIn)
+      fillArray = Present(arrayIntegerIn).or.Present(arrayRealIn).or.  &
+        Present(arrayCharacterIn)
       if(DEBUG) then
         write(*,*)'   fillInteger=',fillInteger
         write(*,*)'   fillReal   =',fillReal
+        write(*,*)'   fillCharacter=',fillCharacter
         write(*,*)'   fillScalar =',fillScalar
         write(*,*)'   fillArray  =',fillArray
         flush(MQC_Algebra2_IOut)
@@ -1747,11 +2203,14 @@
         myDataType = 'INTEGER'
       elseIf(fillReal) then
         myDataType = 'REAL'
+      elseIf(fillCharacter) then
+        myDataType = 'CHARACTER'
       else
         call MQC_Error_L(  &
           'MQC_Variable_setVal: Confused setting myDataType.', 6, &
           'fillInteger', fillInteger, &
-          'fillReal', fillReal )
+          'fillReal', fillReal,  &
+          'fillCharacter',fillCharacter)
       endIf
       if(DEBUG) write(*,*)'   myDataType = ',TRIM(myDataType)
       if(PRESENT(dimensions)) then
@@ -1775,6 +2234,8 @@
             myDimensions(1) = SIZE(arrayIntegerIn)
           elseIf(fillReal) then
             myDimensions(1) = SIZE(arrayRealIn)
+          elseIf(fillCharacter) then
+            myDimensions(1) = SIZE(arrayCharacterIn)
           else
             call mqc_error_l(  &
               'MQC_Variable_setVal: Confused setting myDimensions.', 6, &
@@ -1794,11 +2255,29 @@
 !     Initialize mqcVariable and then set the value appropriately.
 !
       if(DEBUG) write(*,*)'   Calling Init...'
+      if(fillCharacter) then
+        if(fillScalar) then
+          myCharacterLength = LEN(scalarCharacterIn)
+        else
+          myCharacterLength = LEN(arrayCharacterIn)
+        endIf
+      endIf
       if(myRank.eq.0) then
-        call MQC_Variable_initialize(mqcVariable,myDataType,debug=DEBUG)
+        if(fillCharacter) then
+          call MQC_Variable_initialize(mqcVariable,myDataType,debug=DEBUG,  &
+            characterLength=myCharacterLength)
+        else
+          call MQC_Variable_initialize(mqcVariable,myDataType,debug=DEBUG)
+        endIf
       else
-        call MQC_Variable_initialize(mqcVariable,myDataType,myDimensions,  &
-          myRank,'FULL',debug=DEBUG)
+        if(fillCharacter) then
+          call MQC_Variable_initialize(mqcVariable,myDataType,myDimensions,  &
+            myRank,'FULL',debug=DEBUG,  &
+            characterLength=myCharacterLength)
+        else
+          call MQC_Variable_initialize(mqcVariable,myDataType,myDimensions,  &
+            myRank,'FULL',debug=DEBUG)
+        endIf
       endIf
       if(DEBUG) then
         write(*,*)'   Back from init.'
@@ -1806,8 +2285,13 @@
         write(*,*)'   dimensions = ',mqcVariable%dimensions
         write(*,*)'   ALLOCATED(realArray) ?    = ',ALLOCATED(mqcVariable%realArray)
         write(*,*)'   ALLOCATED(integerArray) ? = ',ALLOCATED(mqcVariable%integerArray)
+        write(*,*)'   ALLOCATED(characterArray) ? = ',  &
+          ALLOCATED(mqcVariable%characterArray)
         if(Allocated(mqcVariable%realArray)) write(*,*)'   SIZE(realArray) = ',SIZE(mqcVariable%realArray)
         if(Allocated(mqcVariable%integerArray)) write(*,*)'   SIZE(integerArray) = ',SIZE(mqcVariable%integerArray)
+        if(Allocated(mqcVariable%characterArray))  &
+          write(*,*)'   SIZE(characterArray) = ',  &
+            SIZE(mqcVariable%characterArray)
         flush(MQC_Algebra2_IOut)
       endIf
 
@@ -1815,6 +2299,7 @@
         write(*,*)
         write(*,*)' fillScalar = ',fillScalar
         write(*,*)' fillReal   = ',fillReal
+        write(*,*)' fillCharacter = ',fillCharacter
         write(*,*)
       endIf
 
@@ -1823,12 +2308,15 @@
           mqcVariable%integerArray(1) = scalarIntegerIn
         elseIf(fillReal) then
           mqcVariable%realArray(1) = scalarRealIn
+        elseIf(fillCharacter) then
+          mqcVariable%characterArray(1) = scalarCharacterIn
         else
           call MQC_Error_L(  &
             'MQC_Variable_setVal: Confused filling scalar value.', 6, &
             'fillScalar', fillScalar, &
             'fillInteger', fillInteger, &
-            'fillReal', fillReal )
+            'fillReal', fillReal,  &
+            'fillCharacter',fillCharacter)
         endIf
       elseIf(fillArray) then
         if(fillInteger) then
@@ -1846,12 +2334,15 @@
             write(*,*)' mqcVariable%realArray(1) = ',mqcVariable%realArray(1)
             write(*,*)
           endIf
+        elseIf(fillCharacter) then
+          mqcVariable%characterArray = arrayCharacterIn
         else
           call MQC_Error_L(  &
             'MQC_Variable_setVal: Confused filling array values.', 6, &
             'fillArray', fillArray, &
             'fillInteger', fillInteger, &
-            'fillReal', fillReal )
+            'fillReal', fillReal,  &
+            'fillCharacter',fillCharacter)
         endIf
       endIf
 !
@@ -1864,6 +2355,29 @@
 !
       return
       end subroutine MQC_Variable_setVal
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicScalar2mqcScalar_character
+      subroutine MQC_Variable_setVal_intrinsicScalar2mqcScalar_character(  &
+        mqcVariable,intrinsicIn)
+!
+!     This subroutine sets an MQC_Variable scalar equal to an intrinsic
+!     character scalar.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      character(len=*),intent(in)::intrinsicIn
+!
+!
+      call MQC_Variable_setVal(mqcVariable,  &
+        scalarCharacterIn=intrinsicIn)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicScalar2mqcScalar_character
 
 
 !
@@ -1914,6 +2428,28 @@
 !
       return
       end subroutine MQC_Variable_setVal_intrinsicScalar2mqcScalar_real
+
+
+!
+!PROCEDURE MQC_Variable_setVal_intrinsicVector2mqcVector_character
+      subroutine MQC_Variable_setVal_intrinsicVector2mqcVector_character(  &
+        mqcVariable,intrinsicIn)
+!
+!     This subroutine sets an MQC_Variable vector equal to an intrinsic
+!     character vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      class(MQC_Variable),intent(inOut)::mqcVariable
+      character(len=*),dimension(:),intent(in)::intrinsicIn
+!
+!
+      call MQC_Variable_setVal(mqcVariable,arrayCharacterIn=intrinsicIn)
+!
+      return
+      end subroutine MQC_Variable_setVal_intrinsicVector2mqcVector_character
 
 
 !
@@ -2085,6 +2621,36 @@
 
 
 !
+!PROCEDURE MQC_Variable_mqc2intrinsicCharacterScalar
+      subroutine MQC_Variable_mqc2intrinsicCharacterScalar(intrinsicOut,  &
+        mqcVariable)
+!
+!     This routine assigns a character MQC_Variable scalar to an intrinsic
+!     character scalar. Normal Fortran padding or truncation applies to the
+!     destination.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(out)::intrinsicOut
+      class(MQC_Variable),intent(in)::mqcVariable
+!
+!
+      if(RANK(mqcVariable).ne.0)  &
+        call mqc_error_i('Attempt to convert an MQC_Variable array to an '//  &
+          'intrinsic character scalar.',6,'RANK(mqcVariable)',  &
+          RANK(mqcVariable))
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('Character assignment requires a character '//  &
+          'MQC_Variable.',6,'mqcVariable%getType()',mqcVariable%getType())
+      intrinsicOut = mqcVariable%characterArray(1)
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicCharacterScalar
+
+
+!
 !PROCEDURE MQC_Variable_mqc2intrinsicIntegerScalar
       subroutine MQC_Variable_mqc2intrinsicIntegerScalar(intrinsicOut,mqcVariable)
 !
@@ -2164,7 +2730,7 @@
 !     to an (input) MQC Variable vector.
 !
 !
-!     H. P. Hratchian, 2022.
+!     H. P. Hratchian, 2022, 2026.
 !
 !
 !     Variable Declarations.
@@ -2179,7 +2745,14 @@
         call mqc_error_I('Attemp to convert MQC_Variable array to '//  &
           'intrinsic SCALAR not allowed.',6,'Rank(mqcVariable)',  &
           Rank(mqcVariable))
-      allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      if(ALLOCATED(intrinsicOut)) then
+        if(SIZE(intrinsicOut).ne.SIZE(mqcVariable,1)) then
+          DeAllocate(intrinsicOut)
+          Allocate(intrinsicOut(SIZE(mqcVariable,1)))
+        endIf
+      else
+        Allocate(intrinsicOut(SIZE(mqcVariable,1)))
+      endIf
       select case(MQC_Variable_getTypeCode(mqcVariable))
       case(2)
         call mqc_error('MQC_Variable_mqc2intrinsicInteger1Array: '// &
@@ -2242,6 +2815,37 @@
 !
       return
       end subroutine MQC_Variable_mqc2intrinsicReal1Array
+
+
+!
+!PROCEDURE MQC_Variable_mqc2intrinsicCharacter1Array
+      subroutine MQC_Variable_mqc2intrinsicCharacter1Array(intrinsicOut,  &
+        mqcVariable)
+!
+!     This routine assigns a character MQC_Variable vector to an allocatable
+!     intrinsic character vector.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=:),dimension(:),allocatable,intent(out)::intrinsicOut
+      class(MQC_Variable),intent(in)::mqcVariable
+!
+!
+      if(RANK(mqcVariable).ne.1)  &
+        call mqc_error_i('Attempt to convert a non-vector MQC_Variable to '//  &
+          'an intrinsic character vector.',6,'RANK(mqcVariable)',  &
+          RANK(mqcVariable))
+      if(TRIM(mqcVariable%getType()).ne.'CHARACTER')  &
+        call mqc_error_a('Character assignment requires a character '//  &
+          'MQC_Variable.',6,'mqcVariable%getType()',mqcVariable%getType())
+      allocate(character(len=LEN(mqcVariable))::  &
+        intrinsicOut(SIZE(mqcVariable)))
+      intrinsicOut = mqcVariable%characterArray
+!
+      return
+      end subroutine MQC_Variable_mqc2intrinsicCharacter1Array
 
 
 !
@@ -2370,6 +2974,28 @@
 !
       return
       end subroutine MQC_Variable_mqc2intrinsicReal4Array
+
+
+!
+!PROCEDURE MQC_Variable_from_intrinsicCharacter
+      function MQC_Variable_from_intrinsicCharacter(intrinsicIn)  &
+        result(mqcVariable)
+!
+!     This function converts an intrinsic character scalar to an MQC_Variable.
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),intent(in)::intrinsicIn
+      type(MQC_Variable)::mqcVariable
+!
+!
+      call MQC_Variable_setVal(mqcVariable,  &
+        scalarCharacterIn=intrinsicIn)
+!
+      return
+      end function MQC_Variable_from_intrinsicCharacter
 
 
 !

@@ -16,8 +16,8 @@
    **                                                                      **
    **                 The Merced Quantum Chemistry Package                 **
    **                              (MQCPack)                               **
-   **                            Version 25.11.2                           **
-   **                           November 11, 2025                          **
+   **                            Version 26.7.1                            **
+   **                             July 13, 2026                            **
    **                                                                      **
    **                                                                      **
    ** Written By:                                                          **
@@ -91,4 +91,3 @@ software is, your program will work without any modifications.
 
 # Licence
   This project is licensed under the Apache License - see the LICENSE file for details
-
