@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.1                           **
-!     **                           July 13, 2026                           **
+!     **                          Version 26.7.2                           **
+!     **                           July 30, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -215,8 +215,8 @@
 !
       if(PRESENT(major))         major         = 26
       if(PRESENT(minor))         minor         = 7
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '26.7.1'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '26.7.2'
 !
       return
       end subroutine mqc_version
@@ -1584,10 +1584,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTL(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTL(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustl_character_vector
@@ -1626,10 +1630,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTR(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTR(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustr_character_vector

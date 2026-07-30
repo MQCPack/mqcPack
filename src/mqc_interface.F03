@@ -9,8 +9,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.1                           **
-!     **                           July 13, 2026                           **
+!     **                          Version 26.7.2                           **
+!     **                           July 30, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -347,7 +347,6 @@
 ! integerTmp is was integer in the calling subroutine.
 !
       subroutine mqc_copy_vec( integerTmp8, integerTmp4, arrayTmp, LR)
-      use MQC_MatWrapper
       use iso_fortran_env, only: int32, int64, real64
       Implicit None
       integer(kind=int64),dimension(:),intent(inout)::integerTmp8
@@ -355,13 +354,6 @@
       real(kind=real64),dimension(:),intent(out)::arrayTmp
       integer(kind=int64),intent(in):: LR
       integer(kind=int64):: i
-      Character(Len=64)::Ignorable
-      Integer(kind=int32)::IntPrecision
-      Integer(kind=int32)::Call_Test
-
-      Call_Test=0 
-      call MQC_Mat_Precision(Ignorable, IntPrecision, Call_Test)
-
       write(6,1234) lr
 1234  format( i10 )
         flush(6)
@@ -377,15 +369,5 @@
 
       return
 
-      if ( IntPrecision .eq. 4 ) then
-!
-! These 2 arrays are the same, with different size declarations.
-! Starting from the end allows us to expand the array without overwriting data
-!
-         do i = LR, 1, -1
-            integerTmp8(i) = integerTmp4(i)
-         end do
-      endif
-      return
       end subroutine mqc_copy_vec
 #endif
