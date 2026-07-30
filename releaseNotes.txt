@@ -8,6 +8,11 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+July 30, 2026
+* MQCPack version set to 26.7.2.
+* This version has a new set of build files using automake to streamline
+  future expansions, including unit tests and other validation tests.
+
 July 13, 2026
 * MQCPack version set to 26.7.1.
 * Added support for writing character scalar and fixed-width vector

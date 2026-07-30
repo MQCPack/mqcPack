@@ -6,6 +6,34 @@
 
       module MQC_MatWrapper
 !
+!     ***********************************************************************
+!     ***********************************************************************
+!     **                                                                   **
+!     **               The Merced Quantum Chemistry Package                **
+!     **                            (MQCPack)                              **
+!     **                                                                   **
+!     ** Written By:                                                       **
+!     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+!     **    Mullally, and Hrant P. Hratchian                               **
+!     **                                                                   **
+!     **                          Version 26.7.2                           **
+!     **                           July 30, 2026                           **
+!     **                                                                   **
+!     **                                                                   **
+!     ** Modules beloning to MQCPack:                                      **
+!     **    1. MQC_General                                                 **
+!     **    2. MQC_Binary                                                  **
+!     **    3. MQC_DataStructures                                          **
+!     **    4. MQC_Integrals                                               **
+!     **    5. MQC_Algebra                                                 **
+!     **    6. MQC_Files                                                   **
+!     **    7. MQC_Molecule                                                **
+!     **    8. MQC_EST                                                     **
+!     **    9. MQC_Gaussian                                                **
+!     **                                                                   **
+!     ***********************************************************************
+!     ***********************************************************************
+!
 !     This module is the MQCPack-owned adapter for unmodified GauOpen
 !     qcmatrix.F and qcmatrixio.F sources compiled with 8-byte integers. It
 !     normalizes the public version-2 ASym API and the frontier TypeA API.
