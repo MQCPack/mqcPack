@@ -157,6 +157,11 @@ repository should record at least:
 - BLAS/LAPACK link line;
 - installation prefix providing the matching `libmqc.a` and `.mod` files.
 
+`make install` places `libmqc.a` under `${prefix}/lib` and the matching
+compiler-generated module files under `${prefix}/mod`. Use a separate prefix
+for each compiler family and configuration; never replace installed module
+files with artifacts from another build.
+
 Changing a public derived type changes its compiled module layout. Rebuild all
 dependent objects after such a change; a stale object can compile cleanly and
 then fail at runtime.
