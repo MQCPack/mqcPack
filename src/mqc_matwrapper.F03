@@ -2477,6 +2477,7 @@
         Integer(kind=int64),Intent(In)::IU,LR,LenBuf
         Character(Len=*),Intent(InOut)::CArr
 
+#ifdef UCMGAUOPEN
         Integer(kind=int32)::IU_4,LR_4,LenBuf_4
         Integer(kind=int32)::IntPrecision, Call_Test
         Character(Len=64)::Name
@@ -2497,6 +2498,9 @@
 !
            call Rd_ChBuf8(IU,LR,LenBuf,CArr)
         endif
+#else
+        Call MQC_Error('Reading character FAF records requires UCM GauOpen.')
+#endif
       Return
       End Subroutine Rd_ChBuf
 
@@ -2508,6 +2512,7 @@
         Character(Len=*),Intent(InOut)::CArr
         Integer(kind=int64),Dimension(LR),Intent(Out)::IArr
 
+#ifdef UCMGAUOPEN
         Integer(kind=int32)::IU_4,LR_4,LenBuf_4
         Integer(kind=int32),Dimension(LR)::IArr_4
         Integer(kind=int64)::I
@@ -2533,6 +2538,9 @@
 !
            call Rd_ChBuf8I(IU,LR,LenBuf,CArr,IArr)
         endif
+#else
+        Call MQC_Error('Reading indexed character FAF records requires UCM GauOpen.')
+#endif
       Return
       End Subroutine Rd_ChBufI
 
@@ -2543,6 +2551,7 @@
         Integer(kind=int64),Intent(In)::IU,LR,LenBuf
         Character(Len=*),Intent(In)::CArr
 
+#ifdef UCMGAUOPEN
         Integer(kind=int32)::IU_4,LR_4,LenBuf_4
         Integer(kind=int32)::IntPrecision, Call_Test
         Character(Len=64)::Name
@@ -2563,6 +2572,9 @@
 !
            call Wr_ChBuf8(IU,LR,LenBuf,CArr)
         endif
+#else
+        Call MQC_Error('Writing character FAF records requires UCM GauOpen.')
+#endif
       Return
       End Subroutine Wr_ChBuf
 
