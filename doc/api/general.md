@@ -50,6 +50,10 @@ Character printing supports scalars and rank-1 fixed-width vectors through the
 intrinsic kernels. `MQC_Variable%print` delegates to these routines, so fixes at
 this layer should benefit both intrinsic and object use.
 
+Logical rank-1 vectors and rank-2 matrices are available through `mqc_print`.
+Logical vectors are also available through the rank-specific
+`mqc_print_vector` generic.
+
 ## Use-association caution
 
 `MQC_General` exports a broad set of names and several later modules re-export

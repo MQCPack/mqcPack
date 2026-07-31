@@ -38,7 +38,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.2                           **
+!     **                          Version 26.7.3                           **
 !     **                           July 30, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
