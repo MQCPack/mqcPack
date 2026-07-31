@@ -189,6 +189,9 @@
       call mqc_print_scalar('General',iOut,header='scalar')
       call mqc_print_vector([ character(len=4)::'One','Two' ],iOut,  &
         header='vector')
+      call mqc_print([.true.,.false.],iOut,header='logical mqc_print')
+      call mqc_print_vector([.false.,.true.],iOut,  &
+        header='logical mqc_print_vector')
       rewind(iOut)
       read(iOut,'(A)') line
       call assertContains('general scalar print',line,'General')
@@ -196,6 +199,22 @@
       call assertContains('general vector print header',line,'vector')
       read(iOut,'(A)') line
       call assertContains('general vector print element',line,'One')
+      read(iOut,'(A)') line
+      call assertContains('general vector print second element',line,'Two')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print header',line,  &
+        'logical mqc_print')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print first element',line,'T')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print second element',line,'F')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector header',line,  &
+        'logical mqc_print_vector')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector first element',line,'F')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector second element',line,'T')
       close(iOut)
 !
       open(newunit=iOut,status='scratch',action='readwrite',form='formatted')
