@@ -78,7 +78,15 @@ examples/SCFenergy/testit.sh
 examples/WriteTest/testit.sh
 examples/hartreefock/Makefile.am
 examples/DataSummary/test/
-doc/
-!doc/Doxygen
+doc/*
+!doc/Doxyfile
 !doc/ABOUT_Algebra2.md
 !doc/mqcpack_logo.png
+!doc/AGENT_API_GUIDE.md
+!doc/api/
+doc/api/*
+!doc/api/*.md
+!doc/api/generate_procedure_index.py
+!configure.ac
+!Makefile.am
+!examples/Build_Tests/Makefile.am
