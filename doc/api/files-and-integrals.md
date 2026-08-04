@@ -43,15 +43,46 @@ Source: [`src/mqc_integrals.F03`](../../src/mqc_integrals.F03).
 `MQC_CGTF` represents one contracted Gaussian-type shell/function object. Its
 public bindings are:
 
-- `init`: set angular momentum, center, contraction coefficients, and primitive
-  exponents;
+- `init`: set angular momentum, center, contraction coefficients, primitive
+  exponents, and an optional angular representation;
 - `print`: report the object;
-- `shell2nBasis`: return the number of basis functions for the shell;
+- `shell2nBasis`: return the exposed/requested number of basis functions;
+- `shell2nCartesian`: return the complete Cartesian working dimension;
+- `getAngularRepresentation`: return `MQC_CGTF_CARTESIAN` or
+  `MQC_CGTF_REAL_PURE`;
+- `getCartesianToBasis`: return the `nCartesian`-by-`nBasis` angular
+  transformation;
+- `primitiveValues`: evaluate one individually normalized stored primitive in
+  the shell's requested representation, excluding both its contraction
+  coefficient and the contracted-shell renormalization;
 - `primitiveSelfOverlap`: compute primitive self-overlap information.
 
-`MQC_basisSet` owns a collection of `MQC_CGTF` shells and tracks basis/shell
-counts. Use `init`, `addShell`, and `print` to maintain its allocation and count
-invariants.
+`MQC_gtoBasisSet` owns a collection of `MQC_CGTF` shells and tracks basis/shell
+counts. Its public `nBasis` count is the exposed dimension and `nCartesian` is
+the sum of complete Cartesian working dimensions. Use `init`, `addShell`, and
+`print` to maintain its allocation and count invariants. The optional trailing
+representation argument to `addShell` permits different shells in one basis
+set to use different representations.
+
+For a Gaussian MatrixFile, use
+`MQC_Gaussian_Unformatted_Matrix_File%loadGTOBasisSet` to construct this
+evaluable object from the file's signed shell types, primitive data, and shell
+coordinates. Gaussian record labels and SP-shell expansion remain owned by
+`MQC_Gaussian`; `MQC_Integrals` owns the resulting normalized shell objects.
+
+Each shell is homogeneous: all of its exposed components are Cartesian or all
+are Gaussian-convention real pure. Cartesian shells use an identity
+transformation. For real-pure shells, values are formed as
+`transpose(T) * cartesianValues`, where `T` is returned by
+`getCartesianToBasis`. Complete Gaussian-ordered Cartesian `lArrays` remain
+available as the working representation. `MQC_Value_CGFT` and
+`basisSetValuesList` apply the transformation for contracted values at a point;
+`MQC_Value_Primitive_Radial` and `MQC_Value_Primitive_Angular` retain their
+low-level radial and scalar Cartesian-monomial meanings.
+
+Pure-shell analytical overlap transformation is not part of this value-only
+API increment. `MQC_Overlap_CGFT` therefore rejects real-pure D and higher
+shells explicitly instead of interpreting pure indices as Cartesian indices.
 
 Angular momentum, Cartesian center, coefficient/exponent pairing, primitive
 normalization, and shell ordering are scientific data. Preserve them when

@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.3                           **
-!     **                           July 30, 2026                           **
+!     **                          Version 26.8.0                           **
+!     **                          August 3, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -36,6 +36,8 @@
       USE MQC_Algebra
       USE MQC_Algebra2
       USE MQC_EST
+      USE MQC_Integrals, ONLY: MQC_gtoBasisSet, MQC_CGTF_CARTESIAN,  &
+        MQC_CGTF_REAL_PURE
       USE MQC_molecule
       use MQC_MatWrapper, only: MQC_MatrixFile_Layout,  &
         MQC_MatrixFile_Character_Record_Layout,  &
@@ -115,6 +117,7 @@
         procedure,pass::getBasisInfo     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Element
         procedure,pass::getBasisArray    => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Info_Array
         procedure,pass::getBasisData     => MQC_Gaussian_Unformatted_Matrix_Get_Basis_Set_Matrices
+        procedure,pass::loadGTOBasisSet
         procedure,pass::getMolData       => MQC_Gaussian_Unformatted_Matrix_Get_Molecule_Data
         procedure,pass::getESTObj        => MQC_Gaussian_Unformatted_Matrix_Get_EST_Object
         procedure,private::get2ERIObj    => MQC_Gaussian_Unformatted_Matrix_Get_twoERIs    
@@ -2770,6 +2773,118 @@
       end subroutine MQC_Gaussian_Unformatted_Matrix_Basis_Type_To_Function_Info
 
 
+
+
+!=====================================================================
+!
+!PROCEDURE loadGTOBasisSet
+      subroutine loadGTOBasisSet(faf,basisSet)
+!
+!     This routine reads Gaussian basis-set records from the unformatted
+!     matrix file in faf and constructs an evaluable MQC_gtoBasisSet. Gaussian
+!     SP shells are expanded into separate Cartesian S and P shells. Negative
+!     D and higher shell types are loaded in the Gaussian real-pure
+!     representation.
+!
+!     H. P. Hratchian, 2026.
+!
+      implicit none
+      class(MQC_Gaussian_Unformatted_Matrix_File),intent(inout)::faf
+      class(MQC_gtoBasisSet),intent(out)::basisSet
+      integer(kind=int64)::angularMomentum,i,iCurrentPrimitive,nBasis,  &
+        nGTOBasisShells,nPrimitives,nShells,representation,shellType
+      integer(kind=int64),dimension(:),allocatable::nPrimitivesPerShell,  &
+        shellTypes
+      real(kind=real64),dimension(:),allocatable::contractionCoefficients,  &
+        contractionCoefficientsP,coordinates,primitiveExponents
+      type(MQC_Variable)::temporaryValue
+!
+!     Read and validate the Gaussian basis-set dimensions and shell records.
+!
+      nBasis = faf%getVal('nBasis')
+      nShells = faf%getVal('nShlAO')
+      nPrimitives = faf%getVal('nPrmAO')
+      if(nBasis.lt.1.or.nShells.lt.1.or.nPrimitives.lt.1)  &
+        call mqc_error('loadGTOBasisSet: Invalid Gaussian basis dimensions.')
+!
+      call faf%getArray('SHELL TYPES',mqcVarOut=temporaryValue)
+      shellTypes = temporaryValue
+      call faf%getArray('NUMBER OF PRIMITIVES PER SHELL',  &
+        mqcVarOut=temporaryValue)
+      nPrimitivesPerShell = temporaryValue
+      call faf%getArray('PRIMITIVE EXPONENTS',mqcVarOut=temporaryValue)
+      primitiveExponents = temporaryValue
+      call faf%getArray('CONTRACTION COEFFICIENTS',  &
+        mqcVarOut=temporaryValue)
+      contractionCoefficients = temporaryValue
+      call faf%getArray('COORDINATES OF EACH SHELL',  &
+        mqcVarOut=temporaryValue)
+      coordinates = temporaryValue
+      if(Any(shellTypes.eq.-1_int64)) then
+        call faf%getArray('P(S=P) CONTRACTION COEFFICIENTS',  &
+          mqcVarOut=temporaryValue)
+        contractionCoefficientsP = temporaryValue
+      endIf
+!
+      if(Size(shellTypes).ne.nShells.or.  &
+        Size(nPrimitivesPerShell).ne.nShells)  &
+        call mqc_error('loadGTOBasisSet: Gaussian shell-array size mismatch.')
+      if(Size(coordinates).ne.3*nShells)  &
+        call mqc_error('loadGTOBasisSet: Gaussian shell-coordinate size mismatch.')
+      if(Any(nPrimitivesPerShell.lt.1_int64).or.  &
+        Sum(nPrimitivesPerShell).ne.nPrimitives)  &
+        call mqc_error('loadGTOBasisSet: Invalid Gaussian primitive counts.')
+      if(Size(primitiveExponents).ne.nPrimitives.or.  &
+        Size(contractionCoefficients).ne.nPrimitives)  &
+        call mqc_error('loadGTOBasisSet: Gaussian primitive-array size mismatch.')
+      if(Any(shellTypes.eq.-1_int64)) then
+        if(Size(contractionCoefficientsP).ne.nPrimitives)  &
+          call mqc_error(  &
+            'loadGTOBasisSet: Gaussian SP-coefficient size mismatch.')
+      endIf
+!
+!     One Gaussian SP record becomes two evaluable contracted shells.
+!
+      nGTOBasisShells = nShells+Count(shellTypes.eq.-1_int64)
+      call basisSet%init(nGTOBasisShells)
+      iCurrentPrimitive = 1
+      do i = 1,nShells
+        shellType = shellTypes(i)
+        if(shellType.eq.-1_int64) then
+          call basisSet%addShell(0_int64,coordinates((3*i-2):(3*i)),  &
+            contractionCoefficients(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),  &
+            primitiveExponents(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),  &
+            MQC_CGTF_CARTESIAN)
+          call basisSet%addShell(1_int64,coordinates((3*i-2):(3*i)),  &
+            contractionCoefficientsP(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),  &
+            primitiveExponents(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),  &
+            MQC_CGTF_CARTESIAN)
+        else
+          angularMomentum = Abs(shellType)
+          representation = MQC_CGTF_CARTESIAN
+          if(shellType.lt.-1_int64) representation = MQC_CGTF_REAL_PURE
+          call basisSet%addShell(angularMomentum,  &
+            coordinates((3*i-2):(3*i)),  &
+            contractionCoefficients(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),  &
+            primitiveExponents(iCurrentPrimitive:  &
+              iCurrentPrimitive+nPrimitivesPerShell(i)-1),representation)
+        endIf
+        iCurrentPrimitive = iCurrentPrimitive+nPrimitivesPerShell(i)
+      endDo
+!
+!     The exposed dimension must reproduce Gaussian's requested AO count.
+!
+      if(basisSet%nShells.ne.nGTOBasisShells.or.  &
+        basisSet%nBasis.ne.nBasis)  &
+        call mqc_error('loadGTOBasisSet: Constructed basis dimensions mismatch.')
+!
+      return
+      end subroutine loadGTOBasisSet
 
 
 !=====================================================================

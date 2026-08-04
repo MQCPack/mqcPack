@@ -63,13 +63,22 @@ Extends `MQC_FileInfo`. Preferred type-bound operations are:
 - wavefunction classification: `isRestricted`, `isUnrestricted`, `isGeneral`,
   `isComplex`;
 - molecule/basis access: `getAtomicNumbers`, `getAtomCarts`, `getAtomWeights`,
-  `getAtomInfo`, `getBasisInfo`, `getBasisArray`, `getBasisData`, `getMolData`;
+  `getAtomInfo`, `getBasisInfo`, `getBasisArray`, `getBasisData`,
+  `loadGTOBasisSet`, `getMolData`;
 - typed data: `getVal`, `getValReal`, `getArray`, `getESTObj`, `get2ERIs`;
 - writing: `writeArray`, `writeArray2`, `writeBasisData`, `writeESTObj`,
   `write2ERIs`.
 
 Use the exact signature in the source because several routines have multiple
 optional destinations or dispatch according to the supplied MQCPack object.
+
+`loadGTOBasisSet` constructs an evaluable `MQC_Integrals::MQC_gtoBasisSet`
+from the opened MatrixFile's Gaussian basis records. It expands a Gaussian
+shell type of `-1` into separate Cartesian S and P contracted shells. Shell
+types `-2` and below become Gaussian-convention real-pure shells with angular
+momentum `abs(shellType)`; nonnegative shell types remain Cartesian. The
+constructed exposed dimension is validated against the MatrixFile `nBasis`
+scalar.
 
 ## Connection ownership and assignment
 
