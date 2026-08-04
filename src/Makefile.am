@@ -44,8 +44,9 @@ else
 MQC_MATWRAPPER_OBJECT = mqc_matwrapper_stub.$(OBJEXT)
 endif
 mqc_gaussian.$(OBJEXT): mqc_general.$(OBJEXT) mqc_files.$(OBJEXT) \
-  mqc_algebra.$(OBJEXT) mqc_algebra2.$(OBJEXT) mqc_est.$(OBJEXT) \
-  mqc_molecule.$(OBJEXT) $(MQC_MATWRAPPER_OBJECT)
+  mqc_integrals.$(OBJEXT) mqc_algebra.$(OBJEXT) \
+  mqc_algebra2.$(OBJEXT) mqc_est.$(OBJEXT) mqc_molecule.$(OBJEXT) \
+  $(MQC_MATWRAPPER_OBJECT)
 mqc_FullWavefunction.$(OBJEXT): mqc_algebra.$(OBJEXT) \
   mqc_datastructures.$(OBJEXT) mqc_files.$(OBJEXT) \
   mqc_est.$(OBJEXT) mqc_gaussian.$(OBJEXT)
