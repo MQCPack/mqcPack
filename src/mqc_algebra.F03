@@ -312,6 +312,8 @@
         Procedure, Private::put_int => MQC_R4Tensor_Put_Int
 !>      \brief <b> Returns the Hemitian transpose of the MQC R4Tensor</b>
         Procedure, Public::dagger => MQC_R4Tensor_Conjugate_Transpose
+!>      \brief <b> Permutes the dimensions of the MQC R4Tensor</b>
+        Procedure, Public::permute => MQC_R4Tensor_Permute
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Generic, Public::put => put_sca, put_int 
@@ -29974,6 +29976,95 @@
       EndIf
 
       End Subroutine MQC_R4Tensor_Initialize
+!
+!     PROCEDURE MQC_R4Tensor_Permute
+!
+!>    \brief <b>Returns a rank-four tensor with permuted dimensions.</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    Returns a rank-four tensor with permuted dimensions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Order
+!>    \verbatim
+!>      Order is Integer(kind=int64),Dimension(4)
+!>      Permutation of [1,2,3,4] defining the input index
+!>      used for each output index.
+!>    \endverbatim
+!>
+!>    \param[in] DoConjg
+!>    \verbatim
+!>      DoConjg is Logical
+!>      If true, complex conjugate the permuted values.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      Function MQC_R4Tensor_Permute(Tensor,Order,DoConjg) Result(Output)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Integer(kind=int64),Dimension(4),Intent(In)::Order
+      Logical,Intent(In)::DoConjg
+      Type(MQC_R4Tensor)::Output
+      Type(MQC_Scalar)::ScalarValue
+      Integer(kind=int64)::I,J,K,L,N
+      Integer(kind=int64),Dimension(4)::IndexOut,TensorShape
+
+      Do N=1,4
+        If(Order(N).lt.1.or.Order(N).gt.4.or.Count(Order.eq.Order(N)).ne.1) &
+          Call MQC_Error_I('Order is not a permutation in MQC_R4Tensor_Permute',6)
+      EndDo
+
+      TensorShape=[Tensor%I,Tensor%J,Tensor%K,Tensor%L]
+      Select Case(Tensor%Data_Type)
+      Case('Integer')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0_int64)
+      Case('Real')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0.0_real64)
+      Case('Complex')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),(0.0_real64,0.0_real64))
+      Case Default
+        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Permute',6, &
+          'Tensor%Data_Type',Tensor%Data_Type)
+      End Select
+      Do I=1,Output%I
+        Do J=1,Output%J
+          Do K=1,Output%K
+            Do L=1,Output%L
+              IndexOut=[I,J,K,L]
+              ScalarValue=Tensor%at(IndexOut(Order(1)),IndexOut(Order(2)), &
+                IndexOut(Order(3)),IndexOut(Order(4)))
+              Select Case(Tensor%Data_Type)
+              Case('Integer')
+                Call Output%put(ScalarValue%ival(),I,J,K,L)
+              Case('Real')
+                Call Output%put(ScalarValue%rval(),I,J,K,L)
+              Case('Complex')
+                If(DoConjg) Then
+                  Call Output%put(Conjg(ScalarValue%cval()),I,J,K,L)
+                Else
+                  Call Output%put(ScalarValue%cval(),I,J,K,L)
+                EndIf
+              End Select
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      End Function MQC_R4Tensor_Permute
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Real
 !

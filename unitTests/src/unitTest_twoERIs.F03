@@ -22,13 +22,25 @@
       type(mqc_r4tensor)::tC,tD,tE,tF,tG,tZ
       type(mqc_r4tensor)::tSO
       type(mqc_r4tensor)::blk
+      type(mqc_r4tensor),dimension(16)::oracleBlocks
       type(mqc_scalar)::sc
       type(mqc_twoERIs)::eriA,eriB,eriC
+      type(mqc_twoERIs)::eriAO,eriX,eriHalf,eriPartial,eriTrans,eriFull,eriSymm
       type(mqc_matrix)::mA,mB,mC,mD,outBlk
+      type(mqc_matrix)::moAA,moBB,moAB,moBA,moFull
       type(mqc_scf_integral)::intSp,intSpin,intGen,intOut
+      type(mqc_scf_integral)::generalMO
       real(kind=real64)::got,expected
+      real(kind=real64)::partialError,transError,partialPairError,transPairError,fullError,atError
       real(kind=real64)::v1,v2,v3,v4,v5,v6,v7
       real(kind=real64)::v8,v9,v10,v11,v12
+      complex(kind=real64)::directValue,partialValue,transValue
+      complex(kind=real64)::coef1,coef2,coef3,coef4
+      integer::p,q,r,s,mu,nu,lambda,sigma,spin1,spin2,iblock,jblock,iinteraction
+      integer::colP,colQ,colR,colS
+      character(len=4),dimension(16)::spinLabels
+      character(len=9),dimension(3)::interactionLabels
+      character(len=4)::spinLabel,exchangeLabel
 !
 !     Format Statements
 !
@@ -3553,7 +3565,374 @@
         write(*,1010) 'R4T/spin/2x/coulomb→ms',got,expected ; nfail=nfail+1
       endIf
 !
+!--------------------------------------------------------------------
+!     Test 159: complex-general AO->MO transformation.
+!
+!     The reference is an explicit spin-orbital four-index sum.  It
+!     deliberately does not use MQC_TwoERIs%at, TwoERI_Trans, or the
+!     partial-contraction spin dispatch.  Each of the 16 output spin
+!     blocks is checked independently.
+!--------------------------------------------------------------------
+!
+      call mqc_allocate_r4tensor(n,n,n,n,tA,'real','full')
+      do mu=1,n
+        do nu=1,n
+          do lambda=1,n
+            do sigma=1,n
+              call tA%put(real((mu+nu)*(lambda+sigma)+mu*nu+lambda*sigma,&
+                                  real64)/37.0_real64,&
+                          mu,nu,lambda,sigma)
+            end do
+          end do
+        end do
+      end do
+      call mqc_twoeris_allocate(eriAO,'full-coulomb','regular',tA)
+
+      call moAA%init(n,n,(0.0_real64,0.0_real64))
+      call moBB%init(n,n,(0.0_real64,0.0_real64))
+      call moAB%init(n,n,(0.0_real64,0.0_real64))
+      call moBA%init(n,n,(0.0_real64,0.0_real64))
+      call moAA%put(( 0.81_real64, 0.07_real64),1,1)
+      call moAA%put((-0.22_real64, 0.13_real64),1,2)
+      call moAA%put(( 0.31_real64,-0.09_real64),2,1)
+      call moAA%put(( 0.74_real64, 0.04_real64),2,2)
+      call moBB%put(( 0.69_real64,-0.05_real64),1,1)
+      call moBB%put(( 0.18_real64, 0.11_real64),1,2)
+      call moBB%put((-0.27_real64, 0.08_real64),2,1)
+      call moBB%put(( 0.77_real64,-0.06_real64),2,2)
+      call moAB%put(( 0.17_real64, 0.14_real64),1,1)
+      call moAB%put((-0.09_real64, 0.06_real64),1,2)
+      call moAB%put(( 0.12_real64,-0.04_real64),2,1)
+      call moAB%put(( 0.08_real64, 0.10_real64),2,2)
+      call moBA%put((-0.11_real64, 0.09_real64),1,1)
+      call moBA%put(( 0.07_real64,-0.12_real64),1,2)
+      call moBA%put(( 0.05_real64, 0.03_real64),2,1)
+      call moBA%put((-0.13_real64, 0.07_real64),2,2)
+      call mqc_integral_allocate(generalMO,'complex general test MOs','general',&
+                                 moAA,moBB,moAB,moBA)
+      moFull=generalMO%getBlock('full')
+
+      eriX=generalMO%outer2ERI(dagger(generalMO))
+      eriHalf=mqc_eri_eri_partial_contraction_2ERI(eriAO,eriX,&
+                                                   [4,3,1,2],[1,4,3,2])
+      eriPartial=mqc_eri_eri_partial_contraction_2ERI(eriHalf,eriX,&
+                                                      [1,2,3,4],[4,1,3,2])
+      call TwoERI_Trans(6,0,generalMO,eriAO,eriTrans)
+
+      spinLabels=[character(len=4)::'aaaa','aaab','aaba','aabb',&
+        'abaa','abab','abba','abbb','baaa','baab','baba','babb',&
+        'bbaa','bbab','bbba','bbbb']
+      interactionLabels=[character(len=9)::'coulomb','exchange','doublebar']
+      do iblock=1,size(spinLabels)
+        spinLabel=spinLabels(iblock)
+        tB=eriPartial%getBlock(spinLabel)
+        tC=eriTrans%getBlock(spinLabel)
+        partialError=0.0_real64
+        transError=0.0_real64
+        do p=1,n
+          do q=1,n
+            do r=1,n
+              do s=1,n
+                directValue=(0.0_real64,0.0_real64)
+                colP=p+merge(0,n,spinLabel(1:1).eq.'a')
+                colQ=q+merge(0,n,spinLabel(2:2).eq.'a')
+                colR=r+merge(0,n,spinLabel(3:3).eq.'a')
+                colS=s+merge(0,n,spinLabel(4:4).eq.'a')
+                do spin1=0,1
+                  do spin2=0,1
+                    do mu=1,n
+                      do nu=1,n
+                        do lambda=1,n
+                          do sigma=1,n
+                            sc=moFull%at(mu+spin1*n,colP); coef1=sc%cval()
+                            sc=moFull%at(nu+spin1*n,colQ); coef2=sc%cval()
+                            sc=moFull%at(lambda+spin2*n,colR); coef3=sc%cval()
+                            sc=moFull%at(sigma+spin2*n,colS); coef4=sc%cval()
+                            sc=tA%at(mu,nu,lambda,sigma)
+                            directValue=directValue+conjg(coef1)*coef2*&
+                              conjg(coef3)*coef4*sc%cval()
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+                sc=tB%at(p,q,r,s); partialValue=sc%cval()
+                sc=tC%at(p,q,r,s); transValue=sc%cval()
+                partialError=max(partialError,abs(partialValue-directValue))
+                transError=max(transError,abs(transValue-directValue))
+              end do
+            end do
+          end do
+        end do
+        if(partialError.le.tol.and.transError.le.tol) then
+          write(*,'(1X,A,1X,A4)') 'PASS  complex-general transform block',spinLabel
+        else
+          write(*,'(1X,A,1X,A4,2(A,ES14.6))') 'FAIL  complex-general transform block',&
+            spinLabel,' partial=',partialError,' TwoERI_Trans=',transError
+          nfail=nfail+1
+        end if
+      end do
+!
+!--------------------------------------------------------------------
+!     Test 160: exhaustive complex-general MQC_TwoERIs%at oracle.
+!
+!     Construct full and symmetric storage from the already validated
+!     transformed blocks.  For every element of every requested spin
+!     block, compare Coulomb, exchange, and double-bar access against
+!     the explicit block relationship
+!       J(p,q,r,s)  = V[pqrs]
+!       K(p,q,r,s)  = V[psrq]
+!       JK(p,q,r,s) = V[pqrs] - V[psrq].
+!--------------------------------------------------------------------
+!
+      do iblock=1,size(spinLabels)
+        oracleBlocks(iblock)=eriTrans%getBlock(spinLabels(iblock))
+      end do
+      call mqc_twoeris_allocate(eriFull,'full-coulomb','general',&
+        alpha=oracleBlocks(1),beta=oracleBlocks(16),&
+        alphaBeta=oracleBlocks(4),betaAlpha=oracleBlocks(13),&
+        abab=oracleBlocks(6),abba=oracleBlocks(7),baab=oracleBlocks(10),&
+        baba=oracleBlocks(11),aaab=oracleBlocks(2),aaba=oracleBlocks(3),&
+        abaa=oracleBlocks(5),baaa=oracleBlocks(9),bbba=oracleBlocks(15),&
+        bbab=oracleBlocks(14),babb=oracleBlocks(12),abbb=oracleBlocks(8))
+      call mqc_twoeris_allocate(eriSymm,'symm-coulomb','general',&
+        alpha=oracleBlocks(1),beta=oracleBlocks(16),&
+        alphaBeta=oracleBlocks(4),abab=oracleBlocks(6),&
+        abba=oracleBlocks(7),aaab=oracleBlocks(2),abbb=oracleBlocks(8))
+
+      do iinteraction=1,size(interactionLabels)
+        do iblock=1,size(spinLabels)
+          spinLabel=spinLabels(iblock)
+          exchangeLabel=spinLabel(1:1)//spinLabel(4:4)//&
+                        spinLabel(3:3)//spinLabel(2:2)
+          jblock=0
+          do p=1,size(spinLabels)
+            if(spinLabels(p).eq.exchangeLabel) jblock=p
+          end do
+          if(jblock.eq.0) stop 'exchange spin block not found'
+          do spin1=1,2
+            atError=0.0_real64
+            do p=1,n; do q=1,n; do r=1,n; do s=1,n
+              sc=oracleBlocks(iblock)%at(p,q,r,s)
+              directValue=sc%cval()
+              sc=oracleBlocks(jblock)%at(p,s,r,q)
+              if(interactionLabels(iinteraction).eq.'exchange') then
+                directValue=sc%cval()
+              elseif(interactionLabels(iinteraction).eq.'doublebar') then
+                directValue=directValue-sc%cval()
+              endIf
+              if(spin1.eq.1) then
+                sc=eriFull%at(p,q,r,s,spinLabel,interactionLabels(iinteraction))
+              else
+                sc=eriSymm%at(p,q,r,s,spinLabel,interactionLabels(iinteraction))
+              endIf
+              atError=max(atError,abs(sc%cval()-directValue))
+            end do; end do; end do; end do
+            if(atError.le.tol) then
+              write(*,'(1X,A,1X,A,1X,A4,1X,A)') 'PASS  at oracle',&
+                merge('full','symm',spin1.eq.1),spinLabel,trim(interactionLabels(iinteraction))
+            else
+              write(*,'(1X,A,1X,A,1X,A4,1X,A,A,ES14.6)') 'FAIL  at oracle',&
+                merge('full','symm',spin1.eq.1),spinLabel,trim(interactionLabels(iinteraction)),&
+                ' error=',atError
+              nfail=nfail+1
+            endIf
+          end do
+        end do
+      end do
+!
+!     Exercise the independent no-spinBlock path using global
+!     spin-orbital indices against the validated full tensor.
+      tD=eriFull%getBlock('full')
+      do iinteraction=1,size(interactionLabels)
+        do spin1=1,2
+          atError=0.0_real64
+          do p=1,2*n; do q=1,2*n; do r=1,2*n; do s=1,2*n
+            sc=tD%at(p,q,r,s)
+            directValue=sc%cval()
+            sc=tD%at(p,s,r,q)
+            if(interactionLabels(iinteraction).eq.'exchange') then
+              directValue=sc%cval()
+            elseif(interactionLabels(iinteraction).eq.'doublebar') then
+              directValue=directValue-sc%cval()
+            endIf
+            if(spin1.eq.1) then
+              sc=eriFull%at(p,q,r,s,interactionIn=interactionLabels(iinteraction))
+            else
+              sc=eriSymm%at(p,q,r,s,interactionIn=interactionLabels(iinteraction))
+            endIf
+            atError=max(atError,abs(sc%cval()-directValue))
+          end do; end do; end do; end do
+          if(atError.le.tol) then
+            write(*,'(1X,A,1X,A,1X,A)') 'PASS  at global oracle',&
+              merge('full','symm',spin1.eq.1),trim(interactionLabels(iinteraction))
+          else
+            write(*,'(1X,A,1X,A,1X,A,A,ES14.6)') 'FAIL  at global oracle',&
+              merge('full','symm',spin1.eq.1),trim(interactionLabels(iinteraction)),&
+              ' error=',atError
+            nfail=nfail+1
+          endIf
+        end do
+      end do
+!
+!--------------------------------------------------------------------
+!     Test 161: real-general AO->MO transformation.
+!
+!     Retain nonzero alpha-beta and beta-alpha orbital mixing while
+!     removing every imaginary coefficient.  This separates general-
+!     spin block dispatch from complex conjugation errors.
+!--------------------------------------------------------------------
+!
+      do p=1,n
+        do q=1,n
+          sc=moAA%at(p,q); call moAA%put(cmplx(real(sc%cval()),0.0_real64,real64),p,q)
+          sc=moBB%at(p,q); call moBB%put(cmplx(real(sc%cval()),0.0_real64,real64),p,q)
+          sc=moAB%at(p,q); call moAB%put(cmplx(real(sc%cval()),0.0_real64,real64),p,q)
+          sc=moBA%at(p,q); call moBA%put(cmplx(real(sc%cval()),0.0_real64,real64),p,q)
+        end do
+      end do
+      call mqc_integral_allocate(generalMO,'real general test MOs','general',&
+                                 moAA,moBB,moAB,moBA)
+      moFull=generalMO%getBlock('full')
+
+      eriX=generalMO%outer2ERI(dagger(generalMO))
+      eriHalf=mqc_eri_eri_partial_contraction_2ERI(eriAO,eriX,&
+                                                   [4,3,1,2],[1,4,3,2])
+      eriPartial=mqc_eri_eri_partial_contraction_2ERI(eriHalf,eriX,&
+                                                      [1,2,3,4],[4,1,3,2])
+      call TwoERI_Trans(6,0,generalMO,eriAO,eriTrans)
+
+      do iblock=1,size(spinLabels)
+        spinLabel=spinLabels(iblock)
+        tB=eriPartial%getBlock(spinLabel)
+        tC=eriTrans%getBlock(spinLabel)
+        partialError=0.0_real64
+        transError=0.0_real64
+        do p=1,n
+          do q=1,n
+            do r=1,n
+              do s=1,n
+                directValue=(0.0_real64,0.0_real64)
+                colP=p+merge(0,n,spinLabel(1:1).eq.'a')
+                colQ=q+merge(0,n,spinLabel(2:2).eq.'a')
+                colR=r+merge(0,n,spinLabel(3:3).eq.'a')
+                colS=s+merge(0,n,spinLabel(4:4).eq.'a')
+                do spin1=0,1
+                  do spin2=0,1
+                    do mu=1,n
+                      do nu=1,n
+                        do lambda=1,n
+                          do sigma=1,n
+                            sc=moFull%at(mu+spin1*n,colP); coef1=sc%cval()
+                            sc=moFull%at(nu+spin1*n,colQ); coef2=sc%cval()
+                            sc=moFull%at(lambda+spin2*n,colR); coef3=sc%cval()
+                            sc=moFull%at(sigma+spin2*n,colS); coef4=sc%cval()
+                            sc=tA%at(mu,nu,lambda,sigma)
+                            directValue=directValue+conjg(coef1)*coef2*&
+                              conjg(coef3)*coef4*sc%cval()
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+                sc=tB%at(p,q,r,s); partialValue=sc%cval()
+                sc=tC%at(p,q,r,s); transValue=sc%cval()
+                partialError=max(partialError,abs(partialValue-directValue))
+                transError=max(transError,abs(transValue-directValue))
+              end do
+            end do
+          end do
+        end do
+        if(partialError.le.tol.and.transError.le.tol) then
+          write(*,'(1X,A,1X,A4)') 'PASS  real-general transform block',spinLabel
+        else
+          write(*,'(1X,A,1X,A4,2(A,ES14.6))') 'FAIL  real-general transform block',&
+            spinLabel,' partial=',partialError,' TwoERI_Trans=',transError
+          nfail=nfail+1
+        end if
+      end do
+
+      call report_partner('aabb','bbaa',[3,4,1,2],.false.)
+      call report_partner('aaab','aaba',[2,1,4,3],.true.)
+      call report_partner('aaab','abaa',[3,4,1,2],.false.)
+      call report_partner('aaab','baaa',[4,3,2,1],.true.)
+      call report_partner('abba','baab',[3,4,1,2],.false.)
+      call report_partner('abab','baba',[2,1,4,3],.true.)
+      call report_partner('abbb','bbba',[4,3,2,1],.true.)
+      call report_partner('abbb','bbab',[3,4,1,2],.false.)
+      call report_partner('abbb','babb',[2,1,4,3],.true.)
+
+      tD=eriTrans%getBlock('full')
+      fullError=0.0_real64
+      do p=1,2*n; do q=1,2*n; do r=1,2*n; do s=1,2*n
+        directValue=(0.0_real64,0.0_real64)
+        do spin1=0,1; do spin2=0,1
+          do mu=1,n; do nu=1,n; do lambda=1,n; do sigma=1,n
+            sc=moFull%at(mu+spin1*n,p); coef1=sc%cval()
+            sc=moFull%at(nu+spin1*n,q); coef2=sc%cval()
+            sc=moFull%at(lambda+spin2*n,r); coef3=sc%cval()
+            sc=moFull%at(sigma+spin2*n,s); coef4=sc%cval()
+            sc=tA%at(mu,nu,lambda,sigma)
+            directValue=directValue+conjg(coef1)*coef2*&
+              conjg(coef3)*coef4*sc%cval()
+          end do; end do; end do; end do
+        end do; end do
+        sc=tD%at(p,q,r,s)
+        fullError=max(fullError,abs(sc%cval()-directValue))
+      end do; end do; end do; end do
+      write(*,'(1X,A,ES14.6)') 'real-general full tensor oracle error=',fullError
+!
       write(*,9000) nfail
       if(nfail.gt.0) stop 1
+
+      contains
+
+      subroutine report_partner(storedLabel,partnerLabel,order,doConjg)
+        character(len=4),intent(in)::storedLabel,partnerLabel
+        integer,dimension(4),intent(in)::order
+        logical,intent(in)::doConjg
+        type(mqc_r4tensor)::storedBlock,partnerBlock
+        type(mqc_scalar)::storedScalar,partnerScalar
+        integer::i1,i2,i3,i4
+        integer,dimension(4)::idx
+        complex(kind=real64)::storedValue,partnerValue
+
+        storedBlock=eriPartial%getBlock(storedLabel)
+        partnerBlock=eriPartial%getBlock(partnerLabel)
+        partialPairError=0.0_real64
+        do i1=1,size(partnerBlock,1); do i2=1,size(partnerBlock,2)
+          do i3=1,size(partnerBlock,3); do i4=1,size(partnerBlock,4)
+            idx=[i1,i2,i3,i4]
+            storedScalar=storedBlock%at(idx(order(1)),idx(order(2)),&
+                                        idx(order(3)),idx(order(4)))
+            partnerScalar=partnerBlock%at(i1,i2,i3,i4)
+            storedValue=storedScalar%cval()
+            if(doConjg) storedValue=conjg(storedValue)
+            partnerValue=partnerScalar%cval()
+            partialPairError=max(partialPairError,abs(storedValue-partnerValue))
+          end do; end do
+        end do; end do
+
+        storedBlock=eriTrans%getBlock(storedLabel)
+        partnerBlock=eriTrans%getBlock(partnerLabel)
+        transPairError=0.0_real64
+        do i1=1,size(partnerBlock,1); do i2=1,size(partnerBlock,2)
+          do i3=1,size(partnerBlock,3); do i4=1,size(partnerBlock,4)
+            idx=[i1,i2,i3,i4]
+            storedScalar=storedBlock%at(idx(order(1)),idx(order(2)),&
+                                        idx(order(3)),idx(order(4)))
+            partnerScalar=partnerBlock%at(i1,i2,i3,i4)
+            storedValue=storedScalar%cval()
+            if(doConjg) storedValue=conjg(storedValue)
+            partnerValue=partnerScalar%cval()
+            transPairError=max(transPairError,abs(storedValue-partnerValue))
+          end do; end do
+        end do; end do
+        write(*,'(1X,A,1X,A4,A,A4,2(A,ES14.6))') 'real-general symmetry',&
+          storedLabel,' -> ',partnerLabel,' partial=',partialPairError,&
+          ' TwoERI_Trans=',transPairError
+      end subroutine report_partner
 !
       end program unitTest_twoERIs
