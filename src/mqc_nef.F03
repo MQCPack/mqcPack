@@ -1,6 +1,7 @@
    Module MQC_NEF
 
       use omp_lib
+      use mqc_algebra
       use mqc_est
       Use iso_fortran_env, only: int32, int64, real64
 

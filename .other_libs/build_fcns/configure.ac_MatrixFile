@@ -8,7 +8,7 @@ AC_PROG_FC( [pgfortran gfortran ifort] )
 MQC_SPECIFIC_FCFLAGS=;
 MQC_LDFLAGS=;
 if `echo $FC 2>&1 | grep 'pgfortran' >/dev/null 2>&1` ; then
-  MQC_SPECIFIC_FCFLAGS="-r8 -i8 -mp -Mallocatable=03 -module `pwd`/src" 
+  MQC_SPECIFIC_FCFLAGS="-r8 -i8 -mp -module `pwd`/src"
   MQC_CPPFLAGS="-DMATRIXFILE -DPGI"
   AC_CHECK_LIB(blas,dswap,[
     echo 'Attempting to compile with GNU blas/lapack libraries'],[
@@ -16,7 +16,7 @@ if `echo $FC 2>&1 | grep 'pgfortran' >/dev/null 2>&1` ; then
     MQC_LDFLAGS="-lmkl_rt -lpthread -lm -ldl"
     ])
 elif `echo $FC 2>&1 | grep 'gfortran' >/dev/null 2>&1` ; then
-  MQC_SPECIFIC_FCFLAGS="-std=f2008 -fdefault-real-8 -fdefault-integer-8 -fopenmp -J`pwd`/src" 
+  MQC_SPECIFIC_FCFLAGS="-std=f2008 -fdefault-real-8 -fdefault-integer-8 -fopenmp -J`pwd`/src"
   MQC_CPPFLAGS="-DMATRIXFILE -DGNU"
   AC_CHECK_LIB(blas,dswap,[
     echo 'Attempting to compile with GNU blas/lapack libraries'],[
@@ -31,8 +31,8 @@ elif `echo $FC 2>&1 | grep 'ifort' >/dev/null 2>&1` ; then
     echo 'Attempting to compile with Intel oneapi MKL libraries'
     MQC_LDFLAGS="-lmkl_rt -lpthread -lm -ldl"
     ])
-else 
-  MQC_SPECIFIC_FCFLAGS="ERROR need to add instance of the special flags for this compiler into configure.ac" 
+else
+  MQC_SPECIFIC_FCFLAGS="ERROR need to add instance of the special flags for this compiler into configure.ac"
 fi
 AC_PROG_RANLIB
 AC_SUBST(MQC_SPECIFIC_FCFLAGS, $MQC_SPECIFIC_FCFLAGS)
