@@ -12,8 +12,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.1                           **
-!     **                           July 13, 2026                           **
+!     **                          Version 26.8.0                           **
+!     **                          August 3, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -997,6 +997,7 @@
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
       type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::iCharacter
 !
 !
       if(.not.mqcVariable%initialized)  &
@@ -1012,8 +1013,10 @@
         mqcVariableOut%characterArray(1) =  &
           mqc_adjustl(mqcVariable%characterArray(1))
       case(1)
-        mqcVariableOut%characterArray =  &
-          mqc_adjustl(mqcVariable%characterArray)
+        do iCharacter = 1,SIZE(mqcVariable%characterArray)
+          mqcVariableOut%characterArray(iCharacter) =  &
+            mqc_adjustl(mqcVariable%characterArray(iCharacter))
+        endDo
       case default
         call mqc_error_i('ADJUSTL found an unsupported character '//  &
           'MQC_Variable rank.',6,'RANK(mqcVariable)',RANK(mqcVariable))
@@ -1036,6 +1039,7 @@
       implicit none
       class(MQC_Variable),intent(in)::mqcVariable
       type(MQC_Variable)::mqcVariableOut
+      integer(kind=int64)::iCharacter
 !
 !
       if(.not.mqcVariable%initialized)  &
@@ -1051,8 +1055,10 @@
         mqcVariableOut%characterArray(1) =  &
           mqc_adjustr(mqcVariable%characterArray(1))
       case(1)
-        mqcVariableOut%characterArray =  &
-          mqc_adjustr(mqcVariable%characterArray)
+        do iCharacter = 1,SIZE(mqcVariable%characterArray)
+          mqcVariableOut%characterArray(iCharacter) =  &
+            mqc_adjustr(mqcVariable%characterArray(iCharacter))
+        endDo
       case default
         call mqc_error_i('ADJUSTR found an unsupported character '//  &
           'MQC_Variable rank.',6,'RANK(mqcVariable)',RANK(mqcVariable))

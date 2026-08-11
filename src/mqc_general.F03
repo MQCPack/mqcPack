@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.7.1                           **
-!     **                           July 13, 2026                           **
+!     **                          Version 26.8.0                           **
+!     **                          August 3, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -90,6 +90,7 @@
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Vector_Array_Complex
+        module procedure MQC_Print_Vector_Array_Logical
         module procedure MQC_Print_Matrix_Array_Integer
         module procedure MQC_Print_Matrix_Array_Real
         module procedure MQC_Print_Matrix_Array_Complex
@@ -111,6 +112,7 @@
         module procedure MQC_Print_Vector_Array_Integer
         module procedure MQC_Print_Vector_Array_Real
         module procedure MQC_Print_Vector_Array_Complex
+        module procedure MQC_Print_Vector_Array_Logical
       end interface
 !
       interface mqc_print_matrix
@@ -214,9 +216,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 26
-      if(PRESENT(minor))         minor         = 7
-      if(PRESENT(revision))      revision      = 1
-      if(PRESENT(versionString)) versionString = '26.7.1'
+      if(PRESENT(minor))         minor         = 8
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '26.8.0'
 !
       return
       end subroutine mqc_version
@@ -907,52 +909,227 @@
       end subroutine MQC_Print_Scalar_Complex
 !
 !
-!PROCEDURE MQC_Print_Rank4Tensor_Array_Real
-      Subroutine MQC_Print_Rank4Tensor_Array_Real(Array,iOut,Header,  &
-        Blank_At_Top,Blank_At_Bottom)
+!PROCEDURE MQC_Print_Vector_Array_Character
+      subroutine MQC_Print_Vector_Array_Character(vector,iOut,header, &
+        blank_at_top,blank_at_bottom,formatStr)
 !
-!     This subroutine is used to print a real rank-4 tensor array.
+!     This subroutine is used to print a character vector.
 !
-!     H. P. Hratchian, 2020.
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      character(len=*),dimension(:),intent(in)::vector
+      integer(kind=int64),intent(in)::iOut
+      character(len=*),intent(in),optional::header,formatStr
+      logical,intent(in),optional::blank_at_top,blank_at_bottom
+!
+      integer(kind=int64)::i
+      character(len=256)::formatLine
+!
+!
+      if(PRESENT(blank_at_top)) then
+        if(blank_at_top) write(iOut,'(" ")')
+      endIf
+      if(PRESENT(header)) write(iOut,'(1x,A)') TRIM(header)
+      do i=1,SIZE(vector)
+        if(PRESENT(formatStr)) then
+          formatLine = '(1x,I7,2x,'//TRIM(formatStr)//')'
+          write(iOut,TRIM(formatLine)) i,vector(i)
+        else
+          write(iOut,'(1x,I7,2x,A)') i,TRIM(vector(i))
+        endIf
+      endDo
+      if(PRESENT(blank_at_bottom)) then
+        if(blank_at_bottom) write(iOut,'(" ")')
+      endIf
+!
+      return
+      end subroutine MQC_Print_Vector_Array_Character
+
+
+!
+!PROCEDURE MQC_Print_Vector_Array_Integer
+      subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom,FormatStr)
+!
+!     This subroutine is used to print a Vector array type variable.
+!
+!     L. M. Thompson, 2016.
+!     H. P. Hratchian, 2017.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),Intent(In)::IOut
+      integer(kind=int64),Dimension(:),Intent(In)::Vector
+      character(Len=*),Intent(In),Optional::Header,FormatStr
+      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
+!
+ 1000 Format(1x,A)
+ 1001 Format(1x,I7,2x,I14)
+ 1002 Format(1x,I7,2X,F14.6)
+ 1003 Format(1x,I7,2x,A)
+ 1020 Format(' ')
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if(Present(Header)) Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+          Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          Write(IOut,1001) I, Vector(I)
+        EndIf
+      EndDo
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Vector_Array_Integer
+
+
+!PROCEDURE MQC_Print_Vector_Array_Real
+      Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom,FormatStr,PrintGT)
+!
+!     This subroutine is used to print a Vector array type variable.
+!
+!     L. M. Thompson, 2016.
+!     H. P. Hratchian, 2017.
 !
 !
 !     Variable Declarations.
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
-      Real(kind=real64),dimension(:,:,:,:),Intent(In)::Array
-      Character(Len=*),Intent(In),Optional::Header
+      Real(kind=real64),Dimension(:),Intent(In)::Vector
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
       Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
+      real(kind=real64),intent(in),optional::PrintGT
+      Integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
+      logical::printLine
 !
  1000 Format(1x,A)
- 1001 Format(5x,10(7x,I7))
+ 1002 Format(1x,I7,2X,F14.6)
  1020 Format(" ")
- 2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
 !
-      NI = Size(Array,1)
-      NJ = Size(Array,2)
-      NK = Size(Array,3)
-      NL = Size(Array,4)
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        if(present(PrintGT)) then
+          printLine = Vector(I).gt.PrintGT
+        else
+          printLine = .true.
+        endIf
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
+          if(printLine) Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          if(printLine) Write(IOut,1002) I, Vector(I)
+        endIf
+      EndDo
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
 !
-      if(PRESENT(Blank_At_Top)) then
-        if(Blank_At_Top) write(IOut,1020)
-      endIf
-      if(PRESENT(Header)) write(IOut,1000) TRIM(Header)
-      do i = 1,NI
-        do j = 1,NJ
-          do k = 1,NK
-            do l = 1,NL
-              write(iOut,2002) i,j,k,l,Array(i,j,k,l)
-            endDo
-          endDo
-        endDo
-      endDo
-      if(PRESENT(Blank_At_Bottom)) then
-        if(Blank_At_Bottom) write(IOut,1020)
-      endIf
+      Return
+      End Subroutine MQC_Print_Vector_Array_Real
+
+
+!PROCEDURE MQC_Print_Vector_Array_Complex
+      Subroutine MQC_Print_Vector_Array_Complex(vector,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom,FormatStr)
 !
-      return
-      end subroutine MQC_Print_Rank4Tensor_Array_Real
+!     This subroutine is used to print a Vector array type variable.
+!
+!     L. M. Thompson, 2016.
+!     H. P. Hratchian, 2017.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Complex(kind=real64),Dimension(:),Intent(In)::Vector
+      Character(Len=*),Intent(In),Optional::Header,FormatStr
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
+!
+ 1000 Format(1x,A)
+ 1002 Format(1x,I7,F12.5,F11.5,"i")
+ 1020 Format(" ")
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        If(present(FormatStr)) then
+          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
+          Write(IOut,trim(FormatLine)) I, Vector(I)
+        Else
+          Write(IOut,1002) I, Vector(I)
+        EndIf
+      EndDo
+
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Vector_Array_Complex
+
+!
+!PROCEDURE MQC_Print_Vector_Array_Logical
+      subroutine MQC_Print_Vector_Array_Logical(Vector,iOut,Header,Blank_At_Top, &
+        Blank_At_Bottom)
+!
+!     This subroutine is used to print a Vector array type variable.
+!
+!     H. P. Hratchian, 2025.
+!
+!
+!     Variable Declarations.
+      implicit none
+      integer(kind=int64),Intent(In)::IOut
+      logical,Dimension(:),Intent(In)::Vector
+      character(Len=*),Intent(In),Optional::Header
+      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      integer(kind=int64)::I,Length
+      Character(Len=256)::FormatLine
+!
+ 1000 Format(1x,A)
+ 1001 Format(1x,I7,2x,L14)
+ 1002 Format(1x,I7,2X,F14.6)
+ 1003 Format(1x,I7,2x,A)
+ 1020 Format(' ')
+!
+      If(PRESENT(Blank_At_Top)) then
+        If(Blank_At_Top) Write(IOut,1020)
+      EndIf
+      if(Present(Header)) Write(IOut,1000) TRIM(Header)
+      Length = Size(Vector)
+      Do I = 1, Length
+        Write(IOut,1001) I, Vector(I)
+      EndDo
+      If(PRESENT(Blank_At_Bottom)) then
+        If(Blank_At_Bottom) Write(IOut,1020)
+      EndIf
+!
+      Return
+      End Subroutine MQC_Print_Vector_Array_Logical
 
 !
 !PROCEDURE MQC_Print_Matrix_Array_Integer
@@ -1178,229 +1355,6 @@
       End Subroutine MQC_Print_Matrix_Array_Logical
 
 !
-!PROCEDURE MQC_Print_Vector_Array_Character
-      subroutine MQC_Print_Vector_Array_Character(vector,iOut,header, &
-        blank_at_top,blank_at_bottom,formatStr)
-!
-!     This subroutine is used to print a character vector.
-!
-!     H. P. Hratchian, 2026.
-!
-!
-      implicit none
-      character(len=*),dimension(:),intent(in)::vector
-      integer(kind=int64),intent(in)::iOut
-      character(len=*),intent(in),optional::header,formatStr
-      logical,intent(in),optional::blank_at_top,blank_at_bottom
-!
-      integer(kind=int64)::i
-      character(len=256)::formatLine
-!
-!
-      if(PRESENT(blank_at_top)) then
-        if(blank_at_top) write(iOut,'(" ")')
-      endIf
-      if(PRESENT(header)) write(iOut,'(1x,A)') TRIM(header)
-      do i=1,SIZE(vector)
-        if(PRESENT(formatStr)) then
-          formatLine = '(1x,I7,2x,'//TRIM(formatStr)//')'
-          write(iOut,TRIM(formatLine)) i,vector(i)
-        else
-          write(iOut,'(1x,I7,2x,A)') i,TRIM(vector(i))
-        endIf
-      endDo
-      if(PRESENT(blank_at_bottom)) then
-        if(blank_at_bottom) write(iOut,'(" ")')
-      endIf
-!
-      return
-      end subroutine MQC_Print_Vector_Array_Character
-
-
-!
-!PROCEDURE MQC_Print_Vector_Array_Integer
-      subroutine MQC_Print_Vector_Array_Integer(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
-!
-!     This subroutine is used to print a Vector array type variable.
-!
-!     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017.
-!
-!
-!     Variable Declarations.
-      implicit none
-      integer(kind=int64),Intent(In)::IOut
-      integer(kind=int64),Dimension(:),Intent(In)::Vector
-      character(Len=*),Intent(In),Optional::Header,FormatStr
-      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      integer(kind=int64)::I,Length
-      Character(Len=256)::FormatLine
-!
- 1000 Format(1x,A)
- 1001 Format(1x,I7,2x,I14)
- 1002 Format(1x,I7,2X,F14.6)
- 1003 Format(1x,I7,2x,A)
- 1020 Format(' ')
-!
-      If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,1020)
-      EndIf
-      if(Present(Header)) Write(IOut,1000) TRIM(Header)
-      Length = Size(Vector)
-      Do I = 1, Length
-        If(present(FormatStr)) then
-          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
-          Write(IOut,trim(FormatLine)) I, Vector(I)
-        Else
-          Write(IOut,1001) I, Vector(I)
-        EndIf
-      EndDo
-      If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,1020)
-      EndIf
-!
-      Return
-      End Subroutine MQC_Print_Vector_Array_Integer
-
-
-!PROCEDURE MQC_Print_Vector_Array_Real
-      Subroutine MQC_Print_Vector_Array_Real(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr,PrintGT)
-!
-!     This subroutine is used to print a Vector array type variable.
-!
-!     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017.
-!
-!
-!     Variable Declarations.
-      Implicit None
-      Integer(kind=int64),Intent(In)::IOut
-      Real(kind=real64),Dimension(:),Intent(In)::Vector
-      Character(Len=*),Intent(In),Optional::Header,FormatStr
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      real(kind=real64),intent(in),optional::PrintGT
-      Integer(kind=int64)::I,Length
-      Character(Len=256)::FormatLine
-      logical::printLine
-!
- 1000 Format(1x,A)
- 1002 Format(1x,I7,2X,F14.6)
- 1020 Format(" ")
-!
-      If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,1020)
-      EndIf
-      Write(IOut,1000) TRIM(Header)
-      Length = Size(Vector)
-      Do I = 1, Length
-        if(present(PrintGT)) then
-          printLine = Vector(I).gt.PrintGT
-        else
-          printLine = .true.
-        endIf
-        If(present(FormatStr)) then
-          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//')'
-          if(printLine) Write(IOut,trim(FormatLine)) I, Vector(I)
-        Else
-          if(printLine) Write(IOut,1002) I, Vector(I)
-        endIf
-      EndDo
-
-      If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,1020)
-      EndIf
-!
-      Return
-      End Subroutine MQC_Print_Vector_Array_Real
-
-
-!PROCEDURE MQC_Print_Vector_Array_Complex
-      Subroutine MQC_Print_Vector_Array_Complex(vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom,FormatStr)
-!
-!     This subroutine is used to print a Vector array type variable.
-!
-!     L. M. Thompson, 2016.
-!     H. P. Hratchian, 2017.
-!
-!
-!     Variable Declarations.
-      Implicit None
-      Integer(kind=int64),Intent(In)::IOut
-      Complex(kind=real64),Dimension(:),Intent(In)::Vector
-      Character(Len=*),Intent(In),Optional::Header,FormatStr
-      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      Integer(kind=int64)::I,Length
-      Character(Len=256)::FormatLine
-!
- 1000 Format(1x,A)
- 1002 Format(1x,I7,F12.5,F11.5,"i")
- 1020 Format(" ")
-!
-      If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,1020)
-      EndIf
-      Write(IOut,1000) TRIM(Header)
-      Length = Size(Vector)
-      Do I = 1, Length
-        If(present(FormatStr)) then
-          FormatLine = '(1x,I7,2x,'//trim(FormatStr)//',SP,'//trim(FormatStr)//',"i")'
-          Write(IOut,trim(FormatLine)) I, Vector(I)
-        Else
-          Write(IOut,1002) I, Vector(I)
-        EndIf
-      EndDo
-
-      If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,1020)
-      EndIf
-!
-      Return
-      End Subroutine MQC_Print_Vector_Array_Complex
-
-!
-!PROCEDURE MQC_Print_Vector_Array_Logical
-      subroutine MQC_Print_Vector_Array_Logical(Vector,iOut,Header,Blank_At_Top, &
-        Blank_At_Bottom)
-!
-!     This subroutine is used to print a Vector array type variable.
-!
-!     H. P. Hratchian, 2025.
-!
-!
-!     Variable Declarations.
-      implicit none
-      integer(kind=int64),Intent(In)::IOut
-      logical,Dimension(:),Intent(In)::Vector
-      character(Len=*),Intent(In),Optional::Header
-      logical(kind=int64),Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
-      integer(kind=int64)::I,Length
-      Character(Len=256)::FormatLine
-!
- 1000 Format(1x,A)
- 1001 Format(1x,I7,2x,L14)
- 1002 Format(1x,I7,2X,F14.6)
- 1003 Format(1x,I7,2x,A)
- 1020 Format(' ')
-!
-      If(PRESENT(Blank_At_Top)) then
-        If(Blank_At_Top) Write(IOut,1020)
-      EndIf
-      if(Present(Header)) Write(IOut,1000) TRIM(Header)
-      Length = Size(Vector)
-      Do I = 1, Length
-        Write(IOut,1001) I, Vector(I)
-      EndDo
-      If(PRESENT(Blank_At_Bottom)) then
-        If(Blank_At_Bottom) Write(IOut,1020)
-      EndIf
-!
-      Return
-      End Subroutine MQC_Print_Vector_Array_Logical
-
-!
 !PROCEDURE MQC_Print_R4Tensor_Array_Integer
       Subroutine MQC_Print_R4Tensor_Array_Integer(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
@@ -1497,6 +1451,54 @@
       End Subroutine MQC_Print_R4Tensor_Array_Real
 !
 !
+!PROCEDURE MQC_Print_Rank4Tensor_Array_Real
+      Subroutine MQC_Print_Rank4Tensor_Array_Real(Array,iOut,Header,  &
+        Blank_At_Top,Blank_At_Bottom)
+!
+!     This subroutine is used to print a real rank-4 tensor array.
+!
+!     H. P. Hratchian, 2020.
+!
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Intent(In)::IOut
+      Real(kind=real64),dimension(:,:,:,:),Intent(In)::Array
+      Character(Len=*),Intent(In),Optional::Header
+      Logical,Intent(In),Optional::Blank_At_Top,Blank_At_Bottom
+      Integer(kind=int64)::NI,NJ,NK,NL,i,j,k,l
+!
+ 1000 Format(1x,A)
+ 1001 Format(5x,10(7x,I7))
+ 1020 Format(" ")
+ 2002 Format(1x,'I=',I4,' J=',I4,' K=',I4,' L=',I4,3x,10F14.6)
+!
+      NI = Size(Array,1)
+      NJ = Size(Array,2)
+      NK = Size(Array,3)
+      NL = Size(Array,4)
+!
+      if(PRESENT(Blank_At_Top)) then
+        if(Blank_At_Top) write(IOut,1020)
+      endIf
+      if(PRESENT(Header)) write(IOut,1000) TRIM(Header)
+      do i = 1,NI
+        do j = 1,NJ
+          do k = 1,NK
+            do l = 1,NL
+              write(iOut,2002) i,j,k,l,Array(i,j,k,l)
+            endDo
+          endDo
+        endDo
+      endDo
+      if(PRESENT(Blank_At_Bottom)) then
+        if(Blank_At_Bottom) write(IOut,1020)
+      endIf
+!
+      return
+      end subroutine MQC_Print_Rank4Tensor_Array_Real
+
+!
 !PROCEDURE MQC_Print_R4Tensor_Array_Complex
       Subroutine MQC_Print_R4Tensor_Array_Complex(Array,iOut,Header,Blank_At_Top, &
         Blank_At_Bottom)
@@ -1584,10 +1586,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTL(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTL(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustl_character_vector
@@ -1626,10 +1632,14 @@
 !
       implicit none
       character(len=*),dimension(:),intent(in)::stringIn
-      character(len=LEN(stringIn)),dimension(SIZE(stringIn))::stringOut
+      character(len=:),dimension(:),allocatable::stringOut
+      integer(kind=int64)::iCharacter
 !
 !
-      stringOut = ADJUSTR(stringIn)
+      allocate(character(len=LEN(stringIn))::stringOut(SIZE(stringIn)))
+      do iCharacter = 1,SIZE(stringIn)
+        stringOut(iCharacter) = ADJUSTR(stringIn(iCharacter))
+      endDo
 !
       return
       end function mqc_adjustr_character_vector

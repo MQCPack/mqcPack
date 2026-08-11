@@ -22,9 +22,12 @@
       type(MQC_Variable)::scalarVariable,vectorVariable,changedVariable
       type(MQC_Variable)::elementVariable,reshapedVariable,clearedVariable
       type(MQC_Variable)::adjustedVariable,lengthVariable,trimmedVariable
+      type(MQC_Variable)::scalarKernelVariable
       character(len=8),dimension(3)::vectorInput
       character(len=8),dimension(3)::intrinsicCharacterVector
       character(len=:),dimension(:),allocatable::vectorOutput
+      character(len=8),dimension(3)::vectorOutputFixed
+      character(len=8),dimension(3)::expectedCharacterVector
       character(len=:),allocatable::trimmedOutput
       character(len=8)::intrinsicCharacterScalar
       character(len=8)::scalarOutput
@@ -71,8 +74,9 @@
 !     overloaded and type-bound MQC_Variable operations.
 !
       intrinsicCharacterScalar = '  Ab'
-      intrinsicCharacterVector =  &
-        [ character(len=8)::'  One',' Two','Three' ]
+      intrinsicCharacterVector(1) = '  One'
+      intrinsicCharacterVector(2) = ' Two'
+      intrinsicCharacterVector(3) = 'Three'
 !
       scalarOutput = mqc_adjustl(intrinsicCharacterScalar)
       call assertCharacter('general scalar adjustl',scalarOutput,'Ab')
@@ -85,30 +89,22 @@
       call assertInteger('general scalar trim length',  &
         LEN(trimmedOutput),4_int64)
 !
-      vectorOutput = mqc_adjustl(intrinsicCharacterVector)
-      call assertCharacterVector('general vector adjustl',vectorOutput,  &
-        [ character(len=8)::'One','Two','Three' ])
-      vectorOutput = mqc_adjustr(intrinsicCharacterVector)
-      call assertCharacterVector('general vector adjustr',vectorOutput,  &
-        [ character(len=8)::'     One','     Two','   Three' ])
-      integerVector = mqc_len_trim(intrinsicCharacterVector)
-      call assertIntegerVector('general vector len_trim',integerVector,  &
-        [5_int64,4_int64,5_int64])
+      call testGeneralCharacterVectors(intrinsicCharacterVector)
 !
-      scalarVariable = intrinsicCharacterScalar
-      adjustedVariable = ADJUSTL(scalarVariable)
+      scalarKernelVariable = '  Ab    '
+      adjustedVariable = ADJUSTL(scalarKernelVariable)
       scalarOutput = adjustedVariable
       call assertCharacter('overloaded scalar adjustl',scalarOutput,'Ab')
       call assertInteger('adjustl preserves scalar length',  &
         LEN(adjustedVariable),8_int64)
-      adjustedVariable = scalarVariable%adjustr()
+      adjustedVariable = scalarKernelVariable%adjustr()
       scalarOutput = adjustedVariable
       call assertCharacter('type-bound scalar adjustr',scalarOutput,  &
         '      Ab')
-      lengthVariable = LEN_TRIM(scalarVariable)
+      lengthVariable = LEN_TRIM(scalarKernelVariable)
       integerScalar = lengthVariable
       call assertInteger('overloaded scalar len_trim',integerScalar,4_int64)
-      trimmedVariable = scalarVariable%trim()
+      trimmedVariable = scalarKernelVariable%trim()
       scalarOutput = trimmedVariable
       call assertCharacter('type-bound scalar trim',scalarOutput,'  Ab')
       call assertInteger('trim changes scalar length',  &
@@ -117,12 +113,20 @@
       vectorVariable = intrinsicCharacterVector
       adjustedVariable = vectorVariable%adjustl()
       vectorOutput = adjustedVariable
-      call assertCharacterVector('type-bound vector adjustl',vectorOutput,  &
-        [ character(len=8)::'One','Two','Three' ])
+      vectorOutputFixed = vectorOutput
+      expectedCharacterVector(1) = 'One'
+      expectedCharacterVector(2) = 'Two'
+      expectedCharacterVector(3) = 'Three'
+      call assertTrue('type-bound vector adjustl',  &
+        ALL(vectorOutputFixed.eq.expectedCharacterVector))
       adjustedVariable = ADJUSTR(vectorVariable)
       vectorOutput = adjustedVariable
-      call assertCharacterVector('overloaded vector adjustr',vectorOutput,  &
-        [ character(len=8)::'     One','     Two','   Three' ])
+      vectorOutputFixed = vectorOutput
+      expectedCharacterVector(1) = '     One'
+      expectedCharacterVector(2) = '     Two'
+      expectedCharacterVector(3) = '   Three'
+      call assertTrue('overloaded vector adjustr',  &
+        ALL(vectorOutputFixed.eq.expectedCharacterVector))
       lengthVariable = vectorVariable%len_trim()
       integerVector = [0_int64]
       integerVector = lengthVariable
@@ -132,14 +136,18 @@
 !     Character vector assignment, extraction, insertion, reshape, and
 !     allocatable intrinsic assignment.
 !
-      vectorInput = [ character(len=8)::'Alpha','bETA','Gamma' ]
+      vectorInput(1) = 'Alpha'
+      vectorInput(2) = 'bETA'
+      vectorInput(3) = 'Gamma'
       vectorVariable = vectorInput
       call assertInteger('vector rank',RANK(vectorVariable),1_int64)
       call assertInteger('vector size',SIZE(vectorVariable),3_int64)
       call assertInteger('vector dimension',SIZE(vectorVariable,1),3_int64)
       call assertInteger('vector length',LEN(vectorVariable),8_int64)
       vectorOutput = vectorVariable
-      call assertCharacterVector('vector round trip',vectorOutput,vectorInput)
+      vectorOutputFixed = vectorOutput
+      call assertTrue('vector round trip',  &
+        ALL(vectorOutputFixed.eq.vectorInput))
 !
       call vectorVariable%put('Delta',[2_int64])
       elementVariable = vectorVariable%getVal([2_int64])
@@ -148,12 +156,17 @@
 !
       reshapedVariable = RESHAPE(vectorVariable,[3_int64])
       vectorOutput = reshapedVariable
-      call assertCharacterVector('reshape preserves values',vectorOutput,  &
-        [ character(len=8)::'Alpha','Delta','Gamma' ])
+      vectorOutputFixed = vectorOutput
+      expectedCharacterVector(1) = 'Alpha'
+      expectedCharacterVector(2) = 'Delta'
+      expectedCharacterVector(3) = 'Gamma'
+      call assertTrue('reshape preserves values',  &
+        ALL(vectorOutputFixed.eq.expectedCharacterVector))
       changedVariable = MQC_Variable_mqc2mqc(vectorVariable)
       vectorOutput = changedVariable
-      call assertCharacterVector('explicit MQC copy',vectorOutput,  &
-        [ character(len=8)::'Alpha','Delta','Gamma' ])
+      vectorOutputFixed = vectorOutput
+      call assertTrue('explicit MQC copy',  &
+        ALL(vectorOutputFixed.eq.expectedCharacterVector))
 !
 !     Clear must retain the fixed element width across the new vector.
 !
@@ -161,8 +174,10 @@
       call assertInteger('clear length',LEN(clearedVariable),5_int64)
       call clearedVariable%change_case('U')
       vectorOutput = clearedVariable
-      call assertCharacterVector('clear and change case',vectorOutput,  &
-        [ character(len=5)::'MIXED','MIXED','MIXED' ])
+      vectorOutputFixed = vectorOutput
+      expectedCharacterVector = 'MIXED'
+      call assertTrue('clear and change case',  &
+        ALL(vectorOutputFixed.eq.expectedCharacterVector))
 !
 !     The scalar MQC conversion and the character printing wrappers are also
 !     part of the public character pathway.
@@ -174,6 +189,9 @@
       call mqc_print_scalar('General',iOut,header='scalar')
       call mqc_print_vector([ character(len=4)::'One','Two' ],iOut,  &
         header='vector')
+      call mqc_print([.true.,.false.],iOut,header='logical mqc_print')
+      call mqc_print_vector([.false.,.true.],iOut,  &
+        header='logical mqc_print_vector')
       rewind(iOut)
       read(iOut,'(A)') line
       call assertContains('general scalar print',line,'General')
@@ -181,6 +199,22 @@
       call assertContains('general vector print header',line,'vector')
       read(iOut,'(A)') line
       call assertContains('general vector print element',line,'One')
+      read(iOut,'(A)') line
+      call assertContains('general vector print second element',line,'Two')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print header',line,  &
+        'logical mqc_print')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print first element',line,'T')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print second element',line,'F')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector header',line,  &
+        'logical mqc_print_vector')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector first element',line,'F')
+      read(iOut,'(A)') line
+      call assertContains('logical mqc_print_vector second element',line,'T')
       close(iOut)
 !
       open(newunit=iOut,status='scratch',action='readwrite',form='formatted')
@@ -198,6 +232,33 @@
       write(*,'(1x,A)') 'unitTest02: PASS'
 !
       contains
+
+
+!PROCEDURE testGeneralCharacterVectors
+      subroutine testGeneralCharacterVectors(input)
+      implicit none
+      character(len=8),dimension(3),intent(in)::input
+      character(len=8),dimension(3)::actual,expected
+      integer(kind=int64),dimension(:),allocatable::lengths
+!
+      actual = mqc_adjustl(input)
+      expected(1) = 'One'
+      expected(2) = 'Two'
+      expected(3) = 'Three'
+      call assertTrue('general vector adjustl',ALL(actual.eq.expected))
+!
+      actual = mqc_adjustr(input)
+      expected(1) = '     One'
+      expected(2) = '     Two'
+      expected(3) = '   Three'
+      call assertTrue('general vector adjustr',ALL(actual.eq.expected))
+!
+      lengths = mqc_len_trim(input)
+      call assertIntegerVector('general vector len_trim',lengths,  &
+        [5_int64,4_int64,5_int64])
+!
+      return
+      end subroutine testGeneralCharacterVectors
 
 !
 !PROCEDURE assertCharacter
@@ -217,25 +278,6 @@
 
 
 !
-!PROCEDURE assertCharacterVector
-      subroutine assertCharacterVector(label,actual,expected)
-      implicit none
-      character(len=*),intent(in)::label
-      character(len=*),dimension(:),intent(in)::actual,expected
-!
-      if(SIZE(actual).ne.SIZE(expected)) then
-        write(*,'(1x,A)') 'FAIL: '//TRIM(label)//' size mismatch'
-        error stop 1
-      endIf
-      if(ANY(actual.ne.expected)) then
-        write(*,'(1x,A)') 'FAIL: '//TRIM(label)
-        error stop 1
-      endIf
-!
-      return
-      end subroutine assertCharacterVector
-
-
 !
 !PROCEDURE assertContains
       subroutine assertContains(label,actual,expectedSubstring)
@@ -290,6 +332,22 @@
 !
       return
       end subroutine assertIntegerVector
+
+
+!
+!PROCEDURE assertTrue
+      subroutine assertTrue(label,condition)
+      implicit none
+      character(len=*),intent(in)::label
+      logical,intent(in)::condition
+!
+      if(.not.condition) then
+        write(*,'(1x,A)') 'FAIL: '//TRIM(label)
+        error stop 1
+      endIf
+!
+      return
+      end subroutine assertTrue
 
 
       end program unitTest02

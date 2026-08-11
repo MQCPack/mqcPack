@@ -8,6 +8,33 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+August 3, 2026
+* MQCPack version set to 26.8.0.
+* Added Cartesian and Gaussian-convention real-pure evaluation of normalized
+  primitive and contracted Gaussian basis-function values in MQC_Integrals,
+  including D, F, and G transformations, phases, and Gaussian ordering.
+* Renamed the evaluable MQC_Integrals basis-set type from MQC_basisSet to
+  MQC_gtoBasisSet to distinguish it from MQC_EST basis-set communication
+  objects.
+* Added MQC_Gaussian_Unformatted_Matrix_File%loadGTOBasisSet to construct an
+  MQC_gtoBasisSet directly from Gaussian FAF basis records, including SP-shell
+  expansion and signed Cartesian/real-pure shell handling.
+* Added durable Cartesian/real-pure basis-value and Gaussian basis-loader
+  tests, including independent Gaussian point-value and overlap-matrix
+  validation during development.
+* Documented that analytical real-pure D-and-higher integral transformation
+  remains unsupported; the new real-pure functionality applies to real-space
+  basis-function values.
+
+July 30, 2026
+* MQCPack version set to 26.7.3.
+* Rearranged procedures in MQC_General.F03.
+
+July 30, 2026
+* MQCPack version set to 26.7.2.
+* This version has a new set of build files using automake to streamline
+  future expansions, including unit tests and other validation tests.
+
 July 13, 2026
 * MQCPack version set to 26.7.1.
 * Added support for writing character scalar and fixed-width vector

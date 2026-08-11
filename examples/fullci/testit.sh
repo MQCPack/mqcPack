@@ -1,8 +1,12 @@
 #! /bin/bash -x
 
-cd ../fullci
-rm outfile
+: "${abs_top_srcdir:=$(cd ../.. && pwd)}"
+: "${abs_top_builddir:=$(cd ../.. && pwd)}"
+
+cd "${abs_top_builddir}/examples/fullci"
+rm -f outfile
 # set up the Gaussian environment
+rm -rf workdir
 mkdir workdir
 cd workdir >> outfile 2>&1
 echo "---------------------------------" >> ../outfile 2>&1
@@ -13,7 +17,8 @@ echo "Finished with tests designed to fail">> ../outfile
 echo "-------------" >> ../outfile 2>&1
 echo "MatFile test">> ../outfile
 echo "-------------" >> ../outfile 2>&1
-cp ../../data/MatrixFile/rhf_h2-sto3g.mat . >> ../outfile
+cp "${abs_top_srcdir}/examples/data/MatrixFile/rhf_h2-sto3g.mat" .  \
+  >> ../outfile
 ../fullci rhf_h2-sto3g.mat >> ../outfile
 cd ..
 rm -r workdir
@@ -21,6 +26,6 @@ rm -r workdir
 sed -e 'sZ-0.000000Z 0.000000Zg' < outfile > outfile_tmp
 mv outfile_tmp outfile
 
-diff -b -B outfile OUTPUT/out
+diff -b -B outfile "${abs_top_srcdir}/examples/fullci/OUTPUT/out"
 
 exit
