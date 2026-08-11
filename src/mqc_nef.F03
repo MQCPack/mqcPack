@@ -2,7 +2,11 @@
 
       use omp_lib
       use mqc_algebra
-      use mqc_est
+      use mqc_est, only: MQC_SCF_Eigenvalues, MQC_SCF_Integral, &
+        MQC_TwoERIs, mqc_print, MatMul, Dagger, Conjg, Transpose, &
+        Contraction, PartialContraction, Size, &
+        mqc_eri_eri_partial_contraction_2eri, operator(+), operator(-), &
+        operator(*)
       Use iso_fortran_env, only: int32, int64, real64
 
 !
