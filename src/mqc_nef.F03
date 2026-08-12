@@ -1,9 +1,9 @@
    Module MQC_NEF
 
-      use mqc_algebra, only: MQC_Scalar, MQC_Vector, MQC_Matrix, &
+      use mqc_est, only: MQC_SCF_Eigenvalues, MQC_SCF_Integral, MQC_TwoERIs, &
+        MQC_Scalar, MQC_Vector, MQC_Matrix, &
         MQC_Error, mqc_error_i, mqc_error_a, mqc_error_A, &
         mqc_print, num2char, String_Change_Case, assignment(=)
-      use mqc_est, only: MQC_SCF_Eigenvalues, MQC_SCF_Integral, MQC_TwoERIs
       Use iso_fortran_env, only: int32, int64, real64
 
 !
@@ -384,7 +384,7 @@
           blank_at_top,blank_at_bottom,formatStr,blockPrint)
 !
       use mqc_est, only: mqc_print
-      use mqc_algebra, only: operator(.eq.), operator(.lt.)
+      use mqc_est, only: operator(.eq.), operator(.lt.)
       implicit none
       class(mqc_nef_matrix)::NEFMat
       integer(kind=int64),intent(in)::iOut
@@ -857,7 +857,7 @@
 !
       subroutine mqc_nef_vector_import_vector(NEFVec,vector)
 !
-      use mqc_algebra, only: Size
+      use mqc_est, only: Size
         implicit none
         class(mqc_nef_vector),intent(inOut)::NEFVec
         type(mqc_vector)::vector
@@ -2571,7 +2571,7 @@
       function mqc_nefmatrix_nefmatrix_contraction(NEFMatA,NEFMatB) result(output)
 !
       use mqc_est, only: Contraction
-      use mqc_algebra, only: operator(+)
+      use mqc_est, only: operator(+)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatA,NEFMatB
       type(mqc_scalar)::output
@@ -2670,7 +2670,7 @@
       function mqc_nef_r4_nef_r4_contraction(NEFR4A,NEFR4B,label) result(output)
 !
       use mqc_est, only: Contraction
-      use mqc_algebra, only: operator(+), operator(-)
+      use mqc_est, only: operator(+), operator(-)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       character(len=*),optional,intent(in)::label
