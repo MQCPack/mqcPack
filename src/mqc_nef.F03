@@ -1,9 +1,6 @@
    Module MQC_NEF
 
-      use mqc_est, only: MQC_SCF_Eigenvalues, MQC_SCF_Integral, MQC_TwoERIs, &
-        MQC_Scalar, MQC_Vector, MQC_Matrix, &
-        MQC_Error, mqc_error_i, mqc_error_a, mqc_error_A, &
-        mqc_print, num2char, String_Change_Case, assignment(=)
+      use mqc_est
       Use iso_fortran_env, only: int32, int64, real64
 
 !
@@ -243,7 +240,6 @@
       subroutine mqc_print_nef_vector(NEFVec,iOut,header, &
           blank_at_top,blank_at_bottom,formatStr)
 !
-      use mqc_est, only: mqc_print
         implicit none
         class(mqc_nef_vector)::NEFVec
         integer(kind=int64),intent(in)::iOut
@@ -270,7 +266,6 @@
 !
       subroutine mqc_nef_vector_initialize(NEFVec,initial_map_matrix,scalar)
 !
-      use mqc_est, only: Size
         implicit none
         class(mqc_nef_vector),intent(inOut)::NEFVec
         type(mqc_scf_eigenvalues),dimension(:),allocatable,intent(in)::initial_map_matrix
@@ -383,8 +378,6 @@
       subroutine mqc_print_nef_matrix(NEFMat,iOut,header, &
           blank_at_top,blank_at_bottom,formatStr,blockPrint)
 !
-      use mqc_est, only: mqc_print
-      use mqc_est, only: operator(.eq.), operator(.lt.)
       implicit none
       integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix)::NEFMat
@@ -600,7 +593,6 @@
 !
       subroutine mqc_nef_matrix_initialize(NEFMat,initial_map_matrix_row,scalar,initial_map_matrix_col)
 !
-      use mqc_est, only: Size
         implicit none
       integer(kind=int64) :: nef_bidx
         class(mqc_nef_matrix),intent(inOut)::NEFMat
@@ -870,7 +862,6 @@
 !
       subroutine mqc_nef_vector_import_vector(NEFVec,vector)
 !
-      use mqc_est, only: Size
         implicit none
         class(mqc_nef_vector),intent(inOut)::NEFVec
         type(mqc_vector)::vector
@@ -928,7 +919,6 @@
 !
       function mqc_nefmatrix_nefmatrix_multiply(NEFMatrixA,NEFMatrixB) result(NEFMatrixOut)
 !
-      use mqc_est, only: operator(+), MatMul
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatrixA,NEFMatrixB
       type(mqc_nef_matrix)::NEFMatrixOut
@@ -1013,7 +1003,6 @@
 !
       function mqc_nefmatrix_integral_multiply(NEFMatA,IntegralB) result(NEFMatOut)
 !
-      use mqc_est, only: MatMul, Size
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatA
       type(mqc_scf_integral),intent(in)::IntegralB
@@ -1080,7 +1069,6 @@
 !
       function mqc_integral_nefmatrix_multiply(IntegralA,NEFMatB) result(NEFMatOut)
 !
-      use mqc_est, only: MatMul, Size
       implicit none
       type(mqc_scf_integral),intent(in)::IntegralA
       type(mqc_nef_matrix),intent(in)::NEFMatB
@@ -1146,7 +1134,6 @@
 !
       function mqc_nef_vector_sum(NEFVecA,NEFVecB) result(NEFVecOut)
 !
-      use mqc_est, only: operator(+)
       implicit none
       type(mqc_nef_vector),intent(in)::NEFVecA,NEFVecB
       type(mqc_nef_vector)::NEFVecOut
@@ -1212,7 +1199,6 @@
 !
       function mqc_nefmatrix_sum(NEFMatA,NEFMatB) result(NEFMatOut)
 !
-      use mqc_est, only: operator(+)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatA,NEFMatB
       type(mqc_nef_matrix)::NEFMatOut
@@ -1300,7 +1286,6 @@
 !
       function mqc_nef_r4_sum(NEFR4A,NEFR4B) result(NEFR4Out)
 !
-      use mqc_est, only: operator(+)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       type(mqc_nef_r4)::NEFR4Out
@@ -1425,7 +1410,6 @@
 !
       function mqc_NEFMatrix_conjugate(NEFMat) result(NEFMatOut)
 !
-      use mqc_est, only: Conjg
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
@@ -1474,7 +1458,6 @@
 !
       function mqc_NEFMatrix_conjugate_transpose(NEFMat) result(NEFMatOut)
 !
-      use mqc_est, only: Dagger
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
@@ -1524,7 +1507,6 @@
 !
       function mqc_NEFR4_conjugate_transpose(NEFR4) result(NEFR4Out)
 !
-      use mqc_est, only: Dagger
       implicit none
       integer(kind=int64) :: nef_bidx, nef_bidx2
       type(mqc_nef_r4),intent(in)::NEFR4
@@ -1595,7 +1577,6 @@
 !
       function mqc_NEFMatrix_transpose(NEFMat) result(NEFMatOut)
 !
-      use mqc_est, only: Transpose
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
@@ -1652,7 +1633,6 @@
 !
       function mqc_scalar_nef_vector_multiply(scalarA,NEFVecB) result(NEFVecOut)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_vector),intent(in)::NEFVecB
       class(*),intent(in)::scalarA
@@ -1717,7 +1697,6 @@
 !
       function mqc_nef_vector_scalar_multiply(NEFVecA,scalarB) result(NEFVecOut)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_vector),intent(in)::NEFVecA
       class(*),intent(in)::scalarB
@@ -1782,7 +1761,6 @@
 !
       function mqc_scalar_nefmatrix_multiply(scalarIn,NEFMat) result(NEFMatOut)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       class(*),intent(in)::scalarIn
@@ -1850,7 +1828,6 @@
 !
       function mqc_nefmatrix_scalar_multiply(NEFMat,scalarB) result(NEFMatOut)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       class(*),intent(in)::scalarB
@@ -1918,7 +1895,6 @@
 !
       function mqc_scalar_nefr4_multiply(scalarIn,NEFR4) result(NEFR4Out)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4
       class(*),intent(in)::scalarIn
@@ -1954,7 +1930,6 @@
       end function mqc_scalar_nefr4_multiply
       function mqc_nefr4_scalar_multiply(NEFR4,scalarB) result(NEFR4Out)
 !
-      use mqc_est, only: operator(*)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4
       class(*),intent(in)::scalarB
@@ -2025,7 +2000,6 @@
 !
       function mqc_nef_vector_difference(NEFVecA,NEFVecB) result(NEFVecOut)
 !
-      use mqc_est, only: operator(-)
       implicit none
       type(mqc_nef_vector),intent(in)::NEFVecA,NEFVecB
       type(mqc_nef_vector)::NEFVecOut
@@ -2094,7 +2068,6 @@
 !
       function mqc_nefmatrix_difference(NEFMatA,NEFMatB) result(NEFMatOut)
 !
-      use mqc_est, only: operator(-)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatA,NEFMatB
       type(mqc_nef_matrix)::NEFMatOut
@@ -2181,7 +2154,6 @@
 !
       function mqc_nef_r4_difference(NEFR4A,NEFR4B) result(NEFR4Out)
 !
-      use mqc_est, only: operator(-)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       type(mqc_nef_r4)::NEFR4Out
@@ -2346,7 +2318,6 @@
       subroutine mqc_print_nef_r4(NEFR4,iOut,header, &
           blank_at_top,blank_at_bottom,formatStr,short_print_threshold)
 !
-      use mqc_est, only: mqc_print
       implicit none
       class(mqc_nef_r4)::NEFR4
       integer(kind=int64),intent(in)::iOut
@@ -2597,8 +2568,6 @@
 !
       function mqc_nefmatrix_nefmatrix_contraction(NEFMatA,NEFMatB) result(output)
 !
-      use mqc_est, only: Contraction
-      use mqc_est, only: operator(+)
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatA,NEFMatB
       type(mqc_scalar)::output
@@ -2696,8 +2665,6 @@
 !
       function mqc_nef_r4_nef_r4_contraction(NEFR4A,NEFR4B,label) result(output)
 !
-      use mqc_est, only: Contraction
-      use mqc_est, only: operator(+), operator(-)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       character(len=*),optional,intent(in)::label
@@ -2868,7 +2835,6 @@
 !
       function mqc_nef_r4_nef_matrix_contraction(NEFR4A,NEFMatB,label,indexA) result(output)
 !
-      use mqc_est, only: Contraction, operator(+), operator(-)
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A
       type(mqc_nef_matrix),intent(in)::NEFMatB
@@ -3447,7 +3413,6 @@
 !
       function mqc_nef_r4_nef_r4_partial_contraction_2nef_r4(NEFR4A,NEFR4B,index1,index2) result(NEFR4Out)
 !
-      use mqc_est, only: operator(+), mqc_eri_eri_partial_contraction_2eri
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       integer(kind=int64),dimension(4),intent(in),optional::index1,index2
@@ -3643,7 +3608,6 @@
 !
       function mqc_nef_r4_eri_partial_contraction_2nef_r4(NEFR4A,ERIB,index1,index2) result(NEFR4Out)
 !
-      use mqc_est, only: operator(+), mqc_eri_eri_partial_contraction_2eri, Size
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A
       type(mqc_twoeris),intent(in)::ERIB
@@ -3874,7 +3838,6 @@
 !
       function mqc_eri_nef_r4_partial_contraction_2nef_r4(ERIA,NEFR4B,index1,index2) result(NEFR4Out)
 !
-      use mqc_est, only: operator(+), mqc_eri_eri_partial_contraction_2eri, Size
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4B
       type(mqc_twoeris),intent(in)::ERIA
@@ -4105,7 +4068,6 @@
 !
       function mqc_nef_r4_nef_r4_partial_contraction(NEFR4A,NEFR4B,index1,index2) result(MatOut)
 !
-      use mqc_est, only: operator(+), PartialContraction
       implicit none
       type(mqc_nef_r4),intent(in)::NEFR4A,NEFR4B
       integer(kind=int64),dimension(4),intent(in),optional::index1,index2
@@ -5442,7 +5404,6 @@
       Subroutine MQC_NEF_Matrix_Map_Insert(MatIn,idIRow,idICol,ExtSCFI,ExtMapC,ExtMapR)
 !
 !     Variable Declarations.
-      use mqc_est, only: Size
       implicit none
       integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix),intent(inOut)::MatIn
