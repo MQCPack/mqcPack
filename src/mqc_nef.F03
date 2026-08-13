@@ -386,6 +386,7 @@
       use mqc_est, only: mqc_print
       use mqc_est, only: operator(.eq.), operator(.lt.)
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix)::NEFMat
       integer(kind=int64),intent(in)::iOut
       character(len=*),intent(in)::header
@@ -429,7 +430,8 @@
             col_num = 1 
             Line = num2char(NEFMat%Map_Matrix_Row(j)%at(sub_j,'alpha'))
             do i = 1, NEFMat%NumSpace_col
-              tmp_int = NEFMat%Main_matrix(NEFMat%blockIndex([1,j],[2,i]))
+              nef_bidx = NEFMat%blockIndex([1,j],[2,i])
+              tmp_int = NEFMat%Main_matrix(nef_bidx)
               do sub_i = 1, NEFMat%Size_vector_alpha_col(i)
                 if (tmp_int%at(sub_j,sub_i,'alpha').eq.0.0) then 
                   Line = trim(Line)//'     '//num2char(0.00000)
@@ -456,7 +458,8 @@
             col_num = 1
             Line = num2char(NEFMat%Map_Matrix_Row(j)%at(sub_j,'beta'))
             do i = 1, NEFMat%NumSpace_col
-              tmp_int = NEFMat%Main_matrix(NEFMat%blockIndex([1,j],[2,i]))
+              nef_bidx = NEFMat%blockIndex([1,j],[2,i])
+              tmp_int = NEFMat%Main_matrix(nef_bidx)
               do sub_i = 1, NEFMat%Size_vector_beta_col(i)
                 if (tmp_int%at(sub_j,sub_i,'beta').eq.0.0) then
                   Line = trim(Line)//'     '//num2char(0.00000)
@@ -483,7 +486,8 @@
             col_num = 1
             Line = num2char(NEFMat%Map_Matrix_Row(j)%at(sub_j,'alpha'))
             do i = 1, NEFMat%NumSpace_col
-              tmp_int = NEFMat%Main_matrix(NEFMat%blockIndex([1,j],[2,i]))
+              nef_bidx = NEFMat%blockIndex([1,j],[2,i])
+              tmp_int = NEFMat%Main_matrix(nef_bidx)
               do sub_i = 1, NEFMat%Size_vector_alpha_col(i)
                 if (tmp_int%at(sub_j,sub_i,'alphabeta').eq.0.0) then
                   Line = trim(Line)//'     '//num2char(0.00000)
@@ -510,7 +514,8 @@
             col_num = 1
             Line = num2char(NEFMat%Map_Matrix_Row(j)%at(sub_j,'beta'))
             do i = 1, NEFMat%NumSpace_col
-              tmp_int = NEFMat%Main_matrix(NEFMat%blockIndex([1,j],[2,i]))
+              nef_bidx = NEFMat%blockIndex([1,j],[2,i])
+              tmp_int = NEFMat%Main_matrix(nef_bidx)
               do sub_i = 1, NEFMat%Size_vector_beta_col(i)
                 if (tmp_int%at(sub_j,sub_i,'betaalpha').eq.0.0) then
                   Line = trim(Line)//'     '//num2char(0.00000)
@@ -533,7 +538,8 @@
       else
         do i = 1, NEFMat%NumSpace_col
           do j = 1, NEFMat%NumSpace_row
-            call mqc_print(NEFMat%Main_matrix(NEFMat%blockIndex([1,j],[2,i])),iOut,&
+            nef_bidx = NEFMat%blockIndex([1,j],[2,i])
+            call mqc_print(NEFMat%Main_matrix(nef_bidx),iOut,&
                   'Sub-Space '//trim(num2char(j))//','//trim(num2char(i)))
           end do
         end do
@@ -596,6 +602,7 @@
 !
       use mqc_est, only: Size
         implicit none
+      integer(kind=int64) :: nef_bidx
         class(mqc_nef_matrix),intent(inOut)::NEFMat
         type(mqc_scf_eigenvalues),dimension(:),allocatable,intent(in)::initial_map_matrix_row
         type(mqc_scf_eigenvalues),dimension(:),allocatable,intent(in),optional::initial_map_matrix_col
@@ -638,25 +645,29 @@
             end if
             if (same_vec.and.i.eq.j) then
               If(Present(Scalar)) then
-                call NEFMat%Main_matrix(NEFMat%blockIndex([1,i],[2,i]))%init(&
+                nef_bidx = NEFMat%blockIndex([1,i],[2,i])
+                call NEFMat%Main_matrix(nef_bidx)%init(&
                        Size(initial_map_matrix_row(i),'alpha'),&
                        Size(initial_map_matrix_row(i),'beta'),&
                        scalar=scalar)
               else
-                call NEFMat%Main_matrix(NEFMat%blockIndex([1,i],[2,i]))%init(&
+                nef_bidx = NEFMat%blockIndex([1,i],[2,i])
+                call NEFMat%Main_matrix(nef_bidx)%init(&
                        Size(initial_map_matrix_row(i),'alpha'),&
                        Size(initial_map_matrix_row(i),'beta'))
               end if
             else
               If(Present(Scalar)) then
-                call NEFMat%Main_matrix(NEFMat%blockIndex([1,i],[2,j]))%init(&
+                nef_bidx = NEFMat%blockIndex([1,i],[2,j])
+                call NEFMat%Main_matrix(nef_bidx)%init(&
                        Size(initial_map_matrix_row(i),'alpha'),&
                        Size(initial_map_matrix_row(i),'beta'),&
                        scalar=scalar,&
                        nAlpha2=Size(active_map_matrix_col(j),'alpha'),&
                        nBeta2=Size(active_map_matrix_col(j),'beta'))
               else
-                call NEFMat%Main_matrix(NEFMat%blockIndex([1,i],[2,j]))%init(&
+                nef_bidx = NEFMat%blockIndex([1,i],[2,j])
+                call NEFMat%Main_matrix(nef_bidx)%init(&
                        Size(initial_map_matrix_row(i),'alpha'),&
                        Size(initial_map_matrix_row(i),'beta'),&
                        nAlpha2=Size(active_map_matrix_col(j),'alpha'),&
@@ -707,6 +718,7 @@
       subroutine mqc_nef_matrix_import_integral(NEFMat,integral)
 !
         implicit none
+      integer(kind=int64) :: nef_bidx
         class(mqc_nef_matrix),intent(inOut)::NEFMat
         type(mqc_scf_integral)::integral
         type(mqc_scf_integral)::tmp_integral
@@ -723,7 +735,8 @@
           do col = 1, NEFMat%NumSpace_col
             tmp_alpha = NEFMat%Map_Matrix_Col(col)%getBlock('alpha')
             tmp_beta = NEFMat%Map_Matrix_Col(col)%getBlock('beta')
-            NEFMat%Main_matrix(NEFMat%blockIndex([1,row],[2,col]))=&
+            nef_bidx = NEFMat%blockIndex([1,row],[2,col])
+            NEFMat%Main_matrix(nef_bidx)=&
                 tmp_integral%orbitals('useStrings',&
               alphaOrbsIn = tmp_alpha%getArrayI(),&
                BetaOrbsIn = tmp_beta%getArrayI(),axis=2)
@@ -919,7 +932,7 @@
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMatrixA,NEFMatrixB
       type(mqc_nef_matrix)::NEFMatrixOut
-      integer(kind=int64)::rowA,colB,colA,final_index
+      integer(kind=int64)::rowA,colB,colA,final_index,nef_bidx,nef_bidx2
 !
       if(NEFMatrixA%NumSpace_col.ne.NEFMatrixB%NumSpace_row) &
         call mqc_error_i('NEF number of subspaces are &
@@ -947,14 +960,16 @@
         do colB = 1, NEFMatrixB%NumSpace_col
           final_index = NEFMatrixOut%blockIndex([1,rowA],[2,colB])
           do colA = 1, NEFMatrixA%NumSpace_col
+            nef_bidx = NEFMatrixA%blockIndex([1,rowA],[2,colA])
+            nef_bidx2 = NEFMatrixB%blockIndex([1,colA],[2,colB])
             if (colA.ne.1) then
               NEFMatrixOut%Main_Matrix(final_index) = NEFMatrixOut%Main_Matrix(final_index) + &
-                matmul(NEFMatrixA%Main_Matrix(NEFMatrixA%blockIndex([1,rowA],[2,colA])),&
-                       NEFMatrixB%Main_Matrix(NEFMatrixB%blockIndex([1,colA],[2,colB])))
+                matmul(NEFMatrixA%Main_Matrix(nef_bidx),&
+                       NEFMatrixB%Main_Matrix(nef_bidx2))
             else
               NEFMatrixOut%Main_Matrix(final_index) =  &
-                matmul(NEFMatrixA%Main_Matrix(NEFMatrixA%blockIndex([1,rowA],[2,colA])),&
-                       NEFMatrixB%Main_Matrix(NEFMatrixB%blockIndex([1,colA],[2,colB])))
+                matmul(NEFMatrixA%Main_Matrix(nef_bidx),&
+                       NEFMatrixB%Main_Matrix(nef_bidx2))
             end if
           end do
         end do
@@ -1414,14 +1429,16 @@
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
-      integer(kind=int64)::row,col
+      integer(kind=int64)::row,col,nef_bidx,nef_bidx2
 !
       call NEFMatOut%init(NEFMat%Map_Matrix_row,&
            initial_map_matrix_col=NEFMat%Map_Matrix_col)
       do row = 1, NEFMat%NumSpace_row
         do col = 1, NEFMat%NumSpace_col
-          NEFMatOut%Main_Matrix(NEFMatOut%blockIndex([1,row],[2,col])) = &
-            conjg(NEFMat%Main_Matrix(NEFMat%blockIndex([1,row],[2,col])))
+          nef_bidx = NEFMatOut%blockIndex([1,row],[2,col])
+          nef_bidx2 = NEFMat%blockIndex([1,row],[2,col])
+          NEFMatOut%Main_Matrix(nef_bidx) = &
+            conjg(NEFMat%Main_Matrix(nef_bidx2))
         end do
       end do
 !
@@ -1461,15 +1478,17 @@
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
-      integer(kind=int64)::row,col
+      integer(kind=int64)::row,col,nef_bidx,nef_bidx2
 !
       call NEFMatOut%init(NEFMat%Map_Matrix_col,&
            initial_map_matrix_col=NEFMat%Map_Matrix_row)
-      
+
       do row = 1, NEFMat%NumSpace_row
         do col = 1, NEFMat%NumSpace_col
-          NEFMatOut%Main_Matrix(NEFMatOut%blockIndex([2,row],[1,col])) = &
-            dagger(NEFMat%Main_Matrix(NEFMat%blockIndex([1,row],[2,col])))
+          nef_bidx = NEFMatOut%blockIndex([2,row],[1,col])
+          nef_bidx2 = NEFMat%blockIndex([1,row],[2,col])
+          NEFMatOut%Main_Matrix(nef_bidx) = &
+            dagger(NEFMat%Main_Matrix(nef_bidx2))
         end do
       end do
 !
@@ -1507,6 +1526,7 @@
 !
       use mqc_est, only: Dagger
       implicit none
+      integer(kind=int64) :: nef_bidx, nef_bidx2
       type(mqc_nef_r4),intent(in)::NEFR4
       type(mqc_nef_r4)::NEFR4Out
       integer(kind=int64)::id1,id2,id3,id4,N1234
@@ -1534,8 +1554,9 @@
         do id2 = 1, NEFR4Out%NumSpace_2
           do id3 = 1, NEFR4Out%NumSpace_3
             do id4 = 1, NEFR4Out%NumSpace_4
-              NEFR4Out%Main_R4(NEFR4Out%blockIndex([4,id4],[3,id3],[2,id2],[1,id1])) = &
-                dagger(NEFR4%Main_R4(NEFR4%blockIndex([1,id4],[2,id3],[3,id2],[4,id1])))
+              nef_bidx = NEFR4Out%blockIndex([4,id4],[3,id3],[2,id2],[1,id1])
+              nef_bidx2 = NEFR4%blockIndex([1,id4],[2,id3],[3,id2],[4,id1])
+              NEFR4Out%Main_R4(nef_bidx) = dagger(NEFR4%Main_R4(nef_bidx2))
             end do
           end do
         end do
@@ -1578,15 +1599,17 @@
       implicit none
       type(mqc_nef_matrix),intent(in)::NEFMat
       type(mqc_nef_matrix)::NEFMatOut
-      integer(kind=int64)::row,col
+      integer(kind=int64)::row,col,nef_bidx,nef_bidx2
 !
       call NEFMatOut%init(NEFMat%Map_Matrix_col,&
            initial_map_matrix_col=NEFMat%Map_Matrix_row)
 
       do row = 1, NEFMat%NumSpace_row
         do col = 1, NEFMat%NumSpace_col
-          NEFMatOut%Main_Matrix(NEFMatOut%blockIndex([2,row],[1,col])) = &
-            transpose(NEFMat%Main_Matrix(NEFMat%blockIndex([1,row],[2,col])))
+          nef_bidx = NEFMatOut%blockIndex([2,row],[1,col])
+          nef_bidx2 = NEFMat%blockIndex([1,row],[2,col])
+          NEFMatOut%Main_Matrix(nef_bidx) = &
+            transpose(NEFMat%Main_Matrix(nef_bidx2))
         end do
       end do
 !
@@ -2403,6 +2426,7 @@
       function mqc_nefmatrix_nefmatrix_outer_product(NEFMatA,NEFMatB) result(NEFR4Out)
 !
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix),intent(in)::NEFMatA
       type(mqc_nef_matrix),intent(in)::NEFMatB
       type(mqc_nef_r4)::NEFR4Out
@@ -2441,7 +2465,8 @@
           do id3 = 1, NEFR4Out%NumSpace_3
             do id4 = 1, NEFR4Out%NumSpace_4
               idB = NEFMatB%blockIndex([1,id3],[2,id4])
-              NEFR4Out%Main_R4(NEFR4Out%blockIndex([1,id1],[2,id2],[3,id3],[4,id4])) = &
+              nef_bidx = NEFR4Out%blockIndex([1,id1],[2,id2],[3,id3],[4,id4])
+              NEFR4Out%Main_R4(nef_bidx) = &
                 NEFMatA%Main_Matrix(idA)%outer2ERI(NEFMatB%Main_Matrix(idB))
             end do
           end do
@@ -2488,6 +2513,7 @@
       function mqc_nefmatrix_nefmatrix_crossouter_product(NEFMatA,NEFMatB) result(NEFR4Out)
 !
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix),intent(in)::NEFMatA
       type(mqc_nef_matrix),intent(in)::NEFMatB
       type(mqc_nef_r4)::NEFR4Out
@@ -2523,7 +2549,8 @@
           do id3 = 1, NEFR4Out%NumSpace_3
             do id2 = 1, NEFR4Out%NumSpace_2
               idB = NEFMatB%blockIndex([1,id3],[2,id2])
-              NEFR4Out%Main_R4(NEFR4Out%blockIndex([1,id1],[2,id2],[3,id3],[4,id4])) = &
+              nef_bidx = NEFR4Out%blockIndex([1,id1],[2,id2],[3,id3],[4,id4])
+              NEFR4Out%Main_R4(nef_bidx) = &
                 NEFMatA%Main_Matrix(idA)%crossouter2ERI(NEFMatB%Main_Matrix(idB))
             end do
           end do
@@ -4085,7 +4112,7 @@
       integer(kind=int64),dimension(4)::my_index1,my_index2
       type(mqc_nef_matrix)::MatOut
       type(MQC_SCF_Eigenvalues),Dimension(:),Allocatable::Map_Matrix_Col,Map_Matrix_Row
-      Integer(kind=int64)::ia,ja,ka,la,ib,jb,kb,lb,i,j,k,l,id1,id2,id3,id4,mat_index
+      Integer(kind=int64)::ia,ja,ka,la,ib,jb,kb,lb,i,j,k,l,id1,id2,id3,id4,mat_index,nef_bidx,nef_bidx2
 !
       if(present(index1)) then
         ia=index1(1)
@@ -4173,9 +4200,11 @@
           mat_index = MatOut%blockIndex([1,id3],[2,id4])
           do id1 = 1, nefr4A%blockSize(ia)
             do id2 = 1, nefr4A%blockSize(ja)
+              nef_bidx = NEFR4A%blockIndex([ka,id3],[la,id4],[ia,id1],[ja,id2])
+              nef_bidx2 = NEFR4B%blockIndex([kb,id3],[lb,id4],[ib,id1],[jb,id2])
               MatOut%Main_Matrix(mat_index) = MatOut%Main_Matrix(mat_index) +&
-                partialcontraction(NEFR4A%Main_R4(NEFR4A%blockIndex([ka,id3],[la,id4],[ia,id1],[ja,id2])),&
-                NEFR4B%Main_R4(NEFR4B%blockIndex([kb,id3],[lb,id4],[ib,id1],[jb,id2])),my_index1,my_index2)
+                partialcontraction(NEFR4A%Main_R4(nef_bidx),&
+                NEFR4B%Main_R4(nef_bidx2),my_index1,my_index2)
             end do
           end do
         end do
@@ -4827,7 +4856,7 @@
       implicit none
       class(mqc_nef_matrix)::nefM
       class(*),intent(in)::i,j,p,q
-      integer(kind=int64)::myI,myJ,myp,myq
+      integer(kind=int64)::myI,myJ,myp,myq,nef_bidx
       type(mqc_scalar)::element
       character(len=*),optional,intent(in)::spinBlockIn
       character(len=64)::spinBlock
@@ -4881,7 +4910,8 @@
       else
         spinBlock = 'alpha'
       end if
-      element = nefM%Main_Matrix(nefM%blockIndex([1,myp],[2,myq]))%at(myI,myJ,spinBlock)
+      nef_bidx = nefM%blockIndex([1,myp],[2,myq])
+      element = nefM%Main_Matrix(nef_bidx)%at(myI,myJ,spinBlock)
 !
       end function mqc_nef_matrix_at
 !
@@ -4945,6 +4975,7 @@
       function mqc_nef_r4_at(nefR4,set1,set2,set3,set4) result(element)
 !
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_r4)::nefR4
       Integer(kind=int64),dimension(4),intent(in)::set1,set2,set3,set4
       integer(kind=int64)::I,J,K,L,myp,myq,myr,mys,sp,sq,sr,ss,id1,id2,id3,id4
@@ -5091,8 +5122,9 @@
         spinBlock=trim(spinBlock)//trim(sL)
       end if
 !  
-      element = nefR4%Main_R4(nefR4%blockIndex(&
-                          [dI,I],[dJ,J],[dK,K],[dL,L]))%at(&
+      nef_bidx = nefR4%blockIndex(&
+                          [dI,I],[dJ,J],[dK,K],[dL,L])
+      element = nefR4%Main_R4(nef_bidx)%at(&
                            id1,id2,id3,id4,spinBlock)
 !
       end function mqc_nef_r4_at
@@ -5412,6 +5444,7 @@
 !     Variable Declarations.
       use mqc_est, only: Size
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_matrix),intent(inOut)::MatIn
       type(mqc_scf_integral),allocatable::ExtI
       integer,optional,intent(in)::idIRow,idICol
@@ -5555,19 +5588,23 @@
            EmptyBlockIntegral
       else if (i > idIRow .and. idIRow>0) then
         if (j>idICol .and. idICol>0) then
+          nef_bidx = MatIn%blockIndex([1,i-1],[2,j-1])
           tempMain(((i-1)*newNcol)+j) = &
-                 MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j-1]))
+                 MatIn%Main_matrix(nef_bidx)
         else
+          nef_bidx = MatIn%blockIndex([1,i-1],[2,j])
           tempMain(((i-1)*newNcol)+j) = &
-                 MatIn%Main_matrix(MatIn%blockIndex([1,i-1],[2,j]))
+                 MatIn%Main_matrix(nef_bidx)
         end if
-      else 
+      else
         if (j>idICol .and. idICol>0) then
+          nef_bidx = MatIn%blockIndex([1,i],[2,j-1])
           tempMain(((i-1)*newNcol)+j) = &
-                 MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j-1]))
+                 MatIn%Main_matrix(nef_bidx)
         else
+          nef_bidx = MatIn%blockIndex([1,i],[2,j])
           tempMain(((i-1)*newNcol)+j) = &
-                 MatIn%Main_matrix(MatIn%blockIndex([1,i],[2,j]))
+                 MatIn%Main_matrix(nef_bidx)
         end if
       end if
     end do 
@@ -5841,6 +5878,7 @@
       function mqc_nef_r4_dimention_collapse(NEFr4,spinType,spinTypeKet,Order) result(NEFMatOut)
 !
       implicit none
+      integer(kind=int64) :: nef_bidx
       class(mqc_nef_r4),intent(in)::NEFr4
       character(len=*),intent(in),optional::spinType,spinTypeKet
       integer(kind=int64),dimension(4),intent(in),optional::Order
@@ -5922,7 +5960,8 @@
               do k = 1, NEFr4%blockSize(ka,dimk,'alpha')
                do l = 1, NEFr4%blockSize(la,diml,'alpha')
                 write(*,*) dimi,dimj,dimk,diml,i,j,k,l
-                call NEFR4%Main_R4(nefr4%blockIndex([ia,dimi],[ja,dimj],[la,diml],[ka,dimk]))%print(&
+                nef_bidx = nefr4%blockIndex([ia,dimi],[ja,dimj],[la,diml],[ka,dimk])
+                call NEFR4%Main_R4(nef_bidx)%print(&
                     6,'MMFM: nefR4 out - aaaa')
                 call NEFMatOut%Main_Matrix(finalid)%print(6,'MMFM: nef out - aa')
                 call NEFMatOut%Main_Matrix(finalid)%put(&
