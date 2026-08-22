@@ -13729,8 +13729,12 @@
 
         if(doAhrm) then
           if(mod(flag,100)/10.eq.1) then
-            aaACden = 2*(aaACden + bbACden) 
-            bbACden = 2*(aaACden/2.0 - 2*bbACden) 
+            if (mod(flag,10).eq.0) then
+              aaACden = 4*aaACden
+            else
+              aaACden = 2*(aaACden + bbACden)
+              bbACden = 2*(aaACden/2.0 - 2*bbACden)
+            endIf
           endIf
           do i = 1,nBasis
             if(mod(flag,10).eq.2) &
