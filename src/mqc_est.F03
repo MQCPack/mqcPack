@@ -3840,7 +3840,8 @@
       type(mqc_r4tensor)::aaaa
       real(kind=real64),dimension(:),allocatable::aaaaLoc
       type(mqc_twoERIs)::temp
-      integer::i,j,k,l,cnt,ip,kp,bs,bsntt,iOut=6,iPrint=0 
+      integer::i,j,k,l,cnt,ip,kp,ilp,kjp,ikp,ljp,bs,bsntt,iOut=6,iPrint=0
+      real(kind=real64)::g1ijkl,g1ilkj,g1iklj
       !!! TODO: make iOut and iPrint NOT static values!!
 
       call string_change_case(integralType,'l',my_integralType)
@@ -3977,11 +3978,105 @@
           endIf
         endIf
       case ('raffenetti1')
-        if(present(transform)) then
-          transform = .false.
+!       G1 -> G2: G2(i,j,k,l) = (4/5)*G1(i,j,k,l) + (8/5)*G1(i,l,k,j) + (8/5)*G1(i,k,l,j)
+!       G1 -> G3: G3(i,j,k,l) = (4/5)*(G1(i,k,l,j) - G1(i,l,k,j))
+!       Derived by inverting the 3x3 linear system relating G1, G2, G3 to regular ERIs.
+        if(my_integralType.eq.'raffenetti2') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,ilp,kjp,ikp,ljp,i,j,k,l,g1ijkl,g1ilkj,g1iklj)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+!           Raffenetti integrals with identical compound pair indices are
+!           stored with a factor of one half.  The three R1 permutations
+!           entering the inverse transformation can have different packing
+!           factors, so unpack each one independently before combining them.
+            ilp = symIndexHash(i,l)
+            kjp = symIndexHash(k,j)
+            ikp = symIndexHash(i,k)
+            ljp = symIndexHash(l,j)
+            g1ijkl = twoERIs%at(i,j,k,l)
+            g1ilkj = twoERIs%at(i,l,k,j)
+            g1iklj = twoERIs%at(i,k,l,j)
+            if(ip.eq.kp) g1ijkl = 2.0_real64*g1ijkl
+            if(ilp.eq.kjp) g1ilkj = 2.0_real64*g1ilkj
+            if(ikp.eq.ljp) g1iklj = 2.0_real64*g1iklj
+            aaaaLoc(symIndexHash(i,j,k,l)) = 0.8_real64*g1ijkl + &
+              1.6_real64*g1ilkj + 1.6_real64*g1iklj
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+          endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'full-coulomb','raffenetti2',aaaa)
+          return
+        elseIf(my_integralType.eq.'raffenetti3') then
+          bs = twoERIs%blockSize('alpha',1)
+          bsntt = (bs*(bs+1))/2
+          call aaaa%init(bs,bs,bs,bs,0.0)
+          call mqc_r4Tensor_full2Symm(aaaa)
+          allocate(aaaaLoc((bs**4+2*bs**3+3*bs**2+2*bs)/8))
+          aaaaLoc = 0.0
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP REDUCTION(+:aaaaLoc), &
+!$OMP SHARED(twoERIs,bs,bsntt),&
+!$OMP PRIVATE(cnt,ip,kp,ilp,kjp,ikp,ljp,i,j,k,l,g1ilkj,g1iklj)
+          do cnt = 1, (bsntt*(bsntt+1))/2
+#ifdef   PGI
+            ip = floor((1+sqrt(dfloat(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(dfloat(-7+8*ip)))/2)
+            k = floor((1+sqrt(dfloat(-7+8*kp)))/2)
+#else
+            ip = floor((1+sqrt(float(-7+8*cnt)))/2)
+            kp = cnt - ip*(ip-1)/2
+            i = floor((1+sqrt(float(-7+8*ip)))/2)
+            k = floor((1+sqrt(float(-7+8*kp)))/2)
+#endif
+            j = ip - i*(i-1)/2
+            l = kp - k*(k-1)/2
+            ilp = symIndexHash(i,l)
+            kjp = symIndexHash(k,j)
+            ikp = symIndexHash(i,k)
+            ljp = symIndexHash(l,j)
+            g1ilkj = twoERIs%at(i,l,k,j)
+            g1iklj = twoERIs%at(i,k,l,j)
+            if(ilp.eq.kjp) g1ilkj = 2.0_real64*g1ilkj
+            if(ikp.eq.ljp) g1iklj = 2.0_real64*g1iklj
+            aaaaLoc(symIndexHash(i,j,k,l)) = 0.8_real64*(g1iklj-g1ilkj)
+            if(ip.eq.kp) aaaaLoc(symIndexHash(i,j,k,l)) = &
+              0.5*aaaaLoc(symIndexHash(i,j,k,l))
+          endDo
+!$OMP END PARALLEL DO
+          call MQC_Matrix_SymmSymmR4Tensor_Put_Real(aaaa,aaaaLoc)
+          call mqc_twoeris_allocate(twoERIs,'full-coulomb','raffenetti3',aaaa)
+          return
         else
-          call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
-            'twoERIs%type()',twoERIs%type())
+          if(present(transform)) then
+            transform = .false.
+          else
+            call mqc_error_a('Transformation of Raffenetti 1 2ERIs NYI in mqc_twoeris_transform',6, &
+              'twoERIs%type()',twoERIs%type(),'my_integralType',my_integralType)
+          endIf
         endIf
       case ('raffenetti2')
         if(present(transform)) then
