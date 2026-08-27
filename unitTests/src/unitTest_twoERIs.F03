@@ -25,11 +25,11 @@
       type(mqc_r4tensor),dimension(16)::oracleBlocks
       type(mqc_scalar)::sc
       type(mqc_twoERIs)::eriA,eriB,eriC
-      type(mqc_twoERIs)::eriAO,eriX,eriHalf,eriPartial,eriTrans,eriFull,eriSymm
+      type(mqc_twoERIs)::eriAO,eriX,eriHalf,eriPartial,eriTrans,eriTransLR,eriFull,eriSymm
       type(mqc_matrix)::mA,mB,mC,mD,outBlk
-      type(mqc_matrix)::moAA,moBB,moAB,moBA,moFull
+      type(mqc_matrix)::moAA,moBB,moAB,moBA,moFull,moAA2,moBB2,moAB2,moBA2,moFull2
       type(mqc_scf_integral)::intSp,intSpin,intGen,intOut
-      type(mqc_scf_integral)::generalMO
+      type(mqc_scf_integral)::generalMO,generalMO2
       real(kind=real64)::got,expected
       real(kind=real64)::partialError,transError,partialPairError,transPairError,fullError,atError
       real(kind=real64)::v1,v2,v3,v4,v5,v6,v7
@@ -3673,6 +3673,48 @@
           nfail=nfail+1
         end if
       end do
+
+!--------------------------------------------------------------------
+!     Test 159b: different complex-general bra and ket transformations.
+!
+!     Use a genuinely different complex ket transformation so that this
+!     distinguishes a bra/ket transformation from two independent
+!     conventional transformations.
+!--------------------------------------------------------------------
+!
+      moAA2=transpose(moAA)
+      moBB2=transpose(moBB)
+      moAB2=transpose(moAB)
+      moBA2=transpose(moBA)
+      call mqc_integral_allocate(generalMO2,'complex general ket MOs','general',&
+                                 moAA2,moBB2,moAB2,moBA2)
+      moFull2=generalMO2%getBlock('full')
+      call TwoERI_Trans(6,0,generalMO,eriAO,eriTransLR,Right_MOs=generalMO2)
+      tD=eriTransLR%getBlock('full')
+      fullError=0.0_real64
+      do p=1,2*n; do q=1,2*n; do r=1,2*n; do s=1,2*n
+        directValue=(0.0_real64,0.0_real64)
+        do spin1=0,1; do spin2=0,1
+          do mu=1,n; do nu=1,n; do lambda=1,n; do sigma=1,n
+            sc=moFull%at(mu+spin1*n,p); coef1=sc%cval()
+            sc=moFull2%at(nu+spin1*n,q); coef2=sc%cval()
+            sc=moFull%at(lambda+spin2*n,r); coef3=sc%cval()
+            sc=moFull2%at(sigma+spin2*n,s); coef4=sc%cval()
+            sc=tA%at(mu,nu,lambda,sigma)
+            directValue=directValue+conjg(coef1)*coef2*&
+              conjg(coef3)*coef4*sc%cval()
+          end do; end do; end do; end do
+        end do; end do
+        sc=tD%at(p,q,r,s)
+        fullError=max(fullError,abs(sc%cval()-directValue))
+      end do; end do; end do; end do
+      if(fullError.le.tol) then
+        write(*,1000) 'different-bra/ket complex-general transformation'
+      else
+        write(*,'(1X,A,ES14.6)') 'FAIL  different-bra/ket transform error=',fullError
+        nfail=nfail+1
+      end if
+
 !
 !--------------------------------------------------------------------
 !     Test 160: exhaustive complex-general MQC_TwoERIs%at oracle.
