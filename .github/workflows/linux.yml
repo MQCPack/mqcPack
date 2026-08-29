@@ -11,6 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Free up disk space
+        run: |
+          sudo apt-get clean
+          sudo apt-get autoremove -y
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -25,11 +32,12 @@ jobs:
           curl https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg
           echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
           sudo apt-get update -y
-          sudo apt-get install -y nvhpc-25-1
+          sudo apt-get install -y nvhpc-25-11
 
       - name: Install GauOpen and create the mqc-install directory
         run: |
-          mkdir gauopen
+          set -e
+          mkdir -p gauopen
           cd gauopen
           curl --fail --location --retry 3 --retry-all-errors \
             --output gauopen_v2.zip \
@@ -37,7 +45,7 @@ jobs:
           unzip -t gauopen_v2.zip
           unzip gauopen_v2.zip
           cd ..
-          mkdir mqc-install
+          mkdir -p mqc-install
 
       - name: Build mqcPack with gfortran
         run: echo -e "yG$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
@@ -46,6 +54,6 @@ jobs:
         run: |
           NVARCH=`uname -s`_`uname -m`
           NVCOMPILERS=/opt/nvidia/hpc_sdk
-          PATH=$NVCOMPILERS/$NVARCH/25.1/compilers/bin:$PATH; export PATH
+          PATH=$NVCOMPILERS/$NVARCH/25.11/compilers/bin:$PATH; export PATH
           echo -e "yn$GITHUB_WORKSPACE/mqc-install\n-lblas\n-llapack\n$GITHUB_WORKSPACE/gauopen\ny\nn\n" | ./mqc_install && doxygen doc/Doxyfile
 

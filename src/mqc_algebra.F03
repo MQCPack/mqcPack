@@ -152,6 +152,8 @@
         Procedure, Public::pop => MQC_Vector_Pop
 !>      \brief <b> Removes the first element of the MQC_Vector and returns the value</b>
         Procedure, Public::shift => MQC_Vector_Shift
+!>      \brief <b> Returns a vector of elements that meet a logical criteria</b>
+        Procedure, Public::pack => MQC_Vector_Pack
 !>      \brief <b> Returns the maximum value in the MQC_Vector</b>
         Procedure, Public::maxval => MQC_Vector_MaxVal
 !>      \brief <b> Returns the minimum value in the MQC_Vector</b>
@@ -165,6 +167,8 @@
 !>      \brief <b> Returns the MQC_Vector sorted from low to high unless vector specifying
 !>      index order is provided</b>
         Procedure, Public::sort => MQC_Vector_sort
+!>      \brief <b> Returns the sorted MQC_Vector with unique elements</b>
+        Procedure, Public::unique => MQC_Vector_unique
 !>      \brief <b> Returns the square root of each element in the MQC_Vector</b>
         Procedure, Public::sqrt => MQC_Vector_Sqrt
 !>      \brief <b> Returns the exponential of the MQC Vector</b>
@@ -184,6 +188,14 @@
         Procedure, Public::diagf => MQC_Matrix_DiagMatrix_Put_Vector_func
       End Type MQC_Vector
 !
+!     Vectors of Vectors...
+!
+!>    \brief <b> Vector of Vectors variable</b>
+      Type MQC_VoV
+        Type(MQC_Vector),Public::Vector
+        Type(MQC_VoV),Public,Dimension(:),Pointer::VoV=>null()
+      End Type MQC_VoV
+!      
 !     Matrices...
 !     Lower triangular matrix is stored in a row-major manner so that it is stored one row at a time.
 !     Matrices with StorSymm flag are symmetric for both real and complex parts. StorHerm, StorASymm 
@@ -212,7 +224,7 @@
         Procedure, Public::norm => MQC_Matrix_Norm
 !>      \brief <b> Returns the transpose of the MQC Matrix</b>
         Procedure, Public::transpose => MQC_Matrix_Transpose
-!>      \brief <b> Returns the Hemitian transpose of the MQC Matrix</b>
+!>      \brief <b> Returns the Hermitian transpose of the MQC Matrix</b>
         Procedure, Public::dagger => MQC_Matrix_Conjugate_Transpose
 !>      \brief <b> Returns the eigenvalues and eigenvalues of a symmetric or 
 !>      hermitian MQC Matrix</b>
@@ -298,6 +310,10 @@
         Procedure, Public::tat => MQC_R4Tensor_R4Tensor_At
         Procedure, Private::put_sca => MQC_R4Tensor_Put_Scalar
         Procedure, Private::put_int => MQC_R4Tensor_Put_Int
+!>      \brief <b> Returns the Hemitian transpose of the MQC R4Tensor</b>
+        Procedure, Public::dagger => MQC_R4Tensor_Conjugate_Transpose
+!>      \brief <b> Permutes the dimensions of the MQC R4Tensor</b>
+        Procedure, Public::permute => MQC_R4Tensor_Permute
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Generic, Public::put => put_sca, put_int 
@@ -361,6 +377,7 @@
 !>    \brief <b> Returns the object as an integer intrinsic</b>
       Interface int
         Module Procedure MQC_Scalar_Get_Intrinsic_Integer
+        Module Procedure MQC_Set_Vector2IntegerArray_Func
       End Interface
 !
 !>    \brief <b> Determines in an array is real type</b>
@@ -423,6 +440,7 @@
       Interface Dagger
         Module Procedure MQC_Vector_Conjugate_Transpose
         Module Procedure MQC_Matrix_Conjugate_Transpose
+        Module Procedure MQC_R4Tensor_Conjugate_Transpose
       End Interface
 !      
 !>    \brief <b> Defines a complex number</b>
@@ -451,6 +469,16 @@
 !>    \brief <b> Returns the location of the minimum value in the MQC_Vector</b>
       Interface minloc
         Module Procedure MQC_Vector_MinLoc
+      End Interface
+!
+!>    \brief <b> Sorts an MQC_Vector</b>
+      Interface sort
+        Module Procedure MQC_Vector_Sort
+      End Interface
+!
+!>    \brief <b> Unique sort of an MQC_Vector</b>
+      Interface unique
+        Module Procedure MQC_Vector_Unique
       End Interface
 !
 !>    \brief <b> Returns the square root</b>
@@ -582,6 +610,11 @@
         Module Procedure MQC_Matrix_Sum
       End Interface
 !
+!>    \brief <b> Returns the Minkowski sum of the MQC_Vector</b>
+      Interface Minkowski
+        Module Procedure MQC_Vector_Minkowski_Sum
+      End Interface
+!
 !>    \brief <b> Reshapes arrays</b>
       Interface Reshape
         Module Procedure MQC_Vector_Reshape_Matrix
@@ -607,6 +640,14 @@
         module procedure MQC_Vector_IsAllocated
         module procedure MQC_Matrix_IsAllocated
         module procedure MQC_R4Tensor_IsAllocated
+      end interface
+!
+!>    \brief <b> Deallocates an object</b>
+      interface Deallocate
+        module procedure MQC_Deallocate_Scalar
+        module procedure MQC_Deallocate_Vector
+        module procedure MQC_Deallocate_Matrix
+        module procedure MQC_Deallocate_R4Tensor
       end interface
 !
 !>    \brief <b> Returns the value of the vector at the specied index</b>
@@ -667,6 +708,11 @@
 !>    \brief <b> Initializes a matrix of the specified size</b>
       interface init
         module procedure MQC_Matrix_Initialize_Func
+      end interface
+!
+!>    \brief <b> Returns a vector of elements that meet a logical criteria</b>
+      interface pack
+        module procedure  MQC_Vector_Pack
       end interface
 !
 !----------------------------------------------------------------
@@ -935,6 +981,10 @@
 !
       Interface Operator (.crossouter.)
         Module Procedure MQC_Matrix_Matrix_Cross_Outer
+      End Interface
+!
+      Interface Operator (.kron.)
+        Module Procedure MQC_Matrix_Matrix_Kronecker_Product
       End Interface
 !
 !     Rank 4 tensor operators...
@@ -2782,8 +2832,8 @@
 !     =============
 !>
 !>    \verbatim
-!>
-!>    MQC_Scalar_Get_Phase is a function that returns the phase angle (p)
+!>       
+!>    MQC_Scalar_Get_Phase is a function that returns the phase angle (p) 
 !>    in radian of MQC_scalar variable. Such as:
 !>    Scalar=exp(-ip)*abs(Scalar)=abs(Scalar)(cos(p)-i sin(p))
 !>
@@ -2822,7 +2872,8 @@
       else
         thresh=1.0E-8
       end if
-      if (abs(Scalar).lt.thresh) then 
+
+      if (abs(Scalar).lt.thresh) then
         output = 0.0
       else
         output = acos(Scalar%rval()/abs(Scalar))
@@ -8403,6 +8454,48 @@
       End Subroutine MQC_Set_Vector2IntegerArray
 !
 !
+!     PROCEDURE MQC_Set_Vector2IntegerArray_Func
+!
+!>    \brief <b> MQC_Set_Vector2IntegerArray_Func is a function that outputs an MQC
+!>    vector to a rank 1 intrinsic integer array</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_Set_Vector2IntegerArray_Func is a function that outputs an MQC vector to
+!>    a rank 1 intrinsic integer array. 
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] VectorIn
+!>    \verbatim
+!>        VectorIn is Type(MQC_Vector)
+!>        The MQC_Vector whose data will be output into the intrinsic
+!>        array.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson  
+!>    \date 2025
+!
+      Function MQC_Set_Vector2IntegerArray_Func(VectorIn) Result(ArrayOut)
+!
+!     Variable Declarations.
+      Implicit None
+      Integer(kind=int64),Allocatable::ArrayOut(:)
+      Type(MQC_Vector),Intent(In)::VectorIn
+!
+      ArrayOut = VectorIn
+!
+      Return
+      End Function MQC_Set_Vector2IntegerArray_Func
+!
+!
 !     PROCEDURE MQC_Set_Vector2RealArray
 !
 !>    \brief <b> MQC_Set_Vector2RealArray is a subroutine that outputs an MQC
@@ -9829,18 +9922,18 @@
         call M%init(VA%length,VB%length,(0.0,0.0))
         if (mqc_have_int(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_int(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         else
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         endif
       endif
 
@@ -11657,7 +11750,7 @@
 !
 !     Variable Declarations.
       Implicit None
-      Class(MQC_Vector),Intent(InOut)::Vector
+      Class(MQC_Vector),Intent(In)::Vector
       Logical::isAllocated
 !
       isAllocated = .False.
@@ -11908,6 +12001,103 @@
 !
       return
       end function mqc_vector_shift
+!
+!
+!     PROCEDURE MQC_Vector_Pack
+!
+!>    \brief <b> MQC_Vector_Pack is a function that returns a vector made up of elements
+!>    who satisfy a mask condition</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Pack is a function that returns a vector made up of elements whose 
+!>    mask condition equals true. Optionally, a vector argument can be provided which
+!>    is of equal or greater length than the number of true elements in mask, such that
+!>    the resulting vector will be of the same size as the optional vector agruments 
+!>    with the elements after the true mask elements taken from this vector.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] Mask
+!>    \verbatim
+!>        Mask is Logical,Dimension(:)
+!>        The mask vector of the same length as the 
+!>        input vector.
+!>    \endverbatim
+!>
+!>    \param[in] Padding
+!>    \verbatim
+!>        Padding is Type(MQC_Vector),Optional
+!>        The pad vector which must be equal or 
+!>        greater in size to the number of true
+!>        elements in mask.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_Vector_Pack(Vector,Mask,Padding) result(Output)
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(in)::vector
+      logical,dimension(:),intent(in)::mask
+      type(mqc_vector),optional,intent(in)::padding
+      type(mqc_vector)::output
+
+      integer(kind=int64),dimension(:),allocatable::tempInt,tempInt2
+      real(kind=real64),dimension(:),allocatable::tempReal,tempReal2
+      complex(kind=real64),dimension(:),allocatable::tempCmplx,tempCmplx2
+!
+      if(size(mask).ne.size(vector)) &
+        call mqc_error_i('mask and vector dimensions are inconsistent in mqc_vector_pack',&
+        6,'size(vector)',size(vector),'size(mask)',size(mask))
+      
+      select case(vector%data_type)
+      case('Integer')
+        tempInt = vector
+        if(present(padding)) then
+          tempInt2 = padding
+          output = pack(tempInt,mask,tempInt2)
+        else
+          output = pack(tempInt,mask)
+        endIf
+      case('Real')
+        tempReal = vector
+        if(present(padding)) then
+          tempReal2 = padding
+          output = pack(tempReal,mask,tempReal2)
+        else
+          output = pack(tempReal,mask)
+        endIf
+      case('Complex')
+        tempCmplx = vector
+        if(present(padding)) then
+          tempCmplx2 = padding
+          output = pack(tempCmplx,mask,tempCmplx2)
+        else
+          output = pack(tempCmplx,mask)
+        endIf
+      case default
+        call mqc_error_a('Unrecognized data type in mqc_vector_pack',6,'vector%data_type',&
+          vector%data_type)
+      end select
+!
+      return
+      end function mqc_vector_pack
 !
 !
 !     PROCEDURE MQC_Vector_MaxVal
@@ -12171,6 +12361,56 @@
 !
       return
       end function mqc_vector_argsort
+!
+!
+!     PROCEDURE MQC_Vector_Unique
+!
+!>    \brief <b> MQC_Vector_Unique is a function that returns a sorted MQC
+!>    vector with unique elements</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Unique is a function that returns a sorted MQC vector with unique 
+!>    elements.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Vector
+!>    \verbatim
+!>        Vector is Class(MQC_Vector)
+!>        The name of the MQC_Vector variable.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      Function MQC_Vector_Unique(Vector) result(VecOut)
+!
+!     Variable Declarations.
+      implicit none
+      class(mqc_vector),intent(in)::vector
+      type(mqc_vector)::VecOut
+
+      type(mqc_vector)::tmpVec
+      integer::i
+!
+      tmpVec = vector
+      call sort(tmpVec)
+      call vecOut%push(tmpVec%at(1))
+      do i = 2, size(tmpVec)
+        if(tmpVec%at(i).ne.tmpVec%at(i-1)) call vecOut%push(tmpVec%at(i))
+      endDo
+!
+      return
+      end function mqc_vector_unique
 !
 !
 !     PROCEDURE MQC_Vector_Sort
@@ -12902,6 +13142,59 @@
       endDo
 !
       end function mqc_vector_product
+!
+!
+!     PROCEDURE MQC_Vector_Minkowski_Sum
+!
+!>    \brief <b> MQC_Vector_Minkowski_Sum is a function that returns the Minkowski sum
+!>    of two MQC vectors</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Vector_Minkowski_Sum is a function that returns the Minkowski sum of two MQC 
+!>    vectors.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] A
+!>    \verbatim
+!>        A is Class(MQC_Vector)
+!>        The name of the first MQC_Vector variable.
+!>    \endverbatim
+!>
+!>    \param[in] B
+!>    \verbatim
+!>        B is Class(MQC_Vector)
+!>        The name of the second MQC_Vector variable.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2025
+!
+      function mqc_vector_minkowski_sum(A,B) result(output)
+!
+      Implicit None
+      class(mqc_vector),intent(in)::A,B
+      type(mqc_vector)::output
+      integer(kind=int64)::i,j
+!
+!     Do the work.
+!
+      call output%init(size(A)*size(B))
+      do i=1,size(A)
+        do j=1,size(B)
+          call output%put(A%at(i)+B%at(j),(i-1)*size(A)+j)
+        endDo
+      endDo
+!
+      end function mqc_vector_minkowski_sum
 !
 !
 !     PROCEDURE MQC_Vector_Complex_Conjugate
@@ -14891,7 +15184,7 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -14906,7 +15199,7 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
@@ -14920,11 +15213,11 @@
             If(Column) Mat%MatC(IndI:IndJ,IndK) = VectorIn%VecC
             If(.not.Column) Mat%MatC(IndK,IndI:IndJ) = VectorIn%VecC
           Else
-            Call MQC_Error_A('VectorIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('VectorIn type not defined in MQC_Matrix_Vector_Put', 6, &
                  'VectorIn%Data_Type', VectorIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+          Call MQC_Error_A('Mat type not defined in MQC_Matrix_Vector_Put', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
@@ -16175,7 +16468,7 @@
                    'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Real') then
@@ -16328,7 +16621,7 @@
                    'MatrixIn%Storage', MatrixIn%Storage )
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         ElseIf (Mat%Data_Type.eq.'Complex') then
@@ -16480,11 +16773,11 @@
                    'MatrixIn%Storage', MatrixIn%Storage)
             EndIf
           Else
-            Call MQC_Error_A('MatrixIn type not defined in MQC_Vector_Vector_Put', 6, &
+            Call MQC_Error_A('MatrixIn type not defined in MQC_Matrix_Matrix_Put', 6, &
                  'MatrixIn%Data_Type', MatrixIn%Data_Type )
           EndIf
         Else
-          Call MQC_Error_A('Mat type not defined in MQC_Vector_Vector_Put', 6, &
+          Call MQC_Error_A('Mat type not defined in MQC_Matrix_Matrix_Put', 6, &
                'Mat%Data_Type', Mat%Data_Type )
         EndIf
       ElseIf (Mat%Storage.eq.'StorSymm') then
@@ -16585,19 +16878,19 @@
       if (Rows.le.Matrix%NRow) then
         if (Cols.le.Matrix%NCol) then
           MatrixOut = Matrix
+          return
         else
           call MatrixOut%init(Matrix%NRow,Cols)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         end if
       else
         if (Cols.le.Matrix%NCol) then
           call MatrixOut%init(Rows,Matrix%NCol)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         else
           call MatrixOut%init(Rows,Cols)
-          call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
         end if
       end if
+      if(Matrix%NRow.gt.0.and.Matrix%NCol.gt.0) &
+        call MatrixOut%mput(Matrix,[1,Matrix%NRow],[1,Matrix%NCol])
 !
       end function MQC_Matrix_Pad
 !
@@ -19950,6 +20243,10 @@
       Real(kind=real64)::Thresh=1e-14
 
       Diagonal = .True.
+      If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
+        Diagonal = .False.
+        Return
+      EndIf
       If(Matrix%Storage.eq.'StorDiag') then
         Return
       ElseIf(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or.&
@@ -21960,8 +22257,8 @@
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2016
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2016, 2025
 !
       Subroutine MQC_Matrix_Full2Symm(Matrix)
 !
@@ -21985,11 +22282,12 @@
       ElseIf(MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')) then
         label = 'antihermitian'
       Else
-        Call MQC_Error_L('Input matrix must be symmetric/antisymmetric/hermitian in MQC_Matrix_Full2Symm', 6, &
-          'MQC_Matrix_Test_Symmetric(Matrix)', MQC_Matrix_Test_Symmetric(Matrix), &
-          "MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')", MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric'), &
-          "MQC_Matrix_Test_Symmetric(Matrix,'hermitian')", MQC_Matrix_Test_Symmetric(Matrix,'hermitian'), &
-          "MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')", MQC_Matrix_Test_Symmetric(Matrix,'antihermitian') )
+        Return
+        !Call MQC_Error_L('Input matrix must be symmetric/antisymmetric/hermitian in MQC_Matrix_Full2Symm', 6, &
+        !  'MQC_Matrix_Test_Symmetric(Matrix)', MQC_Matrix_Test_Symmetric(Matrix), &
+        !  "MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric')", MQC_Matrix_Test_Symmetric(Matrix,'antisymmetric'), &
+        !  "MQC_Matrix_Test_Symmetric(Matrix,'hermitian')", MQC_Matrix_Test_Symmetric(Matrix,'hermitian'), &
+        !  "MQC_Matrix_Test_Symmetric(Matrix,'antihermitian')", MQC_Matrix_Test_Symmetric(Matrix,'antihermitian') )
       EndIf
       If(MQC_Matrix_HaveReal(Matrix)) then
         Allocate(Temp(MQC_Matrix_Rows(Matrix),MQC_Matrix_Columns(Matrix)))
@@ -22095,9 +22393,9 @@
       Integer(kind=int64)::I,J,II,N,NTT
       Character(len=10)::storage
 !
-      If(.not.(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or. &
-        Matrix%Storage.eq.'StorHerm'.or.Matrix%Storage.eq.'StorAhrm')) &
-        Call MQC_Error_A('Input matrix must be lower-triangular packed &
+      If((Matrix%Storage.ne.'StorSymm').and.(Matrix%Storage.ne.'StorAsym').and. &
+         (Matrix%Storage.ne.'StorHerm').and.(Matrix%Storage.ne.'StorAhrm')) &
+        Call MQC_Error_A('Input matrix must be lower-triangular packed&
         & in MQC_Matrix_Symm2Full', 6, 'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       NTT = (N*(N+1))/2
@@ -22584,8 +22882,8 @@
 !
 !     Authors:
 !     ========
-!>    \author X. Sheng
-!>    \date 2017
+!>    \author X. Sheng, M. M. F. Moraes
+!>    \date 2017, 2025
 !
       Function MQC_Matrix_Symm2Full_Func(Matrix) Result(Temp)
 !
@@ -22594,10 +22892,12 @@
       Type(MQC_Matrix),Intent(In)::Matrix
       type(MQC_Matrix)::Temp
       Integer(kind=int64)::I,J,II,N
-!
-      If(.not.Matrix%Storage.eq.'StorSymm') Call MQC_Error_A('Input matrix must be &
-     &  lower-triangular packed in MQC_Matrix_Symm2Full', 6, &
-     'Matrix%Storage', Matrix%Storage )
+
+      If((Matrix%Storage.ne.'StorSymm').and.(Matrix%Storage.ne.'StorAsym').and. &
+         (Matrix%Storage.ne.'StorHerm').and.(Matrix%Storage.ne.'StorAhrm')) &
+         Call MQC_Error_A('Input matrix must be &
+         &lower-triangular packed in MQC_Matrix_Symm2Full_Func', 6, &
+         'Matrix%Storage', Matrix%Storage )
       N = MQC_Matrix_Columns(Matrix)
       Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Temp,Matrix%Data_Type,'StorFull')
       If(Matrix%Data_Type.eq.'Real') then
@@ -24096,11 +24396,15 @@
       Type(MQC_Matrix)::MAreal,Tmp1
       Integer(kind=int64),Allocatable::Result(:,:)
 
-      If (.not. VB%Column .or. MA%NCol /= VB%Length) then
+      If (MA%NCol /= VB%Length) then
         Call MQC_Error_I('Matrix and vector are not conformable for multiplication', 6, &
              'MA%NCol', MA%NCol, &
              'VB%Length', VB%Length)
       EndIf
+      If (.not. VB%Column) then
+        Call MQC_Error_I('Row type vector are not conformable for a right size multiplication with a matrix', 6)
+      EndIf
+      
 
       If (MQC_Matrix_HaveInteger(MA)) MAreal = MQC_Cast_Real(MA)
       If (MQC_Vector_HaveInteger(VB)) VBreal = MQC_Cast_Real(VB)
@@ -24274,11 +24578,15 @@
       Type(MQC_Matrix)::MBreal,Tmp1
       Integer(kind=int64),Allocatable::Result(:,:)
 
-      If (VA%Column .or. VA%Length /= MB%NRow) then
+      If ( VA%Length /= MB%NRow) then
         Call MQC_Error_i('Matrix and vector are not conformable for multiplication', 6, &
              'VA%Length', VA%Length, &
              'MB%NRow', MB%NRow)
       EndIf
+      If (VA%Column) then
+        Call MQC_Error_I('Column type vector are not conformable for a left size multiplication with a matrix', 6)
+      EndIf
+
 
       If (MQC_Matrix_HaveReal(MB) .and. MQC_Vector_HaveReal(VA)) then
         Call MQC_Allocate_Vector(MB%NCol,VC,'Real')
@@ -24828,27 +25136,35 @@
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2025
 !
       Function MQC_ComplexMatrixProduct(Comp,Matrix) Result(Matrix_Res)
 !
       Implicit None
       Complex(kind=real64),Intent(In)::Comp
       Type(MQC_Matrix),Intent(In)::Matrix
-      Type(MQC_Matrix)::Matrix_Res
+      Type(MQC_Matrix)::Matrix_Res,TmpMatrix
 
       Call MQC_Deallocate_Matrix(Matrix_Res)
-      If (Matrix%Data_Type.eq.'Integer') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex','StorFull')
+      if (Matrix%Storage.ne.'StorFull') then
+        TmpMatrix =  MQC_Matrix_Symm2Full_Func(Matrix)
+        if (TmpMatrix%Data_Type.eq.'Integer') then
+          Matrix_Res%MatC = Comp *TmpMatrix%MatI
+        else if (TmpMatrix%Data_Type.eq.'Real') then
+          Matrix_Res%MatC = Comp *TmpMatrix%MatR
+        else 
+          Matrix_Res%MatC = Comp *TmpMatrix%MatC
+        end if
+      else if (Matrix%Data_Type.eq.'Integer') then
         Matrix_Res%MatC = Comp * Matrix%MatI
-      Else If (Matrix%Data_Type.eq.'Real') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      else if (Matrix%Data_Type.eq.'Real') then
         Matrix_Res%MatC = Comp * Matrix%MatR
-      Else If (Matrix%Data_Type.eq.'Complex') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      else 
         Matrix_Res%MatC = Comp * Matrix%MatC
-      EndIf
+      end if
+      call MQC_Matrix_Full2Symm(Matrix_Res) 
 
       End Function MQC_ComplexMatrixProduct
 !
@@ -24884,27 +25200,35 @@
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2025
 !
       Function MQC_MatrixComplexProduct(Matrix,Comp) Result(Matrix_Res)
 !
       Implicit None
       Complex(kind=real64),Intent(In)::Comp
       Type(MQC_Matrix),Intent(In)::Matrix
-      Type(MQC_Matrix)::Matrix_Res
+      Type(MQC_Matrix)::Matrix_Res,TmpMatrix
 
       Call MQC_Deallocate_Matrix(Matrix_Res)
-      If (Matrix%Data_Type.eq.'Integer') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex','StorFull')
+      if (Matrix%Storage.ne.'StorFull') then
+        TmpMatrix =  MQC_Matrix_Symm2Full_Func(Matrix)
+        if (TmpMatrix%Data_Type.eq.'Integer') then
+          Matrix_Res%MatC = Comp *TmpMatrix%MatI
+        else if (TmpMatrix%Data_Type.eq.'Real') then
+          Matrix_Res%MatC = Comp *TmpMatrix%MatR
+        else 
+          Matrix_Res%MatC = Comp *TmpMatrix%MatC
+        end if
+      else if (Matrix%Data_Type.eq.'Integer') then
         Matrix_Res%MatC = Comp * Matrix%MatI
-      Else If (Matrix%Data_Type.eq.'Real') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      else if (Matrix%Data_Type.eq.'Real') then
         Matrix_Res%MatC = Comp * Matrix%MatR
-      Else If (Matrix%Data_Type.eq.'Complex') then
-        Call MQC_Allocate_Matrix(Matrix%NRow,Matrix%NCol,Matrix_Res,'Complex',Matrix%Storage)
+      else 
         Matrix_Res%MatC = Comp * Matrix%MatC
-      EndIf
+      end if
+      call MQC_Matrix_Full2Symm(Matrix_Res) 
 
       End Function MQC_MatrixComplexProduct
 !
@@ -26416,22 +26740,22 @@
       integer(kind=int64)::iUse,jUse
 !
       if(abs(i).gt.mqc_matrix_rows(a)) &
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'i',i)
       if(abs(j).gt.mqc_matrix_columns(a)) &
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'j',j)
       if(i.lt.0) then
         iUse = mqc_matrix_rows(a)+i+1
       elseif(i.gt.0) then
         iUse = i
       else
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'i',i)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'i',i)
       endIf
       if(j.lt.0) then
         jUse = mqc_matrix_columns(a)+j+1
       elseif(i.gt.0) then
         jUse = j
       else
-        call mqc_error_i('Badly defined index in mqc_matrix_minor',6,'j',j)
+        call mqc_error_i('Badly defined index in mqc_matrix_cofactor',6,'j',j)
       endIf
 
       cofactor = (-1)**(iUse+jUse)*a%minor(iUse,jUse)
@@ -27468,10 +27792,10 @@
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2025
 !
-      Function MQC_Matrix_Matrix_Outer(matrix1,matrix2) result(outer)
+    Function MQC_Matrix_Matrix_Outer(matrix1,matrix2) result(outer)
 !
 !     Variable Declarations.
       Implicit None
@@ -27485,7 +27809,9 @@
       P = size(matrix2,2)
       
       call outer%init(M,N,O,P)
-      
+       
+!!!$OMP PARALLEL DO DEFAULT(NONE), &
+!!!$OMP SHARED(M,N,O,P,outer,matrix1,matrix2)
       do i = 1,M
         do j = 1,N
           do k = 1,O
@@ -27495,10 +27821,8 @@
           endDo
         endDo
       endDo
-
-      end function MQC_Matrix_Matrix_Outer
-
-
+!!!$OMP END PARALLEL DO
+    end function MQC_Matrix_Matrix_Outer
 !
 !
 !     PROCEDURE MQC_Matrix_Matrix_Cross_Outer
@@ -27513,7 +27837,7 @@
 !>    \verbatim
 !>
 !>    MQC_Matrix_Matrix_Cross_Outer is a function that returns the rank-4 tensor containing 
-!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices </b>.
+!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices.
 !>
 !>    \endverbatim
 !
@@ -27563,8 +27887,64 @@
       endDo
 
       end function MQC_Matrix_Matrix_Cross_Outer
+!
+!
+!     PROCEDURE MQC_Matrix_Matrix_Kronecker_Product
+!
+!>    \brief <b> MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of
+!>    two matrices </b>.
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of two
+!>    matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the kronecker product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the kronecker product.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2026
+!
+      Function MQC_Matrix_Matrix_Kronecker_Product(matrix1,matrix2) result(kron)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_matrix)::kron
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::i,j,iStart,iEnd,jStart,jEnd
 
+      call kron%init(size(matrix1,1)*size(matrix2,1),size(matrix1,2)*size(matrix2,2))
 
+      do i = 1,size(matrix1,1)
+        iStart = size(matrix1,1)*(i-1)+1
+        iEnd = size(matrix1,1)*i
+        do j = 1,size(matrix1,2)
+          jStart = size(matrix1,2)*(j-1)+1
+          jEnd = size(matrix1,2)*j
+          call kron%mput(matrix1%at(i,j)*matrix2,[iStart,iEnd],[jStart,jEnd])
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Kronecker_Product
 !
 !
 !     PROCEDURE MQC_Matrix_Complex_RealPart
@@ -29062,20 +29442,29 @@
 !>        = .True.:  print blank line below output
 !>        = .False.: do not print blank line below output.
 !>    \endverbatim
+!>
+!>    \param[in] Short_Print_Threshold
+!>    \verbatim
+!>        Short_Print_Threshold is Real,Optional
+!>        if present: print only elements with absolute value larger than Short_Print_Threshold
+!>    \endverbatim
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2016
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2016, 2025
 !
-      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom)
+      Subroutine MQC_Print_R4Tensor_Algebra1(Tensor,IOut,Header,blank_at_top,blank_at_bottom,short_print_threshold)
 !
       Implicit None
       Integer(kind=int64),Intent(In)::IOut
       Class(MQC_R4Tensor),Intent(In)::Tensor
       Integer(kind=int64)::I,J,K,L
       Character(Len=*),intent(in),optional::Header
+      Real(kind=real64),intent(in),optional::short_print_threshold
       Logical,Optional::blank_at_top,blank_at_bottom
+      Logical::short_print
+      Real(kind=real64)::print_threshold 
 
  1000 Format(1x,A)
  1020 Format( " " )
@@ -29086,19 +29475,43 @@
       If(Present(blank_at_top)) then
         If(blank_at_top) Write(IOut,1020)
       EndIf
+      If(Present(short_print_threshold)) then
+        print_threshold = short_print_threshold
+        if (print_threshold.lt.0) then
+          short_print = .false.
+        else 
+          short_print = .true.
+        end if
+      else
+        print_threshold = -1.0
+        short_print = .false.
+      EndIf
       If(Present(Header)) Write(IOut,1000) Trim(Header)
       If(MQC_R4Tensor_HaveFull(Tensor)) then
         Do I = 1, Tensor%I
           Do J = 1, Tensor%J
             Do K = 1, Tensor%K
               Do l = 1, Tensor%L
-                If(Tensor%Data_Type.eq.'Integer') then
-                  Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
-                ElseIf(Tensor%Data_Type.eq.'Real') then
-                  Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
-                ElseIf(Tensor%Data_Type.eq.'Complex') then
-                  Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
-                EndIf
+                If(short_print) then
+                  If(Tensor%Data_Type.eq.'Integer') then
+                    If(abs(Tensor%ITen(I,J,K,L)).gt.print_threshold) &
+                      Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
+                  ElseIf(Tensor%Data_Type.eq.'Real') then
+                    If(abs(Tensor%RTen(I,J,K,L)).gt.print_threshold) &
+                      Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
+                  ElseIf(Tensor%Data_Type.eq.'Complex') then
+                    If(abs(Tensor%CTen(I,J,K,L)).gt.print_threshold) &
+                      Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
+                  EndIf
+                Else
+                  If(Tensor%Data_Type.eq.'Integer') then
+                    Write(IOut,1100) I,J,K,L,Tensor%ITen(I,J,K,L)
+                  ElseIf(Tensor%Data_Type.eq.'Real') then
+                    Write(IOut,1200) I,J,K,L,Tensor%RTen(I,J,K,L)
+                  ElseIf(Tensor%Data_Type.eq.'Complex') then
+                    Write(IOut,1300) I,J,K,L,Tensor%CTen(I,J,K,L)
+                  EndIf
+                EndIF
               EndDo
             EndDo
           EndDo
@@ -29108,13 +29521,25 @@
           Do J = 1, Tensor%J
             Do K = 1, Tensor%K
               Do l = 1, Tensor%L
-                If(Tensor%Data_Type.eq.'Integer') then
-                  Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
-                ElseIf(Tensor%Data_Type.eq.'Real') then
-                  Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
-                ElseIf(Tensor%Data_Type.eq.'Complex') then
-                  Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
-                EndIf
+                If(short_print) then
+                  If(abs(Tensor%at(I,J,K,L)).gt.print_threshold ) then
+                    If(Tensor%Data_Type.eq.'Integer') then
+                      Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
+                    ElseIf(Tensor%Data_Type.eq.'Real') then
+                      Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
+                    ElseIf(Tensor%Data_Type.eq.'Complex') then
+                      Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
+                    EndIf
+                  EndIf
+                Else
+                  If(Tensor%Data_Type.eq.'Integer') then
+                    Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
+                  ElseIf(Tensor%Data_Type.eq.'Real') then
+                    Write(IOut,1200) I,J,K,L,Tensor%RTen(symIndexHash(I,J,K,L),1,1,1)
+                  ElseIf(Tensor%Data_Type.eq.'Complex') then
+                    Write(IOut,1300) I,J,K,L,Tensor%CTen(symIndexHash(I,J,K,L),1,1,1)
+                  EndIf
+                EndIF
               EndDo
             EndDo
           EndDo
@@ -29551,6 +29976,95 @@
       EndIf
 
       End Subroutine MQC_R4Tensor_Initialize
+!
+!     PROCEDURE MQC_R4Tensor_Permute
+!
+!>    \brief <b>Returns a rank-four tensor with permuted dimensions.</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    Returns a rank-four tensor with permuted dimensions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Order
+!>    \verbatim
+!>      Order is Integer(kind=int64),Dimension(4)
+!>      Permutation of [1,2,3,4] defining the input index
+!>      used for each output index.
+!>    \endverbatim
+!>
+!>    \param[in] DoConjg
+!>    \verbatim
+!>      DoConjg is Logical
+!>      If true, complex conjugate the permuted values.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      Function MQC_R4Tensor_Permute(Tensor,Order,DoConjg) Result(Output)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Integer(kind=int64),Dimension(4),Intent(In)::Order
+      Logical,Intent(In)::DoConjg
+      Type(MQC_R4Tensor)::Output
+      Type(MQC_Scalar)::ScalarValue
+      Integer(kind=int64)::I,J,K,L,N
+      Integer(kind=int64),Dimension(4)::IndexOut,TensorShape
+
+      Do N=1,4
+        If(Order(N).lt.1.or.Order(N).gt.4.or.Count(Order.eq.Order(N)).ne.1) &
+          Call MQC_Error_I('Order is not a permutation in MQC_R4Tensor_Permute',6)
+      EndDo
+
+      TensorShape=[Tensor%I,Tensor%J,Tensor%K,Tensor%L]
+      Select Case(Tensor%Data_Type)
+      Case('Integer')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0_int64)
+      Case('Real')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0.0_real64)
+      Case('Complex')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),(0.0_real64,0.0_real64))
+      Case Default
+        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Permute',6, &
+          'Tensor%Data_Type',Tensor%Data_Type)
+      End Select
+      Do I=1,Output%I
+        Do J=1,Output%J
+          Do K=1,Output%K
+            Do L=1,Output%L
+              IndexOut=[I,J,K,L]
+              ScalarValue=Tensor%at(IndexOut(Order(1)),IndexOut(Order(2)), &
+                IndexOut(Order(3)),IndexOut(Order(4)))
+              Select Case(Tensor%Data_Type)
+              Case('Integer')
+                Call Output%put(ScalarValue%ival(),I,J,K,L)
+              Case('Real')
+                Call Output%put(ScalarValue%rval(),I,J,K,L)
+              Case('Complex')
+                If(DoConjg) Then
+                  Call Output%put(Conjg(ScalarValue%cval()),I,J,K,L)
+                Else
+                  Call Output%put(ScalarValue%cval(),I,J,K,L)
+                EndIf
+              End Select
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      End Function MQC_R4Tensor_Permute
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Real
 !
@@ -30497,8 +31011,8 @@
 !
 !     Authors:
 !     ========
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2025
 !
       Function MQC_R4Tensor_R4Tensor_Contraction(R4Tensor1,R4Tensor2) Result(Contraction)
 !
@@ -30507,6 +31021,7 @@
       Implicit None
       Type(MQC_R4Tensor),Intent(In)::R4Tensor1,R4Tensor2
       Type(MQC_Scalar)::Contraction
+      Type(MQC_Scalar),dimension(:),allocatable::ContractionVec
       Integer(kind=int64)::M,N,O,P,i,j,k,l
 !
       Contraction = 0.0
@@ -30514,14 +31029,23 @@
       N = Min(size(R4Tensor1,2),size(R4Tensor2,2))
       O = Min(size(R4Tensor1,3),size(R4Tensor2,3))
       P = Min(size(R4Tensor1,4),size(R4Tensor2,4))
+      allocate(ContractionVec(M))
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP SHARED(M,N,O,P,ContractionVec,R4Tensor1,R4Tensor2),&
+!$OMP PRIVATE(j,k,l,i)
       Do i = 1,M
+        ContractionVec(i) = 0.0
         Do j = 1,N
           Do k = 1,O
             Do l = 1,P
-              Contraction = Contraction + R4Tensor1%at(i,j,k,l)*R4Tensor2%at(i,j,k,l)
+              ContractionVec(i) = ContractionVec(i) + R4Tensor1%at(i,j,k,l)*R4Tensor2%at(i,j,k,l)
             EndDo
           EndDo
         EndDo
+      EndDo
+!$OMP END PARALLEL DO
+      Do i = 1,M
+        Contraction = Contraction + ContractionVec(i)
       EndDo
 !
       End Function MQC_R4Tensor_R4Tensor_Contraction
@@ -30744,7 +31268,7 @@
 !>    
 !>    \verbatim
 !>
-!>    MQC_R4Tensor_R4Tensor_At is a function that returns the vector between indices 
+!>    MQC_R4Tensor_Vector_At is a function that returns the vector between indices 
 !>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
 !>    index is counted back from the final element. 
 !>
@@ -31566,8 +32090,8 @@
 !     Authors:
 !     ========
 !
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2026
 !
       Function MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2,D3,D4) Result(TensorOut)
 !
@@ -31624,56 +32148,56 @@
       If (IndI.lt.0) IndI = Size(TensorIn,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(TensorIn,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
+      If (Len1.lt.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1) )
-      If (IndI.le.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
+      If (IndI.lt.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
            Size(TensorIn,1),'Len1', Len1 )
       If (IndJ.lt.Len1.or.IndJ.gt.Size(TensorIn,1)) Call MQC_Error_I('Index J out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1))
       IndK = K
       IndL = L
       If (IndK.lt.0) IndK = Size(TensorIn,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(TensorIn,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
+      If (Len2.lt.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
+      If (IndK.lt.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
            Size(TensorIn,2),'Len2', Len2 )
       If (IndL.lt.Len2.or.IndL.gt.Size(TensorIn,2)) Call MQC_Error_I('Index L out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2))
       IndM = M
       IndN = N
       If (IndM.lt.0) IndM = Size(TensorIn,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(TensorIn,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
+      If (Len3.lt.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
+      If (IndM.lt.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
            Size(TensorIn,3),'Len3', Len3 )
       If (IndN.lt.Len3.or.IndN.gt.Size(TensorIn,3)) Call MQC_Error_I('Index N out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3))
       IndO = O
       IndP = P
       If (IndO.lt.0) IndO = Size(TensorIn,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(TensorIn,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
+      If (Len4.lt.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
+      If (IndO.lt.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
            Size(TensorIn,4),'Len4', Len4 )
       If (IndP.lt.Len4.or.IndP.gt.Size(TensorIn,4)) Call MQC_Error_I('Index P out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4))
 
       If (MQC_R4Tensor_HaveFull(TensorIn)) then
@@ -31857,10 +32381,10 @@
       If (IndI.lt.0) IndI = Size(Ten,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(Ten,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
+      If (Len1.lt.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
         Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
         6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1),'Size(Ten,1)',Size(Ten,1))
-      If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+      If (IndI.lt.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
         'Len1', Len1 )
       If (IndJ.gt.Size(Ten,1)) Call MQC_Error_I('Index J out of bounds in  &
@@ -31870,10 +32394,10 @@
       If (IndK.lt.0) IndK = Size(Ten,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(Ten,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
+      If (Len2.lt.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
         Call MQC_Error_I('Dimension 2 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2),'Size(Ten,2)',Size(Ten,2) )
+      If (IndK.lt.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndK',IndK,'Size(Ten,2)', &
         Size(Ten,2),'Len2', Len2 )
       If (IndL.gt.Size(Ten,2)) Call MQC_Error_I('Index L out of bounds in &
@@ -31883,10 +32407,10 @@
       If (IndM.lt.0) IndM = Size(Ten,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(Ten,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
+      If (Len3.lt.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
         Call MQC_Error_I('Dimension 3 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3),'Size(Ten,3)',Size(Ten,3) )
+      If (IndM.lt.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndM',IndM,'Size(Ten,3)', Size(Ten,3), &
         'Len3', Len3 )
       If (IndN.gt.Size(Ten,3)) Call MQC_Error_I('Index N out of bounds in &
@@ -31896,10 +32420,10 @@
       If (IndO.lt.0) IndO = Size(Ten,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(Ten,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
+      If (Len4.lt.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
         Call MQC_Error_I('Dimension 4 length badly defined in MQC_R4Tensor_R4Tensor_Put',6, &
-        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4),'Size(Ten,4)',Size(Ten,4)  )
+      If (IndO.lt.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndO',IndO,'Size(Ten,4)', Size(Ten,4), &
         'Len4', Len4 )
       If (IndP.gt.Size(Ten,4)) Call MQC_Error_I('Index P out of bounds in &
@@ -32764,6 +33288,7 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,va,[i],[j]))
+              !tmpR = dagger(RA%mat(vb,va,[i],[j]))
             case(3)      
               tmpR = RA%mat([i],va,vb,[j])
             case(4)
@@ -32773,8 +33298,10 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],va,[j]))
+              !tmpR = dagger(RA%mat(vb,[i],va,[j]))
             case(2)      
               tmpR = transpose(RA%mat([i],vb,va,[j]))
+              !tmpR = dagger(RA%mat([i],vb,va,[j]))
             case(4)
               tmpR = RA%mat([i],[j],va,vb)
             end select      
@@ -32782,10 +33309,13 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],[j],va))
+              !tmpR = dagger(RA%mat(vb,[i],[j],va))
             case(2)       
               tmpR = transpose(RA%mat([i],vb,[j],va))
+              !tmpR = dagger(RA%mat([i],vb,[j],va))
             case(3)       
               tmpR = transpose(RA%mat([i],[j],vb,va))
+              !tmpR = dagger(RA%mat([i],[j],vb,va))
             end select      
           end select      
           call MC%put(Contraction(tmpR,MB),i,j)
@@ -32947,8 +33477,8 @@
 !$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
 !$OMP       ib,jb,lb,kb,MC,dimAl,dimAk),&
 !$OMP PRIVATE(tmpRA,tmpRB,k,l)
-      do k=1,dimAl
-        do l=1,dimAk
+      do k=1,dimAk
+        do l=1,dimAl
           select case(ia)
           case(1)      
             select case(ja)
@@ -32999,7 +33529,7 @@
               if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
             end select      
           end select      
-         select case(ib)
+          select case(ib)
           case(1)
             select case(jb)
             case(2)
@@ -33013,7 +33543,7 @@
               if(kb.eq.3) tmpRB = RB%mat(vi,[l],[k],vj)
             end select
           case(2)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[k],[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[l],[k]))
@@ -33025,7 +33555,7 @@
               if(kb.eq.3) tmpRB = RB%mat([l],vi,[k],vj)
             end select
           case(3)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],vi,[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[l],vi,[k]))
@@ -33037,7 +33567,7 @@
               if(kb.eq.2) tmpRB = RB%mat([l],[k],vi,vj)
             end select
           case(4)
-            select case(ib)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],[l],vi))
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[l],[k],vi))
@@ -33054,8 +33584,416 @@
       enddo
 !$OMP END PARALLEL DO
 
-
-
       EndFunction MQC_R4Tensor_R4Tensor_Partial_Contraction
+!
+!
+!     PROCEDURE MQC_R4Tensor_Conjugate_Transpose
+!
+!>    \brief <b> MQC_R4Tensor_Conjugate_Transpose is a function that returns the 
+!>    conjugate transpose of a MQC R4Tensor</b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_Conjugate_Transpose is a function that returns the conjugate 
+!>    transpose of a MQC R4Tensor.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] R4Tensor
+!>    \verbatim
+!>        Matrix is Type(MQC_R4Tensor)
+!>        The MQC R4Tensor to be conjugate transposed.
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_R4Tensor_Conjugate_Transpose(R4Tensor)
+!
+!     Variable Declarations.
+      Implicit None
+      Type(MQC_R4Tensor)::MQC_R4Tensor_Conjugate_Transpose
+      Class(MQC_R4Tensor),Intent(In)::R4Tensor
+      Integer(kind=int64)::I,J,L,K
+!
+      If(MQC_R4Tensor_HaveReal(R4Tensor)) then
+        Call MQC_Allocate_R4Tensor(R4Tensor%L,R4Tensor%K,R4Tensor%J,R4Tensor%I,&
+          MQC_R4Tensor_Conjugate_Transpose,'Real',R4Tensor%Storage)
+        If (R4Tensor%Storage.eq.'StorFull') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%RTen(L,K,J,I)=R4Tensor%RTen(I,J,K,L)
+            end do
+           end do
+          end do
+         end do
+        ElseIf (R4Tensor%Storage.eq.'StorSymm') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%RTen(L,K,J,I)=R4Tensor%RTen(I,J,K,L)
+            end do
+           end do
+          end do
+         end do
+        Else
+          Call MQC_Error_A('Unrecognise R4Tensor storage type in MQC_R4Tensor_Conjugate_Transpose', 6, &
+               'R4Tensor%Storage', R4Tensor%Storage )
+        EndIf
+      ElseIf(MQC_R4Tensor_HaveInteger(R4Tensor)) then
+        Call MQC_Allocate_R4Tensor(R4Tensor%I,R4Tensor%J,R4Tensor%K,R4Tensor%L,&
+          MQC_R4Tensor_Conjugate_Transpose,'Integer',R4Tensor%Storage)
+        If (R4Tensor%Storage.eq.'StorFull') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%ITen(L,K,J,I)=R4Tensor%ITen(I,J,K,L)
+            end do
+           end do
+          end do
+         end do
+        ElseIf (R4Tensor%Storage.eq.'StorSymm') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%ITen(L,K,J,I)=R4Tensor%ITen(I,J,K,L)
+            end do
+           end do
+          end do
+         end do
+        Else
+          Call MQC_Error_A('Unrecognise R4Tensor storage type in MQC_R4Tensor_Conjugate_Transpose', 6, &
+               'R4Tensor%Storage', R4Tensor%Storage )
+        EndIf
+      ElseIf(MQC_R4Tensor_HaveComplex(R4Tensor)) then
+        Call MQC_Allocate_R4Tensor(R4Tensor%I,R4Tensor%J,R4Tensor%K,R4Tensor%L,&
+          MQC_R4Tensor_Conjugate_Transpose,'Complex',R4Tensor%Storage)
+        If (R4Tensor%Storage.eq.'StorFull') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%CTen(L,K,J,I)=conjg(R4Tensor%CTen(I,J,K,L))
+            end do
+           end do
+          end do
+         end do
+        ElseIf (R4Tensor%Storage.eq.'StorSymm') then
+         do I=1, R4Tensor%I 
+          do J=1, R4Tensor%J 
+           do L=1, R4Tensor%L 
+            do K=1, R4Tensor%K 
+              MQC_R4Tensor_Conjugate_Transpose%CTen(L,K,J,I)=conjg(R4Tensor%CTen(I,J,K,L))
+            end do
+           end do
+          end do
+         end do
+        Else
+          Call MQC_Error_A('Unrecognise R4Tensor storage type in MQC_R4Tensor_Conjugate_Transpose', 6, &
+               'R4Tensor%Storage', R4Tensor%Storage )
+        EndIf
+      EndIf
+!
+      Return
+      End Function MQC_R4Tensor_Conjugate_Transpose
+
+!
+!
+!     PROCEDURE MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor
+!
+!>    \brief <b> MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor 
+!>    </b>
+!>
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>       
+!>    MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] RA
+!>    \verbatim
+!>        RA is Type(MQC_R4Tensor)
+!>        The MQC  R4Tensor to be partially contracted.
+!>    \endverbatim
+!>
+!>    \param[in] RB
+!>    \verbatim
+!>        RB is Type(MQC_R4Tensor)
+!>        The MQC  R4Tensor to be partially contracted.
+!>    \endverbatim
+!>
+!>    \param[in] orderA
+!>    \verbatim
+!>        inorder is Integer(kind=int64),dimension(4),optional
+!>        Contain the indexes of RA to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are the one to be multiplied.
+!>        Ex: If orderA=[3,2,4,1], the thrid and second indexes of RA are contacted.
+!>            The fourth and first form the first and second indexes
+!>            of the result R4Tensor, respectivelly.
+!>    \endverbatim
+!>
+!>    \param[in] orderB
+!>    \verbatim
+!>        inorder is Integer(kind=int64),dimension(B),optional
+!>        Contain the indexes of RB to be contracted.
+!>        The two first integers in the object are the ones to be contracted,
+!>        while the two last are used as the two last indexes of the R4Tensor.
+!>
+!>        Ex: orderA=[3,2,4,1] and orderB=[2,1,4,3]
+!>        sum_{i,j} RA_{ljik} RB_{jipq} = RC_{klqp}
+!>
+!>    \endverbatim
+!
+!     Authors:
+!     ========
+!>    \author M. M. F. Moraes
+!>    \date 2025
+!
+      Function MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor(RA,RB,orderA,orderB) Result(RC)
+!
+      Implicit None
+      Type(MQC_R4Tensor),Intent(In)::RA,RB
+      Integer(kind=int64),dimension(4),Intent(In),optional::orderA,orderB
+      Type(MQC_R4Tensor)::RAreal,RBreal,RC
+      Type(MQC_Matrix)::tmpRB,tmpRA
+      Integer(kind=int64)::ia,ja,ka,la,ib,jb,kb,lb,i,j,k,l,p,q
+      Integer(kind=int64)::dimAi,dimAj,dimAk,dimAl,dimBi,dimBj,dimBk,dimBl
+      Integer(kind=int64),dimension(2)::vi,vj
+
+      if(present(orderA)) then
+        ia=orderA(1)
+        ja=orderA(2)
+        ka=orderA(3)
+        la=orderA(4)
+        if (ia.eq.ja) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ia', ia,'ja',ja)             
+        if (ia.eq.ka) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ia', ia,'ka',ka)             
+        if (ia.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ia', ia,'la',la)             
+        if (ja.eq.ka) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ja', ja,'ka',ka)             
+        if (ja.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ja', ja,'la',la)             
+        if (ka.eq.la) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Contraction_2R4Tensor',&
+                                        6,'ka', ka,'la',la)
+      else
+        ia=1
+        ja=2
+        ka=3
+        la=4
+      endif
+      if(present(orderB)) then
+        ib=orderB(1)
+        jb=orderB(2)
+        kb=orderB(3)
+        lb=orderB(4)
+        if (ib.eq.jb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'ib', ib,'jb',jb)
+        if (ib.eq.kb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'ib', ib,'kb',kb)
+        if (ib.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'ib', ib,'lb',lb)
+        if (jb.eq.kb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'jb', jb,'kb',kb)
+        if (jb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'jb', jb,'lb',lb)
+        if (kb.eq.lb) Call MQC_Error_I('Duplicated index in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor',&
+                                        6,'kb', kb,'lb',lb)
+      else
+        ib=1
+        jb=2
+        kb=3
+        lb=4
+      endif
+      if (ia.gt.4.or.ia.le.0.or.ib.gt.4.or.ib.le.0.or.&
+          ja.gt.4.or.ja.le.0.or.jb.gt.4.or.jb.le.0.or.&
+          ka.gt.4.or.ka.le.0.or.kb.gt.4.or.kb.le.0.or.&
+          la.gt.4.or.la.le.0.or.lb.gt.4.or.lb.le.0.) Call MQC_Error(&
+           'Index out of range in MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor', 6)
+      dimAi = MQC_R4Tensor_Size(RA,ia)
+      dimAj = MQC_R4Tensor_Size(RA,ja)
+      dimAk = MQC_R4Tensor_Size(RA,ka)
+      dimAl = MQC_R4Tensor_Size(RA,la)
+
+      dimBi = MQC_R4Tensor_Size(RB,ib)
+      dimBj = MQC_R4Tensor_Size(RB,jb)
+      dimBk = MQC_R4Tensor_Size(RB,kb)
+      dimBl = MQC_R4Tensor_Size(RB,lb)
+
+      If (dimAi.ne.dimBi.or.dimAj.ne.dimBj) Call MQC_Error(&
+             'R4Tensor are not conformable for partial contraction_2R4Tensor', 6)
+
+      If (MQC_R4Tensor_HaveInteger(RA)) RAreal = MQC_Cast_Real(RA)
+      If (MQC_R4Tensor_HaveInteger(RB)) RBreal = MQC_Cast_Real(RB)
+      If (MQC_R4Tensor_HaveComplex(RA) .or. MQC_R4Tensor_HaveComplex(RB)) then
+        Call MQC_Allocate_R4Tensor(dimAk,dimAl,dimBk,dimBl,RC,'Complex','StorFull')
+      ElseIf (MQC_R4Tensor_HaveReal(RA) .or. MQC_R4Tensor_HaveReal(RB)) then
+        Call MQC_Allocate_R4Tensor(dimAk,dimAl,dimBk,dimBl,RC,'Real','StorFull')
+       !!TODO:Consider symm
+      Else
+        Call MQC_Allocate_R4Tensor(dimAk,dimAl,dimBk,dimBl,RC,'Integer','StorFull')
+      EndIf
+      
+      vi=[1,dimAi]
+      vj=[1,dimAj]
+!$OMP PARALLEL DO DEFAULT(NONE), &
+!$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
+!$OMP       ib,jb,lb,kb,RC,dimAl,dimAk,dimBl,dimBk),&
+!$OMP PRIVATE(tmpRA,tmpRB,k,l,p,q)
+      do k=1,dimAk
+        do l=1,dimAl
+          select case(ia)
+          case(1)      
+            select case(ja)
+            case(2)      
+              if(ka.eq.3) tmpRA = RA%mat(vi,vj,[k],[l])
+              if(ka.eq.4) tmpRA = RA%mat(vi,vj,[l],[k])
+            case(3)      
+              if(ka.eq.2) tmpRA = RA%mat(vi,[k],vj,[l])
+              if(ka.eq.4) tmpRA = RA%mat(vi,[l],vj,[k])
+            case(4)
+              if(ka.eq.2) tmpRA = RA%mat(vi,[k],[l],vj)
+              if(ka.eq.3) tmpRA = RA%mat(vi,[l],[k],vj)
+            end select      
+          case(2)      
+            select case(ja)
+            case(1)      
+              if(ka.eq.3) tmpRA = transpose(RA%mat(vj,vi,[k],[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat(vj,vi,[l],[k]))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,vi,[k],[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,vi,[l],[k]))
+            case(3)      
+              if(ka.eq.1) tmpRA = RA%mat([k],vi,vj,[l])
+              if(ka.eq.4) tmpRA = RA%mat([l],vi,vj,[k])
+            case(4)
+              if(ka.eq.1) tmpRA = RA%mat([k],vi,[l],vj)
+              if(ka.eq.3) tmpRA = RA%mat([l],vi,[k],vj)
+            end select      
+          case(3)      
+            select case(ja)
+            case(1)      
+              if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],vi,[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat(vj,[l],vi,[k]))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,[l],vi,[k]))
+            case(2)      
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,vi,[l]))
+              if(ka.eq.4) tmpRA = transpose(RA%mat([l],vj,vi,[k]))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat([l],vj,vi,[k]))
+            case(4)
+              if(ka.eq.1) tmpRA = RA%mat([k],[l],vi,vj)
+              if(ka.eq.2) tmpRA = RA%mat([l],[k],vi,vj)
+            end select      
+          case(4)
+            select case(ja)
+            case(1)      
+              if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],[l],vi))
+              if(ka.eq.3) tmpRA = transpose(RA%mat(vj,[l],[k],vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,[l],[k],vi))
+            case(2)       
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,[l],vi))
+              if(ka.eq.3) tmpRA = transpose(RA%mat([l],vj,[k],vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat([l],vj,[k],vi))
+            case(3)       
+              if(ka.eq.1) tmpRA = transpose(RA%mat([k],[l],vj,vi))
+              if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],[l],vj,vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat([l],[k],vj,vi))
+            end select      
+          end select      
+          do p=1,dimBk
+            do q=1,dimBl
+             select case(ib)
+             case(1)
+               select case(jb)
+               case(2)
+                 if(kb.eq.3) tmpRB = RB%mat(vi,vj,[p],[q])
+                 if(kb.eq.4) tmpRB = RB%mat(vi,vj,[q],[p])
+               case(3)
+                 if(kb.eq.2) tmpRB = RB%mat(vi,[p],vj,[q])
+                 if(kb.eq.4) tmpRB = RB%mat(vi,[q],vj,[p])
+               case(4)
+                 if(kb.eq.2) tmpRB = RB%mat(vi,[p],[q],vj)
+                 if(kb.eq.3) tmpRB = RB%mat(vi,[q],[p],vj)
+               end select
+             case(2)
+               select case(jb)
+               case(1)
+                 if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[p],[q]))
+                 if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[q],[p]))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,vi,[p],[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,vi,[q],[p]))
+               case(3)
+                 if(kb.eq.1) tmpRB = RB%mat([p],vi,vj,[q])
+                 if(kb.eq.4) tmpRB = RB%mat([q],vi,vj,[p])
+               case(4)
+                 if(kb.eq.1) tmpRB = RB%mat([p],vi,[q],vj)
+                 if(kb.eq.3) tmpRB = RB%mat([q],vi,[p],vj)
+               end select
+             case(3)
+               select case(jb)
+               case(1)
+                 if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],vi,[q]))
+                 if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[q],vi,[p]))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,[q],vi,[p]))
+               case(2)
+                 if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,vi,[q]))
+                 if(kb.eq.4) tmpRB = transpose(RB%mat([q],vj,vi,[p]))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat([q],vj,vi,[p]))
+               case(4)
+                 if(kb.eq.1) tmpRB = RB%mat([p],[q],vi,vj)
+                 if(kb.eq.2) tmpRB = RB%mat([q],[p],vi,vj)
+               end select
+             case(4)
+               select case(jb)
+               case(1)
+                 if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],[q],vi))
+                 if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[q],[p],vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,[q],[p],vi))
+               case(2)
+                 if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,[q],vi))
+                 if(kb.eq.3) tmpRB = transpose(RB%mat([q],vj,[p],vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat([q],vj,[p],vi))
+               case(3)
+                 if(kb.eq.1) tmpRB = transpose(RB%mat([p],[q],vj,vi))
+                 if(kb.eq.2) tmpRB = transpose(RB%mat([q],[p],vj,vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],[q],vj,vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat([q],[p],vj,vi))
+               end select
+             end select
+             call RC%put(Contraction(tmpRA,tmpRB),k,l,p,q)
+            enddo
+          enddo
+        enddo
+      enddo
+!$OMP END PARALLEL DO
+
+      EndFunction MQC_R4Tensor_R4Tensor_Partial_Contraction_2R4Tensor
 
       End Module MQC_Algebra

@@ -121,7 +121,7 @@ MQC_LDFLAGS=
 
 AS_CASE([$FC],
   [*pgfortran*|*nvfortran*], [
-    MQC_SPECIFIC_FCFLAGS="-r8 -i8 -Mallocatable=03 -module $PWD/src"
+    MQC_SPECIFIC_FCFLAGS="-r8 -i8 -module $PWD/src"
     MQC_GAUOPEN_FCFLAGS="-r8 -i8 -DUSE_I8"
     MQC_CPPFLAGS="-DPGI"
     AS_IF([test "x$mqc_with_gauopen" = xyes],

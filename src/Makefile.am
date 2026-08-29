@@ -13,7 +13,7 @@ CLEANFILES = gauopen_qcmatrix.$(OBJEXT) gauopen_qcmatrixio.$(OBJEXT) \
 if WITH_GAUOPEN
 libmqc_a_LIBADD = gauopen_qcmatrix.$(OBJEXT) gauopen_qcmatrixio.$(OBJEXT)
 endif
-libmqc_a_SOURCES = mqc_general.F03 mqc_binary.F03 mqc_datastructures.F03 mqc_files.F03 mqc_integrals.F03 mqc_algebra.F03 mqc_algebra2.F03 mqc_molecule.F03 mqc_est.F03 mqc_util.c
+libmqc_a_SOURCES = mqc_general.F03 mqc_binary.F03 mqc_datastructures.F03 mqc_files.F03 mqc_integrals.F03 mqc_algebra.F03 mqc_algebra2.F03 mqc_molecule.F03 mqc_est.F03 mqc_nef.F03 mqc_util.c
 if WITH_GAUOPEN
 libmqc_a_SOURCES += mqc_matwrapper_direct.F03
 else

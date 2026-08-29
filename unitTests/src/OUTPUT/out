@@ -1,0 +1,448 @@
+ PASS  space/doublebar+doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar+doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar+doublebar: abba(1,1,1,1)
+ PASS  space/doublebar-doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar-doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar-doublebar: abba(1,1,1,1)
+ PASS  space/ms+ms: aaaa(1,1,1,1)
+ PASS  space/ms-ms: aaaa(1,1,1,1)
+ PASS  space/coulomb-exchange: aaaa(1,1,1,1)
+ PASS  space/coulomb-exchange: aabb(1,1,1,1)
+ PASS  space/coulomb-exchange: abba(1,1,1,1)
+ PASS  space/coulomb-doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar-coulomb: aaaa(1,1,1,1)
+ PASS  space/doublebar+exchange: aaaa(1,1,1,1)
+ PASS  space/coulomb+spin/coulomb: aaaa(1,1,1,1)
+ PASS  space/coulomb+spin/coulomb: bbbb(1,1,1,1)
+ PASS  space/coulomb+spin/coulomb: aabb(1,1,1,1)
+ PASS  space/coulomb-spin/coulomb: aaaa(1,1,1,1)
+ PASS  space/coulomb-spin/coulomb: bbbb(1,1,1,1)
+ PASS  space/coulomb-spin/coulomb: aabb(1,1,1,1)
+ PASS  space/exchange+spin/exchange: aaaa(1,1,1,1)
+ PASS  space/exchange+spin/exchange: bbbb(1,1,1,1)
+ PASS  space/exchange+spin/exchange: abba(1,1,1,1)
+ PASS  space/exchange-spin/exchange: aaaa(1,1,1,1)
+ PASS  space/exchange-spin/exchange: abba(1,1,1,1)
+ PASS  space/inverted+spin/inverted: aaaa(1,1,1,1)
+ PASS  space/inverted+spin/inverted: abab(1,1,1,1)
+ PASS  space/inverted-spin/inverted: aaaa(1,1,1,1)
+ PASS  space/inverted-spin/inverted: abab(1,1,1,1)
+ PASS  space/doublebar+spin/doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar+spin/doublebar: bbbb(1,1,1,1)
+ PASS  space/doublebar+spin/doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar+spin/doublebar: abba(1,1,1,1)
+ PASS  space/doublebar-spin/doublebar: aaaa(1,1,1,1)
+ PASS  space/doublebar-spin/doublebar: aabb(1,1,1,1)
+ PASS  space/doublebar-spin/doublebar: abba(1,1,1,1)
+ PASS  space/ms+spin/ms: aaaa(1,1,1,1)
+ PASS  space/ms+spin/ms: bbbb(1,1,1,1)
+ PASS  space/ms+spin/ms: aabb(1,1,1,1)
+ PASS  space/ms+spin/ms: abba(1,1,1,1)
+ PASS  space/ms+spin/ms: abab(1,1,1,1)
+ PASS  space/ms+spin/ms: baba(1,1,1,1)
+ PASS  space/ms-spin/ms: aaaa(1,1,1,1)
+ PASS  space/ms-spin/ms: aabb(1,1,1,1)
+ PASS  space/ms-spin/ms: abba(1,1,1,1)
+ PASS  space/ms-spin/ms: abab(1,1,1,1)
+ PASS  space/ms-spin/ms: baba(1,1,1,1)
+ PASS  spin/ms getBlock: aaaa(1,1,1,1)
+ PASS  spin/ms getBlock: bbbb(1,1,1,1)
+ PASS  spin/ms getBlock: aabb(1,1,1,1)
+ PASS  spin/ms getBlock: abba(1,1,1,1)
+ PASS  spin/ms getBlock: abab(1,1,1,1)
+ PASS  spin/ms getBlock: baba(1,1,1,1)
+ PASS  spin/coulomb_s+coulomb_s: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+coulomb_s: bbbb(1,1,1,1)
+ PASS  spin/coulomb_s+coulomb_s: aabb(1,1,1,1)
+ PASS  spin/exchange_s+exchange_s: aaaa(1,1,1,1)
+ PASS  spin/exchange_s+exchange_s: abba(1,1,1,1)
+ PASS  spin/inverted_s+inverted_s: aaaa(1,1,1,1)
+ PASS  spin/inverted_s+inverted_s: abab(1,1,1,1)
+ PASS  spin/doublebar_s+doublebar_s: aaaa(1,1,1,1)
+ PASS  spin/doublebar_s+doublebar_s: aabb(1,1,1,1)
+ PASS  spin/doublebar_s+doublebar_s: abba(1,1,1,1)
+ PASS  spin/ms_s+ms_s: aaaa(1,1,1,1)
+ PASS  spin/ms_s+ms_s: aabb(1,1,1,1)
+ PASS  spin/ms_s+ms_s: abba(1,1,1,1)
+ PASS  spin/ms_s+ms_s: abab(1,1,1,1)
+ PASS  spin/coulomb_f+coulomb_f: aaaa(1,1,1,1)
+ PASS  spin/coulomb_f+coulomb_f: aabb(1,1,1,1)
+ PASS  spin/coulomb_f+coulomb_f: bbaa(1,1,1,1)
+ PASS  spin/exchange_f+exchange_f: aaaa(1,1,1,1)
+ PASS  spin/exchange_f+exchange_f: abba(1,1,1,1)
+ PASS  spin/exchange_f+exchange_f: baab(1,1,1,1)
+ PASS  spin/inverted_f+inverted_f: aaaa(1,1,1,1)
+ PASS  spin/inverted_f+inverted_f: abab(1,1,1,1)
+ PASS  spin/inverted_f+inverted_f: baba(1,1,1,1)
+ PASS  spin/doublebar_f+doublebar_f: aaaa(1,1,1,1)
+ PASS  spin/doublebar_f+doublebar_f: aabb(1,1,1,1)
+ PASS  spin/doublebar_f+doublebar_f: abba(1,1,1,1)
+ PASS  spin/doublebar_f+doublebar_f: baab(1,1,1,1)
+ PASS  spin/ms_f+ms_f: aaaa(1,1,1,1)
+ PASS  spin/ms_f+ms_f: aabb(1,1,1,1)
+ PASS  spin/ms_f+ms_f: abba(1,1,1,1)
+ PASS  spin/ms_f+ms_f: abab(1,1,1,1)
+ PASS  spin/ms_f+ms_f: baba(1,1,1,1)
+ PASS  spin/coulomb_s+exchange_s: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+exchange_s: aabb(1,1,1,1)
+ PASS  spin/coulomb_s+exchange_s: abba(1,1,1,1)
+ PASS  spin/coulomb_s+inverted_s: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+inverted_s: aabb(1,1,1,1)
+ PASS  spin/coulomb_s+inverted_s: abab(1,1,1,1)
+ PASS  spin/coulomb_s+ms_s: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+ms_s: aabb(1,1,1,1)
+ PASS  spin/coulomb_s+ms_s: abba(1,1,1,1)
+ PASS  spin/coulomb_s+ms_s: abab(1,1,1,1)
+ PASS  spin/exchange_s+inverted_s: aaaa(1,1,1,1)
+ PASS  spin/exchange_s+inverted_s: abba(1,1,1,1)
+ PASS  spin/exchange_s+inverted_s: abab(1,1,1,1)
+ PASS  spin/exchange_s+ms_s: aabb(1,1,1,1)
+ PASS  spin/exchange_s+ms_s: abba(1,1,1,1)
+ PASS  spin/exchange_s+ms_s: abab(1,1,1,1)
+ PASS  spin/doublebar_s+inverted_s: aaaa(1,1,1,1)
+ PASS  spin/doublebar_s+inverted_s: aabb(1,1,1,1)
+ PASS  spin/doublebar_s+inverted_s: abba(1,1,1,1)
+ PASS  spin/doublebar_s+inverted_s: abab(1,1,1,1)
+ PASS  spin/doublebar_s+ms_s: aaaa(1,1,1,1)
+ PASS  spin/doublebar_s+ms_s: aabb(1,1,1,1)
+ PASS  spin/doublebar_s+ms_s: abba(1,1,1,1)
+ PASS  spin/doublebar_s+ms_s: abab(1,1,1,1)
+ PASS  space/coulomb+spin/exchange_s: aaaa(1,1,1,1)
+ PASS  space/coulomb+spin/exchange_s: aabb(1,1,1,1)
+ PASS  space/coulomb+spin/exchange_s: abba(1,1,1,1)
+ PASS  space/coulomb+spin/exchange_s: bbaa(1,1,1,1)
+ PASS  space/coulomb+spin/exchange_s: baab(1,1,1,1)
+ PASS  space/exchange+spin/coulomb_s: aaaa(1,1,1,1)
+ PASS  space/exchange+spin/coulomb_s: aabb(1,1,1,1)
+ PASS  space/exchange+spin/coulomb_s: abba(1,1,1,1)
+ PASS  space/doublebar+spin/inverted_s: aaaa(1,1,1,1)
+ PASS  space/doublebar+spin/inverted_s: aabb(1,1,1,1)
+ PASS  space/doublebar+spin/inverted_s: abba(1,1,1,1)
+ PASS  space/doublebar+spin/inverted_s: abab(1,1,1,1)
+ PASS  space/ms+spin/coulomb_s: aaaa(1,1,1,1)
+ PASS  space/ms+spin/coulomb_s: aabb(1,1,1,1)
+ PASS  space/ms+spin/coulomb_s: abab(1,1,1,1)
+ PASS  space/inverted+spin/coulomb_s: aaaa(1,1,1,1)
+ PASS  space/inverted+spin/coulomb_s: aabb(1,1,1,1)
+ PASS  space/inverted+spin/coulomb_s: abab(1,1,1,1)
+ PASS  space/inverted+space/coulomb: aaaa(1,1,1,1)
+ PASS  space/inverted+space/coulomb: aabb(1,1,1,1)
+ PASS  space/inverted+space/coulomb: abab(1,1,1,1)
+ PASS  space/ms+space/inverted: aaaa(1,1,1,1)
+ PASS  space/ms+space/inverted: aabb(1,1,1,1)
+ PASS  space/ms+space/inverted: abab(1,1,1,1)
+ PASS  space/coulomb+spin/inverted_s: aaaa(1,1,1,1)
+ PASS  space/coulomb+spin/inverted_s: aabb(1,1,1,1)
+ PASS  space/coulomb+spin/inverted_s: abab(1,1,1,1)
+ PASS  space/coulomb+spin/ms_s: aaaa(1,1,1,1)
+ PASS  space/coulomb+spin/ms_s: aabb(1,1,1,1)
+ PASS  space/coulomb+spin/ms_s: abba(1,1,1,1)
+ PASS  space/coulomb+spin/ms_s: abab(1,1,1,1)
+ PASS  spin/coulomb_s+space/exchange: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+space/exchange: aabb(1,1,1,1)
+ PASS  spin/coulomb_s+space/exchange: abba(1,1,1,1)
+ PASS  spin/coulomb_s+space/inverted: aaaa(1,1,1,1)
+ PASS  spin/coulomb_s+space/inverted: aabb(1,1,1,1)
+ PASS  spin/coulomb_s+space/inverted: abab(1,1,1,1)
+ PASS  spin/exchange_s+space/coulomb: aaaa(1,1,1,1)
+ PASS  spin/exchange_s+space/coulomb: aabb(1,1,1,1)
+ PASS  spin/exchange_s+space/coulomb: abba(1,1,1,1)
+ PASS  spin/exchange_s+space/exchange: aaaa(1,1,1,1)
+ PASS  spin/exchange_s+space/exchange: abba(1,1,1,1)
+ PASS  spin/exchange_s+space/inverted: aaaa(1,1,1,1)
+ PASS  spin/exchange_s+space/inverted: abba(1,1,1,1)
+ PASS  spin/exchange_s+space/inverted: abab(1,1,1,1)
+ PASS  Dagger spin/coulomb_s: aaaa(1,1,1,1)
+ PASS  Dagger spin/coulomb_s: aabb(1,1,1,1)
+ PASS  Dagger spin/coulomb_f: aabb(1,1,1,1)
+ PASS  Dagger spin/coulomb_f: bbaa(1,1,1,1)
+ PASS  Dagger spin/exchange_s: aaaa(1,1,1,1)
+ PASS  Dagger spin/exchange_s: abba(1,1,1,1)
+ PASS  Dagger spin/exchange_f: abba(1,1,1,1)
+ PASS  Dagger spin/exchange_f: baab(1,1,1,1)
+ PASS  Dagger spin/inverted_s: aaaa(1,1,1,1)
+ PASS  Dagger spin/inverted_s: abab(1,1,1,1)
+ PASS  Dagger spin/inverted_f: abab(1,1,1,1)
+ PASS  Dagger spin/inverted_f: baba(1,1,1,1)
+ PASS  Dagger spin/doublebar_f: aabb(1,1,1,1)
+ PASS  Dagger spin/doublebar_f: bbaa(1,1,1,1)
+ PASS  Dagger spin/doublebar_f: abba(1,1,1,1)
+ PASS  Dagger spin/doublebar_f: baab(1,1,1,1)
+ PASS  Dagger spin/ms_f: aabb(1,1,1,1)
+ PASS  Dagger spin/ms_f: bbaa(1,1,1,1)
+ PASS  Dagger spin/ms_f: abba(1,1,1,1)
+ PASS  Dagger spin/ms_f: baab(1,1,1,1)
+ PASS  Dagger spin/ms_f: abab(1,1,1,1)
+ PASS  Dagger spin/ms_f: baba(1,1,1,1)
+ PASS  contraction space/doublebar x spin/coulomb (J)
+ PASS  contraction space/doublebar x spin/exchange (J)
+ PASS  contraction space/doublebar x spin/doublebar (J)
+ PASS  contraction space/ms x spin/inverted (J)
+ PASS  contraction space/ms x spin/ms (J)
+ PASS  contraction space/ms x spin/inverted (K)
+ PASS  contraction space/doublebar x general/ms (J)
+ PASS  contraction space/ms x general/ms (J)
+ PASS  contraction general/ms x space/doublebar (J)
+ PASS  contraction general/ms x space/ms (J)
+ PASS  at/space-coul-full/aaaa/J
+ PASS  at/space-coul-full/aaaa/K
+ PASS  at/space-exch-full/aaaa/J
+ PASS  at/space-exch-full/aaaa/K
+ PASS  at/space-dbar-full/aaaa/JK
+ PASS  at/space-ms-full/aaaa/J
+ PASS  at/space-inv-full/aaaa/J
+ PASS  at/space-coul-symm/aaaa/J
+ PASS  at/space-exch-symm/aaaa/K
+ PASS  at/space-ms-symm/aaaa/JK
+ PASS  at/spin-coul-full/aaaa/J
+ PASS  at/spin-coul-full/aabb/J
+ PASS  at/spin-coul-full/bbaa/J=0
+ PASS  at/spin-coul-symm/aaaa/K
+ PASS  at/spin-coul-symm/bbaa/J
+ PASS  at/spin-exch-full/aaaa/K
+ PASS  at/spin-exch-full/abba/K
+ PASS  at/spin-exch-symm/baab/K
+ PASS  at/spin-dbar-full/aaaa/JK
+ PASS  at/spin-dbar-full/aabb/JK
+ PASS  at/spin-dbar-full/abba/JK
+ PASS  at/spin-ms-full/aaaa/J
+ PASS  at/spin-ms-full/bbbb/J
+ PASS  at/spin-ms-full/aabb/J
+ PASS  at/spin-ms-symm/bbaa/J
+ PASS  at/spin-inv-full/aaaa/J
+ PASS  at/spin-inv-full/aabb/J
+ PASS  at/spin-inv-symm/aabb/J
+ PASS  at/spin-ms-full/abab/J
+ PASS  at/spin-ms-full/noSpinBlk-abab/J
+ PASS  at/gen-coul-full/aaaa/J
+ PASS  at/gen-coul-full/aabb/J
+ PASS  at/gen-coul-symm/bbaa/J
+ PASS  at/gen-exch-full/aaaa/K
+ PASS  at/gen-exch-full/abba/J
+ PASS  at/gen-exch-symm/baab/J
+ PASS  at/gen-dbar-full/aaaa/JK
+ PASS  at/gen-dbar-full/aabb/JK
+ PASS  at/gen-dbar-symm/bbaa/JK
+ PASS  at/gen-ms-full/abab/J
+ PASS  at/gen-ms-full/abab/K
+ PASS  at/gen-ms-full/abab/JK=0
+ PASS  at/gen-ms-symm/baba/J
+ PASS  at/gen-inv-full/aaaa/J
+ PASS  at/gen-inv-full/abab/J
+ PASS  at/gen-inv-symm/baba/J
+ PASS  at/gen-ms-full/spinBlk-babb/JK
+ PASS  at/gen-ms-full/noSpinBlk-babb/JK
+ PASS  at/space-ms/noSpinBlk-aaaa/J
+ PASS  at/space-ms/noSpinBlk-aaaa/K
+ PASS  at/spin-ms/noSpinBlk-aaaa/J
+ PASS  at/spin-ms/noSpinBlk-aaaa/K
+ PASS  at/spin-ms/noSpinBlk-bbbb/J
+ PASS  at/spin-ms/noSpinBlk-aabb/J
+ PASS  at/spin-ms/noSpinBlk-abba/K
+ PASS  at/spin-ms/noSpinBlk-abab/J
+ PASS  at/gen-ms/noSpinBlk-aabb/J
+ PASS  at/gen-ms/noSpinBlk-abba/J
+ PASS  at/gen-ms/noSpinBlk-abab/J
+ PASS  at/gen-ms/noSpinBlk-aabb/JK
+ PASS  IC/space x space/same=T: aa
+ PASS  IC/space x spin/same=T: aa
+ PASS  IC/space x spin/same=F [1,3]: aa
+ PASS  IC/space x spin/same=F [1,3]: bb
+ PASS  IC/space x general/same=T: aa
+ PASS  IC/space x general/same=F [1,3]: aa
+ PASS  IC/space x general/same=F [1,3]: bb
+ PASS  IC/space x general/same=F [1,3]: ab
+ PASS  IC/space x general/same=F [1,3]: ba
+ PASS  IC/spin-symm x space/same=T [1,2]: aa
+ PASS  IC/spin-symm x space/same=T [1,2]: bb
+ PASS  IC/spin-full x space/same=T [3,4]: aa
+ PASS  IC/spin-full x space/same=T [3,4]: bb
+ PASS  IC/spin x spin/same=T: aa
+ PASS  IC/spin x spin/same=T: bb
+ PASS  IC/spin x general/same=T: aa (ab/ba of intGen unused)
+ PASS  IC/spin x general/same=T: bb (ab/ba of intGen unused)
+ PASS  IC/spin x general/same=F [1,3]: aa
+ PASS  IC/spin x general/same=F [1,3]: bb
+ PASS  IC/spin x general/same=F [1,3]: ab
+ PASS  IC/spin x general/same=F [1,3]: ba (bbaa not aaaa)
+ PASS  IC/spin x general/same=F [3,1]: ab (aabb*M_ba)
+ PASS  IC/spin x general/same=F [3,1]: ba (bbaa*M_ab)
+ PASS  IC/gen+SF x space/same=T [1,2]: aa
+ PASS  IC/gen+SF x space/same=T [1,2]: bb
+ PASS  IC/gen+SF x space/same=T [1,2]: ab (aaab contribution)
+ PASS  IC/gen+SF x space/same=T [1,2]: ba (bbba contribution)
+ PASS  IC/gen x spin/same=T: aa
+ PASS  IC/gen x spin/same=T: bb
+ PASS  IC/gen+SF x spin/same=F [3,1]: aa
+ PASS  IC/gen+SF x spin/same=F [3,1]: bb
+ PASS  IC/gen+SF x spin/same=F [3,1]: ab (aaab*M_aa, not bbba)
+ PASS  IC/gen+SF x spin/same=F [3,1]: ba (bbba*M_bb)
+ PASS  IC/gen x general/same=T: aa
+ PASS  IC/gen x general/same=T: bb
+ PASS  IC/gen x general/same=T: ab
+ PASS  IC/gen x general/same=T: ba
+ PASS  IC/gen x general/same=F [1,3]: aa
+ PASS  IC/gen x general/same=F [1,3]: bb
+ PASS  IC/gen x general/same=F [1,3]: ab
+ PASS  IC/gen x general/same=F [1,3]: ba
+ PASS  IC/gen x general/same=F [3,1]: ab
+ PASS  IC/gen x general/same=F [3,1]: ba
+ PASS  R4T/space/1x/coulomb
+ PASS  R4T/space/1x/exchange
+ PASS  R4T/space/1x/doublebar
+ PASS  R4T/space/2x/coulomb
+ PASS  R4T/spin/2x/coulomb (intType=label)
+ PASS  R4T/spin/2x/doublebar (intType=label)
+ PASS  R4T/general/2x/coulomb (intType=label)
+ PASS  R4T/space/1x/inverted
+ PASS  R4T/space/1x/ms
+ PASS  R4T/space/2x/inverted
+ PASS  R4T/space/2x/ms
+ PASS  R4T/spin/2x/coulomb→inverted
+ PASS  R4T/spin/2x/coulomb→ms
+ PASS  complex-general transform block aaaa
+ PASS  complex-general transform block aaab
+ PASS  complex-general transform block aaba
+ PASS  complex-general transform block aabb
+ PASS  complex-general transform block abaa
+ PASS  complex-general transform block abab
+ PASS  complex-general transform block abba
+ PASS  complex-general transform block abbb
+ PASS  complex-general transform block baaa
+ PASS  complex-general transform block baab
+ PASS  complex-general transform block baba
+ PASS  complex-general transform block babb
+ PASS  complex-general transform block bbaa
+ PASS  complex-general transform block bbab
+ PASS  complex-general transform block bbba
+ PASS  complex-general transform block bbbb
+ PASS  at oracle full aaaa coulomb
+ PASS  at oracle symm aaaa coulomb
+ PASS  at oracle full aaab coulomb
+ PASS  at oracle symm aaab coulomb
+ PASS  at oracle full aaba coulomb
+ PASS  at oracle symm aaba coulomb
+ PASS  at oracle full aabb coulomb
+ PASS  at oracle symm aabb coulomb
+ PASS  at oracle full abaa coulomb
+ PASS  at oracle symm abaa coulomb
+ PASS  at oracle full abab coulomb
+ PASS  at oracle symm abab coulomb
+ PASS  at oracle full abba coulomb
+ PASS  at oracle symm abba coulomb
+ PASS  at oracle full abbb coulomb
+ PASS  at oracle symm abbb coulomb
+ PASS  at oracle full baaa coulomb
+ PASS  at oracle symm baaa coulomb
+ PASS  at oracle full baab coulomb
+ PASS  at oracle symm baab coulomb
+ PASS  at oracle full baba coulomb
+ PASS  at oracle symm baba coulomb
+ PASS  at oracle full babb coulomb
+ PASS  at oracle symm babb coulomb
+ PASS  at oracle full bbaa coulomb
+ PASS  at oracle symm bbaa coulomb
+ PASS  at oracle full bbab coulomb
+ PASS  at oracle symm bbab coulomb
+ PASS  at oracle full bbba coulomb
+ PASS  at oracle symm bbba coulomb
+ PASS  at oracle full bbbb coulomb
+ PASS  at oracle symm bbbb coulomb
+ PASS  at oracle full aaaa exchange
+ PASS  at oracle symm aaaa exchange
+ PASS  at oracle full aaab exchange
+ PASS  at oracle symm aaab exchange
+ PASS  at oracle full aaba exchange
+ PASS  at oracle symm aaba exchange
+ PASS  at oracle full aabb exchange
+ PASS  at oracle symm aabb exchange
+ PASS  at oracle full abaa exchange
+ PASS  at oracle symm abaa exchange
+ PASS  at oracle full abab exchange
+ PASS  at oracle symm abab exchange
+ PASS  at oracle full abba exchange
+ PASS  at oracle symm abba exchange
+ PASS  at oracle full abbb exchange
+ PASS  at oracle symm abbb exchange
+ PASS  at oracle full baaa exchange
+ PASS  at oracle symm baaa exchange
+ PASS  at oracle full baab exchange
+ PASS  at oracle symm baab exchange
+ PASS  at oracle full baba exchange
+ PASS  at oracle symm baba exchange
+ PASS  at oracle full babb exchange
+ PASS  at oracle symm babb exchange
+ PASS  at oracle full bbaa exchange
+ PASS  at oracle symm bbaa exchange
+ PASS  at oracle full bbab exchange
+ PASS  at oracle symm bbab exchange
+ PASS  at oracle full bbba exchange
+ PASS  at oracle symm bbba exchange
+ PASS  at oracle full bbbb exchange
+ PASS  at oracle symm bbbb exchange
+ PASS  at oracle full aaaa doublebar
+ PASS  at oracle symm aaaa doublebar
+ PASS  at oracle full aaab doublebar
+ PASS  at oracle symm aaab doublebar
+ PASS  at oracle full aaba doublebar
+ PASS  at oracle symm aaba doublebar
+ PASS  at oracle full aabb doublebar
+ PASS  at oracle symm aabb doublebar
+ PASS  at oracle full abaa doublebar
+ PASS  at oracle symm abaa doublebar
+ PASS  at oracle full abab doublebar
+ PASS  at oracle symm abab doublebar
+ PASS  at oracle full abba doublebar
+ PASS  at oracle symm abba doublebar
+ PASS  at oracle full abbb doublebar
+ PASS  at oracle symm abbb doublebar
+ PASS  at oracle full baaa doublebar
+ PASS  at oracle symm baaa doublebar
+ PASS  at oracle full baab doublebar
+ PASS  at oracle symm baab doublebar
+ PASS  at oracle full baba doublebar
+ PASS  at oracle symm baba doublebar
+ PASS  at oracle full babb doublebar
+ PASS  at oracle symm babb doublebar
+ PASS  at oracle full bbaa doublebar
+ PASS  at oracle symm bbaa doublebar
+ PASS  at oracle full bbab doublebar
+ PASS  at oracle symm bbab doublebar
+ PASS  at oracle full bbba doublebar
+ PASS  at oracle symm bbba doublebar
+ PASS  at oracle full bbbb doublebar
+ PASS  at oracle symm bbbb doublebar
+ PASS  at global oracle full coulomb
+ PASS  at global oracle symm coulomb
+ PASS  at global oracle full exchange
+ PASS  at global oracle symm exchange
+ PASS  at global oracle full doublebar
+ PASS  at global oracle symm doublebar
+ PASS  real-general transform block aaaa
+ PASS  real-general transform block aaab
+ PASS  real-general transform block aaba
+ PASS  real-general transform block aabb
+ PASS  real-general transform block abaa
+ PASS  real-general transform block abab
+ PASS  real-general transform block abba
+ PASS  real-general transform block abbb
+ PASS  real-general transform block baaa
+ PASS  real-general transform block baab
+ PASS  real-general transform block baba
+ PASS  real-general transform block babb
+ PASS  real-general transform block bbaa
+ PASS  real-general transform block bbab
+ PASS  real-general transform block bbba
+ PASS  real-general transform block bbbb
+ real-general symmetry aabb -> bbaa partial=  5.551115E-17 TwoERI_Trans=  0.000000E+00
+ real-general symmetry aaab -> aaba partial=  1.040834E-17 TwoERI_Trans=  0.000000E+00
+ real-general symmetry aaab -> abaa partial=  9.540979E-18 TwoERI_Trans=  0.000000E+00
+ real-general symmetry aaab -> baaa partial=  1.214306E-17 TwoERI_Trans=  0.000000E+00
+ real-general symmetry abba -> baab partial=  2.602085E-18 TwoERI_Trans=  0.000000E+00
+ real-general symmetry abab -> baba partial=  8.673617E-19 TwoERI_Trans=  0.000000E+00
+ real-general symmetry abbb -> bbba partial=  2.081668E-17 TwoERI_Trans=  0.000000E+00
+ real-general symmetry abbb -> bbab partial=  1.387779E-17 TwoERI_Trans=  0.000000E+00
+ real-general symmetry abbb -> babb partial=  1.040834E-17 TwoERI_Trans=  0.000000E+00
+ real-general full tensor oracle error=  1.387779E-16
+
+ Tests completed: 0 failure(s)

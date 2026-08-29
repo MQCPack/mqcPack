@@ -7,8 +7,10 @@ TESTS_ENVIRONMENT = abs_top_srcdir='$(abs_top_srcdir)' \
 CLEANFILES = ../algebra2/outfile ../fullci/outfile ../hartreefock/outfile \
   unitTest07-numerical.faf
 
-TESTS = ../algebra2/testit.sh unitTest01 unitTest02 unitTest08
-check_PROGRAMS = ../algebra2/algebra_fun unitTest01 unitTest02 unitTest08
+TESTS = ../algebra2/testit.sh unitTest01 unitTest02 \
+  ../../unitTests/src/testit.sh
+check_PROGRAMS = ../algebra2/algebra_fun unitTest01 unitTest02 \
+  ../../unitTests/src/unitTest_twoERIs
 
 if WITH_GAUOPEN
 TESTS += ../fullci/testit.sh ../hartreefock/testit.sh \
@@ -36,13 +38,14 @@ unitTest04_SOURCES = ../../unitTests/src/unitTest04.f03
 unitTest05_SOURCES = ../../unitTests/src/unitTest05.f03
 unitTest06_SOURCES = ../../unitTests/src/unitTest06.f03
 unitTest07_SOURCES = ../../unitTests/src/unitTest07.f03
-unitTest08_SOURCES = ../../unitTests/src/unitTest08.f03
-
+______unitTests_src_unitTest_twoERIs_SOURCES = \
+  ../../unitTests/src/unitTest_twoERIs.F03
 EXTRA_DIST = test_no_gauopen_matrixfile.sh \
   test_public_gauopen_character.sh ../algebra2/testit.sh \
   ../algebra2/OUTPUT/out ../fullci/testit.sh ../fullci/OUTPUT/out \
   ../hartreefock/testit.sh ../hartreefock/OUTPUT/out \
-  ../data/MatrixFile/rhf_h2-sto3g.mat
+  ../data/MatrixFile/rhf_h2-sto3g.mat ../../unitTests/src/testit.sh \
+  ../../unitTests/src/OUTPUT/out
 
 LDADD = ../../src/libmqc.a ${MQC_LAPACK} ${MQC_BLAS}
 

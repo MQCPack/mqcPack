@@ -82,6 +82,8 @@ doc/*
 !doc/Doxyfile
 !doc/ABOUT_Algebra2.md
 !doc/mqcpack_logo.png
+CLAUDE.local.md
+CLAUDE.md
 !doc/AGENT_API_GUIDE.md
 !doc/api/
 doc/api/*
