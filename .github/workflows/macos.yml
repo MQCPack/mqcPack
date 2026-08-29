@@ -1,6 +1,9 @@
 name: MacOS Tests
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
 
 jobs:
@@ -20,7 +23,10 @@ jobs:
         run: |
           mkdir gauopen
           cd gauopen
-          wget http://gaussian.com/g16/gauopen_v2.zip
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output gauopen_v2.zip \
+            https://gaussian.com/g16/gauopen_v2.zip
+          unzip -t gauopen_v2.zip
           unzip gauopen_v2.zip
           cd ..
           mkdir mqc-install

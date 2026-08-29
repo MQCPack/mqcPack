@@ -43,8 +43,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 25.11.2                          **
-!     **                         November 11, 2025                         **
+!     **                          Version 26.8.0                           **
+!     **                          August 3, 2026                           **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -312,6 +312,8 @@
         Procedure, Private::put_int => MQC_R4Tensor_Put_Int
 !>      \brief <b> Returns the Hemitian transpose of the MQC R4Tensor</b>
         Procedure, Public::dagger => MQC_R4Tensor_Conjugate_Transpose
+!>      \brief <b> Permutes the dimensions of the MQC R4Tensor</b>
+        Procedure, Public::permute => MQC_R4Tensor_Permute
 !>      \brief <b> Update the specified element in the MQC R4Tensor with the
 !>      specified value</b>
         Generic, Public::put => put_sca, put_int 
@@ -638,6 +640,14 @@
         module procedure MQC_Vector_IsAllocated
         module procedure MQC_Matrix_IsAllocated
         module procedure MQC_R4Tensor_IsAllocated
+      end interface
+!
+!>    \brief <b> Deallocates an object</b>
+      interface Deallocate
+        module procedure MQC_Deallocate_Scalar
+        module procedure MQC_Deallocate_Vector
+        module procedure MQC_Deallocate_Matrix
+        module procedure MQC_Deallocate_R4Tensor
       end interface
 !
 !>    \brief <b> Returns the value of the vector at the specied index</b>
@@ -971,6 +981,10 @@
 !
       Interface Operator (.crossouter.)
         Module Procedure MQC_Matrix_Matrix_Cross_Outer
+      End Interface
+!
+      Interface Operator (.kron.)
+        Module Procedure MQC_Matrix_Matrix_Kronecker_Product
       End Interface
 !
 !     Rank 4 tensor operators...
@@ -9908,18 +9922,18 @@
         call M%init(VA%length,VB%length,(0.0,0.0))
         if (mqc_have_int(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_int(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VA)) then
           VC = mqc_cast_complex(VA)
-          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VC%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         elseif (mqc_have_real(VB)) then
           VC = mqc_cast_complex(VB)
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VC%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VC%vecc),1,M%matc,VA%length)
         else
-          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,VB%vecc,1,M%matc,VA%length)
+          call zgerc(VA%length,VB%length,1.0,VA%vecc,1,conjg(VB%vecc),1,M%matc,VA%length)
         endif
       endif
 
@@ -20229,6 +20243,10 @@
       Real(kind=real64)::Thresh=1e-14
 
       Diagonal = .True.
+      If(MQC_Matrix_Rows(Matrix).ne.MQC_Matrix_Columns(Matrix)) then
+        Diagonal = .False.
+        Return
+      EndIf
       If(Matrix%Storage.eq.'StorDiag') then
         Return
       ElseIf(Matrix%Storage.eq.'StorSymm'.or.Matrix%Storage.eq.'StorAsym'.or.&
@@ -27819,7 +27837,7 @@
 !>    \verbatim
 !>
 !>    MQC_Matrix_Matrix_Cross_Outer is a function that returns the rank-4 tensor containing 
-!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices </b>.
+!>    the  M1(i,l)xM(k,j) outer product of two MQC matrices.
 !>
 !>    \endverbatim
 !
@@ -27869,8 +27887,64 @@
       endDo
 
       end function MQC_Matrix_Matrix_Cross_Outer
+!
+!
+!     PROCEDURE MQC_Matrix_Matrix_Kronecker_Product
+!
+!>    \brief <b> MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of
+!>    two matrices </b>.
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    MQC_Matrix_Matrix_Kronecker_Product computes the Kronecker product of two
+!>    matrices.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Matrix1
+!>    \verbatim
+!>        Matrix1 is type(mqc_matrix)
+!>        The first matrix in the kronecker product.
+!>    \endverbatim
+!>
+!>    \param[in] Matrix2
+!>    \verbatim
+!>        Matrix2 is type(mqc_matrix)
+!>        The second matrix in the kronecker product.
+!>    \endverbatim
+!>
+!
+!     Authors:
+!     ========
+!>    \author L. M. Thompson 
+!>    \date 2026
+!
+      Function MQC_Matrix_Matrix_Kronecker_Product(matrix1,matrix2) result(kron)
+!
+!     Variable Declarations.
+      Implicit None
+      type(mqc_matrix)::kron
+      type(mqc_matrix),intent(in)::matrix1,matrix2
+      integer(kind=int64)::i,j,iStart,iEnd,jStart,jEnd
 
+      call kron%init(size(matrix1,1)*size(matrix2,1),size(matrix1,2)*size(matrix2,2))
 
+      do i = 1,size(matrix1,1)
+        iStart = size(matrix1,1)*(i-1)+1
+        iEnd = size(matrix1,1)*i
+        do j = 1,size(matrix1,2)
+          jStart = size(matrix1,2)*(j-1)+1
+          jEnd = size(matrix1,2)*j
+          call kron%mput(matrix1%at(i,j)*matrix2,[iStart,iEnd],[jStart,jEnd])
+        endDo
+      endDo
+
+      end function MQC_Matrix_Matrix_Kronecker_Product
 !
 !
 !     PROCEDURE MQC_Matrix_Complex_RealPart
@@ -29448,7 +29522,7 @@
             Do K = 1, Tensor%K
               Do l = 1, Tensor%L
                 If(short_print) then
-                  If(abs(Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)).gt.print_threshold ) then
+                  If(abs(Tensor%at(I,J,K,L)).gt.print_threshold ) then
                     If(Tensor%Data_Type.eq.'Integer') then
                       Write(IOut,1100) I,J,K,L,Tensor%ITen(symIndexHash(I,J,K,L),1,1,1)
                     ElseIf(Tensor%Data_Type.eq.'Real') then
@@ -29902,6 +29976,95 @@
       EndIf
 
       End Subroutine MQC_R4Tensor_Initialize
+!
+!     PROCEDURE MQC_R4Tensor_Permute
+!
+!>    \brief <b>Returns a rank-four tensor with permuted dimensions.</b>
+!
+!>    \par Purpose:
+!     =============
+!>
+!>    \verbatim
+!>
+!>    Returns a rank-four tensor with permuted dimensions.
+!>
+!>    \endverbatim
+!
+!     Arguments:
+!     ==========
+!>    \param[in] Order
+!>    \verbatim
+!>      Order is Integer(kind=int64),Dimension(4)
+!>      Permutation of [1,2,3,4] defining the input index
+!>      used for each output index.
+!>    \endverbatim
+!>
+!>    \param[in] DoConjg
+!>    \verbatim
+!>      DoConjg is Logical
+!>      If true, complex conjugate the permuted values.
+!>    \endverbatim
+!>
+!     Authors:
+!     ========
+!>    \author L. M. Thompson
+!>    \date 2026
+!
+      Function MQC_R4Tensor_Permute(Tensor,Order,DoConjg) Result(Output)
+!
+      Implicit None
+      Class(MQC_R4Tensor),Intent(In)::Tensor
+      Integer(kind=int64),Dimension(4),Intent(In)::Order
+      Logical,Intent(In)::DoConjg
+      Type(MQC_R4Tensor)::Output
+      Type(MQC_Scalar)::ScalarValue
+      Integer(kind=int64)::I,J,K,L,N
+      Integer(kind=int64),Dimension(4)::IndexOut,TensorShape
+
+      Do N=1,4
+        If(Order(N).lt.1.or.Order(N).gt.4.or.Count(Order.eq.Order(N)).ne.1) &
+          Call MQC_Error_I('Order is not a permutation in MQC_R4Tensor_Permute',6)
+      EndDo
+
+      TensorShape=[Tensor%I,Tensor%J,Tensor%K,Tensor%L]
+      Select Case(Tensor%Data_Type)
+      Case('Integer')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0_int64)
+      Case('Real')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),0.0_real64)
+      Case('Complex')
+        Call Output%init(TensorShape(Order(1)),TensorShape(Order(2)), &
+          TensorShape(Order(3)),TensorShape(Order(4)),(0.0_real64,0.0_real64))
+      Case Default
+        Call MQC_Error_A('Tensor type not defined in MQC_R4Tensor_Permute',6, &
+          'Tensor%Data_Type',Tensor%Data_Type)
+      End Select
+      Do I=1,Output%I
+        Do J=1,Output%J
+          Do K=1,Output%K
+            Do L=1,Output%L
+              IndexOut=[I,J,K,L]
+              ScalarValue=Tensor%at(IndexOut(Order(1)),IndexOut(Order(2)), &
+                IndexOut(Order(3)),IndexOut(Order(4)))
+              Select Case(Tensor%Data_Type)
+              Case('Integer')
+                Call Output%put(ScalarValue%ival(),I,J,K,L)
+              Case('Real')
+                Call Output%put(ScalarValue%rval(),I,J,K,L)
+              Case('Complex')
+                If(DoConjg) Then
+                  Call Output%put(Conjg(ScalarValue%cval()),I,J,K,L)
+                Else
+                  Call Output%put(ScalarValue%cval(),I,J,K,L)
+                EndIf
+              End Select
+            EndDo
+          EndDo
+        EndDo
+      EndDo
+      End Function MQC_R4Tensor_Permute
 !
 !     PROCEDURE MQC_Matrix_SymmSymmR4Tensor_Put_Real
 !
@@ -31105,7 +31268,7 @@
 !>    
 !>    \verbatim
 !>
-!>    MQC_R4Tensor_R4Tensor_At is a function that returns the vector between indices 
+!>    MQC_R4Tensor_Vector_At is a function that returns the vector between indices 
 !>    D1, D2, D3 and D4. If the values in the index specification are negative, the 
 !>    index is counted back from the final element. 
 !>
@@ -31927,8 +32090,8 @@
 !     Authors:
 !     ========
 !
-!>    \author L. M. Thompson
-!>    \date 2019
+!>    \author L. M. Thompson, M. M. F. Moraes
+!>    \date 2019, 2026
 !
       Function MQC_R4Tensor_R4Tensor_At(TensorIn,D1,D2,D3,D4) Result(TensorOut)
 !
@@ -31985,56 +32148,56 @@
       If (IndI.lt.0) IndI = Size(TensorIn,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(TensorIn,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
+      If (Len1.lt.0.or.Len1.gt.Size(TensorIn,1)) Call MQC_Error_I('Dimension 1 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1) )
-      If (IndI.le.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
+      If (IndI.lt.0.or.IndI.gt.(Size(TensorIn,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndI',IndI,'Size(TensorIn,1)', &
            Size(TensorIn,1),'Len1', Len1 )
       If (IndJ.lt.Len1.or.IndJ.gt.Size(TensorIn,1)) Call MQC_Error_I('Index J out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndJ',IndJ,'Len1',Len1,'Size(TensorIn,1)', &
            Size(TensorIn,1))
       IndK = K
       IndL = L
       If (IndK.lt.0) IndK = Size(TensorIn,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(TensorIn,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
+      If (Len2.lt.0.or.Len2.gt.Size(TensorIn,2)) Call MQC_Error_I('Dimension 2 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
+      If (IndK.lt.0.or.IndK.gt.(Size(TensorIn,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndK',IndK,'Size(TensorIn,2)', &
            Size(TensorIn,2),'Len2', Len2 )
       If (IndL.lt.Len2.or.IndL.gt.Size(TensorIn,2)) Call MQC_Error_I('Index L out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndL',IndL,'Len2',Len2,'Size(TensorIn,2)', &
            Size(TensorIn,2))
       IndM = M
       IndN = N
       If (IndM.lt.0) IndM = Size(TensorIn,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(TensorIn,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
+      If (Len3.lt.0.or.Len3.gt.Size(TensorIn,3)) Call MQC_Error_I('Dimension 3 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
+      If (IndM.lt.0.or.IndM.gt.(Size(TensorIn,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndM',IndM,'Size(TensorIn,3)', &
            Size(TensorIn,3),'Len3', Len3 )
       If (IndN.lt.Len3.or.IndN.gt.Size(TensorIn,3)) Call MQC_Error_I('Index N out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndN',IndN,'Len3',Len3,'Size(TensorIn,3)', &
            Size(TensorIn,3))
       IndO = O
       IndP = P
       If (IndO.lt.0) IndO = Size(TensorIn,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(TensorIn,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
-           & defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
+      If (Len4.lt.0.or.Len4.gt.Size(TensorIn,4)) Call MQC_Error_I('Dimension 4 length badly &
+           &defined in MQC_R4Tensor_R4Tensor_At',6,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
-           & bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
+      If (IndO.lt.0.or.IndO.gt.(Size(TensorIn,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+           &bounds in MQC_R4Tensor_R4Tensor_At',6,'IndO',IndO,'Size(TensorIn,4)', &
            Size(TensorIn,4),'Len4', Len4 )
       If (IndP.lt.Len4.or.IndP.gt.Size(TensorIn,4)) Call MQC_Error_I('Index P out of bounds &
-           & in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
+           &in MQC_R4Tensor_R4Tensor_At',6,'IndP',IndP,'Len4',Len4,'Size(TensorIn,4)', &
            Size(TensorIn,4))
 
       If (MQC_R4Tensor_HaveFull(TensorIn)) then
@@ -32218,10 +32381,10 @@
       If (IndI.lt.0) IndI = Size(Ten,1) + IndI + 1
       If (IndJ.lt.0) IndJ = Size(Ten,1) + IndJ + 1
       Len1 = IndJ-IndI+1
-      If (Len1.le.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
+      If (Len1.lt.0.or.Len1.ne.Size(TensorIn,1).or.Len1.gt.Size(Ten,1)) &
         Call MQC_Error_I('Dimension 1 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
         6,'Len1',Len1,'Size(TensorIn,1)',Size(TensorIn,1),'Size(Ten,1)',Size(Ten,1))
-      If (IndI.le.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
+      If (IndI.lt.0.or.IndI.gt.(Size(Ten,1)-Len1+1)) Call MQC_Error_I('Index I out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndI',IndI,'Size(Ten,1)', Size(Ten,1), &
         'Len1', Len1 )
       If (IndJ.gt.Size(Ten,1)) Call MQC_Error_I('Index J out of bounds in  &
@@ -32231,10 +32394,10 @@
       If (IndK.lt.0) IndK = Size(Ten,2) + IndK + 1
       If (IndL.lt.0) IndL = Size(Ten,2) + IndL + 1
       Len2 = IndL-IndK+1
-      If (Len2.le.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
+      If (Len2.lt.0.or.Len2.ne.Size(TensorIn,2).or.Len2.gt.Size(Ten,2)) &
         Call MQC_Error_I('Dimension 2 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2) )
-      If (IndK.le.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
+        6,'Len2',Len2,'Size(TensorIn,2)', Size(TensorIn,2),'Size(Ten,2)',Size(Ten,2) )
+      If (IndK.lt.0.or.IndK.gt.(Size(Ten,2)-Len2+1)) Call MQC_Error_I('Index K out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndK',IndK,'Size(Ten,2)', &
         Size(Ten,2),'Len2', Len2 )
       If (IndL.gt.Size(Ten,2)) Call MQC_Error_I('Index L out of bounds in &
@@ -32244,10 +32407,10 @@
       If (IndM.lt.0) IndM = Size(Ten,3) + IndM + 1
       If (IndN.lt.0) IndN = Size(Ten,3) + IndN + 1
       Len3 = IndN-IndM+1
-      If (Len3.le.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
+      If (Len3.lt.0.or.Len3.ne.Size(TensorIn,3).or.Len3.gt.Size(Ten,3)) &
         Call MQC_Error_I('Dimension 3 length badly defined in MQC_R4Tensor_R4Tensor_Put', &
-        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3) )
-      If (IndM.le.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
+        6,'Len3',Len3,'Size(TensorIn,3)',Size(TensorIn,3),'Size(Ten,3)',Size(Ten,3) )
+      If (IndM.lt.0.or.IndM.gt.(Size(Ten,3)-Len3+1)) Call MQC_Error_I('Index M out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndM',IndM,'Size(Ten,3)', Size(Ten,3), &
         'Len3', Len3 )
       If (IndN.gt.Size(Ten,3)) Call MQC_Error_I('Index N out of bounds in &
@@ -32257,10 +32420,10 @@
       If (IndO.lt.0) IndO = Size(Ten,4) + IndO + 1
       If (IndP.lt.0) IndP = Size(Ten,4) + IndP + 1
       Len4 = IndP-IndO+1
-      If (Len4.le.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
+      If (Len4.lt.0.or.Len4.ne.Size(TensorIn,4).or.Len4.gt.Size(Ten,4)) &
         Call MQC_Error_I('Dimension 4 length badly defined in MQC_R4Tensor_R4Tensor_Put',6, &
-        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4) )
-      If (IndO.le.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
+        'Len4',Len4,'Size(TensorIn,4)',Size(TensorIn,4),'Size(Ten,4)',Size(Ten,4)  )
+      If (IndO.lt.0.or.IndO.gt.(Size(Ten,4)-Len4+1)) Call MQC_Error_I('Index O out of &
         & bounds in MQC_R4Tensor_R4Tensor_Put',6,'IndO',IndO,'Size(Ten,4)', Size(Ten,4), &
         'Len4', Len4 )
       If (IndP.gt.Size(Ten,4)) Call MQC_Error_I('Index P out of bounds in &
@@ -33125,6 +33288,7 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,va,[i],[j]))
+              !tmpR = dagger(RA%mat(vb,va,[i],[j]))
             case(3)      
               tmpR = RA%mat([i],va,vb,[j])
             case(4)
@@ -33134,8 +33298,10 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],va,[j]))
+              !tmpR = dagger(RA%mat(vb,[i],va,[j]))
             case(2)      
               tmpR = transpose(RA%mat([i],vb,va,[j]))
+              !tmpR = dagger(RA%mat([i],vb,va,[j]))
             case(4)
               tmpR = RA%mat([i],[j],va,vb)
             end select      
@@ -33143,10 +33309,13 @@
             select case(ib)
             case(1)      
               tmpR = transpose(RA%mat(vb,[i],[j],va))
+              !tmpR = dagger(RA%mat(vb,[i],[j],va))
             case(2)       
               tmpR = transpose(RA%mat([i],vb,[j],va))
+              !tmpR = dagger(RA%mat([i],vb,[j],va))
             case(3)       
               tmpR = transpose(RA%mat([i],[j],vb,va))
+              !tmpR = dagger(RA%mat([i],[j],vb,va))
             end select      
           end select      
           call MC%put(Contraction(tmpR,MB),i,j)
@@ -33308,8 +33477,8 @@
 !$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
 !$OMP       ib,jb,lb,kb,MC,dimAl,dimAk),&
 !$OMP PRIVATE(tmpRA,tmpRB,k,l)
-      do k=1,dimAl
-        do l=1,dimAk
+      do k=1,dimAk
+        do l=1,dimAl
           select case(ia)
           case(1)      
             select case(ja)
@@ -33360,7 +33529,7 @@
               if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
             end select      
           end select      
-         select case(ib)
+          select case(ib)
           case(1)
             select case(jb)
             case(2)
@@ -33374,7 +33543,7 @@
               if(kb.eq.3) tmpRB = RB%mat(vi,[l],[k],vj)
             end select
           case(2)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[k],[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[l],[k]))
@@ -33386,7 +33555,7 @@
               if(kb.eq.3) tmpRB = RB%mat([l],vi,[k],vj)
             end select
           case(3)
-            select case(ja)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],vi,[l]))
               if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[l],vi,[k]))
@@ -33398,7 +33567,7 @@
               if(kb.eq.2) tmpRB = RB%mat([l],[k],vi,vj)
             end select
           case(4)
-            select case(ib)
+            select case(jb)
             case(1)
               if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[k],[l],vi))
               if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[l],[k],vi))
@@ -33690,8 +33859,8 @@
 !$OMP SHARED(RA,RB,vi,vj,ia,ja,la,ka,&
 !$OMP       ib,jb,lb,kb,RC,dimAl,dimAk,dimBl,dimBk),&
 !$OMP PRIVATE(tmpRA,tmpRB,k,l,p,q)
-      do k=1,dimAl
-        do l=1,dimAk
+      do k=1,dimAk
+        do l=1,dimAl
           select case(ia)
           case(1)      
             select case(ja)
@@ -33710,6 +33879,8 @@
             case(1)      
               if(ka.eq.3) tmpRA = transpose(RA%mat(vj,vi,[k],[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat(vj,vi,[l],[k]))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,vi,[k],[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,vi,[l],[k]))
             case(3)      
               if(ka.eq.1) tmpRA = RA%mat([k],vi,vj,[l])
               if(ka.eq.4) tmpRA = RA%mat([l],vi,vj,[k])
@@ -33722,9 +33893,13 @@
             case(1)      
               if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],vi,[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat(vj,[l],vi,[k]))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat(vj,[l],vi,[k]))
             case(2)      
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,vi,[l]))
               if(ka.eq.4) tmpRA = transpose(RA%mat([l],vj,vi,[k]))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,vi,[l]))
+              !if(ka.eq.4) tmpRA = dagger(RA%mat([l],vj,vi,[k]))
             case(4)
               if(ka.eq.1) tmpRA = RA%mat([k],[l],vi,vj)
               if(ka.eq.2) tmpRA = RA%mat([l],[k],vi,vj)
@@ -33734,16 +33909,22 @@
             case(1)      
               if(ka.eq.2) tmpRA = transpose(RA%mat(vj,[k],[l],vi))
               if(ka.eq.3) tmpRA = transpose(RA%mat(vj,[l],[k],vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat(vj,[k],[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat(vj,[l],[k],vi))
             case(2)       
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],vj,[l],vi))
               if(ka.eq.3) tmpRA = transpose(RA%mat([l],vj,[k],vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],vj,[l],vi))
+              !if(ka.eq.3) tmpRA = dagger(RA%mat([l],vj,[k],vi))
             case(3)       
               if(ka.eq.1) tmpRA = transpose(RA%mat([k],[l],vj,vi))
               if(ka.eq.2) tmpRA = transpose(RA%mat([l],[k],vj,vi))
+              !if(ka.eq.1) tmpRA = dagger(RA%mat([k],[l],vj,vi))
+              !if(ka.eq.2) tmpRA = dagger(RA%mat([l],[k],vj,vi))
             end select      
           end select      
-          do p=1,dimBl
-            do q=1,dimBk
+          do p=1,dimBk
+            do q=1,dimBl
              select case(ib)
              case(1)
                select case(jb)
@@ -33762,6 +33943,8 @@
                case(1)
                  if(kb.eq.3) tmpRB = transpose(RB%mat(vj,vi,[p],[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat(vj,vi,[q],[p]))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,vi,[p],[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,vi,[q],[p]))
                case(3)
                  if(kb.eq.1) tmpRB = RB%mat([p],vi,vj,[q])
                  if(kb.eq.4) tmpRB = RB%mat([q],vi,vj,[p])
@@ -33774,9 +33957,13 @@
                case(1)
                  if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],vi,[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat(vj,[q],vi,[p]))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat(vj,[q],vi,[p]))
                case(2)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,vi,[q]))
                  if(kb.eq.4) tmpRB = transpose(RB%mat([q],vj,vi,[p]))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,vi,[q]))
+                 !if(kb.eq.4) tmpRB = dagger(RB%mat([q],vj,vi,[p]))
                case(4)
                  if(kb.eq.1) tmpRB = RB%mat([p],[q],vi,vj)
                  if(kb.eq.2) tmpRB = RB%mat([q],[p],vi,vj)
@@ -33786,12 +33973,18 @@
                case(1)
                  if(kb.eq.2) tmpRB = transpose(RB%mat(vj,[p],[q],vi))
                  if(kb.eq.3) tmpRB = transpose(RB%mat(vj,[q],[p],vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat(vj,[p],[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat(vj,[q],[p],vi))
                case(2)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],vj,[q],vi))
                  if(kb.eq.3) tmpRB = transpose(RB%mat([q],vj,[p],vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],vj,[q],vi))
+                 !if(kb.eq.3) tmpRB = dagger(RB%mat([q],vj,[p],vi))
                case(3)
                  if(kb.eq.1) tmpRB = transpose(RB%mat([p],[q],vj,vi))
                  if(kb.eq.2) tmpRB = transpose(RB%mat([q],[p],vj,vi))
+                 !if(kb.eq.1) tmpRB = dagger(RB%mat([p],[q],vj,vi))
+                 !if(kb.eq.2) tmpRB = dagger(RB%mat([q],[p],vj,vi))
                end select
              end select
              call RC%put(Contraction(tmpRA,tmpRB),k,l,p,q)

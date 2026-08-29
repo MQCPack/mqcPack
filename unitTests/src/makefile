@@ -12,7 +12,7 @@ RunF         = pgfortran -i8 -r8 -Mallocatable=03
 #
 # The 'all' rule.
 #
-all: unitTest01.exe
+all: unitTest01.exe unitTest02.exe
 
 #
 # Generic rules for building module (*.mod) and object (*.o) files.
