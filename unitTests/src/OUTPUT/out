@@ -316,6 +316,7 @@
  PASS  complex-general transform block bbab
  PASS  complex-general transform block bbba
  PASS  complex-general transform block bbbb
+ PASS  different-bra/ket complex-general transformation
  PASS  at oracle full aaaa coulomb
  PASS  at oracle symm aaaa coulomb
  PASS  at oracle full aaab coulomb

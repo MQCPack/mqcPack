@@ -5,11 +5,11 @@ AUTOMAKE_OPTIONS = subdir-objects
 TESTS_ENVIRONMENT = abs_top_srcdir='$(abs_top_srcdir)' \
   abs_top_builddir='$(abs_top_builddir)'
 CLEANFILES = ../algebra2/outfile ../fullci/outfile ../hartreefock/outfile \
-  unitTest07-numerical.faf
+  ../../unitTests/src/outfile unitTest07-numerical.faf
 
-TESTS = ../algebra2/testit.sh unitTest01 unitTest02 \
+TESTS = ../algebra2/testit.sh unitTest01 unitTest02 unitTest08 \
   ../../unitTests/src/testit.sh
-check_PROGRAMS = ../algebra2/algebra_fun unitTest01 unitTest02 \
+check_PROGRAMS = ../algebra2/algebra_fun unitTest01 unitTest02 unitTest08 \
   ../../unitTests/src/unitTest_twoERIs
 
 if WITH_GAUOPEN
@@ -38,6 +38,7 @@ unitTest04_SOURCES = ../../unitTests/src/unitTest04.f03
 unitTest05_SOURCES = ../../unitTests/src/unitTest05.f03
 unitTest06_SOURCES = ../../unitTests/src/unitTest06.f03
 unitTest07_SOURCES = ../../unitTests/src/unitTest07.f03
+unitTest08_SOURCES = ../../unitTests/src/unitTest08.f03
 ______unitTests_src_unitTest_twoERIs_SOURCES = \
   ../../unitTests/src/unitTest_twoERIs.F03
 EXTRA_DIST = test_no_gauopen_matrixfile.sh \
