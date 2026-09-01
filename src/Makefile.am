@@ -4,7 +4,8 @@ mqcmoddir = $(prefix)/mod
 MQC_MODULE_FILES = mqc_general.mod mqc_binary.mod \
   mqc_datastructures.mod mqc_files.mod mqc_integrals.mod \
   mqc_algebra.mod mqc_algebra2.mod mqc_molecule.mod mqc_est.mod \
-  mqc_matwrapper.mod mqc_gaussian.mod mqc_fullwavefunction.mod
+  mqc_nef.mod mqc_matwrapper.mod mqc_gaussian.mod \
+  mqc_fullwavefunction.mod
 nodist_mqcmod_DATA = $(MQC_MODULE_FILES)
 EXTRA_DIST = mqc_general_lapack.F03
 lib_LIBRARIES = libmqc.a
@@ -36,6 +37,7 @@ mqc_molecule.$(OBJEXT): mqc_general.$(OBJEXT) mqc_algebra.$(OBJEXT) \
 mqc_est.$(OBJEXT): mqc_general.$(OBJEXT) mqc_binary.$(OBJEXT) \
   mqc_algebra.$(OBJEXT) mqc_datastructures.$(OBJEXT) \
   mqc_files.$(OBJEXT)
+mqc_nef.$(OBJEXT): mqc_est.$(OBJEXT)
 mqc_matwrapper_direct.$(OBJEXT): mqc_general.$(OBJEXT)
 mqc_matwrapper_stub.$(OBJEXT): mqc_general.$(OBJEXT)
 if WITH_GAUOPEN
