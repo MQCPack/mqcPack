@@ -33,6 +33,7 @@ or Git commit on which a downstream repository depends.
 | Scalars, vectors, matrices, rank-4 tensors, operators, eigensystems, SVD | [Algebra objects](api/algebra.md) | `src/mqc_algebra.F03` |
 | Rank-changing numerical or character values | [MQC_Variable](api/algebra2.md) | `src/mqc_algebra2.F03` |
 | SCF/post-SCF intermediates, spin blocks, determinants, two-electron integrals | [Electronic-structure objects](api/est.md) | `src/mqc_est.F03` |
+| Natural Excitation Framework vectors, matrices, and rank-4 objects | [Electronic-structure objects](api/est.md#natural-excitation-framework-objects) | `src/mqc_nef.F03` |
 | FChk or FAF/MatrixFile reading and writing | [Gaussian interfaces](api/gaussian.md) | `src/mqc_gaussian.F03`, `src/mqc_matwrapper_direct.F03` |
 | Text files, linked lists, basis functions, molecule data, C interoperability | [Supporting modules](api/files-and-integrals.md) | corresponding files under `src/` |
 | Find an exact declaration or type-bound implementation | [Generated procedure index](api/PROCEDURE_INDEX.md) | all principal `src/*.F03` files and `src/mqc_util.c` |
@@ -48,6 +49,7 @@ MQC_General
   │    ├─ MQC_Algebra2
   │    ├─ MQC_Molecule
   │    └─ MQC_EST
+  │         └─ MQC_NEF
   └─ MQC_MatWrapper
        └─ MQC_Gaussian
             └─ downstream programs and higher-level wavefunction handling

@@ -1115,23 +1115,23 @@
         print_threshold = -1.0
         short_print = .false.
       EndIf      
-      call string_change_case(trim(twoERIs%integraltype),'L')
-      if(trim(twoERIs%integralType).eq.'regular') then
+      call string_change_case(twoERIs%integraltype,'L',integralType)
+      if(trim(integralType).eq.'regular') then
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'Regular 2ERIs',short_print_threshold=print_threshold)
-      elseIf(trim(twoERIs%integralType).eq.'raffenetti1') then
+      elseIf(trim(integralType).eq.'raffenetti1') then
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'Raffenetti 1 2ERIs',short_print_threshold=print_threshold)
-      elseIf(trim(twoERIs%integralType).eq.'raffenetti2') then
+      elseIf(trim(integralType).eq.'raffenetti2') then
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'Raffenetti 2 2ERIs',short_print_threshold=print_threshold)
-      elseIf(trim(twoERIs%integralType).eq.'raffenetti3') then
+      elseIf(trim(integralType).eq.'raffenetti3') then
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'Raffenetti 3 2ERIs',short_print_threshold=print_threshold)
-      elseIf(trim(twoERIs%integralType).eq.'space') then
+      elseIf(trim(integralType).eq.'space') then
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'Restricted MO 2ERIs',short_print_threshold=print_threshold)
-      elseIf(trim(twoERIs%integralType).eq.'spin') then
+      elseIf(trim(integralType).eq.'spin') then
         write(iout,'(A)') 'Unrestricted MO 2ERIs'
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'(aa|aa)',short_print_threshold=print_threshold)
@@ -1169,7 +1169,7 @@
           twoERIs%hasSpinBlock('baba')) then
           call twoERIs%baba%print(iout,'(ba|ba)',short_print_threshold=print_threshold)
         endIf
-      elseIf(trim(twoERIs%integralType).eq.'general') then
+      elseIf(trim(integralType).eq.'general') then
         write(iout,'(A)') 'General MO 2ERIs'
         if(twoERIs%hasSpinBlock('aaaa')) &
           call twoERIs%alpha%print(iout,'(aa|aa)',short_print_threshold=print_threshold)
@@ -2860,7 +2860,7 @@
 !>        The MQC_TwoERIs variable to allocate.
 !>    \endverbatim
 !>    
-!>    \param[in,out] StorIntType
+!>    \param[in] StorIntType
 !>    \verbatim
 !>        StorIntType is Character(len=*)
 !>        Label consited of a hyphen or other character separated sting.
@@ -2894,7 +2894,7 @@
 !>                         triplet integrals.
 !>    \endverbatim
 !>    
-!>    \param[in,out] IntegralType
+!>    \param[in] IntegralType
 !>    \verbatim
 !>        IntegralType is Character(len=*)
 !>        = 'Regular':     the MQC_TwoERIs variable contains 
@@ -3038,23 +3038,24 @@
 !
       implicit none
       class(mqc_twoERIs)::twoERIs
-      character(len=*)::storIntType,integralType
+      character(len=*),intent(in)::storIntType,integralType
+      character(len=len(storIntType))::myStorIntType
+      character(len=len(integralType))::myIntegralType
       type(mqc_r4tensor),optional::alpha,beta,alphaBeta,betaAlpha,abab,abba,baab, &
         baba,aaab,aaba,abaa,baaa,bbba,bbab,babb,abbb
       logical,dimension(16),optional::allocationVector
       logical,dimension(16)::allocVec
       integer::i
 !
-      call string_change_case(storIntType,'L')
-      call string_change_case(integralType,'L')
-      storIntType = trim(storIntType)
-      twoERIs%storageType = storIntType(1:4) 
-      if(len(storIntType).eq.4) then
+      call string_change_case(storIntType,'L',myStorIntType)
+      call string_change_case(integralType,'L',myIntegralType)
+      twoERIs%storageType = myStorIntType(1:4)
+      if(len_trim(myStorIntType).eq.4) then
         twoERIs%interactionType = 'coulomb'
       else
-        twoERIs%interactionType = storIntType(6:) 
+        twoERIs%interactionType = myStorIntType(6:len_trim(myStorIntType))
       endIf
-      twoERIs%integralType = trim(integralType) 
+      twoERIs%integralType = trim(myIntegralType)
       if(twoERIs%storageType.ne.'symm'.and.&
         twoERIs%storageType.ne.'full') &
         call mqc_error_a('Unrecognized storage type in mqc_twoeris_allocate',6,&
