@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.9.0                           **
-!     **                         September 1, 2026                         **
+!     **                          Version 26.9.2                           **
+!     **                         September 3, 2026                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -217,8 +217,8 @@
 !
       if(PRESENT(major))         major         = 26
       if(PRESENT(minor))         minor         = 9
-      if(PRESENT(revision))      revision      = 0
-      if(PRESENT(versionString)) versionString = '26.9.0'
+      if(PRESENT(revision))      revision      = 2
+      if(PRESENT(versionString)) versionString = '26.9.2'
 !
       return
       end subroutine mqc_version
@@ -1924,6 +1924,66 @@
 !
       return
       end function mqc_float
+!
+!
+!PROCEDURE mqc_distance
+      function mqc_distance(point1,point2) result(distance)
+!
+!     Return the Euclidean distance between two points of equal positive
+!     dimension. The distance has the same units as the point coordinates.
+!
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      real(kind=real64),dimension(:),intent(in)::point1,point2
+      real(kind=real64)::distance
+!
+      if(Size(point1).ne.Size(point2))  &
+        call mqc_error('mqc_distance: Points must have the same dimension.')
+      if(Size(point1).le.0)  &
+        call mqc_error('mqc_distance: Points must have positive dimension.')
+!
+      distance = Sqrt(dot_product(point1-point2,point1-point2))
+!
+      return
+      end function mqc_distance
+!
+!
+!PROCEDURE mqc_distance_matrix
+      function mqc_distance_matrix(points) result(distanceMatrix)
+!
+!     Return the symmetric pairwise Euclidean distance matrix for points
+!     stored by column in points(nDimensions,nPoints). Distances have the
+!     same units as the point coordinates.
+!
+!
+!     H. P. Hratchian, 2026.
+!
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::points
+      real(kind=real64),dimension(:,:),allocatable::distanceMatrix
+      integer(kind=int64)::i,j,nDimensions,nPoints
+!
+      nDimensions = Size(points,1)
+      nPoints = Size(points,2)
+      if(nDimensions.le.0)  &
+        call mqc_error(  &
+          'mqc_distance_matrix: Points must have positive dimension.')
+!
+      Allocate(distanceMatrix(nPoints,nPoints))
+      distanceMatrix = 0.0_real64
+      do i = 1,nPoints-1
+        do j = i+1,nPoints
+          distanceMatrix(i,j) = mqc_distance(points(:,i),points(:,j))
+          distanceMatrix(j,i) = distanceMatrix(i,j)
+        endDo
+      endDo
+!
+      return
+      end function mqc_distance_matrix
 !
 !
 !PROCEDURE mqc_normalizeVector
