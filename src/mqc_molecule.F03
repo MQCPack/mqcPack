@@ -31,8 +31,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.9.0                           **
-!     **                         September 1, 2026                         **
+!     **                          Version 26.9.1                           **
+!     **                         September 3, 2026                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
