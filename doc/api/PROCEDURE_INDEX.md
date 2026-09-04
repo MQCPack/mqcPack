@@ -313,7 +313,7 @@ generic overload membership must still be checked in the source interface block.
 - `MQC_Value_Primitive_Radial` — `function` ([source](../../src/mqc_integrals.F03#L1020))
 - `MQC_Value_Primitive_Angular` — `function` ([source](../../src/mqc_integrals.F03#L1043))
 - `MQC_Overlap_CGFT` — `subroutine` ([source](../../src/mqc_integrals.F03#L1067))
-- `MQC_Overlap_Primitive_XYZ_OS` — `subroutine` ([source](../../src/mqc_integrals.F03#L1195))
+- `MQC_Overlap_Primitive_XYZ_OS` — `subroutine` ([source](../../src/mqc_integrals.F03#L1210))
 
 ## `src/mqc_algebra.F03`
 

@@ -9,6 +9,11 @@ will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
 September 3, 2026
+* MQCPack version set to 26.9.2.
+* Updated the analytical overlap integral code to handle pure AO functions.
+* Fixed the Cartesian F AO self-overlap error in the Obara-Saika recurrence.
+
+September 3, 2026
 * MQCPack version set to 26.9.1.
 * Added distance and distance matrix procedures to mqc_general.F03.
 

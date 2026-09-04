@@ -10,7 +10,7 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.9.1                           **
+!     **                          Version 26.9.2                           **
 !     **                         September 3, 2026                         **
 !     **                                                                   **
 !     **                                                                   **
@@ -1063,7 +1063,7 @@
       end function MQC_Value_Primitive_Angular
 
 !
-!PROCEDURE MQC_Overlap_CGTF
+!PROCEDURE MQC_Overlap_CGFT
       subroutine MQC_Overlap_CGFT(bra,ket,basisIntegrals)
 !
 !     This subroutine calculates an overlap integral between two contracted
@@ -1078,14 +1078,14 @@
       implicit none
       class(MQC_CGTF),intent(in)::bra,ket
       real(kind=real64),dimension(:,:),allocatable,intent(out)::basisIntegrals
-      integer(kind=int64)::i,j,k,ixyz,iBasisBra,iBasisKet,nBasisBra,  &
-        nBasisKet,nBasisPairs,nPrimPairs
+      integer(kind=int64)::i,j,k,ixyz,nCartesianBra,nCartesianKet,  &
+        nCartesianPairs,nPrimPairs
       integer(kind=int64),dimension(:,:),allocatable::indexBasisPairs,  &
         indexPrimPairs
       real(kind=real64)::mu,p
       real(kind=real64),dimension(3)::xAB,xPA,xPB
-      real(kind=real64),dimension(:,:),allocatable::tmpSij,primCoeffs,  &
-        primBasisIntsTot
+      real(kind=real64),dimension(:,:),allocatable::cartesianIntegrals,  &
+        tmpSij,primCoeffs,primBasisIntsTot
       real(kind=real64),dimension(:,:,:),allocatable::primBasisInts
       logical,dimension(:,:),allocatable::haveSij
 !
@@ -1095,39 +1095,34 @@
  1021 format(4x,i3,4x,i3,4x,f8.5,6x,f8.5,6x,f8.5,6x,f8.5)
  1030 format(/,/)
 !
-!     Analytical recurrences in this routine currently operate only on the
-!     complete Cartesian shell. Reject pure shells until the Cartesian result
-!     is explicitly transformed at this boundary.
+!     The analytical recurrence operates on complete Cartesian shells. Build
+!     that working-basis block for every shell pair, then transform it to the
+!     requested exposed representations before returning it.
 !
-      if((bra%angularRepresentation.eq.MQC_CGTF_REAL_PURE.and.  &
-        bra%angularMomentum.gt.1).or.  &
-        (ket%angularRepresentation.eq.MQC_CGTF_REAL_PURE.and.  &
-        ket%angularMomentum.gt.1))  &
-        call mqc_error('MQC_Overlap_CGFT: Real-pure shell integrals NYI.')
-!
-!     Calculate nBasisPairs and nPrimPairs. Then allocate some arrays.
+!     Calculate the Cartesian basis-pair and primitive-pair counts. Then
+!     allocate the Cartesian working arrays.
 !
       if(MQC_Integrals_DEBUG) then
         write(iOut,*)' In MQC_Overlap_CGFT, bra and ket:'
         call MQC_CGTF_print(bra,iOut)
         call MQC_CGTF_print(ket,iOut)
       endIf
-      nBasisBra = bra%nBasis
-      nBasisKet = ket%nBasis
-      nBasisPairs = nBasisBra*nBasisKet
+      nCartesianBra = bra%nCartesian
+      nCartesianKet = ket%nCartesian
+      nCartesianPairs = nCartesianBra*nCartesianKet
       nPrimPairs  = bra%nPrim*ket%nPrim
-      if(Allocated(basisIntegrals)) DeAllocate(basisIntegrals)
-      Allocate(basisIntegrals(nBasisBra,nBasisKet))
-      Allocate(indexBasisPairs(2,nBasisPairs),indexPrimPairs(2,nPrimPairs))
-      Allocate(primBasisInts(nPrimPairs,3,nBasisPairs),  &
-        primBasisIntsTot(nPrimPairs,nBasisPairs),  &
-        primCoeffs(nPrimPairs,nBasisPairs))
+      Allocate(cartesianIntegrals(nCartesianBra,nCartesianKet))
+      Allocate(indexBasisPairs(2,nCartesianPairs),  &
+        indexPrimPairs(2,nPrimPairs))
+      Allocate(primBasisInts(nPrimPairs,3,nCartesianPairs),  &
+        primBasisIntsTot(nPrimPairs,nCartesianPairs),  &
+        primCoeffs(nPrimPairs,nCartesianPairs))
 !
 !     Fill indexBasisPairs and indexPrimPairs.
 !
       k = 0
-      do j = 1,nBasisKet
-        do i = 1,nBasisBra
+      do j = 1,nCartesianKet
+        do i = 1,nCartesianBra
           k = k+1
           indexBasisPairs(1,k) = i
           indexBasisPairs(2,k) = j
@@ -1148,7 +1143,7 @@
 !
       Allocate(tmpSij(bra%angularMomentum+1,ket%angularMomentum+1),  &
         haveSij(bra%angularMomentum+1,ket%angularMomentum+1))
-      do i = 1,nBasisPairs
+      do i = 1,nCartesianPairs
         do j = 1,nPrimPairs
           primCoeffs(j,i) =  &
             bra%primitiveNorm(indexPrimPairs(1,j),indexBasisPairs(1,i))*  &
@@ -1172,8 +1167,8 @@
             primBasisInts(j,2,i)*primBasisInts(j,3,i)
         endDo
       endDo
-      do i = 1,nBasisPairs
-        basisIntegrals(indexBasisPairs(1,i),indexBasisPairs(2,i)) =  &
+      do i = 1,nCartesianPairs
+        cartesianIntegrals(indexBasisPairs(1,i),indexBasisPairs(2,i)) =  &
           dot_product(primCoeffs(:,i),primBasisIntsTot(:,i))
         if(MQC_Integrals_DEBUG) then
           write(iOut,1000) indexBasisPairs(1,i),indexBasisPairs(2,i),  &
@@ -1186,6 +1181,26 @@
         endIf
       endDo
       if(MQC_Integrals_DEBUG) write(iOut,1030)
+!
+!     Transform the complete Cartesian block into the exposed bra and ket
+!     representations. During shell initialization the representation is
+!     temporarily Cartesian and the transformation has not yet been built,
+!     so retain a direct Cartesian path.
+!
+      if(bra%angularRepresentation.eq.MQC_CGTF_REAL_PURE) then
+        if(ket%angularRepresentation.eq.MQC_CGTF_REAL_PURE) then
+          basisIntegrals = MatMul(Transpose(bra%cartesianToBasis),  &
+            MatMul(cartesianIntegrals,ket%cartesianToBasis))
+        else
+          basisIntegrals = MatMul(Transpose(bra%cartesianToBasis),  &
+            cartesianIntegrals)
+        endIf
+      elseIf(ket%angularRepresentation.eq.MQC_CGTF_REAL_PURE) then
+        basisIntegrals = MatMul(cartesianIntegrals,  &
+          ket%cartesianToBasis)
+      else
+        call Move_Alloc(cartesianIntegrals,basisIntegrals)
+      endIf
 !
       return
       end subroutine MQC_Overlap_CGFT
@@ -1274,7 +1289,8 @@
           call MQC_Overlap_Primitive_XYZ_OS(ixyz-2,1,mu,p,XAB,XPA,XPB,Sij,haveSij)
         if(.not.haveSij(ixyz,1))  &
           call MQC_Overlap_Primitive_XYZ_OS(ixyz-1,0,mu,p,XAB,XPA,XPB,Sij,haveSij)
-        Sij(ixyz+1,2) = XPA*Sij(ixyz,2)+(ixyz*Sij(ixyz-1,2)+Sij(ixyz,1))/(mqc_float(2)*p)
+        Sij(ixyz+1,2) = XPA*Sij(ixyz,2)+  &
+          ((ixyz-1)*Sij(ixyz-1,2)+Sij(ixyz,1))/(mqc_float(2)*p)
         haveSij(ixyz+1,2) = .true.
 !
 !     >=2,>=2
