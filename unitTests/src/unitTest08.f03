@@ -2,7 +2,8 @@
 !
 !     Validate Cartesian and Gaussian-convention real-pure contracted shells,
 !     including D/F/G transformations, primitive and contracted point values,
-!     Gaussian PRISM Cartesian ordering, and mixed-shell basis assembly.
+!     analytical overlap integrals, Gaussian PRISM Cartesian ordering, and
+!     mixed-shell basis assembly.
 !
 !     H. P. Hratchian, 2026.
 !
@@ -17,7 +18,8 @@
       real(kind=real64),dimension(3)::center,xyz
       real(kind=real64),dimension(:),allocatable::expectedMixedValues,  &
         valuesD,valuesDefault,valuesExplicit,valuesF,valuesG,valuesMixed
-      real(kind=real64),dimension(:,:),allocatable::transformation
+      real(kind=real64),dimension(:,:),allocatable::mixedOverlap,  &
+        transformation
 !
       center = [0.0_real64,0.0_real64,0.0_real64]
       xyz = [0.31_real64,-0.47_real64,0.83_real64]
@@ -53,6 +55,7 @@
       call assertPureShell(4_int64,9_int64,'real-pure G')
       call assertMultiPrimitiveValues()
       call assertPrimitiveIndependentOfContraction()
+      call assertMixedRepresentationOverlaps()
 !
 !     Gaussian uses PRISM ordering for G and higher Cartesian working shells.
 !
@@ -103,6 +106,9 @@
       expectedMixedValues = [valuesD,valuesF,valuesG]
       call assertVectorClose(valuesMixed,expectedMixedValues,  &
         'mixed basis-set point values')
+      mixedOverlap = basisSetOverlapMatrix(mixedBasisSet)
+      call assertNormalizedSymmetricOverlap(mixedOverlap,24_int64,  &
+        'mixed basis-set analytical overlap')
 !
       write(*,'(1x,A)') 'unitTest08: PASS'
 !
@@ -120,7 +126,8 @@
       character(len=*),intent(in)::label
       type(MQC_CGTF)::cartesianShell,pureShell
       real(kind=real64),dimension(:,:),allocatable::cartesianMetric,  &
-        pureOverlap,shellTransformation
+        cartesianOverlap,expectedPureOverlap,pureOverlap,  &
+        shellTransformation
       real(kind=real64),dimension(:),allocatable::cartesianValues,  &
         expectedValues,primitiveCartesianValues,primitivePureValues,  &
         pureValues
@@ -145,9 +152,17 @@
 !
       cartesianMetric = buildNormalizedCartesianMetric(  &
         cartesianShell%lArrays)
-      pureOverlap = MatMul(Transpose(shellTransformation),  &
-        MatMul(cartesianMetric,shellTransformation))
-      call assertIdentity(pureOverlap,Trim(label)//' transformed overlap')
+      call MQC_Overlap_CGFT(cartesianShell,cartesianShell,  &
+        cartesianOverlap)
+      call assertMatrixClose(cartesianOverlap,cartesianMetric,  &
+        Trim(label)//' analytical Cartesian overlap')
+      expectedPureOverlap = MatMul(Transpose(shellTransformation),  &
+        MatMul(cartesianOverlap,shellTransformation))
+      call MQC_Overlap_CGFT(pureShell,pureShell,pureOverlap)
+      call assertMatrixClose(pureOverlap,expectedPureOverlap,  &
+        Trim(label)//' analytical transformed overlap')
+      call assertIdentity(pureOverlap,  &
+        Trim(label)//' analytical normalized overlap')
 !
       call cartesianShell%primitiveValues(1_int64,xyz,  &
         primitiveCartesianValues)
@@ -225,6 +240,69 @@
 !
       return
       end subroutine assertPrimitiveIndependentOfContraction
+
+
+!PROCEDURE assertMixedRepresentationOverlaps
+      subroutine assertMixedRepresentationOverlaps()
+!
+!     Validate Cartesian/pure, pure/Cartesian, and pure/pure analytical
+!     overlap blocks for different centers and contracted shells.
+!
+!     H. P. Hratchian, 2026.
+!
+      implicit none
+      type(MQC_CGTF)::cartesianBra,cartesianKet,pureBra,pureKet
+      real(kind=real64),dimension(2)::braAlphas,braCoefficients
+      real(kind=real64),dimension(3)::braCenter,ketCenter
+      real(kind=real64),dimension(3)::ketAlphas,ketCoefficients
+      real(kind=real64),dimension(:,:),allocatable::cartesianOverlap,  &
+        cartesianPureOverlap,expectedOverlap,pureCartesianOverlap,  &
+        pureOverlap,reversePureOverlap,transformationBra,  &
+        transformationKet
+!
+      braCenter = [0.23_real64,-0.41_real64,0.17_real64]
+      ketCenter = [-0.37_real64,0.29_real64,0.52_real64]
+      braCoefficients = [0.64_real64,-0.21_real64]
+      braAlphas = [1.43_real64,0.38_real64]
+      ketCoefficients = [0.31_real64,-0.27_real64,0.83_real64]
+      ketAlphas = [3.20_real64,0.91_real64,0.28_real64]
+      call cartesianBra%init(3_int64,braCenter,braCoefficients,  &
+        braAlphas,MQC_CGTF_CARTESIAN)
+      call pureBra%init(3_int64,braCenter,braCoefficients,braAlphas,  &
+        MQC_CGTF_REAL_PURE)
+      call cartesianKet%init(2_int64,ketCenter,ketCoefficients,  &
+        ketAlphas,MQC_CGTF_CARTESIAN)
+      call pureKet%init(2_int64,ketCenter,ketCoefficients,ketAlphas,  &
+        MQC_CGTF_REAL_PURE)
+      transformationBra = pureBra%getCartesianToBasis()
+      transformationKet = pureKet%getCartesianToBasis()
+      call MQC_Overlap_CGFT(cartesianBra,cartesianKet,  &
+        cartesianOverlap)
+!
+      call MQC_Overlap_CGFT(cartesianBra,pureKet,  &
+        cartesianPureOverlap)
+      expectedOverlap = MatMul(cartesianOverlap,transformationKet)
+      call assertMatrixClose(cartesianPureOverlap,expectedOverlap,  &
+        'Cartesian/pure analytical overlap')
+!
+      call MQC_Overlap_CGFT(pureBra,cartesianKet,  &
+        pureCartesianOverlap)
+      expectedOverlap = MatMul(Transpose(transformationBra),  &
+        cartesianOverlap)
+      call assertMatrixClose(pureCartesianOverlap,expectedOverlap,  &
+        'pure/Cartesian analytical overlap')
+!
+      call MQC_Overlap_CGFT(pureBra,pureKet,pureOverlap)
+      expectedOverlap = MatMul(Transpose(transformationBra),  &
+        MatMul(cartesianOverlap,transformationKet))
+      call assertMatrixClose(pureOverlap,expectedOverlap,  &
+        'pure/pure analytical overlap')
+      call MQC_Overlap_CGFT(pureKet,pureBra,reversePureOverlap)
+      call assertMatrixClose(reversePureOverlap,Transpose(pureOverlap),  &
+        'reversed pure/pure analytical overlap')
+!
+      return
+      end subroutine assertMixedRepresentationOverlaps
 
 
 !PROCEDURE buildNormalizedCartesianMetric
@@ -333,6 +411,53 @@
 !
       return
       end subroutine assertIdentity
+
+
+!PROCEDURE assertMatrixClose
+      subroutine assertMatrixClose(actual,expected,label)
+!
+!     Compare two real matrices using the unit-test numerical tolerance.
+!
+!     H. P. Hratchian, 2026.
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::actual,expected
+      character(len=*),intent(in)::label
+!
+      if(Any(Shape(actual).ne.Shape(expected)))  &
+        call fail(Trim(label)//' shape differs.')
+      if(Any(Abs(actual-expected).gt.1.0e-11_real64))  &
+        call fail(Trim(label)//' differs.')
+!
+      return
+      end subroutine assertMatrixClose
+
+
+!PROCEDURE assertNormalizedSymmetricOverlap
+      subroutine assertNormalizedSymmetricOverlap(overlap,nBasis,label)
+!
+!     Validate the shape, symmetry, and normalized diagonal of an AO overlap
+!     matrix.
+!
+!     H. P. Hratchian, 2026.
+!
+      implicit none
+      real(kind=real64),dimension(:,:),intent(in)::overlap
+      integer(kind=int64),intent(in)::nBasis
+      character(len=*),intent(in)::label
+      integer(kind=int64)::i
+!
+      if(Any(Shape(overlap).ne.[nBasis,nBasis]))  &
+        call fail(Trim(label)//' shape differs.')
+      if(Any(Abs(overlap-Transpose(overlap)).gt.1.0e-11_real64))  &
+        call fail(Trim(label)//' is not symmetric.')
+      do i = 1,nBasis
+        if(Abs(overlap(i,i)-1.0_real64).gt.1.0e-11_real64)  &
+          call fail(Trim(label)//' diagonal differs.')
+      endDo
+!
+      return
+      end subroutine assertNormalizedSymmetricOverlap
 
 
 !PROCEDURE assertVectorClose

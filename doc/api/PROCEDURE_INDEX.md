@@ -8,7 +8,7 @@ pages. Many MQCPack modules do not declare a module-wide `private` default, so
 a technically accessible implementation routine is not automatically a supported
 downstream interface.
 
-The current inventory contains 983 Fortran/C procedure definitions
+The current inventory contains 985 Fortran/C procedure definitions
 and 308 type-bound procedure or generic bindings.
 
 The scanner recognizes free-form Fortran declarations and ordinary C function
@@ -84,36 +84,38 @@ generic overload membership must still be checked in the source interface block.
 - `complex2character` — `function` ([source](../../src/mqc_general.F03#L1831))
 - `Build_String_Add_Int` — `Subroutine` ([source](../../src/mqc_general.F03#L1859))
 - `mqc_float` — `function` ([source](../../src/mqc_general.F03#L1906))
-- `mqc_normalizeVector` — `Subroutine` ([source](../../src/mqc_general.F03#L1930))
-- `mqc_vectorTrimZero` — `Subroutine` ([source](../../src/mqc_general.F03#L1959))
-- `mqc_vectorPhase` — `Subroutine` ([source](../../src/mqc_general.F03#L2019))
-- `mqc_crossProduct3D_real` — `function` ([source](../../src/mqc_general.F03#L2079))
-- `mqc_outerProduct_real` — `Function` ([source](../../src/mqc_general.F03#L2110))
-- `mqc_matrixTrimZero` — `Subroutine` ([source](../../src/mqc_general.F03#L2153))
-- `mqc_contraction_full_real` — `function` ([source](../../src/mqc_general.F03#L2218))
-- `mqc_packedSymmetricMatrix2FullMatrix_integer` — `Subroutine` ([source](../../src/mqc_general.F03#L2248))
-- `mqc_packedSymmetricMatrix2FullMatrix_real` — `Subroutine` ([source](../../src/mqc_general.F03#L2326))
-- `mqc_matrixSymm2Full_integer` — `function` ([source](../../src/mqc_general.F03#L2404))
-- `mqc_matrixSymm2Full_real` — `function` ([source](../../src/mqc_general.F03#L2446))
-- `mqc_packedDiagonalMatrix2FullMatrix_integer` — `Subroutine` ([source](../../src/mqc_general.F03#L2488))
-- `mqc_packedDiagonalMatrix2FullMatrix_real` — `subroutine` ([source](../../src/mqc_general.F03#L2523))
-- `mqc_packedSymmetricSymmetricR4Tensor2Full_real` — `subroutine` ([source](../../src/mqc_general.F03#L2557))
-- `mqc_FullMatrix2packedSymmetricMatrix_real` — `subroutine` ([source](../../src/mqc_general.F03#L2624))
-- `mqc_matrixFull2Symm_real` — `function` ([source](../../src/mqc_general.F03#L2701))
-- `mqc_matrixTrace` — `function` ([source](../../src/mqc_general.F03#L2741))
-- `mqc_diagMatrixTimesFullMatrix` — `subroutine` ([source](../../src/mqc_general.F03#L2768))
-- `mqc_matrixInverse_symmFull` — `subroutine` ([source](../../src/mqc_general.F03#L2816))
-- `MQC_leastSquaresFit` — `subroutine` ([source](../../src/mqc_general.F03#L2890))
-- `mqc_bubbleSort_integer` — `subroutine` ([source](../../src/mqc_general.F03#L2937))
-- `mqc_bubbleSort_real` — `subroutine` ([source](../../src/mqc_general.F03#L3010))
-- `mqc_matrixOrderedColumns_integer` — `subroutine` ([source](../../src/mqc_general.F03#L3087))
-- `mqc_matrixOrderedColumns_real` — `subroutine` ([source](../../src/mqc_general.F03#L3124))
-- `mqc_flattenR4Real` — `function` ([source](../../src/mqc_general.F03#L3161))
-- `mqc_isqrt` — `function` ([source](../../src/mqc_general.F03#L3185))
-- `mqc_factorial` — `function` ([source](../../src/mqc_general.F03#L3208))
-- `mqc_doubleFactorial` — `function` ([source](../../src/mqc_general.F03#L3234))
-- `mqc_seq` — `subroutine` ([source](../../src/mqc_general.F03#L3265))
-- `mqc_sphericalPolar2xyz` — `subroutine` ([source](../../src/mqc_general.F03#L3298))
+- `mqc_distance` — `function` ([source](../../src/mqc_general.F03#L1930))
+- `mqc_distance_matrix` — `function` ([source](../../src/mqc_general.F03#L1955))
+- `mqc_normalizeVector` — `Subroutine` ([source](../../src/mqc_general.F03#L1990))
+- `mqc_vectorTrimZero` — `Subroutine` ([source](../../src/mqc_general.F03#L2019))
+- `mqc_vectorPhase` — `Subroutine` ([source](../../src/mqc_general.F03#L2079))
+- `mqc_crossProduct3D_real` — `function` ([source](../../src/mqc_general.F03#L2139))
+- `mqc_outerProduct_real` — `Function` ([source](../../src/mqc_general.F03#L2170))
+- `mqc_matrixTrimZero` — `Subroutine` ([source](../../src/mqc_general.F03#L2213))
+- `mqc_contraction_full_real` — `function` ([source](../../src/mqc_general.F03#L2278))
+- `mqc_packedSymmetricMatrix2FullMatrix_integer` — `Subroutine` ([source](../../src/mqc_general.F03#L2308))
+- `mqc_packedSymmetricMatrix2FullMatrix_real` — `Subroutine` ([source](../../src/mqc_general.F03#L2386))
+- `mqc_matrixSymm2Full_integer` — `function` ([source](../../src/mqc_general.F03#L2464))
+- `mqc_matrixSymm2Full_real` — `function` ([source](../../src/mqc_general.F03#L2506))
+- `mqc_packedDiagonalMatrix2FullMatrix_integer` — `Subroutine` ([source](../../src/mqc_general.F03#L2548))
+- `mqc_packedDiagonalMatrix2FullMatrix_real` — `subroutine` ([source](../../src/mqc_general.F03#L2583))
+- `mqc_packedSymmetricSymmetricR4Tensor2Full_real` — `subroutine` ([source](../../src/mqc_general.F03#L2617))
+- `mqc_FullMatrix2packedSymmetricMatrix_real` — `subroutine` ([source](../../src/mqc_general.F03#L2684))
+- `mqc_matrixFull2Symm_real` — `function` ([source](../../src/mqc_general.F03#L2761))
+- `mqc_matrixTrace` — `function` ([source](../../src/mqc_general.F03#L2801))
+- `mqc_diagMatrixTimesFullMatrix` — `subroutine` ([source](../../src/mqc_general.F03#L2828))
+- `mqc_matrixInverse_symmFull` — `subroutine` ([source](../../src/mqc_general.F03#L2876))
+- `MQC_leastSquaresFit` — `subroutine` ([source](../../src/mqc_general.F03#L2950))
+- `mqc_bubbleSort_integer` — `subroutine` ([source](../../src/mqc_general.F03#L2997))
+- `mqc_bubbleSort_real` — `subroutine` ([source](../../src/mqc_general.F03#L3070))
+- `mqc_matrixOrderedColumns_integer` — `subroutine` ([source](../../src/mqc_general.F03#L3147))
+- `mqc_matrixOrderedColumns_real` — `subroutine` ([source](../../src/mqc_general.F03#L3184))
+- `mqc_flattenR4Real` — `function` ([source](../../src/mqc_general.F03#L3221))
+- `mqc_isqrt` — `function` ([source](../../src/mqc_general.F03#L3245))
+- `mqc_factorial` — `function` ([source](../../src/mqc_general.F03#L3268))
+- `mqc_doubleFactorial` — `function` ([source](../../src/mqc_general.F03#L3294))
+- `mqc_seq` — `subroutine` ([source](../../src/mqc_general.F03#L3325))
+- `mqc_sphericalPolar2xyz` — `subroutine` ([source](../../src/mqc_general.F03#L3358))
 
 ## `src/mqc_general_lapack.F03`
 
@@ -311,7 +313,7 @@ generic overload membership must still be checked in the source interface block.
 - `MQC_Value_Primitive_Radial` — `function` ([source](../../src/mqc_integrals.F03#L1020))
 - `MQC_Value_Primitive_Angular` — `function` ([source](../../src/mqc_integrals.F03#L1043))
 - `MQC_Overlap_CGFT` — `subroutine` ([source](../../src/mqc_integrals.F03#L1067))
-- `MQC_Overlap_Primitive_XYZ_OS` — `subroutine` ([source](../../src/mqc_integrals.F03#L1195))
+- `MQC_Overlap_Primitive_XYZ_OS` — `subroutine` ([source](../../src/mqc_integrals.F03#L1210))
 
 ## `src/mqc_algebra.F03`
 

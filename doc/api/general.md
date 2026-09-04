@@ -21,6 +21,10 @@ project's BLAS/LAPACK wrappers.
 - Character kernels: `mqc_adjustl`, `mqc_adjustr`, `mqc_len_trim`, and scalar
   `mqc_trim`. These operate on intrinsic values; `MQC_Algebra2` supplies the
   corresponding `MQC_Variable` layer.
+- Geometry kernels: `mqc_distance(point1,point2)` returns the Euclidean
+  distance between equal-length intrinsic real vectors, and
+  `mqc_distance_matrix(points)` returns all pairwise distances for points
+  stored by column in `points(nDimensions,nPoints)`.
 - Array/storage helpers: `mqc_packedDiagonalMatrix2FullMatrix`,
   `mqc_matrixSymm2Full`, `matrixOrderedColumns`, `flatten`, and `contraction`.
 - Linear solves: the `mqc_dgesv` generic dispatches matrix and vector right-hand
@@ -36,6 +40,8 @@ Consult the [procedure index](PROCEDURE_INDEX.md) for all specific overloads.
   supported build configurations promote default kinds.
 - Use `mqc_float(...)` when converting integers or literals in mixed numerical
   formulas.
+- Distance results retain the coordinate units supplied by the caller. The
+  distance routines do not assume bohr, angstrom, or three dimensions.
 - Treat packed/full conversion routines as storage transformations. Confirm the
   expected packed ordering before interchanging their output with external
   software.

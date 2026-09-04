@@ -80,9 +80,12 @@ available as the working representation. `MQC_Value_CGFT` and
 `MQC_Value_Primitive_Radial` and `MQC_Value_Primitive_Angular` retain their
 low-level radial and scalar Cartesian-monomial meanings.
 
-Pure-shell analytical overlap transformation is not part of this value-only
-API increment. `MQC_Overlap_CGFT` therefore rejects real-pure D and higher
-shells explicitly instead of interpreting pure indices as Cartesian indices.
+`MQC_Overlap_CGFT` evaluates its Obara-Saika recurrence in the complete
+Cartesian working shells and transforms the resulting block as
+`transpose(T_bra) * S_cartesian * T_ket`. It supports Cartesian/Cartesian,
+Cartesian/real-pure, real-pure/Cartesian, and real-pure/real-pure shell pairs.
+`basisSetOverlapMatrix` assembles those blocks in the exposed `nBasis`
+dimensions and ordering of the basis set.
 
 Angular momentum, Cartesian center, coefficient/exponent pairing, primitive
 normalization, and shell ordering are scientific data. Preserve them when
