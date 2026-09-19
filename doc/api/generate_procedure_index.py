@@ -21,6 +21,7 @@ FORTRAN_SOURCES = (
     "src/mqc_datastructures.F03",
     "src/mqc_files.F03",
     "src/mqc_integrals.F03",
+    "src/mqc_integrals_quadrature.F03",
     "src/mqc_algebra.F03",
     "src/mqc_algebra2.F03",
     "src/mqc_molecule.F03",
