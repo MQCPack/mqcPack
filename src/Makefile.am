@@ -7,7 +7,7 @@ MQC_MODULE_FILES = mqc_general.mod mqc_binary.mod \
   mqc_nef.mod mqc_matwrapper.mod mqc_gaussian.mod \
   mqc_fullwavefunction.mod
 nodist_mqcmod_DATA = $(MQC_MODULE_FILES)
-EXTRA_DIST = mqc_general_lapack.F03
+EXTRA_DIST = mqc_general_lapack.F03 mqc_integrals_quadrature.F03
 lib_LIBRARIES = libmqc.a
 CLEANFILES = gauopen_qcmatrix.$(OBJEXT) gauopen_qcmatrixio.$(OBJEXT) \
   $(MQC_MODULE_FILES)
@@ -28,7 +28,7 @@ mqc_binary.$(OBJEXT): mqc_general.$(OBJEXT)
 mqc_datastructures.$(OBJEXT): mqc_general.$(OBJEXT) \
   mqc_binary.$(OBJEXT)
 mqc_files.$(OBJEXT): mqc_general.$(OBJEXT)
-mqc_integrals.$(OBJEXT): mqc_general.$(OBJEXT) \
+mqc_integrals.$(OBJEXT): $(srcdir)/mqc_integrals_quadrature.F03 mqc_general.$(OBJEXT) \
   mqc_datastructures.$(OBJEXT)
 mqc_algebra.$(OBJEXT): mqc_general.$(OBJEXT)
 mqc_algebra2.$(OBJEXT): mqc_general.$(OBJEXT)

@@ -1,3 +1,34 @@
+/*
+ *
+ *     ***********************************************************************
+ *     ***********************************************************************
+ *     **                                                                   **
+ *     **               The Merced Quantum Chemistry Package                **
+ *     **                            (MQCPack)                              **
+ *     **                                                                   **
+ *     ** Written By:                                                       **
+ *     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
+ *     **    Mullally, and Hrant P. Hratchian                               **
+ *     **                                                                   **
+ *     **                           Version 26.9.3                          **
+ *     **                         September 19, 2026                        **
+ *     **                                                                   **
+ *     **                                                                   **
+ *     ** Modules beloning to MQCPack:                                      **
+ *     **    1. MQC_General                                                 **
+ *     **    2. MQC_Binary                                                  **
+ *     **    3. MQC_DataStructures                                          **
+ *     **    4. MQC_Integrals                                               **
+ *     **    5. MQC_Algebra                                                 **
+ *     **    6. MQC_Files                                                   **
+ *     **    7. MQC_Molecule                                                **
+ *     **    8. MQC_EST                                                     **
+ *     **    9. MQC_Gaussian                                                **
+ *     **                                                                   **
+ *     ***********************************************************************
+ *     ***********************************************************************
+ *
+ */
 /* C Example */
 #include <math.h>
 #include <stdio.h>
