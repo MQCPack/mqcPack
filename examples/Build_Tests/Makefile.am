@@ -3,7 +3,8 @@ AM_CPPFLAGS = $(MQC_CPPFLAGS)
 AM_LDFLAGS = $(MQC_LDFLAGS)
 AUTOMAKE_OPTIONS = subdir-objects
 TESTS_ENVIRONMENT = abs_top_srcdir='$(abs_top_srcdir)' \
-  abs_top_builddir='$(abs_top_builddir)'
+  abs_top_builddir='$(abs_top_builddir)' \
+  FC='$(FC)' MQC_TEST_FCFLAGS='$(AM_FCFLAGS) $(FCFLAGS)'
 CLEANFILES = ../algebra2/outfile ../fullci/outfile ../hartreefock/outfile \
   ../../unitTests/src/outfile unitTest07-numerical.faf
 
@@ -58,3 +59,11 @@ BUILD_PROGRAM_OBJECTS += ../fullci/fullci.$(OBJEXT) \
 endif
 
 build: $(BUILD_PROGRAM_OBJECTS)
+
+# Gaussian-independent quadrature rules, partitions, and owning-grid contracts.
+TESTS += unitTest10 unitTest11 unitTest12 test_quadrature_invalid.sh test_quadrature_private.sh
+check_PROGRAMS += unitTest10 unitTest11 unitTest12
+unitTest10_SOURCES = ../../unitTests/src/unitTest10.f03
+unitTest11_SOURCES = ../../unitTests/src/unitTest11.f03
+unitTest12_SOURCES = ../../unitTests/src/unitTest12.f03
+EXTRA_DIST += test_quadrature_invalid.sh test_quadrature_private.sh

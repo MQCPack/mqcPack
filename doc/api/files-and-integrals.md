@@ -40,6 +40,14 @@ It extends familiar bit operations through generics including `btest`,
 
 Source: [`src/mqc_integrals.F03`](../../src/mqc_integrals.F03).
 
+`MQC_Integrals` also owns the [quadrature API](quadrature.md):
+`quadrature_grid`, `molecular_quadrature_grid`, explicit procedural constructors,
+23 Lebedev rules through degree 77, and unpruned original-Becke partitioning.
+Declarations are in the host source; implementations are included from
+`mqc_integrals_quadrature.F03` after `contains`. The include is not compiled
+separately. Grid storage and implementation helpers are private. This API has
+no Gaussian-file or PAD policy dependency and works without GauOpen.
+
 `MQC_CGTF` represents one contracted Gaussian-type shell/function object. Its
 public bindings are:
 
@@ -100,30 +108,10 @@ and Cartesian coordinates. Its public methods are `print`, `getNucRep`,
 `getNumAtoms`, and `updateMolData`. Coordinate units and the orientation of the
 3-by-`NAtoms` coordinate matrix must be explicit at call boundaries.
 
-Element-property lookup procedures are module-level APIs rather than stored
-components of every molecule object:
-
-- `mqc_element_has_bragg_slater_radius(atomicNumber)` reports whether a
-  tabulated value exists. Atomic number zero identifies a ghost center and
-  returns false.
-- `mqc_element_bragg_slater_radius(atomicNumber)` returns the Slater empirical
-  atomic radius in bohr, including Slater's 0.25-angstrom hydrogen value.
-- `mqc_element_becke_1988_radius(atomicNumber)` returns the radius used for the
-  original Becke molecular partition in bohr. It uses the same table except
-  for Becke's 0.35-angstrom hydrogen value.
-
-The current table covers atomic numbers 1 through
-`MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER` (currently 86). Missing values terminate
-through `mqc_error`; callers must not silently assign a physical radius to a
-ghost or unsupported element. Select radii using true atomic numbers, not
-effective nuclear charges. The radius procedures are implemented directly in
-`src/mqc_molecule.F03`; they are not generated or included from another file.
-
-These routines intentionally do not define a generic, context-free “atomic
-radius.” Covalent, van der Waals, ionic, and integration radii have different
-scientific meanings and must use separate, source-identified APIs if they are
-added later. The present API is the minimum atomic-size boundary required for
-an original-Becke reference implementation.
+Element-radius lookup is provided by `MQC_General`; see
+[General utilities](general.md#element-radius-lookups). Import the radius
+procedures directly from that module. Element-symbol/atomic-number conversion
+remains in `MQC_Molecule`. No radius wrappers are defined here.
 
 The nuclear-repulsion result is meaningful only when coordinates and charges
 use the expected units/conventions. Do not infer units from a variable named

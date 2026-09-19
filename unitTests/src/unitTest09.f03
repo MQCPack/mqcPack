@@ -1,16 +1,16 @@
       Program unitTest09
 !
 !     Validate element symbols and the Bragg-Slater and original-Becke
-!     atomic-size radius APIs in MQC_Molecule.
+!     atomic-size radius APIs in MQC_General.
 !
 !     H. P. Hratchian, 2026.
 !
       Use iso_fortran_env, Only: int64,real64
-      Use MQC_General, Only: angPBohr
-      Use MQC_Molecule, Only: MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER,  &
-        mqc_atomic_number,mqc_element_becke_1988_radius,  &
+      Use MQC_General, Only: angPBohr,MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER,  &
+        mqc_element_becke_1988_radius,  &
         mqc_element_bragg_slater_radius,  &
-        mqc_element_has_bragg_slater_radius,mqc_element_symbol
+        mqc_element_has_bragg_slater_radius
+      Use MQC_Molecule, Only: mqc_atomic_number,mqc_element_symbol
       Implicit None
 !
       Call assertTrue(mqc_element_has_bragg_slater_radius(1_int64),  &

@@ -67,3 +67,35 @@ them through use association. When a downstream unit uses multiple MQCPack
 modules, prefer `only:` lists if a generic becomes ambiguous. Do not bypass an
 object-layer generic merely because its intrinsic implementation routine is
 visible.
+
+## Element-radius lookups
+
+The element-radius API is defined directly in `src/mqc_general.F03` and
+requires no molecule or algebra objects:
+
+- `mqc_element_has_bragg_slater_radius(atomicNumber)` reports whether a
+  tabulated value exists. Atomic number zero identifies a ghost center and
+  returns false.
+- `mqc_element_bragg_slater_radius(atomicNumber)` returns the Slater empirical
+  atomic radius in bohr, including Slater's 0.25-angstrom hydrogen value.
+- `mqc_element_becke_1988_radius(atomicNumber)` returns the radius used for the
+  original Becke molecular partition in bohr. It uses the same table except
+  for Becke's 0.35-angstrom hydrogen value.
+
+The current table covers atomic numbers 1 through
+`MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER` (currently 86). Missing values terminate
+through `mqc_error`; callers must not silently assign a physical radius to a
+ghost or unsupported element. Select radii using true atomic numbers, not
+effective nuclear charges. The radius procedures are implemented directly in
+`src/mqc_general.F03`; they are not generated or included from another file.
+
+These routines intentionally do not define a generic, context-free “atomic
+radius.” Covalent, van der Waals, ionic, and integration radii have different
+scientific meanings and must use separate, source-identified APIs if they are
+added later. The present API is the minimum atomic-size boundary required for
+an original-Becke reference implementation.
+
+The table and procedures moved from `MQC_Molecule` without numerical or
+unit changes. Callers should use `MQC_General` directly. There are no new
+wrappers in `MQC_Molecule`; its existing unrestricted use association may
+still expose the same entities transitively.

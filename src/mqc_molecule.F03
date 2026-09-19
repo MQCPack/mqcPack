@@ -31,8 +31,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                          Version 26.9.2                           **
-!     **                         September 3, 2026                         **
+!     **                           Version 26.9.3                          **
+!     **                         September 19, 2026                        **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -54,38 +54,6 @@
       Use MQC_Algebra
       Use MQC_DataStructures
       Use MQC_Files
-!
-!     The Bragg-Slater table is stored in angstrom and converted to bohr at
-!     the public procedure boundary. Values are from J. C. Slater,
-!     J. Chem. Phys. 41, 3199-3204 (1964), DOI:10.1063/1.1725697.
-!     The table is intentionally limited to elements for which this
-!     compilation provides values; callers must not invent a radius for a
-!     ghost center or an unsupported element.
-!
-      Integer(kind=int64),Parameter,Public::  &
-        MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER=86_int64
-      Real(kind=real64),Dimension(  &
-        MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER),Parameter,Private::  &
-        MQC_BRAGG_SLATER_RADII_ANGSTROM = [ Real(kind=real64)::  &
-          0.25,1.40,  & ! H-He
-          1.45,1.05,0.85,0.70,0.65,0.60,0.50,1.50,  & ! Li-Ne
-          1.80,1.50,1.25,1.10,1.00,1.00,1.00,1.80,  & ! Na-Ar
-          2.20,1.80,  & ! K-Ca
-          1.60,1.40,1.35,1.40,1.40,1.40,1.35,1.35,1.35,1.35,  & ! Sc-Zn
-          1.30,1.25,1.15,1.15,1.15,1.90,  & ! Ga-Kr
-          2.35,2.00,  & ! Rb-Sr
-          1.80,1.55,1.45,1.45,1.35,1.30,1.35,1.40,1.60,1.55,  & ! Y-Cd
-          1.55,1.45,1.45,1.40,1.40,2.10,  & ! In-Xe
-          2.60,2.15,  & ! Cs-Ba
-          1.95,1.85,1.85,1.85,1.85,1.85,1.85,  & ! La-Eu
-          1.80,1.75,1.75,1.75,1.75,1.75,1.75,1.75,  & ! Gd-Lu
-          1.55,1.45,1.35,1.35,1.30,1.35,1.35,1.35,1.50,  & ! Hf-Hg
-          1.90,1.80,1.60,1.90,1.45,2.10 ] ! Tl-Rn
-!
-      Public::mqc_element_has_bragg_slater_radius
-      Public::mqc_element_bragg_slater_radius
-      Public::mqc_element_becke_1988_radius
-!
 !>    \brief <b> Nuclear structure information object</b>
       Type MQC_Molecule_Data
         Type(MQC_Scalar)::NAtoms
@@ -1221,72 +1189,7 @@
       end function mqc_atomic_number 
 !
 !
-!PROCEDURE mqc_element_has_bragg_slater_radius
-      Function mqc_element_has_bragg_slater_radius(atomicNumber)  &
-        Result(hasRadius)
-!
-!     Report whether the explicitly tabulated Bragg-Slater radius is
-!     available for atomicNumber. Ghost centers have atomic number zero and
-!     deliberately return false.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Logical::hasRadius
-!
-      hasRadius = atomicNumber.ge.1_int64.and.  &
-        atomicNumber.le.MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER
-!
-      Return
-      End Function mqc_element_has_bragg_slater_radius
-!
-!
-!PROCEDURE mqc_element_bragg_slater_radius
-      Function mqc_element_bragg_slater_radius(atomicNumber)  &
-        Result(radiusBohr)
-!
-!     Return the Slater empirical atomic radius in bohr. Hydrogen retains
-!     Slater's 0.25-angstrom value. Use mqc_element_becke_1988_radius when
-!     reproducing Becke's original heteronuclear partition adjustment.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Real(kind=real64)::radiusBohr
-!
-      If(.not.mqc_element_has_bragg_slater_radius(atomicNumber))  &
-        Call mqc_error_i(  &
-          'No Bragg-Slater radius is available for atomic number.',6,  &
-          'atomicNumber',atomicNumber)
-      radiusBohr = MQC_BRAGG_SLATER_RADII_ANGSTROM(atomicNumber)/  &
-        angPBohr
-!
-      Return
-      End Function mqc_element_bragg_slater_radius
-!
-!
-!PROCEDURE mqc_element_becke_1988_radius
-      Function mqc_element_becke_1988_radius(atomicNumber)  &
-        Result(radiusBohr)
-!
-!     Return the atomic-size radius in bohr for the original Becke molecular
-!     partition (J. Chem. Phys. 88, 2547-2553 (1988),
-!     DOI:10.1063/1.454033). This uses the Bragg-Slater table with Becke's
-!     0.35-angstrom hydrogen radius.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Real(kind=real64)::radiusBohr
-!
-      radiusBohr = mqc_element_bragg_slater_radius(atomicNumber)
-      If(atomicNumber.eq.1_int64) radiusBohr = 0.35_real64/angPBohr
-!
-      Return
-      End Function mqc_element_becke_1988_radius
+
 !
 !
 !     PROCEDURE MQC_UPDATE_MOL_DATA
