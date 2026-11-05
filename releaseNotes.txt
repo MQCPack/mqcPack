@@ -8,10 +8,20 @@ number updates will be documented here. Note that the minor version number
 will often be updated near the start of the month and the revision number
 in that case will be set to 0.
 
+November 5, 2026
+* MQCPack version set to 26.11.0.
+* Suppress missing-label warnings from MQC_Gaussian getArray when foundOut
+  is supplied, unless module debugging is enabled. Missing labels still
+  terminate with an error when foundOut is omitted.
+* Include the quadrature rule, molecular partition, and owning-grid tests,
+  invalid-input/private-access checks, and public API documentation.
+
 September 19, 2026
 * MQCPack version set to 26.9.3.
 * The critical update here is the addition of the quadrature class, which
   includes Becke partitioning and related support procedures.
+* Moved the Bragg-Slater and Becke-1988 radius APIs from MQC_Molecule
+  directly into MQC_General. Element-symbol conversion remains in MQC_Molecule.
 
 September 3, 2026
 * MQCPack version set to 26.9.2.
