@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                           Version 26.9.3                          **
-!     **                         September 19, 2026                        **
+!     **                          Version 26.11.0                          **
+!     **                          November 5, 2026                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -42,9 +42,9 @@
 !           (2)  Printing;
 !           (3)  Character conversion and manipulation;
 !           (4)  Algebra;
-!           (5)  Other; and
-!           (6)  BLAS and LAPACK wrappers.
-!
+!           (5)  Chemistry;
+!           (6)  Other; and
+!           (7)  BLAS and LAPACK wrappers.
 !
 !
 !
@@ -225,73 +225,6 @@
 !     Subroutines/Functions...
 !
       CONTAINS
-
-!PROCEDURE mqc_element_has_bragg_slater_radius
-      Function mqc_element_has_bragg_slater_radius(atomicNumber)  &
-        Result(hasRadius)
-!
-!     Report whether the explicitly tabulated Bragg-Slater radius is
-!     available for atomicNumber. Ghost centers have atomic number zero and
-!     deliberately return false.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Logical::hasRadius
-!
-      hasRadius = atomicNumber.ge.1_int64.and.  &
-        atomicNumber.le.MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER
-!
-      Return
-      End Function mqc_element_has_bragg_slater_radius
-!
-!
-!PROCEDURE mqc_element_bragg_slater_radius
-      Function mqc_element_bragg_slater_radius(atomicNumber)  &
-        Result(radiusBohr)
-!
-!     Return the Slater empirical atomic radius in bohr. Hydrogen retains
-!     Slater's 0.25-angstrom value. Use mqc_element_becke_1988_radius when
-!     reproducing Becke's original heteronuclear partition adjustment.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Real(kind=real64)::radiusBohr
-!
-      If(.not.mqc_element_has_bragg_slater_radius(atomicNumber))  &
-        Call mqc_error_i(  &
-          'No Bragg-Slater radius is available for atomic number.',6,  &
-          'atomicNumber',atomicNumber)
-      radiusBohr = MQC_BRAGG_SLATER_RADII_ANGSTROM(atomicNumber)/  &
-        angPBohr
-!
-      Return
-      End Function mqc_element_bragg_slater_radius
-!
-!
-!PROCEDURE mqc_element_becke_1988_radius
-      Function mqc_element_becke_1988_radius(atomicNumber)  &
-        Result(radiusBohr)
-!
-!     Return the atomic-size radius in bohr for the original Becke molecular
-!     partition (J. Chem. Phys. 88, 2547-2553 (1988),
-!     DOI:10.1063/1.454033). This uses the Bragg-Slater table with Becke's
-!     0.35-angstrom hydrogen radius.
-!
-!     H. P. Hratchian, 2026.
-!
-      Implicit None
-      Integer(kind=int64),Intent(In)::atomicNumber
-      Real(kind=real64)::radiusBohr
-!
-      radiusBohr = mqc_element_bragg_slater_radius(atomicNumber)
-      If(atomicNumber.eq.1_int64) radiusBohr = 0.35_real64/angPBohr
-!
-      Return
-      End Function mqc_element_becke_1988_radius
 !
 !
 !----------------------------------------------------------------
@@ -299,6 +232,7 @@
 !     MQC Suite Control and System Interaction                  |
 !                                                               |
 !----------------------------------------------------------------
+!
 !
 !PROCEDURE mqc_version
       subroutine mqc_version(major,minor,revision,versionString)
@@ -315,9 +249,9 @@
       character(len=*),OPTIONAL,intent(out)::versionString
 !
       if(PRESENT(major))         major         = 26
-      if(PRESENT(minor))         minor         = 9
-      if(PRESENT(revision))      revision      = 3
-      if(PRESENT(versionString)) versionString = '26.9.3'
+      if(PRESENT(minor))         minor         = 11
+      if(PRESENT(revision))      revision      = 0
+      if(PRESENT(versionString)) versionString = '26.11.0'
 !
       return
       end subroutine mqc_version
@@ -3083,7 +3017,81 @@
 !
       return
       end subroutine MQC_leastSquaresFit
-
+!
+!
+!----------------------------------------------------------------
+!                                                               |
+!     Chemistry                                                 |
+!                                                               |
+!----------------------------------------------------------------
+!
+!
+!PROCEDURE mqc_element_has_bragg_slater_radius
+      Function mqc_element_has_bragg_slater_radius(atomicNumber)  &
+        Result(hasRadius)
+!
+!     Report whether the explicitly tabulated Bragg-Slater radius is
+!     available for atomicNumber. Ghost centers have atomic number zero and
+!     deliberately return false.
+!
+!     H. P. Hratchian, 2026.
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::atomicNumber
+      Logical::hasRadius
+!
+      hasRadius = atomicNumber.ge.1_int64.and.  &
+        atomicNumber.le.MQC_BRAGG_SLATER_MAX_ATOMIC_NUMBER
+!
+      Return
+      End Function mqc_element_has_bragg_slater_radius
+!
+!
+!PROCEDURE mqc_element_bragg_slater_radius
+      Function mqc_element_bragg_slater_radius(atomicNumber)  &
+        Result(radiusBohr)
+!
+!     Return the Slater empirical atomic radius in bohr. Hydrogen retains
+!     Slater's 0.25-angstrom value. Use mqc_element_becke_1988_radius when
+!     reproducing Becke's original heteronuclear partition adjustment.
+!
+!     H. P. Hratchian, 2026.
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::atomicNumber
+      Real(kind=real64)::radiusBohr
+!
+      If(.not.mqc_element_has_bragg_slater_radius(atomicNumber))  &
+        Call mqc_error_i(  &
+          'No Bragg-Slater radius is available for atomic number.',6,  &
+          'atomicNumber',atomicNumber)
+      radiusBohr = MQC_BRAGG_SLATER_RADII_ANGSTROM(atomicNumber)/  &
+        angPBohr
+!
+      Return
+      End Function mqc_element_bragg_slater_radius
+!
+!
+!PROCEDURE mqc_element_becke_1988_radius
+      Function mqc_element_becke_1988_radius(atomicNumber)  &
+        Result(radiusBohr)
+!
+!     Return the atomic-size radius in bohr for the original Becke molecular
+!     partition (J. Chem. Phys. 88, 2547-2553 (1988),
+!     DOI:10.1063/1.454033). This uses the Bragg-Slater table with Becke's
+!     0.35-angstrom hydrogen radius.
+!
+!     H. P. Hratchian, 2026.
+!
+      Implicit None
+      Integer(kind=int64),Intent(In)::atomicNumber
+      Real(kind=real64)::radiusBohr
+!
+      radiusBohr = mqc_element_bragg_slater_radius(atomicNumber)
+      If(atomicNumber.eq.1_int64) radiusBohr = 0.35_real64/angPBohr
+!
+      Return
+      End Function mqc_element_becke_1988_radius
 !
 !
 !----------------------------------------------------------------

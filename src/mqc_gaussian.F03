@@ -10,8 +10,8 @@
 !     **    Lee M. Thompson, Xianghai Sheng, Andrew D. Mahler, Dave        **
 !     **    Mullally, and Hrant P. Hratchian                               **
 !     **                                                                   **
-!     **                           Version 26.9.3                          **
-!     **                         September 19, 2026                        **
+!     **                          Version 26.11.0                          **
+!     **                          November 5, 2026                         **
 !     **                                                                   **
 !     **                                                                   **
 !     ** Modules beloning to MQCPack:                                      **
@@ -1767,10 +1767,10 @@
       if(present(foundOut)) foundOut = found
       if(.not.found) then
         errorMsg = 'Could NOT find requested matrix file label "'//TRIM(label)//'".'
-        if(present(foundOut)) then
-          write(6,'(A)') errorMsg
-        else
+        if(.not.present(foundOut)) then
           call MQC_Error_L(errorMsg,6,'found',found)
+        elseIf(MQC_Gaussian_DEBUG) then
+          write(6,'(A)') errorMsg
         endIf
       endIf
 !
