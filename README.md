@@ -125,5 +125,5 @@ A Git checkout may need
 `autoreconf --install` once to generate `configure`; release source archives
 normally include generated Autotools files.
 
-# Licence
+# License
   This project is licensed under the Apache License - see the LICENSE file for details
