@@ -72,6 +72,11 @@ Extends `MQC_FileInfo`. Preferred type-bound operations are:
 Use the exact signature in the source because several routines have multiple
 optional destinations or dispatch according to the supplied MQCPack object.
 
+For optional FAF records, supply `foundOut` to `getArray`. A missing label
+sets it to false and prints a warning only when module debugging is enabled
+through `MQC_Gaussian_SetDEBUG`. Omitting `foundOut` makes a missing label a
+hard error through `mqc_error`.
+
 `loadGTOBasisSet` constructs an evaluable `MQC_Integrals::MQC_gtoBasisSet`
 from the opened MatrixFile's Gaussian basis records. It expands a Gaussian
 shell type of `-1` into separate Cartesian S and P contracted shells. Shell
